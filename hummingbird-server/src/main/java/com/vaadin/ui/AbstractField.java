@@ -32,7 +32,6 @@ import com.vaadin.data.Property;
 import com.vaadin.data.Validatable;
 import com.vaadin.data.Validator;
 import com.vaadin.data.Validator.InvalidValueException;
-import com.vaadin.data.util.LegacyPropertyHelper;
 import com.vaadin.data.util.converter.Converter;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 import com.vaadin.data.util.converter.ConverterUtil;
@@ -352,39 +351,6 @@ public abstract class AbstractField<T> extends AbstractComponent
         return buffered;
     }
 
-    /**
-     * Returns a string representation of this object. The returned string
-     * representation depends on if the legacy Property toString mode is enabled
-     * or disabled.
-     * <p>
-     * If legacy Property toString mode is enabled, returns the value of this
-     * <code>Field</code> converted to a String.
-     * </p>
-     * <p>
-     * If legacy Property toString mode is disabled, the string representation
-     * has no special meaning
-     * </p>
-     *
-     * @see LegacyPropertyHelper#isLegacyToStringEnabled()
-     *
-     * @return A string representation of the value value stored in the Property
-     *         or a string representation of the Property object.
-     * @deprecated As of 7.0. Use {@link #getValue()} to get the value of the
-     *             field, {@link #getConvertedValue()} to get the field value
-     *             converted to the data model type or
-     *             {@link #getPropertyDataSource()} .getValue() to get the value
-     *             of the data source.
-     */
-    @Deprecated
-    @Override
-    public String toString() {
-        if (!LegacyPropertyHelper.isLegacyToStringEnabled()) {
-            return super.toString();
-        } else {
-            return LegacyPropertyHelper.legacyPropertyToString(this);
-        }
-    }
-
     /* Property interface implementation */
 
     /**
@@ -547,11 +513,6 @@ public abstract class AbstractField<T> extends AbstractComponent
             fireValueChange(repaintIsNotNeeded);
 
         }
-    }
-
-    @Deprecated
-    static boolean equals(Object value1, Object value2) {
-        return SharedUtil.equals(value1, value2);
     }
 
     /* External data source */
@@ -1087,16 +1048,6 @@ public abstract class AbstractField<T> extends AbstractComponent
         markAsDirty();
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Property.ValueChangeListener listener) {
-        addValueChangeListener(listener);
-    }
-
     /*
      * Removes a value change listener from the field. Don't add a JavaDoc
      * comment here, we use the default documentation from the implemented
@@ -1109,16 +1060,6 @@ public abstract class AbstractField<T> extends AbstractComponent
                 VALUE_CHANGE_METHOD);
         // ensure "automatic immediate handling" works
         markAsDirty();
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Property.ValueChangeListener listener) {
-        removeValueChangeListener(listener);
     }
 
     /**
@@ -1202,16 +1143,6 @@ public abstract class AbstractField<T> extends AbstractComponent
                 READ_ONLY_STATUS_CHANGE_METHOD);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addReadOnlyStatusChangeListener(com.vaadin.data.Property.ReadOnlyStatusChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Property.ReadOnlyStatusChangeListener listener) {
-        addReadOnlyStatusChangeListener(listener);
-    }
-
     /*
      * Removes a read-only status change listener from the field. Don't add a
      * JavaDoc comment here, we use the default documentation from the
@@ -1222,16 +1153,6 @@ public abstract class AbstractField<T> extends AbstractComponent
             Property.ReadOnlyStatusChangeListener listener) {
         removeListener(Property.ReadOnlyStatusChangeEvent.class, listener,
                 READ_ONLY_STATUS_CHANGE_METHOD);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeReadOnlyStatusChangeListener(com.vaadin.data.Property.ReadOnlyStatusChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Property.ReadOnlyStatusChangeListener listener) {
-        removeReadOnlyStatusChangeListener(listener);
     }
 
     /**
@@ -1644,11 +1565,12 @@ public abstract class AbstractField<T> extends AbstractComponent
     private void addPropertyListeners() {
         if (!isListeningToPropertyEvents) {
             if (dataSource instanceof Property.ValueChangeNotifier) {
-                ((Property.ValueChangeNotifier) dataSource).addListener(this);
+                ((Property.ValueChangeNotifier) dataSource)
+                        .addValueChangeListener(this);
             }
             if (dataSource instanceof Property.ReadOnlyStatusChangeNotifier) {
                 ((Property.ReadOnlyStatusChangeNotifier) dataSource)
-                        .addListener(this);
+                        .addReadOnlyStatusChangeListener(this);
             }
             isListeningToPropertyEvents = true;
         }
@@ -1662,11 +1584,11 @@ public abstract class AbstractField<T> extends AbstractComponent
         if (isListeningToPropertyEvents) {
             if (dataSource instanceof Property.ValueChangeNotifier) {
                 ((Property.ValueChangeNotifier) dataSource)
-                        .removeListener(this);
+                        .removeValueChangeListener(this);
             }
             if (dataSource instanceof Property.ReadOnlyStatusChangeNotifier) {
                 ((Property.ReadOnlyStatusChangeNotifier) dataSource)
-                        .removeListener(this);
+                        .removeReadOnlyStatusChangeListener(this);
             }
             isListeningToPropertyEvents = false;
         }

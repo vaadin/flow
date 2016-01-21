@@ -1595,16 +1595,6 @@ public class SQLContainer implements Container, Container.Filterable,
         itemSetChangeListeners.add(listener);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Container.ItemSetChangeListener listener) {
-        addItemSetChangeListener(listener);
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -1619,16 +1609,6 @@ public class SQLContainer implements Container, Container.Filterable,
         if (itemSetChangeListeners != null) {
             itemSetChangeListeners.remove(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Container.ItemSetChangeListener listener) {
-        removeItemSetChangeListener(listener);
     }
 
     protected void fireContentsChange() {
@@ -1672,17 +1652,8 @@ public class SQLContainer implements Container, Container.Filterable,
     public void addRowIdChangeListener(RowIdChangeListener listener) {
         if (queryDelegate instanceof QueryDelegate.RowIdChangeNotifier) {
             ((QueryDelegate.RowIdChangeNotifier) queryDelegate)
-                    .addListener(listener);
+                    .addRowIdChangeListener(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addRowIdChangeListener(RowIdChangeListener)}
-     **/
-    @Deprecated
-    public void addListener(RowIdChangeListener listener) {
-        addRowIdChangeListener(listener);
     }
 
     /**
@@ -1693,17 +1664,8 @@ public class SQLContainer implements Container, Container.Filterable,
     public void removeRowIdChangeListener(RowIdChangeListener listener) {
         if (queryDelegate instanceof QueryDelegate.RowIdChangeNotifier) {
             ((QueryDelegate.RowIdChangeNotifier) queryDelegate)
-                    .removeListener(listener);
+                    .removeRowIdChangeListener(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeRowIdChangeListener(RowIdChangeListener)}
-     **/
-    @Deprecated
-    public void removeListener(RowIdChangeListener listener) {
-        removeRowIdChangeListener(listener);
     }
 
     /**

@@ -16,7 +16,6 @@
 
 package com.vaadin.server;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -123,16 +122,6 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public File getBaseDirectory() {
-        final String realPath = VaadinServlet
-                .getResourcePath(servlet.getServletContext(), "/");
-        if (realPath == null) {
-            return null;
-        }
-        return new File(realPath);
-    }
-
-    @Override
     protected boolean requestCanCreateSession(VaadinRequest request) {
         if (ServletUIInitHandler.isUIInitRequest(request)) {
             // This is the first request if you are embedding by writing the
@@ -158,12 +147,6 @@ public class VaadinServletService extends VaadinService {
                 && !ServletPortletHelper.isPublishedFileRequest(request)
                 && !ServletPortletHelper.isUIDLRequest(request)
                 && !ServletPortletHelper.isPushRequest(request));
-    }
-
-    @Override
-    protected URL getApplicationUrl(VaadinRequest request)
-            throws MalformedURLException {
-        return getServlet().getApplicationUrl((VaadinServletRequest) request);
     }
 
     public static HttpServletRequest getCurrentServletRequest() {

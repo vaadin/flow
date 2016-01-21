@@ -18,10 +18,7 @@ package com.vaadin.server;
 
 import static com.vaadin.shared.util.SharedUtil.trimTrailingSlashes;
 
-import java.io.File;
-import java.net.URL;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.portlet.EventRequest;
@@ -130,27 +127,6 @@ public class VaadinPortletService extends VaadinService {
     @Override
     public String getMimeType(String resourceName) {
         return getPortletContext().getMimeType(resourceName);
-    }
-
-    @Override
-    public File getBaseDirectory() {
-        PortletContext context = getPortletContext();
-        String resultPath = context.getRealPath("/");
-        if (resultPath != null) {
-            return new File(resultPath);
-        } else {
-            try {
-                final URL url = context.getResource("/");
-                return new File(url.getFile());
-            } catch (final Exception e) {
-                // FIXME: Handle exception
-                getLogger().log(Level.INFO,
-                        "Cannot access base directory, possible security issue "
-                                + "with Application Server or Servlet Container",
-                        e);
-            }
-        }
-        return null;
     }
 
     private static final Logger getLogger() {

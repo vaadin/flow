@@ -94,20 +94,6 @@ public interface Constants {
             + ".\n"
             + "=================================================================";
 
-    public static final String WARNING_LEGACY_PROPERTY_TOSTRING = "You are using toString() instead of getValue() to get the value for a Property of type {0}"
-            + ". This is strongly discouraged and only provided for backwards compatibility with Vaadin 6. "
-            + "To disable this warning message and retain the behavior, set the init parameter \""
-            + Constants.SERVLET_PARAMETER_LEGACY_PROPERTY_TOSTRING
-            + "\" to \"true\". To disable the legacy functionality, set \""
-            + Constants.SERVLET_PARAMETER_LEGACY_PROPERTY_TOSTRING
-            + "\" to false."
-            + " (Note that your debugger might call toString() and trigger this message)."
-            + " To find out who is calling toString(), enable FINE level logging.";
-
-    static final String WARNING_UNKNOWN_LEGACY_PROPERTY_TOSTRING_VALUE = "Unknown value '{0}' for parameter "
-            + Constants.SERVLET_PARAMETER_LEGACY_PROPERTY_TOSTRING
-            + ". Supported values are 'false','warning','true'";
-
     static final String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = "\n"
             + "=================================================================\n"
             + "Vaadin was unable to acquire class loader from servlet container\n"
@@ -127,19 +113,9 @@ public interface Constants {
     static final String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
     static final String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
     static final String SERVLET_PARAMETER_UI_PROVIDER = "UIProvider";
-    static final String SERVLET_PARAMETER_LEGACY_PROPERTY_TOSTRING = "legacyPropertyToString";
     static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     static final String SERVLET_PARAMETER_SENDURLSASPARAMETERS = "sendUrlsAsParameters";
     static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
-    /**
-     * Name of system or context property to write declarative syntax with the
-     * old "v-" prefix or with the new "vaadin-" prefix. The default value
-     * depends on the Vaadin branch used.
-     *
-     * @see DesignContext
-     * @since 7.5.7
-     */
-    static final String SERVLET_PARAMETER_LEGACY_DESIGN_PREFIX = "legacyDesignPrefix";
 
     // Configurable parameter names
     static final String PARAMETER_VAADIN_RESOURCES = "Resources";
@@ -159,15 +135,6 @@ public interface Constants {
 
     // Widget set parameter name
     static final String PARAMETER_WIDGETSET = "widgetset";
-
-    /**
-     * @deprecated As of 7.1, this message is no longer used and might be
-     *             removed from the code.
-     */
-    @Deprecated
-    static final String ERROR_NO_UI_FOUND = "No UIProvider returned a UI for the request.";
-
-    static final String DEFAULT_THEME_NAME = "reindeer";
 
     static final String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
 

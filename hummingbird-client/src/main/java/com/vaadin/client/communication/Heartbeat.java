@@ -25,7 +25,6 @@ import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.Console;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.util.SharedUtil;
 
 /**
@@ -62,7 +61,7 @@ public class Heartbeat {
                 connection.translateVaadinUri(
                         ApplicationConstants.APP_PROTOCOL_PREFIX
                                 + ApplicationConstants.HEARTBEAT_PATH + '/'),
-                UIConstants.UI_ID_PARAMETER + "="
+                ApplicationConstants.UI_ID_PARAMETER + "="
                         + connection.getConfiguration().getUIId());
 
         connection.addHandler(

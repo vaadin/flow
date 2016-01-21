@@ -1080,7 +1080,7 @@ public class SQLContainerTableQueryTest {
         listener.containerItemSetChange(EasyMock.isA(ItemSetChangeEvent.class));
         EasyMock.replay(listener);
 
-        container.addListener(listener);
+        container.addItemSetChangeListener(listener);
         container.addItem();
 
         EasyMock.verify(listener);
@@ -1095,7 +1095,7 @@ public class SQLContainerTableQueryTest {
         EasyMock.expectLastCall().anyTimes();
         EasyMock.replay(listener);
 
-        container.addListener(listener);
+        container.addItemSetChangeListener(listener);
         container.removeItem(container.lastItemId());
 
         EasyMock.verify(listener);
@@ -1107,8 +1107,8 @@ public class SQLContainerTableQueryTest {
                 .createMock(ItemSetChangeListener.class);
         EasyMock.replay(listener);
 
-        container.addListener(listener);
-        container.removeListener(listener);
+        container.addItemSetChangeListener(listener);
+        container.removeItemSetChangeListener(listener);
         container.addItem();
 
         EasyMock.verify(listener);

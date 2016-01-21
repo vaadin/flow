@@ -110,15 +110,6 @@ public abstract class AbstractContainer implements Container {
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addPropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Deprecated
-    protected void addListener(Container.PropertySetChangeListener listener) {
-        addPropertySetChangeListener(listener);
-    }
-
-    /**
      * Implementation of the corresponding method in
      * {@link PropertySetChangeNotifier}, override with the corresponding public
      * method and implement the interface to use this.
@@ -131,16 +122,6 @@ public abstract class AbstractContainer implements Container {
         if (getPropertySetChangeListeners() != null) {
             getPropertySetChangeListeners().remove(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removePropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Deprecated
-    protected void removeListener(
-            Container.PropertySetChangeListener listener) {
-        removePropertySetChangeListener(listener);
     }
 
     // ItemSetChangeNotifier
@@ -162,15 +143,6 @@ public abstract class AbstractContainer implements Container {
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Deprecated
-    protected void addListener(Container.ItemSetChangeListener listener) {
-        addItemSetChangeListener(listener);
-    }
-
-    /**
      * Implementation of the corresponding method in
      * {@link ItemSetChangeNotifier}, override with the corresponding public
      * method and implement the interface to use this.
@@ -182,15 +154,6 @@ public abstract class AbstractContainer implements Container {
         if (getItemSetChangeListeners() != null) {
             getItemSetChangeListeners().remove(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Deprecated
-    protected void removeListener(Container.ItemSetChangeListener listener) {
-        removeItemSetChangeListener(listener);
     }
 
     /**

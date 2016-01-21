@@ -308,13 +308,6 @@ public interface Property<T> extends Serializable {
                 Property.ValueChangeListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addValueChangeListener(ValueChangeListener)}
-         **/
-        @Deprecated
-        public void addListener(Property.ValueChangeListener listener);
-
-        /**
          * Removes a previously registered value change listener.
          *
          * @param listener
@@ -322,13 +315,6 @@ public interface Property<T> extends Serializable {
          */
         public void removeValueChangeListener(
                 Property.ValueChangeListener listener);
-
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeValueChangeListener(ValueChangeListener)}
-         **/
-        @Deprecated
-        public void removeListener(Property.ValueChangeListener listener);
     }
 
     /* ReadOnly Status change event */
@@ -399,13 +385,6 @@ public interface Property<T> extends Serializable {
                 Property.ReadOnlyStatusChangeListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addReadOnlyStatusChangeListener(ReadOnlyStatusChangeListener)}
-         **/
-        @Deprecated
-        public void addListener(Property.ReadOnlyStatusChangeListener listener);
-
-        /**
          * Removes a previously registered read-only status change listener.
          *
          * @param listener
@@ -414,12 +393,5 @@ public interface Property<T> extends Serializable {
         public void removeReadOnlyStatusChangeListener(
                 Property.ReadOnlyStatusChangeListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeReadOnlyStatusChangeListener(ReadOnlyStatusChangeListener)}
-         **/
-        @Deprecated
-        public void removeListener(
-                Property.ReadOnlyStatusChangeListener listener);
     }
 }

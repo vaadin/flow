@@ -425,8 +425,8 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE>
             // avoid multiple notifications for the same property if
             // multiple filters are in use
             ValueChangeNotifier notifier = (ValueChangeNotifier) property;
-            notifier.removeListener(this);
-            notifier.addListener(this);
+            notifier.removeValueChangeListener(this);
+            notifier.addValueChangeListener(this);
         }
     }
 
@@ -441,7 +441,7 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE>
     private void removeValueChangeListener(Item item, Object propertyId) {
         Property<?> property = item.getItemProperty(propertyId);
         if (property instanceof ValueChangeNotifier) {
-            ((ValueChangeNotifier) property).removeListener(this);
+            ((ValueChangeNotifier) property).removeValueChangeListener(this);
         }
     }
 
@@ -778,29 +778,10 @@ public abstract class AbstractBeanContainer<IDTYPE, BEANTYPE>
         return new PropertyBasedBeanIdResolver(propertyId);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by {@link #addPropertySetChangeListener}
-     **/
-    @Deprecated
-    @Override
-    public void addListener(Container.PropertySetChangeListener listener) {
-        addPropertySetChangeListener(listener);
-    }
-
     @Override
     public void addPropertySetChangeListener(
             Container.PropertySetChangeListener listener) {
         super.addPropertySetChangeListener(listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removePropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Deprecated
-    @Override
-    public void removeListener(Container.PropertySetChangeListener listener) {
-        removePropertySetChangeListener(listener);
     }
 
     @Override

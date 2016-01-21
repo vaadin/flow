@@ -26,7 +26,6 @@ import com.vaadin.server.SynchronizedRequestHandler;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.ui.UI;
 
 /**

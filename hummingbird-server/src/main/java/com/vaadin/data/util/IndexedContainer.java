@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
@@ -61,10 +60,9 @@ import com.vaadin.data.util.filter.UnsupportedFilterException;
 // item type is really IndexedContainerItem, but using Item not to show it in
 // public API
 public class IndexedContainer
-        extends AbstractInMemoryContainer<Object, Object, Item>
-        implements Container.PropertySetChangeNotifier,
-        Property.ValueChangeNotifier, Container.Sortable, Cloneable,
-        Container.Filterable, Container.SimpleFilterable {
+        extends AbstractInMemoryContainer<Object, Object, Item> implements
+        Container.PropertySetChangeNotifier, Property.ValueChangeNotifier,
+        Container.Sortable, Container.Filterable, Container.SimpleFilterable {
 
     /* Internal structure */
 
@@ -500,30 +498,10 @@ public class IndexedContainer
         super.addPropertySetChangeListener(listener);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addPropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Deprecated
-    @Override
-    public void addListener(Container.PropertySetChangeListener listener) {
-        addPropertySetChangeListener(listener);
-    }
-
     @Override
     public void removePropertySetChangeListener(
             Container.PropertySetChangeListener listener) {
         super.removePropertySetChangeListener(listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removePropertySetChangeListener(com.vaadin.data.Container.PropertySetChangeListener)}
-     **/
-    @Deprecated
-    @Override
-    public void removeListener(Container.PropertySetChangeListener listener) {
-        removePropertySetChangeListener(listener);
     }
 
     /*
@@ -540,16 +518,6 @@ public class IndexedContainer
         propertyValueChangeListeners.add(listener);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Property.ValueChangeListener listener) {
-        addValueChangeListener(listener);
-    }
-
     /*
      * (non-Javadoc)
      *
@@ -562,16 +530,6 @@ public class IndexedContainer
         if (propertyValueChangeListeners != null) {
             propertyValueChangeListeners.remove(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Property.ValueChangeListener listener) {
-        removeValueChangeListener(listener);
     }
 
     /**
@@ -962,39 +920,6 @@ public class IndexedContainer
         }
 
         /**
-         * Returns a string representation of this object. The returned string
-         * representation depends on if the legacy Property toString mode is
-         * enabled or disabled.
-         * <p>
-         * If legacy Property toString mode is enabled, returns the value of the
-         * <code>Property</code> converted to a String.
-         * </p>
-         * <p>
-         * If legacy Property toString mode is disabled, the string
-         * representation has no special meaning
-         * </p>
-         *
-         * @return A string representation of the value value stored in the
-         *         Property or a string representation of the Property object.
-         * @deprecated As of 7.0. To get the property value, use
-         *             {@link #getValue()} instead (and possibly toString on
-         *             that)
-         */
-        @Deprecated
-        @Override
-        public String toString() {
-            if (!LegacyPropertyHelper.isLegacyToStringEnabled()) {
-                return super.toString();
-            } else {
-                return LegacyPropertyHelper.legacyPropertyToString(this);
-            }
-        }
-
-        private Logger getLogger() {
-            return Logger.getLogger(IndexedContainerProperty.class.getName());
-        }
-
-        /**
          * Calculates a integer hash-code for the Property that's unique inside
          * the Item containing the Property. Two different Properties inside the
          * same Item contained in the same list always have different
@@ -1040,16 +965,6 @@ public class IndexedContainer
             addSinglePropertyChangeListener(propertyId, itemId, listener);
         }
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-         **/
-        @Override
-        @Deprecated
-        public void addListener(Property.ValueChangeListener listener) {
-            addValueChangeListener(listener);
-        }
-
         /*
          * (non-Javadoc)
          *
@@ -1060,16 +975,6 @@ public class IndexedContainer
         public void removeValueChangeListener(
                 Property.ValueChangeListener listener) {
             removeSinglePropertyChangeListener(propertyId, itemId, listener);
-        }
-
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeValueChangeListener(com.vaadin.data.Property.ValueChangeListener)}
-         **/
-        @Override
-        @Deprecated
-        public void removeListener(Property.ValueChangeListener listener) {
-            removeValueChangeListener(listener);
         }
 
         private IndexedContainer getHost() {
@@ -1108,74 +1013,6 @@ public class IndexedContainer
     @Override
     public void setItemSorter(ItemSorter itemSorter) {
         super.setItemSorter(itemSorter);
-    }
-
-    /**
-     * Supports cloning of the IndexedContainer cleanly.
-     *
-     * @throws CloneNotSupportedException
-     *             if an object cannot be cloned. .
-     *
-     * @deprecated As of 6.6. Cloning support might be removed from
-     *             IndexedContainer in the future
-     */
-    @Deprecated
-    @Override
-    public Object clone() throws CloneNotSupportedException {
-
-        // Creates the clone
-        final IndexedContainer nc = new IndexedContainer();
-
-        // Clone the shallow properties
-        nc.setAllItemIds(getAllItemIds() != null
-                ? (ListSet<Object>) ((ListSet<Object>) getAllItemIds()).clone()
-                : null);
-        nc.setItemSetChangeListeners(getItemSetChangeListeners() != null
-                ? new LinkedList<Container.ItemSetChangeListener>(
-                        getItemSetChangeListeners())
-                : null);
-        nc.propertyIds = propertyIds != null
-                ? (ArrayList<Object>) propertyIds.clone() : null;
-        nc.setPropertySetChangeListeners(getPropertySetChangeListeners() != null
-                ? new LinkedList<Container.PropertySetChangeListener>(
-                        getPropertySetChangeListeners())
-                : null);
-        nc.propertyValueChangeListeners = propertyValueChangeListeners != null
-                ? (LinkedList<Property.ValueChangeListener>) propertyValueChangeListeners
-                        .clone()
-                : null;
-        nc.readOnlyProperties = readOnlyProperties != null
-                ? (HashSet<Property<?>>) readOnlyProperties.clone() : null;
-        nc.singlePropertyValueChangeListeners = singlePropertyValueChangeListeners != null
-                ? (Hashtable<Object, Map<Object, List<Property.ValueChangeListener>>>) singlePropertyValueChangeListeners
-                        .clone()
-                : null;
-
-        nc.types = types != null ? (Hashtable<Object, Class<?>>) types.clone()
-                : null;
-
-        nc.setFilters(
-                (HashSet<Filter>) ((HashSet<Filter>) getFilters()).clone());
-
-        nc.setFilteredItemIds(getFilteredItemIds() == null ? null
-                : (ListSet<Object>) ((ListSet<Object>) getFilteredItemIds())
-                        .clone());
-
-        // Clone property-values
-        if (items == null) {
-            nc.items = null;
-        } else {
-            nc.items = new Hashtable<Object, Map<Object, Object>>();
-            for (final Iterator<?> i = items.keySet().iterator(); i
-                    .hasNext();) {
-                final Object id = i.next();
-                final Hashtable<Object, Object> it = (Hashtable<Object, Object>) items
-                        .get(id);
-                nc.items.put(id, (Map<Object, Object>) it.clone());
-            }
-        }
-
-        return nc;
     }
 
     @Override

@@ -35,7 +35,6 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -74,7 +73,7 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
             session.getCommunicationManager().repaintAll(uI);
 
             JsonObject params = Json.createObject();
-            params.put(UIConstants.UI_ID_PARAMETER, uI.getUIId());
+            params.put(ApplicationConstants.UI_ID_PARAMETER, uI.getUIId());
             String initialUIDL = getInitialUidl(request, uI);
             params.put("uidl", initialUIDL);
 

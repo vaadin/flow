@@ -86,30 +86,6 @@ public class Notification implements Serializable {
         }
     }
 
-    @Deprecated
-    public static final Type TYPE_HUMANIZED_MESSAGE = Type.HUMANIZED_MESSAGE;
-    @Deprecated
-    public static final Type TYPE_WARNING_MESSAGE = Type.WARNING_MESSAGE;
-    @Deprecated
-    public static final Type TYPE_ERROR_MESSAGE = Type.ERROR_MESSAGE;
-    @Deprecated
-    public static final Type TYPE_TRAY_NOTIFICATION = Type.TRAY_NOTIFICATION;
-
-    @Deprecated
-    public static final Position POSITION_CENTERED = Position.MIDDLE_CENTER;
-    @Deprecated
-    public static final Position POSITION_CENTERED_TOP = Position.TOP_CENTER;
-    @Deprecated
-    public static final Position POSITION_CENTERED_BOTTOM = Position.BOTTOM_CENTER;
-    @Deprecated
-    public static final Position POSITION_TOP_LEFT = Position.TOP_LEFT;
-    @Deprecated
-    public static final Position POSITION_TOP_RIGHT = Position.TOP_RIGHT;
-    @Deprecated
-    public static final Position POSITION_BOTTOM_LEFT = Position.BOTTOM_LEFT;
-    @Deprecated
-    public static final Position POSITION_BOTTOM_RIGHT = Position.BOTTOM_RIGHT;
-
     public static final int DELAY_FOREVER = -1;
     public static final int DELAY_NONE = 0;
 
@@ -130,7 +106,7 @@ public class Notification implements Serializable {
      *            The message to show
      */
     public Notification(String caption) {
-        this(caption, null, TYPE_HUMANIZED_MESSAGE);
+        this(caption, null, Type.HUMANIZED_MESSAGE);
     }
 
     /**
@@ -160,7 +136,7 @@ public class Notification implements Serializable {
      *            The message description
      */
     public Notification(String caption, String description) {
-        this(caption, description, TYPE_HUMANIZED_MESSAGE);
+        this(caption, description, Type.HUMANIZED_MESSAGE);
     }
 
     /**

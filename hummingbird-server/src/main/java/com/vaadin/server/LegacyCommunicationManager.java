@@ -31,13 +31,11 @@ import java.util.logging.Logger;
 import com.vaadin.server.ClientConnector.ConnectorErrorEvent;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.SharedState;
-import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.UI;
 
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -79,20 +77,6 @@ public class LegacyCommunicationManager implements Serializable {
     }
 
     private static final ConcurrentHashMap<Class<? extends SharedState>, JsonValue> referenceDiffStates = new ConcurrentHashMap<Class<? extends SharedState>, JsonValue>();
-
-    /**
-     * @deprecated As of 7.1. See #11411.
-     */
-    @Deprecated
-    public static JsonObject encodeState(ClientConnector connector,
-            SharedState state) {
-        UI uI = connector.getUI();
-        Class<? extends SharedState> stateType = ((AbstractComponent) connector)
-                .getStateType();
-        EncodeResult encodeResult = JsonCodec.encode(state, null, stateType,
-                uI.getConnectorTracker());
-        return (JsonObject) encodeResult.getDiff();
-    }
 
     /**
      * Resolves a dependency URI, registering the URI with this
@@ -245,26 +229,6 @@ public class LegacyCommunicationManager implements Serializable {
         }
     }
 
-    private final HashMap<Class<? extends ClientConnector>, Integer> typeToKey = new HashMap<Class<? extends ClientConnector>, Integer>();
-    private int nextTypeKey = 0;
-
-    /**
-     * @deprecated As of 7.1. Will be removed in the future.
-     */
-    @Deprecated
-    public String getTagForType(Class<? extends ClientConnector> class1) {
-        Integer id = typeToKey.get(class1);
-        if (id == null) {
-            id = nextTypeKey++;
-            typeToKey.put(class1, id);
-            if (getLogger().isLoggable(Level.FINE)) {
-                getLogger().log(Level.FINE, "Mapping {0} to {1}",
-                        new Object[] { class1.getName(), id });
-            }
-        }
-        return id.toString();
-    }
-
     /**
      * Helper class for terminal to keep track of data that client is expected
      * to know.
@@ -294,38 +258,6 @@ public class LegacyCommunicationManager implements Serializable {
         public boolean isEmpty() {
             return res.isEmpty();
         }
-
-    }
-
-    /**
-     * @deprecated As of 7.1. See #11411.
-     */
-    @Deprecated
-    public String getStreamVariableTargetUrl(ClientConnector owner, String name,
-            StreamVariable value) {
-        /*
-         * We will use the same APP/* URI space as ApplicationResources but
-         * prefix url with UPLOAD
-         *
-         * eg. APP/UPLOAD/[UIID]/[PID]/[NAME]/[SECKEY]
-         *
-         * SECKEY is created on each paint to make URL's unpredictable (to
-         * prevent CSRF attacks).
-         *
-         * NAME and PID from URI forms a key to fetch StreamVariable when
-         * handling post
-         */
-        String paintableId = owner.getConnectorId();
-        UI ui = owner.getUI();
-        int uiId = ui.getUIId();
-        String key = uiId + "/" + paintableId + "/" + name;
-
-        ConnectorTracker connectorTracker = ui.getConnectorTracker();
-        connectorTracker.addStreamVariable(paintableId, name, value);
-        String seckey = connectorTracker.getSeckey(value);
-
-        return ApplicationConstants.APP_PROTOCOL_PREFIX
-                + ServletPortletHelper.UPLOAD_URL_PREFIX + key + "/" + seckey;
 
     }
 

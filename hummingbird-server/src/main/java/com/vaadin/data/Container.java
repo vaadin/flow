@@ -1127,13 +1127,6 @@ public interface Container extends Serializable {
                 Container.ItemSetChangeListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addItemSetChangeListener(ItemSetChangeListener)}
-         **/
-        @Deprecated
-        public void addListener(Container.ItemSetChangeListener listener);
-
-        /**
          * Removes the Item set change listener from the object.
          *
          * @param listener
@@ -1142,12 +1135,6 @@ public interface Container extends Serializable {
         public void removeItemSetChangeListener(
                 Container.ItemSetChangeListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeItemSetChangeListener(ItemSetChangeListener)}
-         **/
-        @Deprecated
-        public void removeListener(Container.ItemSetChangeListener listener);
     }
 
     /* Property set change event */
@@ -1229,13 +1216,6 @@ public interface Container extends Serializable {
                 Container.PropertySetChangeListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addPropertySetChangeListener(PropertySetChangeListener)}
-         **/
-        @Deprecated
-        public void addListener(Container.PropertySetChangeListener listener);
-
-        /**
          * Removes a previously registered Property set change listener.
          *
          * @param listener
@@ -1244,12 +1224,5 @@ public interface Container extends Serializable {
         public void removePropertySetChangeListener(
                 Container.PropertySetChangeListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removePropertySetChangeListener(PropertySetChangeListener)}
-         **/
-        @Deprecated
-        public void removeListener(
-                Container.PropertySetChangeListener listener);
     }
 }

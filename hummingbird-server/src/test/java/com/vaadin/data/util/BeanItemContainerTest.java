@@ -234,7 +234,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
     public void testItemSetChangeListeners() {
         BeanItemContainer<ClassName> container = getContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         ClassName cn1 = new ClassName("com.example.Test", 1111);
         ClassName cn2 = new ClassName("com.example.Test2", 2222);
@@ -326,7 +326,7 @@ public class BeanItemContainerTest extends AbstractBeanContainerTestBase {
     public void testItemSetChangeListenersFiltering() {
         BeanItemContainer<ClassName> container = getContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         ClassName cn1 = new ClassName("com.example.Test", 1111);
         ClassName cn2 = new ClassName("com.example.Test2", 2222);

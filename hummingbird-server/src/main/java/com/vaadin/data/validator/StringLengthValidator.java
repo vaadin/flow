@@ -30,8 +30,6 @@ public class StringLengthValidator extends AbstractStringValidator {
 
     private Integer maxLength = null;
 
-    private boolean allowNull = true;
-
     /**
      * Creates a new StringLengthValidator with a given error message.
      *
@@ -61,11 +59,10 @@ public class StringLengthValidator extends AbstractStringValidator {
      *            setting a field as required or not.
      */
     public StringLengthValidator(String errorMessage, Integer minLength,
-            Integer maxLength, boolean allowNull) {
+            Integer maxLength) {
         this(errorMessage);
         setMinLength(minLength);
         setMaxLength(maxLength);
-        setNullAllowed(allowNull);
     }
 
     /**
@@ -78,7 +75,7 @@ public class StringLengthValidator extends AbstractStringValidator {
     @Override
     protected boolean isValidValue(String value) {
         if (value == null) {
-            return allowNull;
+            return false;
         }
         final int len = value.length();
         if ((minLength != null && minLength > -1 && len < minLength)
@@ -86,17 +83,6 @@ public class StringLengthValidator extends AbstractStringValidator {
             return false;
         }
         return true;
-    }
-
-    /**
-     * Returns <code>true</code> if null strings are allowed.
-     *
-     * @return <code>true</code> if allows null string, otherwise
-     *         <code>false</code>.
-     */
-    @Deprecated
-    public final boolean isNullAllowed() {
-        return allowNull;
     }
 
     /**
@@ -115,15 +101,6 @@ public class StringLengthValidator extends AbstractStringValidator {
      */
     public Integer getMinLength() {
         return minLength;
-    }
-
-    /**
-     * Sets whether null-strings are to be allowed. This can be better handled
-     * by setting a field as required or not.
-     */
-    @Deprecated
-    public void setNullAllowed(boolean allowNull) {
-        this.allowNull = allowNull;
     }
 
     /**

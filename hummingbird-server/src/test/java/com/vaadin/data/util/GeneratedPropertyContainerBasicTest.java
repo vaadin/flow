@@ -49,7 +49,7 @@ public class GeneratedPropertyContainerBasicTest
     public void testItemSetChangeListeners() {
         GeneratedPropertyContainer container = createContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         String id1 = "id1";
         String id2 = "id2";
@@ -120,7 +120,7 @@ public class GeneratedPropertyContainerBasicTest
     public void testAddRemoveContainerFilter() {
         GeneratedPropertyContainer container = createContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         // simply adding or removing container filters should cause events
         // (content changes)
@@ -145,7 +145,8 @@ public class GeneratedPropertyContainerBasicTest
     public void testItemSetChangeListenersFiltering() {
         Container.Indexed container = createContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        ((GeneratedPropertyContainer) container).addListener(counter);
+        ((GeneratedPropertyContainer) container)
+                .addItemSetChangeListener(counter);
 
         counter.reset();
         ((Container.Filterable) container)

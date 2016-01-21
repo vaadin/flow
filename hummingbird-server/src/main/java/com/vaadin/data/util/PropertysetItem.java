@@ -210,16 +210,6 @@ public class PropertysetItem
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addPropertySetChangeListener(com.vaadin.data.Item.PropertySetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(Item.PropertySetChangeListener listener) {
-        addPropertySetChangeListener(listener);
-    }
-
-    /**
      * Removes a previously registered property set change listener.
      *
      * @param listener
@@ -231,16 +221,6 @@ public class PropertysetItem
         if (propertySetChangeListeners != null) {
             propertySetChangeListeners.remove(listener);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removePropertySetChangeListener(com.vaadin.data.Item.PropertySetChangeListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(Item.PropertySetChangeListener listener) {
-        removePropertySetChangeListener(listener);
     }
 
     /**
