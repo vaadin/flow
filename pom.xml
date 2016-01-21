@@ -17,6 +17,24 @@
 		<module>hummingbird-ui-test</module>
 	</modules>
 
+        <organization>
+                <name>Vaadin Ltd</name>
+                <url>http://vaadin.com</url>
+        </organization>
+        <url>http://vaadin.com</url>
+        <licenses>
+                <license>
+                        <name>Apache License Version 2.0</name>
+                        <distribution>repo</distribution>
+                        <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+                </license>
+        </licenses>
+        <scm>
+                <connection>scm:https:https://github.com/vaadin/hummingbird.git</connection>
+                <developerConnection>scm:https:https://github.com/vaadin/hummingbird.git</developerConnection>
+                <url>https://github.com/vaadin/hummingbird</url>
+        </scm>
+
 	<properties>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
