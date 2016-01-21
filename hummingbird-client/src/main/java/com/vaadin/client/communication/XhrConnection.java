@@ -32,7 +32,6 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.util.SharedUtil;
 
 import elemental.client.Browser;
@@ -229,8 +228,9 @@ public class XhrConnection {
                 .translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
                         + ApplicationConstants.UIDL_PATH + '/');
 
-        uri = SharedUtil.addGetParameters(uri, UIConstants.UI_ID_PARAMETER + "="
-                + connection.getConfiguration().getUIId());
+        uri = SharedUtil.addGetParameters(uri,
+                ApplicationConstants.UI_ID_PARAMETER + "="
+                        + connection.getConfiguration().getUIId());
 
         return uri;
 

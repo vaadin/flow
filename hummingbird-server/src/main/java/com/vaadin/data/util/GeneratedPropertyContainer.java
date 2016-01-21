@@ -383,18 +383,8 @@ public class GeneratedPropertyContainer extends AbstractContainer
     }
 
     @Override
-    public void addListener(ItemSetChangeListener listener) {
-        super.addListener(listener);
-    }
-
-    @Override
     public void removeItemSetChangeListener(ItemSetChangeListener listener) {
         super.removeItemSetChangeListener(listener);
-    }
-
-    @Override
-    public void removeListener(ItemSetChangeListener listener) {
-        super.removeListener(listener);
     }
 
     @Override
@@ -404,19 +394,9 @@ public class GeneratedPropertyContainer extends AbstractContainer
     }
 
     @Override
-    public void addListener(PropertySetChangeListener listener) {
-        super.addListener(listener);
-    }
-
-    @Override
     public void removePropertySetChangeListener(
             PropertySetChangeListener listener) {
         super.removePropertySetChangeListener(listener);
-    }
-
-    @Override
-    public void removeListener(PropertySetChangeListener listener) {
-        super.removeListener(listener);
     }
 
     /* Filtering functionality */

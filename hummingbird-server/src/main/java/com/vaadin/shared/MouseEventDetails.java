@@ -22,22 +22,6 @@ import java.io.Serializable;
  */
 public class MouseEventDetails implements Serializable {
     /**
-     * @deprecated use {@link MouseButton#LEFT} instead.
-     */
-    @Deprecated
-    public static final MouseButton BUTTON_LEFT = MouseButton.LEFT;
-    /**
-     * @deprecated use {@link MouseButton#MIDDLE} instead.
-     */
-    @Deprecated
-    public static final MouseButton BUTTON_MIDDLE = MouseButton.MIDDLE;
-    /**
-     * @deprecated use {@link MouseButton#RIGHT} instead.
-     */
-    @Deprecated
-    public static final MouseButton BUTTON_RIGHT = MouseButton.RIGHT;
-
-    /**
      * Constants for mouse buttons.
      *
      * @author Vaadin Ltd

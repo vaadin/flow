@@ -61,13 +61,6 @@ public interface FieldEvents {
         public void addFocusListener(FocusListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addFocusListener(FocusListener)}
-         **/
-        @Deprecated
-        public void addListener(FocusListener listener);
-
-        /**
          * Removes a <code>FocusListener</code> from the Component.
          *
          * @param listener
@@ -76,12 +69,6 @@ public interface FieldEvents {
          */
         public void removeFocusListener(FocusListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeFocusListener(FocusListener)}
-         **/
-        @Deprecated
-        public void removeListener(FocusListener listener);
     }
 
     /**
@@ -113,13 +100,6 @@ public interface FieldEvents {
         public void addBlurListener(BlurListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addBlurListener(BlurListener)}
-         **/
-        @Deprecated
-        public void addListener(BlurListener listener);
-
-        /**
          * Removes a <code>BlurListener</code> from the Component.
          *
          * @param listener
@@ -128,12 +108,6 @@ public interface FieldEvents {
          */
         public void removeBlurListener(BlurListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removeBlurListener(BlurListener)}
-         **/
-        @Deprecated
-        public void removeListener(BlurListener listener);
     }
 
     /**

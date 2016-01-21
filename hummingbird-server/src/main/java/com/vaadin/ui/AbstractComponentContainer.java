@@ -61,8 +61,7 @@ public abstract class AbstractComponentContainer extends AbstractComponent
         final LinkedList<Component> l = new LinkedList<Component>();
 
         // Adds all components
-        for (final Iterator<Component> i = getComponentIterator(); i
-                .hasNext();) {
+        for (final Iterator<Component> i = iterator(); i.hasNext();) {
             l.add(i.next());
         }
 
@@ -80,8 +79,7 @@ public abstract class AbstractComponentContainer extends AbstractComponent
     @Override
     public void moveComponentsFrom(ComponentContainer source) {
         final LinkedList<Component> components = new LinkedList<Component>();
-        for (final Iterator<Component> i = source.getComponentIterator(); i
-                .hasNext();) {
+        for (final Iterator<Component> i = source.iterator(); i.hasNext();) {
             components.add(i.next());
         }
 
@@ -100,32 +98,12 @@ public abstract class AbstractComponentContainer extends AbstractComponent
                 ComponentAttachListener.attachMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addComponentAttachListener(com.vaadin.ui.ComponentContainer.ComponentAttachListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(ComponentAttachListener listener) {
-        addComponentAttachListener(listener);
-    }
-
     /* documented in interface */
     @Override
     public void removeComponentAttachListener(
             ComponentAttachListener listener) {
         removeListener(ComponentAttachEvent.class, listener,
                 ComponentAttachListener.attachMethod);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addComponentDetachListener(com.vaadin.ui.ComponentContainer.ComponentDetachListener)}
-     **/
-    @Override
-    @Deprecated
-    public void addListener(ComponentDetachListener listener) {
-        addComponentDetachListener(listener);
     }
 
     /* documented in interface */
@@ -135,32 +113,12 @@ public abstract class AbstractComponentContainer extends AbstractComponent
                 ComponentDetachListener.detachMethod);
     }
 
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeComponentAttachListener(com.vaadin.ui.ComponentContainer.ComponentAttachListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(ComponentAttachListener listener) {
-        removeComponentAttachListener(listener);
-    }
-
     /* documented in interface */
     @Override
     public void removeComponentDetachListener(
             ComponentDetachListener listener) {
         removeListener(ComponentDetachEvent.class, listener,
                 ComponentDetachListener.detachMethod);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeComponentDetachListener(com.vaadin.ui.ComponentContainer.ComponentDetachListener)}
-     **/
-    @Override
-    @Deprecated
-    public void removeListener(ComponentDetachListener listener) {
-        removeComponentDetachListener(listener);
     }
 
     /**
@@ -228,14 +186,4 @@ public abstract class AbstractComponentContainer extends AbstractComponent
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @deprecated As of 7.0, use {@link #iterator()} instead.
-     */
-    @Deprecated
-    @Override
-    public Iterator<Component> getComponentIterator() {
-        return iterator();
-    }
 }

@@ -16,8 +16,6 @@
 
 package com.vaadin.ui;
 
-import java.util.Iterator;
-
 import com.vaadin.ui.HasComponents.ComponentAttachDetachNotifier;
 
 /**
@@ -82,18 +80,6 @@ public interface ComponentContainer
             Component newComponent);
 
     /**
-     * Gets an iterator to the collection of contained components. Using this
-     * iterator it is possible to step through all components contained in this
-     * container.
-     *
-     * @return the component iterator.
-     *
-     * @deprecated As of 7.0, use {@link #iterator()} instead.
-     */
-    @Deprecated
-    public Iterator<Component> getComponentIterator();
-
-    /**
      * Gets the number of children this {@link ComponentContainer} has. This
      * must be symmetric with what {@link #getComponentIterator()} returns.
      *
@@ -111,33 +97,5 @@ public interface ComponentContainer
      *            moved to this container.
      */
     public void moveComponentsFrom(ComponentContainer source);
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addComponentAttachListener(ComponentAttachListener)}
-     **/
-    @Deprecated
-    public void addListener(ComponentAttachListener listener);
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeComponentAttachListener(ComponentAttachListener)}
-     **/
-    @Deprecated
-    public void removeListener(ComponentAttachListener listener);
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addComponentDetachListener(ComponentDetachListener)}
-     **/
-    @Deprecated
-    public void addListener(ComponentDetachListener listener);
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeComponentDetachListener(ComponentDetachListener)}
-     **/
-    @Deprecated
-    public void removeListener(ComponentDetachListener listener);
 
 }

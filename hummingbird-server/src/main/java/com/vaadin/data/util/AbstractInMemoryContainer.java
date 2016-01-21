@@ -442,16 +442,6 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     }
 
     // ItemSetChangeNotifier
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Deprecated
-    @Override
-    public void addListener(Container.ItemSetChangeListener listener) {
-        addItemSetChangeListener(listener);
-    }
-
     @Override
     public void addItemSetChangeListener(
             Container.ItemSetChangeListener listener) {
@@ -462,16 +452,6 @@ public abstract class AbstractInMemoryContainer<ITEMIDTYPE, PROPERTYIDCLASS, ITE
     public void removeItemSetChangeListener(
             Container.ItemSetChangeListener listener) {
         super.removeItemSetChangeListener(listener);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeItemSetChangeListener(com.vaadin.data.Container.ItemSetChangeListener)}
-     **/
-    @Deprecated
-    @Override
-    public void removeListener(Container.ItemSetChangeListener listener) {
-        removeItemSetChangeListener(listener);
     }
 
     // internal methods

@@ -416,25 +416,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Loads the VaadinSession for the given service and WrappedSession from the
-     * HTTP session.
-     *
-     * @param service
-     *            The service the VaadinSession is associated with
-     * @param underlyingSession
-     *            The wrapped HTTP session for the user
-     * @return A VaadinSession instance for the service, session combination or
-     *         null if none was found.
-     * @deprecated as of 7.6, call
-     *             {@link VaadinService#loadSession(WrappedSession)} instead
-     */
-    @Deprecated
-    public static VaadinSession getForSession(VaadinService service,
-            WrappedSession underlyingSession) {
-        return service.loadSession(underlyingSession);
-    }
-
-    /**
      * Retrieves all {@link VaadinSession}s which are stored in the given HTTP
      * session
      *
@@ -458,35 +439,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             }
         }
         return sessions;
-    }
-
-    /**
-     * Removes this VaadinSession from the HTTP session.
-     *
-     * @param service
-     *            The service this session is associated with
-     * @deprecated as of 7.6, call
-     *             {@link VaadinService#removeSession(WrappedSession)} instead
-     */
-    @Deprecated
-    public void removeFromSession(VaadinService service) {
-        service.removeSession(session);
-    }
-
-    /**
-     * Stores this VaadinSession in the HTTP session.
-     *
-     * @param service
-     *            The service this session is associated with
-     * @param session
-     *            The HTTP session this VaadinSession should be stored in
-     * @deprecated as of 7.6, call
-     *             {@link VaadinService#storeSession(VaadinSession, WrappedSession)}
-     *             instead
-     */
-    @Deprecated
-    public void storeInSession(VaadinService service, WrappedSession session) {
-        service.storeSession(this, session);
     }
 
     /**
@@ -1191,23 +1143,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public void close() {
         assert hasLock();
         state = State.CLOSING;
-    }
-
-    /**
-     * Returns whether this session is marked to be closed. Note that this
-     * method also returns true if the session is actually already closed.
-     *
-     * @see #close()
-     *
-     * @deprecated As of 7.2, use <code>{@link #getState()
-     *              getState() != State.OPEN}</code> instead.
-     *
-     * @return true if this session is marked to be closed, false otherwise
-     */
-    @Deprecated
-    public boolean isClosing() {
-        assert hasLock();
-        return state == State.CLOSING || state == State.CLOSED;
     }
 
     /**

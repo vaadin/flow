@@ -25,7 +25,6 @@ import java.lang.annotation.Target;
 import com.vaadin.server.Constants;
 import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.DeploymentConfiguration;
-import com.vaadin.server.DeploymentConfiguration.LegacyProperyToStringMode;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
@@ -128,15 +127,4 @@ public @interface VaadinServletConfiguration {
     @InitParameterName(VaadinServlet.PARAMETER_WIDGETSET)
     public String widgetset() default VaadinServlet.DEFAULT_WIDGETSET;
 
-    /**
-     * The legacy Property.toString() mode used. The default value is
-     * {@link LegacyProperyToStringMode#DISABLED}
-     *
-     * @return The Property.toString() mode in use.
-     *
-     * @deprecated as of 7.1, should only be used to ease migration
-     */
-    @Deprecated
-    @InitParameterName(Constants.SERVLET_PARAMETER_LEGACY_PROPERTY_TOSTRING)
-    public LegacyProperyToStringMode legacyPropertyToStringMode() default LegacyProperyToStringMode.DISABLED;
 }

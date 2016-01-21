@@ -21,7 +21,6 @@ import java.sql.Timestamp;
 import java.util.logging.Logger;
 
 import com.vaadin.data.Property;
-import com.vaadin.data.util.LegacyPropertyHelper;
 import com.vaadin.data.util.converter.Converter.ConversionException;
 
 /**
@@ -57,30 +56,6 @@ final public class ColumnProperty implements Property {
      */
     @SuppressWarnings("unused")
     private ColumnProperty() {
-    }
-
-    /**
-     * Deprecated constructor for ColumnProperty. If this is used the primary
-     * keys are not identified correctly in some cases for some databases (i.e.
-     * Oracle). See http://dev.vaadin.com/ticket/9145.
-     *
-     * @param propertyId
-     * @param readOnly
-     * @param allowReadOnlyChange
-     * @param nullable
-     * @param value
-     * @param type
-     *
-     * @deprecated As of 7.0. Use
-     *             {@link #ColumnProperty(String, boolean, boolean, boolean, boolean, Object, Class)
-     *             instead
-     */
-    @Deprecated
-    public ColumnProperty(String propertyId, boolean readOnly,
-            boolean allowReadOnlyChange, boolean nullable, Object value,
-            Class<?> type) {
-        this(propertyId, readOnly, allowReadOnlyChange, nullable, false, value,
-                type);
     }
 
     /**
@@ -252,36 +227,6 @@ final public class ColumnProperty implements Property {
 
     public String getPropertyId() {
         return propertyId;
-    }
-
-    /**
-     * Returns a string representation of this object. The returned string
-     * representation depends on if the legacy Property toString mode is enabled
-     * or disabled.
-     * <p>
-     * If legacy Property toString mode is enabled, returns the value of this
-     * <code>Property</code> converted to a String.
-     * </p>
-     * <p>
-     * If legacy Property toString mode is disabled, the string representation
-     * has no special meaning
-     * </p>
-     *
-     * @see LegacyPropertyHelper#isLegacyToStringEnabled()
-     *
-     * @return A string representation of the value value stored in the Property
-     *         or a string representation of the Property object.
-     * @deprecated As of 7.0. To get the property value, use {@link #getValue()}
-     *             instead (and possibly toString on that)
-     */
-    @Deprecated
-    @Override
-    public String toString() {
-        if (!LegacyPropertyHelper.isLegacyToStringEnabled()) {
-            return super.toString();
-        } else {
-            return LegacyPropertyHelper.legacyPropertyToString(this);
-        }
     }
 
     private static Logger getLogger() {

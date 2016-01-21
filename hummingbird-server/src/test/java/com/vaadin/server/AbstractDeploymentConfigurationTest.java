@@ -131,11 +131,6 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public LegacyProperyToStringMode getLegacyPropertyToStringMode() {
-            return null;
-        }
-
-        @Override
         public boolean isSendUrlsAsParameters() {
             return DefaultDeploymentConfiguration.DEFAULT_SEND_URLS_AS_PARAMETERS;
         }

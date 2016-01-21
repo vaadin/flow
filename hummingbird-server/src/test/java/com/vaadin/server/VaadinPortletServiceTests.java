@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.shared.ui.ui.UIConstants;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 public class VaadinPortletServiceTests {
@@ -124,8 +124,9 @@ public class VaadinPortletServiceTests {
                     .thenReturn(mockLock);
             VaadinRequest requestWithUIIDSet = Mockito
                     .mock(VaadinRequest.class);
-            when(requestWithUIIDSet.getParameter(UIConstants.UI_ID_PARAMETER))
-                    .thenReturn("1");
+            when(requestWithUIIDSet
+                    .getParameter(ApplicationConstants.UI_ID_PARAMETER))
+                            .thenReturn("1");
             when(requestWithUIIDSet.getWrappedSession())
                     .thenReturn(emptyWrappedSession);
 

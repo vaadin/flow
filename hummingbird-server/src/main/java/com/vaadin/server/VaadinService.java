@@ -17,7 +17,6 @@
 package com.vaadin.server;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -25,8 +24,6 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,7 +55,6 @@ import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 import com.vaadin.util.ReflectTools;
@@ -88,13 +84,6 @@ public abstract class VaadinService implements Serializable {
     // Use the old name.reinitializing value for backwards compatibility
     static final String PRESERVE_UNBOUND_SESSION_ATTRIBUTE = VaadinService.class
             .getName() + ".reinitializing";
-
-    /**
-     * @deprecated As of 7.1.1, use {@link #PRESERVE_UNBOUND_SESSION_ATTRIBUTE}
-     *             instead
-     */
-    @Deprecated
-    static final String REINITIALIZING_SESSION_MARKER = PRESERVE_UNBOUND_SESSION_ATTRIBUTE;
 
     private static final Method SESSION_INIT_METHOD = ReflectTools.findMethod(
             SessionInitListener.class, "sessionInit", SessionInitEvent.class);
@@ -359,20 +348,6 @@ public abstract class VaadinService implements Serializable {
         return getSystemMessagesProvider()
                 .getSystemMessages(systemMessagesInfo);
     }
-
-    /**
-     * Returns the context base directory.
-     *
-     * Typically an application is deployed in a such way that is has an
-     * application directory. For web applications this directory is the root
-     * directory of the web applications. In some cases applications might not
-     * have an application directory (for example web applications running
-     * inside a war).
-     *
-     * @return The application base directory or null if the application has no
-     *         base directory.
-     */
-    public abstract File getBaseDirectory();
 
     /**
      * Adds a listener that gets notified when a new Vaadin service session is
@@ -760,24 +735,6 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Get the base URL that should be used for sending requests back to this
-     * service.
-     * <p>
-     * This is only used to support legacy cases.
-     *
-     * @param request
-     * @return
-     * @throws MalformedURLException
-     *
-     * @deprecated As of 7.0. Only used to support {@link LegacyApplication}.
-     */
-    @Deprecated
-    protected URL getApplicationUrl(VaadinRequest request)
-            throws MalformedURLException {
-        return null;
-    }
-
-    /**
      * Creates a new Vaadin session for this service and request
      *
      * @param request
@@ -975,7 +932,8 @@ public abstract class VaadinService implements Serializable {
         VaadinSession session = loadSession(request.getWrappedSession());
 
         // Get UI id from the request
-        String uiIdString = request.getParameter(UIConstants.UI_ID_PARAMETER);
+        String uiIdString = request
+                .getParameter(ApplicationConstants.UI_ID_PARAMETER);
         UI ui = null;
         if (uiIdString != null && session != null) {
             int uiId = Integer.parseInt(uiIdString);
@@ -1550,18 +1508,6 @@ public abstract class VaadinService implements Serializable {
         } else {
             json.put(key, value);
         }
-    }
-
-    /**
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    public void criticalNotification(VaadinRequest request,
-            VaadinResponse response, String caption, String message,
-            String details, String url) throws IOException {
-        writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
-                createCriticalNotificationJSON(caption, message, details, url));
     }
 
     /**

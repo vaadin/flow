@@ -31,7 +31,6 @@ import com.vaadin.client.ValueMap;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushConstants;
-import com.vaadin.shared.ui.ui.UIConstants;
 import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 import com.vaadin.shared.util.SharedUtil;
 
@@ -200,7 +199,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     private void connect() {
         String baseUrl = connection.translateVaadinUri(url);
-        String extraParams = UIConstants.UI_ID_PARAMETER + "="
+        String extraParams = ApplicationConstants.UI_ID_PARAMETER + "="
                 + connection.getConfiguration().getUIId();
 
         String csrfToken = connection.getMessageHandler().getCsrfToken();

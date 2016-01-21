@@ -15,22 +15,16 @@
  */
 package com.vaadin.server;
 
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -384,162 +378,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
             }
         }
         return true;
-    }
-
-    /**
-     * Send a notification to client-side widgetset. Used to notify client of
-     * critical errors, session expiration and more. Server has no knowledge of
-     * what UI client refers to.
-     *
-     * @param request
-     *            the HTTP request instance.
-     * @param response
-     *            the HTTP response to write to.
-     * @param caption
-     *            the notification caption
-     * @param message
-     *            to notification body
-     * @param details
-     *            a detail message to show in addition to the message. Currently
-     *            shown directly below the message but could be hidden behind a
-     *            details drop down in the future. Mainly used to give
-     *            additional information not necessarily useful to the end user.
-     * @param url
-     *            url to load when the message is dismissed. Null will reload
-     *            the current page.
-     * @throws IOException
-     *             if the writing failed due to input/output error.
-     *
-     * @deprecated As of 7.0. This method is retained only for backwards
-     *             compatibility and for {@link GAEVaadinServlet}.
-     */
-    @Deprecated
-    protected void criticalNotification(VaadinServletRequest request,
-            VaadinServletResponse response, String caption, String message,
-            String details, String url) throws IOException {
-
-        if (ServletPortletHelper.isUIDLRequest(request)) {
-            String output = VaadinService.createCriticalNotificationJSON(
-                    caption, message, details, url);
-            getService().writeStringResponse(response,
-                    JsonConstants.JSON_CONTENT_TYPE, output);
-        } else {
-            // Create an HTML reponse with the error
-            String output = "";
-
-            if (url != null) {
-                output += "<a href=\"" + url + "\">";
-            }
-            if (caption != null) {
-                output += "<b>" + caption + "</b><br/>";
-            }
-            if (message != null) {
-                output += message;
-                output += "<br/><br/>";
-            }
-
-            if (details != null) {
-                output += details;
-                output += "<br/><br/>";
-            }
-            if (url != null) {
-                output += "</a>";
-            }
-            getService().writeStringResponse(response,
-                    "text/html; charset=UTF-8", output);
-        }
-    }
-
-    /**
-     * Writes the response in {@code output} using the contentType given in
-     * {@code contentType} to the provided {@link HttpServletResponse}
-     *
-     * @param response
-     * @param contentType
-     * @param output
-     *            Output to write (UTF-8 encoded)
-     * @throws IOException
-     */
-    private void writeResponse(HttpServletResponse response, String contentType,
-            String output) throws IOException {
-        response.setContentType(contentType);
-        final OutputStream out = response.getOutputStream();
-        // Set the response type
-        final PrintWriter outWriter = new PrintWriter(
-                new BufferedWriter(new OutputStreamWriter(out, "UTF-8")));
-        outWriter.print(output);
-        outWriter.flush();
-        outWriter.close();
-    }
-
-    /**
-     * Gets resource path using different implementations. Required to
-     * supporting different servlet container implementations (application
-     * servers).
-     *
-     * @param servletContext
-     * @param path
-     *            the resource path.
-     * @return the resource path.
-     *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    protected static String getResourcePath(ServletContext servletContext,
-            String path) {
-        String resultPath = null;
-        resultPath = servletContext.getRealPath(path);
-        if (resultPath != null) {
-            return resultPath;
-        } else {
-            try {
-                final URL url = servletContext.getResource(path);
-                resultPath = url.getFile();
-            } catch (final Exception e) {
-                // FIXME: Handle exception
-                getLogger().log(Level.INFO,
-                        "Could not find resource path " + path, e);
-            }
-        }
-        return resultPath;
-    }
-
-    /**
-     * A helper method to strip away characters that might somehow be used for
-     * XSS attacks. Leaves at least alphanumeric characters intact. Also removes
-     * e.g. '(' and ')', so values should be safe in javascript too.
-     *
-     * @param themeName
-     * @return
-     *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    public static String stripSpecialChars(String themeName) {
-        StringBuilder sb = new StringBuilder();
-        char[] charArray = themeName.toCharArray();
-        for (int i = 0; i < charArray.length; i++) {
-            char c = charArray[i];
-            if (!CHAR_BLACKLIST.contains(c)) {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-    private static final Collection<Character> CHAR_BLACKLIST = new HashSet<Character>(
-            Arrays.asList(new Character[] { '&', '"', '\'', '<', '>', '(', ')',
-                    ';' }));
-
-    /**
-     * Returns the default theme. Must never return null.
-     *
-     * @return
-     */
-    public static String getDefaultTheme() {
-        return DEFAULT_THEME_NAME;
     }
 
     /**

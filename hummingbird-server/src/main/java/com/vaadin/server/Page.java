@@ -25,7 +25,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.vaadin.event.EventRouter;
-import com.vaadin.shared.ui.BorderStyle;
 import com.vaadin.shared.ui.ui.PageClientRpc;
 import com.vaadin.shared.ui.ui.PageState;
 import com.vaadin.shared.ui.ui.UIState;
@@ -103,24 +102,6 @@ public class Page implements Serializable {
     private static final Method BROWSER_RESIZE_METHOD = ReflectTools.findMethod(
             BrowserWindowResizeListener.class, "browserWindowResized",
             BrowserWindowResizeEvent.class);
-
-    /**
-     * @deprecated As of 7.0, use {@link BorderStyle#NONE} instead.
-     */
-    @Deprecated
-    public static final BorderStyle BORDER_NONE = BorderStyle.NONE;
-
-    /**
-     * @deprecated As of 7.0, use {@link BorderStyle#MINIMAL} instead.
-     */
-    @Deprecated
-    public static final BorderStyle BORDER_MINIMAL = BorderStyle.MINIMAL;
-
-    /**
-     * @deprecated As of 7.0, use {@link BorderStyle#DEFAULT} instead.
-     */
-    @Deprecated
-    public static final BorderStyle BORDER_DEFAULT = BorderStyle.DEFAULT;
 
     /**
      * Listener that that gets notified when the URI fragment of the page
@@ -252,15 +233,6 @@ public class Page implements Serializable {
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addUriFragmentChangedListener(UriFragmentChangedListener)}
-     **/
-    @Deprecated
-    public void addListener(Page.UriFragmentChangedListener listener) {
-        addUriFragmentChangedListener(listener);
-    }
-
-    /**
      * Removes a URI fragment listener that was previously added to this page.
      *
      * @param listener
@@ -272,15 +244,6 @@ public class Page implements Serializable {
             Page.UriFragmentChangedListener listener) {
         removeListener(UriFragmentChangedEvent.class, listener,
                 URI_FRAGMENT_CHANGED_METHOD);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeUriFragmentChangedListener(UriFragmentChangedListener)}
-     **/
-    @Deprecated
-    public void removeListener(Page.UriFragmentChangedListener listener) {
-        removeUriFragmentChangedListener(listener);
     }
 
     /**
@@ -418,23 +381,6 @@ public class Page implements Serializable {
      * For internal use only. Updates the internal state with the given values.
      * Does not resize the Page or browser window.
      *
-     * @deprecated As of 7.2, use
-     *             {@link #updateBrowserWindowSize(int, int, boolean)} instead.
-     *
-     * @param width
-     *            the new browser window width
-     * @param height
-     *            the new browse window height
-     */
-    @Deprecated
-    public void updateBrowserWindowSize(int width, int height) {
-        updateBrowserWindowSize(width, height, true);
-    }
-
-    /**
-     * For internal use only. Updates the internal state with the given values.
-     * Does not resize the Page or browser window.
-     *
      * @since 7.2
      *
      * @param width
@@ -491,15 +437,6 @@ public class Page implements Serializable {
     }
 
     /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #addBrowserWindowResizeListener(BrowserWindowResizeListener)}
-     **/
-    @Deprecated
-    public void addListener(BrowserWindowResizeListener resizeListener) {
-        addBrowserWindowResizeListener(resizeListener);
-    }
-
-    /**
      * Removes a {@link BrowserWindowResizeListener} from this UI. The listener
      * will no longer be notified when the browser window is resized.
      *
@@ -512,15 +449,6 @@ public class Page implements Serializable {
                 BROWSER_RESIZE_METHOD);
         getState(true).hasResizeListeners = hasEventRouter()
                 && eventRouter.hasListeners(BrowserWindowResizeEvent.class);
-    }
-
-    /**
-     * @deprecated As of 7.0, replaced by
-     *             {@link #removeBrowserWindowResizeListener(BrowserWindowResizeListener)}
-     **/
-    @Deprecated
-    public void removeListener(BrowserWindowResizeListener resizeListener) {
-        removeBrowserWindowResizeListener(resizeListener);
     }
 
     /**
@@ -593,21 +521,6 @@ public class Page implements Serializable {
                     + " parameter is configured as false");
         }
         return location;
-    }
-
-    /**
-     * For internal use only. Used to update the server-side location when the
-     * client-side location changes.
-     *
-     * @deprecated As of 7.2, use {@link #updateLocation(String, boolean)}
-     *             instead.
-     *
-     * @param location
-     *            the new location URI
-     */
-    @Deprecated
-    public void updateLocation(String location) {
-        updateLocation(location, true);
     }
 
     /**

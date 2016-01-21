@@ -26,7 +26,6 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.ui.ui.UIConstants;
 
 import elemental.client.Browser;
 
@@ -372,7 +371,8 @@ public class ApplicationConfiguration implements EntryPoint {
 
         vaadinDirUrl = WidgetUtil.getAbsoluteUrl(jsoConfiguration
                 .getConfigString(ApplicationConstants.VAADIN_DIR_URL));
-        uiId = jsoConfiguration.getConfigInteger(UIConstants.UI_ID_PARAMETER)
+        uiId = jsoConfiguration
+                .getConfigInteger(ApplicationConstants.UI_ID_PARAMETER)
                 .intValue();
 
         // null -> false

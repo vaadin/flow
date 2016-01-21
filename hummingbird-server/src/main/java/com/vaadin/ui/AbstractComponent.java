@@ -62,8 +62,8 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /* Sizeable fields */
 
-    private float width = SIZE_UNDEFINED;
-    private float height = SIZE_UNDEFINED;
+    private float width = -1;
+    private float height = -1;
     private Unit widthUnit = Unit.PIXELS;
     private Unit heightUnit = Unit.PIXELS;
 

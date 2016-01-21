@@ -9,20 +9,11 @@ public class StringLengthValidatorTest extends TestCase {
     private StringLengthValidator validator = new StringLengthValidator(
             "Error");
     private StringLengthValidator validatorNoNull = new StringLengthValidator(
-            "Error", 1, 5, false);
+            "Error", 1, 5);
     private StringLengthValidator validatorMinValue = new StringLengthValidator(
-            "Error", 5, null, true);
+            "Error", 5, null);
     private StringLengthValidator validatorMaxValue = new StringLengthValidator(
-            "Error", null, 15, true);
-
-    public void testValidatorWithNull() {
-        assertTrue("Didn't accept null", validator.isValid(null));
-        assertTrue("Didn't accept null", validatorMinValue.isValid(null));
-    }
-
-    public void testValidatorNotAcceptingNull() {
-        assertFalse("Accepted null", validatorNoNull.isValid(null));
-    }
+            "Error", null, 15);
 
     public void testEmptyString() {
         assertTrue("Didn't accept empty String", validator.isValid(""));

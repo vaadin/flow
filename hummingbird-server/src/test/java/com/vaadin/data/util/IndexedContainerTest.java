@@ -41,7 +41,7 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
     public void testItemSetChangeListeners() {
         IndexedContainer container = new IndexedContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         String id1 = "id1";
         String id2 = "id2";
@@ -112,7 +112,7 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
     public void testAddRemoveContainerFilter() {
         IndexedContainer container = new IndexedContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         // simply adding or removing container filters should cause events
         // (content changes)
@@ -134,7 +134,7 @@ public class IndexedContainerTest extends AbstractInMemoryContainerTestBase {
     public void testItemSetChangeListenersFiltering() {
         IndexedContainer container = new IndexedContainer();
         ItemSetChangeCounter counter = new ItemSetChangeCounter();
-        container.addListener(counter);
+        container.addItemSetChangeListener(counter);
 
         counter.reset();
         container.addContainerFilter(FULLY_QUALIFIED_NAME, "Test", true, false);

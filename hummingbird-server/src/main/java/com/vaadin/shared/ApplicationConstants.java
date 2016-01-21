@@ -48,9 +48,6 @@ public class ApplicationConstants implements Serializable {
     // Javadocs in ApplicationConfiguration should be updated if this is changed
     public static final String V_RESOURCE_PATH = "v-resourcePath";
 
-    @Deprecated
-    public static final String DRAG_AND_DROP_CONNECTOR_ID = "DD";
-
     /**
      * URL parameter used in UIDL requests to indicate that the full server-side
      * state should be returned to the client, i.e. without any incremental
@@ -145,4 +142,8 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String WIDGETSET_VERSION_ID = "wsver";
 
+    /**
+     * Name of the parameter used to transmit UI ids back and forth
+     */
+    public static final String UI_ID_PARAMETER = "v-uiId";
 }

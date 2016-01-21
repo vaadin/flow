@@ -181,13 +181,6 @@ public interface Item extends Serializable {
                 Item.PropertySetChangeListener listener);
 
         /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #addPropertySetChangeListener(PropertySetChangeListener)}
-         **/
-        @Deprecated
-        public void addListener(Item.PropertySetChangeListener listener);
-
-        /**
          * Removes a previously registered property set change listener.
          *
          * @param listener
@@ -196,11 +189,5 @@ public interface Item extends Serializable {
         public void removePropertySetChangeListener(
                 Item.PropertySetChangeListener listener);
 
-        /**
-         * @deprecated As of 7.0, replaced by
-         *             {@link #removePropertySetChangeListener(PropertySetChangeListener)}
-         **/
-        @Deprecated
-        public void removeListener(Item.PropertySetChangeListener listener);
     }
 }
