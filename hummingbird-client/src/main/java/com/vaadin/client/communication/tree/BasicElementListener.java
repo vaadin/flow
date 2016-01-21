@@ -231,65 +231,79 @@ public class BasicElementListener {
             Object oldValue = property.getProxyValue();
             JsonValue oldJsonValue = TreeUpdater.asJsonValue(oldValue);
 
-            Object value = null;
             JsonValue newJsonValue = null;
+            Object value = null;
             if (attribute.startsWith("attr.")
                     || TreeUpdater.isAlwaysAttribute(attribute)) {
                 value = element.getAttribute(attribute.substring(5));
                 if (value != null) {
                     newJsonValue = Json.create((String) value);
+                } else {
+                    newJsonValue = Json.createNull();
                 }
             } else if (attribute.equals("classList")) {
                 value = element.getAttribute("class");
                 if (value != null) {
                     newJsonValue = Json.create((String) value);
+                } else {
+                    newJsonValue = Json.createNull();
                 }
             } else { // property
                 JavaScriptObject propertyJSO = element
                         .getPropertyJSO(attribute);
                 if (propertyJSO != null) {
                     newJsonValue = Util.jso2json(propertyJSO);
+                    // need to copy the value so that the old one is still kept
+                    // in
+                    // state node and not updated by the element
                     switch (newJsonValue.getType()) {
                     case NUMBER:
-                        value = element.getPropertyDouble(attribute);
+                        value = new Double(
+                                element.getPropertyDouble(attribute));
                         break;
                     case STRING:
-                        value = element.getPropertyString(attribute);
+                        value = new String(
+                                element.getPropertyString(attribute));
                         break;
                     case BOOLEAN:
-                        value = element.getPropertyBoolean(attribute);
+                        value = new Boolean(
+                                element.getPropertyBoolean(attribute));
                         break;
                     case OBJECT:
-                        value = element.getPropertyObject(attribute);
+                        value = Json.parse(newJsonValue.toJson()).toNative();
                         break;
                     case ARRAY:
-                        value = propertyJSO.cast();
+                        value = ((JsArrayObject<?>) propertyJSO).cloneArray();
+                        break;
                     default:
                         break;
                     }
                 }
             }
 
+            TreeUpdater.debug("Checking for Element "
+                    + TreeUpdater.debugHtml(element) + " attribute/property "
+                    + attribute + " updates, previously: " + oldJsonValue
+                    + ", now: " + newJsonValue);
             // send value to server and update node if changed
             if (oldJsonValue != null && !oldJsonValue.jsEquals(newJsonValue)
                     || newJsonValue != null
                             && !newJsonValue.jsEquals(oldJsonValue)) {
                 updates.set(arrayIndex++, attribute);
                 updates.set(arrayIndex++, newJsonValue);
-
-                property.setValue(value);
+                // do not fire update events
+                property.doSetValue(value, false);
             }
-
         }
+
         if (updates.length() > 1) {
             arguments.set(0, updates);
             TreeUpdater
                     .debug("Sending updated attributes to server for event in node "
                             + elementNode.getId() + " with attributes: "
                             + updates.toJson());
+            treeUpdater.sendRpc("vAttributeUpdate", arguments);
         }
-
-        treeUpdater.sendRpc("vAttributeUpdate", arguments);
     }
 
     private static JsonObject extractEventDetails(JavaScriptObject event,

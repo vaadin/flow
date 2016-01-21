@@ -109,6 +109,10 @@ public class TreeNodeProperty implements ReactiveValue {
     }
 
     public void setValue(Object value) {
+        doSetValue(value, true);
+    }
+
+    void doSetValue(Object value, boolean fireValueChangeEvent) {
         final Object oldValue = this.value;
         if (value instanceof JavaScriptObject
                 && ((JsonValue) value).getType() == JsonType.OBJECT) {
@@ -140,7 +144,10 @@ public class TreeNodeProperty implements ReactiveValue {
         }
 
         this.value = value;
-        owner.getCallbackQueue().enqueue(new ValueChangeEvent(oldValue, value));
+        if (fireValueChangeEvent) {
+            owner.getCallbackQueue()
+                    .enqueue(new ValueChangeEvent(oldValue, value));
+        }
     }
 
     public native JavaScriptObject getPropertyDescriptor()

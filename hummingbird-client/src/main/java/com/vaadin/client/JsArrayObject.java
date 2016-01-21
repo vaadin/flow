@@ -57,4 +57,13 @@ public final class JsArrayObject<T> extends JavaScriptObject {
     public static <T> JsArrayObject<T> create() {
         return JavaScriptObject.createArray().cast();
     }
+
+    public JsArrayObject<T> cloneArray() {
+        return slice(this).cast();
+    }
+
+    public native static JavaScriptObject slice(JsArrayObject<?> array)
+    /*-{
+        return array.slice();
+     }-*/;
 }
