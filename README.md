@@ -1,74 +1,37 @@
-Vaadin
+Hummingbird
 ======
-*[Vaadin](https://vaadin.com) is a Java framework for building modern web applications that look great, perform well and make you and your users happy.*
+*[Hummingbird](https://vaadin.com) is a Java framework for building modern web sites that look great, perform well and make you and your users happy.*
 
-For instructions about _using_ Vaadin to develop applications, please refer to
-https://vaadin.com/learn
+For instructions about _using_ Hummingbird to develop applications, please refer to
+https://vaadin.com/
 
 To contribute, first refer to https://vaadin.com/wiki/-/wiki/Main/Contributing+Code
-for general instructions and requirements for contributing code to the Vaadin framework.
+for general instructions and requirements for contributing code to Hummingbird.
 
-Instructions on how to set up a working environment for developing the Vaadin
-framework follow below.
+Instructions on how to set up a working environment for developing the Hummingbird project follow below.
 
 Quick Setup
 ======
-1. <code>git clone https://github.com/vaadin/vaadin.git</code>
-1. Install IvyDE, including Ant Tasks, if needed (http://www.apache.org/dist/ant/ivyde/updatesite)
-1. Import the project into Eclipse
-1. Run build/ide.xml in Eclipse
+1. <code>git clone https://github.com/vaadin/hummingbird.git</code>
+1. <code>mvn install</code>
 
 For more details, see below
 
-Cloning the project repositories
-======
-The Vaadin repository can be cloned using
-<pre><code>git clone https://github.com/vaadin/vaadin.git</code></pre>
-
-or using your favorite Git tool.
-
-If using Windows, you might want to add these Git settings: `core.autocrlf=false` and `core.fileMode=false`.
-
-Setting up Eclipse to Develop Vaadin 7
+Setting up Eclipse to Develop Hummingbird
 =========
-
-Start Eclipse
--------------
-Start Eclipse with the workspace you would like to use. It is usually a good idea to use the parent folder of the Git repository as the workspace folder.
-
-Install IvyDE
----------
-You'll need the Apache Ivy plug-in for Eclipse to build the project:
-
-1. Go to *Help* -> *Install New Software...*
-1. Enter `http://www.apache.org/dist/ant/ivyde/updatesite` in the "Work with:" text field
-1. Select and install all items
-
-If you have installed IvyDE via the Eclipse Marketplace previously, **make sure** that you also have *Apache Ivy Ant Tasks* installed, which is not included in that IvyDE installation:
-
-1. Go to *Help* -> *Install New Software...*
-1. Click the hyperlink in the "What is already installed?" sentence near the bottom right-hand corner
-1. Verify that the list includes *Apache Ivy Ant Tasks*
-1. If it isn't included, follow the installation process above, but select only *Apache Ivy library* > *Apache Ivy Ant Tasks*
-
 
 Import the Project into the Workspace
 ------------
-1. Do *File* -> *Import* -> *General* -> *Existing Projects into Workspace*
-![ImportProject](http://f.cl.ly/items/0G361519182v1z2T1o1O/Import.png "Import project")
-1. Select the *vaadin* folder (where you cloned the project)
-1. Ensure the *vaadin* project is checked
-1. Click “finish” to complete the import of Vaadin Framework
+1. Do *File* -> *Import* -> *General* -> *Existing Maven Project*
+1. Select the *hummingbird* folder (where you cloned the project)
+1. Ensure all projects are checked
+1. Click “finish” to complete the import
 
-The project should compile without further configuration. If the project does not compile without errors, choose *Ivy* -> *Resolve* from the vaadin project popup menu to ensure all dependencies have been resolved.
+Note that the first compilation takes a while to finish as Maven downloads dependencies used in the projects.
 
-Note that the first compilation takes a while to finish as Ivy downloads dependencies used in the projects.
-
-Compiling the Default Widget Set and Themes
+Compiling the Client Engine
 --------
-Compile the default widget set by executing the default target in build/ide.xml in the vaadin project.
-In Eclipse this is done by opening build/ide.xml, right clicking on it and choosing *Run As* -> *Ant Build*.
-![CompileWidgetSet](http://cl.ly/image/1R43162b282e/build.png "Compiling the Widget Set")
+Compile the client engine by executing the eclipse build configuration *Compile ClientEngine* in *hummingbird-client/eclipse*
 
 Set up extra workspace preferences
 --------
@@ -88,29 +51,13 @@ Indent-using spaces: true
 Indentation size: 4
 </code></pre>
 
-Running a UI test
-------
-The *vaadin* project includes an embedded Jetty (*com.vaadin.launcher.DevelopmentServerLauncher*) which is used for running the UI tests.
-In Eclipse you can launch it using the included launch configuration: Right click on *eclipse/Development Server (vaadin).launch" and select *Debug As* -> *Development Server (vaadin)*.
-
-This launches a Jetty on port 8888 which allows you to run any UI class in the project by opening http://localhost:8888/run/&lt;UI class name&gt;?restartApplication in your browser, e.g. [http://localhost:8888/run/com.vaadin.tests.components.label.LabelModes?restartApplication](http://localhost:8888/run/com.vaadin.tests.components.label.LabelModes?restartApplication) (Use ?restartApplication to ensure the correct UI is shown).
-
-Running JUnit tests
+Running tests
 =====
 The unit tests for the projects can be run using
-<pre><code>ant test</code></pre>
-
-Note that the included Vaadin TestBench (browser) tests require access to a TestBench cluster, currently only available internally at Vaadin Ltd.
+<pre><code>mvn test</code></pre>
 
 Building a package
 =====
-The distribution files can be built in two steps.
+The distribution package is built and installed into the local Maven repository by doing
 
-1. Build the project by running
-<pre><code>ant</code></pre>
-in the project root directory (add -Dvaadin.version=1.2.3 to use a specific version number).
-
-Setting up other IDEs to Develop Vaadin 7
-=========
-- Unofficial instructions
-  - IntelliJ IDEA: http://github.com/Saulis/vaadin-idea-workspace/
+1. mvn install
