@@ -75,7 +75,7 @@ public class StringLengthValidator extends AbstractStringValidator {
     @Override
     protected boolean isValidValue(String value) {
         if (value == null) {
-            return false;
+            return true;
         }
         final int len = value.length();
         if ((minLength != null && minLength > -1 && len < minLength)
