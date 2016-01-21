@@ -153,13 +153,20 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
 
     private Method getAddListenerMethod(Class<?> cls, Class<?> listenerClass)
             throws SecurityException, NoSuchMethodException {
-        return cls.getMethod("addListener", listenerClass);
+        String methodName = "add" + getListenerMethodName(listenerClass);
+        return cls.getMethod(methodName, listenerClass);
+
+    }
+
+    private String getListenerMethodName(Class<?> listenerClass) {
+        return listenerClass.getSimpleName();
 
     }
 
     private Method getRemoveListenerMethod(Class<?> cls, Class<?> listenerClass)
             throws SecurityException, NoSuchMethodException {
-        return cls.getMethod("removeListener", listenerClass);
+        String methodName = "remove" + getListenerMethodName(listenerClass);
+        return cls.getMethod(methodName, listenerClass);
 
     }
 
