@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
  * Note : The icons are associated purely to mime-types, so a file may not have
  * a custom icon accessible with this class.
  * </p>
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */
@@ -223,7 +223,7 @@ public class FileTypeResolver implements Serializable {
     /**
      * Gets the mime-type of a file. Currently the mime-type is resolved based
      * only on the file name extension.
-     * 
+     *
      * @param fileName
      *            the name of the file whose mime-type is requested.
      * @return mime-type <code>String</code> for the given filename
@@ -264,7 +264,7 @@ public class FileTypeResolver implements Serializable {
     /**
      * Gets the mime-type for a file. Currently the returned file type is
      * resolved by the filename extension only.
-     * 
+     *
      * @param file
      *            the file whose mime-type is requested.
      * @return the files mime-type <code>String</code>
@@ -293,7 +293,7 @@ public class FileTypeResolver implements Serializable {
     /**
      * Adds a mime-type mapping for the given filename extension. If the
      * extension is already in the internal mapping it is overwritten.
-     * 
+     *
      * @param extension
      *            the filename extension to be associated with
      *            <code>MIMEType</code>.
@@ -306,7 +306,7 @@ public class FileTypeResolver implements Serializable {
 
     /**
      * Gets the internal file extension to mime-type mapping.
-     * 
+     *
      * @return unmodifiable map containing the current file extension to
      *         mime-type mapping
      */

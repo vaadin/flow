@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -76,10 +76,10 @@ import com.vaadin.util.CurrentInstance;
  * passing a {@link Component} with the main layout or other content of the view
  * to {@link #setContent(Component)} or to the constructor of the UI.
  * </p>
- * 
+ *
  * @see #init(VaadinRequest)
  * @see UIProvider
- * 
+ *
  * @since 7.0
  */
 public abstract class UI extends AbstractSingleComponentContainer
@@ -100,7 +100,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * The id of this UI, used to find the server side instance of the UI form
      * which a request originates. A negative value indicates that the UI id has
      * not yet been assigned by the Application.
-     * 
+     *
      * @see VaadinSession#getNextUIid()
      */
     private int uiId = -1;
@@ -181,10 +181,10 @@ public abstract class UI extends AbstractSingleComponentContainer
     /**
      * Creates a new UI with the given component (often a layout) as its
      * content.
-     * 
+     *
      * @param content
      *            the component to use as this UIs content.
-     * 
+     *
      * @see #setContent(Component)
      */
     public UI(Component content) {
@@ -212,9 +212,9 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Overridden to return a value instead of referring to the parent.
-     * 
+     *
      * @return this UI
-     * 
+     *
      * @see com.vaadin.ui.AbstractComponent#getUI()
      */
     @Override
@@ -224,12 +224,12 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Gets the application object to which the component is attached.
-     * 
+     *
      * <p>
      * The method will return {@code null} if the component is not currently
      * attached to an application.
      * </p>
-     * 
+     *
      * <p>
      * Getting a null value is often a problem in constructors of regular
      * components and in the initializers of custom composite components. A
@@ -238,7 +238,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * Another way is to move the problematic initialization to
      * {@link #attach()}, as described in the documentation of the method.
      * </p>
-     * 
+     *
      * @return the parent application of the component or <code>null</code>.
      * @see #attach()
      */
@@ -249,7 +249,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Fire a click event to all click listeners.
-     * 
+     *
      * @param object
      *            The raw "value" of the variable change from the client side.
      */
@@ -261,7 +261,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.HasComponents#iterator()
      */
     @Override
@@ -279,7 +279,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.ComponentContainer#getComponentCount()
      */
     @Override
@@ -293,13 +293,13 @@ public abstract class UI extends AbstractSingleComponentContainer
      * This method is for internal use by the framework. To explicitly close a
      * UI, see {@link #close()}.
      * </p>
-     * 
+     *
      * @param session
      *            the session to set
-     * 
+     *
      * @throws IllegalStateException
      *             if the session has already been set
-     * 
+     *
      * @see #getSession()
      */
     public void setSession(VaadinSession session) {
@@ -352,7 +352,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
      * {@link UI#getCurrent()} does not return this UI.
-     * 
+     *
      * @return the id of this UI
      */
     public int getUIId() {
@@ -384,10 +384,10 @@ public abstract class UI extends AbstractSingleComponentContainer
      * Component.Focusable) due we want the last focused component to be focused
      * in client too. Not the one that is rendered last (the case we'd get if
      * implemented in Focusable only).
-     * 
+     *
      * To focus component from Vaadin application, use Focusable.focus(). See
      * {@link Focusable}.
-     * 
+     *
      * @param focusable
      *            to be focused on next paint
      */
@@ -400,7 +400,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * Scrolls any component between the component and UI to a suitable position
      * so the component is visible to the user. The given component must belong
      * to this UI.
-     * 
+     *
      * @param component
      *            the component to be scrolled into view
      * @throws IllegalArgumentException
@@ -420,7 +420,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * Internal initialization method, should not be overridden. This method is
      * not declared as final because that would break compatibility with e.g.
      * CDI.
-     * 
+     *
      * @param request
      *            the initialization request
      * @param uiId
@@ -428,7 +428,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @param embedId
      *            the embed id of this UI, or <code>null</code> if no id is
      *            known
-     * 
+     *
      * @see #getUIId()
      * @see #getEmbedId()
      */
@@ -471,7 +471,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * The {@link VaadinRequest} can be used to get information about the
      * request that caused this UI to be created.
      * </p>
-     * 
+     *
      * @param request
      *            the Vaadin request that caused this UI to be created
      */
@@ -479,7 +479,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Internal reinitialization method, should not be overridden.
-     * 
+     *
      * @since 7.2
      * @param request
      *            the request that caused this UI to be reloaded
@@ -523,7 +523,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * <p>
      * The {@link VaadinRequest} can be used to get information about the
      * request that caused this UI to be reloaded.
-     * 
+     *
      * @since 7.2
      * @param request
      *            the request that caused this UI to be reloaded
@@ -542,10 +542,10 @@ public abstract class UI extends AbstractSingleComponentContainer
      * <p>
      * The UI is stored using a weak reference to avoid leaking memory in case
      * it is not explicitly cleared.
-     * 
+     *
      * @param ui
      *            the UI to register as the current UI
-     * 
+     *
      * @see #getCurrent()
      * @see ThreadLocal
      */
@@ -560,9 +560,9 @@ public abstract class UI extends AbstractSingleComponentContainer
      * <p>
      * The UI is stored using a weak reference to avoid leaking memory in case
      * it is not explicitly cleared.
-     * 
+     *
      * @return the current UI instance if available, otherwise <code>null</code>
-     * 
+     *
      * @see #setCurrent(UI)
      */
     public static UI getCurrent() {
@@ -571,7 +571,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Set top offset to which the UI should scroll to.
-     * 
+     *
      * @param scrollTop
      */
     public void setScrollTop(int scrollTop) {
@@ -591,7 +591,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Set left offset to which the UI should scroll to.
-     * 
+     *
      * @param scrollLeft
      */
     public void setScrollLeft(int scrollLeft) {
@@ -621,7 +621,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * When there are active window resize listeners, lazy resize mode should be
      * used to avoid a large number of events during resize.
      * </p>
-     * 
+     *
      * @param resizeLazy
      *            true to use a delay before recalculating sizes, false to
      *            calculate immediately.
@@ -633,7 +633,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Checks whether lazy resize is enabled.
-     * 
+     *
      * @return <code>true</code> if lazy resize is enabled, <code>false</code>
      *         if lazy resize is not enabled
      */
@@ -646,9 +646,9 @@ public abstract class UI extends AbstractSingleComponentContainer
      * clicks inside the UI. Also when the click targets a component inside the
      * UI, provided the targeted component does not prevent the click event from
      * propagating.
-     * 
+     *
      * Use {@link #removeListener(ClickListener)} to remove the listener.
-     * 
+     *
      * @param listener
      *            The listener to add
      */
@@ -669,7 +669,7 @@ public abstract class UI extends AbstractSingleComponentContainer
     /**
      * Remove a click listener from the UI. The listener should earlier have
      * been added using {@link #addListener(ClickListener)}.
-     * 
+     *
      * @param listener
      *            The listener to remove
      */
@@ -704,7 +704,7 @@ public abstract class UI extends AbstractSingleComponentContainer
     /**
      * Returns the navigator attached to this UI or null if there is no
      * navigator.
-     * 
+     *
      * @return
      */
     public Navigator getNavigator() {
@@ -713,7 +713,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * For internal use only.
-     * 
+     *
      * @param navigator
      */
     public void setNavigator(Navigator navigator) {
@@ -723,16 +723,16 @@ public abstract class UI extends AbstractSingleComponentContainer
     /**
      * Shows a notification message on the middle of the UI. The message
      * automatically disappears ("humanized message").
-     * 
+     *
      * Care should be taken to to avoid XSS vulnerabilities as the caption is
      * rendered as html.
-     * 
+     *
      * @see #showNotification(Notification)
      * @see Notification
-     * 
+     *
      * @param caption
      *            The message
-     * 
+     *
      * @deprecated As of 7.0, use Notification.show instead but be aware that
      *             Notification.show does not allow HTML.
      */
@@ -747,18 +747,18 @@ public abstract class UI extends AbstractSingleComponentContainer
      * Shows a notification message the UI. The position and behavior of the
      * message depends on the type, which is one of the basic types defined in
      * {@link Notification}, for instance Notification.TYPE_WARNING_MESSAGE.
-     * 
+     *
      * Care should be taken to to avoid XSS vulnerabilities as the caption is
      * rendered as html.
-     * 
+     *
      * @see #showNotification(Notification)
      * @see Notification
-     * 
+     *
      * @param caption
      *            The message
      * @param type
      *            The message type
-     * 
+     *
      * @deprecated As of 7.0, use Notification.show instead but be aware that
      *             Notification.show does not allow HTML.
      */
@@ -773,18 +773,18 @@ public abstract class UI extends AbstractSingleComponentContainer
      * Shows a notification consisting of a bigger caption and a smaller
      * description on the middle of the UI. The message automatically disappears
      * ("humanized message").
-     * 
+     *
      * Care should be taken to to avoid XSS vulnerabilities as the caption and
      * description are rendered as html.
-     * 
+     *
      * @see #showNotification(Notification)
      * @see Notification
-     * 
+     *
      * @param caption
      *            The caption of the message
      * @param description
      *            The message description
-     * 
+     *
      * @deprecated As of 7.0, use new Notification(...).show(Page) instead but
      *             be aware that HTML by default not allowed.
      */
@@ -800,20 +800,20 @@ public abstract class UI extends AbstractSingleComponentContainer
      * description. The position and behavior of the message depends on the
      * type, which is one of the basic types defined in {@link Notification} ,
      * for instance Notification.TYPE_WARNING_MESSAGE.
-     * 
+     *
      * Care should be taken to to avoid XSS vulnerabilities as the caption and
      * description are rendered as html.
-     * 
+     *
      * @see #showNotification(Notification)
      * @see Notification
-     * 
+     *
      * @param caption
      *            The caption of the message
      * @param description
      *            The message description
      * @param type
      *            The message type
-     * 
+     *
      * @deprecated As of 7.0, use new Notification(...).show(Page) instead but
      *             be aware that HTML by default not allowed.
      */
@@ -831,13 +831,13 @@ public abstract class UI extends AbstractSingleComponentContainer
      * description. The position and behavior of the message depends on the
      * type, which is one of the basic types defined in {@link Notification} ,
      * for instance Notification.TYPE_WARNING_MESSAGE.
-     * 
+     *
      * Care should be taken to avoid XSS vulnerabilities if html content is
      * allowed.
-     * 
+     *
      * @see #showNotification(Notification)
      * @see Notification
-     * 
+     *
      * @param caption
      *            The message caption
      * @param description
@@ -847,7 +847,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @param htmlContentAllowed
      *            Whether html in the caption and description should be
      *            displayed as html or as plain text
-     * 
+     *
      * @deprecated As of 7.0, use new Notification(...).show(Page).
      */
     @Deprecated
@@ -859,16 +859,16 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Shows a notification message.
-     * 
+     *
      * @see Notification
      * @see #showNotification(String)
      * @see #showNotification(String, int)
      * @see #showNotification(String, String)
      * @see #showNotification(String, String, int)
-     * 
+     *
      * @param notification
      *            The notification message to show
-     * 
+     *
      * @deprecated As of 7.0, use Notification.show instead
      */
     @Deprecated
@@ -882,9 +882,9 @@ public abstract class UI extends AbstractSingleComponentContainer
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
      * {@link UI#getCurrent()} does not return this UI.
-     * 
+     *
      * @see VaadinService#closeInactiveUIs(VaadinSession)
-     * 
+     *
      * @return The time the last heartbeat request occurred, in milliseconds
      *         since the epoch.
      */
@@ -900,7 +900,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
      * {@link UI#getCurrent()} does not return this UI.
-     * 
+     *
      * @param lastHeartbeat
      *            The time the last heartbeat request occurred, in milliseconds
      *            since the epoch.
@@ -951,9 +951,9 @@ public abstract class UI extends AbstractSingleComponentContainer
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
      * {@link UI#getCurrent()} does not return this UI.
-     * 
+     *
      * @see #close()
-     * 
+     *
      * @return whether this UI is closing.
      */
     public boolean isClosing() {
@@ -964,7 +964,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * Called after the UI is added to the session. A UI instance is attached
      * exactly once, before its {@link #init(VaadinRequest) init} method is
      * called.
-     * 
+     *
      * @see Component#attach
      */
     @Override
@@ -1022,9 +1022,9 @@ public abstract class UI extends AbstractSingleComponentContainer
      * later point in time.</li>
      * </ul>
      * </p>
-     * 
+     *
      * @since 7.1
-     * 
+     *
      * @param runnable
      *            the runnable which accesses the UI
      * @throws UIDetachedException
@@ -1032,7 +1032,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      *             therefore not be done)
      * @throws IllegalStateException
      *             if the current thread holds the lock for another session
-     * 
+     *
      * @see #access(Runnable)
      * @see VaadinSession#accessSynchronously(Runnable)
      */
@@ -1096,14 +1096,14 @@ public abstract class UI extends AbstractSingleComponentContainer
      * The returned future can be used to check for task completion and to
      * cancel the task.
      * </p>
-     * 
+     *
      * @see #getCurrent()
      * @see #accessSynchronously(Runnable)
      * @see VaadinSession#access(Runnable)
      * @see VaadinSession#lock()
-     * 
+     *
      * @since 7.1
-     * 
+     *
      * @param runnable
      *            the runnable which accesses the UI
      * @throws UIDetachedException
@@ -1154,7 +1154,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Retrieves the object used for configuring notifications.
-     * 
+     *
      * @return The instance used for notification configuration
      */
     public NotificationConfiguration getNotificationConfiguration() {
@@ -1163,7 +1163,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Retrieves the object used for configuring the loading indicator.
-     * 
+     *
      * @return The instance used for configuring the loading indicator
      */
     public LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
@@ -1182,14 +1182,14 @@ public abstract class UI extends AbstractSingleComponentContainer
      * return this UI since writing the response may invoke logic in any
      * attached component or extension. The recommended way of fulfilling these
      * conditions is to use {@link #access(Runnable)}.
-     * 
+     *
      * @throws IllegalStateException
      *             if push is disabled.
      * @throws UIDetachedException
      *             if this UI is not attached to a session.
-     * 
+     *
      * @see #getPushConfiguration()
-     * 
+     *
      * @since 7.1
      */
     public void push() {
@@ -1227,7 +1227,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
      * {@link UI#getCurrent()} does not return this UI.
-     * 
+     *
      * @return the push connection used by this UI, or {@code null} if push is
      *         not available.
      */
@@ -1243,7 +1243,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * <p>
      * The {@code pushConnection} argument must be non-null if and only if
      * {@code getPushConfiguration().getPushMode().isEnabled()}.
-     * 
+     *
      * @param pushConnection
      *            the push connection to use for this UI
      */
@@ -1276,7 +1276,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * application developer. An add-on should not set the poll interval
      * directly, rather instruct the user to set it.
      * </p>
-     * 
+     *
      * @param intervalInMillis
      *            The interval (in ms) with which the UI should poll the server
      *            or -1 to disable polling
@@ -1287,7 +1287,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Returns the interval with which the UI polls the server.
-     * 
+     *
      * @return The interval (in ms) with which the UI polls the server or -1 if
      *         polling is disabled
      */
@@ -1308,7 +1308,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Retrieves the object used for configuring the push channel.
-     * 
+     *
      * @since 7.1
      * @return The instance used for push configuration
      */
@@ -1318,7 +1318,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Retrieves the object used for configuring the reconnect dialog.
-     * 
+     *
      * @since 7.6
      * @return The instance used for reconnect dialog configuration
      */
@@ -1329,7 +1329,7 @@ public abstract class UI extends AbstractSingleComponentContainer
     /**
      * Get the label that is added to the container element, where tooltip,
      * notification and dialogs are added to.
-     * 
+     *
      * @return the label of the container
      */
     public String getOverlayContainerLabel() {
@@ -1343,7 +1343,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * This is helpful for users of assistive devices, as this element is
      * reachable for them.
      * </p>
-     * 
+     *
      * @param overlayContainerLabel
      *            label to use for the container
      */
@@ -1360,7 +1360,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * it is embedded. The embed identifier is based on the
      * <code>window.name</code> DOM attribute of the browser window where the UI
      * is displayed and the id of the div element where the UI is embedded.
-     * 
+     *
      * @since 7.2
      * @return the embed id for this UI, or <code>null</code> if no id known
      */
@@ -1370,9 +1370,9 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Gets the last processed server message id.
-     * 
+     *
      * Used internally for communication tracking.
-     * 
+     *
      * @return lastProcessedServerMessageId the id of the last processed server
      *         message
      * @since 7.6
@@ -1383,9 +1383,9 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     /**
      * Sets the last processed server message id.
-     * 
+     *
      * Used internally for communication tracking.
-     * 
+     *
      * @param lastProcessedServerMessageId
      *            the id of the last processed server message
      * @since 7.6

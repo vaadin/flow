@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -39,13 +39,13 @@ public class Page implements Serializable {
     /**
      * Listener that gets notified when the size of the browser window
      * containing the uI has changed.
-     * 
+     *
      * @see UI#addListener(BrowserWindowResizeListener)
      */
     public interface BrowserWindowResizeListener extends Serializable {
         /**
          * Invoked when the browser window containing a UI has been resized.
-         * 
+         *
          * @param event
          *            a browser window resize event
          */
@@ -62,7 +62,7 @@ public class Page implements Serializable {
 
         /**
          * Creates a new event
-         * 
+         *
          * @param source
          *            the uI for which the browser window has been resized
          * @param width
@@ -83,7 +83,7 @@ public class Page implements Serializable {
 
         /**
          * Gets the new browser window height
-         * 
+         *
          * @return an integer with the new pixel height of the browser window
          */
         public int getHeight() {
@@ -92,7 +92,7 @@ public class Page implements Serializable {
 
         /**
          * Gets the new browser window width
-         * 
+         *
          * @return an integer with the new pixel width of the browser window
          */
         public int getWidth() {
@@ -125,7 +125,7 @@ public class Page implements Serializable {
     /**
      * Listener that that gets notified when the URI fragment of the page
      * changes.
-     * 
+     *
      * @see Page#addUriFragmentChangedListener(UriFragmentChangedListener)
      */
     public interface UriFragmentChangedListener extends Serializable {
@@ -134,9 +134,9 @@ public class Page implements Serializable {
          * changes. Please note that the initial URI fragment has already been
          * set when a new UI is initialized, so there will not be any initial
          * event for listeners added during {@link UI#init(VaadinRequest)}.
-         * 
+         *
          * @see Page#addUriFragmentChangedListener(UriFragmentChangedListener)
-         * 
+         *
          * @param event
          *            the URI fragment changed event
          */
@@ -155,7 +155,7 @@ public class Page implements Serializable {
 
     /**
      * Event fired when the URI fragment of a <code>Page</code> changes.
-     * 
+     *
      * @see Page#addUriFragmentChangedListener(UriFragmentChangedListener)
      */
     public static class UriFragmentChangedEvent extends EventObject {
@@ -167,7 +167,7 @@ public class Page implements Serializable {
 
         /**
          * Creates a new instance of UriFragmentReader change event.
-         * 
+         *
          * @param source
          *            the Source of the event.
          * @param uriFragment
@@ -180,7 +180,7 @@ public class Page implements Serializable {
 
         /**
          * Gets the page in which the fragment has changed.
-         * 
+         *
          * @return the page in which the fragment has changed
          */
         public Page getPage() {
@@ -189,7 +189,7 @@ public class Page implements Serializable {
 
         /**
          * Get the new URI fragment
-         * 
+         *
          * @return the new fragment
          */
         public String getUriFragment() {
@@ -237,11 +237,11 @@ public class Page implements Serializable {
      * page is changed. Please note that the initial URI fragment has already
      * been set when a new UI is initialized, so there will not be any initial
      * event for listeners added during {@link UI#init(VaadinRequest)}.
-     * 
+     *
      * @see #getUriFragment()
      * @see #setUriFragment(String)
      * @see #removeUriFragmentChangedListener(UriFragmentChangedListener)
-     * 
+     *
      * @param listener
      *            the URI fragment listener to add
      */
@@ -262,10 +262,10 @@ public class Page implements Serializable {
 
     /**
      * Removes a URI fragment listener that was previously added to this page.
-     * 
+     *
      * @param listener
      *            the URI fragment listener to remove
-     * 
+     *
      * @see Page#addUriFragmentChangedListener(UriFragmentChangedListener)
      */
     public void removeUriFragmentChangedListener(
@@ -295,17 +295,17 @@ public class Page implements Serializable {
      * is already a non-null fragment will leave a trailing # in the URI since
      * removing it would cause the browser to reload the page. This is not fully
      * consistent with the semantics of {@link java.net.URI}.
-     * 
+     *
      * @param newUriFragment
      *            The new fragment.
      * @param fireEvents
      *            true to fire event
-     * 
+     *
      * @see #getUriFragment()
      * @see #setLocation(URI)
      * @see UriFragmentChangedEvent
      * @see Page.UriFragmentChangedListener
-     * 
+     *
      */
     public void setUriFragment(String newUriFragment, boolean fireEvents) {
         String oldUriFragment = location.getFragment();
@@ -340,7 +340,7 @@ public class Page implements Serializable {
 
     /**
      * Sets URI fragment. This method fires a {@link UriFragmentChangedEvent}
-     * 
+     *
      * @param newUriFragment
      *            id of the new fragment
      * @see UriFragmentChangedEvent
@@ -358,9 +358,9 @@ public class Page implements Serializable {
      * <p>
      * To listen to changes in fragment, hook a
      * {@link Page.UriFragmentChangedListener}.
-     * 
+     *
      * @return the current fragment in browser location URI.
-     * 
+     *
      * @see #getLocation()
      * @see #setUriFragment(String)
      * @see #addUriFragmentChangedListener(UriFragmentChangedListener)
@@ -405,9 +405,9 @@ public class Page implements Serializable {
 
     /**
      * Gets the window.name value of the browser window of this page.
-     * 
+     *
      * @since 7.2
-     * 
+     *
      * @return the window name, <code>null</code> if the name is not known
      */
     public String getWindowName() {
@@ -434,9 +434,9 @@ public class Page implements Serializable {
     /**
      * For internal use only. Updates the internal state with the given values.
      * Does not resize the Page or browser window.
-     * 
+     *
      * @since 7.2
-     * 
+     *
      * @param width
      *            the new browser window width
      * @param height
@@ -476,10 +476,10 @@ public class Page implements Serializable {
      * received while a resize is being performed. Use
      * {@link UI#setResizeLazy(boolean)}.
      * </p>
-     * 
+     *
      * @param resizeListener
      *            the listener to add
-     * 
+     *
      * @see BrowserWindowResizeListener#browserWindowResized(BrowserWindowResizeEvent)
      * @see UI#setResizeLazy(boolean)
      */
@@ -502,7 +502,7 @@ public class Page implements Serializable {
     /**
      * Removes a {@link BrowserWindowResizeListener} from this UI. The listener
      * will no longer be notified when the browser window is resized.
-     * 
+     *
      * @param resizeListener
      *            the listener to remove
      */
@@ -526,7 +526,7 @@ public class Page implements Serializable {
     /**
      * Gets the last known height of the browser window in which this UI
      * resides.
-     * 
+     *
      * @return the browser window height in pixels
      */
     public int getBrowserWindowHeight() {
@@ -535,7 +535,7 @@ public class Page implements Serializable {
 
     /**
      * Gets the last known width of the browser window in which this uI resides.
-     * 
+     *
      * @return the browser window width in pixels
      */
     public int getBrowserWindowWidth() {
@@ -549,10 +549,10 @@ public class Page implements Serializable {
      * This method should not be used to start downloads, as the client side
      * will assume the browser will navigate away when opening the URI. Use one
      * of the {@code Page.open} methods or {@code FileDownloader} instead.
-     * 
+     *
      * @see #open(String, String)
      * @see FileDownloader
-     * 
+     *
      * @param uri
      *            the URI to show
      */
@@ -567,10 +567,10 @@ public class Page implements Serializable {
      * This method should not be used to start downloads, as the client side
      * will assume the browser will navigate away when opening the URI. Use one
      * of the {@code Page.open} methods or {@code FileDownloader} instead.
-     * 
+     *
      * @see #open(String, String)
      * @see FileDownloader
-     * 
+     *
      * @param uri
      *            the URI to show
      */
@@ -582,7 +582,7 @@ public class Page implements Serializable {
      * Returns the location URI of this page, as reported by the browser. Note
      * that this may not be consistent with the server URI the application is
      * deployed in due to potential proxies, redirections and similar.
-     * 
+     *
      * @return The browser location URI.
      */
     public URI getLocation() {
@@ -598,10 +598,10 @@ public class Page implements Serializable {
     /**
      * For internal use only. Used to update the server-side location when the
      * client-side location changes.
-     * 
+     *
      * @deprecated As of 7.2, use {@link #updateLocation(String, boolean)}
      *             instead.
-     * 
+     *
      * @param location
      *            the new location URI
      */
@@ -613,9 +613,9 @@ public class Page implements Serializable {
     /**
      * For internal use only. Used to update the server-side location when the
      * client-side location changes.
-     * 
+     *
      * @since 7.2
-     * 
+     *
      * @param location
      *            the new location URI
      * @param fireEvents
@@ -638,7 +638,7 @@ public class Page implements Serializable {
 
     /**
      * Internal helper method to actually add a notification.
-     * 
+     *
      * @param notification
      *            the notification to add
      */
@@ -652,12 +652,12 @@ public class Page implements Serializable {
 
     /**
      * Shows a notification message.
-     * 
+     *
      * @see Notification
-     * 
+     *
      * @param notification
      *            The notification message to show
-     * 
+     *
      * @deprecated As of 7.0, use Notification.show(Page) instead.
      */
     @Deprecated
@@ -669,9 +669,9 @@ public class Page implements Serializable {
      * Gets the Page to which the current uI belongs. This is automatically
      * defined when processing requests to the server. In other cases, (e.g.
      * from background threads), the current uI is not automatically defined.
-     * 
+     *
      * @see UI#getCurrent()
-     * 
+     *
      * @return the current page instance if available, otherwise
      *         <code>null</code>
      */
@@ -689,7 +689,7 @@ public class Page implements Serializable {
      * <p>
      * If the title is set to null, it will not left as-is. Set to empty string
      * to clear the title.
-     * 
+     *
      * @param title
      *            the page title to set
      */
@@ -715,7 +715,7 @@ public class Page implements Serializable {
      * outside of Page should not access it directly but only through public
      * APIs provided by Page.
      * </p>
-     * 
+     *
      * @since 7.1
      * @param markAsDirty
      *            true to mark the state as dirty

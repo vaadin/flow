@@ -55,10 +55,10 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 /**
- * 
+ *
  * @author Vaadin Ltd
  * @since 7.0.0
- * 
+ *
  * @deprecated As of 7.0. Will likely change or be removed in a future version
  */
 @Deprecated
@@ -435,9 +435,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      * Override this method if you want to add some custom html around around
      * the div element into which the actual Vaadin application will be
      * rendered.
-     * 
+     *
      * @param context
-     * 
+     *
      * @throws IOException
      */
     private void setupMainDiv(BootstrapContext context) throws IOException {

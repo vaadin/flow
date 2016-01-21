@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -41,7 +41,7 @@ import elemental.json.JsonObject;
  * <p>
  * Handles permanent errors by showing a critical system notification to the
  * user
- * 
+ *
  * @since 7.6
  * @author Vaadin Ltd
  */
@@ -77,7 +77,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         /**
          * Checks if this type is of higher priority than the given type
-         * 
+         *
          * @param type
          *            the type to compare to
          * @return true if this type has higher priority than the given type,
@@ -115,7 +115,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     /**
      * Checks if we are currently trying to reconnect
-     * 
+     *
      * @return true if we have noted a problem and are trying to re-establish
      *         server connection, false otherwise
      */
@@ -125,7 +125,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     /**
      * Returns the connection this handler is connected to
-     * 
+     *
      * @return the connection for this handler
      */
     protected ApplicationConnection getConnection() {
@@ -180,7 +180,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      * Called whenever an error occurs in communication which should be handled
      * by showing the reconnect dialog and retrying communication until
      * successful again
-     * 
+     *
      * @param type
      *            The type of failure detected
      * @param payload
@@ -237,10 +237,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     /**
      * Called after a problem occurred.
-     * 
+     *
      * This method is responsible for re-sending the payload to the server (if
      * not null) or re-send a heartbeat request at some point
-     * 
+     *
      * @param payload
      *            the payload that did not reach the server, null if the problem
      *            was detected by a heartbeat
@@ -268,7 +268,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     /**
      * Re-sends the payload to the server (if not null) or re-sends a heartbeat
      * request immediately
-     * 
+     *
      * @param payload
      *            the payload that did not reach the server, null if the problem
      *            was detected by a heartbeat
@@ -302,7 +302,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     /**
      * Called when we should give up trying to reconnect and let the user decide
      * how to continue
-     * 
+     *
      */
     protected void giveUp() {
         reconnectionCause = null;
@@ -333,7 +333,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     /**
      * Checks if the reconnect dialog is visible to the user
-     * 
+     *
      * @return true if the user can see the dialog, false otherwise
      */
     protected boolean isDialogVisible() {
@@ -365,7 +365,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     /**
      * Gets the text to show in the reconnect dialog after giving up (reconnect
      * limit reached)
-     * 
+     *
      * @param reconnectAttempt
      *            The number of the current reconnection attempt
      * @return The text to show in the reconnect dialog after giving up
@@ -377,7 +377,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     /**
      * Gets the text to show in the reconnect dialog
-     * 
+     *
      * @param reconnectAttempt
      *            The number of the current reconnection attempt
      * @return The text to show in the reconnect dialog
@@ -499,7 +499,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     /**
      * Called when a communication error occurs and we cannot recover from it
-     * 
+     *
      * @since
      * @param details
      * @param statusCode

@@ -49,14 +49,14 @@ import elemental.client.Browser;
  * This is the client side communication "engine", managing client-server
  * communication with its server side counterpart
  * com.vaadin.server.VaadinService.
- * 
+ *
  * Client-side connectors receive updates from the corresponding server-side
  * connector (typically component) as state updates or RPC calls. The connector
  * has the possibility to communicate back with its server side counter part
  * through RPC calls.
- * 
+ *
  * TODO document better
- * 
+ *
  * Entry point classes (widgetsets) define <code>onModuleLoad()</code>.
  */
 public class ApplicationConnection implements HasHandlers {
@@ -65,12 +65,12 @@ public class ApplicationConnection implements HasHandlers {
      * A string that, if found in a non-JSON response to a UIDL request, will
      * cause the browser to refresh the page. If followed by a colon, optional
      * whitespace, and a URI, causes the browser to synchronously load the URI.
-     * 
+     *
      * <p>
      * This allows, for instance, a servlet filter to redirect the application
      * to a custom login page when the session expires. For example:
      * </p>
-     * 
+     *
      * <pre>
      * if (sessionExpired) {
      *     response.setHeader(&quot;Content-Type&quot;, &quot;text/html&quot;);
@@ -186,12 +186,12 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Event triggered when a application is stopped by calling
      * {@link ApplicationConnection#setApplicationRunning(false)}.
-     * 
+     *
      * To listen for the event add a {@link ApplicationStoppedHandler} by
      * invoking
      * {@link ApplicationConnection#addHandler(ApplicationConnection.ApplicationStoppedEvent.Type, ApplicationStoppedHandler)}
      * to the {@link ApplicationConnection}
-     * 
+     *
      * @since 7.1.8
      * @author Vaadin Ltd
      */
@@ -215,7 +215,7 @@ public class ApplicationConnection implements HasHandlers {
      * A listener for listening to application stopped events. The listener can
      * be added to a {@link ApplicationConnection} by invoking
      * {@link ApplicationConnection#addHandler(ApplicationStoppedEvent.Type, ApplicationStoppedHandler)}
-     * 
+     *
      * @since 7.1.8
      * @author Vaadin Ltd
      */
@@ -225,7 +225,7 @@ public class ApplicationConnection implements HasHandlers {
          * Triggered when the {@link ApplicationConnection} marks a previously
          * running application as stopped by invoking
          * {@link ApplicationConnection#setApplicationRunning(false)}
-         * 
+         *
          * @param event
          *            the event triggered by the {@link ApplicationConnection}
          */
@@ -322,7 +322,7 @@ public class ApplicationConnection implements HasHandlers {
      * called once this application has started (first response received) or
      * failed to start. This ensures that the applications are started in order,
      * to avoid session-id problems.
-     * 
+     *
      */
     public void start() {
         String jsonText = configuration.getUIDL();
@@ -342,7 +342,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Checks if there is some work to be done on the client side
-     * 
+     *
      * @return true if the client has some work to be done, false otherwise
      */
     private boolean isActive() {
@@ -364,7 +364,7 @@ public class ApplicationConnection implements HasHandlers {
                 return vi;
             }
         }
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::getMessageHandler();
             var pd = [
@@ -375,9 +375,9 @@ public class ApplicationConnection implements HasHandlers {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
@@ -425,7 +425,7 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Checks whether or not the CSS is loaded. By default checks the size of
      * the loading indicator element.
-     * 
+     *
      * @return
      */
     protected boolean isCSSLoaded() {
@@ -435,12 +435,12 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Shows the communication error notification.
-     * 
+     *
      * @param details
      *            Optional details.
      * @param statusCode
      *            The status code returned for the request
-     * 
+     *
      */
     public void showCommunicationError(String details, int statusCode) {
         Console.error("Communication error: " + details);
@@ -449,7 +449,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Shows the authentication error notification.
-     * 
+     *
      * @param details
      *            Optional details.
      */
@@ -460,7 +460,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Shows the session expiration notification.
-     * 
+     *
      * @param details
      *            Optional details.
      */
@@ -471,7 +471,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Shows an error notification.
-     * 
+     *
      * @param details
      *            Optional details.
      * @param message
@@ -490,7 +490,7 @@ public class ApplicationConnection implements HasHandlers {
      * <p>
      * Used by the native "client.isActive" function.
      * </p>
-     * 
+     *
      * @return true if deferred commands are (potentially) being executed, false
      *         otherwise
      */
@@ -505,7 +505,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Returns the loading indicator used by this ApplicationConnection
-     * 
+     *
      * @return The loading indicator for this ApplicationConnection
      */
     public VLoadingIndicator getLoadingIndicator() {
@@ -580,7 +580,7 @@ public class ApplicationConnection implements HasHandlers {
      * Translates custom protocols in UIDL URI's to be recognizable by browser.
      * All uri's from UIDL should be routed via this method before giving them
      * to browser due URI's in UIDL may contain custom protocols like theme://.
-     * 
+     *
      * @param uidlUri
      *            Vaadin URI from uidl
      * @return translated URI ready for browser
@@ -591,7 +591,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the {@link ApplicationConfiguration} for the current application.
-     * 
+     *
      * @see ApplicationConfiguration
      * @return the configuration for this application
      */
@@ -630,7 +630,7 @@ public class ApplicationConnection implements HasHandlers {
     /**
      * Checks if the application is in the {@link ApplicationState#RUNNING}
      * state.
-     * 
+     *
      * @since 7.6
      * @return true if the application is in the running state, false otherwise
      */
@@ -660,7 +660,7 @@ public class ApplicationConnection implements HasHandlers {
      * "initializing" to "running" to "stopped". There is no way for an
      * application to go back to a previous state, i.e. a stopped application
      * can never be re-started
-     * 
+     *
      * @since 7.6
      * @return the current state of this application
      */
@@ -670,7 +670,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the server RPC queue for this application
-     * 
+     *
      * @since 7.6
      * @return the server RPC queue
      */
@@ -680,7 +680,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the communication error handler for this application
-     * 
+     *
      * @since 7.6
      * @return the server RPC queue
      */
@@ -690,7 +690,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the (server to client) message handler for this application
-     * 
+     *
      * @since 7.6
      * @return the message handler
      */
@@ -700,7 +700,7 @@ public class ApplicationConnection implements HasHandlers {
 
     /**
      * Gets the (client to server) message sender for this application
-     * 
+     *
      * @since 7.6
      * @return the message sender
      */

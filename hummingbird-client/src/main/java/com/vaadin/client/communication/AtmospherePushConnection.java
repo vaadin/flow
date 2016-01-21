@@ -40,7 +40,7 @@ import elemental.json.JsonObject;
 /**
  * The default {@link PushConnection} implementation that uses Atmosphere for
  * handling the communication channel.
- * 
+ *
  * @author Vaadin Ltd
  * @since 7.1
  */
@@ -138,7 +138,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.client.communication.PushConnection#init(ApplicationConnection
      * , Map<String, String>, CommunicationErrorHandler)
@@ -300,9 +300,9 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Called whenever a server push connection is established (or
      * re-established).
-     * 
+     *
      * @param response
-     * 
+     *
      * @since 7.2
      */
     protected void onConnect(AtmosphereResponse response) {
@@ -330,7 +330,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.communication.PushConenction#disconnect()
      */
     @Override
@@ -384,7 +384,7 @@ public class AtmospherePushConnection implements PushConnection {
     /**
      * Called if the push connection fails. Atmosphere will automatically retry
      * the connection until successful.
-     * 
+     *
      */
     protected void onError(AtmosphereResponse response) {
         state = State.DISCONNECTED;
@@ -518,7 +518,7 @@ public class AtmospherePushConnection implements PushConnection {
             JavaScriptObject config)
             /*-{
                 var self = this;
-            
+
                 config.url = uri;
                 config.onOpen = $entry(function(response) {
                     self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
@@ -544,7 +544,7 @@ public class AtmospherePushConnection implements PushConnection {
                 config.onClientTimeout = $entry(function(request) {
                     self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
                 });
-            
+
                 return $wnd.jQueryVaadin.atmosphere.subscribe(config);
             }-*/;
 

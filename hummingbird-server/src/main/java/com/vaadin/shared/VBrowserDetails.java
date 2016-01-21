@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -22,7 +22,7 @@ import java.io.Serializable;
  * information about the browser. Used internally by
  * {@link com.vaadin.client.BrowserInfo} and
  * {@link com.vaadin.server.WebBrowser}. Should not be used directly.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 6.3
  */
@@ -60,7 +60,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Create an instance based on the given user agent.
-     * 
+     *
      * @param userAgent
      *            User agent as provided by the browser.
      */
@@ -284,7 +284,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is Firefox.
-     * 
+     *
      * @return true if it is Firefox, false otherwise
      */
     public boolean isFirefox() {
@@ -293,7 +293,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is using the Gecko engine
-     * 
+     *
      * @return true if it is Gecko, false otherwise
      */
     public boolean isGecko() {
@@ -302,7 +302,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is using the WebKit engine
-     * 
+     *
      * @return true if it is WebKit, false otherwise
      */
     public boolean isWebKit() {
@@ -311,7 +311,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is using the Presto engine
-     * 
+     *
      * @return true if it is Presto, false otherwise
      */
     public boolean isPresto() {
@@ -320,7 +320,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is using the Trident engine
-     * 
+     *
      * @since 7.1.7
      * @return true if it is Trident, false otherwise
      */
@@ -330,7 +330,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is Safari.
-     * 
+     *
      * @return true if it is Safari, false otherwise
      */
     public boolean isSafari() {
@@ -339,7 +339,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is Chrome.
-     * 
+     *
      * @return true if it is Chrome, false otherwise
      */
     public boolean isChrome() {
@@ -348,7 +348,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is Opera.
-     * 
+     *
      * @return true if it is Opera, false otherwise
      */
     public boolean isOpera() {
@@ -357,7 +357,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is Internet Explorer.
-     * 
+     *
      * @return true if it is Internet Explorer, false otherwise
      */
     public boolean isIE() {
@@ -366,7 +366,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is Edge.
-     * 
+     *
      * @since 7.5.3
      * @return true if it is Edge, false otherwise
      */
@@ -386,7 +386,7 @@ public class VBrowserDetails implements Serializable {
     /**
      * Returns the version of the browser engine. For WebKit this is an integer
      * e.g., 532.0. For gecko it is a float e.g., 1.8 or 1.9.
-     * 
+     *
      * @return The version of the browser engine
      */
     public float getBrowserEngineVersion() {
@@ -400,7 +400,7 @@ public class VBrowserDetails implements Serializable {
      * Note that Internet Explorer 8 and newer will return the document mode so
      * IE8 rendering as IE7 will return 7.
      * </p>
-     * 
+     *
      * @return The major version of the browser.
      */
     public final int getBrowserMajorVersion() {
@@ -409,9 +409,9 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Returns the browser minor version e.g., 5 for Firefox 3.5.
-     * 
+     *
      * @see #getBrowserMajorVersion()
-     * 
+     *
      * @return The minor version of the browser, or -1 if not known/parsed.
      */
     public final int getBrowserMinorVersion() {
@@ -420,7 +420,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is run on Windows.
-     * 
+     *
      * @return true if run on Windows, false otherwise
      */
     public boolean isWindows() {
@@ -429,7 +429,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is run on Windows Phone.
-     * 
+     *
      * @return true if run on Windows Phone, false otherwise
      * @since 7.3.2
      */
@@ -439,7 +439,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is run on Mac OSX.
-     * 
+     *
      * @return true if run on Mac OSX, false otherwise
      */
     public boolean isMacOSX() {
@@ -448,7 +448,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is run on Linux.
-     * 
+     *
      * @return true if run on Linux, false otherwise
      */
     public boolean isLinux() {
@@ -457,7 +457,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is run on Android.
-     * 
+     *
      * @return true if run on Android, false otherwise
      */
     public boolean isAndroid() {
@@ -466,7 +466,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is run in iOS.
-     * 
+     *
      * @return true if run in iOS, false otherwise
      */
     public boolean isIOS() {
@@ -475,7 +475,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is run on iPhone.
-     * 
+     *
      * @return true if run on iPhone, false otherwise
      * @since 7.3.3
      */
@@ -485,7 +485,7 @@ public class VBrowserDetails implements Serializable {
 
     /**
      * Tests if the browser is run on iPad.
-     * 
+     *
      * @return true if run on iPad, false otherwise
      * @since 7.3.3
      */
@@ -496,7 +496,7 @@ public class VBrowserDetails implements Serializable {
     /**
      * Returns the major version of the operating system. Currently only
      * supported for mobile devices (iOS/Android)
-     * 
+     *
      * @return The major version or -1 if unknown
      */
     public int getOperatingSystemMajorVersion() {
@@ -506,7 +506,7 @@ public class VBrowserDetails implements Serializable {
     /**
      * Returns the minor version of the operating system. Currently only
      * supported for mobile devices (iOS/Android)
-     * 
+     *
      * @return The minor version or -1 if unknown
      */
     public int getOperatingSystemMinorVersion() {
@@ -518,7 +518,7 @@ public class VBrowserDetails implements Serializable {
      * application. NOTE that the browser might still be capable of running
      * Crome Frame, so you might still want to check
      * {@link #isChromeFrameCapable()} if this returns true.
-     * 
+     *
      * @return true if the browser won't work, false if not the browser is
      *         supported or might work
      */

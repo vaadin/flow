@@ -38,7 +38,7 @@ public class PropertyFormatterTest extends TestCase {
 
     /**
      * The object passed to format should be same as property's type.
-     * 
+     *
      * @throws IllegalAccessException
      * @throws InstantiationException
      */
