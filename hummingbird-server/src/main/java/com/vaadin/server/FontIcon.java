@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -24,7 +24,7 @@ package com.vaadin.server;
  * <code>fonticon://&lt;fontfamily&gt;/&lt;codepoint&gt;</code> to reference a
  * specific icon from a specific icon font. <br/>
  * </p>
- * 
+ *
  * @since 7.2
  * @author Vaadin Ltd
  */
@@ -32,7 +32,7 @@ public interface FontIcon extends Resource {
     /**
      * Returns the name (font family) of the font from which this icon comes.
      * The name is used to apply the correct font where the icon is used.
-     * 
+     *
      * @since 7.2
      * @return
      */
@@ -47,7 +47,7 @@ public interface FontIcon extends Resource {
      * When constructing icon fonts, it might be a good idea to use the
      * codepoints in the "Private use area", from 0xE000 0xF8FF.
      * </p>
-     * 
+     *
      * @since 7.2
      * @return
      */
@@ -56,7 +56,7 @@ public interface FontIcon extends Resource {
     /**
      * Returns HTML that can be used to display the icon in places where HTML
      * can be used.
-     * 
+     *
      * @since 7.2
      * @return HTML needed to display icon
      */

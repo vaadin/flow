@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -25,7 +25,7 @@ import com.vaadin.shared.communication.PushMode;
 /**
  * The default implementation of {@link DeploymentConfiguration} based on a base
  * class for resolving system properties and a set of init parameters.
- * 
+ *
  * @author Vaadin Ltd
  * @since 7.0.0
  */
@@ -54,7 +54,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Default value for {@link #isSyncIdCheckEnabled()} = {@value} .
-     * 
+     *
      * @since 7.3
      */
     public static final boolean DEFAULT_SYNC_ID_CHECK = true;
@@ -75,7 +75,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Create a new deployment configuration instance.
-     * 
+     *
      * @param systemPropertyBaseClass
      *            the class that should be used as a basis when reading system
      *            properties
@@ -141,7 +141,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Gets an system property value.
-     * 
+     *
      * @param parameterName
      *            the Name or the parameter.
      * @return String value or null if not found
@@ -179,7 +179,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Gets an application property value.
-     * 
+     *
      * @param parameterName
      *            the Name or the parameter.
      * @return String value or null if not found
@@ -200,7 +200,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * The default is false.
      */
     @Override

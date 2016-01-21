@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -47,7 +47,7 @@ import elemental.json.JsonValue;
  * {@link com.vaadin.client.ApplicationConnection}.
  * <p>
  * TODO Document better!
- * 
+ *
  * @deprecated As of 7.0. Will likely change or be removed in a future version
  */
 @Deprecated
@@ -67,7 +67,7 @@ public class LegacyCommunicationManager implements Serializable {
 
     /**
      * TODO New constructor - document me!
-     * 
+     *
      * @param session
      */
     public LegacyCommunicationManager(VaadinSession session) {
@@ -98,7 +98,7 @@ public class LegacyCommunicationManager implements Serializable {
      * Resolves a dependency URI, registering the URI with this
      * {@code LegacyCommunicationManager} if needed and returns a fully
      * qualified URI.
-     * 
+     *
      * @deprecated As of 7.1. See #11413.
      */
     @Deprecated
@@ -169,9 +169,9 @@ public class LegacyCommunicationManager implements Serializable {
      * {@link #isComponentVisibleToClient(Component)} is used. For other types
      * of connectors, the contextual visibility of its first Component ancestor
      * is used. If no Component ancestor is found, the connector is not visible.
-     * 
+     *
      * @deprecated As of 7.1. See #11411.
-     * 
+     *
      * @param connector
      *            The connector to check
      * @return <code>true</code> if the connector is visible to the client,
@@ -195,9 +195,9 @@ public class LegacyCommunicationManager implements Serializable {
     /**
      * Checks if the component should be visible to the client. Returns false if
      * the child should not be sent to the client, true otherwise.
-     * 
+     *
      * @deprecated As of 7.1. See #11411.
-     * 
+     *
      * @param child
      *            The child to check
      * @return true if the child is visible to the client, false otherwise
@@ -268,9 +268,9 @@ public class LegacyCommunicationManager implements Serializable {
     /**
      * Helper class for terminal to keep track of data that client is expected
      * to know.
-     * 
+     *
      * TODO make customlayout templates (from theme) to be cached here.
-     * 
+     *
      * @deprecated As of 7.1. See #11410.
      */
     @Deprecated
@@ -279,7 +279,7 @@ public class LegacyCommunicationManager implements Serializable {
         private final Set<Object> res = new HashSet<Object>();
 
         /**
-         * 
+         *
          * @param paintable
          * @return true if the given class was added to cache
          */
@@ -306,12 +306,12 @@ public class LegacyCommunicationManager implements Serializable {
         /*
          * We will use the same APP/* URI space as ApplicationResources but
          * prefix url with UPLOAD
-         * 
+         *
          * eg. APP/UPLOAD/[UIID]/[PID]/[NAME]/[SECKEY]
-         * 
+         *
          * SECKEY is created on each paint to make URL's unpredictable (to
          * prevent CSRF attacks).
-         * 
+         *
          * NAME and PID from URI forms a key to fetch StreamVariable when
          * handling post
          */
@@ -332,9 +332,9 @@ public class LegacyCommunicationManager implements Serializable {
     /**
      * Handles an exception related to a connector by invoking the appropriate
      * error handler.
-     * 
+     *
      * @deprecated As of 7.1. See #11411.
-     * 
+     *
      * @param throwable
      *            the exception to handle
      * @param connector
@@ -351,7 +351,7 @@ public class LegacyCommunicationManager implements Serializable {
     /**
      * Requests that the given UI should be fully re-rendered on the client
      * side.
-     * 
+     *
      * @since 7.1 @deprecated. As of 7.1. Should be refactored once locales are
      *        fixed (#11378)
      */

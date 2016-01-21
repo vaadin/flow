@@ -120,7 +120,7 @@ public class PushRequestHandler
      * Create your own request handler and override this method if you want to
      * customize the {@link PushHandler}, e.g. to dynamically decide the suspend
      * timeout.
-     * 
+     *
      * @since 7.6
      * @param service
      *            the vaadin service
@@ -154,7 +154,7 @@ public class PushRequestHandler
 
     /**
      * Initializes Atmosphere for the given ServletConfiguration
-     * 
+     *
      * @since 7.5.0
      * @param vaadinServletConfig
      *            The servlet configuration for the servlet which should have
@@ -262,7 +262,7 @@ public class PushRequestHandler
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * com.vaadin.server.SessionExpiredHandler#handleSessionExpired(com.vaadin
      * .server.VaadinRequest, com.vaadin.server.VaadinResponse)

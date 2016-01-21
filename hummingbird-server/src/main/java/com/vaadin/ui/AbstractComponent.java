@@ -34,7 +34,7 @@ import com.vaadin.shared.ui.ComponentStateUtil;
  * {@link Component} interface. Basic UI components that are not derived from an
  * external component can inherit this class to easily qualify as Vaadin
  * components. Most components in Vaadin do just that.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 3.0
  */
@@ -90,7 +90,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Component#setId(java.lang.String)
      */
     @Override
@@ -100,7 +100,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Component#getId()
      */
     @Override
@@ -184,14 +184,14 @@ public abstract class AbstractComponent extends AbstractClientConnector
     /**
      * Adds or removes a style name. Multiple styles can be specified as a
      * space-separated list of style names.
-     * 
+     *
      * If the {@code add} parameter is true, the style name is added to the
      * component. If the {@code add} parameter is false, the style name is
      * removed from the component.
      * <p>
      * Functionally this is equivalent to using {@link #addStyleName(String)} or
      * {@link #removeStyleName(String)}
-     * 
+     *
      * @since 7.5
      * @param style
      *            the style name to be added or removed
@@ -231,20 +231,20 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /**
      * Sets the locale of this component.
-     * 
+     *
      * <pre>
      * // Component for which the locale is meaningful
      * InlineDateField date = new InlineDateField(&quot;Datum&quot;);
-     * 
+     *
      * // German language specified with ISO 639-1 language
      * // code and ISO 3166-1 alpha-2 country code.
      * date.setLocale(new Locale(&quot;de&quot;, &quot;DE&quot;));
-     * 
+     *
      * date.setResolution(DateField.RESOLUTION_DAY);
      * layout.addComponent(date);
      * </pre>
-     * 
-     * 
+     *
+     *
      * @param locale
      *            the locale to become this component's locale.
      */
@@ -255,7 +255,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Component#isEnabled()
      */
     @Override
@@ -265,7 +265,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Component#setEnabled(boolean)
      */
     @Override
@@ -275,7 +275,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.client.Connector#isConnectorEnabled()
      */
     @Override
@@ -293,7 +293,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Component#isVisible()
      */
     @Override
@@ -303,7 +303,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.ui.Component#setVisible(boolean)
      */
     @Override
@@ -369,7 +369,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      * To find the Window that contains the component, use {@code Window w =
      * getParent(Window.class);}
      * </p>
-     * 
+     *
      * @param <T>
      *            The type of the ancestor
      * @param parentType
@@ -419,12 +419,12 @@ public abstract class AbstractComponent extends AbstractClientConnector
     /**
      * Returns the shared state bean with information to be sent from the server
      * to the client.
-     * 
+     *
      * Subclasses should override this method and set any relevant fields of the
      * state returned by super.getState().
-     * 
+     *
      * @since 7.0
-     * 
+     *
      * @return updated component shared state
      */
     @Override
@@ -447,7 +447,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
     /**
      * Sets the data object, that can be used for any application specific data.
      * The component does not use or modify this data.
-     * 
+     *
      * @param data
      *            the Application specific data.
      * @since 3.1
@@ -458,7 +458,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /**
      * Gets the application specific data. See {@link #setData(Object)}.
-     * 
+     *
      * @return the Application specific data set with setData function.
      * @since 3.1
      */
@@ -470,7 +470,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.Sizeable#getHeight()
      */
     @Override
@@ -480,7 +480,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#getHeightUnits()
      */
     @Override
@@ -490,7 +490,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#getWidth()
      */
     @Override
@@ -500,7 +500,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#getWidthUnits()
      */
     @Override
@@ -510,7 +510,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#setHeight(float, Unit)
      */
     @Override
@@ -526,7 +526,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#setSizeFull()
      */
     @Override
@@ -537,7 +537,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#setSizeUndefined()
      */
     @Override
@@ -548,7 +548,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#setWidthUndefined()
      */
     @Override
@@ -558,7 +558,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#setHeightUndefined()
      */
     @Override
@@ -568,7 +568,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#setWidth(float, Unit)
      */
     @Override
@@ -584,7 +584,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#setWidth(java.lang.String)
      */
     @Override
@@ -599,7 +599,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see com.vaadin.server.Sizeable#setHeight(java.lang.String)
      */
     @Override
@@ -617,7 +617,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
      * consist of one, two or three parts with '_' between the different parts
      * if there is more than one part. The first part specifies the language,
      * the second part the country and the third part the variant of the locale.
-     * 
+     *
      * @param localeString
      *            the locale specified as a string
      * @return the Locale object corresponding to localeString
@@ -644,7 +644,7 @@ public abstract class AbstractComponent extends AbstractClientConnector
     /**
      * Determine whether a <code>content</code> component is equal to, or the
      * ancestor of this component.
-     * 
+     *
      * @param content
      *            the potential ancestor element
      * @return <code>true</code> if the relationship holds

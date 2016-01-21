@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -44,7 +44,7 @@ public interface FieldEvents {
      * class really will send the events, or if it just defines the methods to
      * be able to implement an interface.
      * </p>
-     * 
+     *
      * @since 6.2
      * @see FocusListener
      * @see FocusEvent
@@ -53,7 +53,7 @@ public interface FieldEvents {
         /**
          * Adds a <code>FocusListener</code> to the Component which gets fired
          * when a <code>Field</code> receives keyboard focus.
-         * 
+         *
          * @param listener
          * @see FocusListener
          * @since 6.2
@@ -69,7 +69,7 @@ public interface FieldEvents {
 
         /**
          * Removes a <code>FocusListener</code> from the Component.
-         * 
+         *
          * @param listener
          * @see FocusListener
          * @since 6.2
@@ -96,7 +96,7 @@ public interface FieldEvents {
      * class really will send the events, or if it just defines the methods to
      * be able to implement an interface.
      * </p>
-     * 
+     *
      * @since 6.2
      * @see BlurListener
      * @see BlurEvent
@@ -105,7 +105,7 @@ public interface FieldEvents {
         /**
          * Adds a <code>BlurListener</code> to the Component which gets fired
          * when a <code>Field</code> loses keyboard focus.
-         * 
+         *
          * @param listener
          * @see BlurListener
          * @since 6.2
@@ -121,7 +121,7 @@ public interface FieldEvents {
 
         /**
          * Removes a <code>BlurListener</code> from the Component.
-         * 
+         *
          * @param listener
          * @see BlurListener
          * @since 6.2
@@ -139,7 +139,7 @@ public interface FieldEvents {
     /**
      * <code>FocusEvent</code> class for holding additional event information.
      * Fired when a <code>Field</code> receives keyboard focus.
-     * 
+     *
      * @since 6.2
      */
     @SuppressWarnings("serial")
@@ -158,7 +158,7 @@ public interface FieldEvents {
     /**
      * <code>FocusListener</code> interface for listening for
      * <code>FocusEvent</code> fired by a <code>Field</code>.
-     * 
+     *
      * @see FocusEvent
      * @since 6.2
      */
@@ -169,7 +169,7 @@ public interface FieldEvents {
 
         /**
          * Component has been focused
-         * 
+         *
          * @param event
          *            Component focus event.
          */
@@ -179,7 +179,7 @@ public interface FieldEvents {
     /**
      * <code>BlurEvent</code> class for holding additional event information.
      * Fired when a <code>Field</code> loses keyboard focus.
-     * 
+     *
      * @since 6.2
      */
     @SuppressWarnings("serial")
@@ -198,7 +198,7 @@ public interface FieldEvents {
     /**
      * <code>BlurListener</code> interface for listening for
      * <code>BlurEvent</code> fired by a <code>Field</code>.
-     * 
+     *
      * @see BlurEvent
      * @since 6.2
      */
@@ -209,7 +209,7 @@ public interface FieldEvents {
 
         /**
          * Component has been blurred
-         * 
+         *
          * @param event
          *            Component blur event.
          */

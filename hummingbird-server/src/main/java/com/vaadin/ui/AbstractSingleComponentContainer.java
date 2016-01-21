@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -24,10 +24,10 @@ import com.vaadin.server.VaadinSession;
 /**
  * Abstract base class for component containers that have only one child
  * component.
- * 
+ *
  * For component containers that support multiple children, inherit
  * {@link AbstractComponentContainer} instead of this class.
- * 
+ *
  * @since 7.0
  */
 public abstract class AbstractSingleComponentContainer extends AbstractComponent
@@ -84,7 +84,7 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
      * Fires the component attached event. This is called by the
      * {@link #setContent(Component)} method after the component has been set as
      * the content.
-     * 
+     *
      * @param component
      *            the component that has been added to this container.
      */
@@ -96,7 +96,7 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
      * Fires the component detached event. This is called by the
      * {@link #setContent(Component)} method after the content component has
      * been replaced by other content.
-     * 
+     *
      * @param component
      *            the component that has been removed from this container.
      */
@@ -112,13 +112,13 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
     /**
      * Sets the content of this container. The content is a component that
      * serves as the outermost item of the visual contents.
-     * 
+     *
      * The content must always be set, either with a constructor parameter or by
      * calling this method.
-     * 
+     *
      * Previous versions of Vaadin used a {@link VerticalLayout} with margins
      * enabled as the default content but that is no longer the case.
-     * 
+     *
      * @param content
      *            a component (typically a layout) to use as content
      */
@@ -152,7 +152,7 @@ public abstract class AbstractSingleComponentContainer extends AbstractComponent
 
     /**
      * Utility method for removing a component from its parent (if possible).
-     * 
+     *
      * @param content
      *            component to remove
      */

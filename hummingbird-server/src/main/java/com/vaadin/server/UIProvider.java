@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -42,7 +42,7 @@ public abstract class UIProvider implements Serializable {
      * Helper to get an annotation for a class. If the annotation is not present
      * on the target class, its super classes and implemented interfaces are
      * also searched for the annotation.
-     * 
+     *
      * @param clazz
      *            the class from which the annotation should be found
      * @param annotationType
@@ -90,13 +90,13 @@ public abstract class UIProvider implements Serializable {
      * <p>
      * The default implementation uses the @{@link Push} annotation if it's
      * defined for the UI class.
-     * 
+     *
      * @param event
      *            the UI create event with information about the UI and the
      *            current request.
      * @return the push mode to use, or <code>null</code> if the default push
      *         mode should be used
-     * 
+     *
      */
     public PushMode getPushMode(UICreateEvent event) {
         Push push = getAnnotationFor(event.getUIClass(), Push.class);
@@ -113,7 +113,7 @@ public abstract class UIProvider implements Serializable {
      * <p>
      * The default implementation uses the @{@link Push} annotation if it's
      * defined for the UI class.
-     * 
+     *
      * @param event
      *            the UI create event with information about the UI and the
      *            current request.

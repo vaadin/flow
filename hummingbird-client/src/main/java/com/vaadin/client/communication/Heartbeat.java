@@ -1,12 +1,12 @@
 /*
  * Copyright 2000-2014 Vaadin Ltd.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -30,7 +30,7 @@ import com.vaadin.shared.util.SharedUtil;
 
 /**
  * Handles sending of heartbeats to the server and reacting to the response
- * 
+ *
  * @since 7.2
  * @author Vaadin Ltd
  */
@@ -49,7 +49,7 @@ public class Heartbeat {
 
     /**
      * Initializes the heartbeat for the given application connection
-     * 
+     *
      * @param connection
      *            the connection
      */
@@ -147,7 +147,7 @@ public class Heartbeat {
 
     /**
      * Changes the heartbeatInterval in runtime and applies it.
-     * 
+     *
      * @param heartbeatInterval
      *            new interval in seconds.
      */
