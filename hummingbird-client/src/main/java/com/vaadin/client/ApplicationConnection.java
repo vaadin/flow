@@ -111,7 +111,7 @@ public class ApplicationConnection implements HasHandlers {
     public static class RequestStartingEvent
             extends ApplicationConnectionEvent {
 
-        public static Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
+        public static final Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
 
         public RequestStartingEvent(ApplicationConnection connection) {
             super(connection);
@@ -131,7 +131,7 @@ public class ApplicationConnection implements HasHandlers {
     public static class ResponseHandlingEndedEvent
             extends ApplicationConnectionEvent {
 
-        public static Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
+        public static final Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
 
         public ResponseHandlingEndedEvent(ApplicationConnection connection) {
             super(connection);
@@ -170,7 +170,7 @@ public class ApplicationConnection implements HasHandlers {
             super(connection);
         }
 
-        public static Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
+        public static final Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
 
         @Override
         public Type<CommunicationHandler> getAssociatedType() {
@@ -198,7 +198,7 @@ public class ApplicationConnection implements HasHandlers {
     public static class ApplicationStoppedEvent
             extends GwtEvent<ApplicationStoppedHandler> {
 
-        public static Type<ApplicationStoppedHandler> TYPE = new Type<ApplicationStoppedHandler>();
+        public static final Type<ApplicationStoppedHandler> TYPE = new Type<ApplicationStoppedHandler>();
 
         @Override
         public Type<ApplicationStoppedHandler> getAssociatedType() {
