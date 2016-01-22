@@ -18,8 +18,6 @@ package com.vaadin.shared.communication;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.util.SharedUtil;
-
 import elemental.json.JsonArray;
 
 /**
@@ -87,29 +85,4 @@ public class MethodInvocation implements Serializable {
         return connectorId + "-" + getInterfaceName() + "-" + getMethodName();
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof MethodInvocation)) {
-            return false;
-        }
-        MethodInvocation other = (MethodInvocation) obj;
-        if (!SharedUtil.equals(getConnectorId(), other.getConnectorId())) {
-            return false;
-        }
-
-        if (!SharedUtil.equals(getInterfaceName(), other.getInterfaceName())) {
-            return false;
-        }
-
-        if (!SharedUtil.equals(getMethodName(), other.getMethodName())) {
-            return false;
-        }
-
-        if (!SharedUtil.equals(getParameters(), other.getParameters())) {
-            return false;
-        }
-
-        return true;
-
-    }
 }

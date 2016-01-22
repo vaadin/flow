@@ -6,10 +6,7 @@ import com.vaadin.data.Property;
 import com.vaadin.data.util.ObjectProperty;
 import com.vaadin.data.util.PropertysetItem;
 
-import junit.framework.TestCase;
-
-public abstract class AbstractFilterTestBase<FILTERTYPE extends Filter>
-        extends TestCase {
+public abstract class AbstractFilterTestBase<FILTERTYPE extends Filter> {
 
     protected static final String PROPERTY1 = "property1";
     protected static final String PROPERTY2 = "property2";

@@ -367,8 +367,10 @@ public class SQLContainer implements Container, Container.Filterable,
                 getLogger().log(Level.SEVERE, "Failed to roll back state", e1);
             }
             try {
-                rs.getStatement().close();
-                rs.close();
+                if (rs != null) {
+                    rs.getStatement().close();
+                    rs.close();
+                }
             } catch (SQLException e1) {
                 getLogger().log(Level.WARNING, "Closing session failed", e1);
             }

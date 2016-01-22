@@ -491,9 +491,11 @@ public class VaadinServlet extends HttpServlet implements Constants {
                 // Explicitly close the input stream to prevent it
                 // from remaining hanging
                 // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4257700
-                InputStream is = connection.getInputStream();
-                if (is != null) {
-                    is.close();
+                if (connection != null) {
+                    InputStream is = connection.getInputStream();
+                    if (is != null) {
+                        is.close();
+                    }
                 }
             } catch (FileNotFoundException e) {
                 // Not logging when the file does not exist.
@@ -600,7 +602,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
             if (length >= 0) {
                 response.setContentLength(length);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             // This can be ignored, content length header is not required.
             // Need to close the input stream because of
             // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4257700 to

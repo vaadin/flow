@@ -207,7 +207,7 @@ public class NestedMethodProperty<T> extends AbstractProperty<T> {
                 }
             }
             return (T) object;
-        } catch (final Throwable e) {
+        } catch (final Exception e) {
             throw new MethodException(this, e);
         }
     }
