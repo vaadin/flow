@@ -226,7 +226,7 @@ public abstract class AbstractField<T> extends AbstractComponent
                     valueWasModifiedByDataSourceDuringCommit = false;
                     committingValueToDataSource = true;
                     getPropertyDataSource().setValue(getConvertedValue());
-                } catch (final Throwable e) {
+                } catch (final Exception e) {
 
                     // Sets the buffering state.
                     SourceException sourceException = new Buffered.SourceException(
@@ -442,7 +442,7 @@ public abstract class AbstractField<T> extends AbstractComponent
                     newFieldValue = doubleConvertedFieldValue;
                     repaintIsNotNeeded = false;
                 }
-            } catch (Throwable t) {
+            } catch (Exception t) {
                 // Ignore exceptions in the conversion at this stage. Any
                 // conversion error will be handled later by validate().
             }
@@ -482,7 +482,7 @@ public abstract class AbstractField<T> extends AbstractComponent
                     // The buffer is now unmodified
                     setModified(false);
 
-                } catch (final Throwable e) {
+                } catch (final Exception e) {
 
                     // Sets the buffering state
                     currentBufferedSourceException = new Buffered.SourceException(
@@ -599,7 +599,7 @@ public abstract class AbstractField<T> extends AbstractComponent
             if (getCurrentBufferedSourceException() != null) {
                 setCurrentBufferedSourceException(null);
             }
-        } catch (final Throwable e) {
+        } catch (final Exception e) {
             setCurrentBufferedSourceException(
                     new Buffered.SourceException(this, e));
             setModified(true);
@@ -1498,7 +1498,7 @@ public abstract class AbstractField<T> extends AbstractComponent
                 if (getCurrentBufferedSourceException() != null) {
                     setCurrentBufferedSourceException(null);
                 }
-            } catch (final Throwable e) {
+            } catch (final Exception e) {
                 // FIXME: What should really be done here if conversion fails?
 
                 // Sets the buffering state

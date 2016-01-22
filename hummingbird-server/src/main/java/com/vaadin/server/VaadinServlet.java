@@ -600,7 +600,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
             if (length >= 0) {
                 response.setContentLength(length);
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             // This can be ignored, content length header is not required.
             // Need to close the input stream because of
             // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4257700 to

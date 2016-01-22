@@ -1325,7 +1325,7 @@ public abstract class VaadinService implements Serializable {
 
         } catch (final SessionExpiredException e) {
             handleSessionExpired(request, response);
-        } catch (final Throwable e) {
+        } catch (final Exception e) {
             handleExceptionDuringRequest(request, response, vaadinSession, e);
         } finally {
             requestEnd(request, response, vaadinSession);
@@ -1333,7 +1333,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void handleExceptionDuringRequest(VaadinRequest request,
-            VaadinResponse response, VaadinSession vaadinSession, Throwable t)
+            VaadinResponse response, VaadinSession vaadinSession, Exception t)
                     throws ServiceException {
         if (vaadinSession != null) {
             vaadinSession.lock();

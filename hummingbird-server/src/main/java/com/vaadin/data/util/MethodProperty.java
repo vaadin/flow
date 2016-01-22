@@ -592,7 +592,7 @@ public class MethodProperty<T> extends AbstractProperty<T> {
             } else {
                 return (T) getMethod.invoke(instance, getArgs);
             }
-        } catch (final Throwable e) {
+        } catch (Exception e) {
             throw new MethodException(this, e);
         }
     }
