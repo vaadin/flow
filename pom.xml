@@ -31,7 +31,7 @@
         </licenses>
         <scm>
                 <connection>scm:https:https://github.com/vaadin/hummingbird.git</connection>
-                <developerConnection>scm:https:https://github.com/vaadin/hummingbird.git</developerConnection>
+                <developerConnection>scm:git:git@github.com:vaadin/hummingbird.git</developerConnection>
                 <url>https://github.com/vaadin/hummingbird</url>
         </scm>
 
