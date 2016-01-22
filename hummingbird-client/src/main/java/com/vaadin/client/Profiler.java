@@ -245,7 +245,7 @@ public class Profiler {
         private static double roundToSignificantFigures(double num) {
             // Number of significant digits
             int n = 3;
-            if (num == 0) {
+            if (num < 0.0005) {
                 return 0;
             }
 
