@@ -351,7 +351,7 @@ public class SQLContainer implements Container, Container.Filterable,
                     }
                     id = new RowId(itemId);
                 }
-                if (id != null && !removedItems.containsKey(id)) {
+                if (!removedItems.containsKey(id)) {
                     ids.add(id);
                 }
             }
