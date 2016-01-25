@@ -471,7 +471,7 @@ public class GeneratedPropertyContainer extends AbstractContainer
     @Override
     public void sort(Object[] propertyId, boolean[] ascending) {
         if (sortableContainer == null) {
-            new UnsupportedOperationException(
+            throw new UnsupportedOperationException(
                     "Wrapped container is not Sortable");
         }
 
@@ -521,8 +521,7 @@ public class GeneratedPropertyContainer extends AbstractContainer
     @Override
     public Collection<?> getSortableContainerPropertyIds() {
         if (sortableContainer == null) {
-            new UnsupportedOperationException(
-                    "Wrapped container is not Sortable");
+            return Collections.emptyList();
         }
 
         Set<Object> sortablePropertySet = new HashSet<Object>(
