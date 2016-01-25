@@ -16,10 +16,10 @@
 package com.vaadin.data.util.filter;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Item;
-import com.vaadin.shared.util.SharedUtil;
 
 public class Between implements Filter {
 
@@ -84,12 +84,11 @@ public class Between implements Filter {
         final Between o = (Between) obj;
 
         // Checks the properties one by one
-        boolean propertyIdEqual = SharedUtil.equals(getPropertyId(),
+        boolean propertyIdEqual = Objects.equals(getPropertyId(),
                 o.getPropertyId());
-        boolean startValueEqual = SharedUtil.equals(getStartValue(),
+        boolean startValueEqual = Objects.equals(getStartValue(),
                 o.getStartValue());
-        boolean endValueEqual = SharedUtil.equals(getEndValue(),
-                o.getEndValue());
+        boolean endValueEqual = Objects.equals(getEndValue(), o.getEndValue());
         return propertyIdEqual && startValueEqual && endValueEqual;
 
     }

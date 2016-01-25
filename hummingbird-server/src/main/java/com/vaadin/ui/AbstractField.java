@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Logger;
 
 import com.vaadin.data.Buffered;
@@ -39,7 +40,6 @@ import com.vaadin.server.AbstractErrorMessage;
 import com.vaadin.server.CompositeErrorMessage;
 import com.vaadin.server.ErrorMessage;
 import com.vaadin.shared.AbstractFieldState;
-import com.vaadin.shared.util.SharedUtil;
 
 /**
  * <p>
@@ -428,7 +428,7 @@ public abstract class AbstractField<T> extends AbstractComponent
             boolean ignoreReadOnly) throws Property.ReadOnlyException,
                     Converter.ConversionException, InvalidValueException {
 
-        if (!SharedUtil.equals(newFieldValue, getInternalValue())) {
+        if (!Objects.equals(newFieldValue, getInternalValue())) {
 
             // Read only fields can not be changed
             if (!ignoreReadOnly && isReadOnly()) {
@@ -437,8 +437,7 @@ public abstract class AbstractField<T> extends AbstractComponent
             try {
                 T doubleConvertedFieldValue = convertFromModel(
                         convertToModel(newFieldValue));
-                if (!SharedUtil.equals(newFieldValue,
-                        doubleConvertedFieldValue)) {
+                if (!Objects.equals(newFieldValue, doubleConvertedFieldValue)) {
                     newFieldValue = doubleConvertedFieldValue;
                     repaintIsNotNeeded = false;
                 }
@@ -1178,7 +1177,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     public void valueChange(Property.ValueChangeEvent event) {
         if (!isBuffered()) {
             if (committingValueToDataSource) {
-                boolean propertyNotifiesOfTheBufferedValue = SharedUtil.equals(
+                boolean propertyNotifiesOfTheBufferedValue = Objects.equals(
                         event.getProperty().getValue(), getInternalValue());
                 if (!propertyNotifiesOfTheBufferedValue) {
                     /*
@@ -1295,7 +1294,7 @@ public abstract class AbstractField<T> extends AbstractComponent
     }
 
     private void localeMightHaveChanged() {
-        if (!SharedUtil.equals(valueLocale, getLocale())) {
+        if (!Objects.equals(valueLocale, getLocale())) {
             // The locale HAS actually changed
 
             if (dataSource != null && !isModified()) {
@@ -1303,7 +1302,7 @@ public abstract class AbstractField<T> extends AbstractComponent
                 // read from that we want to update the value
                 T newInternalValue = convertFromModel(
                         getPropertyDataSource().getValue());
-                if (!SharedUtil.equals(newInternalValue, getInternalValue())) {
+                if (!Objects.equals(newInternalValue, getInternalValue())) {
                     setInternalValue(newInternalValue);
                     fireValueChange(false);
                 }
@@ -1319,7 +1318,7 @@ public abstract class AbstractField<T> extends AbstractComponent
                 Object convertedValue = convertToModel(getInternalValue(),
                         valueLocale);
                 T newinternalValue = convertFromModel(convertedValue);
-                if (!SharedUtil.equals(getInternalValue(), newinternalValue)) {
+                if (!Objects.equals(getInternalValue(), newinternalValue)) {
                     setInternalValue(newinternalValue);
                     fireValueChange(false);
                 }
@@ -1514,7 +1513,7 @@ public abstract class AbstractField<T> extends AbstractComponent
             setModified(false);
 
             // If the new value differs from the previous one
-            if (!SharedUtil.equals(newFieldValue, getInternalValue())) {
+            if (!Objects.equals(newFieldValue, getInternalValue())) {
                 setInternalValue(newFieldValue);
                 fireValueChange(false);
             } else if (wasModified) {
