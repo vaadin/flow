@@ -21,8 +21,6 @@ import java.io.ObjectInputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -37,6 +35,8 @@ import org.atmosphere.util.Version;
 
 import com.vaadin.shared.communication.PushConstants;
 import com.vaadin.ui.UI;
+
+import elemental.json.JsonObject;
 
 /**
  * A {@link PushConnection} implementation using the Atmosphere push support
@@ -164,9 +164,9 @@ public class AtmospherePushConnection implements PushConnection {
             }
         } else {
             try {
-                Writer writer = new StringWriter();
-                new UidlWriter().write(getUI(), writer, async);
-                sendMessage("for(;;);[{" + writer.toString() + "}]");
+                JsonObject response = new UidlWriter().createUidl(getUI(),
+                        async);
+                sendMessage("for(;;);[" + response.toJson() + "]");
             } catch (Exception e) {
                 throw new RuntimeException("Push failed", e);
             }
