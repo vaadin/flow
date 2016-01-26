@@ -62,7 +62,7 @@ public final class RowItem implements Item {
 
     @Override
     public Property getItemProperty(Object id) {
-        if (id instanceof String && id != null) {
+        if (id != null && id instanceof String) {
             for (ColumnProperty cp : properties) {
                 if (id.equals(cp.getPropertyId())) {
                     return cp;
