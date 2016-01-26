@@ -186,7 +186,7 @@
 				var widgetset = getConfig('widgetset');
 				var widgetsetUrl = getConfig('widgetsetUrl');
 				if (!widgetsetUrl) {
-					widgetsetUrl = vaadinDir + 'widgetsets/' + widgetset + "/" + widgetset + ".nocache.js?" + new Date().getTime();
+					widgetsetUrl = vaadinDir + widgetset + "/" + widgetset + ".nocache.js?" + new Date().getTime();
 				}
 				loadWidgetset(widgetsetUrl, widgetset);
 				

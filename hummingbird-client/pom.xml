@@ -12,8 +12,8 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<gwt.module>com.vaadin.DefaultWidgetSet</gwt.module>
-		<gwt.module.output>${project.build.outputDirectory}/VAADIN/widgetsets</gwt.module.output>
+		<gwt.module>com.vaadin.ClientEngine</gwt.module>
+		<gwt.module.output>${project.build.outputDirectory}/VAADIN</gwt.module.output>
 		<gwt.module.style>OBF</gwt.module.style>
 	</properties>
 
@@ -129,7 +129,7 @@
 		<profile>
 			<id>sdm</id>
 			<properties>
-				<gwt.module>com.vaadin.DefaultWidgetSet</gwt.module>
+				<gwt.module>com.vaadin.ClientEngine</gwt.module>
 			</properties>
 		</profile>
 	</profiles>
