@@ -18,7 +18,6 @@ package com.vaadin.server.communication;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -237,39 +236,20 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
      * @return a string with the initial UIDL message
      * @throws IOException
      */
-    protected String getInitialUidl(VaadinRequest request, UI uI)
-            throws IOException {
-        StringWriter writer = new StringWriter();
-        try {
-            writer.write("{");
+    protected String getInitialUidl(VaadinRequest request, UI uI) {
 
-            VaadinSession session = uI.getSession();
-            if (session.getConfiguration().isXsrfProtectionEnabled()) {
-                writer.write(getSecurityKeyUIDL(session));
-            }
-            new UidlWriter().write(uI, writer, false);
-            writer.write("}");
+        JsonObject response = new UidlWriter().write(uI, false);
 
-            String initialUIDL = writer.toString();
-            getLogger().log(Level.FINE, "Initial UIDL:" + initialUIDL);
-            return initialUIDL;
-        } finally {
-            writer.close();
+        VaadinSession session = uI.getSession();
+        if (session.getConfiguration().isXsrfProtectionEnabled()) {
+
+            String seckey = session.getCsrfToken();
+            response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
         }
-    }
 
-    /**
-     * Gets the security key (and generates one if needed) as UIDL.
-     *
-     * @param session
-     *            the vaadin session to which the security key belongs
-     * @return the security key UIDL or "" if the feature is turned off
-     */
-    private static String getSecurityKeyUIDL(VaadinSession session) {
-        String seckey = session.getCsrfToken();
-
-        return "\"" + ApplicationConstants.UIDL_SECURITY_TOKEN_ID + "\":\""
-                + seckey + "\",";
+        String initialUIDL = response.toJson();
+        getLogger().log(Level.FINE, "Initial UIDL:" + initialUIDL);
+        return initialUIDL;
     }
 
     private static final Logger getLogger() {
