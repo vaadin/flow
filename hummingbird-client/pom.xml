@@ -71,7 +71,7 @@
 				<version>2.12.4</version>
 				<configuration>
 					<excludes>
-						<exclude>**/*.java</exclude>
+						<exclude>**/Gwt*.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
