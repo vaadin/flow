@@ -573,7 +573,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         appConfig.put("versionInfo", versionInfo);
-        appConfig.put("widgetset", Constants.DEFAULT_WIDGETSET);
 
         // Use locale from session if set, else from the request
         Locale locale = ServletPortletHelper.findLocale(null,
