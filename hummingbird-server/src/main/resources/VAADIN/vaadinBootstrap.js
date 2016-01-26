@@ -183,10 +183,10 @@
 				
 				var versionInfo = getConfig('versionInfo');
 				
-				var widgetset = getConfig('widgetset');
+				var widgetset = "com.vaadin.ClientEngine";
 				var widgetsetUrl = getConfig('widgetsetUrl');
 				if (!widgetsetUrl) {
-					widgetsetUrl = vaadinDir + 'widgetsets/' + widgetset + "/" + widgetset + ".nocache.js?" + new Date().getTime();
+					widgetsetUrl = vaadinDir + "client/" + widgetset + "/" + widgetset + ".nocache.js?" + new Date().getTime();
 				}
 				loadWidgetset(widgetsetUrl, widgetset);
 				

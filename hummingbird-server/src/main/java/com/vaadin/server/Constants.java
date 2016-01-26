@@ -128,13 +128,7 @@ public interface Constants {
 
     static final int DEFAULT_THEME_CACHETIME = 1000 * 60 * 60 * 24;
 
-    static final String WIDGETSET_DIR_PATH = "VAADIN/widgetsets";
-
-    // Name of the default widget set, used if not specified in web.xml
-    static final String DEFAULT_WIDGETSET = "com.vaadin.DefaultWidgetSet";
-
-    // Widget set parameter name
-    static final String PARAMETER_WIDGETSET = "widgetset";
+    static final String WIDGETSET_DIR_PATH = "VAADIN/client";
 
     static final String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
 
