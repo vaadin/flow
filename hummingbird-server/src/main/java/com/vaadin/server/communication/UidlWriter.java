@@ -16,9 +16,7 @@
 
 package com.vaadin.server.communication;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -44,7 +42,8 @@ import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
-import elemental.json.impl.JsonUtil;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Serializes pending server-side changes to UI state to JSON. This includes
@@ -57,22 +56,18 @@ import elemental.json.impl.JsonUtil;
 public class UidlWriter implements Serializable {
 
     /**
-     * Writes a JSON object containing all pending changes to the given UI.
+     * Creates a JSON object containing all pending changes to the given UI.
      *
      * @param ui
      *            The {@link UI} whose changes to write
-     * @param writer
-     *            The writer to use
-     * @param analyzeLayouts
-     *            Whether detected layout problems should be logged.
      * @param async
      *            True if this message is sent by the server asynchronously,
      *            false if it is a response to a client message.
-     *
-     * @throws IOException
-     *             If the writing fails.
+     * @return JSON object containing the UIDL response
      */
-    public void write(UI ui, Writer writer, boolean async) throws IOException {
+    public JsonObject write(UI ui, boolean async) {
+        JsonObject response = Json.createObject();
+
         VaadinSession session = ui.getSession();
         VaadinService service = session.getService();
 
@@ -125,35 +120,23 @@ public class UidlWriter implements Serializable {
             int syncId = service.getDeploymentConfiguration()
                     .isSyncIdCheckEnabled()
                             ? uiConnectorTracker.getCurrentSyncId() : -1;
-            writer.write("\"" + ApplicationConstants.SERVER_SYNC_ID + "\": "
-                    + syncId + ", ");
+            response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
             if (repaintAll) {
-                writer.write("\"" + ApplicationConstants.RESYNCHRONIZE_ID
-                        + "\": true, ");
+                response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
             }
             int nextClientToServerMessageId = ui
                     .getLastProcessedClientToServerId() + 1;
-            writer.write("\"" + ApplicationConstants.CLIENT_TO_SERVER_ID
-                    + "\": " + nextClientToServerMessageId + ", ");
-
-            // send server to client RPC calls for components in the UI, in call
-            // order
-
-            // collect RPC calls from components in the UI in the order in
-            // which they were performed, remove the calls from components
-
-            writer.write("\"rpc\" : ");
-            new ClientRpcWriter().write(ui, writer);
-            writer.write(", "); // close rpc
+            response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
+                    nextClientToServerMessageId);
 
             uiConnectorTracker.markAllConnectorsClean();
-
-            writer.write("\"meta\" : ");
 
             SystemMessages messages = ui.getSession().getService()
                     .getSystemMessages(ui.getLocale(), null);
             // TODO hilightedConnector
-            new MetadataWriter().write(ui, writer, repaintAll, async, messages);
+            JsonObject meta = new MetadataWriter().write(ui, repaintAll, async,
+                    messages);
+            response.put("meta", meta);
 
             Set<Class<? extends Component>> usedComponents = new HashSet<Class<? extends Component>>();
             findClientConnectors(ui, usedComponents);
@@ -216,14 +199,14 @@ public class UidlWriter implements Serializable {
 
             // Include script dependencies in output if there are any
             if (!scriptDependencies.isEmpty()) {
-                writer.write(", \"scriptDependencies\": "
-                        + JsonUtil.stringify(toJsonArray(scriptDependencies)));
+                response.put("scriptDependencies",
+                        toJsonArray(scriptDependencies));
             }
 
             // Include style dependencies in output if there are any
             if (!styleDependencies.isEmpty()) {
-                writer.write(", \"styleDependencies\": "
-                        + JsonUtil.stringify(toJsonArray(styleDependencies)));
+                response.put("styleDependencies",
+                        toJsonArray(styleDependencies));
             }
 
             for (ClientConnector connector : processedConnectors) {
@@ -233,7 +216,9 @@ public class UidlWriter implements Serializable {
             assert (uiConnectorTracker.getDirtyConnectors()
                     .isEmpty()) : "Connectors have been marked as dirty during the end of the paint phase. This is most certainly not intended.";
 
-            writePerformanceData(ui, writer);
+            response.put("timings", getPerformanceData(ui));
+
+            return response;
         } finally {
             uiConnectorTracker.setWritingResponse(false);
             uiConnectorTracker.cleanConnectorMap();
@@ -263,13 +248,12 @@ public class UidlWriter implements Serializable {
     /**
      * Adds the performance timing data (used by TestBench 3) to the UIDL
      * response.
-     *
-     * @throws IOException
      */
-    private void writePerformanceData(UI ui, Writer writer) throws IOException {
-        writer.write(String.format(", \"timings\":[%d, %d]",
-                ui.getSession().getCumulativeRequestDuration(),
-                ui.getSession().getLastRequestDuration()));
+    private JsonValue getPerformanceData(UI ui) {
+        JsonArray timings = Json.createArray();
+        timings.set(0, ui.getSession().getCumulativeRequestDuration());
+        timings.set(1, ui.getSession().getLastRequestDuration());
+        return timings;
     }
 
     private static final Logger getLogger() {

@@ -35,6 +35,7 @@ import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonException;
+import elemental.json.JsonObject;
 
 /**
  * Processes a UIDL request from the client.
@@ -108,28 +109,11 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     private void writeUidl(VaadinRequest request, VaadinResponse response,
             UI ui, Writer writer) throws IOException {
-        openJsonMessage(writer, response);
+        JsonObject uidl = new UidlWriter().write(ui, false);
 
-        new UidlWriter().write(ui, writer, false);
-
-        closeJsonMessage(writer);
-    }
-
-    protected void closeJsonMessage(Writer outWriter) throws IOException {
-        outWriter.write("}]");
-    }
-
-    /**
-     * Writes the opening of JSON message to be sent to client.
-     *
-     * @param outWriter
-     * @param response
-     * @throws IOException
-     */
-    protected void openJsonMessage(Writer outWriter, VaadinResponse response)
-            throws IOException {
         // some dirt to prevent cross site scripting
-        outWriter.write("for(;;);[{");
+        String responseString = "for(;;);[" + uidl.toJson() + "]";
+        writer.write(responseString);
     }
 
     private static final Logger getLogger() {

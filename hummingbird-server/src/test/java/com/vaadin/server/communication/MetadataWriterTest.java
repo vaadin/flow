@@ -19,7 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.StringWriter;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,11 +30,12 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WrappedSession;
 import com.vaadin.ui.UI;
 
+import elemental.json.JsonObject;
+
 public class MetadataWriterTest {
 
     private UI ui;
     private VaadinSession session;
-    private StringWriter writer;
     private SystemMessages messages;
 
     @Before
@@ -43,7 +43,6 @@ public class MetadataWriterTest {
         ui = Mockito.mock(UI.class);
         session = Mockito.mock(VaadinSession.class);
         Mockito.when(ui.getSession()).thenReturn(session);
-        writer = new StringWriter();
         messages = Mockito.mock(SystemMessages.class);
     }
 
@@ -55,30 +54,30 @@ public class MetadataWriterTest {
 
     @Test
     public void writeAsyncTag() throws Exception {
-        new MetadataWriter().write(ui, writer, false, true, messages);
-        Assert.assertEquals("{\"async\":true}", writer.getBuffer().toString());
+        JsonObject meta = new MetadataWriter().write(ui, false, true, messages);
+        Assert.assertEquals("{\"async\":true}", meta.toJson());
     }
 
     @Test
     public void writeRepaintTag() throws Exception {
-        new MetadataWriter().write(ui, writer, true, false, messages);
-        Assert.assertEquals("{\"repaintAll\":true}",
-                writer.getBuffer().toString());
+        JsonObject meta = new MetadataWriter().write(ui, true, false, messages);
+        Assert.assertEquals("{\"repaintAll\":true}", meta.toJson());
     }
 
     @Test
     public void writeRepaintAndAsyncTag() throws Exception {
-        new MetadataWriter().write(ui, writer, true, true, messages);
-        Assert.assertEquals("{\"repaintAll\":true, \"async\":true}",
-                writer.getBuffer().toString());
+        JsonObject meta = new MetadataWriter().write(ui, true, true, messages);
+        Assert.assertEquals("{\"repaintAll\":true,\"async\":true}",
+                meta.toJson());
     }
 
     @Test
     public void writeRedirectWithExpiredSession() throws Exception {
         disableSessionExpirationMessages(messages);
 
-        new MetadataWriter().write(ui, writer, false, false, messages);
-        Assert.assertEquals("{}", writer.getBuffer().toString());
+        JsonObject meta = new MetadataWriter().write(ui, false, false,
+                messages);
+        Assert.assertEquals("{}", meta.toJson());
     }
 
     @Test
@@ -88,10 +87,11 @@ public class MetadataWriterTest {
 
         disableSessionExpirationMessages(messages);
 
-        new MetadataWriter().write(ui, writer, false, false, messages);
+        JsonObject meta = new MetadataWriter().write(ui, false, false,
+                messages);
         Assert.assertEquals(
                 "{\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}",
-                writer.getBuffer().toString());
+                meta.toJson());
     }
 
     @Test
@@ -101,9 +101,9 @@ public class MetadataWriterTest {
 
         disableSessionExpirationMessages(messages);
 
-        new MetadataWriter().write(ui, writer, false, true, messages);
+        JsonObject meta = new MetadataWriter().write(ui, false, true, messages);
         Assert.assertEquals(
                 "{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}",
-                writer.getBuffer().toString());
+                meta.toJson());
     }
 }

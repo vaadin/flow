@@ -16,12 +16,13 @@
 
 package com.vaadin.server.communication;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.Writer;
 
 import com.vaadin.server.SystemMessages;
 import com.vaadin.ui.UI;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Serializes miscellaneous metadata to JSON.
@@ -34,44 +35,31 @@ public class MetadataWriter implements Serializable {
     private int timeoutInterval = -1;
 
     /**
-     * Writes a JSON object containing metadata related to the given UI.
+     * Creates a JSON object containing metadata related to the given UI.
      *
      * @param ui
      *            The UI whose metadata to write.
-     * @param writer
-     *            The writer used.
      * @param repaintAll
      *            Whether the client should repaint everything.
-     * @param analyzeLayouts
-     *            Whether detected layout problems should be reported in client
-     *            and server console.
      * @param async
      *            True if this message is sent by the server asynchronously,
      *            false if it is a response to a client message.
      * @param messages
      *            a {@link SystemMessages} containing client-side error
      *            messages.
-     * @throws IOException
-     *             If the serialization fails.
+     * @return JSON object with the metadata
      *
      */
-    public void write(UI ui, Writer writer, boolean repaintAll, boolean async,
-            SystemMessages messages) throws IOException {
+    public JsonObject write(UI ui, boolean repaintAll, boolean async,
+            SystemMessages messages) {
+        JsonObject meta = Json.createObject();
 
-        writer.write("{");
-
-        boolean metaOpen = false;
         if (repaintAll) {
-            metaOpen = true;
-            writer.write("\"repaintAll\":true");
+            meta.put("repaintAll", true);
         }
 
         if (async) {
-            if (metaOpen) {
-                writer.write(", ");
-            }
-            metaOpen = true;
-            writer.write("\"async\":true");
+            meta.put("async", true);
         }
 
         // meta instruction for client to enable auto-forward to
@@ -83,18 +71,20 @@ public class MetadataWriter implements Serializable {
             int newTimeoutInterval = ui.getSession().getSession()
                     .getMaxInactiveInterval();
             if (repaintAll || (timeoutInterval != newTimeoutInterval)) {
-                String escapedURL = messages.getSessionExpiredURL() == null ? ""
-                        : messages.getSessionExpiredURL().replace("/", "\\/");
-                if (metaOpen) {
-                    writer.write(",");
+                String url = messages.getSessionExpiredURL();
+                if (url == null) {
+                    url = "";
                 }
-                writer.write("\"timedRedirect\":{\"interval\":"
-                        + (newTimeoutInterval + 15) + ",\"url\":\"" + escapedURL
-                        + "\"}");
-                metaOpen = true;
+
+                JsonObject redirect = Json.createObject();
+                redirect.put("interval", newTimeoutInterval + 15);
+                redirect.put("url", url);
+
+                meta.put("timedRedirect", redirect);
             }
             timeoutInterval = newTimeoutInterval;
         }
-        writer.write("}");
+
+        return meta;
     }
 }
