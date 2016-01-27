@@ -16,14 +16,32 @@ import com.vaadin.hummingbird.change.NodeChange;
  * @author Vaadin Ltd
  */
 public abstract class Namespace implements Serializable {
-    private static Map<Class<? extends Namespace>, Function<StateNode, Namespace>> namespaceFactoies = new HashMap<>();
+    private static int nextNamespaceId = 0;
+
+    // Non-private for testing purposes
+    static final Map<Class<? extends Namespace>, NamespaceData> namespaces = new HashMap<>();
+
+    private static class NamespaceData implements Serializable {
+        private Function<StateNode, ? extends Namespace> factory;
+        private int id = nextNamespaceId++;
+
+        public <T extends Namespace> NamespaceData(
+                Function<StateNode, T> factory) {
+            this.factory = factory;
+        }
+    }
+
+    private static <T extends Namespace> void registerNamespace(Class<T> type,
+            Function<StateNode, T> factory) {
+        namespaces.put(type, new NamespaceData(factory));
+    }
 
     static {
-        namespaceFactoies.put(ElementDataNamespace.class,
+        registerNamespace(ElementDataNamespace.class,
                 ElementDataNamespace::new);
-        namespaceFactoies.put(ElementPropertiesNamespace.class,
+        registerNamespace(ElementPropertiesNamespace.class,
                 ElementPropertiesNamespace::new);
-        namespaceFactoies.put(ElementChildrenNamespace.class,
+        registerNamespace(ElementChildrenNamespace.class,
                 ElementChildrenNamespace::new);
     }
 
@@ -59,14 +77,9 @@ public abstract class Namespace implements Serializable {
      */
     public static Namespace create(Class<? extends Namespace> namespaceType,
             StateNode node) {
-        assert namespaceType != null;
         assert node != null;
 
-        Function<StateNode, Namespace> factory = namespaceFactoies
-                .get(namespaceType);
-        assert factory != null;
-
-        return factory.apply(node);
+        return getData(namespaceType).factory.apply(node);
     }
 
     /**
@@ -111,5 +124,26 @@ public abstract class Namespace implements Serializable {
             StateNode childNode = (StateNode) child;
             childNode.setParent(null);
         }
+    }
+
+    /**
+     * Gets the id of a namespace type.
+     *
+     * @param namespace
+     *            the namespace type
+     * @return the id of the namespace type
+     */
+    public static int getId(Class<? extends Namespace> namespace) {
+        return getData(namespace).id;
+    }
+
+    private static NamespaceData getData(Class<? extends Namespace> namespace) {
+        assert namespace != null;
+
+        NamespaceData data = namespaces.get(namespace);
+
+        assert data != null;
+
+        return data;
     }
 }
