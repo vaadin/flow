@@ -13,6 +13,11 @@ public abstract class AbstractNamespaceTest<T extends Namespace> {
     public T createNamespace() {
         Class<T> namespaceType = findNamespaceType();
 
+        return createNamespace(namespaceType);
+    }
+
+    public static <T extends Namespace> T createNamespace(
+            Class<T> namespaceType) {
         StateNode node = new StateNode(Collections.singleton(namespaceType));
 
         return node.getNamespace(namespaceType);
