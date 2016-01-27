@@ -55,6 +55,7 @@ public class ClassesSerializableTest extends TestCase {
             "com\\.vaadin\\.server\\.communication\\.JSONSerializer", //
             // and its inner classes do not need to be serializable
             "com\\.vaadin\\.util\\.SerializerHelper", // fully static
+            "com\\.vaadin\\.util\\.JsonStream.*", // fully static
             // class level filtering, also affecting nested classes and
             // interfaces
             "com\\.vaadin\\.server\\.LegacyCommunicationManager.*", //
