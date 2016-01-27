@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Objects;
 
 import com.vaadin.event.EventRouter;
-import com.vaadin.shared.ui.ui.PageClientRpc;
 import com.vaadin.shared.ui.ui.PageState;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Notification;
@@ -485,7 +484,7 @@ public class Page implements Serializable {
      *            the URI to show
      */
     public void setLocation(String uri) {
-        uI.getRpcProxy(PageClientRpc.class).setLocation(uri);
+        // FIXME Implement
     }
 
     /**
@@ -613,7 +612,7 @@ public class Page implements Serializable {
      * Reloads the page in the browser.
      */
     public void reload() {
-        uI.getRpcProxy(PageClientRpc.class).reload();
+        // FIXME Implement
     }
 
     /**
