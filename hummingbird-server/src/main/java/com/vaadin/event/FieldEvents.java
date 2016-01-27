@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 
 import com.vaadin.shared.EventId;
-import com.vaadin.shared.communication.FieldRpc.FocusAndBlurServerRpc;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentEventListener;
@@ -188,28 +187,6 @@ public interface FieldEvents {
          *            Component blur event.
          */
         public void blur(BlurEvent event);
-    }
-
-    public static abstract class FocusAndBlurServerRpcImpl
-            implements FocusAndBlurServerRpc {
-
-        private Component component;
-
-        public FocusAndBlurServerRpcImpl(Component component) {
-            this.component = component;
-        }
-
-        protected abstract void fireEvent(ComponentEvent event);
-
-        @Override
-        public void blur() {
-            fireEvent(new BlurEvent(component));
-        }
-
-        @Override
-        public void focus() {
-            fireEvent(new FocusEvent(component));
-        }
     }
 
 }

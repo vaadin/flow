@@ -18,7 +18,6 @@ package com.vaadin.ui;
 import com.vaadin.event.FieldEvents.BlurEvent;
 import com.vaadin.event.FieldEvents.BlurListener;
 import com.vaadin.event.FieldEvents.BlurNotifier;
-import com.vaadin.event.FieldEvents.FocusAndBlurServerRpcImpl;
 import com.vaadin.event.FieldEvents.FocusEvent;
 import com.vaadin.event.FieldEvents.FocusListener;
 import com.vaadin.event.FieldEvents.FocusNotifier;
@@ -36,12 +35,6 @@ public abstract class AbstractFocusable extends AbstractComponent
         implements Focusable, FocusNotifier, BlurNotifier {
 
     protected AbstractFocusable() {
-        registerRpc(new FocusAndBlurServerRpcImpl(this) {
-            @Override
-            protected void fireEvent(ComponentEvent event) {
-                AbstractFocusable.this.fireEvent(event);
-            }
-        });
     }
 
     @Override

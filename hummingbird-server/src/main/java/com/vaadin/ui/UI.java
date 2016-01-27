@@ -44,7 +44,6 @@ import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Component.Focusable;
 import com.vaadin.util.CurrentInstance;
@@ -120,31 +119,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     private int scrollLeft = 0;
 
-    private UIServerRpc rpc = new UIServerRpc() {
-        @Override
-        public void click(MouseEventDetails mouseDetails) {
-            fireEvent(new ClickEvent(UI.this, mouseDetails));
-        }
-
-        @Override
-        public void resize(int viewWidth, int viewHeight, int windowWidth,
-                int windowHeight) {
-            // TODO We're not doing anything with the view dimensions
-            getPage().updateBrowserWindowSize(windowWidth, windowHeight, true);
-        }
-
-        @Override
-        public void scroll(int scrollTop, int scrollLeft) {
-            UI.this.scrollTop = scrollTop;
-            UI.this.scrollLeft = scrollLeft;
-        }
-
-        @Override
-        public void poll() {
-            fireEvent(new PollEvent(UI.this));
-        }
-    };
-
     /**
      * Timestamp keeping track of the last heartbeat of this UI. Updated to the
      * current time whenever the application receives a heartbeat or UIDL
@@ -186,7 +160,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @see #setContent(Component)
      */
     public UI(Component content) {
-        registerRpc(rpc);
         setSizeFull();
         setContent(content);
     }
