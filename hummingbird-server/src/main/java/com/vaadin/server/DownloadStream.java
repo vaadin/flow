@@ -264,58 +264,55 @@ public class DownloadStream implements Serializable {
             return;
         }
 
-        if (data != null) {
+        OutputStream out = null;
+        try {
+            // Sets content type
+            response.setContentType(getContentType());
 
-            OutputStream out = null;
-            try {
-                // Sets content type
-                response.setContentType(getContentType());
+            // Sets cache headers
+            response.setCacheTime(getCacheTime());
 
-                // Sets cache headers
-                response.setCacheTime(getCacheTime());
-
-                // Copy download stream parameters directly
-                // to HTTP headers.
-                final Iterator<String> i = getParameterNames();
-                if (i != null) {
-                    while (i.hasNext()) {
-                        final String param = i.next();
-                        response.setHeader(param, getParameter(param));
-                    }
+            // Copy download stream parameters directly
+            // to HTTP headers.
+            final Iterator<String> i = getParameterNames();
+            if (i != null) {
+                while (i.hasNext()) {
+                    final String param = i.next();
+                    response.setHeader(param, getParameter(param));
                 }
-
-                // Content-Disposition: attachment generally forces download
-                String contentDisposition = getParameter(CONTENT_DISPOSITION);
-                if (contentDisposition == null) {
-                    contentDisposition = getContentDispositionFilename(
-                            getFileName());
-                }
-
-                response.setHeader(CONTENT_DISPOSITION, contentDisposition);
-
-                int bufferSize = getBufferSize();
-                if (bufferSize <= 0 || bufferSize > Constants.MAX_BUFFER_SIZE) {
-                    bufferSize = Constants.DEFAULT_BUFFER_SIZE;
-                }
-                final byte[] buffer = new byte[bufferSize];
-                int bytesRead = 0;
-
-                out = response.getOutputStream();
-
-                long totalWritten = 0;
-                while ((bytesRead = data.read(buffer)) > 0) {
-                    out.write(buffer, 0, bytesRead);
-
-                    totalWritten += bytesRead;
-                    if (totalWritten >= buffer.length) {
-                        // Avoid chunked encoding for small resources
-                        out.flush();
-                    }
-                }
-            } finally {
-                tryToCloseStream(out);
-                tryToCloseStream(data);
             }
+
+            // Content-Disposition: attachment generally forces download
+            String contentDisposition = getParameter(CONTENT_DISPOSITION);
+            if (contentDisposition == null) {
+                contentDisposition = getContentDispositionFilename(
+                        getFileName());
+            }
+
+            response.setHeader(CONTENT_DISPOSITION, contentDisposition);
+
+            int bufferSize = getBufferSize();
+            if (bufferSize <= 0 || bufferSize > Constants.MAX_BUFFER_SIZE) {
+                bufferSize = Constants.DEFAULT_BUFFER_SIZE;
+            }
+            final byte[] buffer = new byte[bufferSize];
+            int bytesRead = 0;
+
+            out = response.getOutputStream();
+
+            long totalWritten = 0;
+            while ((bytesRead = data.read(buffer)) > 0) {
+                out.write(buffer, 0, bytesRead);
+
+                totalWritten += bytesRead;
+                if (totalWritten >= buffer.length) {
+                    // Avoid chunked encoding for small resources
+                    out.flush();
+                }
+            }
+        } finally {
+            tryToCloseStream(out);
+            tryToCloseStream(data);
         }
     }
 

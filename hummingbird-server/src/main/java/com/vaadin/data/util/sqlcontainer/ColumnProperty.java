@@ -185,8 +185,11 @@ final public class ColumnProperty implements Property {
     private boolean isValueAlreadySet(Object newValue) {
         Object referenceValue = isModified() ? changedValue : value;
 
-        return (isNullable() && newValue == null && referenceValue == null)
-                || newValue.equals(referenceValue);
+        if (newValue == null) {
+            return isNullable() && referenceValue == null;
+        } else {
+            return newValue.equals(referenceValue);
+        }
     }
 
     @Override

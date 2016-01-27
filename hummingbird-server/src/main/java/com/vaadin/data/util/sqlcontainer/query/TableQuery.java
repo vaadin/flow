@@ -43,6 +43,7 @@ import com.vaadin.data.util.sqlcontainer.TemporaryRowId;
 import com.vaadin.data.util.sqlcontainer.connection.JDBCConnectionPool;
 import com.vaadin.data.util.sqlcontainer.query.generator.DefaultSQLGenerator;
 import com.vaadin.data.util.sqlcontainer.query.generator.MSSQLGenerator;
+import com.vaadin.data.util.sqlcontainer.query.generator.OracleGenerator;
 import com.vaadin.data.util.sqlcontainer.query.generator.SQLGenerator;
 import com.vaadin.data.util.sqlcontainer.query.generator.StatementHelper;
 
@@ -648,7 +649,7 @@ public class TableQuery extends AbstractTransactionalQuery
                 for (String colName : primaryKeyColumns) {
                     if (colName.equalsIgnoreCase("rownum")) {
                         if (getSqlGenerator() instanceof MSSQLGenerator
-                                || getSqlGenerator() instanceof MSSQLGenerator) {
+                                || getSqlGenerator() instanceof OracleGenerator) {
                             throw new IllegalArgumentException(
                                     "When using Oracle or MSSQL, a primary key column"
                                             + " named \'rownum\' is not allowed!");
