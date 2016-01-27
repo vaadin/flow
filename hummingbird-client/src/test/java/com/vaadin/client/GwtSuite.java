@@ -1,6 +1,7 @@
 package com.vaadin.client;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
+import com.vaadin.client.hummingbird.collection.GwtCollectionTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -13,7 +14,7 @@ public class GwtSuite extends GWTTestSuite {
          * module for each test class.
          */
         TestSuite suite = new TestSuite("Hummingbird GWT tests");
-        suite.addTestSuite(GwtExampleTest.class);
+        suite.addTestSuite(GwtCollectionTest.class);
         return suite;
     }
 }
