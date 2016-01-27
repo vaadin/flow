@@ -67,13 +67,6 @@
 		</repository>
 	</repositories>
 
-	<distributionManagement>
-		<repository>
-			<id>internal-snapshot</id>
-			<url>scpexe://vaadin.com/home/vaadin/download/internal/hummingbird/hummingbird-6fbd67</url>
-		</repository>
-	</distributionManagement>
-
 	<pluginRepositories>
 		<pluginRepository>
 			<id>hummingbird-internal-snapshots</id>
