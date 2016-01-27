@@ -112,7 +112,6 @@
 				<configuration>
 					<failOnError>true</failOnError>
 					<gwtSdkFirstInClasspath></gwtSdkFirstInClasspath>
-					<jsInteropMode>JS</jsInteropMode>
 					<persistentunitcache>false</persistentunitcache>
 					<webappDirectory>${gwt.module.output}</webappDirectory>
 					<modules>
