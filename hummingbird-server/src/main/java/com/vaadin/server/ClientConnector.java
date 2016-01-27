@@ -16,7 +16,6 @@
 package com.vaadin.server;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.communication.MethodInvocation;
@@ -125,15 +124,6 @@ public interface ClientConnector extends Connector {
         }
 
     }
-
-    /**
-     * Returns the list of pending server to client RPC calls and clears the
-     * list.
-     *
-     * @return an unmodifiable ordered list of pending server to client method
-     *         calls (not null)
-     */
-    public List<ClientMethodInvocation> retrievePendingRpcCalls();
 
     /**
      * Checks if the communicator is enabled. An enabled communicator is allowed

@@ -39,13 +39,10 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.ui.ScrollClientRpc;
-import com.vaadin.shared.ui.ui.UIClientRpc;
 import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Component.Focusable;
@@ -570,46 +567,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     }
 
     /**
-     * Set top offset to which the UI should scroll to.
-     *
-     * @param scrollTop
-     */
-    public void setScrollTop(int scrollTop) {
-        if (scrollTop < 0) {
-            throw new IllegalArgumentException(
-                    "Scroll offset must be at least 0");
-        }
-        if (this.scrollTop != scrollTop) {
-            this.scrollTop = scrollTop;
-            getRpcProxy(ScrollClientRpc.class).setScrollTop(scrollTop);
-        }
-    }
-
-    public int getScrollTop() {
-        return scrollTop;
-    }
-
-    /**
-     * Set left offset to which the UI should scroll to.
-     *
-     * @param scrollLeft
-     */
-    public void setScrollLeft(int scrollLeft) {
-        if (scrollLeft < 0) {
-            throw new IllegalArgumentException(
-                    "Scroll offset must be at least 0");
-        }
-        if (this.scrollLeft != scrollLeft) {
-            this.scrollLeft = scrollLeft;
-            getRpcProxy(ScrollClientRpc.class).setScrollLeft(scrollLeft);
-        }
-    }
-
-    public int getScrollLeft() {
-        return scrollLeft;
-    }
-
-    /**
      * Should resize operations be lazy, i.e. should there be a delay before
      * layout sizes are recalculated and resize events are sent to the server.
      * Speeds up resize operations in slow UIs with the penalty of slightly
@@ -755,9 +712,8 @@ public abstract class UI extends AbstractSingleComponentContainer
     public void close() {
         closing = true;
 
-        boolean sessionExpired = (session == null
-                || session.getState() != State.OPEN);
-        getRpcProxy(UIClientRpc.class).uiClosed(sessionExpired);
+        // FIXME Send info to client
+
         if (getPushConnection() != null) {
             // Push the Rpc to the client. The connection will be closed when
             // the UI is detached and cleaned up.
