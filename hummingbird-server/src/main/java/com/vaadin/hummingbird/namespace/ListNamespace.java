@@ -9,14 +9,17 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.change.NodeChange;
 
-public abstract class ListNamespace extends Namespace {
+public abstract class ListNamespace<T> extends Namespace {
 
-    private List<Object> values = new ArrayList<>();
+    private List<T> values = new ArrayList<>();
 
     private List<ListSpliceChange> changes = new ArrayList<>();
 
-    public ListNamespace(StateNode node) {
+    private boolean nodeValues;
+
+    public ListNamespace(StateNode node, boolean nodeValues) {
         super(node);
+        this.nodeValues = nodeValues;
     }
 
     public int size() {
@@ -24,16 +27,21 @@ public abstract class ListNamespace extends Namespace {
         return values.size();
     }
 
-    protected Object get(int index) {
+    protected T get(int index) {
         setAccessed();
         return values.get(index);
     }
 
-    protected void add(Object value) {
+    protected void add(T value) {
         add(values.size(), value);
     }
 
-    protected void add(int index, Object value) {
+    protected void add(int index, T value) {
+        assert value == null || (value instanceof StateNode == nodeValues);
+
+        if (nodeValues) {
+            attachPotentialChild(value);
+        }
         values.add(index, value);
 
         addChange(new ListSpliceChange(this, index, 0,
@@ -41,7 +49,8 @@ public abstract class ListNamespace extends Namespace {
     }
 
     public void remove(int index) {
-        values.remove(index);
+        Object removed = values.remove(index);
+        detatchPotentialChild(removed);
 
         addChange(
                 new ListSpliceChange(this, index, 1, Collections.emptyList()));
@@ -73,5 +82,9 @@ public abstract class ListNamespace extends Namespace {
             changes.add(
                     new ListSpliceChange(this, 0, 0, new ArrayList<>(values)));
         }
+    }
+
+    public boolean isNodeValues() {
+        return nodeValues;
     }
 }

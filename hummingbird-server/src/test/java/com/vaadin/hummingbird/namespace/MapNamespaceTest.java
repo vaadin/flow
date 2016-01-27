@@ -5,6 +5,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.MapRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
@@ -142,6 +144,34 @@ public class MapNamespaceTest
             threw = true;
         }
         Assert.assertTrue(name + " should throw AssertionError", threw);
+    }
+
+    @Test
+    public void testPutAttachDetachChildren() {
+        StateNode child = StateNodeTest.createEmptyNode("child");
+
+        Assert.assertNull(child.getParent());
+
+        namespace.put("key", child);
+
+        Assert.assertSame(namespace.getNode(), child.getParent());
+
+        namespace.put("key", "foo");
+
+        Assert.assertNull(child.getParent());
+    }
+
+    @Test
+    public void testRemoveDetachChildren() {
+        StateNode child = StateNodeTest.createEmptyNode("child");
+
+        namespace.put("key", child);
+
+        Assert.assertSame(namespace.getNode(), child.getParent());
+
+        namespace.remove("key");
+
+        Assert.assertNull(child.getParent());
     }
 
 }

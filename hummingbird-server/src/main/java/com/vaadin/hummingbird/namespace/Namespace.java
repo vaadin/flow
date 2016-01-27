@@ -46,4 +46,18 @@ public abstract class Namespace implements Serializable {
     public abstract void collectChanges(Consumer<NodeChange> collector);
 
     public abstract void resetChanges();
+
+    protected void attachPotentialChild(Object child) {
+        if (child instanceof StateNode) {
+            StateNode childNode = (StateNode) child;
+            childNode.setParent(getNode());
+        }
+    }
+
+    protected void detatchPotentialChild(Object child) {
+        if (child instanceof StateNode) {
+            StateNode childNode = (StateNode) child;
+            childNode.setParent(null);
+        }
+    }
 }

@@ -22,8 +22,12 @@ public abstract class MapNamespace extends Namespace {
     }
 
     protected void put(String key, Object value) {
+        attachPotentialChild(value);
+
         setChanged(key);
-        values.put(key, value);
+        Object oldValue = values.put(key, value);
+
+        detatchPotentialChild(oldValue);
     }
 
     protected Object get(String key) {
@@ -38,7 +42,8 @@ public abstract class MapNamespace extends Namespace {
 
     protected void remove(String key) {
         setChanged(key);
-        values.remove(key);
+        Object oldValue = values.remove(key);
+        detatchPotentialChild(oldValue);
     }
 
     private void setChanged(String key) {
