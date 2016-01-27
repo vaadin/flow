@@ -24,7 +24,6 @@ import java.util.logging.Logger;
 import com.vaadin.event.EventRouter;
 import com.vaadin.event.MethodEventSource;
 import com.vaadin.shared.communication.MethodInvocation;
-import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
@@ -96,74 +95,6 @@ public abstract class AbstractClientConnector
         } else {
             return "Session must be locked when " + method + " is called";
         }
-    }
-
-    /**
-     * Registers an RPC interface implementation for this component.
-     *
-     * A component can listen to multiple RPC interfaces, and subclasses can
-     * register additional implementations.
-     *
-     * @since 7.0
-     *
-     * @param implementation
-     *            RPC interface implementation
-     * @param rpcInterfaceType
-     *            RPC interface class for which the implementation should be
-     *            registered
-     */
-    @Deprecated
-    protected <T extends ServerRpc> void registerRpc(T implementation,
-            Class<T> rpcInterfaceType) {
-    }
-
-    /**
-     * Registers an RPC interface implementation for this component.
-     *
-     * A component can listen to multiple RPC interfaces, and subclasses can
-     * register additional implementations.
-     *
-     * @since 7.0
-     *
-     * @param implementation
-     *            RPC interface implementation. Also used to deduce the type.
-     */
-    protected <T extends ServerRpc> void registerRpc(T implementation) {
-        // Search upwards until an interface is found. It must be found as T
-        // extends ServerRpc
-        Class<?> cls = implementation.getClass();
-        Class<ServerRpc> serverRpcClass = getServerRpcInterface(cls);
-
-        while (cls != null && serverRpcClass == null) {
-            cls = cls.getSuperclass();
-            serverRpcClass = getServerRpcInterface(cls);
-        }
-
-        if (serverRpcClass == null) {
-            throw new RuntimeException(
-                    "No interface T extends ServerRpc found in the class hierarchy.");
-        }
-
-        registerRpc(implementation, serverRpcClass);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Class<ServerRpc> getServerRpcInterface(
-            Class<?> implementationClass) {
-        Class<ServerRpc> serverRpcClass = null;
-        if (implementationClass != null) {
-            for (Class<?> candidateInterface : implementationClass
-                    .getInterfaces()) {
-                if (ServerRpc.class.isAssignableFrom(candidateInterface)) {
-                    if (serverRpcClass != null) {
-                        throw new RuntimeException(
-                                "Use registerRpc(T implementation, Class<T> rpcInterfaceType) if the Rpc implementation implements more than one interface");
-                    }
-                    serverRpcClass = (Class<ServerRpc>) candidateInterface;
-                }
-            }
-        }
-        return serverRpcClass;
     }
 
     /**
