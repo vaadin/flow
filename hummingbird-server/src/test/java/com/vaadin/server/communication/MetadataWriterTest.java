@@ -54,19 +54,22 @@ public class MetadataWriterTest {
 
     @Test
     public void writeAsyncTag() throws Exception {
-        JsonObject meta = new MetadataWriter().write(ui, false, true, messages);
+        JsonObject meta = new MetadataWriter().createMetadata(ui, false, true,
+                messages);
         Assert.assertEquals("{\"async\":true}", meta.toJson());
     }
 
     @Test
     public void writeRepaintTag() throws Exception {
-        JsonObject meta = new MetadataWriter().write(ui, true, false, messages);
+        JsonObject meta = new MetadataWriter().createMetadata(ui, true, false,
+                messages);
         Assert.assertEquals("{\"repaintAll\":true}", meta.toJson());
     }
 
     @Test
     public void writeRepaintAndAsyncTag() throws Exception {
-        JsonObject meta = new MetadataWriter().write(ui, true, true, messages);
+        JsonObject meta = new MetadataWriter().createMetadata(ui, true, true,
+                messages);
         Assert.assertEquals("{\"repaintAll\":true,\"async\":true}",
                 meta.toJson());
     }
@@ -75,7 +78,7 @@ public class MetadataWriterTest {
     public void writeRedirectWithExpiredSession() throws Exception {
         disableSessionExpirationMessages(messages);
 
-        JsonObject meta = new MetadataWriter().write(ui, false, false,
+        JsonObject meta = new MetadataWriter().createMetadata(ui, false, false,
                 messages);
         Assert.assertEquals("{}", meta.toJson());
     }
@@ -87,7 +90,7 @@ public class MetadataWriterTest {
 
         disableSessionExpirationMessages(messages);
 
-        JsonObject meta = new MetadataWriter().write(ui, false, false,
+        JsonObject meta = new MetadataWriter().createMetadata(ui, false, false,
                 messages);
         Assert.assertEquals(
                 "{\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}",
@@ -101,7 +104,8 @@ public class MetadataWriterTest {
 
         disableSessionExpirationMessages(messages);
 
-        JsonObject meta = new MetadataWriter().write(ui, false, true, messages);
+        JsonObject meta = new MetadataWriter().createMetadata(ui, false, true,
+                messages);
         Assert.assertEquals(
                 "{\"async\":true,\"timedRedirect\":{\"interval\":15,\"url\":\"\"}}",
                 meta.toJson());

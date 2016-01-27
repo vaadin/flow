@@ -65,7 +65,7 @@ public class UidlWriter implements Serializable {
      *            false if it is a response to a client message.
      * @return JSON object containing the UIDL response
      */
-    public JsonObject write(UI ui, boolean async) {
+    public JsonObject createUidl(UI ui, boolean async) {
         JsonObject response = Json.createObject();
 
         VaadinSession session = ui.getSession();
@@ -134,8 +134,8 @@ public class UidlWriter implements Serializable {
             SystemMessages messages = ui.getSession().getService()
                     .getSystemMessages(ui.getLocale(), null);
             // TODO hilightedConnector
-            JsonObject meta = new MetadataWriter().write(ui, repaintAll, async,
-                    messages);
+            JsonObject meta = new MetadataWriter().createMetadata(ui,
+                    repaintAll, async, messages);
             response.put("meta", meta);
 
             Set<Class<? extends Component>> usedComponents = new HashSet<Class<? extends Component>>();
@@ -216,7 +216,7 @@ public class UidlWriter implements Serializable {
             assert (uiConnectorTracker.getDirtyConnectors()
                     .isEmpty()) : "Connectors have been marked as dirty during the end of the paint phase. This is most certainly not intended.";
 
-            response.put("timings", getPerformanceData(ui));
+            response.put("timings", createPerformanceData(ui));
 
             return response;
         } finally {
@@ -249,7 +249,7 @@ public class UidlWriter implements Serializable {
      * Adds the performance timing data (used by TestBench 3) to the UIDL
      * response.
      */
-    private JsonValue getPerformanceData(UI ui) {
+    private JsonValue createPerformanceData(UI ui) {
         JsonArray timings = Json.createArray();
         timings.set(0, ui.getSession().getCumulativeRequestDuration());
         timings.set(1, ui.getSession().getLastRequestDuration());

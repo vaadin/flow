@@ -50,7 +50,7 @@ public class MetadataWriter implements Serializable {
      * @return JSON object with the metadata
      *
      */
-    public JsonObject write(UI ui, boolean repaintAll, boolean async,
+    public JsonObject createMetadata(UI ui, boolean repaintAll, boolean async,
             SystemMessages messages) {
         JsonObject meta = Json.createObject();
 

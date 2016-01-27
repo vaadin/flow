@@ -108,7 +108,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     private static void writeUidl(UI ui, Writer writer) throws IOException {
-        JsonObject uidl = new UidlWriter().write(ui, false);
+        JsonObject uidl = new UidlWriter().createUidl(ui, false);
 
         // some dirt to prevent cross site scripting
         String responseString = "for(;;);[" + uidl.toJson() + "]";

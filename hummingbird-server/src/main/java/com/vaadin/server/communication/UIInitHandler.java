@@ -238,7 +238,7 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
      */
     protected String getInitialUidl(VaadinRequest request, UI uI) {
 
-        JsonObject response = new UidlWriter().write(uI, false);
+        JsonObject response = new UidlWriter().createUidl(uI, false);
 
         VaadinSession session = uI.getSession();
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
