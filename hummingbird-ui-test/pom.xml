@@ -13,6 +13,8 @@
 
 	<properties>
 		<jetty.plugin.version>9.2.3.v20140905</jetty.plugin.version>
+		<!-- Don't care about coding style for tests -->
+		<sonar.skip>true</sonar.skip>
 	</properties>
 
 	<dependencies>
