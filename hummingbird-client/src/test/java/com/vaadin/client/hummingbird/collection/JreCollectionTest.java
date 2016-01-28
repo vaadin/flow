@@ -45,6 +45,29 @@ public class JreCollectionTest {
     }
 
     @Test
+    public void testArraySplice() {
+        JsArray<String> array = JsCollections.array();
+
+        // 1, 2
+        array.splice(0, 0, "1", "2");
+
+        // 1, 1.3, 1.7, 2
+        JsArray<String> noneRemoved = array.splice(1, 0, "1.3", "1.7");
+
+        Assert.assertEquals(0, noneRemoved.length());
+        Assert.assertEquals(4, array.length());
+        Assert.assertEquals("1.3", array.get(1));
+
+        // 1, 2
+        JsArray<String> twoRemoved = array.splice(1, 2);
+        Assert.assertEquals(2, twoRemoved.length());
+        Assert.assertEquals("1.7", twoRemoved.get(1));
+
+        Assert.assertEquals(2, array.length());
+        Assert.assertEquals("2", array.get(1));
+    }
+
+    @Test
     public void testJreJsArrayHasNoNative() {
         // Check that the JRE version overrides all native methods
         for (Method method : JreJsArray.class.getMethods()) {

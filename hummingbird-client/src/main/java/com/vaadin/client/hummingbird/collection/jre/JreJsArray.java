@@ -17,6 +17,7 @@
 package com.vaadin.client.hummingbird.collection.jre;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -53,5 +54,38 @@ public class JreJsArray<T> extends JsArray<T> {
     @Override
     public int length() {
         return values.size();
+    }
+
+    /**
+     * JRE implementation of the final {@link #splice(int, int, Object...)}
+     * method.
+     *
+     * @param index
+     *            the index at which do do the operation
+     * @param remove
+     *            the number of items to remove
+     * @param add
+     *            new items to add
+     * @return an array of removed items
+     */
+    public JsArray<T> doSplice(int index, int remove, T[] add) {
+        JreJsArray<T> removed = new JreJsArray<>();
+        if (remove > 0) {
+            List<T> removeRange = values.subList(index, index + remove);
+            removed.values.addAll(removeRange);
+
+            removeRange.clear();
+        }
+
+        if (add != null) {
+            values.addAll(index, Arrays.asList(add));
+        }
+
+        return removed;
+    }
+
+    @Override
+    public JsArray<T> splice(int index, int remove) {
+        return doSplice(index, remove, null);
     }
 }
