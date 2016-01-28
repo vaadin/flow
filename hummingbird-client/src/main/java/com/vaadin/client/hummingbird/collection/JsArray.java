@@ -19,7 +19,6 @@ package com.vaadin.client.hummingbird.collection;
 import com.google.gwt.core.client.GWT;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 
-import jsinterop.annotations.JsIgnore;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -99,6 +98,38 @@ public class JsArray<T> {
      */
     @JsProperty(name = "length")
     public native int length();
+
+    /**
+     * Removes and adds a number of items at some index.
+     *
+     * @param index
+     *            the index at which do do the operation
+     * @param remove
+     *            the number of items to remove
+     * @param add
+     *            new items to add
+     * @return an array of removed items
+     */
+    @SafeVarargs
+    @JsOverlay
+    public final JsArray<T> splice(int index, int remove, T... add) {
+        if (GWT.isScript()) {
+            return JsniHelper.splice(this, index, remove, add);
+        } else {
+            return ((JreJsArray<T>) this).doSplice(index, remove, add);
+        }
+    }
+
+    /**
+     * Removes a number of items at some index.
+     *
+     * @param index
+     *            the index at which do do the operation
+     * @param remove
+     *            the number of items to remove
+     * @return an array of removed items
+     */
+    public native JsArray<T> splice(int index, int remove);
 }
 
 // Helper for stuff not allowed in a @JsType class
@@ -107,13 +138,20 @@ class JsniHelper {
         // Only static stuff here, should never be instantiated
     }
 
-    @JsIgnore
+    static native <T> JsArray<T> splice(JsArray<T> array, int index, int remove,
+            T[] add)
+            /*-{
+                var args = [index, remove];
+                args.push.apply(args, add);
+
+                return array.splice.apply(array, args);
+            }-*/;
+
     static native <T> T getValueNative(JsArray<T> array, int index)
     /*-{
         return array[index];
     }-*/;
 
-    @JsIgnore
     static native <T> void setValueNative(JsArray<T> array, int i, T value)
     /*-{
         array[i] = value;
