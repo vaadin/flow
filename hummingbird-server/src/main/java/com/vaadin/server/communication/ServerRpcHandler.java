@@ -37,7 +37,6 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Connector;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.MethodInvocation;
-import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.UI;
 

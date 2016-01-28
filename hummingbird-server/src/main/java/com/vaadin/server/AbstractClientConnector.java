@@ -15,25 +15,15 @@
  */
 package com.vaadin.server;
 
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import com.vaadin.event.EventRouter;
 import com.vaadin.event.MethodEventSource;
-import com.vaadin.shared.communication.ClientRpc;
 import com.vaadin.shared.communication.MethodInvocation;
-import com.vaadin.shared.communication.ServerRpc;
 import com.vaadin.shared.communication.SharedState;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
@@ -47,22 +37,11 @@ public abstract class AbstractClientConnector
         implements ClientConnector, MethodEventSource {
 
     /**
-     * A map from server to client RPC interface class to the RPC proxy that
-     * sends ourgoing RPC calls for that interface.
-     */
-    private Map<Class<?>, ClientRpc> rpcProxyMap = new HashMap<Class<?>, ClientRpc>();
-
-    /**
      * Shared state object to be communicated from the server to the client when
      * modified.
      */
     private SharedState sharedState;
     private Class<? extends SharedState> stateType;
-
-    /**
-     * Pending RPC method invocations to be sent.
-     */
-    private ArrayList<ClientMethodInvocation> pendingInvocations = new ArrayList<ClientMethodInvocation>();
 
     private String connectorId;
 
@@ -116,74 +95,6 @@ public abstract class AbstractClientConnector
         } else {
             return "Session must be locked when " + method + " is called";
         }
-    }
-
-    /**
-     * Registers an RPC interface implementation for this component.
-     *
-     * A component can listen to multiple RPC interfaces, and subclasses can
-     * register additional implementations.
-     *
-     * @since 7.0
-     *
-     * @param implementation
-     *            RPC interface implementation
-     * @param rpcInterfaceType
-     *            RPC interface class for which the implementation should be
-     *            registered
-     */
-    @Deprecated
-    protected <T extends ServerRpc> void registerRpc(T implementation,
-            Class<T> rpcInterfaceType) {
-    }
-
-    /**
-     * Registers an RPC interface implementation for this component.
-     *
-     * A component can listen to multiple RPC interfaces, and subclasses can
-     * register additional implementations.
-     *
-     * @since 7.0
-     *
-     * @param implementation
-     *            RPC interface implementation. Also used to deduce the type.
-     */
-    protected <T extends ServerRpc> void registerRpc(T implementation) {
-        // Search upwards until an interface is found. It must be found as T
-        // extends ServerRpc
-        Class<?> cls = implementation.getClass();
-        Class<ServerRpc> serverRpcClass = getServerRpcInterface(cls);
-
-        while (cls != null && serverRpcClass == null) {
-            cls = cls.getSuperclass();
-            serverRpcClass = getServerRpcInterface(cls);
-        }
-
-        if (serverRpcClass == null) {
-            throw new RuntimeException(
-                    "No interface T extends ServerRpc found in the class hierarchy.");
-        }
-
-        registerRpc(implementation, serverRpcClass);
-    }
-
-    @SuppressWarnings("unchecked")
-    private Class<ServerRpc> getServerRpcInterface(
-            Class<?> implementationClass) {
-        Class<ServerRpc> serverRpcClass = null;
-        if (implementationClass != null) {
-            for (Class<?> candidateInterface : implementationClass
-                    .getInterfaces()) {
-                if (ServerRpc.class.isAssignableFrom(candidateInterface)) {
-                    if (serverRpcClass != null) {
-                        throw new RuntimeException(
-                                "Use registerRpc(T implementation, Class<T> rpcInterfaceType) if the Rpc implementation implements more than one interface");
-                    }
-                    serverRpcClass = (Class<ServerRpc>) candidateInterface;
-                }
-            }
-        }
-        return serverRpcClass;
     }
 
     /**
@@ -288,90 +199,6 @@ public abstract class AbstractClientConnector
         } catch (Exception e) {
             throw new RuntimeException(
                     "Error finding state type for " + getClass().getName(), e);
-        }
-    }
-
-    /**
-     * Returns an RPC proxy for a given server to client RPC interface for this
-     * component.
-     *
-     * TODO more javadoc, subclasses, ...
-     *
-     * @param rpcInterface
-     *            RPC interface type
-     *
-     * @since 7.0
-     */
-    protected <T extends ClientRpc> T getRpcProxy(final Class<T> rpcInterface) {
-        // create, initialize and return a dynamic proxy for RPC
-        try {
-            if (!rpcProxyMap.containsKey(rpcInterface)) {
-                Class<?> proxyClass = Proxy.getProxyClass(
-                        rpcInterface.getClassLoader(), rpcInterface);
-                Constructor<?> constructor = proxyClass
-                        .getConstructor(InvocationHandler.class);
-                T rpcProxy = rpcInterface.cast(constructor
-                        .newInstance(new RpcInvocationHandler(rpcInterface)));
-                // cache the proxy
-                rpcProxyMap.put(rpcInterface, rpcProxy);
-            }
-            return (T) rpcProxyMap.get(rpcInterface);
-        } catch (Exception e) {
-            // TODO exception handling?
-            throw new RuntimeException(e);
-        }
-    }
-
-    private class RpcInvocationHandler
-            implements InvocationHandler, Serializable {
-
-        private String rpcInterfaceName;
-
-        public RpcInvocationHandler(Class<?> rpcInterface) {
-            rpcInterfaceName = rpcInterface.getName().replaceAll("\\$", ".");
-        }
-
-        @Override
-        public Object invoke(Object proxy, Method method, Object[] args)
-                throws Throwable {
-            if (method.getDeclaringClass() == Object.class) {
-                // Don't add Object methods such as toString and hashCode as
-                // invocations
-                return method.invoke(this, args);
-            }
-            addMethodInvocationToQueue(rpcInterfaceName, method, args);
-            return null;
-        }
-
-    }
-
-    /**
-     * For internal use: adds a method invocation to the pending RPC call queue.
-     *
-     * @param interfaceName
-     *            RPC interface name
-     * @param method
-     *            RPC method
-     * @param parameters
-     *            RPC all parameters
-     *
-     * @since 7.0
-     */
-    protected void addMethodInvocationToQueue(String interfaceName,
-            Method method, Object[] parameters) {
-        // add to queue
-        pendingInvocations.add(new ClientMethodInvocation(this, interfaceName,
-                method, parameters));
-    }
-
-    @Override
-    public List<ClientMethodInvocation> retrievePendingRpcCalls() {
-        if (pendingInvocations.isEmpty()) {
-            return Collections.emptyList();
-        } else {
-            List<ClientMethodInvocation> result = pendingInvocations;
-            pendingInvocations = new ArrayList<ClientMethodInvocation>();
-            return Collections.unmodifiableList(result);
         }
     }
 

@@ -39,14 +39,10 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
-import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.EventId;
 import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.ui.ScrollClientRpc;
-import com.vaadin.shared.ui.ui.UIClientRpc;
-import com.vaadin.shared.ui.ui.UIServerRpc;
 import com.vaadin.shared.ui.ui.UIState;
 import com.vaadin.ui.Component.Focusable;
 import com.vaadin.util.CurrentInstance;
@@ -113,41 +109,6 @@ public abstract class UI extends AbstractSingleComponentContainer
             this);
 
     /**
-     * Scroll Y position.
-     */
-    private int scrollTop = 0;
-
-    /**
-     * Scroll X position
-     */
-    private int scrollLeft = 0;
-
-    private UIServerRpc rpc = new UIServerRpc() {
-        @Override
-        public void click(MouseEventDetails mouseDetails) {
-            fireEvent(new ClickEvent(UI.this, mouseDetails));
-        }
-
-        @Override
-        public void resize(int viewWidth, int viewHeight, int windowWidth,
-                int windowHeight) {
-            // TODO We're not doing anything with the view dimensions
-            getPage().updateBrowserWindowSize(windowWidth, windowHeight, true);
-        }
-
-        @Override
-        public void scroll(int scrollTop, int scrollLeft) {
-            UI.this.scrollTop = scrollTop;
-            UI.this.scrollLeft = scrollLeft;
-        }
-
-        @Override
-        public void poll() {
-            fireEvent(new PollEvent(UI.this));
-        }
-    };
-
-    /**
      * Timestamp keeping track of the last heartbeat of this UI. Updated to the
      * current time whenever the application receives a heartbeat or UIDL
      * request from the client for this UI.
@@ -188,7 +149,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @see #setContent(Component)
      */
     public UI(Component content) {
-        registerRpc(rpc);
         setSizeFull();
         setContent(content);
     }
@@ -570,46 +530,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     }
 
     /**
-     * Set top offset to which the UI should scroll to.
-     *
-     * @param scrollTop
-     */
-    public void setScrollTop(int scrollTop) {
-        if (scrollTop < 0) {
-            throw new IllegalArgumentException(
-                    "Scroll offset must be at least 0");
-        }
-        if (this.scrollTop != scrollTop) {
-            this.scrollTop = scrollTop;
-            getRpcProxy(ScrollClientRpc.class).setScrollTop(scrollTop);
-        }
-    }
-
-    public int getScrollTop() {
-        return scrollTop;
-    }
-
-    /**
-     * Set left offset to which the UI should scroll to.
-     *
-     * @param scrollLeft
-     */
-    public void setScrollLeft(int scrollLeft) {
-        if (scrollLeft < 0) {
-            throw new IllegalArgumentException(
-                    "Scroll offset must be at least 0");
-        }
-        if (this.scrollLeft != scrollLeft) {
-            this.scrollLeft = scrollLeft;
-            getRpcProxy(ScrollClientRpc.class).setScrollLeft(scrollLeft);
-        }
-    }
-
-    public int getScrollLeft() {
-        return scrollLeft;
-    }
-
-    /**
      * Should resize operations be lazy, i.e. should there be a delay before
      * layout sizes are recalculated and resize events are sent to the server.
      * Speeds up resize operations in slow UIs with the penalty of slightly
@@ -755,9 +675,8 @@ public abstract class UI extends AbstractSingleComponentContainer
     public void close() {
         closing = true;
 
-        boolean sessionExpired = (session == null
-                || session.getState() != State.OPEN);
-        getRpcProxy(UIClientRpc.class).uiClosed(sessionExpired);
+        // FIXME Send info to client
+
         if (getPushConnection() != null) {
             // Push the Rpc to the client. The connection will be closed when
             // the UI is detached and cleaned up.
