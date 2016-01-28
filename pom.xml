@@ -29,6 +29,7 @@
                         <url>http://www.apache.org/licenses/LICENSE-2.0</url>
                 </license>
         </licenses>
+        <inceptionYear>2000</inceptionYear>
         <scm>
                 <connection>scm:https:https://github.com/vaadin/hummingbird.git</connection>
                 <developerConnection>scm:git:git@github.com:vaadin/hummingbird.git</developerConnection>
