@@ -39,6 +39,29 @@ public class GwtCollectionTest extends ClientEngineTestBase {
         assertEquals("bar", array.get(0));
     }
 
+    public void testArraySplice() {
+        JsArray<String> array = JsCollections.array();
+
+        // 1, 2
+        array.push("1");
+        array.push("2");
+
+        // 1, 1.3, 1.7, 2
+        JsArray<String> noneRemoved = array.splice(1, 0, "1.3", "1.7");
+
+        assertEquals(0, noneRemoved.length());
+        assertEquals(4, array.length());
+        assertEquals("1.3", array.get(1));
+
+        // 1, 2
+        JsArray<String> twoRemoved = array.splice(1, 2);
+        assertEquals(2, twoRemoved.length());
+        assertEquals("1.7", twoRemoved.get(1));
+
+        assertEquals(2, array.length());
+        assertEquals("2", array.get(1));
+    }
+
     public void testMap() {
         JsMap<String, Integer> map = JsCollections.map();
 
