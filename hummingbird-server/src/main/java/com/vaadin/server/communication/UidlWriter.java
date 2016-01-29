@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.hummingbird.StateTree;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.LegacyCommunicationManager;
 import com.vaadin.server.LegacyCommunicationManager.ClientCache;
@@ -138,6 +139,11 @@ public class UidlWriter implements Serializable {
                     repaintAll, async, messages);
             response.put("meta", meta);
 
+            JsonArray changes = encodeChanges(ui);
+            if (changes.length() != 0) {
+                response.put("changes", changes);
+            }
+
             Set<Class<? extends Component>> usedComponents = new HashSet<Class<? extends Component>>();
             findClientConnectors(ui, usedComponents);
 
@@ -223,6 +229,24 @@ public class UidlWriter implements Serializable {
             uiConnectorTracker.setWritingResponse(false);
             uiConnectorTracker.cleanConnectorMap();
         }
+    }
+
+    /**
+     * Encodes the state tree changes of the given UI.
+     *
+     * @param ui
+     *            the UI
+     * @return a JSON array of changes
+     */
+    private JsonArray encodeChanges(UI ui) {
+        JsonArray changes = Json.createArray();
+
+        StateTree stateTree = ui.getStateTree();
+
+        stateTree.collectChanges(
+                change -> changes.set(changes.length(), change.toJson()));
+
+        return changes;
     }
 
     private void findClientConnectors(Component c,
