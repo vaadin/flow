@@ -24,7 +24,7 @@ import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.MapNamespace;
-import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.namespace.NamespaceRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -43,7 +43,7 @@ public class MapPutChangeTest {
 
         Assert.assertEquals(change.getNode().getId(),
                 (int) json.getNumber("node"));
-        Assert.assertEquals(Namespace.getId(namespace.getClass()),
+        Assert.assertEquals(NamespaceRegistry.getId(namespace.getClass()),
                 (int) json.getNumber("ns"));
         Assert.assertEquals("put", json.getString("type"));
         Assert.assertEquals("some", json.getString("key"));

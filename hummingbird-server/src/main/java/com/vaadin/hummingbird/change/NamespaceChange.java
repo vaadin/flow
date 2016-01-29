@@ -17,6 +17,7 @@
 package com.vaadin.hummingbird.change;
 
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.namespace.NamespaceRegistry;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -54,6 +55,6 @@ public abstract class NamespaceChange extends NodeChange {
 
     @Override
     protected void populateJson(JsonObject json) {
-        json.put("ns", Json.create(Namespace.getId(namespace)));
+        json.put("ns", Json.create(NamespaceRegistry.getId(namespace)));
     }
 }
