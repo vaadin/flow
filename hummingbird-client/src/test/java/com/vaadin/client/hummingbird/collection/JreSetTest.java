@@ -67,4 +67,19 @@ public class JreSetTest {
         assertEquals(expectedValues, seenValues);
     }
 
+    @Test
+    public void testSetIsEmpty() {
+        JsSet<String> set = JsCollections.set();
+        assertTrue(JsCollections.isEmpty(set));
+        // 1, 2, 3
+        set.add("1");
+        assertFalse(JsCollections.isEmpty(set));
+        set.add("2");
+        assertFalse(JsCollections.isEmpty(set));
+        set.delete("1");
+        assertFalse(JsCollections.isEmpty(set));
+        set.delete("2");
+        assertTrue(JsCollections.isEmpty(set));
+    }
+
 }
