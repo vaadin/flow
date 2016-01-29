@@ -130,6 +130,42 @@ public class JsArray<T> {
      * @return an array of removed items
      */
     public native JsArray<T> splice(int index, int remove);
+
+    /**
+     * Removes the item at the given index
+     *
+     * @param index
+     *            the index to remove
+     * @return the remove item
+     */
+    @JsOverlay
+    public final T remove(int index) {
+        return splice(index, 1).get(0);
+    }
+
+    /**
+     * Clears the array
+     */
+    @JsOverlay
+    public final JsArray<T> clear() {
+        if (GWT.isScript()) {
+            JsniHelper.clear(this);
+        } else {
+            ((JreJsArray<T>) this).doClear();
+        }
+        return this;
+    }
+
+    /**
+     * Checks if the array is empty (length == 0)
+     *
+     * @return true if the array is empty, false otherwise
+     */
+    @JsOverlay
+    public final boolean isEmpty() {
+        return length() == 0;
+    }
+
 }
 
 // Helper for stuff not allowed in a @JsType class
@@ -147,6 +183,11 @@ class JsniHelper {
                 return array.splice.apply(array, args);
             }-*/;
 
+    static native void clear(JsArray<?> array)
+    /*-{
+        array.length = 0;
+    }-*/;
+
     static native <T> T getValueNative(JsArray<T> array, int index)
     /*-{
         return array[index];
@@ -156,4 +197,5 @@ class JsniHelper {
     /*-{
         array[i] = value;
     }-*/;
+
 }
