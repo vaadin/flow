@@ -1,0 +1,121 @@
+package com.vaadin.hummingbird.namespace;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.NodeChange;
+
+/**
+ * A state node namespace that structures data as a list.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
+public abstract class ListNamespace extends Namespace {
+
+    private List<Object> values = new ArrayList<>();
+
+    private List<ListSpliceChange> changes = new ArrayList<>();
+
+    /**
+     * Creates a new list namespace for the given node.
+     *
+     * @param node
+     *            the node that the namespace belongs to
+     */
+    public ListNamespace(StateNode node) {
+        super(node);
+    }
+
+    /**
+     * Gets the number of items in this namespace.
+     *
+     * @return the number of items
+     */
+    public int size() {
+        setAccessed();
+        return values.size();
+    }
+
+    /**
+     * Gets the item at the given index.
+     *
+     * @param index
+     *            the of the desired item
+     * @return the item at the given index
+     */
+    protected Object get(int index) {
+        setAccessed();
+        return values.get(index);
+    }
+
+    /**
+     * Adds an item to the end of the list.
+     *
+     * @param item
+     *            the item to add
+     */
+    protected void add(Object item) {
+        add(values.size(), item);
+    }
+
+    /**
+     * Inserts an item at the given index of the list.
+     *
+     * @param index
+     *            index to insert at
+     * @param item
+     *            the item to insert
+     */
+    protected void add(int index, Object item) {
+        values.add(index, item);
+
+        addChange(new ListSpliceChange(this, index, 0,
+                Collections.singletonList(item)));
+    }
+
+    /**
+     * Removes the item at the given index
+     *
+     * @param index
+     *            index of the item to remove
+     */
+    public void remove(int index) {
+        values.remove(index);
+
+        addChange(
+                new ListSpliceChange(this, index, 1, Collections.emptyList()));
+    }
+
+    private void addChange(ListSpliceChange change) {
+        getNode().markAsDirty();
+
+        // XXX combine with previous changes if possible
+        changes.add(change);
+
+        // TODO Fire some listeners
+    }
+
+    private void setAccessed() {
+        // TODO Set up listener if we're in a computation
+    }
+
+    @Override
+    public void collectChanges(Consumer<NodeChange> collector) {
+        changes.forEach(collector);
+        changes.clear();
+    }
+
+    @Override
+    public void resetChanges() {
+        changes.clear();
+        if (!values.isEmpty()) {
+            changes.add(
+                    new ListSpliceChange(this, 0, 0, new ArrayList<>(values)));
+        }
+    }
+}
