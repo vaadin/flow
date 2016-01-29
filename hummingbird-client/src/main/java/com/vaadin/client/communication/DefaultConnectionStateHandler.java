@@ -17,11 +17,11 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
@@ -139,21 +139,22 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     @Override
-    public void heartbeatException(Request request, Throwable exception) {
+    public void heartbeatException(XMLHttpRequest request,
+            Exception exception) {
         Console.error("Heartbeat exception: " + exception.getMessage());
         handleRecoverableError(Type.HEARTBEAT, null);
     }
 
     @Override
-    public void heartbeatInvalidStatusCode(Request request, Response response) {
-        int statusCode = response.getStatusCode();
+    public void heartbeatInvalidStatusCode(XMLHttpRequest xhr) {
+        int statusCode = xhr.getStatus();
         Console.warn("Heartbeat request returned " + statusCode);
 
-        if (response.getStatusCode() == Response.SC_GONE) {
+        if (statusCode == Response.SC_GONE) {
             // Session expired
             getConnection().showSessionExpiredError(null);
             stopApplication();
-        } else if (response.getStatusCode() == Response.SC_NOT_FOUND) {
+        } else if (statusCode == Response.SC_NOT_FOUND) {
             // UI closed, do nothing as the UI will react to this
             // Should not trigger reconnect dialog as this will prevent user
             // input
@@ -402,7 +403,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         debug("xhrInvalidContent");
         endRequest();
 
-        String responseText = xhrConnectionError.getResponse().getText();
+        String responseText = xhrConnectionError.getXhr().getResponseText();
         /*
          * A servlet filter or equivalent may have intercepted the request and
          * served non-UIDL content (for instance, a login page if the session
@@ -445,8 +446,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     public void xhrInvalidStatusCode(XhrConnectionError xhrConnectionError) {
         debug("xhrInvalidStatusCode");
 
-        Response response = xhrConnectionError.getResponse();
-        int statusCode = response.getStatusCode();
+        int statusCode = xhrConnectionError.getXhr().getStatus();
         Console.warn("Server returned " + statusCode + " for xhr");
 
         if (statusCode == 401) {
@@ -486,9 +486,9 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             XhrConnectionError xhrConnectionError) {
         int statusCode = -1;
         if (xhrConnectionError != null) {
-            Response response = xhrConnectionError.getResponse();
-            if (response != null) {
-                statusCode = response.getStatusCode();
+            XMLHttpRequest xhr = xhrConnectionError.getXhr();
+            if (xhr != null) {
+                statusCode = xhr.getStatus();
             }
         }
         handleCommunicationError(details, statusCode);

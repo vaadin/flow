@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird.collection;
 import com.google.gwt.core.client.GWT;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 import com.vaadin.client.hummingbird.collection.jre.JreJsMap;
+import com.vaadin.client.hummingbird.collection.jre.JreJsSet;
 
 /**
  * Factory for JavaScript collection implementations with support for
@@ -57,6 +58,34 @@ public class JsCollections {
         }
     }
 
+    /**
+     * Creates a new JavaScript Set.
+     *
+     * @return a new JS Set instance
+     */
+    public static <V> JsSet<V> set() {
+        if (GWT.isScript()) {
+            return createNativeSet();
+        } else {
+            return new JreJsSet<>();
+        }
+    }
+
+    // TODO Make non static and move to JsMap so it is easier to use
+    /**
+     * Returns an array of the values in a {@link JsMap}.
+     *
+     * @param map
+     *            the source map
+     * @return an array of the values in the map
+     */
+    public static <K, V> JsArray<V> mapValues(JsMap<K, V> map) {
+        JsArray<V> result = JsCollections.array();
+        map.forEach((value, key) -> result.push(value));
+
+        return result;
+    }
+
     private static native <T> JsArray<T> createNativeArray()
     /*-{
         return [];
@@ -66,4 +95,32 @@ public class JsCollections {
     /*-{
         return new $wnd.Map();
     }-*/;
+
+    private static native <V> JsSet<V> createNativeSet()
+    /*-{
+        return new $wnd.Set();
+    }-*/;
+
+    /**
+     * Checks if the given map is empty, i.e. has no mappings.
+     *
+     * @param map
+     *            the map to check
+     * @return <code>true</code> if the map is empty, false otherwise
+     */
+    public static <K, V> boolean isEmpty(JsMap<K, V> map) {
+        return map.size() == 0;
+    }
+
+    /**
+     * Checks if the given set is empty.
+     *
+     * @param set
+     *            the set to check
+     * @return <code>true</code> if the set is empty, false otherwise
+     */
+    public static <V> boolean isEmpty(JsSet<V> set) {
+        return set.size() == 0;
+    }
+
 }

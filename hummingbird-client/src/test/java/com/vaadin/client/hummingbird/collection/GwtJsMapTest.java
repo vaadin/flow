@@ -21,45 +21,7 @@ import java.util.Map;
 
 import com.vaadin.client.ClientEngineTestBase;
 
-public class GwtCollectionTest extends ClientEngineTestBase {
-
-    public void testArray() {
-        JsArray<String> array = JsCollections.array();
-
-        assertEquals(0, array.length());
-
-        array.push("foo");
-
-        assertEquals(1, array.length());
-
-        assertEquals("foo", array.get(0));
-
-        array.set(0, "bar");
-
-        assertEquals("bar", array.get(0));
-    }
-
-    public void testArraySplice() {
-        JsArray<String> array = JsCollections.array();
-
-        // 1, 2
-        array.splice(0, 0, "1", "2");
-
-        // 1, 1.3, 1.7, 2
-        JsArray<String> noneRemoved = array.splice(1, 0, "1.3", "1.7");
-
-        assertEquals(0, noneRemoved.length());
-        assertEquals(4, array.length());
-        assertEquals("1.3", array.get(1));
-
-        // 1, 2
-        JsArray<String> twoRemoved = array.splice(1, 2);
-        assertEquals(2, twoRemoved.length());
-        assertEquals("1.7", twoRemoved.get(1));
-
-        assertEquals(2, array.length());
-        assertEquals("2", array.get(1));
-    }
+public class GwtJsMapTest extends ClientEngineTestBase {
 
     public void testMap() {
         JsMap<String, Integer> map = JsCollections.map();
@@ -101,6 +63,29 @@ public class GwtCollectionTest extends ClientEngineTestBase {
         expectedValues.put("Two", 2);
 
         assertEquals(expectedValues, seenValues);
+    }
+
+    public void testMapValues() {
+        JsMap<String, Integer> map = JsCollections.map();
+
+        map.set("One", 1).set("Two", 2);
+
+        JsArray<Integer> values = JsCollections.mapValues(map);
+
+        assertEquals(2, values.length());
+
+        assertEquals(1, values.get(0).intValue());
+        assertEquals(2, values.get(1).intValue());
+
+        map.delete("One");
+
+        values = JsCollections.mapValues(map);
+        assertEquals(1, values.length());
+        assertEquals(2, values.get(0).intValue());
+
+        map.clear();
+        values = JsCollections.mapValues(map);
+        assertEquals(0, values.length());
     }
 
 }
