@@ -22,12 +22,18 @@ public class StateTree {
     // Double instead of Integer since GWT 2.8 doesn't box doubles
     private final JsMap<Double, StateNode> idToNode = JsCollections.map();
 
+    private final StateNode rootNode = new StateNode(0, this);
+
+    public StateTree() {
+        registerNode(rootNode);
+    }
+
     public void registerNode(StateNode node) {
         assert node != null;
         assert node.getTree() == this;
 
         Double key = Double.valueOf(node.getId());
-        assert !idToNode.has(key);
+        assert !idToNode.has(key) : "Node " + key + " is already registered";
 
         idToNode.set(key, node);
     }
@@ -36,5 +42,9 @@ public class StateTree {
         Double key = Double.valueOf(id);
 
         return idToNode.get(key);
+    }
+
+    public StateNode getRootNode() {
+        return rootNode;
     }
 }

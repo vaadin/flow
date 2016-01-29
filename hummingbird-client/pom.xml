@@ -14,7 +14,7 @@
 	<properties>
 		<gwt.module>com.vaadin.ClientEngine</gwt.module>
 		<gwt.module.output>${project.build.outputDirectory}/VAADIN/client</gwt.module.output>
-		<gwt.module.style>OBF</gwt.module.style>
+		<gwt.module.style>PRETTY</gwt.module.style>
 	</properties>
 
 	<dependencies>
@@ -92,6 +92,8 @@
 					</execution>
 				</executions>
 				<configuration>
+					<!-- Assertions should be disabled once we introduce a separate production build -->
+					<enableAssertions>true</enableAssertions>
 					<failOnError>true</failOnError>
 					<gwtSdkFirstInClasspath></gwtSdkFirstInClasspath>
 					<persistentunitcache>false</persistentunitcache>
