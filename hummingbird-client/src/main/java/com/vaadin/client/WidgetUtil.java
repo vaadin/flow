@@ -55,4 +55,16 @@ public class WidgetUtil {
         return a.getHref();
     }
 
+    /**
+     * Anything in, anything out. It's JavaScript after all. This method just
+     * makes the Java compiler accept the fact.
+     *
+     * @param value
+     *            anything
+     * @return the same stuff
+     */
+    public static native <T> T crazyJsCast(Object value)
+    /*-{
+        return value;
+    }-*/;
 }
