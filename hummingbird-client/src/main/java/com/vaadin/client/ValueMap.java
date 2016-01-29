@@ -18,9 +18,6 @@
  */
 package com.vaadin.client;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
@@ -60,15 +57,6 @@ public final class ValueMap extends JavaScriptObject {
         }
         return a;
     }-*/;
-
-    public Set<String> getKeySet() {
-        final HashSet<String> attrs = new HashSet<String>();
-        JsArrayString attributeNamesArray = getKeyArray();
-        for (int i = 0; i < attributeNamesArray.length(); i++) {
-            attrs.add(attributeNamesArray.get(i));
-        }
-        return attrs;
-    }
 
     public native JsArrayString getJSStringArray(String name)
     /*-{

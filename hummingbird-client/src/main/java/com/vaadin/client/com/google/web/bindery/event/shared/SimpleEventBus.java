@@ -1,60 +1,41 @@
 package com.vaadin.client.com.google.web.bindery.event.shared;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.Event.Type;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
-import com.google.web.bindery.event.shared.UmbrellaException;
+import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsMap;
 
 /**
  * Basic implementation of {@link EventBus}.
+ *
+ * Copied to use JsArray and JsMap
  */
 public class SimpleEventBus extends EventBus {
+    @FunctionalInterface
     private interface Command {
         void execute();
     }
-
-    private final boolean isReverseOrder;
 
     private int firingDepth = 0;
 
     /**
      * Add and remove operations received during dispatch.
      */
-    private List<Command> deferredDeltas;
+    private JsArray<Command> deferredDeltas;
 
     /**
      * Map of event type to map of event source to list of their handlers.
      */
-    private final Map<Event.Type<?>, Map<Object, List<?>>> map = new HashMap<Event.Type<?>, Map<Object, List<?>>>();
-
-    public SimpleEventBus() {
-        this(false);
-    }
+    private final JsMap<Event.Type<?>, JsMap<Object, JsArray<?>>> map = JsCollections
+            .map();
 
     /**
-     * Allows creation of an instance that fires its handlers in the reverse of
-     * the order in which they were added, although filtered handlers all fire
-     * before unfiltered handlers.
-     * <p>
-     * 
-     * @deprecated This is a legacy feature, required by GWT's old
-     *             HandlerManager. Reverse order is not honored for handlers
-     *             tied to a specific event source (via
-     *             {@link #addHandlerToSource}.
+     * Create an instance of the event bus
      */
-    @Deprecated
-    protected SimpleEventBus(boolean fireInReverseOrder) {
-        isReverseOrder = fireInReverseOrder;
+    public SimpleEventBus() {
     }
 
     @Override
@@ -107,7 +88,7 @@ public class SimpleEventBus extends EventBus {
                 + " have size: " + getHandlerCount(type)
                 + " so do not have a handler at index: " + index;
 
-        List<H> l = getHandlerList(type, null);
+        JsArray<H> l = getHandlerList(type, null);
         return l.get(index);
     }
 
@@ -116,7 +97,7 @@ public class SimpleEventBus extends EventBus {
      */
     @Deprecated
     protected int getHandlerCount(Event.Type<?> eventKey) {
-        return getHandlerList(eventKey, null).size();
+        return getHandlerList(eventKey, null).length();
     }
 
     /**
@@ -124,14 +105,14 @@ public class SimpleEventBus extends EventBus {
      */
     @Deprecated
     protected boolean isEventHandled(Event.Type<?> eventKey) {
-        return map.containsKey(eventKey);
+        return map.has(eventKey);
     }
 
     private void defer(Command command) {
         if (deferredDeltas == null) {
-            deferredDeltas = new ArrayList<Command>();
+            deferredDeltas = JsCollections.array();
         }
-        deferredDeltas.add(command);
+        deferredDeltas.push(command);
     }
 
     private <H> HandlerRegistration doAdd(final Event.Type<H> type,
@@ -159,8 +140,8 @@ public class SimpleEventBus extends EventBus {
     }
 
     private <H> void doAddNow(Event.Type<H> type, Object source, H handler) {
-        List<H> l = ensureHandlerList(type, source);
-        l.add(handler);
+        JsArray<H> l = ensureHandlerList(type, source);
+        l.push(handler);
     }
 
     private <H> void doFire(Event<H> event, Object source) {
@@ -174,28 +155,25 @@ public class SimpleEventBus extends EventBus {
                 setSourceOfEvent(event, source);
             }
 
-            List<H> handlers = getDispatchList(event.getAssociatedType(),
+            JsArray<H> handlers = getDispatchList(event.getAssociatedType(),
                     source);
-            Set<Throwable> causes = null;
+            JsArray<Throwable> causes = null;
 
-            ListIterator<H> it = isReverseOrder
-                    ? handlers.listIterator(handlers.size())
-                    : handlers.listIterator();
-            while (isReverseOrder ? it.hasPrevious() : it.hasNext()) {
-                H handler = isReverseOrder ? it.previous() : it.next();
+            for (int i = 0; i < handlers.length(); i++) {
+                H handler = handlers.get(i);
 
                 try {
                     dispatchEvent(event, handler);
-                } catch (Throwable e) {
+                } catch (Exception e) {
                     if (causes == null) {
-                        causes = new HashSet<Throwable>();
+                        causes = JsCollections.array();
                     }
-                    causes.add(e);
+                    causes.set(causes.length(), e);
                 }
             }
 
             if (causes != null) {
-                throw new UmbrellaException(causes);
+                throw new RuntimeException(causes.get(0));
             }
         } finally {
             firingDepth--;
@@ -206,9 +184,9 @@ public class SimpleEventBus extends EventBus {
     }
 
     private <H> void doRemoveNow(Event.Type<H> type, Object source, H handler) {
-        List<H> l = getHandlerList(type, source);
+        JsArray<H> l = getHandlerList(type, source);
 
-        boolean removed = l.remove(handler);
+        boolean removed = JsCollections.remove(l, handler);
 
         if (removed && l.isEmpty()) {
             prune(type, source);
@@ -235,48 +213,50 @@ public class SimpleEventBus extends EventBus {
         });
     }
 
-    private <H> List<H> ensureHandlerList(Event.Type<H> type, Object source) {
-        Map<Object, List<?>> sourceMap = map.get(type);
+    private <H> JsArray<H> ensureHandlerList(Event.Type<H> type,
+            Object source) {
+        JsMap<Object, JsArray<?>> sourceMap = map.get(type);
         if (sourceMap == null) {
-            sourceMap = new HashMap<Object, List<?>>();
-            map.put(type, sourceMap);
+            sourceMap = JsCollections.map();
+            map.set(type, sourceMap);
         }
 
         // safe, we control the puts.
         @SuppressWarnings("unchecked")
-        List<H> handlers = (List<H>) sourceMap.get(source);
+        JsArray<H> handlers = (JsArray<H>) sourceMap.get(source);
         if (handlers == null) {
-            handlers = new ArrayList<H>();
-            sourceMap.put(source, handlers);
+            handlers = JsCollections.array();
+            sourceMap.set(source, handlers);
         }
 
         return handlers;
     }
 
-    private <H> List<H> getDispatchList(Event.Type<H> type, Object source) {
-        List<H> directHandlers = getHandlerList(type, source);
+    private <H> JsArray<H> getDispatchList(Event.Type<H> type, Object source) {
+        JsArray<H> directHandlers = getHandlerList(type, source);
         if (source == null) {
             return directHandlers;
         }
 
-        List<H> globalHandlers = getHandlerList(type, null);
+        JsArray<H> globalHandlers = getHandlerList(type, null);
 
-        List<H> rtn = new ArrayList<H>(directHandlers);
-        rtn.addAll(globalHandlers);
+        JsArray<H> rtn = JsCollections.array();
+        JsCollections.addAll(rtn, directHandlers);
+        JsCollections.addAll(rtn, globalHandlers);
         return rtn;
     }
 
-    private <H> List<H> getHandlerList(Event.Type<H> type, Object source) {
-        Map<Object, List<?>> sourceMap = map.get(type);
+    private <H> JsArray<H> getHandlerList(Event.Type<H> type, Object source) {
+        JsMap<Object, JsArray<?>> sourceMap = map.get(type);
         if (sourceMap == null) {
-            return Collections.emptyList();
+            return JsCollections.array();
         }
 
         // safe, we control the puts.
         @SuppressWarnings("unchecked")
-        List<H> handlers = (List<H>) sourceMap.get(source);
+        JsArray<H> handlers = (JsArray<H>) sourceMap.get(source);
         if (handlers == null) {
-            return Collections.emptyList();
+            return JsCollections.array();
         }
 
         return handlers;
@@ -285,7 +265,8 @@ public class SimpleEventBus extends EventBus {
     private void handleQueuedAddsAndRemoves() {
         if (deferredDeltas != null) {
             try {
-                for (Command c : deferredDeltas) {
+                for (int i = 0; i < deferredDeltas.length(); i++) {
+                    Command c = deferredDeltas.get(i);
                     c.execute();
                 }
             } finally {
@@ -295,15 +276,16 @@ public class SimpleEventBus extends EventBus {
     }
 
     private void prune(Event.Type<?> type, Object source) {
-        Map<Object, List<?>> sourceMap = map.get(type);
+        JsMap<Object, JsArray<?>> sourceMap = map.get(type);
 
-        List<?> pruned = sourceMap.remove(source);
+        JsArray<?> pruned = sourceMap.get(source);
+        sourceMap.delete(source);
 
         assert pruned != null : "Can't prune what wasn't there";
         assert pruned.isEmpty() : "Pruned unempty list!";
 
-        if (sourceMap.isEmpty()) {
-            map.remove(type);
+        if (JsCollections.isEmpty(sourceMap)) {
+            map.delete(type);
         }
     }
 }
