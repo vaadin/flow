@@ -19,6 +19,9 @@ import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 /**
  * A client-side representation of a server-side state node.
  *
@@ -114,5 +117,20 @@ public class StateNode {
     public void forEachNamespace(
             ForEachCallback<Double, AbstractNamespace> callback) {
         namespaces.forEach(callback);
+    }
+
+    /**
+     * Gets a JSON object representing the contents of this namespace. Only
+     * intended for debugging purposes.
+     *
+     * @return a JSON representation
+     */
+    public JsonObject getDebugJson() {
+        JsonObject object = Json.createObject();
+
+        forEachNamespace((ns, nsId) -> object.put(String.valueOf(nsId),
+                ns.getDebugJson()));
+
+        return object;
     }
 }
