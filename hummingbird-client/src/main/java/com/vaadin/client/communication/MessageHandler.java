@@ -15,11 +15,8 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.core.client.Duration;
@@ -36,6 +33,8 @@ import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.TreeChangeProcessor;
+import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.client.Browser;
@@ -75,7 +74,8 @@ public class MessageHandler {
     /**
      * Contains all UIDL messages received while response handling is suspended
      */
-    private List<PendingUIDLMessage> pendingUIDLMessages = new ArrayList<PendingUIDLMessage>();
+    private JsArray<PendingUIDLMessage> pendingUIDLMessages = JsCollections
+            .array();
 
     // will hold the CSRF token once received
     private String csrfToken = ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE;
@@ -226,7 +226,7 @@ public class MessageHandler {
                         + " but expected " + getExpectedServerId()
                         + ". Postponing handling until the missing message(s) have been received");
             }
-            pendingUIDLMessages.add(new PendingUIDLMessage(valueMap));
+            pendingUIDLMessages.push(new PendingUIDLMessage(valueMap));
             if (!forceHandleMessage.isRunning()) {
                 forceHandleMessage.schedule(MAX_SUSPENDED_TIMEOUT);
             }
@@ -523,17 +523,19 @@ public class MessageHandler {
         }
 
         // Try to find the next expected message
-        PendingUIDLMessage toHandle = null;
-        for (PendingUIDLMessage message : pendingUIDLMessages) {
+        int toHandle = -1;
+        for (int i = 0; i < pendingUIDLMessages.length(); i++) {
+            PendingUIDLMessage message = pendingUIDLMessages.get(i);
             if (isNextExpectedMessage(getServerId(message.json))) {
-                toHandle = message;
+                toHandle = i;
                 break;
             }
         }
 
-        if (toHandle != null) {
-            pendingUIDLMessages.remove(toHandle);
-            handleJSON(toHandle.getJson());
+        if (toHandle != -1) {
+            PendingUIDLMessage messageToHandle = pendingUIDLMessages
+                    .remove(toHandle);
+            handleJSON(messageToHandle.getJson());
             // Any remaining messages will be handled when this is called
             // again at the end of handleJSON
             return true;
@@ -544,13 +546,14 @@ public class MessageHandler {
     }
 
     private void removeOldPendingMessages() {
-        Iterator<PendingUIDLMessage> i = pendingUIDLMessages.iterator();
-        while (i.hasNext()) {
-            PendingUIDLMessage m = i.next();
+        for (int i = 0; i < pendingUIDLMessages.length(); i++) {
+            PendingUIDLMessage m = pendingUIDLMessages.get(i);
             int serverId = getServerId(m.json);
             if (serverId != -1 && serverId < getExpectedServerId()) {
                 Console.log("Removing old message with id " + serverId);
-                i.remove();
+
+                pendingUIDLMessages.remove(i);
+                i--;
             }
         }
     }

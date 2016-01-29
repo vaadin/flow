@@ -88,4 +88,11 @@ public class JreJsArray<T> extends JsArray<T> {
     public JsArray<T> splice(int index, int remove) {
         return doSplice(index, remove, null);
     }
+
+    /**
+     * Internal method called to clear the array
+     */
+    public void doClear() {
+        values.clear();
+    }
 }

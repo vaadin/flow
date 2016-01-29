@@ -19,6 +19,8 @@ package com.vaadin.client.hummingbird.collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Test;
+
 import com.vaadin.client.ClientEngineTestBase;
 
 public class GwtCollectionTest extends ClientEngineTestBase {
@@ -37,6 +39,65 @@ public class GwtCollectionTest extends ClientEngineTestBase {
         array.set(0, "bar");
 
         assertEquals("bar", array.get(0));
+    }
+
+    @Test
+    public void testArrayRemove() {
+        JsArray<String> array = JsCollections.array();
+
+        // 1, 2, 3
+        array.push("1");
+        array.push("2");
+        array.push("3");
+
+        array.remove(1);
+        assertArray(array, "1", "3");
+        array.remove(1);
+        assertArray(array, "1");
+        array.remove(0);
+        assertArray(array);
+    }
+
+    @Test
+    public void testArrayClear() {
+        JsArray<String> array = JsCollections.array();
+
+        // 1, 2, 3
+        array.push("1");
+        array.push("2");
+        array.push("3");
+
+        array.clear();
+        assertArray(array);
+    }
+
+    @Test
+    public void testEmptyArrayClear() {
+        JsArray<String> array = JsCollections.array();
+        array.clear();
+        assertArray(array);
+    }
+
+    @Test
+    public void testArrayIsEmpty() {
+        JsArray<String> array = JsCollections.array();
+        assertTrue(array.isEmpty());
+        // 1, 2, 3
+        array.push("1");
+        assertFalse(array.isEmpty());
+        array.push("2");
+        assertFalse(array.isEmpty());
+        array.remove(0);
+        assertFalse(array.isEmpty());
+        array.remove(0);
+        assertTrue(array.isEmpty());
+    }
+
+    private <T> void assertArray(JsArray<T> array, T... values) {
+        assertEquals(values.length, array.length());
+        for (int i = 0; i < values.length; i++) {
+            assertEquals(values[i], array.get(i));
+        }
     }
 
     public void testArraySplice() {
