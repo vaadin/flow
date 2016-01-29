@@ -28,7 +28,6 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.ApplicationConnection.ApplicationState;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
@@ -164,22 +163,18 @@ public class MessageHandler {
                     + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
         }
 
-        if (connection.getApplicationState() == ApplicationState.RUNNING) {
-            handleJSON(json);
-        } else if (connection
-                .getApplicationState() == ApplicationState.INITIALIZING) {
+        switch (connection.getApplicationState()) {
+        case INITIALIZING:
             // Application is starting up for the first time
             connection.setApplicationRunning(true);
-            connection.executeWhenCSSLoaded(new Runnable() {
-                @Override
-                public void run() {
-                    handleJSON(json);
-                }
-            });
-        } else {
+            // Then continue processing as normal
+            //$FALL-THROUGH$
+        case RUNNING:
+            handleJSON(json);
+            break;
+        default:
             Console.warn(
                     "Ignored received message because application has already been stopped");
-            return;
         }
     }
 
