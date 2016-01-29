@@ -19,6 +19,10 @@ package com.vaadin.client;
 import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
 
+import elemental.json.JsonArray;
+import elemental.json.JsonValue;
+import elemental.json.impl.JsonUtil;
+
 /**
  * Utility methods which are related to client side code only
  */
@@ -55,4 +59,68 @@ public class WidgetUtil {
         return a.getHref();
     }
 
+    /**
+     * Converts a JSON array to a Java array. This is a no-op in compiled
+     * JavaScipt, but needs special handling for tests running in the JVM.
+     *
+     * @param array
+     *            the JSON array to convert
+     * @return the converted Java array
+     */
+    public static Object[] jsonArrayToJavaArray(JsonArray array) {
+        Object[] add;
+        if (GWT.isScript()) {
+            add = WidgetUtil.crazyJsCast(array);
+        } else {
+            add = new Object[array.length()];
+            for (int i = 0; i < add.length; i++) {
+                add[i] = jsonValueToJavaValue(array.get(i));
+            }
+        }
+        return add;
+    }
+
+    /**
+     * Converts a JSON value to a Java value. This is a no-op in compiled
+     * JavaScipt, but needs special handling for tests running in the JVM.
+     *
+     * @param value
+     *            the JSON value to convert
+     * @return the converted Java value
+     */
+    @SuppressWarnings("boxing")
+    public static Object jsonValueToJavaValue(JsonValue value) {
+        if (GWT.isScript()) {
+            return value;
+        } else {
+            switch (value.getType()) {
+            case BOOLEAN:
+                return value.asBoolean();
+            case STRING:
+                return value.asString();
+            case NUMBER:
+                return value.asNumber();
+            case NULL:
+                return null;
+            case ARRAY:
+                return jsonArrayToJavaArray((JsonArray) value);
+            default:
+                throw new IllegalArgumentException(
+                        "Can't convert " + value.getType());
+            }
+        }
+    }
+
+    /**
+     * Anything in, anything out. It's JavaScript after all. This method just
+     * makes the Java compiler accept the fact.
+     *
+     * @param value
+     *            anything
+     * @return the same stuff
+     */
+    public static native <T> T crazyJsCast(Object value)
+    /*-{
+        return value;
+    }-*/;
 }
