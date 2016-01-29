@@ -96,6 +96,8 @@
 					<gwtSdkFirstInClasspath></gwtSdkFirstInClasspath>
 					<persistentunitcache>false</persistentunitcache>
 					<webappDirectory>${gwt.module.output}</webappDirectory>
+					<compileReport>true</compileReport>
+
 					<modules>
 						<module>${gwt.module}</module>
 					</modules>
