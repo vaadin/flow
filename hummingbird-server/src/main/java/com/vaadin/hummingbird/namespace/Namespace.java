@@ -85,4 +85,31 @@ public abstract class Namespace implements Serializable {
      * relative to a newly created namespace.
      */
     public abstract void resetChanges();
+
+    /**
+     * Attaches an object if it is a {@link StateNode}.
+     *
+     * @param child
+     *            the instance to maybe attach
+     */
+    protected void attachPotentialChild(Object child) {
+        if (child instanceof StateNode) {
+            StateNode childNode = (StateNode) child;
+            childNode.setParent(getNode());
+        }
+    }
+
+    /**
+     * Detaches an object if it is a {@link StateNode}.
+     *
+     * @param child
+     *            the instance to maybe detach
+     */
+    @SuppressWarnings("static-method")
+    protected void detatchPotentialChild(Object child) {
+        if (child instanceof StateNode) {
+            StateNode childNode = (StateNode) child;
+            childNode.setParent(null);
+        }
+    }
 }

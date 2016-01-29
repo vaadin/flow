@@ -6,6 +6,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.change.NodeChange;
 
@@ -15,8 +17,8 @@ public class ListNamespaceTest
 
     @Test
     public void testAddingAndRemoving() {
-        Object value1 = new Object();
-        Object value2 = new Object();
+        StateNode value1 = StateNodeTest.createEmptyNode("value1");
+        StateNode value2 = StateNodeTest.createEmptyNode("value2");
 
         namespace.add(value1);
 
@@ -61,8 +63,8 @@ public class ListNamespaceTest
 
     @Test
     public void testChangesAfterRest() {
-        Object value1 = new Object();
-        Object value2 = new Object();
+        StateNode value1 = StateNodeTest.createEmptyNode("value1");
+        StateNode value2 = StateNodeTest.createEmptyNode("value2");
 
         namespace.add(value1);
         namespace.add(value2);
@@ -77,5 +79,20 @@ public class ListNamespaceTest
         Assert.assertEquals(0, change.getRemoveCount());
         Assert.assertEquals(Arrays.asList(value1, value2),
                 change.getNewItems());
+    }
+
+    @Test
+    public void testAttachDetachChildren() {
+        StateNode child = StateNodeTest.createEmptyNode("child");
+
+        Assert.assertNull(child.getParent());
+
+        namespace.add(child);
+
+        Assert.assertSame(namespace.getNode(), child.getParent());
+
+        namespace.remove(0);
+
+        Assert.assertNull(child.getParent());
     }
 }
