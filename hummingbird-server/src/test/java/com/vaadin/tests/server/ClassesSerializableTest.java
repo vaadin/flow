@@ -57,6 +57,7 @@ public class ClassesSerializableTest extends TestCase {
             "com\\.vaadin\\.util\\.SerializerHelper", // fully static
             "com\\.vaadin\\.util\\.JsonStream.*", // fully static
             "com\\.vaadin\\.hummingbird\\.JsonCodec", // fully static
+            "com\\.vaadin\\.hummingbird\\.namespace\\.NamespaceRegistry.*", // static
             // class level filtering, also affecting nested classes and
             // interfaces
             "com\\.vaadin\\.server\\.LegacyCommunicationManager.*", //
