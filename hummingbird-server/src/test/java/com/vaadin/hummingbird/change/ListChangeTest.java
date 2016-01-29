@@ -26,7 +26,7 @@ import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ListNamespace;
-import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.namespace.NamespaceRegistry;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -46,7 +46,7 @@ public class ListChangeTest {
 
         Assert.assertEquals(change.getNode().getId(),
                 (int) json.getNumber("node"));
-        Assert.assertEquals(Namespace.getId(namespace.getClass()),
+        Assert.assertEquals(NamespaceRegistry.getId(namespace.getClass()),
                 (int) json.getNumber("ns"));
         Assert.assertEquals("splice", json.getString("type"));
         Assert.assertEquals(0, (int) json.getNumber("index"));
