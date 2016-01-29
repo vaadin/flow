@@ -114,6 +114,10 @@ public class JsCollections {
         return map.size() == 0;
     }
 
+    public static <V> boolean isEmpty(JsSet<V> set) {
+        return set.size() == 0;
+    }
+
     public static <H> void addAll(JsArray<H> target, JsArray<H> source) {
         if (target == source) {
             throw new IllegalArgumentException(
