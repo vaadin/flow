@@ -19,8 +19,6 @@ package com.vaadin.client.hummingbird.collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Assert;
-
 import com.vaadin.client.ClientEngineTestBase;
 
 public class GwtJsSetTest extends ClientEngineTestBase {
@@ -65,7 +63,7 @@ public class GwtJsSetTest extends ClientEngineTestBase {
 
     public void testSetIsEmpty() {
         JsSet<String> set = JsCollections.set();
-        Assert.assertTrue(JsCollections.isEmpty(set));
+        assertTrue(JsCollections.isEmpty(set));
         // 1, 2, 3
         set.add("1");
         assertFalse(JsCollections.isEmpty(set));

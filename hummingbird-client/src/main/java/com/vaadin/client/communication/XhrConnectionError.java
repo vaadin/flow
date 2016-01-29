@@ -15,8 +15,7 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.Response;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 
 import elemental.json.JsonObject;
 
@@ -29,70 +28,22 @@ import elemental.json.JsonObject;
  */
 public class XhrConnectionError {
 
-    private Throwable exception;
-    private Request request;
-    private Response response;
+    private XMLHttpRequest xhr;
     private JsonObject payload;
 
-    /**
-     * Constructs an event from the given request, payload and exception
-     *
-     * @param request
-     *            the request which failed
-     * @param payload
-     *            the payload which was going to the server
-     * @param exception
-     *            the exception describing the problem
-     */
-    public XhrConnectionError(Request request, JsonObject payload,
-            Throwable exception) {
-        this.request = request;
-        this.exception = exception;
+    public XhrConnectionError(XMLHttpRequest xhr, JsonObject payload) {
+        this.xhr = xhr;
         this.payload = payload;
     }
 
     /**
-     * Constructs an event from the given request, response and payload
+     * Returns {@link XMLHttpRequest} which failed to reach the server
      *
-     * @param request
-     *            the request which failed
-     * @param payload
-     *            the payload which was going to the server
-     * @param response
-     *            the response for the request
-     */
-    public XhrConnectionError(Request request, JsonObject payload,
-            Response response) {
-        this.request = request;
-        this.response = response;
-        this.payload = payload;
-    }
-
-    /**
-     * Returns the exception which caused the problem, if available
+     * @return the request which failed
      *
-     * @return the exception which caused the problem, or null if not available
      */
-    public Throwable getException() {
-        return exception;
-    }
-
-    /**
-     * Returns the request for which the problem occurred
-     *
-     * @return the request where the problem occurred
-     */
-    public Request getRequest() {
-        return request;
-    }
-
-    /**
-     * Returns the received response, if available
-     *
-     * @return the received response, or null if not available
-     */
-    public Response getResponse() {
-        return response;
+    public XMLHttpRequest getXhr() {
+        return xhr;
     }
 
     /**
