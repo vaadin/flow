@@ -42,6 +42,11 @@ public class JreJsArray<T> extends JsArray<T> {
 
     // Special name since the actual method must be final
     public void doSet(int index, T value) {
+        while (index >= values.size()) {
+            // Setting outside the current range should extend the array as it
+            // does in JS
+            values.add(null);
+        }
         values.set(index, value);
     }
 

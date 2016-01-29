@@ -45,6 +45,7 @@ public interface JsMap<K, V> {
     public interface ForEachCallback<K, V> {
         /**
          * Receives one key-value pair.
+         *
          * @param value
          *            the value
          * @param key
@@ -119,4 +120,5 @@ public interface JsMap<K, V> {
      */
     @JsProperty(name = "size")
     public int size();
+
 }

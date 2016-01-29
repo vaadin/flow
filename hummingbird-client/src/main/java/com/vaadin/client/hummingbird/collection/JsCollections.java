@@ -114,4 +114,28 @@ public class JsCollections {
         return map.size() == 0;
     }
 
+    public static <H> void addAll(JsArray<H> target, JsArray<H> source) {
+        if (target == source) {
+            throw new IllegalArgumentException(
+                    "Target and source cannot be the same array");
+        }
+
+        // Consider optimizing this using splice if needed
+        int targetIndex = target.length();
+        for (int i = 0; i < source.length(); i++) {
+            target.set(targetIndex++, source.get(i));
+        }
+    }
+
+    public static <H> boolean remove(JsArray<H> array, H toRemove) {
+        for (int i = 0; i < array.length(); i++) {
+            if (array.get(i) == toRemove) {
+                array.remove(i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }
