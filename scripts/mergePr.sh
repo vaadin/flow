@@ -60,7 +60,9 @@ echo "Closes #$PR" >> COMMIT_MSG
 
 git commit --author "$AUTHOR"  -F COMMIT_MSG  --edit
 
+echo
 echo "If everything is ok, do"
-echo "git push origin head:master"
+echo
+echo "git push origin $BRANCH:master"
 
 rm -f COMMIT_MSG
