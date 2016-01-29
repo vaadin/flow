@@ -30,21 +30,29 @@ import com.vaadin.hummingbird.change.NodeChange;
  *
  * @since
  * @author Vaadin Ltd
+ * @param <T>
+ *            the type of the items in the list
  */
-public abstract class ListNamespace extends Namespace {
+public abstract class ListNamespace<T> extends Namespace {
 
-    private List<Object> values = new ArrayList<>();
+    private List<T> values = new ArrayList<>();
 
     private List<ListSpliceChange> changes = new ArrayList<>();
+
+    private boolean nodeValues;
 
     /**
      * Creates a new list namespace for the given node.
      *
      * @param node
      *            the node that the namespace belongs to
+     * @param nodeValues
+     *            <code>true</code> if this list contains child nodes;
+     *            <code>false</code> if this list contains primitive value
      */
-    public ListNamespace(StateNode node) {
+    public ListNamespace(StateNode node, boolean nodeValues) {
         super(node);
+        this.nodeValues = nodeValues;
     }
 
     /**
@@ -64,7 +72,7 @@ public abstract class ListNamespace extends Namespace {
      *            the of the desired item
      * @return the item at the given index
      */
-    protected Object get(int index) {
+    protected T get(int index) {
         setAccessed();
         return values.get(index);
     }
@@ -75,7 +83,7 @@ public abstract class ListNamespace extends Namespace {
      * @param item
      *            the item to add
      */
-    protected void add(Object item) {
+    protected void add(T item) {
         add(values.size(), item);
     }
 
@@ -87,7 +95,12 @@ public abstract class ListNamespace extends Namespace {
      * @param item
      *            the item to insert
      */
-    protected void add(int index, Object item) {
+    protected void add(int index, T item) {
+        assert item == null || (item instanceof StateNode == nodeValues);
+
+        if (nodeValues) {
+            attachPotentialChild(item);
+        }
         values.add(index, item);
 
         addChange(new ListSpliceChange(this, index, 0,
@@ -101,7 +114,8 @@ public abstract class ListNamespace extends Namespace {
      *            index of the item to remove
      */
     public void remove(int index) {
-        values.remove(index);
+        Object removed = values.remove(index);
+        detatchPotentialChild(removed);
 
         addChange(
                 new ListSpliceChange(this, index, 1, Collections.emptyList()));
@@ -133,5 +147,15 @@ public abstract class ListNamespace extends Namespace {
             changes.add(
                     new ListSpliceChange(this, 0, 0, new ArrayList<>(values)));
         }
+    }
+
+    /**
+     * Checks whether this list contains node values.
+     *
+     * @return <code>true</code> if this list contains node values;
+     *         <code>false</code> if this list contains primitive values
+     */
+    public boolean isNodeValues() {
+        return nodeValues;
     }
 }
