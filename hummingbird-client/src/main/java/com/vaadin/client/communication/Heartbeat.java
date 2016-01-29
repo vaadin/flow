@@ -15,14 +15,12 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
+import com.vaadin.client.elemental.js.util.Xhr;
 import com.vaadin.client.Console;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.util.SharedUtil;
@@ -82,13 +80,12 @@ public class Heartbeat {
     public void send() {
         timer.cancel();
 
-        final RequestBuilder rb = new RequestBuilder(RequestBuilder.POST, uri);
-
-        final RequestCallback callback = new RequestCallback() {
+        Console.debug("Sending heartbeat request...");
+        Xhr.post(uri, null, "text/plain; charset=utf-8", new Xhr.Callback() {
 
             @Override
-            public void onResponseReceived(Request request, Response response) {
-                int status = response.getStatusCode();
+            public void onSuccess(XMLHttpRequest xhr) {
+                int status = xhr.getStatus();
 
                 if (status == Response.SC_OK) {
                     connection.getConnectionStateHandler().heartbeatOk();
@@ -96,30 +93,22 @@ public class Heartbeat {
                     // Handler should stop the application if heartbeat should
                     // no longer be sent
                     connection.getConnectionStateHandler()
-                            .heartbeatInvalidStatusCode(request, response);
+                            .heartbeatInvalidStatusCode(xhr);
                 }
 
                 schedule();
             }
 
             @Override
-            public void onError(Request request, Throwable exception) {
+            public void onFail(XMLHttpRequest xhr) {
                 // Handler should stop the application if heartbeat should no
                 // longer be sent
                 connection.getConnectionStateHandler()
-                        .heartbeatException(request, exception);
+                        .heartbeatInvalidStatusCode(xhr);
                 schedule();
+
             }
-        };
-
-        rb.setCallback(callback);
-
-        try {
-            Console.debug("Sending heartbeat request...");
-            rb.send();
-        } catch (RequestException re) {
-            callback.onError(null, re);
-        }
+        });
 
     }
 
