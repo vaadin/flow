@@ -121,4 +121,57 @@ public class JsCollections {
         return map.size() == 0;
     }
 
+    /**
+     * Checks if the given set is empty.
+     *
+     * @param set
+     *            the set to check
+     * @return <code>true</code> if the set is empty, false otherwise
+     */
+    public static <V> boolean isEmpty(JsSet<V> set) {
+        return set.size() == 0;
+    }
+
+    /**
+     * Add all items in the source array to the end of the target array
+     *
+     * @param target
+     *            the target array to append to
+     * @param source
+     *            the source array to read from
+     */
+    public static <H> void addAll(JsArray<H> target, JsArray<H> source) {
+        if (target == source) {
+            throw new IllegalArgumentException(
+                    "Target and source cannot be the same array");
+        }
+
+        // Consider optimizing this using splice if needed
+        int targetIndex = target.length();
+        for (int i = 0; i < source.length(); i++) {
+            target.set(targetIndex++, source.get(i));
+        }
+    }
+
+    /**
+     * Removes the given item from the array
+     *
+     * @param array
+     *            the array to remove from
+     * @param toRemove
+     *            the item to remove
+     * @return <code>true</code> if the item was found and removed from the
+     *         array, <code>false</code> otherwise
+     */
+    public static <H> boolean remove(JsArray<H> array, H toRemove) {
+        for (int i = 0; i < array.length(); i++) {
+            if (array.get(i) == toRemove) {
+                array.remove(i);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 }

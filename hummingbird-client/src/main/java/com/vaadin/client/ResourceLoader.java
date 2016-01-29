@@ -16,9 +16,6 @@
 
 package com.vaadin.client;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -33,6 +30,7 @@ import com.google.gwt.user.client.Timer;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.collection.JsSet;
 
 /**
  * ResourceLoader lets you dynamically include external scripts and styles on
@@ -142,8 +140,8 @@ public class ResourceLoader {
 
     private ApplicationConnection connection;
 
-    private final Set<String> loadedResources = new HashSet<String>();
-    private final Set<String> preloadedResources = new HashSet<String>();
+    private final JsSet<String> loadedResources = JsCollections.set();
+    private final JsSet<String> preloadedResources = JsCollections.set();
 
     private final JsMap<String, JsArray<ResourceLoadListener>> loadListeners = JsCollections
             .map();
@@ -228,7 +226,7 @@ public class ResourceLoader {
             final ResourceLoadListener resourceLoadListener, boolean async) {
         final String url = WidgetUtil.getAbsoluteUrl(scriptUrl);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url, false);
-        if (loadedResources.contains(url)) {
+        if (loadedResources.has(url)) {
             if (resourceLoadListener != null) {
                 resourceLoadListener.onLoad(event);
             }
@@ -298,7 +296,7 @@ public class ResourceLoader {
             ResourceLoadListener resourceLoadListener) {
         url = WidgetUtil.getAbsoluteUrl(url);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url, true);
-        if (loadedResources.contains(url) || preloadedResources.contains(url)) {
+        if (loadedResources.has(url) || preloadedResources.has(url)) {
             // Already loaded or preloaded -> just fire listener
             if (resourceLoadListener != null) {
                 resourceLoadListener.onLoad(event);
@@ -403,7 +401,7 @@ public class ResourceLoader {
             final ResourceLoadListener resourceLoadListener) {
         final String url = WidgetUtil.getAbsoluteUrl(stylesheetUrl);
         final ResourceLoadEvent event = new ResourceLoadEvent(this, url, false);
-        if (loadedResources.contains(url)) {
+        if (loadedResources.has(url)) {
             if (resourceLoadListener != null) {
                 resourceLoadListener.onLoad(event);
             }
@@ -489,7 +487,7 @@ public class ResourceLoader {
                     new Timer() {
                         @Override
                         public void run() {
-                            if (!loadedResources.contains(url)) {
+                            if (!loadedResources.has(url)) {
                                 fireError(event);
                             }
                         }
@@ -511,12 +509,12 @@ public class ResourceLoader {
                     if (rules === undefined) {
                         rules = sheet.rules;
                     }
-
+    
                     if (rules === null) {
                         // Style sheet loaded, but can't access length because of XSS -> assume there's something there
                         return 1;
                     }
-
+    
                     // Return length so we can distinguish 0 (probably 404 error) from normal case.
                     return rules.length;
                 } catch (err) {
@@ -578,7 +576,7 @@ public class ResourceLoader {
                 // Also fire preload events for potential listeners
                 fireLoad(new ResourceLoadEvent(this, resource, true));
             }
-            preloadedResources.remove(resource);
+            preloadedResources.delete(resource);
             loadedResources.add(resource);
             listeners = loadListeners.get(resource);
             loadListeners.delete(resource);
