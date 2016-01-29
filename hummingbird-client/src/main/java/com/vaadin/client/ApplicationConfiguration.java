@@ -15,16 +15,15 @@
  */
 package com.vaadin.client;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.client.Browser;
@@ -223,12 +222,12 @@ public class ApplicationConfiguration implements EntryPoint {
     private boolean widgetsetVersionSent = false;
     private static boolean moduleLoaded = false;
 
-    static// TODO consider to make this hashmap per application
-    LinkedList<Runnable> callbacks = new LinkedList<Runnable>();
+    static JsArray<Runnable> callbacks = JsCollections.array();
 
     private static int dependenciesLoading;
 
-    private static ArrayList<ApplicationConnection> runningApplications = new ArrayList<ApplicationConnection>();
+    private static JsArray<ApplicationConnection> runningApplications = JsCollections
+            .array();
 
     /**
      * Checks whether path info in requests to the server-side service should be
@@ -406,7 +405,7 @@ public class ApplicationConfiguration implements EntryPoint {
                 ApplicationConnection a = GWT
                         .create(ApplicationConnection.class);
                 a.init(appConf);
-                runningApplications.add(a);
+                runningApplications.push(a);
                 Profiler.leave("ApplicationConfiguration.startApplication");
 
                 a.start();
@@ -414,7 +413,7 @@ public class ApplicationConfiguration implements EntryPoint {
         });
     }
 
-    public static List<ApplicationConnection> getRunningApplications() {
+    public static JsArray<ApplicationConnection> getRunningApplications() {
         return runningApplications;
     }
 
@@ -472,7 +471,7 @@ public class ApplicationConfiguration implements EntryPoint {
         if (dependenciesLoading == 0) {
             c.run();
         } else {
-            callbacks.add(c);
+            callbacks.push(c);
         }
     }
 
@@ -482,8 +481,9 @@ public class ApplicationConfiguration implements EntryPoint {
 
     static void endDependencyLoading() {
         dependenciesLoading--;
-        if (dependenciesLoading == 0 && !callbacks.isEmpty()) {
-            for (Runnable cmd : callbacks) {
+        if (dependenciesLoading == 0 && callbacks.length() != 0) {
+            for (int i = 0; i < callbacks.length(); i++) {
+                Runnable cmd = callbacks.get(i);
                 cmd.run();
             }
             callbacks.clear();

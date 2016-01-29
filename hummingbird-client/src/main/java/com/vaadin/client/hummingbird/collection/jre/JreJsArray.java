@@ -56,7 +56,19 @@ public class JreJsArray<T> extends JsArray<T> {
         return values.size();
     }
 
-    // Special name since the actual method must be final
+    /**
+     * Internal method for actually performing a splice.
+     * <p>
+     * Exists only because splice must be final
+     *
+     * @param index
+     *            the index at which do do the operation
+     * @param remove
+     *            the number of items to remove
+     * @param add
+     *            a new item to add
+     * @return an array of removed items
+     */
     public JsArray<T> doSplice(int index, int remove, T[] add) {
         JreJsArray<T> removed = new JreJsArray<>();
         if (remove > 0) {
@@ -76,5 +88,12 @@ public class JreJsArray<T> extends JsArray<T> {
     @Override
     public JsArray<T> splice(int index, int remove) {
         return doSplice(index, remove, null);
+    }
+
+    /**
+     * Internal method called to clear the array
+     */
+    public void doClear() {
+        values.clear();
     }
 }
