@@ -19,6 +19,10 @@ import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+
 public class MapNamespace extends AbstractNamespace {
     private final JsMap<String, MapProperty> properties = JsCollections.map();
 
@@ -38,5 +42,16 @@ public class MapNamespace extends AbstractNamespace {
 
     public void forEachProperty(ForEachCallback<String, MapProperty> callback) {
         properties.forEach(callback);
+    }
+
+    @Override
+    public JsonValue getDebugJson() {
+        JsonObject json = Json.createObject();
+
+        properties.forEach((p, n) -> {
+            json.put(n, getAsDebugJson(p.getValue()));
+        });
+
+        return json;
     }
 }

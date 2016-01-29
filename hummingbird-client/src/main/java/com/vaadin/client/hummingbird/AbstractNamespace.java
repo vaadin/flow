@@ -15,6 +15,10 @@
  */
 package com.vaadin.client.hummingbird;
 
+import com.vaadin.client.WidgetUtil;
+
+import elemental.json.JsonValue;
+
 public abstract class AbstractNamespace {
 
     private final int id;
@@ -31,5 +35,16 @@ public abstract class AbstractNamespace {
 
     public StateNode getNode() {
         return node;
+    }
+
+    public abstract JsonValue getDebugJson();
+
+    protected JsonValue getAsDebugJson(Object value) {
+        if (value instanceof StateNode) {
+            StateNode child = (StateNode) value;
+            return child.getDebugJson();
+        } else {
+            return WidgetUtil.crazyJsoCast(value);
+        }
     }
 }

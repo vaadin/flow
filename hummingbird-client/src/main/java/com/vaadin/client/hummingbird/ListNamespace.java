@@ -18,6 +18,10 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonValue;
+
 public class ListNamespace extends AbstractNamespace {
 
     private final JsArray<Object> values = JsCollections.array();
@@ -45,5 +49,19 @@ public class ListNamespace extends AbstractNamespace {
     @SafeVarargs
     public final <T> void splice(int index, int remove, T... add) {
         values.splice(index, remove, add);
+    }
+
+    @Override
+    public JsonValue getDebugJson() {
+        JsonArray json = Json.createArray();
+
+        for (int i = 0; i < values.length(); i++) {
+            Object value = values.get(i);
+            JsonValue jsonValue = getAsDebugJson(value);
+
+            json.set(json.length(), jsonValue);
+        }
+
+        return json;
     }
 }

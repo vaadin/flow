@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,27 +8,30 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.namespace.Namespace;
 
 public class StateTree extends NodeOwner {
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
     private int nextId = 0;
 
-    private StateNode rootNode = new StateNode(Collections.emptyList()) {
-        @Override
-        public void setParent(StateNode parent) {
-            throw new IllegalStateException(
-                    "Can't set the parent of the tree root");
-        }
+    private final StateNode rootNode;
 
-        @Override
-        public boolean isAttached() {
-            // Root is always attached
-            return true;
-        }
-    };
+    @SafeVarargs
+    public StateTree(Class<? extends Namespace>... namespaces) {
+        rootNode = new StateNode(Arrays.asList(namespaces)) {
+            @Override
+            public void setParent(StateNode parent) {
+                throw new IllegalStateException(
+                        "Can't set the parent of the tree root");
+            }
 
-    public StateTree() {
+            @Override
+            public boolean isAttached() {
+                // Root is always attached
+                return true;
+            }
+        };
         rootNode.setOwner(this);
     }
 

@@ -19,6 +19,9 @@ import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 public class StateNode {
     private final StateTree tree;
     private final int id;
@@ -68,5 +71,15 @@ public class StateNode {
     public void forEachNamespace(
             ForEachCallback<Double, AbstractNamespace> callback) {
         namespaces.forEach(callback);
+    }
+
+    public JsonObject getDebugJson() {
+        JsonObject object = Json.createObject();
+
+        forEachNamespace((ns, id) -> {
+            object.put(String.valueOf(id), ns.getDebugJson());
+        });
+
+        return object;
     }
 }

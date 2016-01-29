@@ -37,6 +37,7 @@ import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
@@ -392,6 +393,8 @@ public class ApplicationConnection implements HasHandlers {
     protected MessageHandler messageHandler;
     protected MessageSender messageSender;
 
+    private final StateTree tree = new StateTree();
+
     /**
      * Shows the communication error notification.
      *
@@ -684,6 +687,10 @@ public class ApplicationConnection implements HasHandlers {
         if (url != null) {
             WidgetUtil.redirect(url);
         }
+    }
+
+    public StateTree getTree() {
+        return tree;
     }
 
 }
