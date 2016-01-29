@@ -164,22 +164,18 @@ public class MessageHandler {
                     + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
         }
 
-        if (connection.getApplicationState() == ApplicationState.RUNNING) {
-            handleJSON(json);
-        } else if (connection
-                .getApplicationState() == ApplicationState.INITIALIZING) {
+        ApplicationState state = connection.getApplicationState();
+        if (state == ApplicationState.INITIALIZING) {
             // Application is starting up for the first time
             connection.setApplicationRunning(true);
-            connection.executeWhenCSSLoaded(new Runnable() {
-                @Override
-                public void run() {
-                    handleJSON(json);
-                }
-            });
+            state = connection.getApplicationState();
+        }
+
+        if (state == ApplicationState.RUNNING) {
+            handleJSON(json);
         } else {
             Console.warn(
                     "Ignored received message because application has already been stopped");
-            return;
         }
     }
 
