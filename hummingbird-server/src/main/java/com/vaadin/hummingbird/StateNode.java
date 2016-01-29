@@ -26,6 +26,7 @@ import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.namespace.NamespaceRegistry;
 
 /**
  * A node in the state tree that is synchronized with the client-side. Data
@@ -56,7 +57,7 @@ public class StateNode implements Serializable {
      */
     public StateNode(Collection<Class<? extends Namespace>> namespaces) {
         for (Class<? extends Namespace> namespaceType : namespaces) {
-            Namespace namespace = Namespace.create(namespaceType, this);
+            Namespace namespace = NamespaceRegistry.create(namespaceType, this);
             this.namespaces.put(namespaceType, namespace);
         }
 

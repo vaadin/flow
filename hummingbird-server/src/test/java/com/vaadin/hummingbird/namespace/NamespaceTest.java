@@ -34,17 +34,17 @@ public class NamespaceTest {
 
     @Test(expected = AssertionError.class)
     public void testCreateNullTypeThrows() {
-        Namespace.create(null, StateNodeTest.createEmptyNode());
+        NamespaceRegistry.create(null, StateNodeTest.createEmptyNode());
     }
 
     @Test(expected = AssertionError.class)
     public void testCreateNullNodeThrows() {
-        Namespace.create(ElementDataNamespace.class, null);
+        NamespaceRegistry.create(ElementDataNamespace.class, null);
     }
 
     @Test(expected = AssertionError.class)
     public void testCreateUnknownNamespaceThrows() {
-        Namespace.create(UnregisteredNamespace.class,
+        NamespaceRegistry.create(UnregisteredNamespace.class,
                 StateNodeTest.createEmptyNode());
     }
 
@@ -59,11 +59,11 @@ public class NamespaceTest {
 
         Assert.assertEquals(
                 "The number of expected namespaces is not up to date",
-                expectedIds.size(), Namespace.namespaces.size());
+                expectedIds.size(), NamespaceRegistry.namespaces.size());
 
         expectedIds.forEach((type, expectedId) -> {
             Assert.assertEquals("Unexpected id for " + type.getName(),
-                    expectedId.intValue(), Namespace.getId(type));
+                    expectedId.intValue(), NamespaceRegistry.getId(type));
         });
     }
 }
