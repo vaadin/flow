@@ -21,15 +21,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.shared.EventBus;
 import com.google.gwt.event.shared.EventHandler;
-import com.google.gwt.event.shared.GwtEvent;
-import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.event.shared.HasHandlers;
-import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.URL;
+import com.google.web.bindery.event.shared.Event;
+import com.google.web.bindery.event.shared.EventBus;
+import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.ConnectionStateHandler;
@@ -37,6 +34,7 @@ import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.event.SimpleEventBus;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
@@ -59,7 +57,7 @@ import elemental.client.Browser;
  *
  * Entry point classes (widgetsets) define <code>onModuleLoad()</code>.
  */
-public class ApplicationConnection implements HasHandlers {
+public class ApplicationConnection {
 
     /**
      * A string that, if found in a non-JSON response to a UIDL request, will
@@ -149,7 +147,7 @@ public class ApplicationConnection implements HasHandlers {
     }
 
     public static abstract class ApplicationConnectionEvent
-            extends GwtEvent<CommunicationHandler> {
+            extends Event<CommunicationHandler> {
 
         private ApplicationConnection connection;
 
@@ -196,7 +194,7 @@ public class ApplicationConnection implements HasHandlers {
      * @author Vaadin Ltd
      */
     public static class ApplicationStoppedEvent
-            extends GwtEvent<ApplicationStoppedHandler> {
+            extends Event<ApplicationStoppedHandler> {
 
         public static final Type<ApplicationStoppedHandler> TYPE = new Type<ApplicationStoppedHandler>();
 
@@ -364,7 +362,7 @@ public class ApplicationConnection implements HasHandlers {
                 return vi;
             }
         }
-
+    
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::getMessageHandler();
             var pd = [
@@ -375,9 +373,9 @@ public class ApplicationConnection implements HasHandlers {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-
+    
         client.initializing = false;
-
+    
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
@@ -601,12 +599,11 @@ public class ApplicationConnection implements HasHandlers {
     }
 
     public <H extends EventHandler> HandlerRegistration addHandler(
-            GwtEvent.Type<H> type, H handler) {
+            Event.Type<H> type, H handler) {
         return eventBus.addHandler(type, handler);
     }
 
-    @Override
-    public void fireEvent(GwtEvent<?> event) {
+    public void fireEvent(Event<?> event) {
         eventBus.fireEvent(event);
     }
 
