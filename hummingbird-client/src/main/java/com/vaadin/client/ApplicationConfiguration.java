@@ -15,8 +15,6 @@
  */
 package com.vaadin.client;
 
-import java.util.HashMap;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -216,8 +214,6 @@ public class ApplicationConfiguration implements EntryPoint {
     private ErrorMessage authorizationError;
     private ErrorMessage sessionExpiredError;
     private int heartbeatInterval;
-
-    private HashMap<Integer, String> unknownComponents;
 
     private boolean widgetsetVersionSent = false;
     private static boolean moduleLoaded = false;
