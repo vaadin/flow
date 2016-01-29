@@ -16,8 +16,13 @@
 
 package com.vaadin.client;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
+
+import elemental.json.JsonValue;
+import elemental.json.impl.JsonUtil;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
@@ -122,5 +127,50 @@ public class WidgetUtil {
     public static native <T> T crazyJsCast(Object value)
     /*-{
         return value;
+    }-*/;
+
+    /**
+     * Anything in, JSO out. It's JavaScript after all. This method just makes
+     * the Java compiler accept the fact. The regular crazy cast doesn't work
+     * for JSOs since the generics still makes the compiler insert a JSO check.
+     *
+     * @since
+     * @param value
+     *            anything
+     * @return the same stuff
+     */
+    public static native <T extends JavaScriptObject> T crazyJsoCast(
+            Object value)
+            /*-{
+                return value;
+            }-*/;
+
+    /**
+     * Converts a JSON value to a formatted string.
+     *
+     * @since
+     *
+     * @param json
+     *            the JSON value to stringify
+     * @return the JSON string
+     */
+    public static String toPrettyJson(JsonValue json) {
+        if (GWT.isScript()) {
+            return toPrettyJsonJsni(json);
+        } else {
+            return JsonUtil.stringify(json, 4);
+        }
+    }
+
+    // JsJsonValue.toJson with indentation set to 4
+    private static native String toPrettyJsonJsni(JsonValue value)
+    /*-{
+    // skip hashCode field
+    return $wnd.JSON.stringify(value, function(keyName, value) {
+        if (keyName == "$H") {
+          return undefined; // skip hashCode property
+        }
+        return value;
+      }, 4);
     }-*/;
 }
