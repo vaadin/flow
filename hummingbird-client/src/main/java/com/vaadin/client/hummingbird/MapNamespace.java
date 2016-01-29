@@ -19,6 +19,10 @@ import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+
 /**
  * A state node namespace that structures data as a map.
  *
@@ -59,11 +63,20 @@ public class MapNamespace extends AbstractNamespace {
 
     /**
      * Iterates all properties in this namespace
-     * 
+     *
      * @param callback
      *            the callback to invoke for each property
      */
     public void forEachProperty(ForEachCallback<String, MapProperty> callback) {
         properties.forEach(callback);
+    }
+
+    @Override
+    public JsonValue getDebugJson() {
+        JsonObject json = Json.createObject();
+
+        properties.forEach((p, n) -> json.put(n, getAsDebugJson(p.getValue())));
+
+        return json;
     }
 }
