@@ -15,17 +15,14 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.CommunicationHandler;
 import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingStartedEvent;
+import com.vaadin.client.elemental.js.util.Xhr;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
@@ -103,7 +100,7 @@ public class XhrConnection {
         return new XhrResponseHandler();
     }
 
-    public class XhrResponseHandler implements RequestCallback {
+    public class XhrResponseHandler implements Xhr.Callback {
 
         private JsonObject payload;
         private double requestStartTime;
@@ -121,44 +118,6 @@ public class XhrConnection {
             this.payload = payload;
         }
 
-        @Override
-        public void onError(Request request, Throwable exception) {
-            getConnectionStateHandler().xhrException(
-                    new XhrConnectionError(request, payload, exception));
-        }
-
-        @Override
-        public void onResponseReceived(Request request, Response response) {
-            int statusCode = response.getStatusCode();
-
-            if (statusCode != 200) {
-                // There was a problem
-                XhrConnectionError problemEvent = new XhrConnectionError(
-                        request, payload, response);
-
-                getConnectionStateHandler().xhrInvalidStatusCode(problemEvent);
-                return;
-            }
-
-            Console.log("Server visit took "
-                    + Profiler.getRelativeTimeString(requestStartTime) + "ms");
-
-            // for(;;);["+ realJson +"]"
-            String responseText = response.getText();
-
-            ValueMap json = MessageHandler.parseWrappedJson(responseText);
-            if (json == null) {
-                // Invalid string (not wrapped as expected or can't parse)
-                getConnectionStateHandler().xhrInvalidContent(
-                        new XhrConnectionError(request, payload, response));
-                return;
-            }
-
-            getConnectionStateHandler().xhrOk();
-            Console.log("Received xhr message: " + responseText);
-            getMessageHandler().handleMessage(json);
-        }
-
         /**
          * Sets the relative time (see {@link Profiler#getRelativeTimeMillis()})
          * when the request was sent.
@@ -170,6 +129,45 @@ public class XhrConnection {
             this.requestStartTime = requestStartTime;
 
         }
+
+        @Override
+        public void onFail(XMLHttpRequest xhr) {
+            int statusCode = xhr.getStatus();
+            if (statusCode != 200) {
+                // There was a problem
+                XhrConnectionError problemEvent = new XhrConnectionError(xhr,
+                        payload);
+
+                getConnectionStateHandler().xhrInvalidStatusCode(problemEvent);
+                return;
+            } else {
+                getConnectionStateHandler()
+                        .xhrException(new XhrConnectionError(xhr, payload));
+            }
+
+        }
+
+        @Override
+        public void onSuccess(XMLHttpRequest xhr) {
+            Console.log("Server visit took "
+                    + Profiler.getRelativeTimeString(requestStartTime) + "ms");
+
+            // for(;;);["+ realJson +"]"
+            String responseText = xhr.getResponseText();
+
+            ValueMap json = MessageHandler.parseWrappedJson(responseText);
+            if (json == null) {
+                // Invalid string (not wrapped as expected or can't parse)
+                getConnectionStateHandler().xhrInvalidContent(
+                        new XhrConnectionError(xhr, payload));
+                return;
+            }
+
+            getConnectionStateHandler().xhrOk();
+            Console.log("Received xhr message: " + responseText);
+            getMessageHandler().handleMessage(json);
+        }
+
     };
 
     /**
@@ -177,44 +175,29 @@ public class XhrConnection {
      *
      * @param payload
      *            The URI to use for the request. May includes GET parameters
-     * @throws RequestException
-     *             if the request could not be sent
      */
     public void send(JsonObject payload) {
-        RequestBuilder rb = new RequestBuilder(RequestBuilder.POST, getUri());
-        // TODO enable timeout
-        // rb.setTimeoutMillis(timeoutMillis);
-        // TODO this should be configurable
-        rb.setHeader("Content-Type", JsonConstants.JSON_CONTENT_TYPE);
-        rb.setRequestData(payload.toJson());
-
         XhrResponseHandler responseHandler = createResponseHandler();
         responseHandler.setPayload(payload);
         responseHandler.setRequestStartTime(Profiler.getRelativeTimeMillis());
 
-        rb.setCallback(responseHandler);
+        XMLHttpRequest xhr = Xhr.post(getUri(), payload.toJson(),
+                JsonConstants.JSON_CONTENT_TYPE, responseHandler);
 
         Console.log("Sending xhr message to server: " + payload.toJson());
-        try {
-            final Request request = rb.send();
 
-            if (webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
-                final int retryTimeout = 250;
-                new Timer() {
-                    @Override
-                    public void run() {
-                        // Use native js to access private field in Request
-                        if (resendRequest(request)
-                                && webkitMaybeIgnoringRequests) {
-                            // Schedule retry if still needed
-                            schedule(retryTimeout);
-                        }
+        if (webkitMaybeIgnoringRequests && BrowserInfo.get().isWebkit()) {
+            final int retryTimeout = 250;
+            new Timer() {
+                @Override
+                public void run() {
+                    // Use native js to access private field in Request
+                    if (resendRequest(xhr) && webkitMaybeIgnoringRequests) {
+                        // Schedule retry if still needed
+                        schedule(retryTimeout);
                     }
-                }.schedule(retryTimeout);
-            }
-        } catch (RequestException e) {
-            getConnectionStateHandler()
-                    .xhrException(new XhrConnectionError(null, payload, e));
+                }
+            }.schedule(retryTimeout);
         }
     }
 
@@ -244,9 +227,8 @@ public class XhrConnection {
         return connection.getMessageHandler();
     }
 
-    private static native boolean resendRequest(Request request)
+    private static native boolean resendRequest(XMLHttpRequest xhr)
     /*-{
-        var xhr = request.@com.google.gwt.http.client.Request::xmlHttpRequest
         if (xhr.readyState != 1) {
             // Progressed to some other readyState -> no longer blocked
             return false;
