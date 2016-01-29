@@ -24,8 +24,7 @@ import com.vaadin.hummingbird.StateNode;
  * @since
  * @author Vaadin Ltd
  */
-public class ElementChildrenNamespace extends ListNamespace {
-
+public class ElementChildrenNamespace extends ListNamespace<StateNode> {
     /**
      * Creates a new element children namespace for the given node.
      *
@@ -33,7 +32,16 @@ public class ElementChildrenNamespace extends ListNamespace {
      *            the node that the namespace belongs to
      */
     public ElementChildrenNamespace(StateNode node) {
-        super(node);
+        super(node, true);
     }
 
+    @Override
+    public void add(int index, StateNode node) {
+        super.add(index, node);
+    }
+
+    @Override
+    public StateNode get(int index) {
+        return super.get(index);
+    }
 }
