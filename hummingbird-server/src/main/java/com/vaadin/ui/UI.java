@@ -29,6 +29,10 @@ import com.vaadin.event.MouseEvents.ClickListener;
 import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
+import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
+import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.server.DefaultErrorHandler;
 import com.vaadin.server.ErrorHandler;
@@ -130,6 +134,10 @@ public abstract class UI extends AbstractSingleComponentContainer
      * the client has id 0.
      */
     private int lastProcessedClientToServerId = -1;
+
+    private final StateTree stateTree = new StateTree(
+            ElementDataNamespace.class, ElementPropertiesNamespace.class,
+            ElementChildrenNamespace.class);
 
     /**
      * Creates a new empty UI without a caption. The content of the UI must be
@@ -1138,5 +1146,14 @@ public abstract class UI extends AbstractSingleComponentContainer
     public void setLastProcessedClientToServerId(
             int lastProcessedClientToServerId) {
         this.lastProcessedClientToServerId = lastProcessedClientToServerId;
+    }
+
+    /**
+     * Gets the state tree of this UI.
+     *
+     * @return the state tree
+     */
+    public StateTree getStateTree() {
+        return stateTree;
     }
 }

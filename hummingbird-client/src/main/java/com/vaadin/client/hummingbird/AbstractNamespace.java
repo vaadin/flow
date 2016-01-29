@@ -15,6 +15,10 @@
  */
 package com.vaadin.client.hummingbird;
 
+import com.vaadin.client.WidgetUtil;
+
+import elemental.json.JsonValue;
+
 /**
  * Base class for {@link MapNamespace} and {@link ListNamespace}.
  *
@@ -50,10 +54,34 @@ public abstract class AbstractNamespace {
 
     /**
      * Gets the node of this namespace.
-     * 
+     *
      * @return the node
      */
     public StateNode getNode() {
         return node;
+    }
+
+    /**
+     * Gets a JSON object representing the contents of this namespace. Only
+     * intended for debugging purposes.
+     *
+     * @return a JSON representation
+     */
+    public abstract JsonValue getDebugJson();
+
+    /**
+     * Helper for getting a JSON representation of a child value.
+     *
+     * @param value
+     *            the child value
+     * @return the JSON representation
+     */
+    protected JsonValue getAsDebugJson(Object value) {
+        if (value instanceof StateNode) {
+            StateNode child = (StateNode) value;
+            return child.getDebugJson();
+        } else {
+            return WidgetUtil.crazyJsoCast(value);
+        }
     }
 }
