@@ -19,6 +19,7 @@ import com.google.gwt.core.client.GWT;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 import com.vaadin.client.hummingbird.collection.jre.JreJsMap;
+import com.vaadin.client.hummingbird.collection.jre.JreJsSet;
 
 /**
  * Factory for JavaScript collection implementations with support for
@@ -58,6 +59,19 @@ public class JsCollections {
         }
     }
 
+    /**
+     * Creates a new JavaScript Set.
+     *
+     * @return a new JS Set instance
+     */
+    public static <V> JsSet<V> set() {
+        if (GWT.isScript()) {
+            return createNativeSet();
+        } else {
+            return new JreJsSet<>();
+        }
+    }
+
     // TODO Make non static and move to JsMap so it is easier to use
     /**
      * Returns an array of the values in a {@link JsMap}
@@ -90,4 +104,14 @@ public class JsCollections {
     /*-{
         return new $wnd.Map();
     }-*/;
+
+    private static native <V> JsSet<V> createNativeSet()
+    /*-{
+        return new $wnd.Set();
+    }-*/;
+
+    public static <K, V> boolean isEmpty(JsMap<K, V> map) {
+        return map.size() == 0;
+    }
+
 }
