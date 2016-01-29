@@ -16,8 +16,7 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.Response;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.ApplicationConnection;
 
 import elemental.json.JsonObject;
@@ -45,24 +44,12 @@ public interface ConnectionStateHandler {
     void setConnection(ApplicationConnection connection);
 
     /**
-     * Called when an exception occurs during a {@link Heartbeat} request
-     *
-     * @param request
-     *            The heartbeat request
-     * @param exception
-     *            The exception which occurred
-     */
-    void heartbeatException(Request request, Throwable exception);
-
-    /**
      * Called when a heartbeat request returns a status code other than OK (200)
      *
-     * @param request
-     *            The heartbeat request
-     * @param response
-     *            The heartbeat response
+     * @param xhr
+     *            the heartbeat request
      */
-    void heartbeatInvalidStatusCode(Request request, Response response);
+    void heartbeatInvalidStatusCode(XMLHttpRequest xhr);
 
     /**
      * Called when a {@link Heartbeat} request succeeds
