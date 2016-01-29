@@ -16,10 +16,7 @@
 
 package com.vaadin.client;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import com.google.gwt.core.client.Duration;
@@ -33,6 +30,9 @@ import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.ObjectElement;
 import com.google.gwt.dom.client.ScriptElement;
 import com.google.gwt.user.client.Timer;
+import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsMap;
 
 /**
  * ResourceLoader lets you dynamically include external scripts and styles on
@@ -145,8 +145,10 @@ public class ResourceLoader {
     private final Set<String> loadedResources = new HashSet<String>();
     private final Set<String> preloadedResources = new HashSet<String>();
 
-    private final Map<String, Collection<ResourceLoadListener>> loadListeners = new HashMap<String, Collection<ResourceLoadListener>>();
-    private final Map<String, Collection<ResourceLoadListener>> preloadListeners = new HashMap<String, Collection<ResourceLoadListener>>();
+    private final JsMap<String, JsArray<ResourceLoadListener>> loadListeners = JsCollections
+            .map();
+    private final JsMap<String, JsArray<ResourceLoadListener>> preloadListeners = JsCollections
+            .map();
 
     private final Element head;
 
@@ -233,7 +235,7 @@ public class ResourceLoader {
             return;
         }
 
-        if (preloadListeners.containsKey(url)) {
+        if (preloadListeners.has(url)) {
             // Preload going on, continue when preloaded
             preloadResource(url, new ResourceLoadListener() {
                 @Override
@@ -305,7 +307,7 @@ public class ResourceLoader {
         }
 
         if (addListener(url, resourceLoadListener, preloadListeners)
-                && !loadListeners.containsKey(url)) {
+                && !loadListeners.has(url)) {
             // Inject loader element if this is the first time this is preloaded
             // AND the resources isn't already being loaded in the normal way
 
@@ -408,7 +410,7 @@ public class ResourceLoader {
             return;
         }
 
-        if (preloadListeners.containsKey(url)) {
+        if (preloadListeners.has(url)) {
             // Preload going on, continue when preloaded
             preloadResource(url, new ResourceLoadListener() {
                 @Override
@@ -528,15 +530,15 @@ public class ResourceLoader {
 
     private static boolean addListener(String url,
             ResourceLoadListener listener,
-            Map<String, Collection<ResourceLoadListener>> listenerMap) {
-        Collection<ResourceLoadListener> listeners = listenerMap.get(url);
+            JsMap<String, JsArray<ResourceLoadListener>> listenerMap) {
+        JsArray<ResourceLoadListener> listeners = listenerMap.get(url);
         if (listeners == null) {
-            listeners = new HashSet<ResourceLoader.ResourceLoadListener>();
-            listeners.add(listener);
-            listenerMap.put(url, listeners);
+            listeners = JsCollections.array();
+            listeners.push(listener);
+            listenerMap.set(url, listeners);
             return true;
         } else {
-            listeners.add(listener);
+            listeners.push(listener);
             return false;
         }
     }
@@ -544,16 +546,19 @@ public class ResourceLoader {
     private void fireError(ResourceLoadEvent event) {
         String resource = event.getResourceUrl();
 
-        Collection<ResourceLoadListener> listeners;
+        JsArray<ResourceLoadListener> listeners;
         if (event.isPreload()) {
             // Also fire error for load listeners
             fireError(new ResourceLoadEvent(this, resource, false));
-            listeners = preloadListeners.remove(resource);
+            listeners = preloadListeners.get(resource);
+            preloadListeners.delete(resource);
         } else {
-            listeners = loadListeners.remove(resource);
+            listeners = loadListeners.get(resource);
+            loadListeners.delete(resource);
         }
         if (listeners != null && !listeners.isEmpty()) {
-            for (ResourceLoadListener listener : listeners) {
+            for (int i = 0; i < listeners.length(); i++) {
+                ResourceLoadListener listener = listeners.get(i);
                 if (listener != null) {
                     listener.onError(event);
                 }
@@ -563,21 +568,24 @@ public class ResourceLoader {
 
     private void fireLoad(ResourceLoadEvent event) {
         String resource = event.getResourceUrl();
-        Collection<ResourceLoadListener> listeners;
+        JsArray<ResourceLoadListener> listeners;
         if (event.isPreload()) {
             preloadedResources.add(resource);
-            listeners = preloadListeners.remove(resource);
+            listeners = preloadListeners.get(resource);
+            preloadListeners.delete(resource);
         } else {
-            if (preloadListeners.containsKey(resource)) {
+            if (preloadListeners.has(resource)) {
                 // Also fire preload events for potential listeners
                 fireLoad(new ResourceLoadEvent(this, resource, true));
             }
             preloadedResources.remove(resource);
             loadedResources.add(resource);
-            listeners = loadListeners.remove(resource);
+            listeners = loadListeners.get(resource);
+            loadListeners.delete(resource);
         }
         if (listeners != null && !listeners.isEmpty()) {
-            for (ResourceLoadListener listener : listeners) {
+            for (int i = 0; i < listeners.length(); i++) {
+                ResourceLoadListener listener = listeners.get(i);
                 if (listener != null) {
                     listener.onLoad(event);
                 }

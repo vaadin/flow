@@ -15,13 +15,13 @@
  */
 package com.vaadin.client.communication;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
+import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
@@ -45,7 +45,8 @@ public class ServerRpcQueue {
      * invocation. Without lastonly, an incremental id based on
      * {@link #lastInvocationTag} is used to get unique values.
      */
-    private LinkedHashMap<String, MethodInvocation> pendingInvocations = new LinkedHashMap<String, MethodInvocation>();
+    private JsMap<String, MethodInvocation> pendingInvocations = JsCollections
+            .map();
 
     private int lastInvocationTag = 0;
 
@@ -98,11 +99,11 @@ public class ServerRpcQueue {
             tag = invocation.getLastOnlyTag();
             assert !tag.matches(
                     "\\d+") : "getLastOnlyTag value must have at least one non-digit character";
-            pendingInvocations.remove(tag);
+            pendingInvocations.delete(tag);
         } else {
             tag = Integer.toString(lastInvocationTag++);
         }
-        pendingInvocations.put(tag, invocation);
+        pendingInvocations.set(tag, invocation);
     }
 
     /**
@@ -112,8 +113,8 @@ public class ServerRpcQueue {
      *
      * @return a collection of all queued method invocations
      */
-    public Collection<MethodInvocation> getAll() {
-        return pendingInvocations.values();
+    public JsArray<MethodInvocation> getAll() {
+        return JsCollections.mapValues(pendingInvocations);
     }
 
     /**
@@ -210,7 +211,9 @@ public class ServerRpcQueue {
             return json;
         }
 
-        for (MethodInvocation invocation : getAll()) {
+        JsArray<MethodInvocation> all = getAll();
+        for (int i = 0; i < all.length(); i++) {
+            MethodInvocation invocation = all.get(i);
             String connectorId = invocation.getConnectorId();
             JsonArray invocationJson = Json.createArray();
             invocationJson.set(0, connectorId);

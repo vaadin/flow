@@ -164,4 +164,27 @@ public class GwtCollectionTest extends ClientEngineTestBase {
         assertEquals(expectedValues, seenValues);
     }
 
+    public void testMapValues() {
+        JsMap<String, Integer> map = JsCollections.map();
+
+        map.set("One", 1).set("Two", 2);
+
+        JsArray<Integer> values = JsCollections.mapValues(map);
+
+        assertEquals(2, values.length());
+
+        assertEquals(1, values.get(0).intValue());
+        assertEquals(2, values.get(1).intValue());
+
+        map.delete("One");
+
+        values = JsCollections.mapValues(map);
+        assertEquals(1, values.length());
+        assertEquals(2, values.get(0).intValue());
+
+        map.clear();
+        values = JsCollections.mapValues(map);
+        assertEquals(0, values.length());
+    }
+
 }

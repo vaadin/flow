@@ -16,6 +16,7 @@
 package com.vaadin.client.hummingbird.collection;
 
 import com.google.gwt.core.client.GWT;
+import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 import com.vaadin.client.hummingbird.collection.jre.JreJsMap;
 
@@ -55,6 +56,29 @@ public class JsCollections {
         } else {
             return new JreJsMap<>();
         }
+    }
+
+    // TODO Make non static and move to JsMap so it is easier to use
+    /**
+     * Returns an array of the values in a {@link JsMap}
+     *
+     * @param map
+     *            the source map
+     * @return an array of the values in the map
+     */
+    public static <K, V> JsArray<V> mapValues(JsMap<K, V> map) {
+        JsArray<V> result = JsCollections.array();
+
+        map.forEach(new ForEachCallback<K, V>() {
+            int i = 0;
+
+            @Override
+            public void accept(V value, K key) {
+                result.set(i++, value);
+            }
+        });
+
+        return result;
     }
 
     private static native <T> JsArray<T> createNativeArray()
