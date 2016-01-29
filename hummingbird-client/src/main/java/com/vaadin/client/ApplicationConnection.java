@@ -28,6 +28,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
+import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.ConnectionStateHandler;
@@ -641,6 +642,12 @@ public class ApplicationConnection {
         return eventBus.addHandler(type, handler);
     }
 
+    /**
+     * Fires the given event using the event bus for this class
+     *
+     * @param event
+     *            the event to fire
+     */
     public void fireEvent(Event<?> event) {
         eventBus.fireEvent(event);
     }

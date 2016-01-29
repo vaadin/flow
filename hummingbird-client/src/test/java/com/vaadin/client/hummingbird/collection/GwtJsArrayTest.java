@@ -39,6 +39,15 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
     }
 
     @Test
+    public void testAppendUsingSet() {
+        JsArray<String> array = JsCollections.array();
+        array.set(0, "0");
+        assertArray(array, "0");
+        array.set(1, "1");
+        assertArray(array, "0", "1");
+    }
+
+    @Test
     public void testArrayRemove() {
         JsArray<String> array = JsCollections.array();
 
@@ -120,4 +129,33 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
         assertEquals("2", array.get(1));
     }
 
+    public void testArrayAddAll() {
+        JsArray<String> array = JsCollections.array();
+        JsArray<String> source = JsCollections.array();
+
+        // 1, 2
+        source.push("1");
+        source.push("2");
+
+        JsCollections.addAll(array, source);
+        assertArray(array, "1", "2");
+
+        JsCollections.addAll(array, source);
+        assertArray(array, "1", "2", "1", "2");
+
+    }
+
+    public void testArrayAddAllSelf() {
+        JsArray<String> array = JsCollections.array();
+        // 1, 2
+        array.push("1");
+        array.push("2");
+        try {
+            JsCollections.addAll(array, array);
+            fail();
+        } catch (IllegalArgumentException e) {
+            // Expected
+        }
+
+    }
 }

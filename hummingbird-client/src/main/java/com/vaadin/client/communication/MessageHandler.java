@@ -16,8 +16,6 @@
 package com.vaadin.client.communication;
 
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
@@ -33,6 +31,7 @@ import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.shared.ApplicationConstants;
 
 /**
@@ -63,7 +62,7 @@ public class MessageHandler {
      * If responseHandlingLocks contains any objects, response handling is
      * suspended until the collection is empty or a timeout has occurred.
      */
-    private Set<Object> responseHandlingLocks = new HashSet<Object>();
+    private JsSet<Object> responseHandlingLocks = JsCollections.set();
 
     /**
      * Contains all UIDL messages received while response handling is suspended
@@ -197,7 +196,7 @@ public class MessageHandler {
             removeOldPendingMessages();
         }
 
-        boolean locked = !responseHandlingLocks.isEmpty();
+        boolean locked = !JsCollections.isEmpty(responseHandlingLocks);
 
         if (locked || !isNextExpectedMessage(serverId)) {
             // Cannot or should not handle this message right now, either
@@ -423,7 +422,7 @@ public class MessageHandler {
     Timer forceHandleMessage = new Timer() {
         @Override
         public void run() {
-            if (!responseHandlingLocks.isEmpty()) {
+            if (!JsCollections.isEmpty(responseHandlingLocks)) {
                 // Lock which was never release -> bug in locker or things just
                 // too slow
                 Console.warn(
@@ -464,8 +463,8 @@ public class MessageHandler {
      * @param lock
      */
     public void resumeResponseHandling(Object lock) {
-        responseHandlingLocks.remove(lock);
-        if (responseHandlingLocks.isEmpty()) {
+        responseHandlingLocks.delete(lock);
+        if (JsCollections.isEmpty(responseHandlingLocks)) {
             // Cancel timer that breaks the lock
             forceHandleMessage.cancel();
 
