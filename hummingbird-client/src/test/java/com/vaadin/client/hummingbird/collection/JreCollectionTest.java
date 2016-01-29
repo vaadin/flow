@@ -45,6 +45,65 @@ public class JreCollectionTest {
     }
 
     @Test
+    public void testArrayRemove() {
+        JsArray<String> array = JsCollections.array();
+
+        // 1, 2, 3
+        array.push("1");
+        array.push("2");
+        array.push("3");
+
+        array.remove(1);
+        assertArray(array, "1", "3");
+        array.remove(1);
+        assertArray(array, "1");
+        array.remove(0);
+        assertArray(array);
+    }
+
+    @Test
+    public void testArrayClear() {
+        JsArray<String> array = JsCollections.array();
+
+        // 1, 2, 3
+        array.push("1");
+        array.push("2");
+        array.push("3");
+
+        array.clear();
+        assertArray(array);
+    }
+
+    @Test
+    public void testEmptyArrayClear() {
+        JsArray<String> array = JsCollections.array();
+        array.clear();
+        assertArray(array);
+    }
+
+    @Test
+    public void testArrayIsEmpty() {
+        JsArray<String> array = JsCollections.array();
+        Assert.assertTrue(array.isEmpty());
+        // 1, 2, 3
+        array.push("1");
+        Assert.assertFalse(array.isEmpty());
+        array.push("2");
+        Assert.assertFalse(array.isEmpty());
+        array.remove(0);
+        Assert.assertFalse(array.isEmpty());
+        array.remove(0);
+        Assert.assertTrue(array.isEmpty());
+    }
+
+    private <T> void assertArray(JsArray<T> array, T... values) {
+        Assert.assertEquals(values.length, array.length());
+        for (int i = 0; i < values.length; i++) {
+            Assert.assertEquals(values[i], array.get(i));
+        }
+    }
+
+    @Test
     public void testArraySplice() {
         JsArray<String> array = JsCollections.array();
 
