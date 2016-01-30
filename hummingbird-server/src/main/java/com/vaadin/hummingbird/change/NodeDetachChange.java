@@ -17,6 +17,7 @@
 package com.vaadin.hummingbird.change;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
@@ -39,6 +40,6 @@ public class NodeDetachChange extends NodeChange {
 
     @Override
     protected void populateJson(JsonObject json) {
-        json.put("type", "detach");
+        json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_DETACH);
     }
 }
