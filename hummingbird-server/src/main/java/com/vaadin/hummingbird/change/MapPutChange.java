@@ -19,6 +19,7 @@ package com.vaadin.hummingbird.change;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.namespace.MapNamespace;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -52,7 +53,7 @@ public class MapPutChange extends NamespaceChange {
 
     /**
      * Gets the key of the change.
-     * 
+     *
      * @return the key of the change
      */
     public String getKey() {
@@ -61,7 +62,7 @@ public class MapPutChange extends NamespaceChange {
 
     /**
      * Gets the new value.
-     * 
+     *
      * @return the new value
      */
     public Object getValue() {
@@ -70,17 +71,19 @@ public class MapPutChange extends NamespaceChange {
 
     @Override
     protected void populateJson(JsonObject json) {
-        json.put("type", "put");
+        json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_PUT);
 
-        json.put("key", key);
+        json.put(JsonConstants.CHANGE_MAP_KEY, key);
 
         super.populateJson(json);
 
         if (value instanceof StateNode) {
             StateNode node = (StateNode) value;
-            json.put("nodeValue", Json.create(node.getId()));
+            json.put(JsonConstants.CHANGE_PUT_NODE_VALUE,
+                    Json.create(node.getId()));
         } else {
-            json.put("value", JsonCodec.encodePrimitiveValue(value));
+            json.put(JsonConstants.CHANGE_PUT_VALUE,
+                    JsonCodec.encodePrimitiveValue(value));
         }
     }
 }

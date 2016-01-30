@@ -19,6 +19,7 @@ package com.vaadin.hummingbird.change;
 import java.io.Serializable;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -59,7 +60,7 @@ public abstract class NodeChange implements Serializable {
     public JsonObject toJson() {
         JsonObject json = Json.createObject();
 
-        json.put("node", node.getId());
+        json.put(JsonConstants.CHANGE_NODE, node.getId());
 
         populateJson(json);
 

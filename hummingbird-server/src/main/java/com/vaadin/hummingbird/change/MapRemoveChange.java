@@ -17,6 +17,7 @@
 package com.vaadin.hummingbird.change;
 
 import com.vaadin.hummingbird.namespace.MapNamespace;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
@@ -55,10 +56,10 @@ public class MapRemoveChange extends NamespaceChange {
 
     @Override
     protected void populateJson(JsonObject json) {
-        json.put("type", "remove");
+        json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_REMOVE);
 
         super.populateJson(json);
 
-        json.put("key", key);
+        json.put(JsonConstants.CHANGE_MAP_KEY, key);
     }
 }
