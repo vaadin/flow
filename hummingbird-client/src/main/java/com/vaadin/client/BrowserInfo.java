@@ -51,7 +51,10 @@ public class BrowserInfo {
 
     private static BrowserInfo instance;
 
-    private static String cssClass = null;
+    private String cssClass = null;
+
+    private VBrowserDetails browserDetails;
+    private boolean touchDevice;
 
     static {
         // Add browser dependent v-* classnames to body to help css hacks
@@ -60,21 +63,6 @@ public class BrowserInfo {
             Browser.getDocument().getBody().getClassList().add(className);
         }
     }
-
-    /**
-     * Singleton method to get BrowserInfo object.
-     *
-     * @return instance of BrowserInfo object
-     */
-    public static BrowserInfo get() {
-        if (instance == null) {
-            instance = new BrowserInfo();
-        }
-        return instance;
-    }
-
-    private VBrowserDetails browserDetails;
-    private boolean touchDevice;
 
     private BrowserInfo() {
         browserDetails = new VBrowserDetails(getBrowserString());
@@ -88,6 +76,18 @@ public class BrowserInfo {
             // tests
             touchDevice = !browserDetails.isPhantomJS() && detectTouchDevice();
         }
+    }
+
+    /**
+     * Singleton method to get BrowserInfo object.
+     *
+     * @return instance of BrowserInfo object
+     */
+    public static BrowserInfo get() {
+        if (instance == null) {
+            instance = new BrowserInfo();
+        }
+        return instance;
     }
 
     private native boolean detectTouchDevice()
@@ -306,17 +306,17 @@ public class BrowserInfo {
 
     public native static String getBrowserString()
     /*-{
-    	return $wnd.navigator.userAgent;
+        return $wnd.navigator.userAgent;
     }-*/;
 
     public native int getScreenWidth()
     /*-{
-    	return $wnd.screen.width;
+        return $wnd.screen.width;
     }-*/;
 
     public native int getScreenHeight()
     /*-{
-    	return $wnd.screen.height;
+        return $wnd.screen.height;
     }-*/;
 
     /**
