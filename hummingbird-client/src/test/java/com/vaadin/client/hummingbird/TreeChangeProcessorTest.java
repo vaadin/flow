@@ -20,6 +20,7 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.shared.JsonConstants;
 import com.vaadin.util.JsonStream;
 
 import elemental.json.Json;
@@ -32,16 +33,19 @@ public class TreeChangeProcessorTest {
     private int rootId = tree.getRootNode().getId();
     private int ns = 0;
 
+    private String myKey = "myKey";
+    private String myValue = "myValue";
+
     @Test
     public void testPutChange() {
-        JsonObject change = putChange(rootId, ns, "key", Json.create("value"));
+        JsonObject change = putChange(rootId, ns, myKey, Json.create(myValue));
 
         TreeChangeProcessor.processChange(tree, change);
 
-        Object value = tree.getRootNode().getMapNamespace(ns).getProperty("key")
+        Object value = tree.getRootNode().getMapNamespace(ns).getProperty(myKey)
                 .getValue();
 
-        Assert.assertEquals("value", value);
+        Assert.assertEquals(myValue, value);
     }
 
     @Test
@@ -49,11 +53,11 @@ public class TreeChangeProcessorTest {
         StateNode child = new StateNode(2, tree);
         tree.registerNode(child);
 
-        JsonObject change = putNodeChange(rootId, ns, "key", child.getId());
+        JsonObject change = putNodeChange(rootId, ns, myKey, child.getId());
 
         TreeChangeProcessor.processChange(tree, change);
 
-        Object value = tree.getRootNode().getMapNamespace(ns).getProperty("key")
+        Object value = tree.getRootNode().getMapNamespace(ns).getProperty(myKey)
                 .getValue();
 
         Assert.assertSame(child, value);
@@ -109,7 +113,7 @@ public class TreeChangeProcessorTest {
     public void testAttachNodeBeforePut() {
         int nodeId = 2;
         JsonArray changes = toArray(
-                putChange(nodeId, ns, "key", Json.create("value")),
+                putChange(nodeId, ns, myKey, Json.create(myValue)),
                 attachChange(nodeId));
 
         TreeChangeProcessor.processChanges(tree, changes);
@@ -118,8 +122,8 @@ public class TreeChangeProcessorTest {
         // value as well just to be on the safe side
 
         Object value = tree.getNode(nodeId).getMapNamespace(ns)
-                .getProperty("key").getValue();
-        Assert.assertEquals("value", value);
+                .getProperty(myKey).getValue();
+        Assert.assertEquals(myValue, value);
     }
 
     private static JsonArray toArray(JsonValue... changes) {
@@ -129,26 +133,26 @@ public class TreeChangeProcessorTest {
     private static JsonObject baseChange(int node, String type) {
         JsonObject json = Json.createObject();
 
-        json.put("type", type);
-        json.put("node", node);
+        json.put(JsonConstants.CHANGE_TYPE, type);
+        json.put(JsonConstants.CHANGE_NODE, node);
         return json;
     }
 
     private static JsonObject mapBaseChange(int node, int ns, String key) {
-        JsonObject json = baseChange(node, "put");
-        json.put("ns", ns);
-        json.put("key", key);
+        JsonObject json = baseChange(node, JsonConstants.CHANGE_TYPE_PUT);
+        json.put(JsonConstants.CHANGE_NAMESPACE, ns);
+        json.put(JsonConstants.CHANGE_MAP_KEY, key);
         return json;
     }
 
     private static JsonObject attachChange(int node) {
-        return baseChange(node, "attach");
+        return baseChange(node, JsonConstants.CHANGE_TYPE_ATTACH);
     }
 
     private static JsonObject putChange(int node, int ns, String key,
             JsonValue value) {
         JsonObject json = mapBaseChange(node, ns, key);
-        json.put("value", value);
+        json.put(JsonConstants.CHANGE_PUT_VALUE, value);
 
         return json;
     }
@@ -157,19 +161,19 @@ public class TreeChangeProcessorTest {
             int child) {
         JsonObject json = mapBaseChange(node, ns, key);
 
-        json.put("nodeValue", child);
+        json.put(JsonConstants.CHANGE_PUT_NODE_VALUE, child);
 
         return json;
     }
 
     private static JsonObject spliceBaseChange(int node, int ns, int index,
             int remove) {
-        JsonObject json = baseChange(node, "splice");
+        JsonObject json = baseChange(node, JsonConstants.CHANGE_TYPE_SPLICE);
 
-        json.put("ns", ns);
-        json.put("index", index);
+        json.put(JsonConstants.CHANGE_NAMESPACE, ns);
+        json.put(JsonConstants.CHANGE_SPLICE_INDEX, index);
         if (remove > 0) {
-            json.put("remove", remove);
+            json.put(JsonConstants.CHANGE_SPLICE_REMOVE, remove);
         }
         return json;
     }
@@ -179,7 +183,7 @@ public class TreeChangeProcessorTest {
         JsonObject json = spliceBaseChange(node, ns, index, remove);
 
         if (add != null && add.length != 0) {
-            json.put("add", toArray(add));
+            json.put(JsonConstants.CHANGE_SPLICE_ADD, toArray(add));
         }
 
         return json;
@@ -192,7 +196,7 @@ public class TreeChangeProcessorTest {
         if (children != null && children.length != 0) {
             JsonArray add = Arrays.stream(children).mapToObj(Json::create)
                     .collect(JsonStream.asArray());
-            json.put("addNodes", add);
+            json.put(JsonConstants.CHANGE_SPLICE_ADD_NODES, add);
         }
 
         return json;
