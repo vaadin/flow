@@ -16,17 +16,6 @@
 	</properties>
 
 	<dependencies>
-		<!-- API DEPENDENCIES -->
-
-		<!-- @WebListener is used for JSR356 websockets so we need to compile with 
-			servlet 3 API -->
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.0.1</version>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- Atmosphere -->
 		<dependency>
 			<groupId>com.vaadin.external.atmosphere</groupId>

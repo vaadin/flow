@@ -28,7 +28,6 @@ import com.vaadin.server.UICreateEvent;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
@@ -120,8 +119,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
 
     private UI getBrowserDetailsUI(VaadinRequest request,
             VaadinSession session) {
-        VaadinService vaadinService = request.getService();
-
         List<UIProvider> uiProviders = session.getUIProviders();
 
         UIClassSelectionEvent classSelectionEvent = new UIClassSelectionEvent(
@@ -141,20 +138,7 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
             return null;
         }
 
-        // Check for an existing UI based on embed id
-
         String embedId = getEmbedId(request);
-
-        UI retainedUI = session.getUIByEmbedId(embedId);
-        if (retainedUI != null) {
-            /*
-             * Previous UI without preserve on refresh will be closed when the
-             * new UI gets added to the session.
-             */
-        }
-
-        // No existing UI found - go on by creating and initializing one
-
         Integer uiId = Integer.valueOf(session.getNextUIid());
 
         // Explicit Class.cast to detect if the UIProvider does something
