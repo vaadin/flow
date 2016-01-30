@@ -22,6 +22,7 @@ import java.util.function.Function;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.namespace.ListNamespace;
+import com.vaadin.shared.JsonConstants;
 import com.vaadin.util.JsonStream;
 
 import elemental.json.Json;
@@ -91,13 +92,13 @@ public class ListSpliceChange extends NamespaceChange {
 
     @Override
     protected void populateJson(JsonObject json) {
-        json.put("type", "splice");
+        json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_SPLICE);
 
         super.populateJson(json);
 
-        json.put("index", index);
+        json.put(JsonConstants.CHANGE_SPLICE_INDEX, index);
         if (removeCount > 0) {
-            json.put("remove", removeCount);
+            json.put(JsonConstants.CHANGE_SPLICE_REMOVE, removeCount);
         }
 
         if (newItems != null && !newItems.isEmpty()) {
@@ -105,10 +106,10 @@ public class ListSpliceChange extends NamespaceChange {
             Function<Object, JsonValue> mapper;
             String addKey;
             if (nodeValues) {
-                addKey = "addNodes";
+                addKey = JsonConstants.CHANGE_SPLICE_ADD_NODES;
                 mapper = item -> Json.create(((StateNode) item).getId());
             } else {
-                addKey = "add";
+                addKey = JsonConstants.CHANGE_SPLICE_ADD;
                 mapper = JsonCodec::encodePrimitiveValue;
             }
 

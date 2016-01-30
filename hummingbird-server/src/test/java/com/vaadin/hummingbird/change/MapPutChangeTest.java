@@ -25,6 +25,7 @@ import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.MapNamespace;
 import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -42,12 +43,15 @@ public class MapPutChangeTest {
         JsonObject json = change.toJson();
 
         Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber("node"));
+                (int) json.getNumber(JsonConstants.CHANGE_NODE));
         Assert.assertEquals(NamespaceRegistry.getId(namespace.getClass()),
-                (int) json.getNumber("ns"));
-        Assert.assertEquals("put", json.getString("type"));
-        Assert.assertEquals("some", json.getString("key"));
-        Assert.assertEquals("string", json.getString("value"));
+                (int) json.getNumber(JsonConstants.CHANGE_NAMESPACE));
+        Assert.assertEquals(JsonConstants.CHANGE_TYPE_PUT,
+                json.getString(JsonConstants.CHANGE_TYPE));
+        Assert.assertEquals("some",
+                json.getString(JsonConstants.CHANGE_MAP_KEY));
+        Assert.assertEquals("string",
+                json.getString(JsonConstants.CHANGE_PUT_VALUE));
     }
 
     @Test
@@ -73,20 +77,20 @@ public class MapPutChangeTest {
     @Test
     public void testNodeValueType() {
         StateNode value = StateNodeTest.createEmptyNode("value");
-        MapPutChange change = new MapPutChange(namespace, "key", value);
+        MapPutChange change = new MapPutChange(namespace, "myKey", value);
 
         JsonObject json = change.toJson();
-        Assert.assertFalse(json.hasKey("value"));
+        Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_PUT_VALUE));
 
-        JsonValue nodeValue = json.get("nodeValue");
+        JsonValue nodeValue = json.get(JsonConstants.CHANGE_PUT_NODE_VALUE);
         Assert.assertSame(JsonType.NUMBER, nodeValue.getType());
         Assert.assertEquals(value.getId(), (int) nodeValue.asNumber());
     }
 
     private JsonValue getValue(Object input) {
-        MapPutChange change = new MapPutChange(namespace, "key", input);
+        MapPutChange change = new MapPutChange(namespace, "myKey", input);
         JsonObject json = change.toJson();
-        return json.get("value");
+        return json.get(JsonConstants.CHANGE_PUT_VALUE);
     }
 
 }

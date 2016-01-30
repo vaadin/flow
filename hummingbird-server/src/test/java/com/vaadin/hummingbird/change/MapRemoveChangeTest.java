@@ -23,6 +23,7 @@ import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.MapNamespace;
 import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
@@ -37,11 +38,13 @@ public class MapRemoveChangeTest {
         JsonObject json = change.toJson();
 
         Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber("node"));
+                (int) json.getNumber(JsonConstants.CHANGE_NODE));
         Assert.assertEquals(NamespaceRegistry.getId(namespace.getClass()),
-                (int) json.getNumber("ns"));
-        Assert.assertEquals("remove", json.getString("type"));
-        Assert.assertEquals("some", json.getString("key"));
+                (int) json.getNumber(JsonConstants.CHANGE_NAMESPACE));
+        Assert.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
+                json.getString(JsonConstants.CHANGE_TYPE));
+        Assert.assertEquals("some",
+                json.getString(JsonConstants.CHANGE_MAP_KEY));
     }
 
 }

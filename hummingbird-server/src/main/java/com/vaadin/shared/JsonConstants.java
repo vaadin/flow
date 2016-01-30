@@ -34,4 +34,108 @@ public class JsonConstants implements Serializable {
 
     public static final String JSON_CONTENT_TYPE = "application/json; charset=UTF-8";
 
+    /**
+     * Key holding id of the node affected by a change.
+     *
+     * @since
+     */
+    public static final String CHANGE_NODE = "node";
+
+    /**
+     * Key holding the type of a change.
+     *
+     * @since
+     */
+    public static final String CHANGE_TYPE = "type";
+
+    /**
+     * Change type for attaching nodes.
+     *
+     * @since
+     */
+    public static final String CHANGE_TYPE_ATTACH = "attach";
+
+    /**
+     * Change type for detaching nodes.
+     *
+     * @since
+     */
+    public static final String CHANGE_TYPE_DETACH = "detach";
+
+    /**
+     * Change type for list splice changes.
+     *
+     * @since
+     */
+    public static final String CHANGE_TYPE_SPLICE = "splice";
+
+    /**
+     * Change type for map put changes.
+     *
+     * @since
+     */
+    public static final String CHANGE_TYPE_PUT = "put";
+
+    /**
+     * Change type for map remove changes.
+     *
+     * @since
+     */
+    public static final String CHANGE_TYPE_REMOVE = "remove";
+
+    /**
+     * Key holding the namespace of a change.
+     *
+     * @since
+     */
+    public static final String CHANGE_NAMESPACE = "ns";
+
+    /**
+     * Key holding the map key of the change.
+     *
+     * @since
+     */
+    public static final String CHANGE_MAP_KEY = "key";
+
+    /**
+     * Key holding nodes to add for a splice.
+     *
+     * @since
+     */
+    public static final String CHANGE_SPLICE_ADD_NODES = "addNodes";
+
+    /**
+     * Key holding values to add for a splice.
+     *
+     * @since
+     */
+    public static final String CHANGE_SPLICE_ADD = "add";
+
+    /**
+     * Key holding the number of items to remove for a splice.
+     *
+     * @since
+     */
+    public static final String CHANGE_SPLICE_REMOVE = "remove";
+
+    /**
+     * Key holding the index of a splice.
+     *
+     * @since
+     */
+    public static final String CHANGE_SPLICE_INDEX = "index";
+
+    /**
+     * Key holding the value of a put change.
+     *
+     * @since
+     */
+    public static final String CHANGE_PUT_VALUE = "value";
+
+    /**
+     * Key holder the node value of a put change.
+     *
+     * @since
+     */
+    public static final String CHANGE_PUT_NODE_VALUE = "nodeValue";
 }

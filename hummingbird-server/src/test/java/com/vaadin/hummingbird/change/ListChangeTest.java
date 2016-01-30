@@ -27,6 +27,7 @@ import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ListNamespace;
 import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -45,14 +46,18 @@ public class ListChangeTest {
         JsonObject json = change.toJson();
 
         Assert.assertEquals(change.getNode().getId(),
-                (int) json.getNumber("node"));
+                (int) json.getNumber(JsonConstants.CHANGE_NODE));
         Assert.assertEquals(NamespaceRegistry.getId(namespace.getClass()),
-                (int) json.getNumber("ns"));
-        Assert.assertEquals("splice", json.getString("type"));
-        Assert.assertEquals(0, (int) json.getNumber("index"));
-        Assert.assertEquals(1, (int) json.getNumber("remove"));
+                (int) json.getNumber(JsonConstants.CHANGE_NAMESPACE));
+        Assert.assertEquals(JsonConstants.CHANGE_TYPE_SPLICE,
+                json.getString(JsonConstants.CHANGE_TYPE));
+        Assert.assertEquals(0,
+                (int) json.getNumber(JsonConstants.CHANGE_SPLICE_INDEX));
+        Assert.assertEquals(1,
+                (int) json.getNumber(JsonConstants.CHANGE_SPLICE_REMOVE));
 
-        JsonArray addNodes = json.getArray("addNodes");
+        JsonArray addNodes = json
+                .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
         Assert.assertEquals(2, addNodes.length());
 
         Assert.assertEquals(child1.getId(), (int) addNodes.getNumber(0));
@@ -66,7 +71,7 @@ public class ListChangeTest {
 
         JsonObject json = change.toJson();
 
-        Assert.assertFalse(json.hasKey("remove"));
+        Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_REMOVE));
     }
 
     @Test
@@ -76,6 +81,6 @@ public class ListChangeTest {
 
         JsonObject json = change.toJson();
 
-        Assert.assertFalse(json.hasKey("addNodes"));
+        Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES));
     }
 }

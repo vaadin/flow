@@ -16,6 +16,7 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -47,7 +48,7 @@ public class TreeChangeProcessor {
         for (int i = 0; i < length; i++) {
             JsonObject change = changes.getObject(i);
             if (isAttach(change)) {
-                int nodeId = (int) change.getNumber("node");
+                int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
 
                 StateNode node = new StateNode(nodeId, tree);
                 tree.registerNode(node);
@@ -64,7 +65,8 @@ public class TreeChangeProcessor {
     }
 
     private static boolean isAttach(JsonObject change) {
-        return "attach".equals(change.getString("type"));
+        return JsonConstants.CHANGE_TYPE_ATTACH
+                .equals(change.getString(JsonConstants.CHANGE_TYPE));
     }
 
     /**
@@ -77,17 +79,17 @@ public class TreeChangeProcessor {
      *            the JSON change
      */
     public static void processChange(StateTree tree, JsonObject change) {
-        String type = change.getString("type");
-        int nodeId = (int) change.getNumber("node");
+        String type = change.getString(JsonConstants.CHANGE_TYPE);
+        int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
 
         StateNode node = tree.getNode(nodeId);
         assert node != null;
 
         switch (type) {
-        case "splice":
+        case JsonConstants.CHANGE_TYPE_SPLICE:
             processSpliceChange(change, node);
             break;
-        case "put":
+        case JsonConstants.CHANGE_TYPE_PUT:
             processPutChange(change, node);
             break;
         default:
@@ -96,18 +98,19 @@ public class TreeChangeProcessor {
     }
 
     private static void processPutChange(JsonObject change, StateNode node) {
-        int nsId = (int) change.getNumber("ns");
+        int nsId = (int) change.getNumber(JsonConstants.CHANGE_NAMESPACE);
         MapNamespace namespace = node.getMapNamespace(nsId);
-        String key = change.getString("key");
+        String key = change.getString(JsonConstants.CHANGE_MAP_KEY);
 
         MapProperty property = namespace.getProperty(key);
 
-        if (change.hasKey("value")) {
-            JsonValue jsonValue = change.get("value");
+        if (change.hasKey(JsonConstants.CHANGE_PUT_VALUE)) {
+            JsonValue jsonValue = change.get(JsonConstants.CHANGE_PUT_VALUE);
             Object value = WidgetUtil.jsonValueToJavaValue(jsonValue);
             property.setValue(value);
-        } else if (change.hasKey("nodeValue")) {
-            int childId = (int) change.getNumber("nodeValue");
+        } else if (change.hasKey(JsonConstants.CHANGE_PUT_NODE_VALUE)) {
+            int childId = (int) change
+                    .getNumber(JsonConstants.CHANGE_PUT_NODE_VALUE);
             StateNode child = node.getTree().getNode(childId);
             assert child != null;
 
@@ -119,26 +122,28 @@ public class TreeChangeProcessor {
     }
 
     private static void processSpliceChange(JsonObject change, StateNode node) {
-        int nsId = (int) change.getNumber("ns");
+        int nsId = (int) change.getNumber(JsonConstants.CHANGE_NAMESPACE);
 
         ListNamespace namespace = node.getListNamespace(nsId);
 
-        int index = (int) change.getNumber("index");
+        int index = (int) change.getNumber(JsonConstants.CHANGE_SPLICE_INDEX);
         int remove;
-        if (change.hasKey("remove")) {
-            remove = (int) change.getNumber("remove");
+        if (change.hasKey(JsonConstants.CHANGE_SPLICE_REMOVE)) {
+            remove = (int) change.getNumber(JsonConstants.CHANGE_SPLICE_REMOVE);
         } else {
             remove = 0;
         }
 
-        if (change.hasKey("add")) {
-            JsonArray addJson = change.getArray("add");
+        if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD)) {
+            JsonArray addJson = change
+                    .getArray(JsonConstants.CHANGE_SPLICE_ADD);
 
             Object[] add = WidgetUtil.jsonArrayToJavaArray(addJson);
 
             namespace.splice(index, remove, add);
-        } else if (change.hasKey("addNodes")) {
-            JsonArray addNodes = change.getArray("addNodes");
+        } else if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES)) {
+            JsonArray addNodes = change
+                    .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
             int length = addNodes.length();
 
             StateNode[] add = new StateNode[length];
