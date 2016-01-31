@@ -1,4 +1,4 @@
-package com.vaadin.client.event;
+package com.vaadin.client.com.google.web.bindery.event.shared;
 
 import java.util.ArrayList;
 import java.util.Collections;
