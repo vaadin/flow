@@ -511,7 +511,7 @@ public class ApplicationConfiguration implements EntryPoint {
     /**
      * Registers that callback that the bootstrap javascript uses to start
      * applications once the widgetset is loaded and all required information is
-     * available
+     * available.
      *
      * @param widgetsetName
      *            the name of this widgetset

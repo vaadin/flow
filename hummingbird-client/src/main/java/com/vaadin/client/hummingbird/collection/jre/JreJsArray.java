@@ -95,7 +95,7 @@ public class JreJsArray<T> extends JsArray<T> {
     }
 
     /**
-     * Internal method called to clear the array
+     * Internal method called to clear the array.
      */
     public void doClear() {
         values.clear();

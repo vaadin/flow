@@ -27,7 +27,6 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.ConnectionStateHandler;
@@ -82,10 +81,10 @@ public class ApplicationConnection {
 
     protected boolean cssLoaded = false;
 
-    /** Parameters for this application connection loaded from the web-page */
+    /** Parameters for this application connection loaded from the web-page. */
     private ApplicationConfiguration configuration;
 
-    /** Event bus for communication events */
+    /** Event bus for communication events. */
     private EventBus eventBus = GWT.create(SimpleEventBus.class);
 
     public enum ApplicationState {
@@ -223,7 +222,7 @@ public class ApplicationConnection {
         /**
          * Triggered when the {@link ApplicationConnection} marks a previously
          * running application as stopped by invoking
-         * {@link ApplicationConnection#setApplicationRunning(false)}
+         * {@link ApplicationConnection#setApplicationRunning(false)}.
          *
          * @param event
          *            the event triggered by the {@link ApplicationConnection}
@@ -340,7 +339,7 @@ public class ApplicationConnection {
     }
 
     /**
-     * Checks if there is some work to be done on the client side
+     * Checks if there is some work to be done on the client side.
      *
      * @return true if the client has some work to be done, false otherwise
      */
@@ -380,9 +379,6 @@ public class ApplicationConnection {
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
-    /**
-     * Helper for tt initialization
-     */
     private JavaScriptObject getVersionInfo() {
         return configuration.getVersionInfoJSObject();
     }
@@ -465,7 +461,7 @@ public class ApplicationConnection {
     }
 
     /**
-     * Returns the loading indicator used by this ApplicationConnection
+     * Returns the loading indicator used by this ApplicationConnection.
      *
      * @return The loading indicator for this ApplicationConnection
      */
@@ -605,7 +601,7 @@ public class ApplicationConnection {
     }
 
     /**
-     * Fires the given event using the event bus for this class
+     * Fires the given event using the event bus for this class.
      *
      * @param event
      *            the event to fire
