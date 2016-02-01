@@ -30,12 +30,12 @@ import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
-import com.vaadin.client.com.google.web.bindery.event.shared.SimpleEventBus;
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
@@ -363,7 +363,7 @@ public class ApplicationConnection {
                 return vi;
             }
         }
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::getMessageHandler();
             var pd = [
@@ -374,9 +374,9 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
