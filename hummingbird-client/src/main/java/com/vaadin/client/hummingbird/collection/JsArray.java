@@ -218,7 +218,7 @@ class JsniHelper {
             /*-{
                 var args = [index, remove];
                 args.push.apply(args, add);
-            
+
                 return array.splice.apply(array, args);
             }-*/;
 
