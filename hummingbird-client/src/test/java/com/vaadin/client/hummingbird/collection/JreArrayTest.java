@@ -157,10 +157,10 @@ public class JreArrayTest {
         source.push("1");
         source.push("2");
 
-        JsCollections.addAll(array, source);
+        array.addAll(source);
         assertArray(array, "1", "2");
 
-        JsCollections.addAll(array, source);
+        array.addAll(source);
         assertArray(array, "1", "2", "1", "2");
 
     }
@@ -172,7 +172,7 @@ public class JreArrayTest {
         array.push("1");
         array.push("2");
 
-        JsCollections.addAll(array, array);
+        array.addAll(array);
     }
 
 }

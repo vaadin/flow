@@ -20,7 +20,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
-import com.vaadin.client.elemental.js.util.Xhr;
+import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.client.Console;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.util.SharedUtil;

@@ -74,7 +74,7 @@ public class JsCollections {
 
     // TODO Make non static and move to JsMap so it is easier to use
     /**
-     * Returns an array of the values in a {@link JsMap}
+     * Returns an array of the values in a {@link JsMap}.
      *
      * @param map
      *            the source map
@@ -84,11 +84,9 @@ public class JsCollections {
         JsArray<V> result = JsCollections.array();
 
         map.forEach(new ForEachCallback<K, V>() {
-            int i = 0;
-
             @Override
             public void accept(V value, K key) {
-                result.set(i++, value);
+                result.push(value);
             }
         });
 
@@ -130,48 +128,6 @@ public class JsCollections {
      */
     public static <V> boolean isEmpty(JsSet<V> set) {
         return set.size() == 0;
-    }
-
-    /**
-     * Add all items in the source array to the end of the target array
-     *
-     * @param target
-     *            the target array to append to
-     * @param source
-     *            the source array to read from
-     */
-    public static <H> void addAll(JsArray<H> target, JsArray<H> source) {
-        if (target == source) {
-            throw new IllegalArgumentException(
-                    "Target and source cannot be the same array");
-        }
-
-        // Consider optimizing this using splice if needed
-        int targetIndex = target.length();
-        for (int i = 0; i < source.length(); i++) {
-            target.set(targetIndex++, source.get(i));
-        }
-    }
-
-    /**
-     * Removes the given item from the array
-     *
-     * @param array
-     *            the array to remove from
-     * @param toRemove
-     *            the item to remove
-     * @return <code>true</code> if the item was found and removed from the
-     *         array, <code>false</code> otherwise
-     */
-    public static <H> boolean remove(JsArray<H> array, H toRemove) {
-        for (int i = 0; i < array.length(); i++) {
-            if (array.get(i) == toRemove) {
-                array.remove(i);
-                return true;
-            }
-        }
-
-        return false;
     }
 
 }

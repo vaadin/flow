@@ -1,4 +1,19 @@
-package com.vaadin.client.com.google.web.bindery.event.shared;
+/*
+ * Copyright 2011 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.client.gwt.com.google.web.bindery.event.shared;
 
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.Event.Type;
@@ -11,7 +26,8 @@ import com.vaadin.client.hummingbird.collection.JsMap;
 /**
  * Basic implementation of {@link EventBus}.
  *
- * Copied to use JsArray and JsMap
+ * Copied from the GWT project to use JsArray and JsMap instead of ArrayList and
+ * HashMap
  */
 public class SimpleEventBus extends EventBus {
     @FunctionalInterface
@@ -36,6 +52,7 @@ public class SimpleEventBus extends EventBus {
      * Create an instance of the event bus
      */
     public SimpleEventBus() {
+        // Intentionally left empty
     }
 
     @Override
@@ -186,7 +203,7 @@ public class SimpleEventBus extends EventBus {
     private <H> void doRemoveNow(Event.Type<H> type, Object source, H handler) {
         JsArray<H> l = getHandlerList(type, source);
 
-        boolean removed = JsCollections.remove(l, handler);
+        boolean removed = l.remove(handler);
 
         if (removed && l.isEmpty()) {
             prune(type, source);
@@ -241,8 +258,8 @@ public class SimpleEventBus extends EventBus {
         JsArray<H> globalHandlers = getHandlerList(type, null);
 
         JsArray<H> rtn = JsCollections.array();
-        JsCollections.addAll(rtn, directHandlers);
-        JsCollections.addAll(rtn, globalHandlers);
+        rtn.addAll(directHandlers);
+        rtn.addAll(globalHandlers);
         return rtn;
     }
 

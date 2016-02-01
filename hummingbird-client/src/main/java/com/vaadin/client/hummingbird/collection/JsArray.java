@@ -168,6 +168,43 @@ public class JsArray<T> {
         return length() == 0;
     }
 
+    /**
+     * Add all items in the source array to the end of this array
+     *
+     * @param source
+     *            the source array to read from
+     */
+    @JsOverlay
+    public final void addAll(JsArray<T> source) {
+        if (this == source) {
+            throw new IllegalArgumentException(
+                    "Target and source cannot be the same array");
+        }
+
+        for (int i = 0; i < source.length(); i++) {
+            push(source.get(i));
+        }
+    }
+
+    /**
+     * Removes the given item from the array
+     *
+     * @param toRemove
+     *            the item to remove
+     * @return <code>true</code> if the item was found and removed from the
+     *         array, <code>false</code> otherwise
+     */
+    @JsOverlay
+    public final boolean remove(T toRemove) {
+        for (int i = 0; i < length(); i++) {
+            if (get(i) == toRemove) {
+                remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 // Helper for stuff not allowed in a @JsType class
@@ -181,7 +218,7 @@ class JsniHelper {
             /*-{
                 var args = [index, remove];
                 args.push.apply(args, add);
-
+            
                 return array.splice.apply(array, args);
             }-*/;
 
