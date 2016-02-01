@@ -40,7 +40,7 @@ public class XhrConnectionError {
      *            the request which caused the error
      * @param payload
      *            the payload which was on its way to the server
-     * @param e
+     * @param exception
      *            the exception which caused the error or null if the error was
      *            not caused by an exception
      */
