@@ -56,7 +56,7 @@
 	<distributionManagement>
 		<repository>
 			<id>internal-snapshot</id>
-			<url>scpexe://vaadin.com/home/vaadin/download/internal/hummingbird/hummingbird-ef6448</url>
+			<url>scpexe://vaadin@gate.vaadin.com/home/vaadin/download/internal/hummingbird/hummingbird-ef6448</url>
 		</repository>
 	</distributionManagement>
 
