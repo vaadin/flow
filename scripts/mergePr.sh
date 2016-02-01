@@ -24,7 +24,8 @@ then
 	exit 5
 fi
 
-commits=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/vaadin/hummingbird/pulls/$PR/commits |jq .[].sha|cut -d\" -f 2)
+head=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/vaadin/hummingbird/pulls/$PR|jq .head.sha|cut -d\" -f 2)
+commits=$(git log origin/master..$head --reverse --oneline|cut -d' ' -f 1)
 prtitle=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/vaadin/hummingbird/pulls/$PR|jq .title|sed "s/^.//"|sed "s/.$//")
 
 echo "$prtitle" > COMMIT_MSG
