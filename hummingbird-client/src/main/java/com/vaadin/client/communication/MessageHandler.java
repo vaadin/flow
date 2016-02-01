@@ -34,7 +34,13 @@ import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.StateTree;
+import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.shared.ApplicationConstants;
+
+import elemental.client.Browser;
+import elemental.dom.Element;
+import elemental.json.JsonObject;
 
 /**
  * A MessageHandler is responsible for handling all incoming messages (JSON)
@@ -164,29 +170,25 @@ public class MessageHandler {
                     + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
         }
 
-        if (connection.getApplicationState() == ApplicationState.RUNNING) {
-            handleJSON(json);
-        } else if (connection
-                .getApplicationState() == ApplicationState.INITIALIZING) {
+        ApplicationState state = connection.getApplicationState();
+        if (state == ApplicationState.INITIALIZING) {
             // Application is starting up for the first time
             connection.setApplicationRunning(true);
-            connection.executeWhenCSSLoaded(new Runnable() {
-                @Override
-                public void run() {
-                    handleJSON(json);
-                }
-            });
+            state = connection.getApplicationState();
+        }
+
+        if (state == ApplicationState.RUNNING) {
+            handleJSON(json);
         } else {
             Console.warn(
                     "Ignored received message because application has already been stopped");
-            return;
         }
     }
 
-    protected void handleJSON(final ValueMap json) {
-        final int serverId = getServerId(json);
+    protected void handleJSON(final ValueMap valueMap) {
+        final int serverId = getServerId(valueMap);
 
-        if (isResynchronize(json) && !isNextExpectedMessage(serverId)) {
+        if (isResynchronize(valueMap) && !isNextExpectedMessage(serverId)) {
             // Resynchronize request. We must remove any old pending
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
@@ -215,7 +217,7 @@ public class MessageHandler {
                     Console.warn("Received message with server id " + serverId
                             + " but have already seen " + lastSeenServerSyncId
                             + ". Ignoring it");
-                    endRequestIfResponse(json);
+                    endRequestIfResponse(valueMap);
                     return;
                 }
 
@@ -224,7 +226,7 @@ public class MessageHandler {
                         + " but expected " + getExpectedServerId()
                         + ". Postponing handling until the missing message(s) have been received");
             }
-            pendingUIDLMessages.add(new PendingUIDLMessage(json));
+            pendingUIDLMessages.add(new PendingUIDLMessage(valueMap));
             if (!forceHandleMessage.isRunning()) {
                 forceHandleMessage.schedule(MAX_SUSPENDED_TIMEOUT);
             }
@@ -244,11 +246,11 @@ public class MessageHandler {
 
         // Client id must be updated before server id, as server id update can
         // cause a resync (which must use the updated id)
-        if (json.containsKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
-            int serverNextExpected = json
+        if (valueMap.containsKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
+            int serverNextExpected = valueMap
                     .getInt(ApplicationConstants.CLIENT_TO_SERVER_ID);
             getMessageSender().setClientToServerMessageId(serverNextExpected,
-                    isResynchronize(json));
+                    isResynchronize(valueMap));
         }
 
         if (serverId != -1) {
@@ -260,8 +262,8 @@ public class MessageHandler {
         }
 
         // Handle redirect
-        if (json.containsKey("redirect")) {
-            String url = json.getValueMap("redirect").getString("url");
+        if (valueMap.containsKey("redirect")) {
+            String url = valueMap.getValueMap("redirect").getString("url");
             Console.log("redirecting to " + url);
             WidgetUtil.redirect(url);
             return;
@@ -270,26 +272,26 @@ public class MessageHandler {
         final MultiStepDuration handleUIDLDuration = new MultiStepDuration();
 
         // Get security key
-        if (json.containsKey(ApplicationConstants.UIDL_SECURITY_TOKEN_ID)) {
-            csrfToken = json
+        if (valueMap.containsKey(ApplicationConstants.UIDL_SECURITY_TOKEN_ID)) {
+            csrfToken = valueMap
                     .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
         }
 
         Console.log("Handling resource dependencies");
-        if (json.containsKey("scriptDependencies")) {
+        if (valueMap.containsKey("scriptDependencies")) {
             connection.loadScriptDependencies(
-                    json.getJSStringArray("scriptDependencies"));
+                    valueMap.getJSStringArray("scriptDependencies"));
         }
-        if (json.containsKey("styleDependencies")) {
+        if (valueMap.containsKey("styleDependencies")) {
             connection.loadStyleDependencies(
-                    json.getJSStringArray("styleDependencies"));
+                    valueMap.getJSStringArray("styleDependencies"));
         }
 
         /*
          * Hook for e.g. TestBench to get details about server peformance
          */
-        if (json.containsKey("timings")) {
-            serverTimingInfo = json.getValueMap("timings");
+        if (valueMap.containsKey("timings")) {
+            serverTimingInfo = valueMap.getValueMap("timings");
         }
 
         Runnable c = new Runnable() {
@@ -302,11 +304,33 @@ public class MessageHandler {
 
                 double processUidlStart = Duration.currentTimeMillis();
 
+                JsonObject json = valueMap.cast();
+                if (json.hasKey("changes")) {
+                    StateTree tree = connection.getTree();
+                    TreeChangeProcessor.processChanges(tree,
+                            json.getArray("changes"));
+
+                    // Temporary debugging output
+                    String elementId = "treeContents";
+                    Element treeContents = Browser.getDocument()
+                            .getElementById(elementId);
+                    if (treeContents == null) {
+                        treeContents = Browser.getDocument()
+                                .createElement("div");
+                        treeContents.setId(elementId);
+                        treeContents.getStyle().setWhiteSpace("pre");
+                        Browser.getDocument().getBody()
+                                .appendChild(treeContents);
+                    }
+                    treeContents.setTextContent("State tree:\n" + WidgetUtil
+                            .toPrettyJson(tree.getRootNode().getDebugJson()));
+                }
+
                 Console.log("handleUIDLMessage: "
                         + (Duration.currentTimeMillis() - processUidlStart)
                         + " ms");
 
-                ValueMap meta = json.getValueMap("meta");
+                ValueMap meta = valueMap.getValueMap("meta");
 
                 if (meta != null) {
                     Profiler.enter("Error handling");
@@ -347,7 +371,7 @@ public class MessageHandler {
                 Console.log(" Processing time was "
                         + String.valueOf(lastProcessingTime) + "ms");
 
-                endRequestIfResponse(json);
+                endRequestIfResponse(valueMap);
                 resumeResponseHandling(lock);
 
                 if (Profiler.isEnabled()) {

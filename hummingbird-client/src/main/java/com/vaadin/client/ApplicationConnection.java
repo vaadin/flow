@@ -28,7 +28,6 @@ import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.HasHandlers;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
@@ -38,6 +37,7 @@ import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.ServerRpcQueue;
+import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
@@ -388,50 +388,12 @@ public class ApplicationConnection implements HasHandlers {
         return configuration.getVersionInfoJSObject();
     }
 
-    int cssWaits = 0;
-
     protected ServerRpcQueue serverRpcQueue;
     protected ConnectionStateHandler connectionStateHandler;
     protected MessageHandler messageHandler;
     protected MessageSender messageSender;
 
-    static final int MAX_CSS_WAITS = 100;
-
-    public void executeWhenCSSLoaded(final Runnable c) {
-        if (!isCSSLoaded() && cssWaits < MAX_CSS_WAITS) {
-            (new Timer() {
-                @Override
-                public void run() {
-                    executeWhenCSSLoaded(c);
-                }
-            }).schedule(50);
-
-            // Show this message just once
-            if (cssWaits++ == 0) {
-                Console.warn("Assuming CSS loading is not complete, "
-                        + "postponing render phase. "
-                        + "(.v-loading-indicator height == 0)");
-            }
-        } else {
-            cssLoaded = true;
-            if (cssWaits >= MAX_CSS_WAITS) {
-                Console.error("CSS files may have not loaded properly.");
-            }
-
-            c.run();
-        }
-    }
-
-    /**
-     * Checks whether or not the CSS is loaded. By default checks the size of
-     * the loading indicator element.
-     *
-     * @return
-     */
-    protected boolean isCSSLoaded() {
-        return cssLoaded
-                || getLoadingIndicator().getElement().getOffsetHeight() != 0;
-    }
+    private final StateTree tree = new StateTree();
 
     /**
      * Shows the communication error notification.
@@ -725,6 +687,15 @@ public class ApplicationConnection implements HasHandlers {
         if (url != null) {
             WidgetUtil.redirect(url);
         }
+    }
+
+    /**
+     * Gets the state tree for this connection.
+     *
+     * @return the state tree
+     */
+    public StateTree getTree() {
+        return tree;
     }
 
 }

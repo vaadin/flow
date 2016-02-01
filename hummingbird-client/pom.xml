@@ -92,6 +92,8 @@
 					</execution>
 				</executions>
 				<configuration>
+					<!-- Assertions should be disabled once we introduce a separate production build -->
+					<enableAssertions>true</enableAssertions>
 					<failOnError>true</failOnError>
 					<gwtSdkFirstInClasspath></gwtSdkFirstInClasspath>
 					<persistentunitcache>false</persistentunitcache>
