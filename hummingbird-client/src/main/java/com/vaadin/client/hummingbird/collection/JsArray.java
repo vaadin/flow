@@ -100,7 +100,7 @@ public class JsArray<T> {
     public native int length();
 
     /**
-     * Removes and adds a number of items at some index.
+     * Removes and adds a number of items at the given index.
      *
      * @param index
      *            the index at which do do the operation
@@ -121,7 +121,7 @@ public class JsArray<T> {
     }
 
     /**
-     * Removes a number of items at some index.
+     * Removes a number of items at the given index.
      *
      * @param index
      *            the index at which do do the operation
@@ -143,7 +143,7 @@ class JsniHelper {
             /*-{
                 var args = [index, remove];
                 args.push.apply(args, add);
-
+            
                 return array.splice.apply(array, args);
             }-*/;
 
