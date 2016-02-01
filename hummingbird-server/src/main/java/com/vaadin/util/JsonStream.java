@@ -43,7 +43,7 @@ import elemental.json.JsonValue;
 public class JsonStream {
     /**
      * Collects a stream of JSON values to a JSON array.
-     * 
+     *
      * @since
      * @author Vaadin Ltd
      */
