@@ -132,7 +132,7 @@ public class JsArray<T> {
     public native JsArray<T> splice(int index, int remove);
 
     /**
-     * Removes the item at the given index
+     * Removes the item at the given index.
      *
      * @param index
      *            the index to remove
@@ -144,7 +144,7 @@ public class JsArray<T> {
     }
 
     /**
-     * Clears the array
+     * Clears the array.
      *
      * @return the cleared array
      */
@@ -159,7 +159,7 @@ public class JsArray<T> {
     }
 
     /**
-     * Checks if the array is empty (length == 0)
+     * Checks if the array is empty (length == 0).
      *
      * @return true if the array is empty, false otherwise
      */
@@ -169,7 +169,7 @@ public class JsArray<T> {
     }
 
     /**
-     * Add all items in the source array to the end of this array
+     * Add all items in the source array to the end of this array.
      *
      * @param source
      *            the source array to read from
@@ -187,7 +187,7 @@ public class JsArray<T> {
     }
 
     /**
-     * Removes the given item from the array
+     * Removes the given item from the array.
      *
      * @param toRemove
      *            the item to remove

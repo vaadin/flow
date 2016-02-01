@@ -107,7 +107,7 @@ public class ServerRpcQueue {
     }
 
     /**
-     * Returns a collection of all queued method invocations
+     * Returns a collection of all queued method invocations.
      * <p>
      * The returned collection must not be modified in any way
      *
@@ -118,7 +118,7 @@ public class ServerRpcQueue {
     }
 
     /**
-     * Clears the queue
+     * Clears the queue.
      */
     public void clear() {
         pendingInvocations.clear();
