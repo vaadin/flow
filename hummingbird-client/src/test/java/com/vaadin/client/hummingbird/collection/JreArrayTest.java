@@ -18,15 +18,13 @@ package com.vaadin.client.hummingbird.collection;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 
-public class JreCollectionTest {
+public class JreArrayTest {
     @Test
     public void testArray() {
         JsArray<String> array = JsCollections.array();
@@ -42,6 +40,74 @@ public class JreCollectionTest {
         array.set(0, "bar");
 
         Assert.assertEquals("bar", array.get(0));
+    }
+
+    @Test
+    public void testAppendUsingSet() {
+        JsArray<String> array = JsCollections.array();
+        array.set(0, "0");
+        assertArray(array, "0");
+        array.set(1, "1");
+        assertArray(array, "0", "1");
+    }
+
+    @Test
+    public void testArrayRemove() {
+        JsArray<String> array = JsCollections.array();
+
+        // 1, 2, 3
+        array.push("1");
+        array.push("2");
+        array.push("3");
+
+        array.remove(1);
+        assertArray(array, "1", "3");
+        array.remove(1);
+        assertArray(array, "1");
+        array.remove(0);
+        assertArray(array);
+    }
+
+    @Test
+    public void testArrayClear() {
+        JsArray<String> array = JsCollections.array();
+
+        // 1, 2, 3
+        array.push("1");
+        array.push("2");
+        array.push("3");
+
+        array.clear();
+        assertArray(array);
+    }
+
+    @Test
+    public void testEmptyArrayClear() {
+        JsArray<String> array = JsCollections.array();
+        array.clear();
+        assertArray(array);
+    }
+
+    @Test
+    public void testArrayIsEmpty() {
+        JsArray<String> array = JsCollections.array();
+        Assert.assertTrue(array.isEmpty());
+        // 1, 2, 3
+        array.push("1");
+        Assert.assertFalse(array.isEmpty());
+        array.push("2");
+        Assert.assertFalse(array.isEmpty());
+        array.remove(0);
+        Assert.assertFalse(array.isEmpty());
+        array.remove(0);
+        Assert.assertTrue(array.isEmpty());
+    }
+
+    private <T> void assertArray(JsArray<T> array, T... values) {
+        Assert.assertEquals(values.length, array.length());
+        for (int i = 0; i < values.length; i++) {
+            Assert.assertEquals(values[i], array.get(i));
+        }
     }
 
     @Test
@@ -82,46 +148,30 @@ public class JreCollectionTest {
     }
 
     @Test
-    public void testMap() {
-        JsMap<String, Integer> map = JsCollections.map();
+    public void testArrayAddAll() {
+        JsArray<String> array = JsCollections.array();
+        JsArray<String> source = JsCollections.array();
 
-        Assert.assertEquals(0, map.size());
+        // 1, 2
+        source.push("1");
+        source.push("2");
 
-        map.set("One", 1).set("Two", 2);
+        array.addAll(source);
+        assertArray(array, "1", "2");
 
-        Assert.assertEquals(2, map.size());
+        array.addAll(source);
+        assertArray(array, "1", "2", "1", "2");
 
-        Assert.assertTrue(map.has("One"));
-        Assert.assertTrue(map.has("Two"));
-        Assert.assertFalse(map.has("Three"));
-
-        Assert.assertEquals(1, (int) map.get("One"));
-        Assert.assertEquals(2, (int) map.get("Two"));
-        Assert.assertNull(map.get("Threee"));
-
-        Assert.assertTrue(map.delete("One"));
-        Assert.assertFalse(map.delete("Three"));
-        Assert.assertFalse(map.has("One"));
-
-        map.clear();
-        Assert.assertEquals(0, map.size());
-        Assert.assertFalse(map.has("Two"));
     }
 
-    @Test
-    public void testMapForEach() {
-        Map<String, Integer> seenValues = new HashMap<>();
+    @Test(expected = IllegalArgumentException.class)
+    public void testArrayAddAllSelf() {
+        JsArray<String> array = JsCollections.array();
+        // 1, 2
+        array.push("1");
+        array.push("2");
 
-        JsMap<String, Integer> map = JsCollections.map();
-
-        map.set("One", 1).set("Two", 2);
-
-        map.forEach((value, key) -> seenValues.put(key, value));
-
-        Map<String, Integer> expectedValues = new HashMap<>();
-        expectedValues.put("One", 1);
-        expectedValues.put("Two", 2);
-
-        Assert.assertEquals(expectedValues, seenValues);
+        array.addAll(array);
     }
+
 }

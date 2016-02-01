@@ -15,57 +15,40 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.Response;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 
 import elemental.json.JsonObject;
 
 /**
- * XhrConnectionError provides detail about an error which occured during an XHR
- * request to the server
+ * XhrConnectionError provides detail about an error which occurred during an
+ * XHR request to the server.
  *
  * @since 7.6
  * @author Vaadin Ltd
  */
 public class XhrConnectionError {
 
-    private Throwable exception;
-    private Request request;
-    private Response response;
-    private JsonObject payload;
+    private final Exception exception;
+    private final XMLHttpRequest xhr;
+    private final JsonObject payload;
 
     /**
-     * Constructs an event from the given request, payload and exception
+     * Creates a XhrConnectionError for the given request using the given
+     * payload.
      *
-     * @param request
-     *            the request which failed
+     * @param xhr
+     *            the request which caused the error
      * @param payload
-     *            the payload which was going to the server
+     *            the payload which was on its way to the server
      * @param exception
-     *            the exception describing the problem
+     *            the exception which caused the error or null if the error was
+     *            not caused by an exception
      */
-    public XhrConnectionError(Request request, JsonObject payload,
-            Throwable exception) {
-        this.request = request;
+    public XhrConnectionError(XMLHttpRequest xhr, JsonObject payload,
+            Exception exception) {
+        this.xhr = xhr;
+        this.payload = payload;
         this.exception = exception;
-        this.payload = payload;
-    }
-
-    /**
-     * Constructs an event from the given request, response and payload
-     *
-     * @param request
-     *            the request which failed
-     * @param payload
-     *            the payload which was going to the server
-     * @param response
-     *            the response for the request
-     */
-    public XhrConnectionError(Request request, JsonObject payload,
-            Response response) {
-        this.request = request;
-        this.response = response;
-        this.payload = payload;
     }
 
     /**
@@ -73,30 +56,22 @@ public class XhrConnectionError {
      *
      * @return the exception which caused the problem, or null if not available
      */
-    public Throwable getException() {
+    public Exception getException() {
         return exception;
     }
 
     /**
-     * Returns the request for which the problem occurred
+     * Returns {@link XMLHttpRequest} which failed to reach the server.
      *
-     * @return the request where the problem occurred
+     * @return the request which failed
+     *
      */
-    public Request getRequest() {
-        return request;
+    public XMLHttpRequest getXhr() {
+        return xhr;
     }
 
     /**
-     * Returns the received response, if available
-     *
-     * @return the received response, or null if not available
-     */
-    public Response getResponse() {
-        return response;
-    }
-
-    /**
-     * Returns the payload which was sent to the server
+     * Returns the payload which was sent to the server.
      *
      * @return the payload which was sent, never null
      */

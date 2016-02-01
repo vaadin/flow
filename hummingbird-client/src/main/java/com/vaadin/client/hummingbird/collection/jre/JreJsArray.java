@@ -42,6 +42,11 @@ public class JreJsArray<T> extends JsArray<T> {
 
     // Special name since the actual method must be final
     public void doSet(int index, T value) {
+        while (index >= values.size()) {
+            // Setting outside the current range should extend the array as it
+            // does in JS
+            values.add(null);
+        }
         values.set(index, value);
     }
 
@@ -87,5 +92,12 @@ public class JreJsArray<T> extends JsArray<T> {
     @Override
     public JsArray<T> splice(int index, int remove) {
         return doSplice(index, remove, null);
+    }
+
+    /**
+     * Internal method called to clear the array.
+     */
+    public void doClear() {
+        values.clear();
     }
 }

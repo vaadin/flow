@@ -130,6 +130,81 @@ public class JsArray<T> {
      * @return an array of removed items
      */
     public native JsArray<T> splice(int index, int remove);
+
+    /**
+     * Removes the item at the given index.
+     *
+     * @param index
+     *            the index to remove
+     * @return the remove item
+     */
+    @JsOverlay
+    public final T remove(int index) {
+        return splice(index, 1).get(0);
+    }
+
+    /**
+     * Clears the array.
+     *
+     * @return the cleared array
+     */
+    @JsOverlay
+    public final JsArray<T> clear() {
+        if (GWT.isScript()) {
+            JsniHelper.clear(this);
+        } else {
+            ((JreJsArray<T>) this).doClear();
+        }
+        return this;
+    }
+
+    /**
+     * Checks if the array is empty (length == 0).
+     *
+     * @return true if the array is empty, false otherwise
+     */
+    @JsOverlay
+    public final boolean isEmpty() {
+        return length() == 0;
+    }
+
+    /**
+     * Add all items in the source array to the end of this array.
+     *
+     * @param source
+     *            the source array to read from
+     */
+    @JsOverlay
+    public final void addAll(JsArray<T> source) {
+        if (this == source) {
+            throw new IllegalArgumentException(
+                    "Target and source cannot be the same array");
+        }
+
+        for (int i = 0; i < source.length(); i++) {
+            push(source.get(i));
+        }
+    }
+
+    /**
+     * Removes the given item from the array.
+     *
+     * @param toRemove
+     *            the item to remove
+     * @return <code>true</code> if the item was found and removed from the
+     *         array, <code>false</code> otherwise
+     */
+    @JsOverlay
+    public final boolean remove(T toRemove) {
+        for (int i = 0; i < length(); i++) {
+            if (get(i) == toRemove) {
+                remove(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
 
 // Helper for stuff not allowed in a @JsType class
@@ -143,9 +218,14 @@ class JsniHelper {
             /*-{
                 var args = [index, remove];
                 args.push.apply(args, add);
-            
+
                 return array.splice.apply(array, args);
             }-*/;
+
+    static native void clear(JsArray<?> array)
+    /*-{
+        array.length = 0;
+    }-*/;
 
     static native <T> T getValueNative(JsArray<T> array, int index)
     /*-{
@@ -156,4 +236,5 @@ class JsniHelper {
     /*-{
         array[i] = value;
     }-*/;
+
 }
