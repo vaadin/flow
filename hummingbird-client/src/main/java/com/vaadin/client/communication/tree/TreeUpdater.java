@@ -146,6 +146,14 @@ public class TreeUpdater {
             Object objectValue) {
         JsonValue value = asJsonValue(objectValue);
         assert element != null;
+
+        if (element.hasTagName("A")
+                && key.endsWith(RouterLinkClickListener.ATTRIBUTE_NAME)
+                && !element
+                        .hasAttribute(RouterLinkClickListener.ATTRIBUTE_NAME)) {
+            RouterLinkClickListener.addRouterLinkListener(element);
+        }
+
         String attrKey = isAttribute(key);
         if (attrKey != null) {
             if (value == null || value.getType() == JsonType.NULL) {
@@ -340,7 +348,8 @@ public class TreeUpdater {
     static boolean isAlwaysAttribute(String key) {
         // FIXME There should be separate API for attribute and property and
         // eitherOr (https://github.com/vaadin/hummingbird/issues/5)
-        return key.equals("style") || key.equals("for");
+        return key.equals("style") || key.equals("for")
+                || key.equals(RouterLinkClickListener.ATTRIBUTE_NAME);
     }
 
     public static native JavaScriptObject addDomListener(Element element,

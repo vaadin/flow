@@ -234,6 +234,10 @@ public class BoundElementTemplate extends Template {
             } else if (name.equals("LOCAL_ID")) {
                 context.registerLocalId(value, element);
             } else {
+                if (element.hasTagName("A") && name
+                        .equals(RouterLinkClickListener.ATTRIBUTE_NAME)) {
+                    RouterLinkClickListener.addRouterLinkListener(element);
+                }
                 DomApi.wrap(element).setAttribute(name, value);
             }
         }
