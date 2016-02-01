@@ -19,18 +19,15 @@ package com.vaadin.client.hummingbird.collection.jre;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsSet;
 
 /**
- * JRE implementation of {@link JsMap}, should only be used for testing.
+ * JRE implementation of {@link JsSet}, should only be used for testing.
  *
  *
  * @deprecated Should only be used for testing.
  * @since
  * @author Vaadin Ltd
- * @param <K>
- *            the key type
  * @param <V>
  *            the value type
  */

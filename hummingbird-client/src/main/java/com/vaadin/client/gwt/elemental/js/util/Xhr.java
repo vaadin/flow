@@ -13,11 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.elemental.js.util;
+package com.vaadin.client.gwt.elemental.js.util;
 
 import com.google.gwt.core.client.JavaScriptException;
 import com.google.gwt.xhr.client.ReadyStateChangeHandler;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+import com.vaadin.client.Console;
 
 import elemental.client.Browser;
 import elemental.html.Window;
@@ -25,7 +26,7 @@ import elemental.html.Window;
 /**
  * A Simpler way to use {@link XMLHttpRequest}.
  *
- * Copied to make get/post return the XmlHttpRequest
+ * Copied from the GWT project to make get/post return the XmlHttpRequest
  */
 public class Xhr {
     /**
@@ -189,6 +190,7 @@ public class Xhr {
             xhr.send(requestData);
         } catch (JavaScriptException e) {
             // Just fail.
+            Console.error(e);
             callback.onFail(xhr);
             xhr.clearOnReadyStateChange();
         }
@@ -203,6 +205,7 @@ public class Xhr {
             xhr.send();
         } catch (JavaScriptException e) {
             // Just fail.
+            Console.error(e);
             callback.onFail(xhr);
             xhr.clearOnReadyStateChange();
         }
