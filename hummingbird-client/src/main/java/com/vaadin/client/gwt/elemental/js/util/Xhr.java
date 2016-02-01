@@ -35,7 +35,7 @@ public class Xhr {
      */
     public interface Callback {
         /**
-         * Called when the request fails
+         * Called when the request fails.
          *
          * @param xhr
          *            the request object
@@ -43,7 +43,7 @@ public class Xhr {
         void onFail(XMLHttpRequest xhr);
 
         /**
-         * Called when the request succeeds
+         * Called when the request succeeds.
          *
          * @param xhr
          *            the request object

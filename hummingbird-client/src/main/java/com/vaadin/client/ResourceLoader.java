@@ -71,7 +71,7 @@ public class ResourceLoader {
         }
 
         /**
-         * Gets the resource loader that has fired this event
+         * Gets the resource loader that has fired this event.
          *
          * @return the resource loader
          */
@@ -90,7 +90,7 @@ public class ResourceLoader {
 
         /**
          * Returns true if the resource has been preloaded, false if it's fully
-         * loaded
+         * loaded.
          *
          * @see ResourceLoader#preloadResource(String, ResourceLoadListener)
          *
@@ -103,7 +103,7 @@ public class ResourceLoader {
     }
 
     /**
-     * Event listener that gets notified when a resource has been loaded
+     * Event listener that gets notified when a resource has been loaded.
      */
     public interface ResourceLoadListener {
         /**
@@ -182,7 +182,7 @@ public class ResourceLoader {
     }
 
     /**
-     * Returns the default ResourceLoader
+     * Returns the default ResourceLoader.
      *
      * @return the default ResourceLoader
      */
@@ -509,12 +509,12 @@ public class ResourceLoader {
                     if (rules === undefined) {
                         rules = sheet.rules;
                     }
-    
+
                     if (rules === null) {
                         // Style sheet loaded, but can't access length because of XSS -> assume there's something there
                         return 1;
                     }
-    
+
                     // Return length so we can distinguish 0 (probably 404 error) from normal case.
                     return rules.length;
                 } catch (err) {

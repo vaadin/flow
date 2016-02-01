@@ -49,7 +49,7 @@ public class SimpleEventBus extends EventBus {
             .map();
 
     /**
-     * Create an instance of the event bus
+     * Create an instance of the event bus.
      */
     public SimpleEventBus() {
         // Intentionally left empty

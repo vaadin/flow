@@ -21,7 +21,7 @@ import elemental.json.JsonObject;
 
 /**
  * XhrConnectionError provides detail about an error which occurred during an
- * XHR request to the server
+ * XHR request to the server.
  *
  * @since 7.6
  * @author Vaadin Ltd
@@ -33,7 +33,7 @@ public class XhrConnectionError {
 
     /**
      * Creates a XhrConnectionError for the given request using the given
-     * payload
+     * payload.
      *
      * @param xhr
      *            the request which caused the error
@@ -46,7 +46,7 @@ public class XhrConnectionError {
     }
 
     /**
-     * Returns {@link XMLHttpRequest} which failed to reach the server
+     * Returns {@link XMLHttpRequest} which failed to reach the server.
      *
      * @return the request which failed
      *
@@ -56,7 +56,7 @@ public class XhrConnectionError {
     }
 
     /**
-     * Returns the payload which was sent to the server
+     * Returns the payload which was sent to the server.
      *
      * @return the payload which was sent, never null
      */
