@@ -16,7 +16,6 @@
 package com.vaadin.client.hummingbird.collection;
 
 import com.google.gwt.core.client.GWT;
-import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 import com.vaadin.client.hummingbird.collection.jre.JreJsMap;
 import com.vaadin.client.hummingbird.collection.jre.JreJsSet;
@@ -82,13 +81,7 @@ public class JsCollections {
      */
     public static <K, V> JsArray<V> mapValues(JsMap<K, V> map) {
         JsArray<V> result = JsCollections.array();
-
-        map.forEach(new ForEachCallback<K, V>() {
-            @Override
-            public void accept(V value, K key) {
-                result.push(value);
-            }
-        });
+        map.forEach((value, key) -> result.push(value));
 
         return result;
     }
