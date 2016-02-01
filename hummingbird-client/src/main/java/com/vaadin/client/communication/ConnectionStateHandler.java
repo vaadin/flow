@@ -44,6 +44,16 @@ public interface ConnectionStateHandler {
     void setConnection(ApplicationConnection connection);
 
     /**
+     * Called when an exception occurs during a {@link Heartbeat} request
+     *
+     * @param request
+     *            The heartbeat request
+     * @param exception
+     *            The exception which occurred
+     */
+    void heartbeatException(XMLHttpRequest request, Exception exception);
+
+    /**
      * Called when a heartbeat request returns a status code other than OK
      * (200).
      *

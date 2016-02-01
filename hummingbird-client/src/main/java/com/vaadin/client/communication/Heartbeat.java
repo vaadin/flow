@@ -15,13 +15,12 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
-import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.client.Console;
+import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.util.SharedUtil;
 
@@ -85,26 +84,22 @@ public class Heartbeat {
 
             @Override
             public void onSuccess(XMLHttpRequest xhr) {
-                int status = xhr.getStatus();
-
-                if (status == Response.SC_OK) {
-                    connection.getConnectionStateHandler().heartbeatOk();
-                } else {
-                    // Handler should stop the application if heartbeat should
-                    // no longer be sent
-                    connection.getConnectionStateHandler()
-                            .heartbeatInvalidStatusCode(xhr);
-                }
-
+                connection.getConnectionStateHandler().heartbeatOk();
                 schedule();
             }
 
             @Override
-            public void onFail(XMLHttpRequest xhr) {
+            public void onFail(XMLHttpRequest xhr, Exception e) {
+
                 // Handler should stop the application if heartbeat should no
                 // longer be sent
-                connection.getConnectionStateHandler()
-                        .heartbeatInvalidStatusCode(xhr);
+                if (e == null) {
+                    connection.getConnectionStateHandler()
+                            .heartbeatInvalidStatusCode(xhr);
+                } else {
+                    connection.getConnectionStateHandler()
+                            .heartbeatException(xhr, e);
+                }
                 schedule();
 
             }

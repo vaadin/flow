@@ -119,18 +119,16 @@ public class XhrConnection {
         }
 
         @Override
-        public void onFail(XMLHttpRequest xhr) {
-            int statusCode = xhr.getStatus();
-            if (statusCode != 200) {
-                // There was a problem
-                XhrConnectionError problemEvent = new XhrConnectionError(xhr,
-                        payload);
+        public void onFail(XMLHttpRequest xhr, Exception e) {
+            XhrConnectionError errorEvent = new XhrConnectionError(xhr, payload,
+                    e);
+            if (e == null) {
+                // Response other than 200
 
-                getConnectionStateHandler().xhrInvalidStatusCode(problemEvent);
+                getConnectionStateHandler().xhrInvalidStatusCode(errorEvent);
                 return;
             } else {
-                getConnectionStateHandler()
-                        .xhrException(new XhrConnectionError(xhr, payload));
+                getConnectionStateHandler().xhrException(errorEvent);
             }
 
         }
@@ -147,7 +145,7 @@ public class XhrConnection {
             if (json == null) {
                 // Invalid string (not wrapped as expected or can't parse)
                 getConnectionStateHandler().xhrInvalidContent(
-                        new XhrConnectionError(xhr, payload));
+                        new XhrConnectionError(xhr, payload, null));
                 return;
             }
 

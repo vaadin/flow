@@ -139,6 +139,13 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     @Override
+    public void heartbeatException(XMLHttpRequest request,
+            Exception exception) {
+        Console.error("Heartbeat exception: " + exception.getMessage());
+        handleRecoverableError(Type.HEARTBEAT, null);
+    }
+
+    @Override
     public void heartbeatInvalidStatusCode(XMLHttpRequest xhr) {
         int statusCode = xhr.getStatus();
         Console.warn("Heartbeat request returned " + statusCode);

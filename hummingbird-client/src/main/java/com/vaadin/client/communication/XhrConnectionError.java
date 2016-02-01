@@ -28,6 +28,7 @@ import elemental.json.JsonObject;
  */
 public class XhrConnectionError {
 
+    private final Exception exception;
     private final XMLHttpRequest xhr;
     private final JsonObject payload;
 
@@ -39,10 +40,24 @@ public class XhrConnectionError {
      *            the request which caused the error
      * @param payload
      *            the payload which was on its way to the server
+     * @param e
+     *            the exception which caused the error or null if the error was
+     *            not caused by an exception
      */
-    public XhrConnectionError(XMLHttpRequest xhr, JsonObject payload) {
+    public XhrConnectionError(XMLHttpRequest xhr, JsonObject payload,
+            Exception exception) {
         this.xhr = xhr;
         this.payload = payload;
+        this.exception = exception;
+    }
+
+    /**
+     * Returns the exception which caused the problem, if available
+     *
+     * @return the exception which caused the problem, or null if not available
+     */
+    public Exception getException() {
+        return exception;
     }
 
     /**

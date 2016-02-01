@@ -39,8 +39,11 @@ public class Xhr {
          *
          * @param xhr
          *            the request object
+         * @param exception
+         *            the exception which cause the request to fail, or null if
+         *            not available
          */
-        void onFail(XMLHttpRequest xhr);
+        void onFail(XMLHttpRequest xhr, Exception exception);
 
         /**
          * Called when the request succeeds.
@@ -66,7 +69,7 @@ public class Xhr {
                     xhr.clearOnReadyStateChange();
                     return;
                 }
-                callback.onFail(xhr);
+                callback.onFail(xhr, null);
                 xhr.clearOnReadyStateChange();
             }
         }
@@ -191,7 +194,7 @@ public class Xhr {
         } catch (JavaScriptException e) {
             // Just fail.
             Console.error(e);
-            callback.onFail(xhr);
+            callback.onFail(xhr, e);
             xhr.clearOnReadyStateChange();
         }
         return xhr;
@@ -206,7 +209,7 @@ public class Xhr {
         } catch (JavaScriptException e) {
             // Just fail.
             Console.error(e);
-            callback.onFail(xhr);
+            callback.onFail(xhr, e);
             xhr.clearOnReadyStateChange();
         }
         return xhr;
