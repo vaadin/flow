@@ -15,15 +15,37 @@
  */
 package com.vaadin.client.hummingbird;
 
+import java.util.Objects;
+
+import com.vaadin.client.hummingbird.reactive.ReactiveChangeListener;
+import com.vaadin.client.hummingbird.reactive.ReactiveEventRouter;
+import com.vaadin.client.hummingbird.reactive.ReactiveValue;
+
+import elemental.events.EventRemover;
+
 /**
  * A property in a map namespace.
  *
  * @since
  * @author Vaadin Ltd
  */
-public class MapProperty {
+public class MapProperty implements ReactiveValue {
     private final String name;
     private final MapNamespace namespace;
+
+    private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(
+            this) {
+        @Override
+        protected MapPropertyChangeListener wrap(ReactiveChangeListener l) {
+            return l::onChange;
+        }
+
+        @Override
+        protected void dispatchEvent(MapPropertyChangeListener listener,
+                MapPropertyChangeEvent event) {
+            listener.onPropertyChange(event);
+        }
+    };
 
     private Object value;
 
@@ -64,16 +86,42 @@ public class MapProperty {
      * @return the property value
      */
     public Object getValue() {
+        eventRouter.registerRead();
         return value;
     }
 
     /**
-     * Sets the property value.
+     * Sets the property value. Changing the value fires a
+     * {@link MapPropertyChangeEvent}.
+     *
+     * @see #addChangeListener(MapPropertyChangeListener)
      *
      * @param value
      *            the new property value
      */
     public void setValue(Object value) {
-        this.value = value;
+        Object oldValue = this.value;
+        if (!Objects.equals(value, oldValue)) {
+            this.value = value;
+            eventRouter.fireEvent(
+                    new MapPropertyChangeEvent(this, oldValue, value));
+        }
+    }
+
+    /**
+     * Adds a listener that gets notified when the value of this property
+     * changes.
+     *
+     * @param listener
+     *            the property change listener to add
+     * @return an event remover for unregistering the listener
+     */
+    public EventRemover addChangeListener(MapPropertyChangeListener listener) {
+        return eventRouter.addListener(listener);
+    }
+
+    @Override
+    public EventRemover addReactiveChangeListener(ReactiveChangeListener listener) {
+        return eventRouter.addReactiveListener(listener);
     }
 }

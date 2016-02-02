@@ -18,19 +18,45 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
+import com.vaadin.client.hummingbird.reactive.Computation;
+import com.vaadin.client.hummingbird.reactive.ReactiveChangeListener;
+import com.vaadin.client.hummingbird.reactive.ReactiveEventRouter;
+import com.vaadin.client.hummingbird.reactive.ReactiveValue;
 
+import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
  * A state node namespace that structures data as a map.
+ * <p>
+ * The namespace works as a reactive value with regards to the set of available
+ * properties. A {@link Computation} will get a dependency on this namespace by
+ * iterating the properties. Accessing a property by name does not create a
+ * dependency. The <code>Computation</code> is invalidated when a property is
+ * added (properties are never removed). It is not invalidated when the value of
+ * a property changes since the property is a reactive values of its own.
  *
  * @since
  * @author Vaadin Ltd
  */
-public class MapNamespace extends AbstractNamespace {
+public class MapNamespace extends AbstractNamespace implements ReactiveValue {
     private final JsMap<String, MapProperty> properties = JsCollections.map();
+
+    private final ReactiveEventRouter<PropertyAddListener, PropertyAddEvent> eventRouter = new ReactiveEventRouter<PropertyAddListener, PropertyAddEvent>(
+            this) {
+        @Override
+        protected PropertyAddListener wrap(ReactiveChangeListener listener) {
+            return listener::onChange;
+        }
+
+        @Override
+        protected void dispatchEvent(PropertyAddListener listener,
+                PropertyAddEvent event) {
+            listener.onPropertyAdd(event);
+        }
+    };
 
     /**
      * Creates a new map namespace.
@@ -56,6 +82,8 @@ public class MapNamespace extends AbstractNamespace {
         if (property == null) {
             property = new MapProperty(name, this);
             properties.set(name, property);
+
+            eventRouter.fireEvent(new PropertyAddEvent(this, property));
         }
 
         return property;
@@ -68,6 +96,7 @@ public class MapNamespace extends AbstractNamespace {
      *            the callback to invoke for each property
      */
     public void forEachProperty(ForEachCallback<String, MapProperty> callback) {
+        eventRouter.registerRead();
         properties.forEach(callback);
     }
 
@@ -78,5 +107,23 @@ public class MapNamespace extends AbstractNamespace {
         properties.forEach((p, n) -> json.put(n, getAsDebugJson(p.getValue())));
 
         return json;
+    }
+
+    @Override
+    public EventRemover addReactiveChangeListener(
+            ReactiveChangeListener listener) {
+        return eventRouter.addReactiveListener(listener);
+    }
+
+    /**
+     * Adds a listener that is informed whenever a new property is added to this
+     * namespace.
+     *
+     * @param listener
+     *            the property add listener
+     * @return an event remover that can be used for removing the added listener
+     */
+    public EventRemover addPropertyAddListener(PropertyAddListener listener) {
+        return eventRouter.addListener(listener);
     }
 }
