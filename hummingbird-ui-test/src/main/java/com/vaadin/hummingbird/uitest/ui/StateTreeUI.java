@@ -33,8 +33,7 @@ public class StateTreeUI extends UI {
         rootNode.getNamespace(ElementPropertiesNamespace.class)
                 .setProperty("foo", "bar");
 
-        StateNode childNode = new StateNode(
-                Arrays.asList(ElementDataNamespace.class));
+        StateNode childNode = new StateNode(ElementDataNamespace.class);
         childNode.getNamespace(ElementDataNamespace.class).setTag("span");
         rootNode.getNamespace(ElementChildrenNamespace.class).add(0, childNode);
     }

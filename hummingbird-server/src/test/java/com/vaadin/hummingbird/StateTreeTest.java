@@ -53,7 +53,7 @@ public class StateTreeTest {
 
     @Test(expected = IllegalStateException.class)
     public void testRootNode_setParent_throws() {
-        tree.getRootNode().setParent(new StateNode(Collections.emptyList()));
+        tree.getRootNode().setParent(new StateNode());
     }
 
     @Test
@@ -176,8 +176,7 @@ public class StateTreeTest {
     @Test
     public void allValuesAfterReattach() {
         StateNode node1 = tree.getRootNode();
-        StateNode node2 = new StateNode(
-                Arrays.asList(ElementDataNamespace.class));
+        StateNode node2 = new StateNode(ElementDataNamespace.class);
 
         node2.setParent(node1);
         node2.getNamespace(ElementDataNamespace.class).setTag("foo");

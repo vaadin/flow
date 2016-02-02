@@ -16,7 +16,6 @@
 
 package com.vaadin.hummingbird;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,7 +47,7 @@ public class StateTree extends NodeOwner {
      */
     @SafeVarargs
     public StateTree(Class<? extends Namespace>... namespaces) {
-        rootNode = new StateNode(Arrays.asList(namespaces)) {
+        rootNode = new StateNode(namespaces) {
             @Override
             public void setParent(StateNode parent) {
                 throw new IllegalStateException(
