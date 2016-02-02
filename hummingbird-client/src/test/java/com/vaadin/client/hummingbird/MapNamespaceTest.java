@@ -18,9 +18,15 @@ package com.vaadin.client.hummingbird;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.client.hummingbird.reactive.CountingComputation;
+import com.vaadin.client.hummingbird.reactive.Reactive;
+
+import elemental.events.EventRemover;
 
 public class MapNamespaceTest {
 
@@ -46,6 +52,63 @@ public class MapNamespaceTest {
         Assert.assertSame(property, getAgain);
 
         Assert.assertEquals(properties, collectProperties());
+    }
+
+    @Test
+    public void testAddPropertyEvent() {
+        AtomicReference<PropertyAddEvent> lastEvent = new AtomicReference<>();
+
+        EventRemover remover = namespace
+                .addPropertyAddListener(new PropertyAddListener() {
+                    @Override
+                    public void onPropertyAdd(PropertyAddEvent event) {
+                        Assert.assertNull("Got unexpected event",
+                                lastEvent.get());
+
+                        lastEvent.set(event);
+                    }
+                });
+
+        Assert.assertNull(lastEvent.get());
+
+        namespace.getProperty("foo");
+
+        PropertyAddEvent event = lastEvent.get();
+
+        Assert.assertSame(namespace, event.getSource());
+        Assert.assertEquals("foo", event.getProperty().getName());
+
+        lastEvent.set(null);
+        namespace.getProperty("foo");
+
+        Assert.assertNull("No new event should have fired", lastEvent.get());
+
+        namespace.getProperty("bar");
+
+        Assert.assertEquals("bar", lastEvent.get().getProperty().getName());
+
+        remover.remove();
+
+        namespace.getProperty("baz");
+
+        Assert.assertEquals("bar", lastEvent.get().getProperty().getName());
+    }
+
+    @Test
+    public void testReactiveInvalidation() {
+        CountingComputation computation = new CountingComputation(
+                () -> namespace.forEachProperty((a, b) -> {
+                }));
+
+        Reactive.flush();
+
+        namespace.getProperty("foo");
+
+        Assert.assertEquals(1, computation.getCount());
+
+        Reactive.flush();
+
+        Assert.assertEquals(2, computation.getCount());
     }
 
     private List<MapProperty> collectProperties() {
