@@ -41,6 +41,8 @@ public class Namespaces {
      */
     public static final int ELEMENT_CHILDREN = 2;
 
+    public static final Integer ELEMENT_ATTRIBUTES = 3;
+
     private Namespaces() {
         // Only static
     }
