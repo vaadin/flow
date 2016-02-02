@@ -33,7 +33,24 @@ import com.vaadin.client.hummingbird.collection.JsSet;
  */
 @Deprecated
 public class JreJsSet<V> implements JsSet<V> {
-    private Set<V> values = new HashSet<>();
+    private final Set<V> values = new HashSet<>();
+
+    /**
+     * Creates a new empty JRE Set.
+     */
+    public JreJsSet() {
+        // Nothing to do
+    }
+
+    /**
+     * Creates a new JRE Set with the contents of another Set.
+     *
+     * @param otherSet
+     *            the Set to copy the contents from
+     */
+    public JreJsSet(JreJsSet<V> otherSet) {
+        this.values.addAll(otherSet.values);
+    }
 
     @Override
     public JsSet<V> add(V value) {
