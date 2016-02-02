@@ -24,6 +24,8 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
+import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.Namespaces;
 
 public class NamespaceTest {
     private static abstract class UnregisteredNamespace extends Namespace {
@@ -53,9 +55,11 @@ public class NamespaceTest {
         // Verifies that the ids are the same as on the client side
         Map<Class<? extends Namespace>, Integer> expectedIds = new HashMap<>();
 
-        expectedIds.put(ElementDataNamespace.class, 0);
-        expectedIds.put(ElementPropertiesNamespace.class, 1);
-        expectedIds.put(ElementChildrenNamespace.class, 2);
+        expectedIds.put(ElementDataNamespace.class, Namespaces.ELEMENT_DATA);
+        expectedIds.put(ElementPropertiesNamespace.class,
+                Namespaces.ELEMENT_PROPERTIES);
+        expectedIds.put(ElementChildrenNamespace.class,
+                Namespaces.ELEMENT_CHILDREN);
 
         Assert.assertEquals(
                 "The number of expected namespaces is not up to date",
