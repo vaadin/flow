@@ -15,8 +15,15 @@
  */
 package com.vaadin.client.hummingbird;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.client.hummingbird.reactive.CountingComputation;
+import com.vaadin.client.hummingbird.reactive.Reactive;
+
+import elemental.events.EventRemover;
 
 public class MapPropertyTest {
     private MapProperty property = new MapProperty("foo",
@@ -29,5 +36,55 @@ public class MapPropertyTest {
         property.setValue("bar");
 
         Assert.assertEquals("bar", property.getValue());
+    }
+
+    @Test
+    public void testChangeListener() {
+        AtomicReference<MapPropertyChangeEvent> lastEvent = new AtomicReference<>();
+
+        EventRemover remover = property
+                .addChangeListener(new MapPropertyChangeListener() {
+                    @Override
+                    public void onPropertyChange(MapPropertyChangeEvent event) {
+                        Assert.assertNull("Got unexpected event",
+                                lastEvent.get());
+                        lastEvent.set(event);
+                    }
+                });
+
+        property.setValue("foo");
+
+        MapPropertyChangeEvent event = lastEvent.get();
+        Assert.assertSame(property, event.getSource());
+        Assert.assertNull(event.getOldValue());
+        Assert.assertEquals("foo", event.getNewValue());
+
+        property.setValue("foo");
+        Assert.assertSame("No new event should have fired", event,
+                lastEvent.get());
+
+        remover.remove();
+
+        property.setValue("bar");
+
+        Assert.assertSame("No new event should have fired", event,
+                lastEvent.get());
+    }
+
+    @Test
+    public void testReactive() {
+        CountingComputation computation = new CountingComputation(
+                () -> property.getValue());
+
+        Reactive.flush();
+
+        property.setValue("bar");
+        property.setValue("baz");
+
+        Assert.assertEquals(1, computation.getCount());
+
+        Reactive.flush();
+
+        Assert.assertEquals(2, computation.getCount());
     }
 }
