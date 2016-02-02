@@ -13,29 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird.reactive;
+package com.vaadin.client.hummingbird;
 
-public class CountingComputation extends Computation {
-
-    private Runnable reader;
-
-    public CountingComputation(ReactiveEventRouter<?, ?> eventRouter) {
-        this(eventRouter::registerRead);
-    }
-
-    public CountingComputation(Runnable reader) {
-        this.reader = reader;
-    }
-
-    private int count = 0;
-
-    @Override
-    protected void doRecompute() {
-        count++;
-        reader.run();
-    }
-
-    public int getCount() {
-        return count;
-    }
+/**
+ * Listener notified when a property is added to a {@link MapNamespace}.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
+public interface PropertyAddListener {
+    /**
+     * Invoked when a property is added.
+     *
+     * @param event
+     *            the property add event
+     */
+    public void onPropertyAdd(PropertyAddEvent event);
 }
