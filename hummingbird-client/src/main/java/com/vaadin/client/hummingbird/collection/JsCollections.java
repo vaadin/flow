@@ -59,15 +59,30 @@ public class JsCollections {
     }
 
     /**
-     * Creates a new JavaScript Set.
+     * Creates a new empty JavaScript Set.
      *
-     * @return a new JS Set instance
+     * @return a new empty JS Set instance
      */
     public static <V> JsSet<V> set() {
         if (GWT.isScript()) {
             return createNativeSet();
         } else {
             return new JreJsSet<>();
+        }
+    }
+
+    /**
+     * Creates a new JavaScript Set with the same contents as another set.
+     *
+     * @param values
+     *            a set of values to add to the new set
+     * @return a new JS Set with the provided contents
+     */
+    public static <T> JsSet<T> set(JsSet<T> values) {
+        if (GWT.isScript()) {
+            return createNativeSet(values);
+        } else {
+            return new JreJsSet<>((JreJsSet<T>) values);
         }
     }
 
@@ -99,6 +114,16 @@ public class JsCollections {
     private static native <V> JsSet<V> createNativeSet()
     /*-{
         return new $wnd.Set();
+    }-*/;
+
+    private static native <V> JsSet<V> createNativeSet(JsSet<V> values)
+    /*-{
+        var set = new $wnd.Set(values);
+        if (set.size == 0 && values.size != 0) {
+            // IE11 doesn't support the Set(Iterable) constructor
+            values.forEach(function(v) { set.add(v); });
+        }
+        return set;
     }-*/;
 
     /**
