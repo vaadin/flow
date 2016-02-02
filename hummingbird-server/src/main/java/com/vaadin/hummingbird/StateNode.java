@@ -17,7 +17,6 @@
 package com.vaadin.hummingbird;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -55,7 +54,8 @@ public class StateNode implements Serializable {
      * @param namespaces
      *            a collection of namespace classes that the node should support
      */
-    public StateNode(Collection<Class<? extends Namespace>> namespaces) {
+    @SafeVarargs
+    public StateNode(Class<? extends Namespace>... namespaces) {
         for (Class<? extends Namespace> namespaceType : namespaces) {
             Namespace namespace = NamespaceRegistry.create(namespaceType, this);
             this.namespaces.put(namespaceType, namespace);

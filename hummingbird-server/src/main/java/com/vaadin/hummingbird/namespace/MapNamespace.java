@@ -19,6 +19,7 @@ package com.vaadin.hummingbird.namespace;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
@@ -78,6 +79,15 @@ public abstract class MapNamespace extends Namespace {
     protected Object get(String key) {
         setAccessed(key);
         return values.get(key);
+    }
+
+    /**
+     * Gets the defined keys.
+     *
+     * @return a set containing all the defined keys
+     */
+    protected Set<String> keySet() {
+        return values.keySet();
     }
 
     /**
@@ -153,4 +163,5 @@ public abstract class MapNamespace extends Namespace {
         changes.clear();
         values.keySet().forEach(k -> changes.put(k, REMOVED_MARKER));
     }
+
 }
