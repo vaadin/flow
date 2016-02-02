@@ -1,11 +1,25 @@
 package com.vaadin.hummingbird.dom.impl;
 
-import java.util.Arrays;
+import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
+import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 
+/**
+ * Implementation which stores data for basic elements, i.e. elements which are
+ * not bound to any template and have no special functionality.
+ * <p>
+ * This should be considered a low level class focusing on performance and
+ * leaving most sanity checks to the caller.
+ * <p>
+ * The data is stored directly in the state node but this should be considered
+ * an implementation detail which can change.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class BasicElementStateProvider implements ElementStateProvider {
 
     private static BasicElementStateProvider instance = new BasicElementStateProvider();
@@ -32,8 +46,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
      */
     public static StateNode createStateNode(String tag) {
         assert isValidTagName(tag) : "Invalid tag name " + tag;
-        StateNode node = new StateNode(
-                Arrays.asList(ElementDataNamespace.class));
+        StateNode node = new StateNode(ElementDataNamespace.class,
+                ElementAttributeNamespace.class);
 
         node.getNamespace(ElementDataNamespace.class).setTag(tag);
 
@@ -79,8 +93,65 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public String getTag(StateNode node) {
+        return getDataNamespace(node).getTag();
+    }
+
+    /**
+     * Gets the element data namespace for the given node and asserts it is
+     * non-null
+     *
+     * @param node
+     *            the node
+     * @return the data name space
+     */
+    private ElementDataNamespace getDataNamespace(StateNode node) {
         ElementDataNamespace ns = node.getNamespace(ElementDataNamespace.class);
         assert ns != null;
-        return ns.getTag();
+        return ns;
     }
+
+    /**
+     * Gets the element attribute namespace for the given node and asserts it is
+     * non-null
+     *
+     * @param node
+     *            the node
+     * @return the data name space
+     */
+    private ElementAttributeNamespace getAttributeNamespace(StateNode node) {
+        ElementAttributeNamespace ns = node
+                .getNamespace(ElementAttributeNamespace.class);
+        assert ns != null;
+        return ns;
+    }
+
+    @Override
+    public void setAttribute(StateNode node, String attribute, String value) {
+        getAttributeNamespace(node).set(attribute, value);
+
+    }
+
+    @Override
+    public String getAttribute(StateNode node, String attribute) {
+        if ("is".equals(attribute)) {
+            return getDataNamespace(node).getIs();
+        }
+        return getAttributeNamespace(node).get(attribute);
+    }
+
+    @Override
+    public boolean hasAttribute(StateNode node, String attribute) {
+        return getAttributeNamespace(node).has(attribute);
+    }
+
+    @Override
+    public void removeAttribute(StateNode node, String attribute) {
+        getAttributeNamespace(node).remove(attribute);
+    }
+
+    @Override
+    public Set<String> getAttributeNames(StateNode node) {
+        return getAttributeNamespace(node).attributes();
+    }
+
 }

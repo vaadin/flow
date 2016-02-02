@@ -50,6 +50,8 @@ public class NamespaceRegistry {
                 ElementPropertiesNamespace::new);
         registerNamespace(ElementChildrenNamespace.class,
                 ElementChildrenNamespace::new);
+        registerNamespace(ElementAttributeNamespace.class,
+                ElementAttributeNamespace::new);
     }
 
     private NamespaceRegistry() {
@@ -93,7 +95,8 @@ public class NamespaceRegistry {
 
         NamespaceData data = namespaces.get(namespace);
 
-        assert data != null;
+        assert data != null : "Namespace " + namespace.getName()
+                + " has not been registered in NamespaceRegistry";
 
         return data;
     }
