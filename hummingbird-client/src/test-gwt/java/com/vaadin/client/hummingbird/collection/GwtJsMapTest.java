@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.WidgetUtil;
 
 public class GwtJsMapTest extends ClientEngineTestBase {
 
@@ -86,6 +87,11 @@ public class GwtJsMapTest extends ClientEngineTestBase {
         map.clear();
         values = JsCollections.mapValues(map);
         assertEquals(0, values.length());
+    }
+
+    public void testCanCast() {
+        // Ok if this doesn't throw ClassCastException
+        JsMap<Object, Object> map = WidgetUtil.crazyJsCast("foo");
     }
 
 }
