@@ -17,7 +17,11 @@ package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.reactive.ReactiveChangeListener;
+import com.vaadin.client.hummingbird.reactive.ReactiveEventRouter;
+import com.vaadin.client.hummingbird.reactive.ReactiveValue;
 
+import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
@@ -28,9 +32,23 @@ import elemental.json.JsonValue;
  * @since
  * @author Vaadin Ltd
  */
-public class ListNamespace extends AbstractNamespace {
+public class ListNamespace extends AbstractNamespace implements ReactiveValue {
 
     private final JsArray<Object> values = JsCollections.array();
+
+    private final ReactiveEventRouter<ListSpliceListener, ListSpliceEvent> eventRouter = new ReactiveEventRouter<ListSpliceListener, ListSpliceEvent>(
+            this) {
+        @Override
+        protected ListSpliceListener wrap(ReactiveChangeListener listener) {
+            return listener::onChange;
+        }
+
+        @Override
+        protected void dispatchEvent(ListSpliceListener listener,
+                ListSpliceEvent event) {
+            listener.onSplice(event);
+        }
+    };
 
     /**
      * Creates a new list namespace.
@@ -50,6 +68,7 @@ public class ListNamespace extends AbstractNamespace {
      * @return the number of items
      */
     public int length() {
+        eventRouter.registerRead();
         return values.length();
     }
 
@@ -85,7 +104,9 @@ public class ListNamespace extends AbstractNamespace {
      *            the number of items to remove
      */
     public void splice(int index, int remove) {
-        values.splice(index, remove);
+        JsArray<Object> removed = values.splice(index, remove);
+        eventRouter.fireEvent(
+                new ListSpliceEvent(this, index, removed, new Object[0]));
     }
 
     /**
@@ -100,7 +121,8 @@ public class ListNamespace extends AbstractNamespace {
      */
     @SafeVarargs
     public final <T> void splice(int index, int remove, T... add) {
-        values.splice(index, remove, add);
+        JsArray<Object> removed = values.splice(index, remove, add);
+        eventRouter.fireEvent(new ListSpliceEvent(this, index, removed, add));
     }
 
     @Override
@@ -115,5 +137,22 @@ public class ListNamespace extends AbstractNamespace {
         }
 
         return json;
+    }
+
+    /**
+     * Adds a listener that will be notified when the list structure changes.
+     *
+     * @param listener
+     *            the list change listener
+     * @return an event remover that can be used for removing the added listener
+     */
+    public EventRemover addSpliceListener(ListSpliceListener listener) {
+        return eventRouter.addListener(listener);
+    }
+
+    @Override
+    public EventRemover addReactiveChangeListener(
+            ReactiveChangeListener listener) {
+        return eventRouter.addReactiveListener(listener);
     }
 }

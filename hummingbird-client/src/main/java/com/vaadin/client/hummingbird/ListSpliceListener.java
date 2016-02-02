@@ -13,29 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird.reactive;
+package com.vaadin.client.hummingbird;
 
-public class CountingComputation extends Computation {
-
-    private Runnable reader;
-
-    public CountingComputation(ReactiveEventRouter<?, ?> eventRouter) {
-        this(eventRouter::registerRead);
-    }
-
-    public CountingComputation(Runnable reader) {
-        this.reader = reader;
-    }
-
-    private int count = 0;
-
-    @Override
-    protected void doRecompute() {
-        count++;
-        reader.run();
-    }
-
-    public int getCount() {
-        return count;
-    }
+/**
+ * Listener notified when the structure of a list namespace changes.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
+@FunctionalInterface
+public interface ListSpliceListener {
+    /**
+     * Invoked when the structure of a list namespace changes.
+     *
+     * @param event
+     *            the list splice event
+     */
+    public void onSplice(ListSpliceEvent event);
 }
