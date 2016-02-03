@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
@@ -73,7 +88,7 @@ public class Element implements Serializable {
     }
 
     /**
-     * Gets the node this element is connected to
+     * Gets the node this element is connected to.
      *
      * @return the node for this element
      */
@@ -82,7 +97,7 @@ public class Element implements Serializable {
     }
 
     /**
-     * Gets the tag name for the element
+     * Gets the tag name for the element.
      *
      * @param node
      *            the node containing the data
@@ -186,7 +201,7 @@ public class Element implements Serializable {
      *            the name of the attribute
      * @return true if the name is valid, false otherwise
      */
-    private boolean isValidAttributeName(String attribute) {
+    private static boolean isValidAttributeName(String attribute) {
         if (attribute == null || attribute.isEmpty()) {
             return false;
         }
@@ -196,11 +211,12 @@ public class Element implements Serializable {
         // APOSTROPHE ('), U+003E GREATER-THAN SIGN (>), U+002F SOLIDUS (/), and
         // U+003D EQUALS SIGN (=) characters, the control characters, and any
         // characters that are not defined by Unicode.
-        if (attribute.indexOf(0) != -1 || attribute.indexOf(' ') != -1
-                || attribute.indexOf('"') != -1 || attribute.indexOf('\'') != -1
-                || attribute.indexOf('>') != -1 || attribute.indexOf('/') != -1
-                || attribute.indexOf('=') != -1) {
-            return false;
+        Character[] illegalCharacters = new Character[] { 0, ' ', '"', '\'',
+                '>', '/', '=' };
+        for (Character c : illegalCharacters) {
+            if (attribute.indexOf(c) != -1) {
+                return false;
+            }
         }
         return true;
     }
