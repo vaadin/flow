@@ -3,6 +3,7 @@ package com.vaadin.hummingbird.dom;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -155,6 +156,24 @@ public class ElementTest {
         e.setAttribute("foo", "bar");
         Assert.assertArrayEquals(new String[] { "foo" },
                 e.getAttributeNames().toArray());
+    }
+
+    @Test
+    public void attributesNamesModificationsNotReflected() {
+        Element e = new Element("div");
+        e.setAttribute("foo", "bar");
+        e.getAttributeNames().remove("foo");
+        Assert.assertTrue(e.hasAttribute("foo"));
+    }
+
+    @Test
+    public void attributesNamesShouldNotBeDynamic() {
+        Element e = new Element("div");
+        e.setAttribute("foo", "bar");
+        Set<String> names = e.getAttributeNames();
+        Assert.assertEquals(1, names.size());
+        e.setAttribute("baz", "zoo");
+        Assert.assertEquals(1, names.size());
     }
 
     @Test
