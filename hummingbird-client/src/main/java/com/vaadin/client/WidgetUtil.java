@@ -162,12 +162,80 @@ public class WidgetUtil {
     // JsJsonValue.toJson with indentation set to 4
     private static native String toPrettyJsonJsni(JsonValue value)
     /*-{
-    // skip hashCode field
-    return $wnd.JSON.stringify(value, function(keyName, value) {
+      // skip hashCode field
+      return $wnd.JSON.stringify(value, function(keyName, value) {
         if (keyName == "$H") {
           return undefined; // skip hashCode property
         }
         return value;
       }, 4);
+    }-*/;
+
+    /**
+     * Assigns a value as JavaScript property of an object.
+     *
+     * @since
+     *
+     * @param object
+     *            the target object
+     * @param name
+     *            the property name
+     * @param value
+     *            the property value
+     */
+    public static native void setJsProperty(Object object, String name,
+            Object value)
+            /*-{
+                object[name] = value;
+            }-*/;
+
+    /**
+     * Checks whether the provided object itself has a JavaScript property with
+     * the given name. Inherited properties are not taken into account.
+     *
+     * @see #hasJsProperty(Object, String)
+     *
+     * @param object
+     *            the target object
+     * @param name
+     *            the name of the property
+     * @return <code>true</code> if the object itself has the named property;
+     *         <code>false</code> if it doesn't have the property of if the
+     *         property is inherited
+     */
+    public static native boolean hasOwnJsProperty(Object object, String name)
+    /*-{
+      return Object.prototype.hasOwnProperty.call(object, name);
+    }-*/;
+
+    /**
+     * Checks whether the provided object has or inherits a JavaScript property
+     * with the given name.
+     *
+     * @see #hasOwnJsProperty(Object, String)
+     *
+     * @param object
+     *            the target object
+     * @param name
+     *            the name of the property
+     * @return <code>true</code> if the object itself has or inherits the named
+     *         property; <code>false</code> otherwise
+     */
+    public static native boolean hasJsProperty(Object object, String name)
+    /*-{
+      return name in object;
+    }-*/;
+
+    /**
+     * Removes a JavaScript property from an object.
+     *
+     * @param object
+     *            the object from which to remove the property
+     * @param name
+     *            the name of the property to remove
+     */
+    public static native void deleteJsProperty(Object object, String name)
+    /*-{
+      delete object[name];
     }-*/;
 }
