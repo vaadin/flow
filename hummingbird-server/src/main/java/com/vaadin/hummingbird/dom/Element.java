@@ -172,6 +172,9 @@ public class Element implements Serializable {
     /**
      * Gets the value of the given attribute.
      * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
+     * <p>
      * An attribute always has a String key and a String value.
      *
      * @param attribute
@@ -190,8 +193,8 @@ public class Element implements Serializable {
     /**
      * Checks if the given attribute has been set.
      * <p>
-     * Note that this will return false for properties set with
-     * {@link PropertyMode#PROPERTY_OR_ATTRIBUTE}.
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
      *
      * @param attribute
      *            the name of the attribute
@@ -207,6 +210,9 @@ public class Element implements Serializable {
 
     /**
      * Gets the defined attribute names.
+     * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
      *
      * @return the defined attribute names
      */
@@ -217,6 +223,9 @@ public class Element implements Serializable {
 
     /**
      * Removes the given attribute.
+     * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
      * <p>
      * If the attribute has not been set, does nothing.
      *
