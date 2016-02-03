@@ -17,6 +17,7 @@
 package com.vaadin.hummingbird.namespace;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.shared.Namespaces;
 
 /**
  * Namespace for basic element information.
@@ -25,9 +26,6 @@ import com.vaadin.hummingbird.StateNode;
  * @author Vaadin Ltd
  */
 public class ElementDataNamespace extends MapNamespace {
-
-    private static final String TAG = "tag";
-    private static final String IS = "is";
 
     /**
      * Creates a new element data namespace for the given node.
@@ -47,7 +45,7 @@ public class ElementDataNamespace extends MapNamespace {
      *            the tag name
      */
     public void setTag(String tag) {
-        put(TAG, tag);
+        put(Namespaces.TAG, tag);
     }
 
     /**
@@ -56,7 +54,7 @@ public class ElementDataNamespace extends MapNamespace {
      * @return the tag name
      */
     public String getTag() {
-        return (String) get(TAG);
+        return (String) get(Namespaces.TAG);
     }
 
     /**
@@ -68,7 +66,7 @@ public class ElementDataNamespace extends MapNamespace {
      *            the is attribute
      */
     public void setIs(String is) {
-        put(IS, is);
+        put(Namespaces.IS, is);
     }
 
     /**
@@ -77,6 +75,6 @@ public class ElementDataNamespace extends MapNamespace {
      * @return the is attribute
      */
     public String getIs() {
-        return (String) get(IS);
+        return (String) get(Namespaces.IS);
     }
 }
