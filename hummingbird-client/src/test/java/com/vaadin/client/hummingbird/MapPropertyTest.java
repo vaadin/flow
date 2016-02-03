@@ -32,10 +32,12 @@ public class MapPropertyTest {
     @Test
     public void testValue() {
         Assert.assertNull(property.getValue());
+        Assert.assertFalse(property.hasValue());
 
         property.setValue("bar");
 
         Assert.assertEquals("bar", property.getValue());
+        Assert.assertTrue(property.hasValue());
     }
 
     @Test
@@ -63,11 +65,26 @@ public class MapPropertyTest {
         Assert.assertSame("No new event should have fired", event,
                 lastEvent.get());
 
+        lastEvent.set(null);
+        property.removeValue();
+
+        MapPropertyChangeEvent removeEvent = lastEvent.get();
+        Assert.assertNull(removeEvent.getNewValue());
+
+        property.removeValue();
+        Assert.assertSame("No new event should have fired", removeEvent,
+                lastEvent.get());
+
+        lastEvent.set(null);
+        property.setValue(null);
+        MapPropertyChangeEvent addBackEvent = lastEvent.get();
+        Assert.assertNull(addBackEvent.getOldValue());
+
         remover.remove();
 
         property.setValue("bar");
 
-        Assert.assertSame("No new event should have fired", event,
+        Assert.assertSame("No new event should have fired", addBackEvent,
                 lastEvent.get());
     }
 
@@ -86,5 +103,32 @@ public class MapPropertyTest {
         Reactive.flush();
 
         Assert.assertEquals(2, computation.getCount());
+    }
+
+    @Test
+    public void testHasValueReactive() {
+        CountingComputation computation = new CountingComputation(
+                () -> property.hasValue());
+
+        Reactive.flush();
+
+        property.setValue("baz");
+
+        Assert.assertEquals(1, computation.getCount());
+
+        Reactive.flush();
+
+        Assert.assertEquals(2, computation.getCount());
+    }
+
+    @Test
+    public void testRemoveValue() {
+        property.setValue("foo");
+        Assert.assertTrue(property.hasValue());
+
+        property.removeValue();
+
+        Assert.assertFalse(property.hasValue());
+        Assert.assertNull(property.getValue());
     }
 }

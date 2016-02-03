@@ -48,6 +48,7 @@ public class MapProperty implements ReactiveValue {
     };
 
     private Object value;
+    private boolean hasValue = false;
 
     /**
      * Creates a new property.
@@ -91,6 +92,17 @@ public class MapProperty implements ReactiveValue {
     }
 
     /**
+     * Checks whether this property as a value.
+     *
+     * @return <code>true</code> if the property has a value, <code>false</code>
+     *         if the property has no value.
+     */
+    public boolean hasValue() {
+        eventRouter.registerRead();
+        return hasValue;
+    }
+
+    /**
      * Sets the property value. Changing the value fires a
      * {@link MapPropertyChangeEvent}.
      *
@@ -100,12 +112,32 @@ public class MapProperty implements ReactiveValue {
      *            the new property value
      */
     public void setValue(Object value) {
-        Object oldValue = this.value;
-        if (!Objects.equals(value, oldValue)) {
-            this.value = value;
-            eventRouter.fireEvent(
-                    new MapPropertyChangeEvent(this, oldValue, value));
+        if (hasValue && Objects.equals(value, this.value)) {
+            // Nothing to do
+            return;
         }
+        updateValue(value, true);
+    }
+
+    /**
+     * Removes the value of this property so that {@link #hasValue()} will
+     * return <code>false</code> until the next time {@link #setValue(Object)}
+     * is run.
+     */
+    public void removeValue() {
+        if (hasValue) {
+            updateValue(null, false);
+        }
+    }
+
+    private void updateValue(Object value, boolean hasValue) {
+        Object oldValue = this.value;
+
+        this.hasValue = hasValue;
+        this.value = value;
+
+        eventRouter
+                .fireEvent(new MapPropertyChangeEvent(this, oldValue, value));
     }
 
     /**
@@ -121,7 +153,8 @@ public class MapProperty implements ReactiveValue {
     }
 
     @Override
-    public EventRemover addReactiveChangeListener(ReactiveChangeListener listener) {
+    public EventRemover addReactiveChangeListener(
+            ReactiveChangeListener listener) {
         return eventRouter.addReactiveListener(listener);
     }
 }
