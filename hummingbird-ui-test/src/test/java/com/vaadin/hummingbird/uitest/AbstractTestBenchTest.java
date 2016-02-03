@@ -7,7 +7,7 @@ import com.vaadin.ui.UI;
 
 public class AbstractTestBenchTest extends TestBenchHelpers {
 
-    private String baseUrl = "http://localhost:8888";;
+    private String baseUrl = "http://localhost:8888";
 
     protected void open() {
         open(getUIClass());
@@ -20,13 +20,13 @@ public class AbstractTestBenchTest extends TestBenchHelpers {
     protected void open(Class<?> uiClass, String... parameters) {
         String url = getTestURL(uiClass);
         if (parameters != null && parameters.length != 0) {
-            url += "&" + Arrays.stream(parameters)
-                    .collect(Collectors.joining("&"));
-        }
-        if (parameters.length > 0) {
-            String paramString = Arrays.asList(parameters).stream()
-                    .collect(Collectors.joining("&"));
-            url += "?" + paramString;
+            if (!url.contains("?")) {
+                url += "?";
+            } else {
+                url += "&";
+            }
+
+            url += Arrays.stream(parameters).collect(Collectors.joining("&"));
         }
 
         getDriver().get(url);
