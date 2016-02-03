@@ -103,7 +103,7 @@ public class JsCollections {
 
     private static native <T> JsArray<T> createNativeArray()
     /*-{
-        return [];
+        return new $wnd.Array();
     }-*/;
 
     private static native <K, V> JsMap<K, V> createNativeMap()
