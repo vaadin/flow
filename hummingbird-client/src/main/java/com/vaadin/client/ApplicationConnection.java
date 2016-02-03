@@ -35,6 +35,8 @@ import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
+import com.vaadin.client.hummingbird.BasicElementBinder;
+import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
@@ -42,6 +44,7 @@ import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
 
 import elemental.client.Browser;
+import elemental.dom.Element;
 
 /**
  * This is the client side communication "engine", managing client-server
@@ -279,6 +282,11 @@ public class ApplicationConnection {
         messageHandler = GWT.create(MessageHandler.class);
         messageSender = GWT.create(MessageSender.class);
         serverRpcQueue = GWT.create(ServerRpcQueue.class);
+
+        StateNode rootNode = tree.getRootNode();
+        Element body = Browser.getDocument().getBody();
+
+        BasicElementBinder.bind(rootNode, body);
     }
 
     public void init(ApplicationConfiguration cnf) {
