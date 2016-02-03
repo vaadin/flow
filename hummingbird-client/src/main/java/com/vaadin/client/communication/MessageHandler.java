@@ -34,6 +34,7 @@ import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsSet;
+import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.client.Browser;
@@ -345,6 +346,8 @@ public class MessageHandler {
                     }
                     Profiler.leave("Error handling");
                 }
+
+                Reactive.flush();
 
                 // TODO build profiling for widget impl loading time
 
