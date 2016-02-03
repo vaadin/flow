@@ -20,6 +20,7 @@ import com.google.gwt.core.client.GWT;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 
 import jsinterop.annotations.JsOverlay;
+import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -32,7 +33,7 @@ import jsinterop.annotations.JsType;
  * @param <T>
  *            the type of the array items
  */
-@JsType(isNative = true)
+@JsType(isNative = true, name = "Array", namespace = JsPackage.GLOBAL)
 public class JsArray<T> {
     /*
      * Don't look at this class as an example of how to integrate a JS API with

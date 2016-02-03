@@ -19,6 +19,7 @@ package com.vaadin.client.hummingbird.collection;
 import org.junit.Test;
 
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.WidgetUtil;
 
 public class GwtJsArrayTest extends ClientEngineTestBase {
 
@@ -155,6 +156,10 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
         } catch (IllegalArgumentException e) {
             // Expected
         }
+    }
 
+    public void testCanCast() {
+        // Ok if this doesn't throw ClassCastException
+        JsArray<Object> array = WidgetUtil.crazyJsCast(JsCollections.array());
     }
 }

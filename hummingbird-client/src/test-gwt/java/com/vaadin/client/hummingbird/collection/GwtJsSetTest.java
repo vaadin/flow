@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.WidgetUtil;
 
 public class GwtJsSetTest extends ClientEngineTestBase {
 
@@ -85,5 +86,10 @@ public class GwtJsSetTest extends ClientEngineTestBase {
         assertTrue(copy.has("1"));
         assertTrue(copy.has("2"));
         assertFalse(copy.has("3"));
+    }
+
+    public void testCanCast() {
+        // Ok if this doesn't throw ClassCastException
+        JsSet<Object> set = WidgetUtil.crazyJsCast(JsCollections.set());
     }
 }
