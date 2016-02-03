@@ -15,8 +15,12 @@
  */
 package com.vaadin.client.hummingbird;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.junit.Assert;
 import org.junit.Test;
+
+import elemental.events.EventRemover;
 
 public class StateTreeTest {
     StateTree tree = new StateTree();
@@ -43,6 +47,61 @@ public class StateTreeTest {
     @Test(expected = AssertionError.class)
     public void testRegisterNullThrows() {
         tree.registerNode(null);
+    }
+
+    @Test
+    public void testNodeUnregister() {
+        tree.registerNode(node);
+
+        Assert.assertFalse(node.isUnregistered());
+
+        AtomicReference<NodeUnregisterEvent> lastEvent = new AtomicReference<>();
+        node.addUnregisterListener(new NodeUnregisterListener() {
+            @Override
+            public void onUnregsiter(NodeUnregisterEvent event) {
+                Assert.assertNull("Unexpected event fired", lastEvent.get());
+                lastEvent.set(event);
+            }
+        });
+
+        tree.unregisterNode(node);
+
+        NodeUnregisterEvent event = lastEvent.get();
+        Assert.assertSame(node, event.getNode());
+
+        Assert.assertTrue(node.isUnregistered());
+        Assert.assertNull(tree.getNode(node.getId()));
+    }
+
+    @Test
+    public void testRemoveUnregisterListener() {
+        tree.registerNode(node);
+
+        EventRemover remove = node
+                .addUnregisterListener(e -> Assert.fail("Should never run"));
+
+        remove.remove();
+
+        tree.unregisterNode(node);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void unregisterNonRegisteredNode() {
+        tree.unregisterNode(node);
+    }
+
+    @Test
+    public void unregisterUnregisteredNode() {
+        tree.registerNode(node);
+        tree.unregisterNode(node);
+        // Should run fine up to this point
+
+        try {
+            tree.unregisterNode(node);
+            Assert.fail("Should have thrown");
+        } catch (AssertionError expected) {
+            // All is fine
+        }
     }
 
 }
