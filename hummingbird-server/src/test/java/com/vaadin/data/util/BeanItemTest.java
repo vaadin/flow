@@ -10,8 +10,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.data.Property;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 
 import junit.framework.TestCase;
 
@@ -22,6 +24,7 @@ import junit.framework.TestCase;
  *
  * See also {@link PropertySetItemTest}, which tests the base class.
  */
+@Category(ContainerTests.class)
 public class BeanItemTest extends TestCase {
 
     @SuppressWarnings("unused")

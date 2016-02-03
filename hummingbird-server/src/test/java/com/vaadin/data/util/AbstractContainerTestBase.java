@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.data.Container;
 import com.vaadin.data.Container.Filterable;
@@ -14,9 +15,11 @@ import com.vaadin.data.Container.Ordered;
 import com.vaadin.data.Container.Sortable;
 import com.vaadin.data.Item;
 import com.vaadin.data.util.filter.SimpleStringFilter;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 
 import junit.framework.TestCase;
 
+@Category(ContainerTests.class)
 public abstract class AbstractContainerTestBase extends TestCase {
 
     /**

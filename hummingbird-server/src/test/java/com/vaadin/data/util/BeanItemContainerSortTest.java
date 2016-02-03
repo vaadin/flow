@@ -9,7 +9,11 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.vaadin.hummingbird.testcategory.ContainerTests;
+
+@Category(ContainerTests.class)
 public class BeanItemContainerSortTest {
     public class Person {
         private String name;

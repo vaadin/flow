@@ -25,6 +25,9 @@ import java.lang.reflect.Field;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 
 /**
  * Test for MethodProperty: don't allocate unnecessary Object arrays.
@@ -32,6 +35,7 @@ import org.junit.Test;
  * @since 7.2
  * @author Vaadin Ltd
  */
+@Category(ContainerTests.class)
 public class MethodPropertyMemoryConsumptionTest {
 
     @Test

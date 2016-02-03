@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.junit.experimental.categories.Category;
+
 import com.vaadin.data.Container;
 import com.vaadin.data.Item;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 import com.vaadin.tests.util.TestUtil;
 
 import junit.framework.TestCase;
 
+@Category(ContainerTests.class)
 public class ContainerSortingTest extends TestCase {
 
     private static final String ITEM_DATA_MINUS2_NULL = "Data -2 null";

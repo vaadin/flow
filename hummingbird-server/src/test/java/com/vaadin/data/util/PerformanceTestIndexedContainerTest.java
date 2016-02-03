@@ -7,9 +7,14 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
+
+import com.vaadin.hummingbird.testcategory.ContainerTests;
+import com.vaadin.hummingbird.testcategory.SlowTests;
 
 import junit.framework.TestCase;
 
+@Category({ ContainerTests.class, SlowTests.class })
 public class PerformanceTestIndexedContainerTest extends TestCase {
 
     private static final int REPEATS = 10;

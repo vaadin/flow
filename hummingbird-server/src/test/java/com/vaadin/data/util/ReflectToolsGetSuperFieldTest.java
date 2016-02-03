@@ -3,11 +3,14 @@ package com.vaadin.data.util;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.PropertyId;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 import com.vaadin.ui.TestField;
 
+@Category(ContainerTests.class)
 public class ReflectToolsGetSuperFieldTest {
 
     @Test

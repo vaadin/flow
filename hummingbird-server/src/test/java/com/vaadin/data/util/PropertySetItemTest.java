@@ -4,12 +4,15 @@ import java.util.Iterator;
 
 import org.easymock.EasyMock;
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.data.Item.PropertySetChangeEvent;
 import com.vaadin.data.Item.PropertySetChangeListener;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 
 import junit.framework.TestCase;
 
+@Category(ContainerTests.class)
 public class PropertySetItemTest extends TestCase {
 
     private static final String ID1 = "id1";
