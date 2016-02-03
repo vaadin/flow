@@ -8,9 +8,13 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
+
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 
 import junit.framework.TestCase;
 
+@Category(ContainerTests.class)
 public class NestedMethodPropertyTest extends TestCase {
 
     public static class Address implements Serializable {

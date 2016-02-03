@@ -8,12 +8,16 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.data.Property;
 import com.vaadin.data.util.NestedMethodPropertyTest.Person;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 
 import junit.framework.TestCase;
 
+@Category(ContainerTests.class)
 public class PropertyDescriptorTest extends TestCase {
     public void testMethodPropertyDescriptorSerialization() throws Exception {
         PropertyDescriptor[] pds = Introspector.getBeanInfo(Person.class)

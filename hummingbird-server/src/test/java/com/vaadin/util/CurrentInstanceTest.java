@@ -26,7 +26,9 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.vaadin.hummingbird.testcategory.SlowTests;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -68,6 +70,7 @@ public class CurrentInstanceTest {
     }
 
     @Test
+    @Category(SlowTests.class)
     public void testInheritableThreadLocal() throws Exception {
         final AtomicBoolean threadFailed = new AtomicBoolean(true);
 
@@ -94,6 +97,7 @@ public class CurrentInstanceTest {
     }
 
     @Test
+    @Category(SlowTests.class)
     public void testClearedAfterRemoveInSeparateThread() throws Exception {
         final AtomicBoolean threadFailed = new AtomicBoolean(true);
 

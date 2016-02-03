@@ -7,10 +7,13 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.data.util.sqlcontainer.SQLTestsConstants;
 import com.vaadin.data.util.sqlcontainer.query.ValidatingSimpleJDBCConnectionPool;
+import com.vaadin.hummingbird.testcategory.SlowTests;
 
+@Category(SlowTests.class)
 public class SimpleJDBCConnectionPoolTest {
     private JDBCConnectionPool connectionPool;
 

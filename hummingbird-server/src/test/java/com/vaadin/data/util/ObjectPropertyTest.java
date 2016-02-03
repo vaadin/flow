@@ -1,9 +1,13 @@
 package com.vaadin.data.util;
 
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
+
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 
 import junit.framework.TestCase;
 
+@Category(ContainerTests.class)
 public class ObjectPropertyTest extends TestCase {
 
     public static class TestSuperClass {

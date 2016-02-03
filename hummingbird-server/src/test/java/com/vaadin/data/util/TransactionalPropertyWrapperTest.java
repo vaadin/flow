@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.data.fieldgroup.FieldGroup;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 import com.vaadin.ui.TestField;
 
 /**
@@ -32,6 +34,7 @@ import com.vaadin.ui.TestField;
  * @since 7.1.15
  * @author Vaadin Ltd
  */
+@Category(ContainerTests.class)
 public class TransactionalPropertyWrapperTest {
 
     @SuppressWarnings("serial")

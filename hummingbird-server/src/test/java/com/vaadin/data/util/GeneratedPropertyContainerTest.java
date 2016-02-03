@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import com.vaadin.data.Container.Filter;
 import com.vaadin.data.Container.Indexed;
@@ -33,7 +34,9 @@ import com.vaadin.data.Item;
 import com.vaadin.data.sort.SortOrder;
 import com.vaadin.data.util.filter.Compare;
 import com.vaadin.data.util.filter.UnsupportedFilterException;
+import com.vaadin.hummingbird.testcategory.ContainerTests;
 
+@Category(ContainerTests.class)
 public class GeneratedPropertyContainerTest {
 
     GeneratedPropertyContainer container;

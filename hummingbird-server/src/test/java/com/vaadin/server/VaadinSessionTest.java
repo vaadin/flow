@@ -34,7 +34,9 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.vaadin.hummingbird.testcategory.SlowTests;
 import com.vaadin.server.ClientConnector.DetachEvent;
 import com.vaadin.server.ClientConnector.DetachListener;
 import com.vaadin.server.communication.UIInitHandler;
@@ -142,6 +144,7 @@ public class VaadinSessionTest {
      * This reproduces #14452 situation with deadlock - see diagram
      */
     @Test
+    @Category(SlowTests.class)
     public void testInvalidationDeadlock() {
 
         // this simulates servlet container's session invalidation from another
@@ -201,6 +204,7 @@ public class VaadinSessionTest {
     }
 
     @Test
+    @Category(SlowTests.class)
     public void threadLocalsAfterSessionDestroy() throws InterruptedException {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
         ui.addDetachListener(new DetachListener() {
@@ -275,6 +279,7 @@ public class VaadinSessionTest {
     }
 
     @Test
+    @Category(SlowTests.class)
     public void threadLocalsWhenDeserializing() throws Exception {
         VaadinSession.setCurrent(session);
         session.lock();
