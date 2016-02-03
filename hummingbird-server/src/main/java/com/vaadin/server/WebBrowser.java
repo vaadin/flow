@@ -185,6 +185,7 @@ public class WebBrowser implements Serializable {
     /**
      * Tests whether the user is using PhantomJS.
      *
+     * @since
      * @return true if the user is using PhantomJS, false if the user is not
      *         using PhantomJS or if no information on the browser is present
      */
