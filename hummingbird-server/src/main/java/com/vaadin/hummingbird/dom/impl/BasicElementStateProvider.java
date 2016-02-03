@@ -29,7 +29,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     /**
-     * Gets the one and only instance
+     * Gets the one and only instance.
      *
      * @return the instance to use for all basic elements
      */
@@ -72,7 +72,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     /**
-     * Checks if the given string is valid as a tag name
+     * Checks if the given string is valid as a tag name.
      *
      * @param tag
      *            the string to check
@@ -98,7 +98,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     /**
      * Gets the element data namespace for the given node and asserts it is
-     * non-null
+     * non-null.
      *
      * @param node
      *            the node
@@ -112,7 +112,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     /**
      * Gets the element attribute namespace for the given node and asserts it is
-     * non-null
+     * non-null.
      *
      * @param node
      *            the node

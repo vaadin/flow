@@ -5,6 +5,13 @@ import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
 
+/**
+ * Handles storing and retrieval of the state information for an element using a
+ * state node.
+ *
+ * @author Vaadin
+ * @since
+ */
 public interface ElementStateProvider extends Serializable {
 
     /**
@@ -45,6 +52,7 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @param attribute
      *            the attribute name
+     * @return the attribute value or null if the attribute has not been set
      */
     String getAttribute(StateNode node, String attribute);
 
