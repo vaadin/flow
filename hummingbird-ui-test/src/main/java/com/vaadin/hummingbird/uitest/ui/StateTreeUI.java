@@ -29,7 +29,7 @@ public class StateTreeUI extends UI {
     protected void init(VaadinRequest request) {
         StateNode rootNode = getStateTree().getRootNode();
 
-        rootNode.getNamespace(ElementDataNamespace.class).setTag("div");
+        rootNode.getNamespace(ElementDataNamespace.class).setTag("body");
         rootNode.getNamespace(ElementPropertiesNamespace.class)
                 .setProperty("foo", "bar");
 
