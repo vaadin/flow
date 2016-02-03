@@ -399,6 +399,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
+        if (context.getSession().getBrowser().isPhantomJS()) {
+            String resource = "vaadin://es6-collections.js";
+            String url = registerDependency(context, uiClass, resource);
+            head.appendElement("script").attr("type", "text/javascript")
+                    .attr("src", url);
+        }
         StyleSheet styleSheet = uiClass.getAnnotation(StyleSheet.class);
         if (styleSheet != null) {
             String[] resources = styleSheet.value();
