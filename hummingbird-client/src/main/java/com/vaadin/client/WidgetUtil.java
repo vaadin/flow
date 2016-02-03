@@ -170,4 +170,35 @@ public class WidgetUtil {
         return value;
       }, 4);
     }-*/;
+
+    /**
+     * Assigns a value as JavaScript property of an object.
+     *
+     * @since
+     *
+     * @param object
+     *            the target object
+     * @param name
+     *            the property name
+     * @param value
+     *            the property value
+     */
+    public static native void setJsProperty(Object object, String name,
+            Object value)
+            /*-{
+                object[name] = value;
+            }-*/;
+
+    /**
+     * Removes a JavaScript property from an object.
+     *
+     * @param object
+     *            the object from which to remove the property
+     * @param name
+     *            the name of the property to remove
+     */
+    public static native void deleteJsProperty(Object object, String name)
+    /*-{
+      delete object[name];
+    }-*/;
 }

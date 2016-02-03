@@ -20,7 +20,8 @@ import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 
 /**
- * Registry of namespace id numbers shared between server and client.
+ * Registry of namespace id numbers and map keys shared between server and
+ * client.
  *
  * @since
  * @author Vaadin Ltd
@@ -40,6 +41,11 @@ public class Namespaces {
      * Id for {@link ElementChildrenNamespace}.
      */
     public static final int ELEMENT_CHILDREN = 2;
+
+    /**
+     * Key for {@link ElementDataNamespace#getTag()}.
+     */
+    public static final String TAG = "tag";
 
     private Namespaces() {
         // Only static
