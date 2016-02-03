@@ -23,7 +23,6 @@ import com.google.gwt.dom.client.Document;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
-import elemental.json.impl.JsonUtil;
 
 /**
  * Utility methods which are related to client side code only
@@ -155,7 +154,8 @@ public class WidgetUtil {
         if (GWT.isScript()) {
             return toPrettyJsonJsni(json);
         } else {
-            return JsonUtil.stringify(json, 4);
+            // Don't use JsonUtil.stringify here or SDM will break
+            return json.toJson();
         }
     }
 
