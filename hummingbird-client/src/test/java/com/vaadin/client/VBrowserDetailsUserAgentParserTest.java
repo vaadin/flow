@@ -57,6 +57,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
     private static final String ANDROID_GALAXY_NEXUS_4_0_4_CHROME = "Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19";
 
     private static final String EDGE_WINDOWS_10 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240";
+    private static final String PHANTOMJS_211_MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1";
 
     public void testSafari3() {
         VBrowserDetails bd = new VBrowserDetails(SAFARI3_WINDOWS);
@@ -421,6 +422,15 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertWindows(bd, false);
     }
 
+    public void testPhantomJs212() {
+        VBrowserDetails bd = new VBrowserDetails(PHANTOMJS_211_MAC);
+        assertPhantomJS(bd);
+        assertWebKit(bd);
+        assertBrowserMajorVersion(bd, 2);
+        assertBrowserMinorVersion(bd, 1);
+        assertMacOSX(bd);
+    }
+
     /*
      * Helper methods below
      */
@@ -475,6 +485,17 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertFalse(browserDetails.isTrident());
     }
 
+    private void assertPhantomJS(VBrowserDetails browserDetails) {
+        // Browser
+        assertFalse(browserDetails.isFirefox());
+        assertFalse(browserDetails.isChrome());
+        assertFalse(browserDetails.isIE());
+        assertFalse(browserDetails.isOpera());
+        assertFalse(browserDetails.isSafari());
+        assertFalse(browserDetails.isEdge());
+        assertTrue(browserDetails.isPhantomJS());
+    }
+
     private void assertFirefox(VBrowserDetails browserDetails) {
         // Browser
         assertTrue(browserDetails.isFirefox());
@@ -483,6 +504,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertFalse(browserDetails.isOpera());
         assertFalse(browserDetails.isSafari());
         assertFalse(browserDetails.isEdge());
+        assertFalse(browserDetails.isPhantomJS());
     }
 
     private void assertChrome(VBrowserDetails browserDetails) {
@@ -493,6 +515,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertFalse(browserDetails.isOpera());
         assertFalse(browserDetails.isSafari());
         assertFalse(browserDetails.isEdge());
+        assertFalse(browserDetails.isPhantomJS());
     }
 
     private void assertIE(VBrowserDetails browserDetails) {
@@ -503,6 +526,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertFalse(browserDetails.isOpera());
         assertFalse(browserDetails.isSafari());
         assertFalse(browserDetails.isEdge());
+        assertFalse(browserDetails.isPhantomJS());
     }
 
     private void assertOpera(VBrowserDetails browserDetails) {
@@ -513,6 +537,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertTrue(browserDetails.isOpera());
         assertFalse(browserDetails.isSafari());
         assertFalse(browserDetails.isEdge());
+        assertFalse(browserDetails.isPhantomJS());
     }
 
     private void assertSafari(VBrowserDetails browserDetails) {
@@ -523,6 +548,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertFalse(browserDetails.isOpera());
         assertTrue(browserDetails.isSafari());
         assertFalse(browserDetails.isEdge());
+        assertFalse(browserDetails.isPhantomJS());
     }
 
     private void assertEdge(VBrowserDetails browserDetails) {
@@ -533,6 +559,7 @@ public class VBrowserDetailsUserAgentParserTest extends TestCase {
         assertFalse(browserDetails.isOpera());
         assertFalse(browserDetails.isSafari());
         assertTrue(browserDetails.isEdge());
+        assertFalse(browserDetails.isPhantomJS());
     }
 
     private void assertMacOSX(VBrowserDetails browserDetails) {
