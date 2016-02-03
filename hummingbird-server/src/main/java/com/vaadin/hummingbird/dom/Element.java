@@ -36,9 +36,18 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
  */
 public class Element implements Serializable {
 
+    private static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
+
     private ElementStateProvider stateProvider;
     private StateNode node;
     private static HashMap<String, String> unsettableAttributes = new HashMap<>();
+
+    /**
+     * Pattern for maching valid tag names, according to
+     * https://www.w3.org/TR/html-markup/syntax.html#tag-name "HTML elements all
+     * have names that only use characters in the range 0–9, a–z, and A–Z."
+     */
+    private static Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");;
 
     static {
         unsettableAttributes.put("is",
@@ -137,17 +146,17 @@ public class Element implements Serializable {
      */
     public Element setAttribute(String attribute, String value) {
         if (attribute == null) {
-            throw new IllegalArgumentException(
-                    "The attribute name cannot be null");
+            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
 
-        attribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!isValidAttributeName(attribute)) {
-            throw new IllegalArgumentException("Attribute " + attribute
-                    + " is not a valid attribute name");
+        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
+        if (!isValidAttributeName(lowerCaseAttribute)) {
+            throw new IllegalArgumentException(String.format(
+                    "Attribute \"%s\" is not a valid attribute name",
+                    lowerCaseAttribute));
         }
 
-        if (unsettableAttributes.containsKey(attribute)) {
+        if (unsettableAttributes.containsKey(lowerCaseAttribute)) {
             throw new IllegalArgumentException("You cannot set the attribute \""
                     + attribute + "\" for an element using setAttribute: "
                     + unsettableAttributes.get(attribute));
@@ -156,7 +165,7 @@ public class Element implements Serializable {
             throw new IllegalArgumentException("Value cannot be null");
         }
 
-        stateProvider.setAttribute(node, attribute, value);
+        stateProvider.setAttribute(node, lowerCaseAttribute, value);
         return this;
     }
 
@@ -172,15 +181,10 @@ public class Element implements Serializable {
      */
     public String getAttribute(String attribute) {
         if (attribute == null) {
-            throw new IllegalArgumentException(
-                    "The attribute name cannot be null");
+            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
-        attribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!isValidAttributeName(attribute)) {
-            throw new IllegalArgumentException("Attribute " + attribute
-                    + " is not a valid attribute name");
-        }
-        return stateProvider.getAttribute(node, attribute);
+        return stateProvider.getAttribute(node,
+                attribute.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -195,16 +199,10 @@ public class Element implements Serializable {
      */
     public boolean hasAttribute(String attribute) {
         if (attribute == null) {
-            throw new IllegalArgumentException(
-                    "The attribute name cannot be null");
+            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
-        attribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!isValidAttributeName(attribute)) {
-            throw new IllegalArgumentException("Attribute " + attribute
-                    + " is not a valid attribute name");
-        }
-
-        return stateProvider.hasAttribute(node, attribute);
+        return stateProvider.hasAttribute(node,
+                attribute.toLowerCase(Locale.ENGLISH));
     }
 
     /**
@@ -227,8 +225,11 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element removeAttribute(String attribute) {
-        assert isValidAttributeName(attribute);
-        stateProvider.removeAttribute(node, attribute);
+        if (attribute == null) {
+            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
+        }
+        stateProvider.removeAttribute(node,
+                attribute.toLowerCase(Locale.ENGLISH));
         return this;
     }
 
@@ -240,10 +241,6 @@ public class Element implements Serializable {
      * @return true if the string is valid as a tag name, false otherwise
      */
     public static boolean isValidTagName(String tag) {
-        // https://www.w3.org/TR/html-markup/syntax.html#tag-name
-        // "HTML elements all have names that only use characters in the range
-        // 0–9, a–z, and A–Z."
-        Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
         return tag != null && tagNamePattern.matcher(tag).matches();
     }
 

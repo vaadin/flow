@@ -54,7 +54,7 @@ public interface ElementStateProvider extends Serializable {
      * @param node
      *            the node containing the data
      * @param attribute
-     *            the attribute name
+     *            the attribute name, not null
      * @param value
      *            the attribute value
      */
@@ -66,7 +66,7 @@ public interface ElementStateProvider extends Serializable {
      * @param node
      *            the node containing the data
      * @param attribute
-     *            the attribute name
+     *            the attribute name, not null
      * @return the attribute value or null if the attribute has not been set
      */
     String getAttribute(StateNode node, String attribute);
@@ -77,7 +77,7 @@ public interface ElementStateProvider extends Serializable {
      * @param node
      *            the node containing the data
      * @param attribute
-     *            the attribute name
+     *            the attribute name, not null
      * @return true if the attribute has been set, false otherwise
      */
     boolean hasAttribute(StateNode node, String attribute);
@@ -88,12 +88,12 @@ public interface ElementStateProvider extends Serializable {
      * @param node
      *            the node containing the data
      * @param attribute
-     *            the attribute name
+     *            the attribute name, not null
      */
     void removeAttribute(StateNode node, String attribute);
 
     /**
-     * Gets the defined attributes names.
+     * Gets the defined attribute names.
      *
      * @param node
      *            the node containing the data

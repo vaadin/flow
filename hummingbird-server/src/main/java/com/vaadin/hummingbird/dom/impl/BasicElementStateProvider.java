@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.dom.impl;
 
+import java.util.Locale;
 import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
@@ -146,12 +147,18 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute, String value) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
         getAttributeNamespace(node).set(attribute, value);
 
     }
 
     @Override
     public String getAttribute(StateNode node, String attribute) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
         if ("is".equals(attribute)) {
             return getDataNamespace(node).getIs();
         }
@@ -160,11 +167,17 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public boolean hasAttribute(StateNode node, String attribute) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
         return getAttributeNamespace(node).has(attribute);
     }
 
     @Override
     public void removeAttribute(StateNode node, String attribute) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
         getAttributeNamespace(node).remove(attribute);
     }
 
