@@ -1,4 +1,4 @@
-package com.vaadin.uitest.ui;
+package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.uitest.ui;
+package com.vaadin.hummingbird.uitest.ui;
 
 import java.util.Arrays;
 

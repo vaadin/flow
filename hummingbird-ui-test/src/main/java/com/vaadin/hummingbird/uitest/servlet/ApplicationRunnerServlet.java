@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.uitest.servlet;
+package com.vaadin.hummingbird.uitest.servlet;
 
 import java.io.File;
 import java.io.IOException;
@@ -39,6 +39,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.vaadin.hummingbird.uitest.servlet.CustomDeploymentConfiguration.Conf;
+import com.vaadin.hummingbird.uitest.ui.EmptyUI;
 import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.ServiceException;
@@ -56,8 +58,6 @@ import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
-import com.vaadin.uitest.servlet.CustomDeploymentConfiguration.Conf;
-import com.vaadin.uitest.ui.EmptyUI;
 import com.vaadin.util.CurrentInstance;
 
 @SuppressWarnings("serial")

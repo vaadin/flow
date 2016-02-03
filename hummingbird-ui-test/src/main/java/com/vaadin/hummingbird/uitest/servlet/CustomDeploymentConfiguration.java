@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.uitest.servlet;
+package com.vaadin.hummingbird.uitest.servlet;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
