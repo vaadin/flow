@@ -16,14 +16,17 @@
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 
 /**
- * A class representing an element in the application server side DOM.
+ * A class representing an element in the DOM.
  * <p>
  * Contains methods for updating and querying various parts of the element, such
  * as attributes.
@@ -50,8 +53,7 @@ public class Element implements Serializable {
      *            can contain letters, numbers and dashes ({@literal -})
      */
     public Element(String tag) {
-        this(BasicElementStateProvider.get(),
-                BasicElementStateProvider.createStateNode(tag));
+        this(tag, null);
     }
 
     /**
@@ -66,25 +68,34 @@ public class Element implements Serializable {
      *            {@literal my-element}
      */
     public Element(String tag, String is) {
-        this(BasicElementStateProvider.get(),
-                BasicElementStateProvider.createStateNode(tag, is));
+        init(tag, is);
     }
 
     /**
-     * Creates an element using the given state provider and element node.
+     * Initializes the element using the given tag and {@code is} attribute.
      *
-     * @param stateProvider
-     *            the state provider to use
-     * @param elementNode
-     *            the state node to use with the state provider
+     * @param tag
+     *            the tag name of the element.
+     * @param is
+     *            the {@code is} attribute or null
      */
-    private Element(ElementStateProvider stateProvider, StateNode node) {
-        assert stateProvider.supports(node) : "ElementStateProvider "
-                + stateProvider + " does not support node " + node;
+    private void init(String tag, String is) {
+        if (!isValidTagName(tag)) {
+            throw new IllegalArgumentException(
+                    "Tag " + tag + " is not a valid tag name");
+        }
+        if (is != null && is.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The is attribute cannot be empty");
+        }
+        stateProvider = BasicElementStateProvider.get();
+        if (is == null) {
+            node = BasicElementStateProvider.createStateNode(tag);
+        } else {
+            node = BasicElementStateProvider.createStateNode(tag, is);
+        }
 
-        this.stateProvider = stateProvider;
-        this.node = node;
-
+        assert stateProvider.supports(node);
     }
 
     /**
@@ -110,6 +121,9 @@ public class Element implements Serializable {
     /**
      * Sets the given attribute to the given value.
      * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
+     * <p>
      * An attribute always has a String key and a String value.
      * <p>
      * Note: An empty attribute value ({@literal ""}) will be rendered as
@@ -122,8 +136,17 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
-        assert isValidAttributeName(attribute) : "Attribute " + attribute
-                + " is not a valid attribute name";
+        if (attribute == null) {
+            throw new IllegalArgumentException(
+                    "The attribute name cannot be null");
+        }
+
+        attribute = attribute.toLowerCase(Locale.ENGLISH);
+        if (!isValidAttributeName(attribute)) {
+            throw new IllegalArgumentException("Attribute " + attribute
+                    + " is not a valid attribute name");
+        }
+
         if (unsettableAttributes.containsKey(attribute)) {
             throw new IllegalArgumentException("You cannot set the attribute \""
                     + attribute + "\" for an element using setAttribute: "
@@ -148,8 +171,15 @@ public class Element implements Serializable {
      *         set
      */
     public String getAttribute(String attribute) {
-        assert isValidAttributeName(attribute) : "Attribute " + attribute
-                + " is not a valid attribute name";
+        if (attribute == null) {
+            throw new IllegalArgumentException(
+                    "The attribute name cannot be null");
+        }
+        attribute = attribute.toLowerCase(Locale.ENGLISH);
+        if (!isValidAttributeName(attribute)) {
+            throw new IllegalArgumentException("Attribute " + attribute
+                    + " is not a valid attribute name");
+        }
         return stateProvider.getAttribute(node, attribute);
     }
 
@@ -164,19 +194,27 @@ public class Element implements Serializable {
      * @return true if the attribute has been set, false otherwise
      */
     public boolean hasAttribute(String attribute) {
-        assert isValidAttributeName(attribute) : "Attribute " + attribute
-                + " is not a valid attribute name";
+        if (attribute == null) {
+            throw new IllegalArgumentException(
+                    "The attribute name cannot be null");
+        }
+        attribute = attribute.toLowerCase(Locale.ENGLISH);
+        if (!isValidAttributeName(attribute)) {
+            throw new IllegalArgumentException("Attribute " + attribute
+                    + " is not a valid attribute name");
+        }
 
         return stateProvider.hasAttribute(node, attribute);
     }
 
     /**
-     * Gets the defined attributes names.
+     * Gets the defined attribute names.
      *
      * @return the defined attribute names
      */
     public Set<String> getAttributeNames() {
-        return stateProvider.getAttributeNames(node);
+        return Collections
+                .unmodifiableSet(stateProvider.getAttributeNames(node));
     }
 
     /**
@@ -189,22 +227,39 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element removeAttribute(String attribute) {
-        assert isValidAttributeName("attribute");
+        assert isValidAttributeName(attribute);
         stateProvider.removeAttribute(node, attribute);
         return this;
+    }
+
+    /**
+     * Checks if the given tag name is valid.
+     *
+     * @param tag
+     *            the tag name
+     * @return true if the string is valid as a tag name, false otherwise
+     */
+    public static boolean isValidTagName(String tag) {
+        // https://www.w3.org/TR/html-markup/syntax.html#tag-name
+        // "HTML elements all have names that only use characters in the range
+        // 0–9, a–z, and A–Z."
+        Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
+        return tag != null && tagNamePattern.matcher(tag).matches();
     }
 
     /**
      * Checks if the given attribute name is valid.
      *
      * @param attribute
-     *            the name of the attribute
+     *            the name of the attribute in lower case
      * @return true if the name is valid, false otherwise
      */
-    private static boolean isValidAttributeName(String attribute) {
+    public static boolean isValidAttributeName(String attribute) {
         if (attribute == null || attribute.isEmpty()) {
             return false;
         }
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
         // https://html.spec.whatwg.org/multipage/syntax.html#attributes-2
         // Attribute names must consist of one or more characters other than the
         // space characters, U+0000 NULL, U+0022 QUOTATION MARK ("), U+0027

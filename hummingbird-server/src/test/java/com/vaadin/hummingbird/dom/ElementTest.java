@@ -13,19 +13,20 @@ public class ElementTest {
     public void createElementWithTag() {
         Element e = new Element("div");
         Assert.assertEquals("div", e.getTag());
+        Assert.assertFalse(e.hasAttribute("is"));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void createElementWithInvalidTag() {
         new Element("<div>");
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void createElementWithEmptyTag() {
         new Element("");
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void createElementWithNullTag() {
         new Element(null);
     }
@@ -37,14 +38,14 @@ public class ElementTest {
         Assert.assertEquals("foo-bar", e.getAttribute("is"));
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void createElementWithTagAndEmptyIs() {
         new Element("div", "");
     }
 
-    @Test(expected = AssertionError.class)
     public void createElementWithTagAndNullIs() {
-        new Element("div", null);
+        Element e = new Element("div", null);
+        Assert.assertFalse(e.hasAttribute("is"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -52,6 +53,13 @@ public class ElementTest {
         Element e = new Element("div");
         // Can't set "is" after creation
         e.setAttribute("is", "bar");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setIsAttributeCaseInsensitive() {
+        Element e = new Element("div");
+        // Can't set "is" after creation
+        e.setAttribute("IS", "bar");
     }
 
     @Test
@@ -100,7 +108,7 @@ public class ElementTest {
         e.setAttribute("foo", null);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void setInvalidAttribute() {
         Element e = new Element("div");
         e.setAttribute("\"foo\"", "bar");
@@ -157,5 +165,43 @@ public class ElementTest {
         e.removeAttribute("foo");
         Assert.assertArrayEquals(new String[] { "bar" },
                 e.getAttributeNames().toArray());
+    }
+
+    @Test
+    public void setGetAttributeValueCaseSensitive() {
+        Element e = new Element("span");
+        e.setAttribute("foo", "bAr");
+        Assert.assertEquals("bAr", e.getAttribute("foo"));
+        e.setAttribute("foo", "BAR");
+        Assert.assertEquals("BAR", e.getAttribute("foo"));
+    }
+
+    @Test
+    public void setGetAttributeNameCaseInsensitive() {
+        Element e = new Element("span");
+        e.setAttribute("foo", "bar");
+        e.setAttribute("FOO", "baz");
+
+        Assert.assertEquals("baz", e.getAttribute("foo"));
+        Assert.assertEquals("baz", e.getAttribute("FOO"));
+    }
+
+    @Test
+    public void hasAttributeNamesCaseInsensitive() {
+        Element e = new Element("span");
+        e.setAttribute("fooo", "bar");
+        Assert.assertTrue(e.hasAttribute("fOoO"));
+    }
+
+    @Test
+    public void getAttributeNamesLowerCase() {
+        Element e = new Element("span");
+        e.setAttribute("FOO", "bar");
+        e.setAttribute("Baz", "bar");
+
+        Assert.assertTrue(e.getAttributeNames().contains("foo"));
+        Assert.assertFalse(e.getAttributeNames().contains("FOO"));
+        Assert.assertTrue(e.getAttributeNames().contains("baz"));
+        Assert.assertFalse(e.getAttributeNames().contains("Baz"));
     }
 }
