@@ -18,7 +18,9 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
+import com.vaadin.client.hummingbird.collection.JsSet;
 
+import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -32,8 +34,13 @@ public class StateNode {
     private final StateTree tree;
     private final int id;
 
+    private boolean unregistered = false;
+
     private final JsMap<Double, AbstractNamespace> namespaces = JsCollections
             .map();
+
+    private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections
+            .set();
 
     /**
      * Creates a new state node.
@@ -132,5 +139,54 @@ public class StateNode {
                 ns.getDebugJson()));
 
         return object;
+    }
+
+    /**
+     * Checks whether this node has been unregistered.
+     *
+     *
+     * @see StateTree#unregisterNode(StateNode)
+     *
+     * @return <code>true</code> if this node has been unregistered;
+     *         <code>false</code> if the node is still registered
+     */
+    public boolean isUnregistered() {
+        return unregistered;
+    }
+
+    /**
+     * Unregisters this node, causing all registered node unregister listeners
+     * to be notified.
+     *
+     * @see #addUnregisterListener(NodeUnregisterListener)
+     */
+    public void unregister() {
+        assert tree.getNode(
+                id) == null : "Node should no longer be findable from the tree";
+
+        if (unregistered) {
+            return;
+        }
+
+        unregistered = true;
+
+        NodeUnregisterEvent event = new NodeUnregisterEvent(this);
+
+        JsSet<NodeUnregisterListener> copy = JsCollections
+                .set(unregisterListeners);
+        copy.forEach(l -> l.onUnregsiter(event));
+    }
+
+    /**
+     * Adds a listener that will be notified when this node is unregistered.
+     *
+     * @param listener
+     *            the node unregister listener to add
+     * @return an event remover that can be used for removing the added listener
+     */
+    public EventRemover addUnregisterListener(NodeUnregisterListener listener) {
+        unregisterListeners.add(listener);
+
+        return () -> unregisterListeners.delete(listener);
     }
 }

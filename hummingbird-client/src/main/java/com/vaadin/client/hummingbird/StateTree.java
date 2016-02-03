@@ -33,7 +33,9 @@ public class StateTree {
     /**
      * Creates a new state tree.
      */
-    public StateTree() {
+    public StateTree()
+
+    {
         registerNode(rootNode);
     }
 
@@ -46,11 +48,34 @@ public class StateTree {
     public final void registerNode(StateNode node) {
         assert node != null;
         assert node.getTree() == this;
+        assert !node.isUnregistered() : "Can't re-register a node";
 
-        Double key = Double.valueOf(node.getId());
+        Double key = getKey(node);
         assert !idToNode.has(key) : "Node " + key + " is already registered";
 
         idToNode.set(key, node);
+    }
+
+    private static Double getKey(StateNode node) {
+        return Double.valueOf(node.getId());
+    }
+
+    /**
+     * Unregisters a node from this tree. Once the node has been unregistered,
+     * it can't be registered again.
+     *
+     * @param node
+     *            the node to unregister
+     */
+    public void unregisterNode(StateNode node) {
+        assert node != null : "Node is null";
+        assert node != rootNode : "Root node can't be unregistered";
+        assert node.getTree() == this : "Node is not registered to this tree";
+        assert node == getNode(
+                node.getId()) : "Node id is not registered to this tree";
+
+        idToNode.delete(getKey(node));
+        node.unregister();
     }
 
     /**
