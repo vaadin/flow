@@ -158,4 +158,25 @@ public abstract class ListNamespace<T> extends Namespace {
     public boolean isNodeValues() {
         return nodeValues;
     }
+
+    /**
+     * Removes all items.
+     */
+    protected void clear() {
+        while (size() > 0) {
+            remove(0);
+        }
+    }
+
+    /**
+     * Gets the position of a value in the list
+     *
+     * @param node
+     *            the node to look for
+     * @return the position in the list or -1 if not found
+     */
+    protected int indexOf(T value) {
+        return values.indexOf(value);
+    }
+
 }

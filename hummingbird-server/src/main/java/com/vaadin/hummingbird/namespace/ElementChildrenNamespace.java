@@ -44,4 +44,14 @@ public class ElementChildrenNamespace extends ListNamespace<StateNode> {
     public StateNode get(int index) {
         return super.get(index);
     }
+
+    @Override
+    public void clear() {
+        super.clear();
+    }
+
+    @Override
+    public int indexOf(StateNode node) {
+        return super.indexOf(node);
+    }
 }

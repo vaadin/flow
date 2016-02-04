@@ -101,4 +101,73 @@ public interface ElementStateProvider extends Serializable {
      */
     Set<String> getAttributeNames(StateNode node);
 
+    /**
+     * Gets the parent element
+     *
+     * @param node
+     *            the node containing the data
+     * @return the parent element or null if the element has no parent
+     */
+    Element getParent(StateNode node);
+
+    /**
+     * Gets the number of child elements
+     *
+     * @param node
+     *            the node containing the data
+     * @return the number of child elements
+     */
+    int getChildCount(StateNode node);
+
+    /**
+     * Returns the child element at the given position
+     *
+     * @param node
+     *            the node containing the data
+     * @param index
+     *            the index of the child element to return
+     * @return the child element
+     */
+    Element getChild(StateNode node, int index);
+
+    /**
+     * Inserts the given child at the given position.
+     *
+     * @param node
+     *            the node containing the data
+     * @param index
+     *            the position at which to insert the new child
+     * @param child
+     *            the child element to insert
+     */
+    void insertChild(StateNode node, int index, Element child);
+
+    /**
+     * Removes the child at the given position
+     *
+     * @param node
+     *            the node containing the data
+     * @param index
+     *            the position of the child element to remove
+     */
+    void removeChild(StateNode node, int index);
+
+    /**
+     * Removes the given child
+     *
+     * @param node
+     *            the node containing the data
+     * @param child
+     *            the child element to remove
+     */
+    void removeChild(StateNode node, Element child);
+
+    /**
+     * Removes all child elements
+     *
+     * @param node
+     *            the node containing the data
+     */
+    void removeAllChildren(StateNode node);
+
 }

@@ -5,6 +5,8 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.UI;
 
 public class BasicElementStateProviderTest {
 
@@ -19,5 +21,20 @@ public class BasicElementStateProviderTest {
     public void doesNotSupportEmptyNode() {
         BasicElementStateProvider provider = BasicElementStateProvider.get();
         Assert.assertFalse(provider.supports(new StateNode()));
+    }
+
+    @Test
+    public void supportsUIRootNode() {
+        BasicElementStateProvider provider = BasicElementStateProvider.get();
+        UI ui = new UI() {
+
+            @Override
+            protected void init(VaadinRequest request) {
+
+            }
+        };
+        StateNode rootNode = ui.getStateTree().getRootNode();
+        Assert.assertTrue(provider.supports(rootNode));
+
     }
 }

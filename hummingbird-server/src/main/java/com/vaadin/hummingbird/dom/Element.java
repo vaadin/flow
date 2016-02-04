@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -36,7 +37,11 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
  */
 public class Element implements Serializable {
 
+    private static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
+
     private static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
+
+    private static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
 
     private ElementStateProvider stateProvider;
     private StateNode node;
@@ -55,6 +60,24 @@ public class Element implements Serializable {
     }
 
     /**
+     * Private constructor for initializing with an existing node
+     */
+    private Element(StateNode node) {
+        // TODO This needs to be fixed once there are several
+        // ElementStateProvider implementations
+        stateProvider = BasicElementStateProvider.get();
+        if (!stateProvider.supports(node)) {
+            throw new IllegalArgumentException(
+                    "BasicElementStateProvider does not support the given state node");
+        }
+
+        this.node = node;
+
+        assert this.node != null;
+        assert stateProvider != null;
+    }
+
+    /**
      * Creates an element using the given tag name.
      *
      * @param tag
@@ -63,6 +86,9 @@ public class Element implements Serializable {
      */
     public Element(String tag) {
         this(tag, null);
+
+        assert node != null;
+        assert stateProvider != null;
     }
 
     /**
@@ -78,6 +104,20 @@ public class Element implements Serializable {
      */
     public Element(String tag, String is) {
         init(tag, is);
+
+        assert node != null;
+        assert stateProvider != null;
+    }
+
+    /**
+     * Gets the element mapped to the given state node
+     *
+     * @param node
+     *            the state node
+     * @return the element for the node
+     */
+    public static Element get(StateNode node) {
+        return new Element(node);
     }
 
     /**
@@ -288,6 +328,210 @@ public class Element implements Serializable {
             }
         }
         return true;
+    }
+
+    /**
+     * Removes the element from its parent.
+     * <p>
+     * Has no effect if the element does not have a parent
+     *
+     * @return this element
+     */
+    public Element removeFromParent() {
+        Element parent = getParent();
+        if (parent != null) {
+            parent.stateProvider.removeChild(parent.getNode(), this);
+        }
+        return this;
+    }
+
+    /**
+     * Gets the parent element
+     *
+     * @return the parent element or null if this element does not have a parent
+     */
+    public Element getParent() {
+        return stateProvider.getParent(node);
+    }
+
+    /**
+     * Gets the number of child elements
+     *
+     * @return the number of child elements
+     */
+    public int getChildCount() {
+        return stateProvider.getChildCount(node);
+    }
+
+    /**
+     * Returns the child element at the given position
+     *
+     * @param index
+     *            the index of the child element to return
+     * @return the child element
+     */
+    public Element getChild(int index) {
+        if (index < 0 || index > getChildCount()) {
+            throw new IllegalArgumentException(String.format(
+                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "get",
+                    index, getChildCount()));
+        }
+
+        return stateProvider.getChild(node, index);
+    }
+
+    /**
+     * Adds the given children as the last children of this element
+     *
+     * @param children
+     *            the element(s) to add
+     * @return this element
+     */
+    public Element appendChild(Element... children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        insertChild(getChildCount(), children);
+
+        return this;
+    }
+
+    /**
+     * Inserts the given child element(s) at the given position.
+     *
+     * @param index
+     *            the position at which to insert the new child
+     * @param children
+     *            the child element(s) to insert
+     * @return this element
+     */
+    public Element insertChild(int index, Element... children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+        if (index > getChildCount()) {
+            throw new IllegalArgumentException(String.format(
+                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "insert",
+                    index, getChildCount()));
+        }
+
+        for (int i = 0; i < children.length; i++) {
+            stateProvider.insertChild(node, index + i, children[i]);
+            assert Objects.equals(this, children[i]
+                    .getParent()) : "Child should have this element as parent after being inserted";
+        }
+
+        return this;
+    }
+
+    /**
+     * Replaces the child at the given position with the given child element
+     *
+     * @param index
+     *            the position of the child element to replace
+     * @param child
+     *            the child element to insert
+     * @return this element
+     */
+    public Element setChild(int index, Element child) {
+        if (child == null) {
+            throw new IllegalArgumentException("The child cannot be null");
+        }
+        int childCount = getChildCount();
+        if (index < 0) {
+            throw new IllegalArgumentException(String.format(
+                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set",
+                    index, getChildCount()));
+        } else if (index < childCount) {
+            removeChild(index);
+            insertChild(index, child);
+        } else if (index == getChildCount()) {
+            insertChild(childCount, child);
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set",
+                    index, getChildCount()));
+        }
+        return this;
+    }
+
+    /**
+     * Removes the given child element(s)
+     *
+     * @param children
+     *            the child element(s) to remove
+     * @return this element
+     */
+    public Element removeChild(Element... children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        for (int i = 0; i < children.length; i++) {
+            if (!Objects.equals(children[i].getParent(), this)) {
+                throw new IllegalArgumentException(
+                        "The given element is not a child of this element");
+            }
+            stateProvider.removeChild(node, children[i]);
+        }
+        return this;
+    }
+
+    /**
+     * Removes the child at the given index
+     *
+     * @param index
+     *            the index of the child to remove
+     * @return this element
+     */
+    public Element removeChild(int index) {
+        if (index < 0 || index >= getChildCount()) {
+            throw new IllegalArgumentException(
+                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN);
+
+        }
+
+        stateProvider.removeChild(node, index);
+        return this;
+    }
+
+    /**
+     * Removes all child elements
+     *
+     * @return this element
+     */
+    public Element removeAllChildren() {
+        stateProvider.removeAllChildren(node);
+
+        return this;
+    }
+
+    @Override
+    public int hashCode() {
+        // Constructors guarantee that neither node nor stateProvider is null
+        return node.hashCode() + 31 * stateProvider.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Element other = (Element) obj;
+
+        // Constructors guarantee that neither node nor stateProvider is null
+        return other.node.equals(node)
+                && other.stateProvider.equals(stateProvider);
     }
 
 }
