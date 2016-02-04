@@ -19,6 +19,7 @@ import com.google.gwt.core.client.GWT;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 import com.vaadin.client.hummingbird.collection.jre.JreJsMap;
 import com.vaadin.client.hummingbird.collection.jre.JreJsSet;
+import com.vaadin.client.hummingbird.collection.jre.JreJsWeakMap;
 
 /**
  * Factory for JavaScript collection implementations with support for
@@ -55,6 +56,19 @@ public class JsCollections {
             return createNativeMap();
         } else {
             return new JreJsMap<>();
+        }
+    }
+
+    /**
+     * Creates a new JavaScript WeakMap.
+     *
+     * @return a new JS weak map instance
+     */
+    public static <K, V> JsWeakMap<K, V> weakMap() {
+        if (GWT.isScript()) {
+            return createNativeWeakMap();
+        } else {
+            return new JreJsWeakMap<>();
         }
     }
 
@@ -109,6 +123,11 @@ public class JsCollections {
     private static native <K, V> JsMap<K, V> createNativeMap()
     /*-{
         return new $wnd.Map();
+    }-*/;
+
+    private static native <K, V> JsWeakMap<K, V> createNativeWeakMap()
+    /*-{
+        return new $wnd.WeakMap();
     }-*/;
 
     private static native <V> JsSet<V> createNativeSet()
