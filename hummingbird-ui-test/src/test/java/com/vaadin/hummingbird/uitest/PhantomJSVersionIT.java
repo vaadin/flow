@@ -11,11 +11,6 @@ public class PhantomJSVersionIT extends PhantomJSTest {
                 "return navigator.userAgent;");
         // Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML,
         // like Gecko) PhantomJS/2.1.1 Safari/538.1
-        String version = userAgent.substring(userAgent.indexOf(" PhantomJS/"));
-        version = version.substring(" PhantomJS/".length());
-        version = version.split(" ")[0];
-        String[] versionParts = version.split("\\.");
-        Assert.assertEquals("2.1", versionParts[0] + "." + versionParts[1]);
-
+        Assert.assertTrue(userAgent.contains(" PhantomJS/2.1."));
     }
 }
