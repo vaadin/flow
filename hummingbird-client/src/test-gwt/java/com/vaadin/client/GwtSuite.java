@@ -4,6 +4,7 @@ import com.google.gwt.junit.tools.GWTTestSuite;
 import com.vaadin.client.hummingbird.collection.GwtJsArrayTest;
 import com.vaadin.client.hummingbird.collection.GwtJsMapTest;
 import com.vaadin.client.hummingbird.collection.GwtJsSetTest;
+import com.vaadin.client.hummingbird.collection.GwtJsWeakMapTest;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -18,6 +19,7 @@ public class GwtSuite extends GWTTestSuite {
         TestSuite suite = new TestSuite("Hummingbird GWT tests");
         suite.addTestSuite(GwtJsArrayTest.class);
         suite.addTestSuite(GwtJsMapTest.class);
+        suite.addTestSuite(GwtJsWeakMapTest.class);
         suite.addTestSuite(GwtJsSetTest.class);
         return suite;
     }
