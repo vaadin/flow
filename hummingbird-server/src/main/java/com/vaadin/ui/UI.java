@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
@@ -121,6 +122,15 @@ public abstract class UI implements Serializable, PollNotifier {
     public UI() {
         stateTree.getRootNode().getNamespace(ElementDataNamespace.class)
                 .setTag("body");
+    }
+
+    /**
+     * Gets the DOM element for this UI.
+     *
+     * @return the DOM element for this UI
+     */
+    public Element getElement() {
+        return Element.get(getStateTree().getRootNode());
     }
 
     /**
