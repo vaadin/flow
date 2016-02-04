@@ -40,7 +40,7 @@ public class JreMapTest {
 
         Assert.assertEquals(1, (int) map.get("One"));
         Assert.assertEquals(2, (int) map.get("Two"));
-        Assert.assertNull(map.get("Threee"));
+        Assert.assertNull(map.get("Three"));
 
         Assert.assertTrue(map.delete("One"));
         Assert.assertFalse(map.delete("Three"));
@@ -49,6 +49,30 @@ public class JreMapTest {
         map.clear();
         Assert.assertEquals(0, map.size());
         Assert.assertFalse(map.has("Two"));
+    }
+
+    @Test
+    public void testMapValues() {
+        JsMap<String, Integer> map = JsCollections.map();
+
+        map.set("One", 1).set("Two", 2);
+
+        JsArray<Integer> values = JsCollections.mapValues(map);
+
+        Assert.assertEquals(2, values.length());
+
+        Assert.assertEquals(1, values.get(0).intValue());
+        Assert.assertEquals(2, values.get(1).intValue());
+
+        map.delete("One");
+
+        values = JsCollections.mapValues(map);
+        Assert.assertEquals(1, values.length());
+        Assert.assertEquals(2, values.get(0).intValue());
+
+        map.clear();
+        values = JsCollections.mapValues(map);
+        Assert.assertEquals(0, values.length());
     }
 
     @Test

@@ -89,9 +89,17 @@ public class GwtJsMapTest extends ClientEngineTestBase {
         assertEquals(0, values.length());
     }
 
+    /**
+     * Tests that it's possible to cast an instance to its own type.
+     *
+     * Most of the JS produced by GWT does not make any assertions about types,
+     * but explicit casts and some use of generics leads to code that might do a
+     * JavaScript instanceof check for @JsType classes, thus failing if the type
+     * defined in the annotation doesn't match the runtime type.
+     */
     public void testCanCast() {
         // Ok if this doesn't throw ClassCastException
-        JsMap<Object, Object> map = WidgetUtil.crazyJsCast("foo");
+        JsMap<Object, Object> map = WidgetUtil.crazyJsCast(JsCollections.map());
     }
 
 }
