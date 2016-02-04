@@ -91,7 +91,7 @@ public class GwtJsMapTest extends ClientEngineTestBase {
 
     public void testCanCast() {
         // Ok if this doesn't throw ClassCastException
-        JsMap<Object, Object> map = WidgetUtil.crazyJsCast("foo");
+        JsMap<Object, Object> map = WidgetUtil.crazyJsCast(JsCollections.map());
     }
 
 }
