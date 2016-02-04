@@ -16,8 +16,8 @@
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -214,13 +214,19 @@ public class Element implements Serializable {
      * Attribute names are considered case insensitive and all names will be
      * converted to lower case automatically.
      * <p>
-     * The returned set is disconnected from the element so adding or removing
-     * elements will not affect the returned set.
+     * The returned collection might be connected so that adding/removing
+     * attributes through {@link #setAttribute(String, String)} or
+     * {@link #removeAttribute(String)} affects the collection. If you want to
+     * store the attribute names for later usage, you should make a copy.
+     * <p>
+     * You cannot modify attributes through the returned set.
      *
      * @return the defined attribute names
      */
     public Set<String> getAttributeNames() {
-        return new HashSet<>(stateProvider.getAttributeNames(node));
+        // Intentionally not making a copy for performance reasons
+        return Collections
+                .unmodifiableSet(stateProvider.getAttributeNames(node));
     }
 
     /**

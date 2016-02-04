@@ -158,7 +158,7 @@ public class ElementTest {
                 e.getAttributeNames().toArray());
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void attributesNamesModificationsNotReflected() {
         Element e = new Element("div");
         e.setAttribute("foo", "bar");
@@ -173,7 +173,11 @@ public class ElementTest {
         Set<String> names = e.getAttributeNames();
         Assert.assertEquals(1, names.size());
         e.setAttribute("baz", "zoo");
-        Assert.assertEquals(1, names.size());
+
+        // NOTE: This only tests the current implementation. This is not
+        // guaranteed behavior
+        Assert.assertEquals(2, names.size());
+        Assert.assertTrue(e.hasAttribute("baz"));
     }
 
     @Test
