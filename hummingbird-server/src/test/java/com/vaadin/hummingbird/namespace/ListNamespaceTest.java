@@ -29,7 +29,7 @@ import com.vaadin.hummingbird.change.NodeChange;
 
 public class ListNamespaceTest
         extends AbstractNamespaceTest<ElementChildrenNamespace> {
-    private ListNamespace namespace = createNamespace();
+    private ListNamespace<StateNode> namespace = createNamespace();
 
     @Test
     public void testAddingAndRemoving() {
@@ -110,5 +110,30 @@ public class ListNamespaceTest
         namespace.remove(0);
 
         Assert.assertNull(child.getParent());
+    }
+
+    @Test
+    public void testIndexOf() {
+        StateNode one = StateNodeTest.createEmptyNode("one");
+        StateNode two = StateNodeTest.createEmptyNode("two");
+        StateNode three = StateNodeTest.createEmptyNode("three");
+
+        namespace.add(one);
+        namespace.add(two);
+        Assert.assertEquals(0, namespace.indexOf(one));
+        Assert.assertEquals(1, namespace.indexOf(two));
+        Assert.assertEquals(-1, namespace.indexOf(three));
+    }
+
+    @Test
+    public void testClear() {
+        StateNode one = StateNodeTest.createEmptyNode("one");
+        StateNode two = StateNodeTest.createEmptyNode("two");
+
+        namespace.add(one);
+        namespace.add(two);
+        Assert.assertEquals(2, namespace.size());
+        namespace.clear();
+        Assert.assertEquals(0, namespace.size());
     }
 }
