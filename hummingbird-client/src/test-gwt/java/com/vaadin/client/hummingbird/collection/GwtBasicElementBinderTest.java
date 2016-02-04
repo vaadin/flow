@@ -33,10 +33,13 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
     private MapNamespace properties = node
             .getMapNamespace(Namespaces.ELEMENT_PROPERTIES);
+    private MapNamespace attributes = node
+            .getMapNamespace(Namespaces.ELEMENT_ATTRIBUTES);
     private MapNamespace elementData = node
             .getMapNamespace(Namespaces.ELEMENT_DATA);
 
     private MapProperty title = properties.getProperty("title");
+    private MapProperty id = attributes.getProperty("id");
 
     private Element element;
 
@@ -60,11 +63,11 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testBindNewProperty() {
         BasicElementBinder.bind(node, element);
 
-        title.setValue("foo");
+        properties.getProperty("lang").setValue("foo");
 
         Reactive.flush();
 
-        assertEquals("foo", element.getTitle());
+        assertEquals("foo", element.getLang());
     }
 
     public void testBindingBeforeFlush() {
@@ -79,30 +82,36 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         BasicElementBinder binder = BasicElementBinder.bind(node, element);
 
         title.setValue("foo");
+        id.setValue("foo");
 
         binder.remove();
 
         title.setValue("bar");
+        id.setValue("bar");
 
         Reactive.flush();
 
         assertEquals("", element.getTitle());
+        assertEquals("", element.getId());
     }
 
     public void testUnbindAfterFlush() {
         BasicElementBinder binder = BasicElementBinder.bind(node, element);
 
         title.setValue("foo");
+        id.setValue("foo");
 
         Reactive.flush();
 
         binder.remove();
 
         title.setValue("bar");
+        id.setValue("bar");
 
         Reactive.flush();
 
         assertEquals("foo", element.getTitle());
+        assertEquals("foo", element.getId());
     }
 
     public void testRemoveArbitraryProperty() {
@@ -152,5 +161,47 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         elementData.getProperty(Namespaces.TAG).setValue("div");
 
         BasicElementBinder.bind(node, element);
+    }
+
+    public void testBindExistingAttribute() {
+        id.setValue("foo");
+
+        BasicElementBinder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals("foo", element.getId());
+    }
+
+    public void testBindNewAttribute() {
+        BasicElementBinder.bind(node, element);
+
+        attributes.getProperty("lang").setValue("foo");
+
+        Reactive.flush();
+
+        assertEquals("foo", element.getLang());
+    }
+
+    public void testSetAttributeWithoutFlush() {
+        id.setValue("foo");
+
+        BasicElementBinder.bind(node, element);
+
+        assertEquals("", element.getId());
+    }
+
+    public void restRemoveAttribute() {
+        BasicElementBinder.bind(node, element);
+
+        id.setValue("foo");
+
+        Reactive.flush();
+
+        id.removeValue();
+
+        Reactive.flush();
+
+        assertEquals(null, element.getId());
     }
 }
