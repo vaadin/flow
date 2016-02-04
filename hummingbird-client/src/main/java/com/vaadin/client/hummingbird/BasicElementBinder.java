@@ -31,10 +31,24 @@ import elemental.events.EventRemover;
  * @author Vaadin Ltd
  */
 public class BasicElementBinder {
-    private JsMap<String, Computation> propertyBindings = JsCollections.map();
-    private EventRemover unregisterListener;
+    @FunctionalInterface
+    private interface PropertyUser {
+        public void use(MapProperty property);
+    }
+
+    private final JsMap<String, Computation> propertyBindings = JsCollections
+            .map();
+    private final JsMap<String, Computation> attributeBindings = JsCollections
+            .map();
+    private final EventRemover unregisterListener;
+
+    private final Element element;
+    private final StateNode node;
 
     private BasicElementBinder(StateNode node, Element element) {
+        this.node = node;
+        this.element = element;
+
         MapNamespace elementData = node
                 .getMapNamespace(Namespaces.ELEMENT_DATA);
 
@@ -42,49 +56,63 @@ public class BasicElementBinder {
         assert nsTag == null
                 || element.getTagName().toLowerCase().equals(nsTag);
 
-        MapNamespace properties = node
-                .getMapNamespace(Namespaces.ELEMENT_PROPERTIES);
-        bindProperties(element, properties);
+        bindMap(Namespaces.ELEMENT_PROPERTIES, propertyBindings,
+                this::updateProperty);
+
+        bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
+                this::updateAttribute);
 
         unregisterListener = node.addUnregisterListener(e -> remove());
     }
 
-    private void bindProperties(Element element, MapNamespace properties) {
-        // Bind existing properties
-        properties.forEachProperty(
-                (property, name) -> bindProperty(element, property));
+    private void bindMap(int namespaceId, JsMap<String, Computation> bindings,
+            PropertyUser user) {
+        MapNamespace namespace = node.getMapNamespace(namespaceId);
+        namespace.forEachProperty(
+                (property, name) -> bindProperty(bindings, user, property));
 
-        // Bind any new properties as they show up
-        properties.addPropertyAddListener(event -> {
-            MapProperty property = event.getProperty();
-            bindProperty(element, property);
-        });
+        namespace.addPropertyAddListener(
+                e -> bindProperty(bindings, user, e.getProperty()));
     }
 
-    private void bindProperty(Element element, MapProperty property) {
+    private static void bindProperty(JsMap<String, Computation> bindings,
+            PropertyUser user, MapProperty property) {
         String name = property.getName();
 
-        assert !propertyBindings.has(name) : "There's already a binding for "
-                + name;
+        assert !bindings.has(name) : "There's already a binding for " + name;
 
-        Computation binding = new Computation() {
+        Computation computation = new Computation() {
             @Override
             protected void doRecompute() {
-                String name = property.getName();
-                if (property.hasValue()) {
-                    WidgetUtil.setJsProperty(element, name,
-                            property.getValue());
-                } else if (WidgetUtil.hasOwnJsProperty(element, name)) {
-                    WidgetUtil.deleteJsProperty(element, name);
-                } else {
-                    // Can't delete inherited property, so instead just clear
-                    // the value
-                    WidgetUtil.setJsProperty(element, name, null);
-                }
+                user.use(property);
             }
         };
 
-        propertyBindings.set(name, binding);
+        bindings.set(name, computation);
+    }
+
+    private void updateProperty(MapProperty mapProperty) {
+        String name = mapProperty.getName();
+
+        if (mapProperty.hasValue()) {
+            WidgetUtil.setJsProperty(element, name, mapProperty.getValue());
+        } else if (WidgetUtil.hasOwnJsProperty(element, name)) {
+            WidgetUtil.deleteJsProperty(element, name);
+        } else {
+            // Can't delete inherited property, so instead just clear
+            // the value
+            WidgetUtil.setJsProperty(element, name, null);
+        }
+    }
+
+    private void updateAttribute(MapProperty mapProperty) {
+        String name = mapProperty.getName();
+
+        if (mapProperty.hasValue()) {
+            element.setAttribute(name, String.valueOf(mapProperty.getValue()));
+        } else {
+            element.removeAttribute(name);
+        }
     }
 
     /**
@@ -92,6 +120,7 @@ public class BasicElementBinder {
      */
     public final void remove() {
         propertyBindings.forEach((computation, name) -> computation.stop());
+        attributeBindings.forEach((computation, name) -> computation.stop());
         unregisterListener.remove();
     }
 
