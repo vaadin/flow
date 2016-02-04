@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Use PhantomJS 2.1.1 installed in before_install
+export PATH=$PWD/phantomjs-2.1.1-linux-x86_64/bin:$PATH
+
 # TRAVIS_PULL_REQUEST == "false" for a normal branch commit, the PR number for a PR
 # TRAVIS_BRANCH == target of normal commit or target of PR
 # TRAVIS_SECURE_ENV_VARS == true if encrypted variables, e.g. SONAR_HOST is available
