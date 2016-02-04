@@ -17,8 +17,6 @@
 package com.vaadin.hummingbird;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -51,8 +49,7 @@ public class StateNodeTest {
 
     @Test
     public void nodeContainsDefinedNamespaces() {
-        StateNode node = new StateNode(
-                Arrays.asList(ElementDataNamespace.class));
+        StateNode node = new StateNode(ElementDataNamespace.class);
 
         ElementDataNamespace namespace = node
                 .getNamespace(ElementDataNamespace.class);
@@ -107,7 +104,7 @@ public class StateNodeTest {
     }
 
     public static StateNode createEmptyNode(String toString) {
-        return new StateNode(Collections.emptyList()) {
+        return new StateNode() {
             @Override
             public String toString() {
                 return toString;

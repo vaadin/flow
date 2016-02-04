@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.namespace;
 
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.vaadin.hummingbird.StateNode;
@@ -34,7 +33,7 @@ public abstract class AbstractNamespaceTest<T extends Namespace> {
 
     public static <T extends Namespace> T createNamespace(
             Class<T> namespaceType) {
-        StateNode node = new StateNode(Collections.singleton(namespaceType));
+        StateNode node = new StateNode(namespaceType);
 
         return node.getNamespace(namespaceType);
     }

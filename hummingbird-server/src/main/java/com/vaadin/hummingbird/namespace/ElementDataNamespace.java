@@ -27,6 +27,7 @@ import com.vaadin.hummingbird.StateNode;
 public class ElementDataNamespace extends MapNamespace {
 
     private static final String TAG = "tag";
+    private static final String IS = "is";
 
     /**
      * Creates a new element data namespace for the given node.
@@ -56,5 +57,26 @@ public class ElementDataNamespace extends MapNamespace {
      */
     public String getTag() {
         return (String) get(TAG);
+    }
+
+    /**
+     * Sets the type of the element as defined by the "is" attribute.
+     * <p>
+     * Note that this cannot be changed after initialization.
+     *
+     * @param is
+     *            the is attribute
+     */
+    public void setIs(String is) {
+        put(IS, is);
+    }
+
+    /**
+     * Gets the type of the element as defined by the "is" attribute.
+     *
+     * @return the is attribute
+     */
+    public String getIs() {
+        return (String) get(IS);
     }
 }

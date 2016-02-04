@@ -25,7 +25,6 @@ import org.junit.Test;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.shared.Namespaces;
-import com.vaadin.hummingbird.shared.Namespaces;
 
 public class NamespaceTest {
     private static abstract class UnregisteredNamespace extends Namespace {
@@ -58,6 +57,8 @@ public class NamespaceTest {
         expectedIds.put(ElementDataNamespace.class, Namespaces.ELEMENT_DATA);
         expectedIds.put(ElementPropertiesNamespace.class,
                 Namespaces.ELEMENT_PROPERTIES);
+        expectedIds.put(ElementAttributeNamespace.class,
+                Namespaces.ELEMENT_ATTRIBUTES);
         expectedIds.put(ElementChildrenNamespace.class,
                 Namespaces.ELEMENT_CHILDREN);
 
