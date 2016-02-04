@@ -3,6 +3,8 @@ package com.vaadin.hummingbird.uitest;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.openqa.selenium.JavascriptExecutor;
+
 import com.vaadin.ui.UI;
 
 public class AbstractTestBenchTest extends TestBenchHelpers {
@@ -77,6 +79,19 @@ public class AbstractTestBenchTest extends TestBenchHelpers {
         }
         throw new RuntimeException(
                 "Could not determine UI class. Ensure the test is named UIClassIT and is in the same package as the UIClass");
+    }
+
+    /**
+     * Executes the given Javascript
+     *
+     * @param script
+     *            the script to execute
+     * @return whatever
+     *         {@link org.openqa.selenium.JavascriptExecutor#executeScript(String, Object...)}
+     *         returns
+     */
+    protected Object executeScript(String script, Object... args) {
+        return ((JavascriptExecutor) getDriver()).executeScript(script, args);
     }
 
 }
