@@ -17,8 +17,6 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
-import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
@@ -28,14 +26,18 @@ public class StateTreeUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
         StateNode rootNode = getStateTree().getRootNode();
-        Element e = new Element("div");
-        e.setAttribute("foo", "baz");
-        rootNode.getNamespace(ElementChildrenNamespace.class).add(0,
-                e.getNode());
+        Element bodyElement = Element.get(rootNode);
 
+        Element div = new Element("div");
+        div.setAttribute("foo", "baz");
+
+        bodyElement.appendChild(div);
         rootNode.getNamespace(ElementPropertiesNamespace.class)
                 .setProperty("foo", "bar");
-        rootNode.getNamespace(ElementAttributeNamespace.class).set("bar",
-                "foo");
+        bodyElement.setAttribute("bar", "foo");
+
+        Element span = new Element("span");
+        span.setAttribute("class", "important");
+        div.appendChild(span);
     }
 }
