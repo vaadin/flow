@@ -119,6 +119,8 @@ public abstract class UI implements Serializable, PollNotifier {
      * Creates a new empty UI.
      */
     public UI() {
+        stateTree.getRootNode().getNamespace(ElementDataNamespace.class)
+                .setTag("body");
     }
 
     /**
