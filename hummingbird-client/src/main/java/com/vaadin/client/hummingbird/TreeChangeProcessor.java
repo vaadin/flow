@@ -16,6 +16,9 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.namespace.ListNamespace;
+import com.vaadin.client.hummingbird.namespace.MapNamespace;
+import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonArray;
