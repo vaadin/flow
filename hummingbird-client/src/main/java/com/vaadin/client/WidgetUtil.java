@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
 
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -237,5 +238,10 @@ public class WidgetUtil {
     public static native void deleteJsProperty(Object object, String name)
     /*-{
       delete object[name];
+    }-*/;
+
+    public static native JsonObject createJsonObjectWithoutPrototype()
+    /*-{
+      return $wnd.Object.create(null);
     }-*/;
 }
