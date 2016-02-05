@@ -30,6 +30,7 @@ import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
@@ -137,7 +138,7 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     private final StateTree stateTree = new StateTree(
             ElementDataNamespace.class, ElementPropertiesNamespace.class,
-            ElementChildrenNamespace.class);
+            ElementChildrenNamespace.class, ElementAttributeNamespace.class);
 
     /**
      * Creates a new empty UI without a caption. The content of the UI must be
