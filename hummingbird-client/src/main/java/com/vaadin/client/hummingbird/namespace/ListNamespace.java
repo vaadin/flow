@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird;
+package com.vaadin.client.hummingbird.namespace;
 
+import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.reactive.Computation;

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird;
+package com.vaadin.client.hummingbird.namespace;
 
 import java.util.Map;
 import java.util.Objects;

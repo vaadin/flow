@@ -20,6 +20,7 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.util.JsonStream;
 

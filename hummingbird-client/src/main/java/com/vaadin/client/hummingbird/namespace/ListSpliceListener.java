@@ -13,21 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird;
+package com.vaadin.client.hummingbird.namespace;
 
 /**
- * Listener notified when the value of a {@link MapProperty} changes.
+ * Listener notified when the structure of a list namespace changes.
  *
  * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface MapPropertyChangeListener {
+public interface ListSpliceListener {
     /**
-     * Invoked when the value changes.
+     * Invoked when the structure of a list namespace changes.
      *
      * @param event
-     *            the property change event
+     *            the list splice event
      */
-    public void onPropertyChange(MapPropertyChangeEvent event);
+    public void onSplice(ListSpliceEvent event);
 }

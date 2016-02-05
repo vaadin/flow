@@ -13,21 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird;
+package com.vaadin.client.hummingbird.namespace;
 
 /**
- * Listener notified when a property is added to a {@link MapNamespace}.
+ * Listener notified when the value of a {@link MapProperty} changes.
  *
  * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface MapPropertyAddListener {
+public interface MapPropertyChangeListener {
     /**
-     * Invoked when a property is added.
+     * Invoked when the value changes.
      *
      * @param event
-     *            the property add event
+     *            the property change event
      */
-    public void onPropertyAdd(MapPropertyAddEvent event);
+    public void onPropertyChange(MapPropertyChangeEvent event);
 }

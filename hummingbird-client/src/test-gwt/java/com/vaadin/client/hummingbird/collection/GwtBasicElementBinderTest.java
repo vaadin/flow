@@ -18,10 +18,10 @@ package com.vaadin.client.hummingbird.collection;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.BasicElementBinder;
-import com.vaadin.client.hummingbird.MapNamespace;
-import com.vaadin.client.hummingbird.MapProperty;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
+import com.vaadin.client.hummingbird.namespace.MapNamespace;
+import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.Namespaces;
 

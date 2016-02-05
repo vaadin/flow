@@ -22,6 +22,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.hummingbird.namespace.AbstractNamespace;
+import com.vaadin.client.hummingbird.namespace.ListNamespace;
+import com.vaadin.client.hummingbird.namespace.MapNamespace;
+
 public class StateNodeTest {
     private StateNode node = new StateNode(1, new StateTree());
 

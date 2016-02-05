@@ -18,6 +18,9 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
+import com.vaadin.client.hummingbird.namespace.AbstractNamespace;
+import com.vaadin.client.hummingbird.namespace.ListNamespace;
+import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.collection.JsSet;
 
 import elemental.events.EventRemover;

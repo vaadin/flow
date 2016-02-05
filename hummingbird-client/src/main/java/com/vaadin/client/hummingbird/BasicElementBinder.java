@@ -18,6 +18,8 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.namespace.MapNamespace;
+import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.hummingbird.shared.Namespaces;
 

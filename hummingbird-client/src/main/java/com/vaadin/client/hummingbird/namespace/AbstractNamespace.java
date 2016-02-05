@@ -13,9 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird;
+package com.vaadin.client.hummingbird.namespace;
 
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.StateNode;
 
 import elemental.json.JsonValue;
 

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird;
+package com.vaadin.client.hummingbird.namespace;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.reactive.CountingComputation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
