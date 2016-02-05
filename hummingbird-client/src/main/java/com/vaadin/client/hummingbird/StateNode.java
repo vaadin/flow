@@ -20,6 +20,7 @@ import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.JsSet;
 
+import elemental.dom.Element;
 import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -41,6 +42,8 @@ public class StateNode {
 
     private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections
             .set();
+
+    private Element element;
 
     /**
      * Creates a new state node.
@@ -186,5 +189,28 @@ public class StateNode {
         unregisterListeners.add(listener);
 
         return () -> unregisterListeners.delete(listener);
+    }
+
+    /**
+     * Gets the element associated with this node.
+     *
+     * @return the element, or <code>null</code> if no element has been
+     *         associate
+     */
+    public Element getElement() {
+        return element;
+    }
+
+    /**
+     * Sets the element associated with this node.
+     *
+     * @param element
+     *            the associated element
+     */
+    public void setElement(Element element) {
+        assert this.element == null
+                || element == null : "Node already has an element";
+
+        this.element = element;
     }
 }
