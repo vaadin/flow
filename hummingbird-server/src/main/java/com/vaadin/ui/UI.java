@@ -140,6 +140,8 @@ public abstract class UI extends AbstractSingleComponentContainer
             ElementDataNamespace.class, ElementPropertiesNamespace.class,
             ElementChildrenNamespace.class, ElementAttributeNamespace.class);
 
+    private int serverSyncId = 0;
+
     /**
      * Creates a new empty UI without a caption. The content of the UI must be
      * set by calling {@link #setContent(Component)} before using the UI.
@@ -1157,4 +1159,35 @@ public abstract class UI extends AbstractSingleComponentContainer
     public StateTree getStateTree() {
         return stateTree;
     }
+
+    /**
+     * Gets the server sync id.
+     * <p>
+     * The sync id is incremented by one whenever a new response is written.
+     * This id is then sent over to the client. The client then adds the most
+     * recent sync id to each communication packet it sends back to the server.
+     * This way, the server knows at what state the client is when the packet is
+     * sent. If the state has changed on the server side since that, the server
+     * can try to adjust the way it handles the actions from the client side.
+     * <p>
+     * The sync id value <code>-1</code> is ignored to facilitate testing with
+     * pre-recorded requests.
+     *
+     * @since
+     * @return the server sync id
+     */
+    public int getServerSyncId() {
+        return serverSyncId;
+    }
+
+    /**
+     * Increments the server sync id.
+     * <p>
+     * This should only be called by whoever sends a message to the client,
+     * after the message has been sent.
+     */
+    public void incrementServerId() {
+        serverSyncId++;
+    }
+
 }
