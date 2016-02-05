@@ -20,75 +20,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.TabIndexState;
 
-public class UIState extends TabIndexState {
+public class UIState implements Serializable {
     public LoadingIndicatorConfigurationState loadingIndicatorConfiguration = new LoadingIndicatorConfigurationState();
     public int pollInterval = -1;
 
-    // Informing users of assistive devices, that the content of this container
-    // is announced automatically and does not need to be navigated into
-    public String overlayContainerLabel = "This content is announced automatically and does not need to be navigated into.";
-    public Map<String, NotificationTypeConfiguration> notificationConfigurations = new HashMap<String, NotificationTypeConfiguration>();
-
-    {
-        notificationConfigurations.put("error",
-                new NotificationTypeConfiguration("Error: ",
-                        " - close with ESC-key", NotificationRole.ALERT));
-        notificationConfigurations.put("warning",
-                new NotificationTypeConfiguration("Warning: ", null,
-                        NotificationRole.ALERT));
-        notificationConfigurations.put("humanized",
-                new NotificationTypeConfiguration("Info: ", null,
-                        NotificationRole.ALERT));
-
-        // We use alert instead of status for all notifications because
-        // (at least) Jaws 16 and earlier fail to announce any role=status
-        // message in Chrome/Firefox
-        notificationConfigurations.put("tray",
-                new NotificationTypeConfiguration("Status: ", null,
-                        NotificationRole.ALERT));
-        notificationConfigurations.put("assistive",
-                new NotificationTypeConfiguration("Note: ", null,
-                        NotificationRole.ALERT));
-    }
-
-    /**
-     * State related to the Page class.
-     */
-    public PageState pageState = new PageState();
     /**
      * Configuration for the push channel
      */
     public PushConfigurationState pushConfiguration = new PushConfigurationState();
     public ReconnectDialogConfigurationState reconnectDialogConfiguration = new ReconnectDialogConfigurationState();
 
-    {
-        // Default is 1 for legacy reasons
-        tabIndex = 1;
-    }
-
     public static class LoadingIndicatorConfigurationState
             implements Serializable {
         public int firstDelay = 300;
         public int secondDelay = 1500;
         public int thirdDelay = 5000;
-    }
-
-    public static class NotificationTypeConfiguration implements Serializable {
-        public String prefix;
-        public String postfix;
-        public NotificationRole notificationRole = NotificationRole.ALERT;
-
-        public NotificationTypeConfiguration() {
-        }
-
-        public NotificationTypeConfiguration(String prefix, String postfix,
-                NotificationRole role) {
-            this.prefix = prefix;
-            this.postfix = postfix;
-            notificationRole = role;
-        }
     }
 
     public static class PushConfigurationState implements Serializable {

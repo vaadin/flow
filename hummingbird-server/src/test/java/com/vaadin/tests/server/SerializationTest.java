@@ -7,53 +7,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import com.vaadin.data.Item;
-import com.vaadin.data.Property;
-import com.vaadin.data.util.IndexedContainer;
-import com.vaadin.data.util.MethodProperty;
-import com.vaadin.data.validator.RegexpValidator;
 import com.vaadin.server.VaadinSession;
 
 import junit.framework.TestCase;
 
 public class SerializationTest extends TestCase {
-
-    public void testValidators() throws Exception {
-        RegexpValidator validator = new RegexpValidator(".*", "Error");
-        validator.validate("aaa");
-        RegexpValidator validator2 = serializeAndDeserialize(validator);
-        validator2.validate("aaa");
-    }
-
-    public void testIndedexContainerItemIds() throws Exception {
-        IndexedContainer ic = new IndexedContainer();
-        ic.addContainerProperty("prop1", String.class, null);
-        Object id = ic.addItem();
-        ic.getItem(id).getItemProperty("prop1").setValue("1");
-
-        Item item2 = ic.addItem("item2");
-        item2.getItemProperty("prop1").setValue("2");
-
-        serializeAndDeserialize(ic);
-    }
-
-    public void testMethodPropertyGetter() throws Exception {
-        MethodProperty<?> mp = new MethodProperty<Object>(new Data(),
-                "dummyGetter");
-        serializeAndDeserialize(mp);
-    }
-
-    public void testMethodPropertyGetterAndSetter() throws Exception {
-        MethodProperty<?> mp = new MethodProperty<Object>(new Data(),
-                "dummyGetterAndSetter");
-        serializeAndDeserialize(mp);
-    }
-
-    public void testMethodPropertyInt() throws Exception {
-        MethodProperty<?> mp = new MethodProperty<Object>(new Data(),
-                "dummyInt");
-        serializeAndDeserialize(mp);
-    }
 
     public void testVaadinSession() throws Exception {
         VaadinSession session = new VaadinSession(null);
@@ -91,11 +49,7 @@ public class SerializationTest extends TestCase {
     }
 
     private static String toString(Object o) {
-        if (o instanceof Property) {
-            return String.valueOf(((Property<?>) o).getValue());
-        } else {
-            return String.valueOf(o);
-        }
+        return String.valueOf(o);
     }
 
     public static class Data implements Serializable {
