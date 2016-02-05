@@ -20,6 +20,7 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
+import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
@@ -27,6 +28,7 @@ import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.dom.NodeList;
 
 public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     private StateNode node = new StateTree().getRootNode();
@@ -37,9 +39,13 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
             .getMapNamespace(Namespaces.ELEMENT_ATTRIBUTES);
     private MapNamespace elementData = node
             .getMapNamespace(Namespaces.ELEMENT_DATA);
+    private ListNamespace children = node
+            .getListNamespace(Namespaces.ELEMENT_CHILDREN);
 
     private MapProperty titleProperty = properties.getProperty("title");
     private MapProperty idAttribute = attributes.getProperty("id");
+
+    private int nextId = node.getId() + 1;
 
     private Element element;
 
@@ -203,5 +209,152 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals(null, element.getId());
+    }
+
+    private StateNode createChildNode(String id) {
+        StateNode childNode = new StateNode(nextId++, node.getTree());
+
+        childNode.getMapNamespace(Namespaces.ELEMENT_DATA)
+                .getProperty(Namespaces.TAG).setValue("span");
+        if (id != null) {
+            childNode.getMapNamespace(Namespaces.ELEMENT_ATTRIBUTES)
+                    .getProperty("id").setValue(id);
+        }
+
+        return childNode;
+    }
+
+    public void testAddChild() {
+        BasicElementBinder.bind(node, element);
+
+        StateNode childNode = createChildNode("child");
+
+        children.splice(0, 0, childNode);
+
+        Reactive.flush();
+
+        assertEquals(element.getChildElementCount(), 1);
+
+        Element childElement = element.getFirstElementChild();
+
+        assertEquals("SPAN", childElement.getTagName());
+        assertEquals("child", childElement.getId());
+    }
+
+    public void testAddChildPosition() {
+        BasicElementBinder.bind(node, element);
+
+        StateNode firstChildNode = createChildNode("first");
+        children.splice(0, 0, firstChildNode);
+        Reactive.flush();
+
+        Element firstChildElement = element.getFirstElementChild();
+
+        // Add an "unofficial" child to mess with index computations
+        Element extraChild = Browser.getDocument().createElement("img");
+        element.insertBefore(extraChild, firstChildElement);
+
+        StateNode secondChildNode = createChildNode("second");
+        children.splice(1, 0, secondChildNode);
+        Reactive.flush();
+
+        Element secondChild = element.querySelector("#second");
+        assertNotNull(secondChild);
+
+        NodeList childNodes = element.getChildNodes();
+
+        assertEquals(3, childNodes.length());
+
+        assertSame(extraChild, childNodes.item(0));
+        assertSame(firstChildElement, childNodes.item(1));
+        assertSame(secondChild, childNodes.item(2));
+    }
+
+    public void testRemoveChild() {
+        BasicElementBinder.bind(node, element);
+
+        StateNode childNode = createChildNode(null);
+
+        children.splice(0, 0, childNode);
+
+        Reactive.flush();
+
+        assertEquals(1, element.getChildElementCount());
+        Element childElement = element.getFirstElementChild();
+
+        children.splice(0, 1);
+
+        Reactive.flush();
+
+        assertEquals(0, element.getChildElementCount());
+        assertNull(childElement.getParentElement());
+    }
+
+    public void testRemoveChildPosition() {
+        BasicElementBinder.bind(node, element);
+
+        StateNode childNode = createChildNode("child");
+        children.splice(0, 0, childNode);
+        Reactive.flush();
+
+        Element firstChildElement = element.getFirstElementChild();
+
+        // Add an "unofficial" child to mess with index computations
+        Element extraChild = Browser.getDocument().createElement("img");
+        element.insertBefore(extraChild, firstChildElement);
+
+        children.splice(0, 1);
+        Reactive.flush();
+
+        NodeList childNodes = element.getChildNodes();
+
+        assertEquals(1, childNodes.length());
+
+        assertSame(extraChild, childNodes.item(0));
+        assertNull(firstChildElement.getParentElement());
+    }
+
+    public void testAddRemoveMultiple() {
+        BasicElementBinder.bind(node, element);
+
+        children.splice(0, 0, createChildNode("1"), createChildNode("2"),
+                createChildNode("3"), createChildNode("4"));
+
+        Reactive.flush();
+
+        assertEquals(4, element.getChildElementCount());
+
+        Element child1 = (Element) element.getChildren().item(0);
+        Element child2 = (Element) element.getChildren().item(1);
+        Element child3 = (Element) element.getChildren().item(2);
+        Element child4 = (Element) element.getChildren().item(3);
+
+        assertEquals("1", child1.getId());
+        assertEquals("2", child2.getId());
+        assertEquals("3", child3.getId());
+        assertEquals("4", child4.getId());
+
+        children.splice(1, 2);
+
+        assertEquals(2, element.getChildElementCount());
+
+        assertSame(child1, element.getChildNodes().item(0));
+        assertSame(child4, element.getChildNodes().item(1));
+    }
+
+    public void testAddBeforeSetTag() {
+        BasicElementBinder.bind(node, element);
+
+        StateNode childNode = new StateNode(nextId++, node.getTree());
+
+        children.splice(0, 0, childNode);
+
+        childNode.getMapNamespace(Namespaces.ELEMENT_DATA)
+                .getProperty(Namespaces.TAG).setValue("span");
+
+        // Should not throw
+        Reactive.flush();
+
+        assertEquals(1, element.getChildElementCount());
     }
 }
