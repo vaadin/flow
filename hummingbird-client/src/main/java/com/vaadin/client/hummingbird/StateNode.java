@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.hummingbird;
 
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
@@ -22,11 +23,12 @@ import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.namespace.AbstractNamespace;
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
+import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.dom.Element;
 import elemental.events.EventRemover;
-import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * A client-side representation of a server-side state node.
@@ -139,12 +141,31 @@ public class StateNode {
      * @return a JSON representation
      */
     public JsonObject getDebugJson() {
-        JsonObject object = Json.createObject();
+        JsonObject object = WidgetUtil.createJsonObjectWithoutPrototype();
 
-        forEachNamespace((ns, nsId) -> object.put(String.valueOf(nsId),
-                ns.getDebugJson()));
+        forEachNamespace((ns, nsId) -> {
+            JsonValue json = ns.getDebugJson();
+            if (json != null) {
+                object.put(getNamespaceDebugName(nsId.intValue()), json);
+            }
+        });
 
         return object;
+    }
+
+    private static String getNamespaceDebugName(int id) {
+        switch (id) {
+        case Namespaces.ELEMENT_DATA:
+            return "elementData";
+        case Namespaces.ELEMENT_PROPERTIES:
+            return "elementProperties";
+        case Namespaces.ELEMENT_ATTRIBUTES:
+            return "elementAttributes";
+        case Namespaces.ELEMENT_CHILDREN:
+            return "elementChildren";
+        default:
+            return Integer.toString(id);
+        }
     }
 
     /**
