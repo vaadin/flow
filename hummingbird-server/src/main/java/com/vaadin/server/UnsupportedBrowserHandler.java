@@ -22,10 +22,6 @@ import java.io.Writer;
  * A {@link RequestHandler} that presents an informative page if the browser in
  * use is unsupported. Recognizes Chrome Frame and allow it to be used.
  *
- * <p>
- * This handler is usually added to the application by
- * {@link LegacyCommunicationManager}.
- * </p>
  */
 @SuppressWarnings("serial")
 public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {

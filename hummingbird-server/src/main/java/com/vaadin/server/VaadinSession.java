@@ -19,7 +19,6 @@ package com.vaadin.server;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -46,15 +45,9 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import com.vaadin.data.util.converter.Converter;
-import com.vaadin.data.util.converter.ConverterFactory;
-import com.vaadin.data.util.converter.DefaultConverterFactory;
-import com.vaadin.event.EventRouter;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.ui.AbstractField;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Contains everything that Vaadin needs to store for a specific user. This is
@@ -199,13 +192,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     // javadoc in UI should be updated if this value is changed
     public static final String UI_PARAMETER = "UI";
 
-    private static final Method BOOTSTRAP_FRAGMENT_METHOD = ReflectTools
-            .findMethod(BootstrapListener.class, "modifyBootstrapFragment",
-                    BootstrapFragmentResponse.class);
-    private static final Method BOOTSTRAP_PAGE_METHOD = ReflectTools.findMethod(
-            BootstrapListener.class, "modifyBootstrapPage",
-            BootstrapPageResponse.class);
-
     /**
      * Configuration for the session.
      */
@@ -221,13 +207,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * unhandled.
      */
     private ErrorHandler errorHandler = new DefaultErrorHandler();
-
-    /**
-     * The converter factory that is used to provide default converters for the
-     * session.
-     */
-    private ConverterFactory converterFactory = new DefaultConverterFactory();
-
     private LinkedList<RequestHandler> requestHandlers = new LinkedList<RequestHandler>();
 
     private int nextUIId = 0;
@@ -235,11 +214,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final Map<String, Integer> embedIdMap = new HashMap<String, Integer>();
 
-    private final EventRouter eventRouter = new EventRouter();
-
     protected WebBrowser browser = new WebBrowser();
-
-    private LegacyCommunicationManager communicationManager;
 
     private long cumulativeRequestDuration = 0;
 
@@ -404,18 +379,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * @return
-     *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    public LegacyCommunicationManager getCommunicationManager() {
-        assert hasLock();
-        return communicationManager;
-    }
-
-    /**
      * Retrieves all {@link VaadinSession}s which are stored in the given HTTP
      * session
      *
@@ -449,16 +412,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 session) : "Cannot change the lock from one instance to another";
         assert hasLock(service, session);
         lock = service.getSessionLock(session);
-    }
-
-    public void setCommunicationManager(
-            LegacyCommunicationManager communicationManager) {
-        assert hasLock();
-        if (communicationManager == null) {
-            throw new IllegalArgumentException("Can not set to null");
-        }
-        assert this.communicationManager == null : "Communication manager can only be set once";
-        this.communicationManager = communicationManager;
     }
 
     public void setConfiguration(DeploymentConfiguration configuration) {
@@ -529,45 +482,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public void setErrorHandler(ErrorHandler errorHandler) {
         assert hasLock();
         this.errorHandler = errorHandler;
-    }
-
-    /**
-     * Gets the {@link ConverterFactory} used to locate a suitable
-     * {@link Converter} for fields in the session.
-     *
-     * See {@link #setConverterFactory(ConverterFactory)} for more details
-     *
-     * @return The converter factory used in the session
-     */
-    public ConverterFactory getConverterFactory() {
-        assert hasLock();
-        return converterFactory;
-    }
-
-    /**
-     * Sets the {@link ConverterFactory} used to locate a suitable
-     * {@link Converter} for fields in the session.
-     * <p>
-     * The {@link ConverterFactory} is used to find a suitable converter when
-     * binding data to a UI component and the data type does not match the UI
-     * component type, e.g. binding a Double to a TextField (which is based on a
-     * String).
-     * </p>
-     * <p>
-     * The {@link Converter} for an individual field can be overridden using
-     * {@link AbstractField#setConverter(Converter)} and for individual property
-     * ids in a {@link Table} using
-     * {@link Table#setConverter(Object, Converter)}.
-     * </p>
-     * <p>
-     * The converter factory must never be set to null.
-     *
-     * @param converterFactory
-     *            The converter factory used in the session
-     */
-    public void setConverterFactory(ConverterFactory converterFactory) {
-        assert hasLock();
-        this.converterFactory = converterFactory;
     }
 
     /**
@@ -682,26 +596,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return Collections.unmodifiableCollection(uIs.values());
     }
 
-    private int connectorIdSequence = 0;
-
     private final String csrfToken = UUID.randomUUID().toString();
-
-    /**
-     * Generate an id for the given Connector. Connectors must not call this
-     * method more than once, the first time they need an id.
-     *
-     * @param connector
-     *            A connector that has not yet been assigned an id.
-     * @return A new id for the connector
-     *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    public String createConnectorId(ClientConnector connector) {
-        assert hasLock();
-        return String.valueOf(connectorIdSequence++);
-    }
 
     /**
      * Returns a UI with the given id.
@@ -740,60 +635,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             WrappedSession session) {
         ReentrantLock l = (ReentrantLock) service.getSessionLock(session);
         return l.isHeldByCurrentThread();
-    }
-
-    /**
-     * Adds a listener that will be invoked when the bootstrap HTML is about to
-     * be generated. This can be used to modify the contents of the HTML that
-     * loads the Vaadin application in the browser and the HTTP headers that are
-     * included in the response serving the HTML.
-     *
-     * @see BootstrapListener#modifyBootstrapFragment(BootstrapFragmentResponse)
-     * @see BootstrapListener#modifyBootstrapPage(BootstrapPageResponse)
-     *
-     * @param listener
-     *            the bootstrap listener to add
-     */
-    public void addBootstrapListener(BootstrapListener listener) {
-        assert hasLock();
-        eventRouter.addListener(BootstrapFragmentResponse.class, listener,
-                BOOTSTRAP_FRAGMENT_METHOD);
-        eventRouter.addListener(BootstrapPageResponse.class, listener,
-                BOOTSTRAP_PAGE_METHOD);
-    }
-
-    /**
-     * Remove a bootstrap listener that was previously added.
-     *
-     * @see #addBootstrapListener(BootstrapListener)
-     *
-     * @param listener
-     *            the bootstrap listener to remove
-     */
-    public void removeBootstrapListener(BootstrapListener listener) {
-        assert hasLock();
-        eventRouter.removeListener(BootstrapFragmentResponse.class, listener,
-                BOOTSTRAP_FRAGMENT_METHOD);
-        eventRouter.removeListener(BootstrapPageResponse.class, listener,
-                BOOTSTRAP_PAGE_METHOD);
-    }
-
-    /**
-     * Fires a bootstrap event to all registered listeners. There are currently
-     * two supported events, both inheriting from {@link BootstrapResponse}:
-     * {@link BootstrapFragmentResponse} and {@link BootstrapPageResponse}.
-     *
-     * @param response
-     *            the bootstrap response event for which listeners should be
-     *            fired
-     *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    public void modifyBootstrapResponse(BootstrapResponse response) {
-        assert hasLock();
-        eventRouter.fireEvent(response);
     }
 
     /**

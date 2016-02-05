@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Locale;
 
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
@@ -194,17 +193,8 @@ public class ServletPortletHelper implements Serializable {
      * <li>{@link Locale#getDefault()}</li>
      * </ol>
      */
-    public static Locale findLocale(Component component, VaadinSession session,
+    public static Locale findLocale(VaadinSession session,
             VaadinRequest request) {
-        if (component == null) {
-            component = UI.getCurrent();
-        }
-        if (component != null) {
-            Locale locale = component.getLocale();
-            if (locale != null) {
-                return locale;
-            }
-        }
 
         if (session == null) {
             session = VaadinSession.getCurrent();

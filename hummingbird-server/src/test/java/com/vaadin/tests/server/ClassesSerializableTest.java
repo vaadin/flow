@@ -28,62 +28,32 @@ public class ClassesSerializableTest extends TestCase {
 
     private static String[] BASE_PACKAGES = { "com.vaadin" };
 
-    private static String[] EXCLUDED_PATTERNS = { "com\\.vaadin\\.demo\\..*", //
-            "com\\.vaadin\\.external\\.org\\.apache\\.commons\\.fileupload\\..*", //
-            "com\\.vaadin\\.launcher\\..*", //
-            "com\\.vaadin\\.client\\..*", //
-            "com\\.vaadin\\.server\\.widgetsetutils\\..*", //
-            "com\\.vaadin\\.server\\.themeutils\\..*", //
+    private static String[] EXCLUDED_PATTERNS = { //
             "com\\.vaadin\\.tests\\..*", // exclude automated tests
-            "com\\.vaadin\\.tools\\..*", //
-            "com\\.vaadin\\.ui\\.themes\\..*", //
             // exact class level filtering
-            "com\\.vaadin\\.event\\.FieldEvents", //
-            "com\\.vaadin\\.event\\.LayoutEvents", //
-            "com\\.vaadin\\.event\\.MouseEvents", //
             "com\\.vaadin\\.event\\.UIEvents", //
-            "com\\.vaadin\\.server\\.VaadinPortlet", //
             "com\\.vaadin\\.server\\.MockServletConfig", //
             "com\\.vaadin\\.server\\.MockServletContext", //
             "com\\.vaadin\\.server\\.Constants", //
             "com\\.vaadin\\.server\\.VaadinServiceClassLoaderUtil", //
             "com\\.vaadin\\.server\\.VaadinServiceClassLoaderUtil\\$GetClassLoaderPrivilegedAction", //
-            "com\\.vaadin\\.server\\.communication\\.FileUploadHandler\\$SimpleMultiPartInputStream", //
             "com\\.vaadin\\.server\\.communication\\.PushRequestHandler.*",
             "com\\.vaadin\\.server\\.communication\\.PushHandler.*", // PushHandler
-            "com\\.vaadin\\.server\\.communication\\.DateSerializer", //
-            "com\\.vaadin\\.server\\.communication\\.JSONSerializer", //
             // and its inner classes do not need to be serializable
-            "com\\.vaadin\\.util\\.SerializerHelper", // fully static
             "com\\.vaadin\\.util\\.JsonStream.*", // fully static
             "com\\.vaadin\\.hummingbird\\.JsonCodec", // fully static
             "com\\.vaadin\\.hummingbird\\.shared\\.Namespaces", // fully static
             "com\\.vaadin\\.hummingbird\\.namespace\\.NamespaceRegistry.*", // static
             // class level filtering, also affecting nested classes and
             // interfaces
-            "com\\.vaadin\\.server\\.LegacyCommunicationManager.*", //
-            "com\\.vaadin\\.buildhelpers.*", //
             "com\\.vaadin\\.util\\.ReflectTools.*", //
-            "com\\.vaadin\\.data\\.util\\.ReflectTools.*", //
-            "com\\.vaadin\\.data\\.util.BeanItemContainerGenerator.*",
-            "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.connection\\.MockInitialContextFactory",
-            "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.DataGenerator",
-            "com\\.vaadin\\.data\\.util\\.sqlcontainer\\.FreeformQueryUtil",
-            "com\\.vaadin\\.sass.*", //
-            "com\\.vaadin\\.testbench.*", //
             "com\\.vaadin\\.util\\.CurrentInstance\\$1", //
-            "com\\.vaadin\\.server\\.AbstractClientConnector\\$1", //
-            "com\\.vaadin\\.server\\.AbstractClientConnector\\$1\\$1", //
-            "com\\.vaadin\\.server\\.JsonCodec\\$1", //
             "com\\.vaadin\\.server\\.communication\\.PushConnection", //
             "com\\.vaadin\\.server\\.communication\\.AtmospherePushConnection.*", //
             "com\\.vaadin\\.util\\.ConnectorHelper", //
             "com\\.vaadin\\.server\\.VaadinSession\\$FutureAccess", //
-            "com\\.vaadin\\.external\\..*", //
-            "com\\.vaadin\\.util\\.WeakValueMap.*", //
-            "com\\.vaadin\\.themes\\.valoutil\\.BodyStyleName", //
+            "com\\.vaadin\\.external\\.org\\.slf4j\\..*", //
             "com\\.vaadin\\.server\\.communication\\.JSR356WebsocketInitializer.*", //
-            "com\\.vaadin\\.screenshotbrowser\\.ScreenshotBrowser.*", //
     };
 
     /**

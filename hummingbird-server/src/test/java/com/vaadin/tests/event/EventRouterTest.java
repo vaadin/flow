@@ -21,11 +21,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.event.EventRouter;
-import com.vaadin.server.ClientConnector.AttachEvent;
-import com.vaadin.server.ClientConnector.AttachListener;
+import com.vaadin.event.UIEvents.PollEvent;
+import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandler;
-import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 
 /**
  * Test EventRouter and related error handling.
@@ -33,38 +33,37 @@ import com.vaadin.ui.Component;
 public class EventRouterTest {
 
     private EventRouter router;
-    private Component component;
+    private UI ui;
     private ErrorHandler errorHandler;
-    private AttachListener listener;
+    private PollListener listener;
 
     @Before
     public void createMocks() {
         router = new EventRouter();
-        component = EasyMock.createNiceMock(Component.class);
+        ui = EasyMock.createNiceMock(UI.class);
         errorHandler = EasyMock.createMock(ErrorHandler.class);
-        listener = EasyMock.createMock(AttachListener.class);
-        router.addListener(AttachEvent.class, listener,
-                AttachListener.attachMethod);
+        listener = EasyMock.createMock(PollListener.class);
+        router.addListener(PollEvent.class, listener, PollListener.POLL_METHOD);
     }
 
     @Test
     public void fireEvent_noException_eventReceived() {
-        listener.attach(EasyMock.<AttachEvent> anyObject());
+        listener.poll(EasyMock.<PollEvent> anyObject());
 
-        EasyMock.replay(component, listener, errorHandler);
-        router.fireEvent(new AttachEvent(component), errorHandler);
+        EasyMock.replay(ui, listener, errorHandler);
+        router.fireEvent(new PollEvent(ui), errorHandler);
         EasyMock.verify(listener, errorHandler);
     }
 
     @Test
     public void fireEvent_exceptionFromListenerAndNoHandler_exceptionPropagated() {
-        listener.attach(EasyMock.<AttachEvent> anyObject());
+        listener.poll(EasyMock.<PollEvent> anyObject());
         EasyMock.expectLastCall()
                 .andThrow(new RuntimeException("listener failed"));
 
-        EasyMock.replay(component, listener);
+        EasyMock.replay(ui, listener);
         try {
-            router.fireEvent(new AttachEvent(component));
+            router.fireEvent(new PollEvent(ui));
             Assert.fail("Did not receive expected exception from listener");
         } catch (RuntimeException e) {
             // e is a ListenerMethod@MethodException
@@ -75,31 +74,32 @@ public class EventRouterTest {
 
     @Test
     public void fireEvent_exceptionFromListener_errorHandlerCalled() {
-        listener.attach(EasyMock.<AttachEvent> anyObject());
+        listener.poll(EasyMock.<PollEvent> anyObject());
         EasyMock.expectLastCall()
                 .andThrow(new RuntimeException("listener failed"));
         errorHandler.error(EasyMock.<ErrorEvent> anyObject());
 
-        EasyMock.replay(component, listener, errorHandler);
-        router.fireEvent(new AttachEvent(component), errorHandler);
+        EasyMock.replay(ui, listener, errorHandler);
+        router.fireEvent(new PollEvent(ui), errorHandler);
         EasyMock.verify(listener, errorHandler);
     }
 
     @Test
     public void fireEvent_multipleListenersAndException_errorHandlerCalled() {
-        AttachListener listener2 = EasyMock.createMock(AttachListener.class);
-        router.addListener(AttachEvent.class, listener2,
-                AttachListener.attachMethod);
+        PollListener listener2 = EasyMock.createMock(PollListener.class);
+        router.addListener(PollEvent.class, listener2,
+                PollListener.POLL_METHOD);
 
-        listener.attach(EasyMock.<AttachEvent> anyObject());
+        listener.poll(EasyMock.<PollEvent> anyObject());
         EasyMock.expectLastCall()
                 .andThrow(new RuntimeException("listener failed"));
         errorHandler.error(EasyMock.<ErrorEvent> anyObject());
         // second listener should be called despite an error in the first
-        listener2.attach(EasyMock.<AttachEvent> anyObject());
+        listener2.poll(EasyMock.<PollEvent> anyObject());
 
-        EasyMock.replay(component, listener, listener2, errorHandler);
-        router.fireEvent(new AttachEvent(component), errorHandler);
+        EasyMock.replay(ui, listener, listener2, errorHandler);
+        router.fireEvent(new PollEvent(ui), errorHandler);
         EasyMock.verify(listener, listener2, errorHandler);
     }
+
 }

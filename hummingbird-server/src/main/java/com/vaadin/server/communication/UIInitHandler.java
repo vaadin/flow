@@ -68,8 +68,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
 
             UI uI = getBrowserDetailsUI(request, session);
 
-            session.getCommunicationManager().repaintAll(uI);
-
             JsonObject params = Json.createObject();
             params.put(ApplicationConstants.UI_ID_PARAMETER, uI.getUIId());
             String initialUIDL = getInitialUidl(request, uI);

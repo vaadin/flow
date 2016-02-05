@@ -366,7 +366,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
             if (request.getRequestedSessionId() == null) {
                 // User has cookies disabled
                 SystemMessages systemMessages = getService().getSystemMessages(
-                        ServletPortletHelper.findLocale(null, null, request),
+                        ServletPortletHelper.findLocale(null, request),
                         request);
                 getService().writeStringResponse(response,
                         JsonConstants.JSON_CONTENT_TYPE,
