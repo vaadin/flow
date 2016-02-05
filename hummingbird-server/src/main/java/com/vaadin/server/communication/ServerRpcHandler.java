@@ -19,29 +19,17 @@ package com.vaadin.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
+import java.security.GeneralSecurityException;
 import java.util.logging.Logger;
 
-import com.vaadin.server.ClientConnector;
 import com.vaadin.server.Constants;
-import com.vaadin.server.LegacyCommunicationManager;
-import com.vaadin.server.LegacyCommunicationManager.InvalidUIDLSecurityKeyException;
-import com.vaadin.server.ServerRpcMethodInvocation;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.shared.Connector;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.communication.MethodInvocation;
-import com.vaadin.ui.ConnectorTracker;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonArray;
-import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
@@ -193,6 +181,21 @@ public class ServerRpcHandler implements Serializable {
     private static final int MAX_BUFFER_SIZE = 64 * 1024;
 
     /**
+     * Exception thrown then the security key sent by the client does not match
+     * the expected one
+     *
+     * @author Vaadin
+     * @since
+     */
+    public static class InvalidUIDLSecurityKeyException
+            extends GeneralSecurityException {
+
+        public InvalidUIDLSecurityKeyException(String message) {
+            super(message);
+        }
+    }
+
+    /**
      * Reads JSON containing zero or more serialized RPC calls (including legacy
      * variable changes) and executes the calls.
      *
@@ -241,8 +244,6 @@ public class ServerRpcHandler implements Serializable {
             // did not reach the client. When the client re-sends the message,
             // it would only get an empty response (because the dirty flags have
             // been cleared on the server) and would be out of sync
-            ui.getSession().getCommunicationManager().repaintAll(ui);
-
             if (rpcRequest.getClientToServerId() < expectedId) {
                 // Just a duplicate message due to a bad connection or similar
                 // It has already been handled by the server so it is safe to
@@ -264,11 +265,8 @@ public class ServerRpcHandler implements Serializable {
                     rpcRequest.getRpcInvocationsData());
         }
 
-        ui.getConnectorTracker()
-                .cleanConcurrentlyRemovedConnectorIds(rpcRequest.getSyncId());
-
         if (rpcRequest.isResynchronize()) {
-            ui.getSession().getCommunicationManager().repaintAll(ui);
+            // TODO
         }
 
     }
@@ -316,135 +314,8 @@ public class ServerRpcHandler implements Serializable {
      */
     private void handleInvocations(UI uI, int lastSyncIdSeenByClient,
             JsonArray invocationsData) {
-        // TODO PUSH Refactor so that this is not needed
-        LegacyCommunicationManager manager = uI.getSession()
-                .getCommunicationManager();
+        // TODO
 
-        try {
-            ConnectorTracker connectorTracker = uI.getConnectorTracker();
-
-            Set<Connector> enabledConnectors = new HashSet<Connector>();
-
-            List<ServerRpcMethodInvocation> invocations = parseInvocations(
-                    uI.getConnectorTracker(), invocationsData,
-                    lastSyncIdSeenByClient);
-            for (MethodInvocation invocation : invocations) {
-                final ClientConnector connector = connectorTracker
-                        .getConnector(invocation.getConnectorId());
-
-                if (connector != null && connector.isConnectorEnabled()) {
-                    enabledConnectors.add(connector);
-                }
-            }
-
-            for (int i = 0; i < invocations.size(); i++) {
-                MethodInvocation invocation = invocations.get(i);
-
-                final ClientConnector connector = connectorTracker
-                        .getConnector(invocation.getConnectorId());
-                if (connector == null) {
-                    getLogger().log(Level.WARNING,
-                            "Received RPC call for unknown connector with id {0} (tried to invoke {1}.{2})",
-                            new Object[] { invocation.getConnectorId(),
-                                    invocation.getInterfaceName(),
-                                    invocation.getMethodName() });
-                    continue;
-                }
-
-                if (!enabledConnectors.contains(connector)) {
-
-                    // Connector is disabled, log a warning and move to the next
-                    getLogger().warning(
-                            getIgnoredDisabledError("RPC call", connector));
-                    continue;
-                }
-                // DragAndDropService has null UI
-                if (connector.getUI() != null
-                        && connector.getUI().isClosing()) {
-                    String msg = "Ignoring RPC call for connector "
-                            + connector.getClass().getName();
-                    msg += " in closed UI";
-                    getLogger().warning(msg);
-                    continue;
-
-                }
-
-                if (invocation instanceof ServerRpcMethodInvocation) {
-                    try {
-                        connector.handleRpc(invocation);
-                    } catch (Exception e) {
-                        manager.handleConnectorRelatedException(connector, e);
-                    }
-                }
-            }
-        } catch (JsonException e) {
-            getLogger().warning("Unable to parse RPC call from the client: "
-                    + e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Parse JSON from the client into a list of MethodInvocation instances.
-     *
-     * @param connectorTracker
-     *            The ConnectorTracker used to lookup connectors
-     * @param invocationsJson
-     *            JSON containing all information needed to execute all
-     *            requested RPC calls.
-     * @param lastSyncIdSeenByClient
-     *            the most recent sync id the client has seen at the time the
-     *            request was sent
-     * @return list of MethodInvocation to perform
-     */
-    private List<ServerRpcMethodInvocation> parseInvocations(
-            ConnectorTracker connectorTracker, JsonArray invocationsJson,
-            int lastSyncIdSeenByClient) {
-        int invocationCount = invocationsJson.length();
-        ArrayList<ServerRpcMethodInvocation> invocations = new ArrayList<ServerRpcMethodInvocation>(
-                invocationCount);
-
-        MethodInvocation previousInvocation = null;
-        // parse JSON to MethodInvocations
-        for (int i = 0; i < invocationCount; ++i) {
-
-            JsonArray invocationJson = invocationsJson.getArray(i);
-
-            ServerRpcMethodInvocation invocation = parseInvocation(
-                    invocationJson, previousInvocation, connectorTracker,
-                    lastSyncIdSeenByClient);
-            if (invocation != null) {
-                // Can be null if the invocation was a legacy invocation and it
-                // was merged with the previous one or if the invocation was
-                // rejected because of an error.
-                invocations.add(invocation);
-                previousInvocation = invocation;
-            }
-        }
-        return invocations;
-    }
-
-    private ServerRpcMethodInvocation parseInvocation(JsonArray invocationJson,
-            MethodInvocation previousInvocation,
-            ConnectorTracker connectorTracker, long lastSyncIdSeenByClient) {
-        String connectorId = invocationJson.getString(0);
-        String interfaceName = invocationJson.getString(1);
-        String methodName = invocationJson.getString(2);
-
-        JsonArray parametersJson = invocationJson.getArray(3);
-
-        return parseServerRpcInvocation(connectorId, interfaceName, methodName,
-                parametersJson, connectorTracker);
-
-    }
-
-    private ServerRpcMethodInvocation parseServerRpcInvocation(
-            String connectorId, String interfaceName, String methodName,
-            JsonArray parametersJson, ConnectorTracker connectorTracker)
-                    throws JsonException {
-        ServerRpcMethodInvocation invocation = new ServerRpcMethodInvocation(
-                connectorId, interfaceName, methodName, parametersJson);
-        return invocation;
     }
 
     protected String getMessage(Reader reader) throws IOException {
@@ -467,19 +338,4 @@ public class ServerRpcHandler implements Serializable {
         return Logger.getLogger(ServerRpcHandler.class.getName());
     }
 
-    /**
-     * Generates an error message when the client is trying to to something
-     * ('what') with a connector which is disabled or invisible.
-     *
-     * @since 7.1.8
-     * @param connector
-     *            the connector which is disabled (or invisible)
-     * @return an error message
-     */
-    public static String getIgnoredDisabledError(String what,
-            ClientConnector connector) {
-        String msg = "Ignoring " + what + " for disabled connector "
-                + connector.getClass().getName();
-        return msg;
-    }
 }

@@ -15,13 +15,7 @@
  */
 package com.vaadin.server;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -31,18 +25,13 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import org.easymock.EasyMock;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.vaadin.hummingbird.testcategory.SlowTests;
-import com.vaadin.server.ClientConnector.DetachEvent;
-import com.vaadin.server.ClientConnector.DetachListener;
 import com.vaadin.server.communication.UIInitHandler;
-import com.vaadin.ui.AbstractComponent;
 import com.vaadin.ui.UI;
-import com.vaadin.util.CurrentInstance;
 
 public class VaadinSessionTest {
 
@@ -176,61 +165,6 @@ public class VaadinSessionTest {
     }
 
     @Test
-    public void threadLocalsAfterUnderlyingSessionTimeout()
-            throws InterruptedException {
-
-        final AtomicBoolean detachCalled = new AtomicBoolean(false);
-        ui.addDetachListener(new DetachListener() {
-            @Override
-            public void detach(DetachEvent event) {
-                detachCalled.set(true);
-                Assert.assertEquals(ui, UI.getCurrent());
-                Assert.assertEquals(ui.getPage(), Page.getCurrent());
-                Assert.assertEquals(session, VaadinSession.getCurrent());
-                Assert.assertEquals(mockService, VaadinService.getCurrent());
-                Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
-            }
-        });
-
-        session.valueUnbound(
-                EasyMock.createMock(HttpSessionBindingEvent.class));
-        mockService.runPendingAccessTasks(session); // as soon as we changed
-                                                    // session.accessSynchronously
-                                                    // to session.access in
-                                                    // VaadinService.fireSessionDestroy,
-                                                    // we need to run the
-                                                    // pending task ourselves
-        Assert.assertTrue(detachCalled.get());
-    }
-
-    @Test
-    @Category(SlowTests.class)
-    public void threadLocalsAfterSessionDestroy() throws InterruptedException {
-        final AtomicBoolean detachCalled = new AtomicBoolean(false);
-        ui.addDetachListener(new DetachListener() {
-            @Override
-            public void detach(DetachEvent event) {
-                detachCalled.set(true);
-                Assert.assertEquals(ui, UI.getCurrent());
-                Assert.assertEquals(ui.getPage(), Page.getCurrent());
-                Assert.assertEquals(session, VaadinSession.getCurrent());
-                Assert.assertEquals(mockService, VaadinService.getCurrent());
-                Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
-            }
-        });
-        CurrentInstance.clearAll();
-        session.close();
-        mockService.cleanupSession(session);
-        mockService.runPendingAccessTasks(session); // as soon as we changed
-                                                    // session.accessSynchronously
-                                                    // to session.access in
-                                                    // VaadinService.fireSessionDestroy,
-                                                    // we need to run the
-                                                    // pending task ourselves
-        Assert.assertTrue(detachCalled.get());
-    }
-
-    @Test
     public void testValueUnbound() {
         MockVaadinSession vaadinSession = new MockVaadinSession(mockService);
 
@@ -252,76 +186,11 @@ public class VaadinSessionTest {
     // Can't define as an anonymous class since it would have a reference to
     // VaadinSessionTest.this which isn't serializable
     private static class MockPageUI extends UI {
-        Page page = new Page(this, getState(false).pageState) {
-            @Override
-            public void init(VaadinRequest request) {
-            }
-        };
 
         @Override
         protected void init(VaadinRequest request) {
         }
 
-        @Override
-        public Page getPage() {
-            return page;
-        }
     }
 
-    private static class SerializationTestLabel extends AbstractComponent {
-        private transient VaadinSession session = VaadinSession.getCurrent();
-
-        private void readObject(ObjectInputStream in)
-                throws IOException, ClassNotFoundException {
-            in.defaultReadObject();
-            session = VaadinSession.getCurrent();
-        }
-    }
-
-    @Test
-    @Category(SlowTests.class)
-    public void threadLocalsWhenDeserializing() throws Exception {
-        VaadinSession.setCurrent(session);
-        session.lock();
-        SerializationTestLabel label = new SerializationTestLabel();
-        Assert.assertEquals("Session should be set when instance is created",
-                session, label.session);
-
-        ui.setContent(label);
-        int uiId = ui.getUIId();
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream out = new ObjectOutputStream(bos);
-        out.writeObject(session);
-        out.close();
-
-        session.unlock();
-
-        CurrentInstance.clearAll();
-
-        ObjectInputStream in = new ObjectInputStream(
-                new ByteArrayInputStream(bos.toByteArray()));
-
-        VaadinSession deserializedSession = (VaadinSession) in.readObject();
-
-        Assert.assertNull("Current session shouldn't leak from deserialisation",
-                VaadinSession.getCurrent());
-
-        Assert.assertNotSame("Should get a new session", session,
-                deserializedSession);
-
-        // Restore http session and service instance so the session can be
-        // locked
-        deserializedSession.refreshTransients(mockWrappedSession, mockService);
-        deserializedSession.lock();
-
-        UI deserializedUi = deserializedSession.getUIById(uiId);
-        SerializationTestLabel deserializedLabel = (SerializationTestLabel) deserializedUi
-                .getContent();
-
-        Assert.assertEquals(
-                "Current session should be available in SerializationTestLabel.readObject",
-                deserializedSession, deserializedLabel.session);
-        deserializedSession.unlock();
-    }
 }
