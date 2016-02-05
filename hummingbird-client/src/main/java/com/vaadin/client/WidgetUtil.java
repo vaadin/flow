@@ -22,6 +22,7 @@ import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
 
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -237,5 +238,19 @@ public class WidgetUtil {
     public static native void deleteJsProperty(Object object, String name)
     /*-{
       delete object[name];
+    }-*/;
+
+    /**
+     * Creates a new {@link JsonObject} without any JavaScript prototype at all.
+     * Not having any prototype is only relevant for objects that are displayed
+     * through the browser console.
+     *
+     * @since
+     *
+     * @return a new json object
+     */
+    public static native JsonObject createJsonObjectWithoutPrototype()
+    /*-{
+      return $wnd.Object.create(null);
     }-*/;
 }

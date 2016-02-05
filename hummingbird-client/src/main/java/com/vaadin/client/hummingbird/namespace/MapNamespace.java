@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.hummingbird.namespace;
 
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
@@ -25,7 +26,6 @@ import com.vaadin.client.hummingbird.reactive.ReactiveEventRouter;
 import com.vaadin.client.hummingbird.reactive.ReactiveValue;
 
 import elemental.events.EventRemover;
-import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -105,9 +105,17 @@ public class MapNamespace extends AbstractNamespace implements ReactiveValue {
 
     @Override
     public JsonValue getDebugJson() {
-        JsonObject json = Json.createObject();
+        JsonObject json = WidgetUtil.createJsonObjectWithoutPrototype();
 
-        properties.forEach((p, n) -> json.put(n, getAsDebugJson(p.getValue())));
+        properties.forEach((p, n) -> {
+            if (p.hasValue()) {
+                json.put(n, getAsDebugJson(p.getValue()));
+            }
+        });
+
+        if (json.keys().length == 0) {
+            return null;
+        }
 
         return json;
     }

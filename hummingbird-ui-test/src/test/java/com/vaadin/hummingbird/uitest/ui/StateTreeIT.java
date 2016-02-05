@@ -10,7 +10,7 @@ public class StateTreeIT extends PhantomJSTest {
     @Test
     public void ensureDomContainsSomething() throws InterruptedException {
         open();
-        Assert.assertTrue(getDriver().getPageSource().contains("State tree"));
+        Assert.assertTrue(getDriver().getPageSource().contains("Hello world"));
     }
 
 }
