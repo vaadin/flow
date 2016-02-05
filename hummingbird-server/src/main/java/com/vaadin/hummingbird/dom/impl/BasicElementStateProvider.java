@@ -23,6 +23,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 
 /**
@@ -44,7 +45,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @SuppressWarnings("unchecked")
     private static Class<? extends Namespace>[] namespaces = new Class[] {
-            ElementDataNamespace.class, ElementAttributeNamespace.class };
+            ElementDataNamespace.class, ElementAttributeNamespace.class,
+            ElementPropertiesNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
