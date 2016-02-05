@@ -119,8 +119,7 @@ public class UidlWriter implements Serializable {
         try {
 
             int syncId = service.getDeploymentConfiguration()
-                    .isSyncIdCheckEnabled()
-                            ? uiConnectorTracker.getCurrentSyncId() : -1;
+                    .isSyncIdCheckEnabled() ? ui.getServerSyncId() : -1;
             response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
             if (repaintAll) {
                 response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
@@ -227,8 +226,13 @@ public class UidlWriter implements Serializable {
             return response;
         } finally {
             uiConnectorTracker.setWritingResponse(false);
+            // Bump sync id when done writing - the client is not expected to
+            // know about anything happening after this moment.
+            ui.incrementServerId();
+
             uiConnectorTracker.cleanConnectorMap();
         }
+
     }
 
     /**

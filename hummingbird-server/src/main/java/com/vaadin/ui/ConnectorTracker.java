@@ -82,12 +82,10 @@ public class ConnectorTracker implements Serializable {
 
     private Map<StreamVariable, String> streamVariableToSeckey;
 
-    private int currentSyncId = 0;
-
     /**
      * Map to track on which syncId each connector was removed.
      *
-     * @see #getCurrentSyncId()
+     * @see UI#getServerSyncId()
      * @see #cleanConcurrentlyRemovedConnectorIds(long)
      */
     private TreeMap<Integer, Set<String>> syncIdToUnregisteredConnectorIds = new TreeMap<Integer, Set<String>>();
@@ -179,10 +177,10 @@ public class ConnectorTracker implements Serializable {
         }
 
         Set<String> unregisteredConnectorIds = syncIdToUnregisteredConnectorIds
-                .get(currentSyncId);
+                .get(uI.getServerSyncId());
         if (unregisteredConnectorIds == null) {
             unregisteredConnectorIds = new HashSet<String>();
-            syncIdToUnregisteredConnectorIds.put(currentSyncId,
+            syncIdToUnregisteredConnectorIds.put(uI.getServerSyncId(),
                     unregisteredConnectorIds);
         }
         unregisteredConnectorIds.add(connectorId);
@@ -816,29 +814,6 @@ public class ConnectorTracker implements Serializable {
         }
 
         return false;
-    }
-
-    /**
-     * Gets the most recently generated server sync id.
-     * <p>
-     * The sync id is incremented by one whenever a new response is being
-     * written. This id is then sent over to the client. The client then adds
-     * the most recent sync id to each communication packet it sends back to the
-     * server. This way, the server knows at what state the client is when the
-     * packet is sent. If the state has changed on the server side since that,
-     * the server can try to adjust the way it handles the actions from the
-     * client side.
-     * <p>
-     * The sync id value <code>-1</code> is ignored to facilitate testing with
-     * pre-recorded requests.
-     *
-     * @see #setWritingResponse(boolean)
-     * @see #connectorWasPresentAsRequestWasSent(String, long)
-     * @since 7.2
-     * @return the current sync id
-     */
-    public int getCurrentSyncId() {
-        return currentSyncId;
     }
 
     /**
