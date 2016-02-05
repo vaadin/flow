@@ -16,14 +16,21 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.namespace.ListNamespace;
+import com.vaadin.client.hummingbird.namespace.ListSpliceEvent;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
+import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.Namespaces;
 
+import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.dom.Node;
+import elemental.dom.NodeList;
 import elemental.events.EventRemover;
 
 /**
@@ -43,18 +50,18 @@ public class BasicElementBinder {
     private final JsMap<String, Computation> attributeBindings = JsCollections
             .map();
     private final EventRemover unregisterListener;
+    private EventRemover childrenListener;
 
     private final Element element;
     private final StateNode node;
 
     private BasicElementBinder(StateNode node, Element element) {
+        assert node.getElement() == null;
+
         this.node = node;
         this.element = element;
 
-        MapNamespace elementData = node
-                .getMapNamespace(Namespaces.ELEMENT_DATA);
-
-        Object nsTag = elementData.getProperty(Namespaces.TAG).getValue();
+        String nsTag = getTag(node);
         assert nsTag == null
                 || element.getTagName().toLowerCase().equals(nsTag);
 
@@ -64,7 +71,16 @@ public class BasicElementBinder {
         bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
                 this::updateAttribute);
 
+        bindChildren();
+
         unregisterListener = node.addUnregisterListener(e -> remove());
+
+        node.setElement(element);
+    }
+
+    private static String getTag(StateNode node) {
+        return (String) node.getMapNamespace(Namespaces.ELEMENT_DATA)
+                .getProperty(Namespaces.TAG).getValue();
     }
 
     private void bindMap(int namespaceId, JsMap<String, Computation> bindings,
@@ -117,6 +133,80 @@ public class BasicElementBinder {
         }
     }
 
+    private void bindChildren() {
+        ListNamespace children = node
+                .getListNamespace(Namespaces.ELEMENT_CHILDREN);
+
+        for (int i = 0; i < children.length(); i++) {
+            StateNode childNode = (StateNode) children.get(i);
+
+            Element child = createElement(childNode);
+
+            element.appendChild(child);
+        }
+
+        childrenListener = children.addSpliceListener(e -> {
+            /*
+             * Handle lazily so we can create the children we need to insert.
+             * The change that gives a child node an element tag name might not
+             * yet have been applied at this point.
+             */
+            Reactive.addFlushListener(() -> handleChildrenSplice(e));
+        });
+    }
+
+    private void handleChildrenSplice(ListSpliceEvent event) {
+        JsArray<Object> remove = event.getRemove();
+        for (int i = 0; i < remove.length(); i++) {
+            StateNode childNode = (StateNode) remove.get(i);
+            Element child = childNode.getElement();
+
+            assert child != null : "Can't find element to remove";
+
+            assert child
+                    .getParentElement() == element : "Invalid element parent";
+
+            element.removeChild(child);
+        }
+
+        Object[] add = event.getAdd();
+        if (add.length != 0) {
+            int insertIndex = event.getIndex();
+            NodeList childNodes = element.getChildNodes();
+
+            Node beforeRef;
+            if (insertIndex < childNodes.length()) {
+                // Insert before the node current at the target index
+                beforeRef = childNodes.item(insertIndex);
+            } else {
+                // Insert at the end
+                beforeRef = null;
+            }
+
+            for (Object newChildObject : add) {
+                Element childElement = createElement(
+                        (StateNode) newChildObject);
+
+                element.insertBefore(childElement, beforeRef);
+
+                beforeRef = childElement.getNextSibling();
+            }
+        }
+    }
+
+    private static Element createElement(StateNode node) {
+        String tag = getTag(node);
+
+        assert tag != null : "New child must have a tag";
+        // ...or a template, but that's not yet implemented
+
+        Element childElement = Browser.getDocument().createElement(tag);
+
+        BasicElementBinder.bind(node, childElement);
+
+        return childElement;
+    }
+
     /**
      * Removes all bindings.
      */
@@ -124,6 +214,7 @@ public class BasicElementBinder {
         propertyBindings.forEach((computation, name) -> computation.stop());
         attributeBindings.forEach((computation, name) -> computation.stop());
         unregisterListener.remove();
+        childrenListener.remove();
     }
 
     /**
