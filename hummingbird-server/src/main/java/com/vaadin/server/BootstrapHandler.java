@@ -38,8 +38,6 @@ import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
 import com.google.gwt.thirdparty.guava.common.net.UrlEscapers;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.server.communication.AtmospherePushConnection;
@@ -76,8 +74,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         private final VaadinResponse response;
         private final BootstrapFragmentResponse bootstrapResponse;
 
-        private String widgetsetName;
-        private String themeName;
         private String appId;
         private PushMode pushMode;
         private JsonObject applicationParameters;
@@ -246,7 +242,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
             BootstrapFragmentResponse fragmentResponse = context
                     .getBootstrapResponse();
-            session.modifyBootstrapResponse(fragmentResponse);
 
             String html = getBootstrapHtml(context);
 
@@ -279,8 +274,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             setupStandaloneDocument(context, pageResponse);
-            context.getSession().modifyBootstrapResponse(pageResponse);
-
             sendBootstrapHeaders(response, headers);
 
             return document.outerHtml();
@@ -389,46 +382,17 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement("style").attr("type", "text/css")
                 .appendText("html, body {height:100%;margin:0;}");
 
-        JavaScript javaScript = uiClass.getAnnotation(JavaScript.class);
-        if (javaScript != null) {
-            String[] resources = javaScript.value();
-            for (String resource : resources) {
-                String url = registerDependency(context, uiClass, resource);
-                head.appendElement("script").attr("type", "text/javascript")
-                        .attr("src", url);
-            }
-        }
-
         if (context.getSession().getBrowser().isPhantomJS()) {
             // Collections polyfill needed only for PhantomJS
-            String resource = "vaadin://es6-collections.js";
-            String url = registerDependency(context, uiClass, resource);
+
             head.appendElement("script").attr("type", "text/javascript")
-                    .attr("src", url);
-        }
-        StyleSheet styleSheet = uiClass.getAnnotation(StyleSheet.class);
-        if (styleSheet != null) {
-            String[] resources = styleSheet.value();
-            for (String resource : resources) {
-                String url = registerDependency(context, uiClass, resource);
-                head.appendElement("link").attr("rel", "stylesheet")
-                        .attr("type", "text/css").attr("href", url);
-            }
+                    .attr("src", context.getUriResolver()
+                            .resolveVaadinUri("vaadin://es6-collections.js"));
         }
 
         Element body = document.body();
         body.attr("scroll", "auto");
         body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
-    }
-
-    private String registerDependency(BootstrapContext context,
-            Class<? extends UI> uiClass, String resource) {
-        String url = context.getSession().getCommunicationManager()
-                .registerDependency(resource, uiClass);
-
-        url = context.getUriResolver().resolveVaadinUri(url);
-
-        return url;
     }
 
     protected String getMainDivStyle(BootstrapContext context) {
@@ -582,8 +546,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         appConfig.put("versionInfo", versionInfo);
 
         // Use locale from session if set, else from the request
-        Locale locale = ServletPortletHelper.findLocale(null,
-                context.getSession(), context.getRequest());
+        Locale locale = ServletPortletHelper.findLocale(context.getSession(),
+                context.getRequest());
         // Get system messages
         SystemMessages systemMessages = vaadinService.getSystemMessages(locale,
                 request);

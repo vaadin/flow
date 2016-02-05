@@ -48,9 +48,7 @@ import com.vaadin.event.EventRouter;
 import com.vaadin.server.VaadinSession.FutureAccess;
 import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.AtmospherePushConnection;
-import com.vaadin.server.communication.FileUploadHandler;
 import com.vaadin.server.communication.HeartbeatHandler;
-import com.vaadin.server.communication.PublishedFileHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
 import com.vaadin.shared.ApplicationConstants;
@@ -198,9 +196,7 @@ public abstract class VaadinService implements Serializable {
             throws ServiceException {
         ArrayList<RequestHandler> handlers = new ArrayList<RequestHandler>();
         handlers.add(new SessionRequestHandler());
-        handlers.add(new PublishedFileHandler());
         handlers.add(new HeartbeatHandler());
-        handlers.add(new FileUploadHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
 
@@ -725,8 +721,6 @@ public abstract class VaadinService implements Serializable {
         Locale locale = request.getLocale();
         session.setLocale(locale);
         session.setConfiguration(getDeploymentConfiguration());
-        session.setCommunicationManager(
-                new LegacyCommunicationManager(session));
 
         ServletPortletHelper.initDefaultUIProvider(session, this);
         onVaadinSessionStarted(request, session);
@@ -1339,17 +1333,13 @@ public abstract class VaadinService implements Serializable {
             vaadinSession.lock();
         }
         try {
-            ErrorHandler errorHandler = ErrorEvent
-                    .findErrorHandler(vaadinSession);
-
-            if (errorHandler != null) {
-                errorHandler.error(new ErrorEvent(t));
-            }
+            vaadinSession.getErrorHandler().error(new ErrorEvent(t));
 
             // if this was an UIDL request, send UIDL back to the client
             if (ServletPortletHelper.isUIDLRequest(request)) {
-                SystemMessages ci = getSystemMessages(ServletPortletHelper
-                        .findLocale(null, vaadinSession, request), request);
+                SystemMessages ci = getSystemMessages(
+                        ServletPortletHelper.findLocale(vaadinSession, request),
+                        request);
                 try {
                     writeStringResponse(response,
                             JsonConstants.JSON_CONTENT_TYPE,
@@ -1368,7 +1358,9 @@ public abstract class VaadinService implements Serializable {
                 // Re-throw other exceptions
                 throw new ServiceException(t);
             }
-        } finally {
+        } finally
+
+        {
             if (vaadinSession != null) {
                 vaadinSession.unlock();
             }
@@ -1433,8 +1425,7 @@ public abstract class VaadinService implements Serializable {
         try {
             // If there is a URL, try to redirect there
             SystemMessages systemMessages = getSystemMessages(
-                    ServletPortletHelper.findLocale(null, null, request),
-                    request);
+                    ServletPortletHelper.findLocale(null, request), request);
             String sessionExpiredURL = systemMessages.getSessionExpiredURL();
             if (sessionExpiredURL != null
                     && (response instanceof VaadinServletResponse)) {

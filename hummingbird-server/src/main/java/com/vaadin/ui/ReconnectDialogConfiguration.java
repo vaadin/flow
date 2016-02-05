@@ -18,6 +18,8 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
+import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
+
 /**
  * Provides method for configuring the reconnect dialog.
  *
@@ -133,72 +135,70 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
 class ReconnectDialogConfigurationImpl implements ReconnectDialogConfiguration {
     private UI ui;
+    private ReconnectDialogConfigurationState state = new ReconnectDialogConfigurationState();
 
-    public ReconnectDialogConfigurationImpl(UI ui) {
-        this.ui = ui;
+    public ReconnectDialogConfigurationImpl() {
+        ui = ui;
     }
 
     @Override
     public String getDialogText() {
-        return ui.getState(false).reconnectDialogConfiguration.dialogText;
+        return state.dialogText;
     }
 
     @Override
     public void setDialogText(String dialogText) {
-        ui.getState().reconnectDialogConfiguration.dialogText = dialogText;
+        state.dialogText = dialogText;
     }
 
     @Override
     public String getDialogTextGaveUp() {
-        return ui.getState(false).reconnectDialogConfiguration.dialogTextGaveUp;
+        return state.dialogTextGaveUp;
     }
 
     @Override
     public void setDialogTextGaveUp(String dialogTextGaveUp) {
-        ui.getState().reconnectDialogConfiguration.dialogTextGaveUp = dialogTextGaveUp;
+        state.dialogTextGaveUp = dialogTextGaveUp;
     }
 
     @Override
     public int getReconnectAttempts() {
-        return ui
-                .getState(false).reconnectDialogConfiguration.reconnectAttempts;
+        return state.reconnectAttempts;
     }
 
     @Override
     public void setReconnectAttempts(int reconnectAttempts) {
-        ui.getState().reconnectDialogConfiguration.reconnectAttempts = reconnectAttempts;
+        state.reconnectAttempts = reconnectAttempts;
     }
 
     @Override
     public int getReconnectInterval() {
-        return ui
-                .getState(false).reconnectDialogConfiguration.reconnectInterval;
+        return state.reconnectInterval;
     }
 
     @Override
     public void setReconnectInterval(int reconnectInterval) {
-        ui.getState().reconnectDialogConfiguration.reconnectInterval = reconnectInterval;
+        state.reconnectInterval = reconnectInterval;
     }
 
     @Override
     public int getDialogGracePeriod() {
-        return ui
-                .getState(false).reconnectDialogConfiguration.dialogGracePeriod;
+        return state.dialogGracePeriod;
     }
 
     @Override
     public void setDialogGracePeriod(int dialogGracePeriod) {
-        ui.getState().reconnectDialogConfiguration.dialogGracePeriod = dialogGracePeriod;
+        state.dialogGracePeriod = dialogGracePeriod;
     }
 
     @Override
     public boolean isDialogModal() {
-        return ui.getState(false).reconnectDialogConfiguration.dialogModal;
+        return state.dialogModal;
     }
 
     @Override
     public void setDialogModal(boolean dialogModal) {
-        ui.getState().reconnectDialogConfiguration.dialogModal = dialogModal;
+        state.dialogModal = dialogModal;
     }
 
 }
