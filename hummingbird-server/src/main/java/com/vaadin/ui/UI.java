@@ -162,6 +162,8 @@ public abstract class UI extends AbstractSingleComponentContainer
     public UI(Component content) {
         setSizeFull();
         setContent(content);
+        stateTree.getRootNode().getNamespace(ElementDataNamespace.class)
+                .setTag("body");
     }
 
     @Override
