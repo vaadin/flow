@@ -26,6 +26,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.MapRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.shared.util.UniqueSerializable;
 
 /**
  * A state node namespace that structures data as a map.
@@ -34,7 +35,8 @@ import com.vaadin.hummingbird.change.NodeChange;
  * @author Vaadin Ltd
  */
 public abstract class MapNamespace extends Namespace {
-    private static final Object REMOVED_MARKER = new Object();
+    private static final UniqueSerializable REMOVED_MARKER = new UniqueSerializable() {
+    };
 
     private Map<String, Object> values = new HashMap<>();
 
