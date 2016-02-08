@@ -57,24 +57,4 @@ public class ElementDataNamespace extends MapNamespace {
         return (String) get(Namespaces.TAG);
     }
 
-    /**
-     * Sets the type of the element as defined by the "is" attribute.
-     * <p>
-     * Note that this cannot be changed after initialization.
-     *
-     * @param is
-     *            the is attribute
-     */
-    public void setIs(String is) {
-        put(Namespaces.IS, is);
-    }
-
-    /**
-     * Gets the type of the element as defined by the "is" attribute.
-     *
-     * @return the is attribute
-     */
-    public String getIs() {
-        return (String) get(Namespaces.IS);
-    }
 }

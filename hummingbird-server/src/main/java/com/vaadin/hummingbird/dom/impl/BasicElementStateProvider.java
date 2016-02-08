@@ -75,27 +75,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
         return node;
     }
 
-    /**
-     * Creates a compatible element state node using the given {@code tag} and
-     * {@code is} attribute.
-     *
-     * @param tag
-     *            the tag to use for the element
-     * @param is
-     *            the is attribute to use for the element
-     * @return a initialized and compatible state node
-     */
-    public static StateNode createStateNode(String tag, String is) {
-        assert is != null && !is.isEmpty();
-        StateNode node = createStateNode(tag);
-
-        // The "is" attribute goes to data namespace as it is tightly bound to
-        // the tag name, although it is defined as an attribute. It also has
-        // special semantics, e.g. cannot be changed later on
-        node.getNamespace(ElementDataNamespace.class).setIs(is);
-        return node;
-    }
-
     @Override
     public boolean supports(StateNode node) {
         for (Class<? extends Namespace> nsClass : namespaces) {
@@ -159,9 +138,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        if ("is".equals(attribute)) {
-            return getDataNamespace(node).getIs();
-        }
         return getAttributeNamespace(node).get(attribute);
     }
 

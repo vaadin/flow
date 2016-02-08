@@ -49,11 +49,6 @@ public class Element implements Serializable {
      */
     private static Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
 
-    static {
-        unsettableAttributes.put("is",
-                "it must be set when constructing the element");
-    }
-
     /**
      * Creates an element using the given tag name.
      *
@@ -62,22 +57,7 @@ public class Element implements Serializable {
      *            can contain letters, numbers and dashes ({@literal -})
      */
     public Element(String tag) {
-        this(tag, null);
-    }
-
-    /**
-     * Creates an element using the given tag name and {@code is} attribute.
-     *
-     * @param tag
-     *            the tag name of the element. Must be a non-empty string and
-     *            can contain letters, numbers and dashes ({@literal -})
-     * @param is
-     *            the {@code is} attribute, describing the type of a custom
-     *            element when using a standard tag name, e.g.
-     *            {@literal my-element}
-     */
-    public Element(String tag, String is) {
-        init(tag, is);
+        init(tag);
     }
 
     /**
@@ -85,24 +65,14 @@ public class Element implements Serializable {
      *
      * @param tag
      *            the tag name of the element.
-     * @param is
-     *            the {@code is} attribute or null
      */
-    private void init(String tag, String is) {
+    private void init(String tag) {
         if (!isValidTagName(tag)) {
             throw new IllegalArgumentException(
                     "Tag " + tag + " is not a valid tag name");
         }
-        if (is != null && is.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The is attribute cannot be empty");
-        }
         stateProvider = BasicElementStateProvider.get();
-        if (is == null) {
-            node = BasicElementStateProvider.createStateNode(tag);
-        } else {
-            node = BasicElementStateProvider.createStateNode(tag, is);
-        }
+        node = BasicElementStateProvider.createStateNode(tag);
 
         assert stateProvider.supports(node);
     }

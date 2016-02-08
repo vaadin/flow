@@ -226,7 +226,6 @@ public class StateTreeTest {
         StateNode child = new StateNode(namespaces);
         root.getNamespace(ElementChildrenNamespace.class).add(0, child);
         child.getNamespace(ElementDataNamespace.class).setTag("div");
-        child.getNamespace(ElementDataNamespace.class).setIs("button");
 
         byte[] serialized = SerializationUtils.serialize(tree);
         StateTree d1 = (StateTree) SerializationUtils.deserialize(serialized);
