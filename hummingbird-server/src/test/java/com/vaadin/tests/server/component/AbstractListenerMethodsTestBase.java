@@ -10,7 +10,6 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 
 import com.vaadin.tests.VaadinClasses;
-import com.vaadin.ui.Component;
 
 import junit.framework.TestCase;
 
@@ -37,11 +36,6 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
                         continue;
                     }
                     String packageName = "com.vaadin.tests.server";
-                    if (Component.class.isAssignableFrom(c)) {
-                        packageName += ".component."
-                                + c.getSimpleName().toLowerCase();
-                        continue;
-                    }
 
                     if (!found) {
                         found = true;

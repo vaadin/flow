@@ -83,10 +83,9 @@ public interface LoadingIndicatorConfiguration extends Serializable {
 
 class LoadingIndicatorConfigurationImpl
         implements LoadingIndicatorConfiguration {
-    private UI ui;
+    private LoadingIndicatorConfigurationState state = new LoadingIndicatorConfigurationState();
 
-    public LoadingIndicatorConfigurationImpl(UI ui) {
-        this.ui = ui;
+    public LoadingIndicatorConfigurationImpl() {
     }
 
     /*
@@ -106,7 +105,7 @@ class LoadingIndicatorConfigurationImpl
      */
     @Override
     public int getFirstDelay() {
-        return getState(false).firstDelay;
+        return getState().firstDelay;
     }
 
     /*
@@ -126,7 +125,7 @@ class LoadingIndicatorConfigurationImpl
      */
     @Override
     public int getSecondDelay() {
-        return getState(false).secondDelay;
+        return getState().secondDelay;
     }
 
     /*
@@ -146,15 +145,11 @@ class LoadingIndicatorConfigurationImpl
      */
     @Override
     public int getThirdDelay() {
-        return getState(false).thirdDelay;
+        return getState().thirdDelay;
     }
 
     private LoadingIndicatorConfigurationState getState() {
-        return ui.getState().loadingIndicatorConfiguration;
-    }
-
-    private LoadingIndicatorConfigurationState getState(boolean markAsDirty) {
-        return ui.getState(markAsDirty).loadingIndicatorConfiguration;
+        return state;
     }
 
 }
