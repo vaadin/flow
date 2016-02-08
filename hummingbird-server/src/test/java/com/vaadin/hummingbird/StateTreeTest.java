@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +31,11 @@ import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
+import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.Namespace;
 
 public class StateTreeTest {
     private StateTree tree = new StateTree();
@@ -205,5 +210,27 @@ public class StateTreeTest {
         ArrayList<NodeChange> changes = new ArrayList<>();
         tree.collectChanges(changes::add);
         return changes;
+    }
+
+    @Test
+    public void testSerializable() {
+
+        Class<? extends Namespace>[] namespaces = new Class[] {
+                ElementChildrenNamespace.class, ElementDataNamespace.class,
+                ElementAttributeNamespace.class,
+                ElementPropertiesNamespace.class };
+        StateTree tree = new StateTree(namespaces);
+
+        StateNode root = tree.getRootNode();
+        root.getNamespace(ElementDataNamespace.class).setTag("body");
+        StateNode child = new StateNode(namespaces);
+        root.getNamespace(ElementChildrenNamespace.class).add(0, child);
+        child.getNamespace(ElementDataNamespace.class).setTag("div");
+        child.getNamespace(ElementDataNamespace.class).setIs("button");
+
+        byte[] serialized = SerializationUtils.serialize(tree);
+        StateTree d1 = (StateTree) SerializationUtils.deserialize(serialized);
+
+        Assert.assertNotNull(d1);
     }
 }
