@@ -16,6 +16,7 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +27,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.MapRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.shared.util.UniqueSerializable;
 
 /**
  * A state node namespace that structures data as a map.
@@ -34,11 +36,12 @@ import com.vaadin.hummingbird.change.NodeChange;
  * @author Vaadin Ltd
  */
 public abstract class MapNamespace extends Namespace {
-    private static final Object REMOVED_MARKER = new Object();
+    private static final Serializable REMOVED_MARKER = new UniqueSerializable() {
+    };
 
-    private Map<String, Object> values = new HashMap<>();
+    private Map<String, Serializable> values = new HashMap<>();
 
-    private Map<String, Object> changes = new HashMap<>();
+    private Map<String, Serializable> changes = new HashMap<>();
 
     /**
      * Creates a new map namespace for the given node.
@@ -59,7 +62,7 @@ public abstract class MapNamespace extends Namespace {
      * @param value
      *            the value to store
      */
-    protected void put(String key, Object value) {
+    protected void put(String key, Serializable value) {
         attachPotentialChild(value);
 
         setChanged(key);
@@ -123,7 +126,7 @@ public abstract class MapNamespace extends Namespace {
         if (!changes.containsKey(key)) {
             // Record this as changed for the collection logic
             if (values.containsKey(key)) {
-                Object oldValue = values.get(key);
+                Serializable oldValue = values.get(key);
                 changes.put(key, oldValue);
             } else {
                 changes.put(key, REMOVED_MARKER);
