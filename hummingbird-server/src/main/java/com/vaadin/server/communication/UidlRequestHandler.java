@@ -22,7 +22,6 @@ import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.server.LegacyCommunicationManager.InvalidUIDLSecurityKeyException;
 import com.vaadin.server.ServletPortletHelper;
 import com.vaadin.server.SessionExpiredHandler;
 import com.vaadin.server.SynchronizedRequestHandler;
@@ -31,6 +30,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 
@@ -134,7 +134,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         }
         VaadinService service = request.getService();
         SystemMessages systemMessages = service.getSystemMessages(
-                ServletPortletHelper.findLocale(null, null, request), request);
+                ServletPortletHelper.findLocale(null, request), request);
 
         service.writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
                 VaadinService.createCriticalNotificationJSON(

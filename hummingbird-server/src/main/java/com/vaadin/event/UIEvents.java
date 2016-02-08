@@ -17,8 +17,8 @@ package com.vaadin.event;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.EventObject;
 
-import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
@@ -58,7 +58,7 @@ public interface UIEvents {
      * @since 7.2
      * @author Vaadin Ltd
      */
-    public static class PollEvent extends ComponentEvent {
+    public static class PollEvent extends EventObject {
         public PollEvent(UI ui) {
             super(ui);
         }
@@ -74,7 +74,7 @@ public interface UIEvents {
              * This cast is safe to make, since this class' constructor
              * constrains the source to be a UI instance.
              */
-            return (UI) getComponent();
+            return (UI) getSource();
         }
     }
 
