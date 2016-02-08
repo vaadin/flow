@@ -134,11 +134,9 @@ public interface ReconnectDialogConfiguration extends Serializable {
 }
 
 class ReconnectDialogConfigurationImpl implements ReconnectDialogConfiguration {
-    private UI ui;
     private ReconnectDialogConfigurationState state = new ReconnectDialogConfigurationState();
 
     public ReconnectDialogConfigurationImpl() {
-        ui = ui;
     }
 
     @Override

@@ -21,6 +21,12 @@ import java.util.Map;
 
 import com.vaadin.shared.communication.PushMode;
 
+/**
+ * Old UI state class, to be deleted asap.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class UIState implements Serializable {
     public LoadingIndicatorConfigurationState loadingIndicatorConfiguration = new LoadingIndicatorConfigurationState();
     public int pollInterval = -1;

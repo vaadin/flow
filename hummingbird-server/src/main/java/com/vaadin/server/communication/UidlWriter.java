@@ -17,7 +17,6 @@
 package com.vaadin.server.communication;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,7 +62,6 @@ public class UidlWriter implements Serializable {
         // to write out
         service.runPendingAccessTasks(session);
 
-        boolean repaintAll = false; // FIXME
         // Paints components
         getLogger().log(Level.FINE, "* Creating response to client");
 
@@ -71,9 +69,6 @@ public class UidlWriter implements Serializable {
                 ? ui.getServerSyncId() : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
-        if (repaintAll) {
-            response.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
-        }
         int nextClientToServerMessageId = ui.getLastProcessedClientToServerId()
                 + 1;
         response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
@@ -82,8 +77,8 @@ public class UidlWriter implements Serializable {
         SystemMessages messages = ui.getSession().getService()
                 .getSystemMessages(ui.getLocale(), null);
 
-        JsonObject meta = new MetadataWriter().createMetadata(ui, repaintAll,
-                async, messages);
+        JsonObject meta = new MetadataWriter().createMetadata(ui, false, async,
+                messages);
         response.put("meta", meta);
 
         JsonArray changes = encodeChanges(ui);
@@ -112,15 +107,6 @@ public class UidlWriter implements Serializable {
                 change -> changes.set(changes.length(), change.toJson()));
 
         return changes;
-    }
-
-    private JsonArray toJsonArray(List<String> list) {
-        JsonArray result = Json.createArray();
-        for (int i = 0; i < list.size(); i++) {
-            result.set(i, list.get(i));
-        }
-
-        return result;
     }
 
     /**

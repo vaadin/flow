@@ -248,11 +248,7 @@ public class ServerRpcHandler implements Serializable {
             // it would only get an empty response (because the dirty flags have
             // been cleared on the server) and would be out of sync
 
-            if (true) {
-                // FIXME Implement
-                throw new UnsupportedOperationException(
-                        "FIXME: Implement resync and call it here");
-            }
+            // FIXME Implement resync
 
             if (rpcRequest.getClientToServerId() < expectedId) {
                 // Just a duplicate message due to a bad connection or similar
@@ -268,6 +264,9 @@ public class ServerRpcHandler implements Serializable {
                                 + expectedId + ", got: "
                                 + rpcRequest.getClientToServerId());
             }
+
+            throw new UnsupportedOperationException(
+                    "FIXME: Implement resync and call it above");
         } else {
             // Message id ok, process RPCs
             ui.setLastProcessedClientToServerId(expectedId);
