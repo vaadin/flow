@@ -2,3 +2,5 @@ language: java
 jdk: oraclejdk8
 before_install: ./.travis.before_install.sh
 script: ./.travis.script.sh
+addons:
+  sauce_connect: true

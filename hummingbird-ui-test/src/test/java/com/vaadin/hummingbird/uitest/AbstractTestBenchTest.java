@@ -3,11 +3,17 @@ package com.vaadin.hummingbird.uitest;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.junit.Rule;
 import org.openqa.selenium.JavascriptExecutor;
 
+import com.vaadin.testbench.ScreenshotOnFailureRule;
 import com.vaadin.ui.UI;
 
 public class AbstractTestBenchTest extends TestBenchHelpers {
+
+    @Rule
+    public ScreenshotOnFailureRule screenshotOnFailure = new ScreenshotOnFailureRule(
+            this, true);
 
     private String baseUrl = "http://localhost:8888";
 

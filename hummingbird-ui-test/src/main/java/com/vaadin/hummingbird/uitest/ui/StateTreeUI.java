@@ -35,6 +35,7 @@ public class StateTreeUI extends UI {
         bodyElement.setAttribute("bar", "foo");
 
         Element span = new Element("span");
+        span.setAttribute("id", "hello");
         span.getNode().getNamespace(ElementPropertiesNamespace.class)
                 .setProperty("textContent", "Hello world");
 
