@@ -22,6 +22,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
+import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 
@@ -44,7 +45,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @SuppressWarnings("unchecked")
     private static Class<? extends Namespace>[] namespaces = new Class[] {
-            ElementDataNamespace.class, ElementAttributeNamespace.class };
+            ElementDataNamespace.class, ElementAttributeNamespace.class,
+            ElementChildrenNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -72,27 +74,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
         node.getNamespace(ElementDataNamespace.class).setTag(tag);
 
-        return node;
-    }
-
-    /**
-     * Creates a compatible element state node using the given {@code tag} and
-     * {@code is} attribute.
-     *
-     * @param tag
-     *            the tag to use for the element
-     * @param is
-     *            the is attribute to use for the element
-     * @return a initialized and compatible state node
-     */
-    public static StateNode createStateNode(String tag, String is) {
-        assert is != null && !is.isEmpty();
-        StateNode node = createStateNode(tag);
-
-        // The "is" attribute goes to data namespace as it is tightly bound to
-        // the tag name, although it is defined as an attribute. It also has
-        // special semantics, e.g. cannot be changed later on
-        node.getNamespace(ElementDataNamespace.class).setIs(is);
         return node;
     }
 
@@ -145,6 +126,21 @@ public class BasicElementStateProvider implements ElementStateProvider {
         return ns;
     }
 
+    /**
+     * Gets the children data namespace for the given node and asserts it is
+     * non-null.
+     *
+     * @param node
+     *            the node
+     * @return the children name space
+     */
+    private ElementChildrenNamespace getChildrenNamespace(StateNode node) {
+        ElementChildrenNamespace ns = node
+                .getNamespace(ElementChildrenNamespace.class);
+        assert ns != null;
+        return ns;
+    }
+
     @Override
     public void setAttribute(StateNode node, String attribute, String value) {
         assert attribute != null;
@@ -159,9 +155,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        if ("is".equals(attribute)) {
-            return getDataNamespace(node).getIs();
-        }
         return getAttributeNamespace(node).get(attribute);
     }
 
@@ -184,6 +177,61 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @Override
     public Set<String> getAttributeNames(StateNode node) {
         return getAttributeNamespace(node).attributes();
+    }
+
+    @Override
+    public Element getParent(StateNode node) {
+        StateNode parentNode = node.getParent();
+        if (parentNode == null) {
+            return null;
+        }
+
+        return Element.get(parentNode);
+    }
+
+    @Override
+    public int getChildCount(StateNode node) {
+        return getChildrenNamespace(node).size();
+    }
+
+    @Override
+    public Element getChild(StateNode node, int index) {
+        assert index >= 0;
+        assert index < getChildCount(node);
+
+        return Element.get(getChildrenNamespace(node).get(index));
+    }
+
+    @Override
+    public void insertChild(StateNode node, int index, Element child) {
+        assert index >= 0;
+        assert index <= getChildCount(node); // == if adding as last
+
+        getChildrenNamespace(node).add(index, child.getNode());
+    }
+
+    @Override
+    public void removeChild(StateNode node, int index) {
+        assert index >= 0;
+        assert index < getChildCount(node);
+
+        getChildrenNamespace(node).remove(index);
+    }
+
+    @Override
+    public void removeAllChildren(StateNode node) {
+        getChildrenNamespace(node).clear();
+    }
+
+    @Override
+    public void removeChild(StateNode node, Element child) {
+        ElementChildrenNamespace childrenNamespace = getChildrenNamespace(node);
+        int pos = childrenNamespace.indexOf(child.getNode());
+        if (pos == -1) {
+            throw new IllegalArgumentException("Not in the list");
+        }
+        childrenNamespace.remove(pos);
+
     }
 
 }

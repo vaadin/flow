@@ -53,11 +53,6 @@ public class Namespaces {
      */
     public static final String TAG = "tag";
 
-    /**
-     * Key for {@link ElementDataNamespace#getIs()}.
-     */
-    public static final String IS = "is";
-
     private Namespaces() {
         // Only static
     }

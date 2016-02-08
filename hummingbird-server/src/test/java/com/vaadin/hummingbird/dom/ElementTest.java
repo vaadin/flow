@@ -33,37 +33,6 @@ public class ElementTest {
     }
 
     @Test
-    public void createElementWithTagAndIs() {
-        Element e = new Element("div", "foo-bar");
-        Assert.assertEquals("div", e.getTag());
-        Assert.assertEquals("foo-bar", e.getAttribute("is"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createElementWithTagAndEmptyIs() {
-        new Element("div", "");
-    }
-
-    public void createElementWithTagAndNullIs() {
-        Element e = new Element("div", null);
-        Assert.assertFalse(e.hasAttribute("is"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setIsAttribute() {
-        Element e = new Element("div");
-        // Can't set "is" after creation
-        e.setAttribute("is", "bar");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setIsAttributeCaseInsensitive() {
-        Element e = new Element("div");
-        // Can't set "is" after creation
-        e.setAttribute("IS", "bar");
-    }
-
-    @Test
     public void publicMethodsShouldReturnElement() {
         HashSet<String> ignore = new HashSet<>();
         ignore.add("toString");
@@ -227,4 +196,254 @@ public class ElementTest {
         Assert.assertTrue(e.getAttributeNames().contains("baz"));
         Assert.assertFalse(e.getAttributeNames().contains("Baz"));
     }
+
+    @Test
+    public void appendChild() {
+        Element parent = new Element("div");
+        Element child = new Element("child");
+        parent.appendChild(child);
+
+        assertChildren(parent, child);
+    }
+
+    @Test
+    public void appendChildren() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1, child2);
+
+        assertChildren(parent, child1, child2);
+    }
+
+    private void assertChildren(Element parent, Element... children) {
+
+        Assert.assertEquals(children.length, parent.getChildCount());
+        for (int i = 0; i < children.length; i++) {
+            Assert.assertEquals(parent, children[i].getParent());
+            Assert.assertEquals(children[i], parent.getChild(i));
+        }
+    }
+
+    @Test
+    public void insertChildFirst() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1);
+        parent.insertChild(0, child2);
+
+        assertChildren(parent, child2, child1);
+    }
+
+    @Test
+    public void insertChildMiddle() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2);
+        parent.insertChild(1, child3);
+
+        assertChildren(parent, child1, child3, child2);
+    }
+
+    @Test
+    public void insertChildAsLast() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2);
+        parent.insertChild(2, child3);
+
+        assertChildren(parent, child1, child2, child3);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void insertChildAfterLast() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2);
+        parent.insertChild(3, child3);
+    }
+
+    @Test
+    public void removeChildFirst() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2, child3);
+        parent.removeChild(child1);
+
+        assertChildren(parent, child2, child3);
+    }
+
+    @Test
+    public void removeChildFirstIndex() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2, child3);
+        parent.removeChild(0);
+
+        assertChildren(parent, child2, child3);
+    }
+
+    @Test
+    public void removeChildrenFirst() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2, child3);
+        parent.removeChild(child1, child2);
+
+        assertChildren(parent, child3);
+    }
+
+    @Test
+    public void removeChildMiddle() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2, child3);
+        parent.removeChild(child2);
+
+        assertChildren(parent, child1, child3);
+    }
+
+    @Test
+    public void removeChildMiddleIndex() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2, child3);
+        parent.removeChild(1);
+
+        assertChildren(parent, child1, child3);
+    }
+
+    @Test
+    public void removeChildrenMiddle() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        Element child4 = new Element("child4");
+        parent.appendChild(child1, child2, child3, child4);
+        parent.removeChild(child2, child3);
+
+        assertChildren(parent, child1, child4);
+    }
+
+    @Test
+    public void removeChildLast() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2, child3);
+        parent.removeChild(child3);
+
+        assertChildren(parent, child1, child2);
+    }
+
+    @Test
+    public void removeChildLastIndex() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        parent.appendChild(child1, child2, child3);
+        parent.removeChild(2);
+
+        assertChildren(parent, child1, child2);
+    }
+
+    @Test
+    public void removeChildrenLast() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        Element child4 = new Element("child4");
+        parent.appendChild(child1, child2, child3, child4);
+        parent.removeChild(child3, child4);
+
+        assertChildren(parent, child1, child2);
+    }
+
+    @Test
+    public void removeAllChildren() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        Element child4 = new Element("child4");
+        parent.appendChild(child1, child2, child3, child4);
+        parent.removeAllChildren();
+
+        assertChildren(parent);
+    }
+
+    @Test
+    public void removeAllChildrenEmpty() {
+        Element parent = new Element("div");
+        parent.removeAllChildren();
+
+        assertChildren(parent);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeNonChild() {
+        Element parent = new Element("div");
+        Element otherElement = new Element("other");
+        parent.removeChild(otherElement);
+    }
+
+    @Test
+    public void getChild() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        Element child3 = new Element("child3");
+        Element child4 = new Element("child4");
+        parent.appendChild(child1, child2, child3, child4);
+        Assert.assertEquals(child1, parent.getChild(0));
+        Assert.assertEquals(child2, parent.getChild(1));
+        Assert.assertEquals(child3, parent.getChild(2));
+        Assert.assertEquals(child4, parent.getChild(3));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getNegativeChild() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1, child2);
+        parent.getChild(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getAfterLastChild() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1, child2);
+        parent.getChild(2);
+    }
+
+    @Test
+    public void getDetachedParent() {
+        Element otherElement = new Element("other");
+        Assert.assertNull(otherElement.getParent());
+    }
+
 }

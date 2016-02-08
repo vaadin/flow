@@ -20,10 +20,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.EventObject;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -37,14 +39,22 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import com.vaadin.hummingbird.testcategory.SlowTests;
-import com.vaadin.server.ClientConnector.DetachEvent;
-import com.vaadin.server.ClientConnector.DetachListener;
+import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UIInitHandler;
-import com.vaadin.ui.AbstractComponent;
+import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
 public class VaadinSessionTest {
+
+    /**
+     * Event fired before a connector is detached from the application.
+     */
+    public static class DetachEvent extends EventObject {
+        public DetachEvent(UI source) {
+            super(source);
+        }
+    }
 
     private VaadinSession session;
     private VaadinServlet mockServlet;
@@ -53,7 +63,7 @@ public class VaadinSessionTest {
     private HttpSession mockHttpSession;
     private WrappedSession mockWrappedSession;
     private VaadinServletRequest vaadinRequest;
-    private UI ui;
+    private MockUI ui;
     private Lock httpSessionLock;
 
     @Before
@@ -104,7 +114,7 @@ public class VaadinSessionTest {
         session = new VaadinSession(mockService);
         mockService.storeSession(session, mockWrappedSession);
 
-        ui = new MockPageUI();
+        ui = new MockUI();
         vaadinRequest = new VaadinServletRequest(
                 EasyMock.createMock(HttpServletRequest.class), mockService) {
             @Override
@@ -180,16 +190,12 @@ public class VaadinSessionTest {
             throws InterruptedException {
 
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
-        ui.addDetachListener(new DetachListener() {
-            @Override
-            public void detach(DetachEvent event) {
-                detachCalled.set(true);
-                Assert.assertEquals(ui, UI.getCurrent());
-                Assert.assertEquals(ui.getPage(), Page.getCurrent());
-                Assert.assertEquals(session, VaadinSession.getCurrent());
-                Assert.assertEquals(mockService, VaadinService.getCurrent());
-                Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
-            }
+        ui.addDetachListener(e -> {
+            detachCalled.set(true);
+            Assert.assertEquals(ui, UI.getCurrent());
+            Assert.assertEquals(session, VaadinSession.getCurrent());
+            Assert.assertEquals(mockService, VaadinService.getCurrent());
+            Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
         });
 
         session.valueUnbound(
@@ -207,16 +213,12 @@ public class VaadinSessionTest {
     @Category(SlowTests.class)
     public void threadLocalsAfterSessionDestroy() throws InterruptedException {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
-        ui.addDetachListener(new DetachListener() {
-            @Override
-            public void detach(DetachEvent event) {
-                detachCalled.set(true);
-                Assert.assertEquals(ui, UI.getCurrent());
-                Assert.assertEquals(ui.getPage(), Page.getCurrent());
-                Assert.assertEquals(session, VaadinSession.getCurrent());
-                Assert.assertEquals(mockService, VaadinService.getCurrent());
-                Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
-            }
+        ui.addDetachListener(e -> {
+            detachCalled.set(true);
+            Assert.assertEquals(ui, UI.getCurrent());
+            Assert.assertEquals(session, VaadinSession.getCurrent());
+            Assert.assertEquals(mockService, VaadinService.getCurrent());
+            Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
         });
         CurrentInstance.clearAll();
         session.close();
@@ -251,25 +253,33 @@ public class VaadinSessionTest {
 
     // Can't define as an anonymous class since it would have a reference to
     // VaadinSessionTest.this which isn't serializable
-    private static class MockPageUI extends UI {
-        Page page = new Page(this, getState(false).pageState) {
-            @Override
-            public void init(VaadinRequest request) {
-            }
-        };
+    private static class MockUI extends UI {
+        private Consumer<DetachEvent> detachListener;
+
+        public void addDetachListener(Consumer<DetachEvent> l) {
+            detachListener = l;
+        }
+
+        @Override
+        public void detach() {
+            super.detach();
+            detachListener.accept(new DetachEvent(this));
+        }
 
         @Override
         protected void init(VaadinRequest request) {
         }
 
-        @Override
-        public Page getPage() {
-            return page;
-        }
     }
 
-    private static class SerializationTestLabel extends AbstractComponent {
+    private static class SerializationPushConnection
+            extends AtmospherePushConnection {
+
         private transient VaadinSession session = VaadinSession.getCurrent();
+
+        public SerializationPushConnection(UI ui) {
+            super(ui);
+        }
 
         private void readObject(ObjectInputStream in)
                 throws IOException, ClassNotFoundException {
@@ -283,11 +293,11 @@ public class VaadinSessionTest {
     public void threadLocalsWhenDeserializing() throws Exception {
         VaadinSession.setCurrent(session);
         session.lock();
-        SerializationTestLabel label = new SerializationTestLabel();
+        SerializationPushConnection pc = new SerializationPushConnection(ui);
         Assert.assertEquals("Session should be set when instance is created",
-                session, label.session);
-
-        ui.setContent(label);
+                session, pc.session);
+        ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
+        ui.setPushConnection(pc);
         int uiId = ui.getUIId();
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -316,12 +326,12 @@ public class VaadinSessionTest {
         deserializedSession.lock();
 
         UI deserializedUi = deserializedSession.getUIById(uiId);
-        SerializationTestLabel deserializedLabel = (SerializationTestLabel) deserializedUi
-                .getContent();
+        SerializationPushConnection deserializedPc = (SerializationPushConnection) deserializedUi
+                .getPushConnection();
 
         Assert.assertEquals(
                 "Current session should be available in SerializationTestLabel.readObject",
-                deserializedSession, deserializedLabel.session);
+                deserializedSession, deserializedPc.session);
         deserializedSession.unlock();
     }
 }

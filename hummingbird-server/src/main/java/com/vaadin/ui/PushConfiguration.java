@@ -166,6 +166,7 @@ public interface PushConfiguration extends Serializable {
 
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;
+    PushConfigurationState state = new PushConfigurationState();
 
     public PushConfigurationImpl(UI ui) {
         this.ui = ui;
@@ -178,7 +179,7 @@ class PushConfigurationImpl implements PushConfiguration {
      */
     @Override
     public PushMode getPushMode() {
-        return getState(false).mode;
+        return getState().mode;
     }
 
     /*
@@ -229,7 +230,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     @Override
     public String getPushUrl() {
-        return getState(false).pushUrl;
+        return getState().pushUrl;
     }
 
     /*
@@ -243,7 +244,7 @@ class PushConfigurationImpl implements PushConfiguration {
             Transport tr = Transport.getByIdentifier(
                     getParameter(PushConfigurationState.TRANSPORT_PARAM));
             if (tr == Transport.WEBSOCKET
-                    && getState(false).alwaysUseXhrForServerRequests) {
+                    && getState().alwaysUseXhrForServerRequests) {
                 return Transport.WEBSOCKET_XHR;
             } else {
                 return tr;
@@ -313,7 +314,7 @@ class PushConfigurationImpl implements PushConfiguration {
      */
     @Override
     public String getParameter(String parameter) {
-        return getState(false).parameters.get(parameter);
+        return getState().parameters.get(parameter);
     }
 
     /*
@@ -329,17 +330,13 @@ class PushConfigurationImpl implements PushConfiguration {
     }
 
     private PushConfigurationState getState() {
-        return ui.getState().pushConfiguration;
-    }
-
-    private PushConfigurationState getState(boolean markAsDirty) {
-        return ui.getState(markAsDirty).pushConfiguration;
+        return state;
     }
 
     @Override
     public Collection<String> getParameterNames() {
         return Collections
-                .unmodifiableCollection(getState(false).parameters.keySet());
+                .unmodifiableCollection(getState().parameters.keySet());
     }
 
 }

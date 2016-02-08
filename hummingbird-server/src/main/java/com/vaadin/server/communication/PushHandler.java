@@ -29,8 +29,6 @@ import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 
 import com.vaadin.server.ErrorEvent;
-import com.vaadin.server.ErrorHandler;
-import com.vaadin.server.LegacyCommunicationManager.InvalidUIDLSecurityKeyException;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.ServletPortletHelper;
 import com.vaadin.server.SessionExpiredException;
@@ -40,6 +38,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
@@ -216,9 +215,9 @@ public class PushHandler {
                         "Could not get session. This should never happen", e);
                 return;
             } catch (SessionExpiredException e) {
-                SystemMessages msg = service
-                        .getSystemMessages(ServletPortletHelper.findLocale(null,
-                                null, vaadinRequest), vaadinRequest);
+                SystemMessages msg = service.getSystemMessages(
+                        ServletPortletHelper.findLocale(null, vaadinRequest),
+                        vaadinRequest);
                 sendNotificationAndDisconnect(resource,
                         VaadinService.createCriticalNotificationJSON(
                                 msg.getSessionExpiredCaption(),
@@ -242,9 +241,9 @@ public class PushHandler {
             } catch (final IOException e) {
                 callErrorHandler(session, e);
             } catch (final Exception e) {
-                SystemMessages msg = service
-                        .getSystemMessages(ServletPortletHelper.findLocale(null,
-                                null, vaadinRequest), vaadinRequest);
+                SystemMessages msg = service.getSystemMessages(
+                        ServletPortletHelper.findLocale(null, vaadinRequest),
+                        vaadinRequest);
 
                 AtmosphereResource errorResource = resource;
                 if (ui != null && ui.getPushConnection() != null) {
@@ -285,19 +284,10 @@ public class PushHandler {
     }
 
     /**
-     * Call the session's {@link ErrorHandler}, if it has one, with the given
-     * exception wrapped in an {@link ErrorEvent}.
+     * Call the session's error handler.
      */
     private void callErrorHandler(VaadinSession session, Exception e) {
-        try {
-            ErrorHandler errorHandler = ErrorEvent.findErrorHandler(session);
-            if (errorHandler != null) {
-                errorHandler.error(new ErrorEvent(e));
-            }
-        } catch (Exception ex) {
-            // Let's not allow error handling to cause trouble; log fails
-            getLogger().log(Level.WARNING, "ErrorHandler call failed", ex);
-        }
+        session.getErrorHandler().error(new ErrorEvent(e));
     }
 
     private static AtmospherePushConnection getConnectionForUI(UI ui) {
