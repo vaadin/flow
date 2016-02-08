@@ -41,6 +41,7 @@ import org.junit.experimental.categories.Category;
 import com.vaadin.hummingbird.testcategory.SlowTests;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UIInitHandler;
+import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
@@ -295,7 +296,7 @@ public class VaadinSessionTest {
         SerializationPushConnection pc = new SerializationPushConnection(ui);
         Assert.assertEquals("Session should be set when instance is created",
                 session, pc.session);
-
+        ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
         ui.setPushConnection(pc);
         int uiId = ui.getUIId();
 
