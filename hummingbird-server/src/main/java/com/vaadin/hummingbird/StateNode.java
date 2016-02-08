@@ -133,22 +133,39 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Gets the namespace of the given type.
+     * Gets the namespace of the given type. This method throws
+     * {@link IllegalStateException} if this node does not contain the desired
+     * namespace. Use {@link #hasNamespace(Class)} to check whether a node
+     * contains a specific namespace.
      *
      * @param namespaceType
-     *            the desired namespace type
-     * @return a namespace instance; <code>null</code> if the node was not
-     *         created to support a namespace of the given type
+     *            the desired namespace type, not <code>null</code>
+     * @return a namespace instance, not <code>null</code>
      */
     public <T extends Namespace> T getNamespace(Class<T> namespaceType) {
         assert namespaceType != null;
 
         Namespace namespace = namespaces.get(namespaceType);
         if (namespace == null) {
-            return null;
-        } else {
-            return namespaceType.cast(namespace);
+            throw new IllegalStateException(
+                    "Node does not have the namespace " + namespaceType);
         }
+
+        return namespaceType.cast(namespace);
+    }
+
+    /**
+     * Checks whether this node contains a namespace.
+     *
+     * @param namespaceType
+     *            the namespace type to check for
+     * @return <code>true</code> if this node contains the namespace; otherwise
+     *         <code>false</code>
+     */
+    public boolean hasNamespace(Class<? extends Namespace> namespaceType) {
+        assert namespaceType != null;
+
+        return namespaces.containsKey(namespaceType);
     }
 
     /**

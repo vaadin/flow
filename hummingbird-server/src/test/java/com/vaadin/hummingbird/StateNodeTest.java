@@ -51,18 +51,24 @@ public class StateNodeTest {
     public void nodeContainsDefinedNamespaces() {
         StateNode node = new StateNode(ElementDataNamespace.class);
 
+        Assert.assertTrue("Should have namespace defined in constructor",
+                node.hasNamespace(ElementDataNamespace.class));
+
         ElementDataNamespace namespace = node
                 .getNamespace(ElementDataNamespace.class);
 
-        Assert.assertNotNull("Should have namespace defined in constructor",
+        Assert.assertNotNull("Existing namespace should also be available",
                 namespace);
 
-        ElementPropertiesNamespace missingNamespace = node
-                .getNamespace(ElementPropertiesNamespace.class);
-
-        Assert.assertNull(
+        Assert.assertFalse(
                 "Should not have namespace that wasn't defined in constructor",
-                missingNamespace);
+                node.hasNamespace(ElementPropertiesNamespace.class));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getMissingNamespaceThrows() {
+        StateNode node = new StateNode(ElementDataNamespace.class);
+        node.getNamespace(ElementPropertiesNamespace.class);
     }
 
     @Test
