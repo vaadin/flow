@@ -33,37 +33,6 @@ public class ElementTest {
     }
 
     @Test
-    public void createElementWithTagAndIs() {
-        Element e = new Element("div", "foo-bar");
-        Assert.assertEquals("div", e.getTag());
-        Assert.assertEquals("foo-bar", e.getAttribute("is"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void createElementWithTagAndEmptyIs() {
-        new Element("div", "");
-    }
-
-    public void createElementWithTagAndNullIs() {
-        Element e = new Element("div", null);
-        Assert.assertFalse(e.hasAttribute("is"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setIsAttribute() {
-        Element e = new Element("div");
-        // Can't set "is" after creation
-        e.setAttribute("is", "bar");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setIsAttributeCaseInsensitive() {
-        Element e = new Element("div");
-        // Can't set "is" after creation
-        e.setAttribute("IS", "bar");
-    }
-
-    @Test
     public void publicMethodsShouldReturnElement() {
         HashSet<String> ignore = new HashSet<>();
         ignore.add("toString");

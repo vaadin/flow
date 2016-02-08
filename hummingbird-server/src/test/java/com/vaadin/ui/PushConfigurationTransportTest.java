@@ -41,12 +41,12 @@ public class PushConfigurationTransportTest {
             Assert.assertEquals(ui.getPushConfiguration().getTransport(),
                     transport);
 
+            boolean alwaysXhr = ((PushConfigurationImpl) ui
+                    .getPushConfiguration()).state.alwaysUseXhrForServerRequests;
             if (transport == Transport.WEBSOCKET_XHR) {
-                Assert.assertTrue(ui
-                        .getState().pushConfiguration.alwaysUseXhrForServerRequests);
+                Assert.assertTrue(alwaysXhr);
             } else {
-                Assert.assertFalse(ui
-                        .getState().pushConfiguration.alwaysUseXhrForServerRequests);
+                Assert.assertFalse(alwaysXhr);
             }
         }
 

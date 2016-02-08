@@ -16,17 +16,13 @@
 
 package com.vaadin.ui;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.io.Serializable;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.event.MouseEvents.ClickEvent;
-import com.vaadin.event.MouseEvents.ClickListener;
-import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateTree;
@@ -34,22 +30,15 @@ import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
-import com.vaadin.navigator.Navigator;
-import com.vaadin.server.DefaultErrorHandler;
-import com.vaadin.server.ErrorHandler;
+import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingRunnable;
-import com.vaadin.server.Page;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
-import com.vaadin.shared.EventId;
-import com.vaadin.shared.MouseEventDetails;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.ui.UIState;
-import com.vaadin.ui.Component.Focusable;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -73,9 +62,7 @@ import com.vaadin.util.CurrentInstance;
  * After a UI has been created by the application, it is initialized using
  * {@link #init(VaadinRequest)}. This method is intended to be overridden by the
  * developer to add components to the user interface and initialize
- * non-component functionality. The component hierarchy must be initialized by
- * passing a {@link Component} with the main layout or other content of the view
- * to {@link #setContent(Component)} or to the constructor of the UI.
+ * non-component functionality.
  * </p>
  *
  * @see #init(VaadinRequest)
@@ -83,19 +70,12 @@ import com.vaadin.util.CurrentInstance;
  *
  * @since 7.0
  */
-public abstract class UI extends AbstractSingleComponentContainer
-        implements PollNotifier, Focusable {
+public abstract class UI implements Serializable, PollNotifier {
 
     /**
      * The application to which this UI belongs
      */
     private volatile VaadinSession session;
-
-    /**
-     * The component that should be scrolled into view after the next repaint.
-     * Null if nothing should be scrolled into view.
-     */
-    private Component scrollIntoView;
 
     /**
      * The id of this UI, used to find the server side instance of the UI form
@@ -106,12 +86,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     private int uiId = -1;
 
-    private ConnectorTracker connectorTracker = new ConnectorTracker(this);
-
-    private Page page = new Page(this, getState(false).pageState);
-
-    private LoadingIndicatorConfiguration loadingIndicatorConfiguration = new LoadingIndicatorConfigurationImpl(
-            this);
+    private LoadingIndicatorConfiguration loadingIndicatorConfiguration = new LoadingIndicatorConfigurationImpl();
 
     /**
      * Timestamp keeping track of the last heartbeat of this UI. Updated to the
@@ -124,17 +99,15 @@ public abstract class UI extends AbstractSingleComponentContainer
 
     private PushConfiguration pushConfiguration = new PushConfigurationImpl(
             this);
-    private ReconnectDialogConfiguration reconnectDialogConfiguration = new ReconnectDialogConfigurationImpl(
-            this);
-
-    private NotificationConfiguration notificationConfiguration = new NotificationConfigurationImpl(
-            this);
+    private ReconnectDialogConfiguration reconnectDialogConfiguration = new ReconnectDialogConfigurationImpl();
 
     /**
      * Tracks which message from the client should come next. First message from
      * the client has id 0.
      */
     private int lastProcessedClientToServerId = -1;
+
+    private Locale locale = Locale.getDefault();
 
     private final StateTree stateTree = new StateTree(
             ElementDataNamespace.class, ElementPropertiesNamespace.class,
@@ -143,54 +116,9 @@ public abstract class UI extends AbstractSingleComponentContainer
     private int serverSyncId = 0;
 
     /**
-     * Creates a new empty UI without a caption. The content of the UI must be
-     * set by calling {@link #setContent(Component)} before using the UI.
+     * Creates a new empty UI.
      */
     public UI() {
-        this(null);
-    }
-
-    /**
-     * Creates a new UI with the given component (often a layout) as its
-     * content.
-     *
-     * @param content
-     *            the component to use as this UIs content.
-     *
-     * @see #setContent(Component)
-     */
-    public UI(Component content) {
-        setSizeFull();
-        setContent(content);
-    }
-
-    @Override
-    protected UIState getState() {
-        return (UIState) super.getState();
-    }
-
-    @Override
-    protected UIState getState(boolean markAsDirty) {
-        return (UIState) super.getState(markAsDirty);
-    }
-
-    @Override
-    public Class<? extends UIState> getStateType() {
-        // This is a workaround for a problem with creating the correct state
-        // object during build
-        return UIState.class;
-    }
-
-    /**
-     * Overridden to return a value instead of referring to the parent.
-     *
-     * @return this UI
-     *
-     * @see com.vaadin.ui.AbstractComponent#getUI()
-     */
-    @Override
-    public UI getUI() {
-        return this;
     }
 
     /**
@@ -213,49 +141,8 @@ public abstract class UI extends AbstractSingleComponentContainer
      * @return the parent application of the component or <code>null</code>.
      * @see #attach()
      */
-    @Override
     public VaadinSession getSession() {
         return session;
-    }
-
-    /**
-     * Fire a click event to all click listeners.
-     *
-     * @param object
-     *            The raw "value" of the variable change from the client side.
-     */
-    private void fireClick(Map<String, Object> parameters) {
-        MouseEventDetails mouseDetails = MouseEventDetails
-                .deSerialize((String) parameters.get("mouseDetails"));
-        fireEvent(new ClickEvent(this, mouseDetails));
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.HasComponents#iterator()
-     */
-    @Override
-    public Iterator<Component> iterator() {
-        // TODO could directly create some kind of combined iterator instead of
-        // creating a new ArrayList
-        ArrayList<Component> components = new ArrayList<Component>();
-
-        if (getContent() != null) {
-            components.add(getContent());
-        }
-
-        return components.iterator();
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.ComponentContainer#getComponentCount()
-     */
-    @Override
-    public int getComponentCount() {
-        return (getContent() == null ? 0 : 1);
     }
 
     /**
@@ -330,62 +217,9 @@ public abstract class UI extends AbstractSingleComponentContainer
         return uiId;
     }
 
-    @Override
-    public void focus() {
-        super.focus();
-    }
-
-    /**
-     * Component that should be focused after the next repaint. Null if no focus
-     * change should take place.
-     */
-    private Focusable pendingFocus;
-
-    private boolean resizeLazy = false;
-
-    private Navigator navigator;
-
     private PushConnection pushConnection = null;
 
     private String embedId;
-
-    /**
-     * This method is used by Component.Focusable objects to request focus to
-     * themselves. Focus renders must be handled at window level (instead of
-     * Component.Focusable) due we want the last focused component to be focused
-     * in client too. Not the one that is rendered last (the case we'd get if
-     * implemented in Focusable only).
-     *
-     * To focus component from Vaadin application, use Focusable.focus(). See
-     * {@link Focusable}.
-     *
-     * @param focusable
-     *            to be focused on next paint
-     */
-    public void setFocusedComponent(Focusable focusable) {
-        pendingFocus = focusable;
-        markAsDirty();
-    }
-
-    /**
-     * Scrolls any component between the component and UI to a suitable position
-     * so the component is visible to the user. The given component must belong
-     * to this UI.
-     *
-     * @param component
-     *            the component to be scrolled into view
-     * @throws IllegalArgumentException
-     *             if {@code component} does not belong to this UI
-     */
-    public void scrollIntoView(Component component)
-            throws IllegalArgumentException {
-        if (component.getUI() != this) {
-            throw new IllegalArgumentException(
-                    "The component where to scroll must belong to this UI.");
-        }
-        scrollIntoView = component;
-        markAsDirty();
-    }
 
     /**
      * Internal initialization method, should not be overridden. This method is
@@ -421,16 +255,9 @@ public abstract class UI extends AbstractSingleComponentContainer
         this.uiId = uiId;
         this.embedId = embedId;
 
-        getPage().init(request);
-
         // Call the init overridden by the application developer
         init(request);
 
-        Navigator navigator = getNavigator();
-        if (navigator != null) {
-            // Kickstart navigation if a navigator was attached in init()
-            navigator.navigateTo(navigator.getState());
-        }
     }
 
     /**
@@ -462,28 +289,11 @@ public abstract class UI extends AbstractSingleComponentContainer
         // old values back before setting the new values again to ensure the
         // events are properly fired.
 
-        Page page = getPage();
-
-        URI oldLocation = page.getLocation();
-        int oldWidth = page.getBrowserWindowWidth();
-        int oldHeight = page.getBrowserWindowHeight();
-
-        page.init(request);
-
         // Reset heartbeat timeout to avoid surprise if it's almost expired
         setLastHeartbeatTimestamp(System.currentTimeMillis());
 
         refresh(request);
 
-        URI newLocation = page.getLocation();
-        int newWidth = page.getBrowserWindowWidth();
-        int newHeight = page.getBrowserWindowHeight();
-
-        page.updateLocation(oldLocation.toString(), false);
-        page.updateBrowserWindowSize(oldWidth, oldHeight, false);
-
-        page.updateLocation(newLocation.toString(), true);
-        page.updateBrowserWindowSize(newWidth, newHeight, true);
     }
 
     /**
@@ -538,99 +348,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     public static UI getCurrent() {
         return CurrentInstance.get(UI.class);
-    }
-
-    /**
-     * Should resize operations be lazy, i.e. should there be a delay before
-     * layout sizes are recalculated and resize events are sent to the server.
-     * Speeds up resize operations in slow UIs with the penalty of slightly
-     * decreased usability.
-     * <p>
-     * Default value: <code>false</code>
-     * </p>
-     * <p>
-     * When there are active window resize listeners, lazy resize mode should be
-     * used to avoid a large number of events during resize.
-     * </p>
-     *
-     * @param resizeLazy
-     *            true to use a delay before recalculating sizes, false to
-     *            calculate immediately.
-     */
-    public void setResizeLazy(boolean resizeLazy) {
-        this.resizeLazy = resizeLazy;
-        markAsDirty();
-    }
-
-    /**
-     * Checks whether lazy resize is enabled.
-     *
-     * @return <code>true</code> if lazy resize is enabled, <code>false</code>
-     *         if lazy resize is not enabled
-     */
-    public boolean isResizeLazy() {
-        return resizeLazy;
-    }
-
-    /**
-     * Add a click listener to the UI. The listener is called whenever the user
-     * clicks inside the UI. Also when the click targets a component inside the
-     * UI, provided the targeted component does not prevent the click event from
-     * propagating.
-     *
-     * Use {@link #removeListener(ClickListener)} to remove the listener.
-     *
-     * @param listener
-     *            The listener to add
-     */
-    public void addClickListener(ClickListener listener) {
-        addListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class, listener,
-                ClickListener.clickMethod);
-    }
-
-    /**
-     * Remove a click listener from the UI. The listener should earlier have
-     * been added using {@link #addListener(ClickListener)}.
-     *
-     * @param listener
-     *            The listener to remove
-     */
-    public void removeClickListener(ClickListener listener) {
-        removeListener(EventId.CLICK_EVENT_IDENTIFIER, ClickEvent.class,
-                listener);
-    }
-
-    @Override
-    public boolean isConnectorEnabled() {
-        // TODO How can a UI be invisible? What does it mean?
-        return isVisible() && isEnabled();
-    }
-
-    public ConnectorTracker getConnectorTracker() {
-        return connectorTracker;
-    }
-
-    public Page getPage() {
-        return page;
-    }
-
-    /**
-     * Returns the navigator attached to this UI or null if there is no
-     * navigator.
-     *
-     * @return
-     */
-    public Navigator getNavigator() {
-        return navigator;
-    }
-
-    /**
-     * For internal use only.
-     *
-     * @param navigator
-     */
-    public void setNavigator(Navigator navigator) {
-        this.navigator = navigator;
     }
 
     /**
@@ -721,11 +438,8 @@ public abstract class UI extends AbstractSingleComponentContainer
      * exactly once, before its {@link #init(VaadinRequest) init} method is
      * called.
      *
-     * @see Component#attach
      */
-    @Override
     public void attach() {
-        super.attach();
     }
 
     /**
@@ -741,19 +455,7 @@ public abstract class UI extends AbstractSingleComponentContainer
      * methods of any children or {@link DetachListener}s that would be
      * communicated to the client are silently ignored.
      */
-    @Override
     public void detach() {
-        super.detach();
-    }
-
-    @Override
-    public void setTabIndex(int tabIndex) {
-        getState().tabIndex = tabIndex;
-    }
-
-    @Override
-    public int getTabIndex() {
-        return getState(false).tabIndex;
     }
 
     /**
@@ -886,20 +588,10 @@ public abstract class UI extends AbstractSingleComponentContainer
                 try {
                     if (runnable instanceof ErrorHandlingRunnable) {
                         ErrorHandlingRunnable errorHandlingRunnable = (ErrorHandlingRunnable) runnable;
-
                         errorHandlingRunnable.handleError(exception);
                     } else {
-                        ConnectorErrorEvent errorEvent = new ConnectorErrorEvent(
-                                UI.this, exception);
-
-                        ErrorHandler errorHandler = com.vaadin.server.ErrorEvent
-                                .findErrorHandler(UI.this);
-
-                        if (errorHandler == null) {
-                            errorHandler = new DefaultErrorHandler();
-                        }
-
-                        errorHandler.error(errorEvent);
+                        getSession().getErrorHandler()
+                                .error(new ErrorEvent(exception));
                     }
                 } catch (Exception e) {
                     getLogger().log(Level.SEVERE, e.getMessage(), e);
@@ -909,12 +601,48 @@ public abstract class UI extends AbstractSingleComponentContainer
     }
 
     /**
-     * Retrieves the object used for configuring notifications.
+     * Sets the interval with which the UI should poll the server to see if
+     * there are any changes. Polling is disabled by default.
+     * <p>
+     * Note that it is possible to enable push and polling at the same time but
+     * it should not be done to avoid excessive server traffic.
+     * </p>
+     * <p>
+     * Add-on developers should note that this method is only meant for the
+     * application developer. An add-on should not set the poll interval
+     * directly, rather instruct the user to set it.
+     * </p>
      *
-     * @return The instance used for notification configuration
+     * @param intervalInMillis
+     *            The interval (in ms) with which the UI should poll the server
+     *            or -1 to disable polling
      */
-    public NotificationConfiguration getNotificationConfiguration() {
-        return notificationConfiguration;
+    public void setPollInterval(int intervalInMillis) {
+        // FIXME Implement
+        throw new UnsupportedOperationException("FIXME: Implement");
+    }
+
+    /**
+     * Returns the interval with which the UI polls the server.
+     *
+     * @return The interval (in ms) with which the UI polls the server or -1 if
+     *         polling is disabled
+     */
+    public int getPollInterval() {
+        // FIXME Implement
+        throw new UnsupportedOperationException("FIXME: Implement");
+    }
+
+    @Override
+    public void addPollListener(PollListener listener) {
+        // FIXME Implement
+        throw new UnsupportedOperationException("FIXME: Implement");
+    }
+
+    @Override
+    public void removePollListener(PollListener listener) {
+        // FIXME Implement
+        throw new UnsupportedOperationException("FIXME: Implement");
     }
 
     /**
@@ -968,12 +696,15 @@ public abstract class UI extends AbstractSingleComponentContainer
          */
         session.getService().runPendingAccessTasks(session);
 
-        if (!getConnectorTracker().hasDirtyConnectors()) {
-            // Do not push if there is nothing to push
-            return;
-        }
-
-        pushConnection.push();
+        // FIXME Implement
+        throw new UnsupportedOperationException(
+                "FIXME: Push if there is something to push, avoid pushing otherwise");
+        // if (!getConnectorTracker().hasDirtyConnectors()) {
+        // // Do not push if there is nothing to push
+        // return;
+        // }
+        //
+        // pushConnection.push();
     }
 
     /**
@@ -1021,48 +752,6 @@ public abstract class UI extends AbstractSingleComponentContainer
     }
 
     /**
-     * Sets the interval with which the UI should poll the server to see if
-     * there are any changes. Polling is disabled by default.
-     * <p>
-     * Note that it is possible to enable push and polling at the same time but
-     * it should not be done to avoid excessive server traffic.
-     * </p>
-     * <p>
-     * Add-on developers should note that this method is only meant for the
-     * application developer. An add-on should not set the poll interval
-     * directly, rather instruct the user to set it.
-     * </p>
-     *
-     * @param intervalInMillis
-     *            The interval (in ms) with which the UI should poll the server
-     *            or -1 to disable polling
-     */
-    public void setPollInterval(int intervalInMillis) {
-        getState().pollInterval = intervalInMillis;
-    }
-
-    /**
-     * Returns the interval with which the UI polls the server.
-     *
-     * @return The interval (in ms) with which the UI polls the server or -1 if
-     *         polling is disabled
-     */
-    public int getPollInterval() {
-        return getState(false).pollInterval;
-    }
-
-    @Override
-    public void addPollListener(PollListener listener) {
-        addListener(EventId.POLL, PollEvent.class, listener,
-                PollListener.POLL_METHOD);
-    }
-
-    @Override
-    public void removePollListener(PollListener listener) {
-        removeListener(EventId.POLL, PollEvent.class, listener);
-    }
-
-    /**
      * Retrieves the object used for configuring the push channel.
      *
      * @since 7.1
@@ -1080,31 +769,6 @@ public abstract class UI extends AbstractSingleComponentContainer
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
         return reconnectDialogConfiguration;
-    }
-
-    /**
-     * Get the label that is added to the container element, where tooltip,
-     * notification and dialogs are added to.
-     *
-     * @return the label of the container
-     */
-    public String getOverlayContainerLabel() {
-        return getState(false).overlayContainerLabel;
-    }
-
-    /**
-     * Sets the label that is added to the container element, where tooltip,
-     * notifications and dialogs are added to.
-     * <p>
-     * This is helpful for users of assistive devices, as this element is
-     * reachable for them.
-     * </p>
-     *
-     * @param overlayContainerLabel
-     *            label to use for the container
-     */
-    public void setOverlayContainerLabel(String overlayContainerLabel) {
-        getState().overlayContainerLabel = overlayContainerLabel;
     }
 
     private static Logger getLogger() {
@@ -1190,4 +854,22 @@ public abstract class UI extends AbstractSingleComponentContainer
         serverSyncId++;
     }
 
+    /**
+     * * Gets the locale for this UI.
+     *
+     * @return the locale in use
+     */
+    public Locale getLocale() {
+        return locale;
+    }
+
+    /**
+     * Sets the locale for this UI.
+     *
+     * @param locale
+     *            the locale to use
+     */
+    public void setLocale(Locale locale) {
+        this.locale = locale;
+    }
 }
