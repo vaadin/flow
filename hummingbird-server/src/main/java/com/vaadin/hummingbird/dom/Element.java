@@ -280,9 +280,9 @@ public class Element implements Serializable {
         // APOSTROPHE ('), U+003E GREATER-THAN SIGN (>), U+002F SOLIDUS (/), and
         // U+003D EQUALS SIGN (=) characters, the control characters, and any
         // characters that are not defined by Unicode.
-        Character[] illegalCharacters = new Character[] { 0, ' ', '"', '\'',
-                '>', '/', '=' };
-        for (Character c : illegalCharacters) {
+        char[] illegalCharacters = new char[] { 0, ' ', '"', '\'', '>', '/',
+                '=' };
+        for (char c : illegalCharacters) {
             if (attribute.indexOf(c) != -1) {
                 return false;
             }
