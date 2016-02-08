@@ -80,8 +80,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @Override
     public boolean supports(StateNode node) {
         for (Class<? extends Namespace> nsClass : namespaces) {
-            Namespace ns = node.getNamespace(nsClass);
-            if (ns == null) {
+            if (!node.hasNamespace(nsClass)) {
                 return false;
             }
         }
@@ -105,10 +104,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
      *            the node
      * @return the data name space
      */
-    private ElementDataNamespace getDataNamespace(StateNode node) {
-        ElementDataNamespace ns = node.getNamespace(ElementDataNamespace.class);
-        assert ns != null;
-        return ns;
+    private static ElementDataNamespace getDataNamespace(StateNode node) {
+        return node.getNamespace(ElementDataNamespace.class);
     }
 
     /**
@@ -119,11 +116,9 @@ public class BasicElementStateProvider implements ElementStateProvider {
      *            the node
      * @return the data name space
      */
-    private ElementAttributeNamespace getAttributeNamespace(StateNode node) {
-        ElementAttributeNamespace ns = node
-                .getNamespace(ElementAttributeNamespace.class);
-        assert ns != null;
-        return ns;
+    private static ElementAttributeNamespace getAttributeNamespace(
+            StateNode node) {
+        return node.getNamespace(ElementAttributeNamespace.class);
     }
 
     /**
@@ -134,11 +129,9 @@ public class BasicElementStateProvider implements ElementStateProvider {
      *            the node
      * @return the children name space
      */
-    private ElementChildrenNamespace getChildrenNamespace(StateNode node) {
-        ElementChildrenNamespace ns = node
-                .getNamespace(ElementChildrenNamespace.class);
-        assert ns != null;
-        return ns;
+    private static ElementChildrenNamespace getChildrenNamespace(
+            StateNode node) {
+        return node.getNamespace(ElementChildrenNamespace.class);
     }
 
     @Override
