@@ -191,7 +191,7 @@ public class ServerRpcHandler implements Serializable {
             extends GeneralSecurityException {
 
         /**
-         * Default constructor for the exception
+         * Default constructor for the exception.
          */
         public InvalidUIDLSecurityKeyException() {
             super();
