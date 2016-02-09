@@ -16,6 +16,9 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +32,10 @@ import com.vaadin.hummingbird.change.MapRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.shared.util.UniqueSerializable;
 
+import elemental.json.Json;
+import elemental.json.JsonValue;
+import elemental.json.impl.JsonUtil;
+
 /**
  * A state node namespace that structures data as a map.
  *
@@ -36,12 +43,38 @@ import com.vaadin.shared.util.UniqueSerializable;
  * @author Vaadin Ltd
  */
 public abstract class MapNamespace extends Namespace {
+    /**
+     * JSON value wrapper that serializes as the value's string representation.
+     */
+    private final class SerializableJson implements Serializable {
+        private transient JsonValue value;
+
+        private SerializableJson(JsonValue value) {
+            assert value != null;
+            this.value = value;
+        }
+
+        private void readObject(ObjectInputStream stream)
+                throws IOException, ClassNotFoundException {
+            String jsonString = (String) stream.readObject();
+            if (jsonString == null) {
+                value = Json.createNull();
+            } else {
+                value = JsonUtil.parse(jsonString);
+            }
+        }
+
+        private void writeObject(ObjectOutputStream stream) throws IOException {
+            stream.writeObject(value.toJson());
+        }
+    }
+
     private static final Serializable REMOVED_MARKER = new UniqueSerializable() {
     };
 
-    private Map<String, Serializable> values = new HashMap<>();
+    private transient Map<String, Object> values = new HashMap<>();
 
-    private Map<String, Serializable> changes = new HashMap<>();
+    private transient Map<String, Object> changes = new HashMap<>();
 
     /**
      * Creates a new map namespace for the given node.
@@ -63,6 +96,24 @@ public abstract class MapNamespace extends Namespace {
      *            the value to store
      */
     protected void put(String key, Serializable value) {
+        doPut(key, value);
+    }
+
+    /**
+     * Stores a JSON value with the given key, replacing any value previously
+     * stored with the same key.
+     *
+     * @param key
+     *            the key to use
+     * @param value
+     *            the value to store
+     */
+    protected void putJson(String key, JsonValue value) {
+        doPut(key, value);
+    }
+
+    // Internal method to avoid exposing non-serializable setter
+    private void doPut(String key, Object value) {
         attachPotentialChild(value);
 
         setChanged(key);
@@ -126,7 +177,7 @@ public abstract class MapNamespace extends Namespace {
         if (!changes.containsKey(key)) {
             // Record this as changed for the collection logic
             if (values.containsKey(key)) {
-                Serializable oldValue = values.get(key);
+                Object oldValue = values.get(key);
                 changes.put(key, oldValue);
             } else {
                 changes.put(key, REMOVED_MARKER);
@@ -165,6 +216,54 @@ public abstract class MapNamespace extends Namespace {
     public void resetChanges() {
         changes.clear();
         values.keySet().forEach(k -> changes.put(k, REMOVED_MARKER));
+    }
+
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+
+        changes = unwrapSerializableJson(stream.readObject());
+        values = unwrapSerializableJson(stream.readObject());
+    }
+
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+
+        stream.writeObject(wrapSerializableJson(changes));
+        stream.writeObject(wrapSerializableJson(values));
+    }
+
+    private static Map<String, Object> unwrapSerializableJson(Object input) {
+        @SuppressWarnings("unchecked")
+        HashMap<String, Object> map = (HashMap<String, Object>) input;
+
+        // Can modify in place when reading
+        map.replaceAll((key, value) -> {
+            if (value instanceof SerializableJson) {
+                SerializableJson json = (SerializableJson) value;
+                return json.value;
+            } else {
+                return value;
+            }
+        });
+        return map;
+    }
+
+    private HashMap<String, Object> wrapSerializableJson(
+            Map<String, Object> input) {
+        // Must create a copy when writing to avoid changing the current
+        // instance
+        HashMap<String, Object> output = new HashMap<>();
+
+        input.forEach((key, value) -> {
+            if (value instanceof JsonValue) {
+                JsonValue jsonValue = (JsonValue) value;
+                value = new SerializableJson(jsonValue);
+            }
+            output.put(key, value);
+        });
+
+        return output;
     }
 
 }
