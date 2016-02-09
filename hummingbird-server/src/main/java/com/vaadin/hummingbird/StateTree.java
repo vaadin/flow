@@ -60,7 +60,7 @@ public class StateTree extends NodeOwner {
                 return true;
             }
         };
-        rootNode.setOwner(this);
+        adoptNodes(rootNode.getOwner());
     }
 
     @Override

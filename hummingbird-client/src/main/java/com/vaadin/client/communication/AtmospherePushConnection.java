@@ -31,7 +31,6 @@ import com.vaadin.client.ValueMap;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushConstants;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 import com.vaadin.shared.util.SharedUtil;
 
 import elemental.json.JsonObject;
@@ -143,8 +142,7 @@ public class AtmospherePushConnection implements PushConnection {
      * , Map<String, String>, CommunicationErrorHandler)
      */
     @Override
-    public void init(final ApplicationConnection connection,
-            final PushConfigurationState pushConfiguration) {
+    public void init(final ApplicationConnection connection) {
         this.connection = connection;
 
         connection.addHandler(ApplicationStoppedEvent.TYPE,
@@ -169,17 +167,18 @@ public class AtmospherePushConnection implements PushConnection {
         config = createConfig();
         // Always debug for now
         config.setStringValue("logLevel", "debug");
-        for (String param : pushConfiguration.parameters.keySet()) {
-            String value = pushConfiguration.parameters.get(param);
+
+        getPushConfiguration().getParameters().forEach((value, key) -> {
             if (value.equalsIgnoreCase("true")
                     || value.equalsIgnoreCase("false")) {
-                config.setBooleanValue(param, value.equalsIgnoreCase("true"));
+                config.setBooleanValue(key, value.equalsIgnoreCase("true"));
             } else {
-                config.setStringValue(param, value);
+                config.setStringValue(key, value);
             }
-        }
-        if (pushConfiguration.pushUrl != null) {
-            url = pushConfiguration.pushUrl;
+
+        });
+        if (getPushConfiguration().getPushUrl() != null) {
+            url = getPushConfiguration().getPushUrl();
         } else {
             url = ApplicationConstants.APP_PROTOCOL_PREFIX
                     + ApplicationConstants.PUSH_PATH;
@@ -195,6 +194,10 @@ public class AtmospherePushConnection implements PushConnection {
                 });
             }
         });
+    }
+
+    private PushConfiguration getPushConfiguration() {
+        return connection.getMessageSender().getPushConfiguration();
     }
 
     private void connect() {
@@ -236,7 +239,7 @@ public class AtmospherePushConnection implements PushConnection {
             // If we are not using websockets, we want to send XHRs
             return false;
         }
-        if (connection.getPushConfiguration().alwaysUseXhrForServerRequests) {
+        if (getPushConfiguration().isAlwaysXhrToServer()) {
             // If user has forced us to use XHR, let's abide
             return false;
         }
@@ -603,7 +606,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
         // Parameter appended to bypass caches after version upgrade.
         pushJs += "?v=" + Version.getFullVersion();
-        return pushJs;
+        return "push/" + pushJs;
     }
 
     @Override

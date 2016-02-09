@@ -20,6 +20,8 @@ import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.PushConfigurationMap;
+import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 
 /**
  * Registry of namespace id numbers and map keys shared between server and
@@ -53,6 +55,14 @@ public class Namespaces {
      * Id for {@link ElementListenersNamespace}.
      */
     public static final int ELEMENT_LISTENERS = 4;
+    /**
+     * Id for {@link PushConfigurationMap}.
+     */
+    public static final int UI_PUSHCONFIGURATION = 5;
+    /**
+     * Id for {@link PushConfigurationParametersMap}.
+     */
+    public static final int UI_PUSHCONFIGURATION_PARAMETERS = 6;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.

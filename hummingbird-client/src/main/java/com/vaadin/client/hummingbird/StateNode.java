@@ -165,6 +165,10 @@ public class StateNode {
             return "elementChildren";
         case Namespaces.ELEMENT_LISTENERS:
             return "elementListeners";
+        case Namespaces.UI_PUSHCONFIGURATION:
+            return "pushConfiguration";
+        case Namespaces.UI_PUSHCONFIGURATION_PARAMETERS:
+            return "pushConfigurationParameters";
         default:
             return "Unknown namespace: " + id;
         }
