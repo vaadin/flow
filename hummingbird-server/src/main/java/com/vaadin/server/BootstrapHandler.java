@@ -445,7 +445,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         if (context.getPushMode().isEnabled()) {
             // Load client-side dependencies for push support
-            String pushJS = vaadinLocation;
+            String pushJS = vaadinLocation + "push/";
             if (context.getRequest().getService().getDeploymentConfiguration()
                     .isProductionMode()) {
                 pushJS += ApplicationConstants.VAADIN_PUSH_JS;
