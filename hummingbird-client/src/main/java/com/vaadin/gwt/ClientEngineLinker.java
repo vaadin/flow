@@ -15,6 +15,7 @@
  */
 package com.vaadin.gwt;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -25,14 +26,17 @@ import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.linker.Artifact;
 import com.google.gwt.core.ext.linker.ArtifactSet;
 import com.google.gwt.core.ext.linker.CompilationResult;
+import com.google.gwt.core.ext.linker.ConfigurationProperty;
 import com.google.gwt.core.ext.linker.EmittedArtifact;
 import com.google.gwt.core.ext.linker.LinkerOrder;
 import com.google.gwt.core.ext.linker.LinkerOrder.Order;
 import com.google.gwt.core.ext.linker.Shardable;
 import com.google.gwt.core.ext.linker.Transferable;
+import com.google.gwt.core.ext.linker.impl.ResourceInjectionUtil;
 import com.google.gwt.core.ext.linker.impl.SelectionScriptLinker;
 import com.google.gwt.dev.About;
 import com.google.gwt.dev.util.DefaultTextOutput;
+import com.google.gwt.util.tools.Utility;
 
 /**
  * A Linker for producing a single, cacheable JavaScript file from a GWT module.
@@ -48,6 +52,9 @@ import com.google.gwt.dev.util.DefaultTextOutput;
 @LinkerOrder(Order.PRIMARY)
 @Shardable
 public class ClientEngineLinker extends SelectionScriptLinker {
+
+    protected static final String COMPUTE_SCRIPT_BASE_DOT_JS = "com/google/gwt/core/ext/linker/impl/computeScriptBase.js";
+
     @Override
     public String getDescription() {
         return "Single Script";
@@ -167,6 +174,65 @@ public class ClientEngineLinker extends SelectionScriptLinker {
                 getJsFilename(context, result));
     }
 
+    @Override
+    protected String fillSelectionScriptTemplate(StringBuffer selectionScript,
+            TreeLogger logger, LinkerContext context, ArtifactSet artifacts,
+            CompilationResult result) throws UnableToCompleteException {
+        String computeScriptBase;
+        String processMetas;
+        try {
+            computeScriptBase = Utility
+                    .getFileFromClassPath(COMPUTE_SCRIPT_BASE_DOT_JS);
+            processMetas = Utility.getFileFromClassPath(PROCESS_METAS_JS);
+        } catch (IOException e) {
+            logger.log(TreeLogger.ERROR,
+                    "Unable to read selection script template", e);
+            throw new UnableToCompleteException();
+        }
+        replaceAll(selectionScript, "__COMPUTE_SCRIPT_BASE__",
+                computeScriptBase);
+
+        replaceAll(selectionScript, "__PROCESS_METAS__", processMetas);
+
+        selectionScript = ResourceInjectionUtil.injectResources(selectionScript,
+                artifacts);
+        permutationsUtil.addPermutationsJs(selectionScript, logger, context);
+
+        replaceAll(selectionScript, "__MODULE_FUNC__",
+                context.getModuleFunctionName());
+        replaceAll(selectionScript, "__MODULE_NAME__", context.getModuleName());
+        replaceAll(selectionScript, "__HOSTED_FILENAME__", getHostedFilename());
+
+        return selectionScript.toString();
+    }
+
+    /**
+     * Returns the name of the {@code ComputeScriptBase} script. By default,
+     * returns
+     * {@code "com/google/gwt/core/ext/linker/impl/computeScriptBase.js"}.
+     *
+     * @param context
+     *            a LinkerContext
+     */
+    protected String getJsComputeScriptBase(LinkerContext context) {
+        return getStringConfigurationProperty(context, "computeScriptBaseJs",
+                "com/google/gwt/core/ext/linker/impl/computeScriptBase.js");
+    }
+
+    protected String getStringConfigurationProperty(LinkerContext context,
+            String name, String def) {
+        for (ConfigurationProperty property : context
+                .getConfigurationProperties()) {
+            if (property.getName().equals(name)
+                    && property.getValues().size() > 0) {
+                if (property.getValues().get(0) != null) {
+                    return property.getValues().get(0);
+                }
+            }
+        }
+        return def;
+    }
+
     private String getJsFilename(LinkerContext context, Script result) {
         return context.getModuleName() + "-" + result.getStrongName()
                 + ".cache.js";
@@ -212,7 +278,7 @@ public class ClientEngineLinker extends SelectionScriptLinker {
     @Override
     protected String getSelectionScriptTemplate(TreeLogger logger,
             LinkerContext context) throws UnableToCompleteException {
-        return "com/google/gwt/core/linker/SingleScriptTemplate.js";
+        return "com/vaadin/gwt/VaadinSingleScriptTemplate.js";
     }
 
     @Override
