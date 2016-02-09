@@ -32,11 +32,12 @@ public class StateTreeUI extends UI {
         div.setAttribute("foo", "baz");
 
         bodyElement.appendChild(div);
-        rootNode.getNamespace(ElementPropertiesNamespace.class)
-                .setProperty("foo", "bar");
         bodyElement.setAttribute("bar", "foo");
 
         Element span = new Element("span");
+        span.getNode().getNamespace(ElementPropertiesNamespace.class)
+                .setProperty("textContent", "Hello world");
+
         span.setAttribute("class", "important");
         div.appendChild(span);
     }
