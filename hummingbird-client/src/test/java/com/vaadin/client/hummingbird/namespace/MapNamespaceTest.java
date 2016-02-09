@@ -120,4 +120,34 @@ public class MapNamespaceTest {
         namespace.forEachProperty((p, n) -> properties.add(p));
         return properties;
     }
+
+    @Test
+    public void hasPropertyValueForNonExistingProperty() {
+        Assert.assertFalse(namespace.hasPropertyValue("foo"));
+        // Should not create the property
+        namespace.forEachProperty((property, key) -> {
+            Assert.fail("There should be no properties");
+        });
+    }
+
+    @Test
+    public void hasPropertyValueForExistingPropertyWithoutValue() {
+        namespace.getProperty("foo");
+        Assert.assertFalse(namespace.hasPropertyValue("foo"));
+    }
+
+    @Test
+    public void hasPropertyValueForExistingPropertyWithValue() {
+        namespace.getProperty("foo").setValue("bar");
+        Assert.assertTrue(namespace.hasPropertyValue("foo"));
+    }
+
+    @Test
+    public void hasPropertyValueAfterRemovingValue() {
+        MapProperty p = namespace.getProperty("foo");
+        p.setValue("bar");
+        Assert.assertTrue(namespace.hasPropertyValue("foo"));
+        p.removeValue();
+        Assert.assertFalse(namespace.hasPropertyValue("foo"));
+    }
 }
