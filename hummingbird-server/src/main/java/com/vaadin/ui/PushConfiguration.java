@@ -18,13 +18,12 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 
+import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 
 /**
  * Provides method for configuring the push channel.
@@ -166,28 +165,24 @@ public interface PushConfiguration extends Serializable {
 
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;
-    PushConfigurationState state = new PushConfigurationState();
 
     public PushConfigurationImpl(UI ui) {
         this.ui = ui;
+        getPushConfigurationMap().setTransport(Transport.WEBSOCKET_XHR);
+        getPushConfigurationMap().setTransport(Transport.LONG_POLLING);
+        getPushConfigurationMap().setPushMode(PushMode.DISABLED);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#getPushMode()
-     */
+    private PushConfigurationMap getPushConfigurationMap() {
+        return ui.getStateTree().getRootNode()
+                .getNamespace(PushConfigurationMap.class);
+    }
+
     @Override
     public PushMode getPushMode() {
-        return getState().mode;
+        return getPushConfigurationMap().getPushMode();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#setPushMode(com.vaadin.shared.
-     * communication .PushMode)
-     */
     @Override
     public void setPushMode(PushMode pushMode) {
         if (pushMode == null) {
@@ -209,9 +204,9 @@ class PushConfigurationImpl implements PushConfiguration {
                     "Push is not available. See previous log messages for more information.");
         }
 
-        PushMode oldMode = getState().mode;
+        PushMode oldMode = getPushConfigurationMap().getPushMode();
         if (oldMode != pushMode) {
-            getState().mode = pushMode;
+            getPushConfigurationMap().setPushMode(pushMode);
 
             if (!oldMode.isEnabled() && pushMode.isEnabled()) {
                 // The push connection is initially in a disconnected state;
@@ -225,118 +220,48 @@ class PushConfigurationImpl implements PushConfiguration {
 
     @Override
     public void setPushUrl(String pushUrl) {
-        getState().pushUrl = pushUrl;
+        getPushConfigurationMap().setPushUrl(pushUrl);
     }
 
     @Override
     public String getPushUrl() {
-        return getState().pushUrl;
+        return getPushConfigurationMap().getPushUrl();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#getTransport()
-     */
     @Override
     public Transport getTransport() {
-        try {
-            Transport tr = Transport.getByIdentifier(
-                    getParameter(PushConfigurationState.TRANSPORT_PARAM));
-            if (tr == Transport.WEBSOCKET
-                    && getState().alwaysUseXhrForServerRequests) {
-                return Transport.WEBSOCKET_XHR;
-            } else {
-                return tr;
-            }
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        return getPushConfigurationMap().getTransport();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.ui.PushConfiguration#setTransport(com.vaadin.shared.ui.ui.
-     * Transport)
-     */
     @Override
     public void setTransport(Transport transport) {
-        if (transport == Transport.WEBSOCKET_XHR) {
-            getState().alwaysUseXhrForServerRequests = true;
-            // Atmosphere knows only about "websocket"
-            setParameter(PushConfigurationState.TRANSPORT_PARAM,
-                    Transport.WEBSOCKET.getIdentifier());
-        } else {
-            getState().alwaysUseXhrForServerRequests = false;
-            setParameter(PushConfigurationState.TRANSPORT_PARAM,
-                    transport.getIdentifier());
-        }
+        getPushConfigurationMap().setTransport(transport);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#getFallbackTransport()
-     */
     @Override
     public Transport getFallbackTransport() {
-        try {
-            return Transport.valueOf(getParameter(
-                    PushConfigurationState.FALLBACK_TRANSPORT_PARAM));
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
+        return getPushConfigurationMap().getFallbackTransport();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.ui.PushConfiguration#setFallbackTransport(com.vaadin.shared
-     * .ui.ui.Transport)
-     */
     @Override
     public void setFallbackTransport(Transport fallbackTransport) {
-        if (fallbackTransport == Transport.WEBSOCKET_XHR) {
-            throw new IllegalArgumentException(
-                    "WEBSOCKET_XHR can only be used as primary transport");
-        }
-        setParameter(PushConfigurationState.FALLBACK_TRANSPORT_PARAM,
-                fallbackTransport.getIdentifier());
+        getPushConfigurationMap().setFallbackTransport(fallbackTransport);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#getParameter(java.lang.String)
-     */
     @Override
     public String getParameter(String parameter) {
-        return getState().parameters.get(parameter);
+        return getPushConfigurationMap().getParameter(parameter);
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.PushConfiguration#setParameter(java.lang.String,
-     * java.lang.String)
-     */
     @Override
     public void setParameter(String parameter, String value) {
-        getState().parameters.put(parameter, value);
+        getPushConfigurationMap().setParameter(parameter, value);
 
-    }
-
-    private PushConfigurationState getState() {
-        return state;
     }
 
     @Override
     public Collection<String> getParameterNames() {
-        return Collections
-                .unmodifiableCollection(getState().parameters.keySet());
+        return getPushConfigurationMap().getParameterNames();
     }
 
 }
