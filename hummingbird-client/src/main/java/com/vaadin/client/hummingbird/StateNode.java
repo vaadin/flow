@@ -48,6 +48,8 @@ public class StateNode {
     private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections
             .set();
 
+    private JsMap<Integer, String> namespaceDebugName;
+
     private Element element;
 
     /**
@@ -153,19 +155,26 @@ public class StateNode {
         return object;
     }
 
-    private static String getNamespaceDebugName(int id) {
-        switch (id) {
-        case Namespaces.ELEMENT_DATA:
-            return "elementData";
-        case Namespaces.ELEMENT_PROPERTIES:
-            return "elementProperties";
-        case Namespaces.ELEMENT_ATTRIBUTES:
-            return "elementAttributes";
-        case Namespaces.ELEMENT_CHILDREN:
-            return "elementChildren";
-        case Namespaces.ELEMENT_LISTENERS:
-            return "elementListeners";
-        default:
+    private String getNamespaceDebugName(int id) {
+        if (namespaceDebugName == null) {
+            namespaceDebugName = JsCollections.map();
+            namespaceDebugName.set(Namespaces.ELEMENT_DATA, "elementData");
+            namespaceDebugName.set(Namespaces.ELEMENT_PROPERTIES,
+                    "elementProperties");
+            namespaceDebugName.set(Namespaces.ELEMENT_ATTRIBUTES,
+                    "elementAttributes");
+            namespaceDebugName.set(Namespaces.ELEMENT_CHILDREN,
+                    "elementChildren");
+            namespaceDebugName.set(Namespaces.ELEMENT_LISTENERS,
+                    "elementListeners");
+            namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION,
+                    "pushConfiguration");
+            namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION_PARAMETERS,
+                    "pushConfigurationParameters");
+        }
+        if (namespaceDebugName.has(id)) {
+            return namespaceDebugName.get(id);
+        } else {
             return "Unknown namespace: " + id;
         }
     }

@@ -17,7 +17,6 @@
 package com.vaadin.client.communication;
 
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 
 import elemental.json.JsonObject;
 
@@ -39,8 +38,7 @@ public interface PushConnection {
      * @param connection
      *            The ApplicationConnection
      */
-    public void init(ApplicationConnection connection,
-            PushConfigurationState pushConfigurationState);
+    public void init(ApplicationConnection connection);
 
     /**
      * Pushes a message to the server. Will throw an exception if the connection
