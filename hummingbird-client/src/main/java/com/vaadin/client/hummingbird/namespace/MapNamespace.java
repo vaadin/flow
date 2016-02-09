@@ -93,6 +93,17 @@ public class MapNamespace extends AbstractNamespace implements ReactiveValue {
     }
 
     /**
+     * Checks if a property with the given name is present.
+     *
+     * @param name
+     *            the name of the property
+     * @return true if the property is present, false otherwise
+     */
+    public boolean hasProperty(String name) {
+        return properties.has(name);
+    }
+
+    /**
      * Iterates all properties in this namespace.
      *
      * @param callback

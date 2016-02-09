@@ -125,4 +125,14 @@ public abstract class NodeOwner implements Serializable {
         dirtyNodes = new HashSet<>();
         return collectedNodes;
     }
+
+    /**
+     * Checks if there are nodes that have been marked as dirty since the last
+     * time {@link #collectDirtyNodes()} was invoked.
+     *
+     * @return true if there are dirty nodes, false otherwise
+     */
+    public boolean hasDirtyNodes() {
+        return !dirtyNodes.isEmpty();
+    }
 }
