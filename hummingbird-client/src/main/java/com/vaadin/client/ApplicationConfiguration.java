@@ -523,6 +523,33 @@ public class ApplicationConfiguration implements EntryPoint {
     }-*/;
 
     /**
+     * Checks if client side is in debug mode. Practically this is invoked by
+     * adding ?debug parameter to URI. Please note that debug mode is always
+     * disabled if production mode is enabled, but disabling production mode
+     * does not automatically enable debug mode.
+     *
+     * @see #isProductionMode()
+     *
+     * @return true if client side is currently been debugged
+     */
+    public static boolean isDebugMode() {
+        return isDebugAvailable() && getParameter("debug") != null;
+    }
+
+    private static String getParameter(String parameter) {
+        String[] keyValues = Browser.getDocument().getLocation().getSearch()
+                .substring(1).split("&");
+        for (String keyValue : keyValues) {
+            String[] param = keyValue.split("=", 1);
+            if (param[0].equals(parameter)) {
+                return param[1];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Checks if production mode is enabled. When production mode is enabled,
      * client-side logging is disabled. There may also be other performance
      * optimizations.
