@@ -170,4 +170,17 @@ public interface ElementStateProvider extends Serializable {
      */
     void removeAllChildren(StateNode node);
 
+    /**
+     * Adds a DOM event listener.
+     *
+     * @param node
+     *            the node containing the data
+     * @param eventType
+     *            the event type
+     * @param listener
+     *            the listener
+     * @return a handle for removing the listener
+     */
+    EventRegistrationHandle addEventListener(StateNode node, String eventType,
+            DomEventListener listener);
 }

@@ -29,9 +29,26 @@ import com.vaadin.hummingbird.shared.Namespaces;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
+import elemental.events.Event;
 
 public class GwtBasicElementBinderTest extends ClientEngineTestBase {
-    private StateNode node = new StateTree().getRootNode();
+    private static class CollectingStateTree extends StateTree {
+        // Assuming each event is only collected for one node
+        JsMap<Event, StateNode> collectedEvents = JsCollections.map();
+
+        public CollectingStateTree() {
+            super(null);
+        }
+
+        @Override
+        public void sendEventToServer(StateNode node, Event event) {
+            collectedEvents.set(event, node);
+        }
+    }
+
+    private CollectingStateTree tree = new CollectingStateTree();
+
+    private StateNode node = tree.getRootNode();
 
     private MapNamespace properties = node
             .getMapNamespace(Namespaces.ELEMENT_PROPERTIES);
@@ -329,5 +346,41 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals(1, element.getChildElementCount());
+    }
+
+    public void testEventFired() {
+        BasicElementBinder.bind(node, element);
+
+        node.getMapNamespace(Namespaces.ELEMENT_LISTENERS).getProperty("click")
+                .setValue(Double.valueOf(1));
+        Reactive.flush();
+
+        element.click();
+
+        assertEquals(1, tree.collectedEvents.size());
+
+        JsArray<StateNode> targets = JsCollections
+                .mapValues(tree.collectedEvents);
+
+        assertSame(node, targets.get(0));
+    }
+
+    public void testRemovedEventNotFired() {
+        BasicElementBinder.bind(node, element);
+
+        MapProperty clickEvent = node
+                .getMapNamespace(Namespaces.ELEMENT_LISTENERS)
+                .getProperty("click");
+        clickEvent.setValue(Double.valueOf(1));
+
+        Reactive.flush();
+
+        clickEvent.removeValue();
+
+        Reactive.flush();
+
+        element.click();
+
+        assertEquals(0, tree.collectedEvents.size());
     }
 }
