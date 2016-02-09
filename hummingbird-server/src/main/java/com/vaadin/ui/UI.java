@@ -17,6 +17,8 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -26,10 +28,9 @@ import java.util.logging.Logger;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateTree;
-import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
-import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
+import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingRunnable;
 import com.vaadin.server.UIProvider;
@@ -109,9 +110,7 @@ public abstract class UI implements Serializable, PollNotifier {
 
     private Locale locale = Locale.getDefault();
 
-    private final StateTree stateTree = new StateTree(
-            ElementDataNamespace.class, ElementPropertiesNamespace.class,
-            ElementChildrenNamespace.class, ElementAttributeNamespace.class);
+    private final StateTree stateTree = new StateTree(getRootNodeNamespaces());
 
     private int serverSyncId = 0;
 
@@ -873,5 +872,20 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     public void setLocale(Locale locale) {
         this.locale = locale;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Class<? extends Namespace>[] getRootNodeNamespaces() {
+        // Start with all element namespaces
+        ArrayList<Class<? extends Namespace>> namespaces = new ArrayList<>(
+                BasicElementStateProvider.getNamespaces());
+
+        // Then add our own custom namespaces (none for now)
+
+        // And return them all
+        assert namespaces.size() == new HashSet<>(namespaces)
+                .size() : "There are duplicates";
+        return (Class<? extends Namespace>[]) namespaces
+                .toArray(new Class<?>[0]);
     }
 }

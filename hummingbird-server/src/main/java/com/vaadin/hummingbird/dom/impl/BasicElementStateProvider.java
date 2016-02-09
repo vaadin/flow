@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.dom.impl;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 
@@ -226,6 +229,15 @@ public class BasicElementStateProvider implements ElementStateProvider {
         }
         childrenNamespace.remove(pos);
 
+    }
+
+    /**
+     * Gets all the namesapces used by an element node.
+     *
+     * @return an unmodifiable collection of namespace classes
+     */
+    public static Collection<Class<? extends Namespace>> getNamespaces() {
+        return Collections.unmodifiableCollection(Arrays.asList(namespaces));
     }
 
 }
