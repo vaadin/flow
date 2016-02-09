@@ -40,7 +40,6 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
 
 import elemental.client.Browser;
@@ -681,11 +680,6 @@ public class ApplicationConnection {
      */
     public MessageSender getMessageSender() {
         return messageSender;
-    }
-
-    public PushConfigurationState getPushConfiguration() {
-        // FIXME from the server
-        return new PushConfigurationState();
     }
 
     public ReconnectDialogConfigurationState getReconnectDialogConfiguration() {
