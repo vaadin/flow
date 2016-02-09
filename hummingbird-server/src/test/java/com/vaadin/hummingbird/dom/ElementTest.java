@@ -39,6 +39,9 @@ public class ElementTest {
         ignore.add("hashCode");
         ignore.add("equals");
 
+        // Returns EventRegistrationHandle
+        ignore.add("addEventListener");
+
         for (Method m : Element.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
                 continue;

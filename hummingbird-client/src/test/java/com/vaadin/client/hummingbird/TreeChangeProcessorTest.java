@@ -30,7 +30,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 public class TreeChangeProcessorTest {
-    private StateTree tree = new StateTree();
+    private StateTree tree = new StateTree(null);
     private int rootId = tree.getRootNode().getId();
     private int ns = 0;
 

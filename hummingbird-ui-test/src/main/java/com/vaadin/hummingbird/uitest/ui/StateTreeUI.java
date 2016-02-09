@@ -28,17 +28,17 @@ public class StateTreeUI extends UI {
         StateNode rootNode = getStateTree().getRootNode();
         Element bodyElement = Element.get(rootNode);
 
-        Element div = new Element("div");
-        div.setAttribute("foo", "baz");
+        Element button = new Element("input");
+        button.setAttribute("type", "button");
+        button.setAttribute("value", "Click me");
 
-        bodyElement.appendChild(div);
-        bodyElement.setAttribute("bar", "foo");
+        button.addEventListener("click", () -> {
+            Element greeting = new Element("div");
+            greeting.getNode().getNamespace(ElementPropertiesNamespace.class)
+                    .setProperty("textContent", "Thank you for clicking!");
+            bodyElement.appendChild(greeting);
+        });
 
-        Element span = new Element("span");
-        span.getNode().getNamespace(ElementPropertiesNamespace.class)
-                .setProperty("textContent", "Hello world");
-
-        span.setAttribute("class", "important");
-        div.appendChild(span);
+        bodyElement.appendChild(button);
     }
 }

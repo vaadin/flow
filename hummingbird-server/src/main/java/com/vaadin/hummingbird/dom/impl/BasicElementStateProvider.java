@@ -22,11 +22,14 @@ import java.util.Locale;
 import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 
@@ -50,7 +53,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @SuppressWarnings("unchecked")
     private static Class<? extends Namespace>[] namespaces = new Class[] {
             ElementDataNamespace.class, ElementAttributeNamespace.class,
-            ElementChildrenNamespace.class, ElementPropertiesNamespace.class };
+            ElementChildrenNamespace.class, ElementPropertiesNamespace.class,
+            ElementListenersNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -229,6 +233,15 @@ public class BasicElementStateProvider implements ElementStateProvider {
         }
         childrenNamespace.remove(pos);
 
+    }
+
+    @Override
+    public EventRegistrationHandle addEventListener(StateNode node,
+            String eventType, DomEventListener listener) {
+        ElementListenersNamespace listeners = node
+                .getNamespace(ElementListenersNamespace.class);
+
+        return listeners.add(eventType, listener);
     }
 
     /**
