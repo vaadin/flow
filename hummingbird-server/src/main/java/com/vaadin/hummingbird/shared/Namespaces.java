@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.shared;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 
 /**
@@ -47,6 +48,11 @@ public class Namespaces {
      * Id for {@link ElementAttributeNamespace}.
      */
     public static final int ELEMENT_ATTRIBUTES = 3;
+
+    /**
+     * Id for {@link ElementListenersNamespace}.
+     */
+    public static final int ELEMENT_LISTENERS = 4;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.

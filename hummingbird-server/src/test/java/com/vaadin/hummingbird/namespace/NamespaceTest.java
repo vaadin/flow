@@ -61,6 +61,8 @@ public class NamespaceTest {
                 Namespaces.ELEMENT_ATTRIBUTES);
         expectedIds.put(ElementChildrenNamespace.class,
                 Namespaces.ELEMENT_CHILDREN);
+        expectedIds.put(ElementListenersNamespace.class,
+                Namespaces.ELEMENT_LISTENERS);
 
         Assert.assertEquals(
                 "The number of expected namespaces is not up to date",
