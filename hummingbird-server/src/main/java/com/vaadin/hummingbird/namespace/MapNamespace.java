@@ -16,6 +16,9 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +30,10 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.MapRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.util.SerializableJson;
 import com.vaadin.shared.util.UniqueSerializable;
+
+import elemental.json.JsonValue;
 
 /**
  * A state node namespace that structures data as a map.
@@ -39,9 +45,9 @@ public abstract class MapNamespace extends Namespace {
     private static final Serializable REMOVED_MARKER = new UniqueSerializable() {
     };
 
-    private Map<String, Serializable> values = new HashMap<>();
+    private transient Map<String, Object> values = new HashMap<>();
 
-    private Map<String, Serializable> changes = new HashMap<>();
+    private transient Map<String, Object> changes = new HashMap<>();
 
     /**
      * Creates a new map namespace for the given node.
@@ -63,6 +69,24 @@ public abstract class MapNamespace extends Namespace {
      *            the value to store
      */
     protected void put(String key, Serializable value) {
+        doPut(key, value);
+    }
+
+    /**
+     * Stores a JSON value with the given key, replacing any value previously
+     * stored with the same key.
+     *
+     * @param key
+     *            the key to use
+     * @param value
+     *            the value to store
+     */
+    protected void putJson(String key, JsonValue value) {
+        doPut(key, value);
+    }
+
+    // Internal method to avoid exposing non-serializable setter
+    private void doPut(String key, Object value) {
         attachPotentialChild(value);
 
         setChanged(key);
@@ -126,7 +150,7 @@ public abstract class MapNamespace extends Namespace {
         if (!changes.containsKey(key)) {
             // Record this as changed for the collection logic
             if (values.containsKey(key)) {
-                Serializable oldValue = values.get(key);
+                Object oldValue = values.get(key);
                 changes.put(key, oldValue);
             } else {
                 changes.put(key, REMOVED_MARKER);
@@ -165,6 +189,25 @@ public abstract class MapNamespace extends Namespace {
     public void resetChanges() {
         changes.clear();
         values.keySet().forEach(k -> changes.put(k, REMOVED_MARKER));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+
+        changes = (Map<String, Object>) stream.readObject();
+        values = (Map<String, Object>) stream.readObject();
+
+        SerializableJson.unwrapMap(changes);
+        SerializableJson.unwrapMap(values);
+    }
+
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+
+        stream.writeObject(SerializableJson.createSerializableMap(changes));
+        stream.writeObject(SerializableJson.createSerializableMap(values));
     }
 
 }
