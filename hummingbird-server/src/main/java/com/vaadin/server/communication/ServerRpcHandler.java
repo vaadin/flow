@@ -305,13 +305,7 @@ public class ServerRpcHandler implements Serializable {
     /**
      * Processes invocations data received from the client.
      * <p>
-     * The invocations data can contain any number of RPC calls, including
-     * legacy variable change calls that are processed separately.
-     * <p>
-     * Consecutive changes to the value of the same variable are combined and
-     * changeVariables() is only called once for them. This preserves the Vaadin
-     * 6 semantics for components and add-ons that do not use Vaadin 7 RPC
-     * directly.
+     * The invocations data can contain any number of RPC calls.
      *
      * @param uI
      *            the UI receiving the invocations data
