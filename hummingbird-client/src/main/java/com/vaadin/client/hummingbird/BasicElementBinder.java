@@ -19,6 +19,7 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.ListSpliceEvent;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
@@ -49,8 +50,14 @@ public class BasicElementBinder {
             .map();
     private final JsMap<String, Computation> attributeBindings = JsCollections
             .map();
+    private final JsMap<String, Computation> listenerBindings = JsCollections
+            .map();
+    private final JsMap<String, EventRemover> listenerRemovers = JsCollections
+            .map();
+
     private final EventRemover unregisterListener;
-    private EventRemover childrenListener;
+    private final EventRemover listenersListener;
+    private final EventRemover childrenListener;
 
     private final Element element;
     private final StateNode node;
@@ -71,9 +78,11 @@ public class BasicElementBinder {
         bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
                 this::updateAttribute);
 
-        bindChildren();
+        childrenListener = bindChildren();
 
         unregisterListener = node.addUnregisterListener(e -> remove());
+
+        listenersListener = bindListeners();
 
         node.setElement(element);
     }
@@ -81,6 +90,58 @@ public class BasicElementBinder {
     private static String getTag(StateNode node) {
         return (String) node.getMapNamespace(Namespaces.ELEMENT_DATA)
                 .getProperty(Namespaces.TAG).getValue();
+    }
+
+    private EventRemover bindListeners() {
+        MapNamespace listeners = node
+                .getMapNamespace(Namespaces.ELEMENT_LISTENERS);
+        listeners.forEachProperty(
+                (property, name) -> bindEventHandlerProperty(property));
+
+        return listeners.addPropertyAddListener(
+                event -> bindEventHandlerProperty(event.getProperty()));
+    }
+
+    private void bindEventHandlerProperty(MapProperty eventHandlerProperty) {
+        String name = eventHandlerProperty.getName();
+        assert !listenerBindings.has(name);
+
+        Computation computation = new Computation() {
+            @Override
+            protected void doRecompute() {
+                String name = eventHandlerProperty.getName();
+
+                boolean hasValue = eventHandlerProperty.hasValue();
+                boolean hasListener = listenerRemovers.has(name);
+
+                if (hasValue != hasListener) {
+                    if (hasValue) {
+                        addEventHandler(name);
+                    } else {
+                        removeEventHandler(name);
+                    }
+                }
+            }
+        };
+
+        listenerBindings.set(name, computation);
+    }
+
+    private void addEventHandler(String eventType) {
+        assert !listenerRemovers.has(eventType);
+
+        EventRemover remover = element.addEventListener(eventType,
+                e -> node.getTree().sendEventToServer(node, e), false);
+
+        listenerRemovers.set(eventType, remover);
+    }
+
+    private void removeEventHandler(String eventType) {
+        EventRemover remover = listenerRemovers.get(eventType);
+        listenerRemovers.delete(eventType);
+
+        assert remover != null;
+        remover.remove();
     }
 
     private void bindMap(int namespaceId, JsMap<String, Computation> bindings,
@@ -133,7 +194,7 @@ public class BasicElementBinder {
         }
     }
 
-    private void bindChildren() {
+    private EventRemover bindChildren() {
         ListNamespace children = node
                 .getListNamespace(Namespaces.ELEMENT_CHILDREN);
 
@@ -145,7 +206,7 @@ public class BasicElementBinder {
             element.appendChild(child);
         }
 
-        childrenListener = children.addSpliceListener(e -> {
+        return children.addSpliceListener(e -> {
             /*
              * Handle lazily so we can create the children we need to insert.
              * The change that gives a child node an element tag name might not
@@ -211,8 +272,16 @@ public class BasicElementBinder {
      * Removes all bindings.
      */
     public final void remove() {
-        propertyBindings.forEach((computation, name) -> computation.stop());
-        attributeBindings.forEach((computation, name) -> computation.stop());
+        ForEachCallback<String, Computation> computationStopper = (computation,
+                name) -> computation.stop();
+
+        propertyBindings.forEach(computationStopper);
+        attributeBindings.forEach(computationStopper);
+        listenerBindings.forEach(computationStopper);
+
+        listenerRemovers.forEach((remover, name) -> remover.remove());
+
+        listenersListener.remove();
         unregisterListener.remove();
         childrenListener.remove();
     }

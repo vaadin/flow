@@ -276,12 +276,16 @@ public class ApplicationConnection {
         }
     }
 
+    private final StateTree tree;
+
     public ApplicationConnection() {
         loadingIndicator = GWT.create(VLoadingIndicator.class);
         connectionStateHandler = GWT.create(ConnectionStateHandler.class);
         messageHandler = GWT.create(MessageHandler.class);
         messageSender = GWT.create(MessageSender.class);
         serverRpcQueue = GWT.create(ServerRpcQueue.class);
+
+        tree = new StateTree(serverRpcQueue);
 
         StateNode rootNode = tree.getRootNode();
         Element body = Browser.getDocument().getBody();
@@ -398,8 +402,6 @@ public class ApplicationConnection {
     protected ConnectionStateHandler connectionStateHandler;
     protected MessageHandler messageHandler;
     protected MessageSender messageSender;
-
-    private final StateTree tree = new StateTree();
 
     /**
      * Shows the communication error notification.

@@ -15,8 +15,14 @@
  */
 package com.vaadin.client.hummingbird;
 
+import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.shared.JsonConstants;
+
+import elemental.events.Event;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * A client-side representation of a server-side state tree.
@@ -30,10 +36,16 @@ public class StateTree {
 
     private final StateNode rootNode = new StateNode(1, this);
 
+    private final ServerRpcQueue rpcQueue;
+
     /**
      * Creates a new state tree.
+     *
+     * @param rpcQueue
+     *            the RPC queue for sending events to the server
      */
-    public StateTree() {
+    public StateTree(ServerRpcQueue rpcQueue) {
+        this.rpcQueue = rpcQueue;
         registerNode(rootNode);
     }
 
@@ -66,14 +78,29 @@ public class StateTree {
      *            the node to unregister
      */
     public void unregisterNode(StateNode node) {
-        assert node != null : "Node is null";
+        assert assertValidNode(node);
         assert node != rootNode : "Root node can't be unregistered";
+
+        idToNode.delete(getKey(node));
+        node.unregister();
+    }
+
+    /**
+     * Verifies that the provided node is not null and properly registered with
+     * this state tree.
+     *
+     * @param node
+     *            the node to test
+     * @return always <code>true</code>, for use with the <code>assert</code>
+     *         keyword
+     */
+    private boolean assertValidNode(StateNode node) {
+        assert node != null : "Node is null";
         assert node.getTree() == this : "Node is not created for this tree";
         assert node == getNode(
                 node.getId()) : "Node id is not registered with this tree";
 
-        idToNode.delete(getKey(node));
-        node.unregister();
+        return true;
     }
 
     /**
@@ -97,5 +124,25 @@ public class StateTree {
      */
     public StateNode getRootNode() {
         return rootNode;
+    }
+
+    /**
+     * Sends a DOM event to the server.
+     *
+     * @param node
+     *            the node that listened to the event
+     * @param event
+     *            the fired event
+     */
+    public void sendEventToServer(StateNode node, Event event) {
+        assert assertValidNode(node);
+
+        JsonObject message = Json.createObject();
+        message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
+        message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_EVENT_TYPE, event.getType());
+
+        rpcQueue.add(message);
+        rpcQueue.flush();
     }
 }

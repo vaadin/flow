@@ -20,22 +20,25 @@ import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-public class StateTreeUI extends UI {
+public class BasicElementUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        Element div = new Element("div");
-        div.setAttribute("foo", "baz");
+        Element bodyElement = getElement();
 
-        getElement().appendChild(div);
-        getElement().setAttribute("bar", "foo");
+        Element button = new Element("input");
+        button.setAttribute("type", "button");
+        button.setAttribute("value", "Click me");
 
-        Element span = new Element("span");
-        span.getNode().getNamespace(ElementPropertiesNamespace.class)
-                .setProperty("textContent", "Hello world");
+        button.addEventListener("click", () -> {
+            Element greeting = new Element("div");
+            greeting.setAttribute("class", "thankYou");
+            greeting.getNode().getNamespace(ElementPropertiesNamespace.class)
+                    .setProperty("textContent", "Thank you for clicking!");
+            bodyElement.appendChild(greeting);
+        });
 
-        span.setAttribute("class", "important");
-        div.appendChild(span);
+        bodyElement.appendChild(button);
     }
 
 }

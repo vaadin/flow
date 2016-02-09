@@ -29,7 +29,7 @@ import elemental.events.EventRemover;
 
 public class MapPropertyTest {
     private MapProperty property = new MapProperty("foo",
-            new MapNamespace(0, new StateNode(0, new StateTree())));
+            new MapNamespace(0, new StateNode(0, new StateTree(null))));
 
     @Test
     public void testValue() {
