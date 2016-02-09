@@ -308,9 +308,12 @@ public class MessageHandler {
                     TreeChangeProcessor.processChanges(tree,
                             json.getArray("changes"));
 
-                    JsonObject debugJson = tree.getRootNode().getDebugJson();
-                    Console.log("StateTree after applying changes:");
-                    Console.log(debugJson);
+                    if (ApplicationConfiguration.isDebugMode()) {
+                        JsonObject debugJson = tree.getRootNode()
+                                .getDebugJson();
+                        Console.log("StateTree after applying changes:");
+                        Console.log(debugJson);
+                    }
                 }
 
                 Console.log("handleUIDLMessage: "
