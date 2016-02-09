@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.util.logging.Logger;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -307,7 +309,7 @@ public class ServerRpcHandler implements Serializable {
      * <p>
      * The invocations data can contain any number of RPC calls.
      *
-     * @param uI
+     * @param ui
      *            the UI receiving the invocations data
      * @param lastSyncIdSeenByClient
      *            the most recent sync id the client has seen at the time the
@@ -316,10 +318,33 @@ public class ServerRpcHandler implements Serializable {
      *            JSON containing all information needed to execute all
      *            requested RPC calls.
      */
-    private void handleInvocations(UI uI, int lastSyncIdSeenByClient,
+    private void handleInvocations(UI ui, int lastSyncIdSeenByClient,
             JsonArray invocationsData) {
-        // TODO
+        for (int i = 0; i < invocationsData.length(); i++) {
+            JsonObject invocationJson = invocationsData.getObject(i);
+            String type = invocationJson.getString("type");
+            assert type != null;
 
+            switch (type) {
+            case "event":
+                handleEventInvocation(ui, invocationJson);
+                break;
+            default:
+                throw new RuntimeException("Unsupported event type: " + type);
+            }
+        }
+    }
+
+    private static void handleEventInvocation(UI ui,
+            JsonObject invocationJson) {
+        int nodeId = (int) invocationJson.getNumber("node");
+        StateNode node = ui.getStateTree().getNodeById(nodeId);
+
+        assert node != null;
+
+        String eventType = invocationJson.getString("event");
+
+        node.getNamespace(ElementListenersNamespace.class).fireEvent(eventType);
     }
 
     protected String getMessage(Reader reader) throws IOException {

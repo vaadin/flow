@@ -29,7 +29,7 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import elemental.events.EventRemover;
 
 public class ListNamespaceTest {
-    private ListNamespace namespace = new StateTree().getRootNode()
+    private ListNamespace namespace = new StateTree(null).getRootNode()
             .getListNamespace(0);
 
     @Test

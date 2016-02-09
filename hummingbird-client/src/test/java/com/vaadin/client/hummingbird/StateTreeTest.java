@@ -23,7 +23,7 @@ import org.junit.Test;
 import elemental.events.EventRemover;
 
 public class StateTreeTest {
-    StateTree tree = new StateTree();
+    StateTree tree = new StateTree(null);
     StateNode node = new StateNode(5, tree);
 
     @Test
