@@ -19,13 +19,10 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
-import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.client.hummingbird.collection.JsCollections;
-import com.vaadin.client.hummingbird.collection.JsMap;
-import com.vaadin.shared.communication.MethodInvocation;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonValue;
 
 /**
  * Manages the queue of server invocations (RPC) which are waiting to be sent to
@@ -36,19 +33,7 @@ import elemental.json.JsonArray;
  */
 public class ServerRpcQueue {
 
-    /**
-     * The pending method invocations that will be send to the server by
-     * {@link #sendPendingCommand}. The key is defined differently based on
-     * whether the method invocation is enqueued with lastonly. With lastonly
-     * enabled, the method signature ( {@link MethodInvocation#getLastOnlyTag()}
-     * ) is used as the key to make enable removing a previously enqueued
-     * invocation. Without lastonly, an incremental id based on
-     * {@link #lastInvocationTag} is used to get unique values.
-     */
-    private JsMap<String, MethodInvocation> pendingInvocations = JsCollections
-            .map();
-
-    private int lastInvocationTag = 0;
+    private JsonArray pendingInvocations = Json.createArray();
 
     protected ApplicationConnection connection;
     private boolean flushPending = false;
@@ -75,55 +60,21 @@ public class ServerRpcQueue {
      *
      * @param invocation
      *            RPC method invocation
-     * @param delayed
-     *            <code>false</code> to trigger sending within a short time
-     *            window (possibly combining subsequent calls to a single
-     *            request), <code>true</code> to let the framework delay sending
-     *            of RPC calls and variable changes until the next non-delayed
-     *            change
-     * @param lastOnly
-     *            <code>true</code> to remove all previously delayed invocations
-     *            of the same method that were also enqueued with lastonly set
-     *            to <code>true</code>. <code>false</code> to add invocation to
-     *            the end of the queue without touching previously enqueued
-     *            invocations.
      */
-    public void add(MethodInvocation invocation, boolean lastOnly) {
+    public void add(JsonValue invocation) {
         if (!connection.isApplicationRunning()) {
             Console.warn(
                     "Trying to invoke method on not yet started or stopped application");
             return;
         }
-        String tag;
-        if (lastOnly) {
-            tag = invocation.getLastOnlyTag();
-            assert !tag.matches(
-                    "\\d+") : "getLastOnlyTag value must have at least one non-digit character";
-            pendingInvocations.delete(tag);
-        } else {
-            tag = Integer.toString(lastInvocationTag++);
-        }
-        pendingInvocations.set(tag, invocation);
-    }
-
-    /**
-     * Returns a collection of all queued method invocations.
-     * <p>
-     * The returned collection must not be modified in any way
-     *
-     * @return a collection of all queued method invocations
-     */
-    public JsArray<MethodInvocation> getAll() {
-        return JsCollections.mapValues(pendingInvocations);
+        pendingInvocations.set(pendingInvocations.length(), invocation);
     }
 
     /**
      * Clears the queue.
      */
     public void clear() {
-        pendingInvocations.clear();
-        // Keep tag string short
-        lastInvocationTag = 0;
+        pendingInvocations = Json.createArray();
         flushPending = false;
     }
 
@@ -133,7 +84,7 @@ public class ServerRpcQueue {
      * @return the number of invocations in the queue
      */
     public int size() {
-        return pendingInvocations.size();
+        return pendingInvocations.length();
     }
 
     /**
@@ -206,23 +157,7 @@ public class ServerRpcQueue {
      *         server
      */
     public JsonArray toJson() {
-        JsonArray json = Json.createArray();
-        if (isEmpty()) {
-            return json;
-        }
-
-        JsArray<MethodInvocation> all = getAll();
-        for (int i = 0; i < all.length(); i++) {
-            MethodInvocation invocation = all.get(i);
-            String connectorId = invocation.getConnectorId();
-            JsonArray invocationJson = Json.createArray();
-            invocationJson.set(0, connectorId);
-            invocationJson.set(1, invocation.getInterfaceName());
-            invocationJson.set(2, invocation.getMethodName());
-            invocationJson.set(3, invocation.getParameters());
-        }
-
-        return json;
+        return pendingInvocations;
     }
 
 }
