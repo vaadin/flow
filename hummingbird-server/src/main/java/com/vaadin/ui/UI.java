@@ -32,6 +32,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingRunnable;
 import com.vaadin.server.UIProvider;
@@ -99,8 +100,7 @@ public abstract class UI implements Serializable, PollNotifier {
 
     private boolean closing = false;
 
-    private PushConfiguration pushConfiguration = new PushConfigurationImpl(
-            this);
+    private PushConfiguration pushConfiguration;
     private ReconnectDialogConfiguration reconnectDialogConfiguration = new ReconnectDialogConfigurationImpl();
 
     /**
@@ -121,6 +121,7 @@ public abstract class UI implements Serializable, PollNotifier {
     public UI() {
         stateTree.getRootNode().getNamespace(ElementDataNamespace.class)
                 .setTag("body");
+        pushConfiguration = new PushConfigurationImpl(this);
     }
 
     /**
@@ -698,15 +699,12 @@ public abstract class UI implements Serializable, PollNotifier {
          */
         session.getService().runPendingAccessTasks(session);
 
-        // FIXME Implement
-        throw new UnsupportedOperationException(
-                "FIXME: Push if there is something to push, avoid pushing otherwise");
-        // if (!getConnectorTracker().hasDirtyConnectors()) {
-        // // Do not push if there is nothing to push
-        // return;
-        // }
-        //
-        // pushConnection.push();
+        if (!stateTree.hasDirtyNodes()) {
+            // Do not push if there is nothing to push
+            return;
+        }
+
+        pushConnection.push();
     }
 
     /**
@@ -755,6 +753,10 @@ public abstract class UI implements Serializable, PollNotifier {
 
     /**
      * Retrieves the object used for configuring the push channel.
+     * <p>
+     * Note that you cannot change push parameters on the fly, you need to
+     * configure the push channel at the same time (in the same request) it is
+     * enabled.
      *
      * @since 7.1
      * @return The instance used for push configuration
@@ -881,7 +883,8 @@ public abstract class UI implements Serializable, PollNotifier {
         ArrayList<Class<? extends Namespace>> namespaces = new ArrayList<>(
                 BasicElementStateProvider.getNamespaces());
 
-        // Then add our own custom namespaces (none for now)
+        // Then add our own custom namespaces
+        namespaces.add(PushConfigurationMap.class);
 
         // And return them all
         assert namespaces.size() == new HashSet<>(namespaces)

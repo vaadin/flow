@@ -16,10 +16,6 @@
 package com.vaadin.shared.ui.ui;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.vaadin.shared.communication.PushMode;
 
 /**
  * Old UI state class, to be deleted asap.
@@ -31,10 +27,6 @@ public class UIState implements Serializable {
     public LoadingIndicatorConfigurationState loadingIndicatorConfiguration = new LoadingIndicatorConfigurationState();
     public int pollInterval = -1;
 
-    /**
-     * Configuration for the push channel
-     */
-    public PushConfigurationState pushConfiguration = new PushConfigurationState();
     public ReconnectDialogConfigurationState reconnectDialogConfiguration = new ReconnectDialogConfigurationState();
 
     public static class LoadingIndicatorConfigurationState
@@ -42,23 +34,6 @@ public class UIState implements Serializable {
         public int firstDelay = 300;
         public int secondDelay = 1500;
         public int thirdDelay = 5000;
-    }
-
-    public static class PushConfigurationState implements Serializable {
-        public static final String TRANSPORT_PARAM = "transport";
-        public static final String FALLBACK_TRANSPORT_PARAM = "fallbackTransport";
-
-        public boolean alwaysUseXhrForServerRequests = false;
-        public PushMode mode = PushMode.DISABLED;
-        public String pushUrl = null;
-        public Map<String, String> parameters = new HashMap<String, String>();
-
-        {
-            parameters.put(TRANSPORT_PARAM,
-                    Transport.WEBSOCKET.getIdentifier());
-            parameters.put(FALLBACK_TRANSPORT_PARAM,
-                    Transport.LONG_POLLING.getIdentifier());
-        }
     }
 
     public static class ReconnectDialogConfigurationState
