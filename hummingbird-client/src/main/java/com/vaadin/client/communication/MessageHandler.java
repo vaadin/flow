@@ -37,8 +37,6 @@ import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.shared.ApplicationConstants;
 
-import elemental.client.Browser;
-import elemental.dom.Element;
 import elemental.json.JsonObject;
 
 /**
@@ -310,20 +308,9 @@ public class MessageHandler {
                     TreeChangeProcessor.processChanges(tree,
                             json.getArray("changes"));
 
-                    // Temporary debugging output
-                    String elementId = "treeContents";
-                    Element treeContents = Browser.getDocument()
-                            .getElementById(elementId);
-                    if (treeContents == null) {
-                        treeContents = Browser.getDocument()
-                                .createElement("div");
-                        treeContents.setId(elementId);
-                        treeContents.getStyle().setWhiteSpace("pre");
-                        Browser.getDocument().getBody()
-                                .appendChild(treeContents);
-                    }
-                    treeContents.setTextContent("State tree:\n" + WidgetUtil
-                            .toPrettyJson(tree.getRootNode().getDebugJson()));
+                    JsonObject debugJson = tree.getRootNode().getDebugJson();
+                    Console.log("StateTree after applying changes:");
+                    Console.log(debugJson);
                 }
 
                 Console.log("handleUIDLMessage: "
