@@ -22,7 +22,7 @@ import org.junit.Test;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.MapNamespace;
 import com.vaadin.hummingbird.namespace.NamespaceRegistry;
 import com.vaadin.shared.JsonConstants;
@@ -34,7 +34,7 @@ import elemental.json.JsonValue;
 
 public class MapPutChangeTest {
     private MapNamespace namespace = AbstractNamespaceTest
-            .createNamespace(ElementPropertiesNamespace.class);
+            .createNamespace(ElementPropertyNamespace.class);
 
     @Test
     public void testJson() {
