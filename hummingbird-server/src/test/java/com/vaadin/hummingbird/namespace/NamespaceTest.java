@@ -55,7 +55,7 @@ public class NamespaceTest {
         Map<Class<? extends Namespace>, Integer> expectedIds = new HashMap<>();
 
         expectedIds.put(ElementDataNamespace.class, Namespaces.ELEMENT_DATA);
-        expectedIds.put(ElementPropertiesNamespace.class,
+        expectedIds.put(ElementPropertyNamespace.class,
                 Namespaces.ELEMENT_PROPERTIES);
         expectedIds.put(ElementAttributeNamespace.class,
                 Namespaces.ELEMENT_ATTRIBUTES);

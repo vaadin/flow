@@ -46,8 +46,8 @@ public class NamespaceRegistry {
     static {
         registerNamespace(ElementDataNamespace.class,
                 ElementDataNamespace::new);
-        registerNamespace(ElementPropertiesNamespace.class,
-                ElementPropertiesNamespace::new);
+        registerNamespace(ElementPropertyNamespace.class,
+                ElementPropertyNamespace::new);
         registerNamespace(ElementChildrenNamespace.class,
                 ElementChildrenNamespace::new);
         registerNamespace(ElementAttributeNamespace.class,
