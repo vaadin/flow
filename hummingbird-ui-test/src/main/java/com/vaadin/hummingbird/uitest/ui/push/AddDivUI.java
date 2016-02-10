@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -53,9 +52,8 @@ public class AddDivUI extends UI {
         StateNode rootNode = getStateTree().getRootNode();
         Element bodyElement = Element.get(rootNode);
         Element div = new Element("div");
-        div.getNode().getNamespace(ElementPropertiesNamespace.class)
-                .setProperty("textContent", "Hello world at "
-                        + System.currentTimeMillis() + " (" + msgId++ + ")");
+        div.setProperty("textContent", "Hello world at "
+                + System.currentTimeMillis() + " (" + msgId++ + ")");
         bodyElement.insertChild(0, div);
         if (msgId % 100 == 0) {
             System.out.println("Pushed id " + msgId + " to " + ip);
