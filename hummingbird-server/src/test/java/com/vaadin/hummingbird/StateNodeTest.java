@@ -105,6 +105,40 @@ public class StateNodeTest {
         changes.clear();
     }
 
+    @Test
+    public void appendChildBeforeParent() {
+        StateNode parent = createEmptyNode("parent");
+        StateNode child = createEmptyNode("child");
+        StateNode grandchild = createEmptyNode("grandchild");
+
+        StateNode root = new StateTree().getRootNode();
+
+        grandchild.setParent(child);
+        child.setParent(parent);
+        parent.setParent(root);
+
+        Assert.assertNotEquals(-1, parent.getId());
+        Assert.assertNotEquals(-1, child.getId());
+        Assert.assertNotEquals(-1, grandchild.getId());
+    }
+
+    @Test
+    public void appendParentBeforeChild() {
+        StateNode parent = createEmptyNode("parent");
+        StateNode child = createEmptyNode("child");
+        StateNode grandchild = createEmptyNode("grandchild");
+
+        StateNode root = new StateTree().getRootNode();
+
+        parent.setParent(root);
+        child.setParent(parent);
+        grandchild.setParent(child);
+
+        Assert.assertNotEquals(-1, parent.getId());
+        Assert.assertNotEquals(-1, child.getId());
+        Assert.assertNotEquals(-1, grandchild.getId());
+    }
+
     public static StateNode createEmptyNode() {
         return createEmptyNode("Empty node");
     }
