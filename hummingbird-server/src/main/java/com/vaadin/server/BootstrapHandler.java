@@ -16,10 +16,15 @@
 
 package com.vaadin.server;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,11 +60,8 @@ import elemental.json.impl.JsonUtil;
 /**
  *
  * @author Vaadin Ltd
- * @since 7.0.0
- *
- * @deprecated As of 7.0. Will likely change or be removed in a future version
+ * @since
  */
-@Deprecated
 public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
@@ -200,6 +202,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             return UrlEscapers.urlFormParameterEscaper().escape(queryString);
         }
     }
+
+    private static String bootstrapJS;
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -469,11 +473,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         StringBuilder builder = new StringBuilder();
         builder.append("//<![CDATA[\n");
-        builder.append("if (!window.vaadin) alert(" + JsonUtil.quote(
-                "Failed to load the bootstrap javascript: " + bootstrapLocation)
-                + ");\n");
-
-        appendMainScriptTagContents(context, builder);
+        builder.append(getBootstrapJS(context));
 
         builder.append("//]]>");
         mainScriptTag.appendChild(
@@ -482,41 +482,36 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
-    protected void appendMainScriptTagContents(BootstrapContext context,
-            StringBuilder builder) throws IOException {
+    private String getBootstrapJS(BootstrapContext context) {
+        if (bootstrapJS == null) {
+            try (InputStream stream = BootstrapHandler.class
+                    .getResourceAsStream("BootstrapHandler.js")) {
+                if (stream == null) {
+                    throw new FileNotFoundException(
+                            "Unable to load BootstrapHandler.js");
+                }
+                StringBuilder sb = new StringBuilder();
+                new BufferedReader(new InputStreamReader(stream, "UTF-8"))
+                        .lines().forEach(s -> sb.append(s));
+                bootstrapJS = sb.toString();
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Unable to load BootstrapHandler.js", e);
+            }
+        }
+        String result = bootstrapJS.replace("{{appId}}", context.getAppId());
         JsonObject appConfig = context.getApplicationParameters();
-
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();
 
         if (isDebug) {
-            /*
-             * Add tracking needed for getting bootstrap metrics to the client
-             * side Profiler if another implementation hasn't already been
-             * added.
-             */
-            builder.append(
-                    "if (typeof window.__gwtStatsEvent != 'function') {\n");
-            builder.append("vaadin.gwtStatsEvents = [];\n");
-            builder.append(
-                    "window.__gwtStatsEvent = function(event) {vaadin.gwtStatsEvents.push(event); return true;};\n");
-            builder.append("}\n");
-        }
-
-        builder.append("vaadin.initApplication(\"");
-        builder.append(context.getAppId());
-        builder.append("\",");
-        appendJsonObject(builder, appConfig, isDebug);
-        builder.append(");\n");
-    }
-
-    private static void appendJsonObject(StringBuilder builder,
-            JsonObject jsonObject, boolean isDebug) {
-        if (isDebug) {
-            builder.append(JsonUtil.stringify(jsonObject, 4));
+            result = result.replace("{{configJSON}}",
+                    JsonUtil.stringify(appConfig, 4));
         } else {
-            builder.append(JsonUtil.stringify(jsonObject));
+            result = result.replace("{{configJSON}}",
+                    JsonUtil.stringify(appConfig));
         }
+        return result;
     }
 
     protected JsonObject getApplicationParameters(BootstrapContext context) {
@@ -620,7 +615,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 e.getLocalizedMessage());
     }
 
-    private void putValueOrNull(JsonObject object, String key, String value) {
+    private static void putValueOrNull(JsonObject object, String key,
+            String value) {
         assert object != null;
         assert key != null;
         if (value == null) {
