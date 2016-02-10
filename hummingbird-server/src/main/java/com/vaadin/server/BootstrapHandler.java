@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
-import java.io.UncheckedIOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -76,6 +75,21 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             + "vaadin.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
             + "vaadin.gwtStatsEvents.push(event); " + "return true;};};";
+
+    private static String bootstrapJS;
+
+    static {
+        try (InputStream stream = BootstrapHandler.class
+                .getResourceAsStream("BootstrapHandler.js");
+                BufferedReader bf = new BufferedReader(
+                        new InputStreamReader(stream, "UTF-8"));) {
+            StringBuilder sb = new StringBuilder();
+            bf.lines().forEach(sb::append);
+            bootstrapJS = sb.toString();
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     protected class BootstrapContext implements Serializable {
 
@@ -208,8 +222,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             return UrlEscapers.urlFormParameterEscaper().escape(queryString);
         }
     }
-
-    private static String bootstrapJS;
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
@@ -400,6 +412,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         Element body = document.body();
         body.attr("scroll", "auto");
         body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
+
+        body.appendElement("noscript").append(
+                "You have to enable javascript in your browser to use an application built with Vaadin Hummingbird.");
     }
 
     private void setupBootstrapScript(BootstrapContext context)
@@ -585,24 +600,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static String getBootstrapJS() {
         if (bootstrapJS == null) {
-            readBootstrapJS();
+            throw new IllegalStateException(
+                    "BootstrapHandler.js has not been loaded during initilization");
         }
         return bootstrapJS;
-    }
-
-    private static synchronized void readBootstrapJS() {
-        if (bootstrapJS == null) {
-            try (InputStream stream = BootstrapHandler.class
-                    .getResourceAsStream("BootstrapHandler.js");
-                    BufferedReader bf = new BufferedReader(
-                            new InputStreamReader(stream, "UTF-8"));) {
-                StringBuilder sb = new StringBuilder();
-                bf.lines().forEach(sb::append);
-                bootstrapJS = sb.toString();
-            } catch (IOException e) {
-                throw new UncheckedIOException(
-                        "Unable to load BootstrapHandler.js", e);
-            }
-        }
     }
 }
