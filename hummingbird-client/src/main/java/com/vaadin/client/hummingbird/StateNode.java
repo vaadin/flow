@@ -163,6 +163,8 @@ public class StateNode {
             return "elementAttributes";
         case Namespaces.ELEMENT_CHILDREN:
             return "elementChildren";
+        case Namespaces.ELEMENT_LISTENERS:
+            return "elementListeners";
         default:
             return "Unknown namespace: " + id;
         }

@@ -138,4 +138,32 @@ public class JsonConstants implements Serializable {
      * @since
      */
     public static final String CHANGE_PUT_NODE_VALUE = "nodeValue";
+
+    /**
+     * Key holding the type in of messages sent from the client.
+     *
+     * @since
+     */
+    public static final String RPC_TYPE = "type";
+
+    /**
+     * Type value for events sent from the client.
+     *
+     * @since
+     */
+    public static final String RPC_TYPE_EVENT = "event";
+
+    /**
+     * Key holding the node in messages sent from the client.
+     *
+     * @since
+     */
+    public static final String RPC_NODE = "node";
+
+    /**
+     * Key holding the event type in event messages sent from the client.
+     *
+     * @since
+     */
+    public static final String RPC_EVENT_TYPE = "event";
 }
