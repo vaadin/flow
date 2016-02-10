@@ -16,7 +16,12 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.io.Serializable;
+import java.util.Set;
+
 import com.vaadin.hummingbird.StateNode;
+
+import elemental.json.JsonValue;
 
 /**
  * Namespace for element property values.
@@ -24,7 +29,7 @@ import com.vaadin.hummingbird.StateNode;
  * @since
  * @author Vaadin Ltd
  */
-public class ElementPropertiesNamespace extends MapNamespace {
+public class ElementPropertyNamespace extends MapNamespace {
 
     /**
      * Creates a new element property namespace for the given node.
@@ -32,7 +37,7 @@ public class ElementPropertiesNamespace extends MapNamespace {
      * @param node
      *            the node that the namespace belongs to
      */
-    public ElementPropertiesNamespace(StateNode node) {
+    public ElementPropertyNamespace(StateNode node) {
         super(node);
     }
 
@@ -42,10 +47,25 @@ public class ElementPropertiesNamespace extends MapNamespace {
      * @param name
      *            the property name
      * @param value
-     *            the value
+     *            the value, must be a string, a boolean, a double or
+     *            <code>null</code>
      */
-    public void setProperty(String name, String value) {
+    public void setProperty(String name, Serializable value) {
+        assert value == null || value instanceof String
+                || value instanceof Boolean || value instanceof Double;
         put(name, value);
+    }
+
+    /**
+     * Sets a property to the given JSON value.
+     *
+     * @param name
+     *            the property name
+     * @param value
+     *            the JSON value
+     */
+    public void setJsonProperty(String name, JsonValue value) {
+        putJson(name, value);
     }
 
     /**
@@ -61,7 +81,7 @@ public class ElementPropertiesNamespace extends MapNamespace {
     }
 
     /**
-     * Removes the named property.
+     * Removes the given property.
      *
      * @param name
      *            the name of the property to remove
@@ -72,14 +92,23 @@ public class ElementPropertiesNamespace extends MapNamespace {
     }
 
     /**
-     * Gets the value of a property.
+     * Gets the value of the given property.
      *
      * @param name
      *            the name of the property
      * @return the property value; <code>null</code> if there is no property or
      *         if the value is explicitly set to null
      */
-    public String getProperty(String name) {
-        return (String) get(name);
+    public Object getProperty(String name) {
+        return get(name);
+    }
+
+    /**
+     * Gets the property names.
+     *
+     * @return a set containing all the property names that have been set
+     */
+    public Set<String> getPropertyNames() {
+        return keySet();
     }
 }
