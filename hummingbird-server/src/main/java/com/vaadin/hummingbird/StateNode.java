@@ -100,7 +100,8 @@ public class StateNode implements Serializable {
 
             NodeOwner parentOwner = parent.getOwner();
             if (parentOwner != owner) {
-                setOwner(parentOwner);
+                // calls setOwner for this node and all descendants
+                parentOwner.adoptNodes(owner);
             }
         }
 
