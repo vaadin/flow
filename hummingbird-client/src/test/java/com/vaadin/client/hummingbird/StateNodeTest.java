@@ -27,7 +27,7 @@ import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 
 public class StateNodeTest {
-    private StateNode node = new StateNode(1, new StateTree());
+    private StateNode node = new StateNode(1, new StateTree(null));
 
     @Test
     public void testDefaultNoNamespaces() {

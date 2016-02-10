@@ -33,7 +33,7 @@ import elemental.events.EventRemover;
 public class MapNamespaceTest {
 
     private final MapNamespace namespace = new MapNamespace(0,
-            new StateNode(0, new StateTree()));
+            new StateNode(0, new StateTree(null)));
 
     @Test
     public void testNewNamespaceEmpty() {
