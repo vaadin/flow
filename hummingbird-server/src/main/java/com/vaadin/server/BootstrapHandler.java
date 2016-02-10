@@ -248,7 +248,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     new BootstrapFragmentResponse(this, request, session,
                             uiClass, new ArrayList<Node>(), provider));
 
-            setupMainDiv(context);
+            setupBootstrapScript(context);
 
             String html = getBootstrapHtml(context);
 
@@ -402,47 +402,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
     }
 
-    protected String getMainDivStyle(BootstrapContext context) {
-        return null;
-    }
-
-    /**
-     * Method to write the div element into which that actual Vaadin application
-     * is rendered.
-     * <p>
-     * Override this method if you want to add some custom html around around
-     * the div element into which the actual Vaadin application will be
-     * rendered.
-     *
-     * @param context
-     *
-     * @throws IOException
-     */
-    private void setupMainDiv(BootstrapContext context) throws IOException {
-        String style = getMainDivStyle(context);
-
-        /*- Add classnames;
-         *      .v-app
-         *      .v-app-loading
-         *- Additionally added from javascript:
-         *      <themeName, remove non-alphanum>
-         */
-
+    private void setupBootstrapScript(BootstrapContext context)
+            throws IOException {
         List<Node> fragmentNodes = context.getBootstrapResponse()
                 .getFragmentNodes();
-
-        Element mainDiv = new Element(Tag.valueOf("div"), "");
-        mainDiv.attr("id", context.getAppId());
-        mainDiv.addClass("v-app");
-        mainDiv.addClass(context.getUIClass().getSimpleName()
-                .toLowerCase(Locale.ENGLISH));
-        if (style != null && style.length() != 0) {
-            mainDiv.attr("style", style);
-        }
-        mainDiv.appendElement("div").addClass("v-app-loading");
-        mainDiv.appendElement("noscript").append(
-                "You have to enable javascript in your browser to use an application built with Vaadin.");
-        fragmentNodes.add(mainDiv);
 
         VaadinRequest request = context.getRequest();
 
