@@ -19,7 +19,7 @@ import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 
@@ -37,7 +37,7 @@ public class Namespaces {
     public static final int ELEMENT_DATA = 0;
 
     /**
-     * Id for {@link ElementPropertiesNamespace}.
+     * Id for {@link ElementPropertyNamespace}.
      */
     public static final int ELEMENT_PROPERTIES = 1;
 

@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 
 public class StateNodeTest {
     @Test
@@ -62,13 +62,13 @@ public class StateNodeTest {
 
         Assert.assertFalse(
                 "Should not have namespace that wasn't defined in constructor",
-                node.hasNamespace(ElementPropertiesNamespace.class));
+                node.hasNamespace(ElementPropertyNamespace.class));
     }
 
     @Test(expected = IllegalStateException.class)
     public void getMissingNamespaceThrows() {
         StateNode node = new StateNode(ElementDataNamespace.class);
-        node.getNamespace(ElementPropertiesNamespace.class);
+        node.getNamespace(ElementPropertyNamespace.class);
     }
 
     @Test
