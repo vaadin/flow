@@ -37,8 +37,6 @@ public class LoadingIndicator {
 
     private static final String PRIMARY_STYLE_NAME = "v-loading-indicator";
 
-    private ApplicationConnection connection;
-
     private int firstDelay = 300;
     private int secondDelay = 1500;
     private int thirdDelay = 5000;
@@ -183,27 +181,6 @@ public class LoadingIndicator {
         if (thirdTimerDelay >= 0) {
             thirdTimer.schedule(thirdTimerDelay);
         }
-    }
-
-    /**
-     * Returns the {@link ApplicationConnection} which uses this loading
-     * indicator
-     *
-     * @return The ApplicationConnection for this loading indicator
-     */
-    public ApplicationConnection getConnection() {
-        return connection;
-    }
-
-    /**
-     * Sets the {@link ApplicationConnection} which uses this loading indicator.
-     * Only used internally.
-     *
-     * @param connection
-     *            The ApplicationConnection for this loading indicator
-     */
-    void setConnection(ApplicationConnection connection) {
-        this.connection = connection;
     }
 
     /**

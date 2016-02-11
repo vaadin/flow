@@ -20,10 +20,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConfiguration;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
 import com.vaadin.client.Console;
+import com.vaadin.client.Registry;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
@@ -108,8 +108,6 @@ public class AtmospherePushConnection implements PushConnection {
         }
     }
 
-    private ApplicationConnection connection;
-
     private JavaScriptObject socket;
 
     private State state = State.CONNECT_PENDING;
@@ -131,22 +129,12 @@ public class AtmospherePushConnection implements PushConnection {
      */
     private String url;
 
-    public AtmospherePushConnection() {
-    }
+    private final Registry registry;
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.client.communication.PushConnection#init(ApplicationConnection
-     * , Map<String, String>, CommunicationErrorHandler)
-     */
-    @Override
-    public void init(final ApplicationConnection connection) {
-        this.connection = connection;
-
-        connection.addHandler(ApplicationStoppedEvent.TYPE,
-                new ApplicationStoppedHandler() {
+    public AtmospherePushConnection(Registry registry) {
+        this.registry = registry;
+        registry.getApplicationConnection().addHandler(
+                ApplicationStoppedEvent.TYPE, new ApplicationStoppedHandler() {
 
                     @Override
                     public void onApplicationStopped(
@@ -168,17 +156,19 @@ public class AtmospherePushConnection implements PushConnection {
         // Always debug for now
         config.setStringValue("logLevel", "debug");
 
-        getPushConfiguration().getParameters().forEach((value, key) -> {
-            if (value.equalsIgnoreCase("true")
-                    || value.equalsIgnoreCase("false")) {
-                config.setBooleanValue(key, value.equalsIgnoreCase("true"));
-            } else {
-                config.setStringValue(key, value);
-            }
+        registry.getPushConfiguration().getParameters()
+                .forEach((value, key) -> {
+                    if (value.equalsIgnoreCase("true")
+                            || value.equalsIgnoreCase("false")) {
+                        config.setBooleanValue(key,
+                                value.equalsIgnoreCase("true"));
+                    } else {
+                        config.setStringValue(key, value);
+                    }
 
-        });
-        if (getPushConfiguration().getPushUrl() != null) {
-            url = getPushConfiguration().getPushUrl();
+                });
+        if (registry.getPushConfiguration().getPushUrl() != null) {
+            url = registry.getPushConfiguration().getPushUrl();
         } else {
             url = ApplicationConstants.APP_PROTOCOL_PREFIX
                     + ApplicationConstants.PUSH_PATH;
@@ -196,16 +186,14 @@ public class AtmospherePushConnection implements PushConnection {
         });
     }
 
-    private PushConfiguration getPushConfiguration() {
-        return connection.getMessageSender().getPushConfiguration();
-    }
-
     private void connect() {
-        String baseUrl = connection.translateVaadinUri(url);
+        String baseUrl = registry.getApplicationConnection()
+                .translateVaadinUri(url);
         String extraParams = ApplicationConstants.UI_ID_PARAMETER + "="
-                + connection.getConfiguration().getUIId();
+                + registry.getApplicationConnection().getConfiguration()
+                        .getUIId();
 
-        String csrfToken = connection.getMessageHandler().getCsrfToken();
+        String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
             extraParams += "&" + ApplicationConstants.CSRF_TOKEN_PARAMETER + "="
                     + csrfToken;
@@ -239,7 +227,7 @@ public class AtmospherePushConnection implements PushConnection {
             // If we are not using websockets, we want to send XHRs
             return false;
         }
-        if (getPushConfiguration().isAlwaysXhrToServer()) {
+        if (registry.getPushConfiguration().isAlwaysXhrToServer()) {
             // If user has forced us to use XHR, let's abide
             return false;
         }
@@ -276,7 +264,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
 
         if (state == State.CONNECT_PENDING) {
-            getConnectionStateHandler().pushNotConnected(message);
+            registry.getConnectionStateHandler().pushNotConnected(message);
             return;
         }
 
@@ -312,7 +300,7 @@ public class AtmospherePushConnection implements PushConnection {
         switch (state) {
         case CONNECT_PENDING:
             state = State.CONNECTED;
-            getConnectionStateHandler().pushOk(this);
+            registry.getConnectionStateHandler().pushOk(this);
             break;
         case DISCONNECT_PENDING:
             // Set state to connected to make disconnect close the connection
@@ -364,12 +352,13 @@ public class AtmospherePushConnection implements PushConnection {
         ValueMap json = MessageHandler.parseWrappedJson(message);
         if (json == null) {
             // Invalid string (not wrapped as expected)
-            getConnectionStateHandler().pushInvalidContent(this, message);
+            registry.getConnectionStateHandler().pushInvalidContent(this,
+                    message);
             return;
         } else {
             Console.log("Received push (" + getTransportType() + ") message: "
                     + message);
-            connection.getMessageHandler().handleMessage(json);
+            registry.getMessageHandler().handleMessage(json);
         }
     }
 
@@ -390,17 +379,17 @@ public class AtmospherePushConnection implements PushConnection {
      */
     protected void onError(AtmosphereResponse response) {
         state = State.DISCONNECTED;
-        getConnectionStateHandler().pushError(this, response);
+        registry.getConnectionStateHandler().pushError(this, response);
     }
 
     protected void onClose(AtmosphereResponse response) {
         state = State.CONNECT_PENDING;
-        getConnectionStateHandler().pushClosed(this, response);
+        registry.getConnectionStateHandler().pushClosed(this, response);
     }
 
     protected void onClientTimeout(AtmosphereResponse response) {
         state = State.DISCONNECTED;
-        getConnectionStateHandler().pushClientTimeout(this, response);
+        registry.getConnectionStateHandler().pushClientTimeout(this, response);
     }
 
     protected void onReconnect(JavaScriptObject request,
@@ -408,7 +397,7 @@ public class AtmospherePushConnection implements PushConnection {
         if (state == State.CONNECTED) {
             state = State.CONNECT_PENDING;
         }
-        getConnectionStateHandler().pushReconnectPending(this);
+        registry.getConnectionStateHandler().pushReconnectPending(this);
     }
 
     public static abstract class AbstractJSO extends JavaScriptObject {
@@ -572,28 +561,33 @@ public class AtmospherePushConnection implements PushConnection {
             final String pushJs = getVersionedPushJs();
 
             Console.log("Loading " + pushJs);
-            ResourceLoader.get().loadScript(
-                    connection.getConfiguration().getVaadinDirUrl() + pushJs,
-                    new ResourceLoadListener() {
-                        @Override
-                        public void onLoad(ResourceLoadEvent event) {
-                            if (isAtmosphereLoaded()) {
-                                Console.log(pushJs + " loaded");
-                                command.run();
-                            } else {
-                                // If bootstrap tried to load vaadinPush.js,
-                                // ResourceLoader assumes it succeeded even if
-                                // it failed (#11673)
-                                onError(event);
-                            }
-                        }
+            ResourceLoader.get()
+                    .loadScript(
+                            registry.getApplicationConfiguration()
+                                    .getVaadinDirUrl() + pushJs,
+                            new ResourceLoadListener() {
+                                @Override
+                                public void onLoad(ResourceLoadEvent event) {
+                                    if (isAtmosphereLoaded()) {
+                                        Console.log(pushJs + " loaded");
+                                        command.run();
+                                    } else {
+                                        // If bootstrap tried to load
+                                        // vaadinPush.js,
+                                        // ResourceLoader assumes it succeeded
+                                        // even if
+                                        // it failed (#11673)
+                                        onError(event);
+                                    }
+                                }
 
-                        @Override
-                        public void onError(ResourceLoadEvent event) {
-                            getConnectionStateHandler().pushScriptLoadError(
-                                    event.getResourceUrl());
-                        }
-                    });
+                                @Override
+                                public void onError(ResourceLoadEvent event) {
+                                    registry.getConnectionStateHandler()
+                                            .pushScriptLoadError(
+                                                    event.getResourceUrl());
+                                }
+                            });
         }
     }
 
@@ -612,10 +606,6 @@ public class AtmospherePushConnection implements PushConnection {
     @Override
     public String getTransportType() {
         return transport;
-    }
-
-    private ConnectionStateHandler getConnectionStateHandler() {
-        return connection.getConnectionStateHandler();
     }
 
 }

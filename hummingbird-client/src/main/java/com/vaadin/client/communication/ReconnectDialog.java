@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import com.vaadin.client.ApplicationConnection;
-
 /**
  * Interface which must be implemented by the reconnect dialog
  *
@@ -52,11 +50,8 @@ public interface ReconnectDialog {
 
     /**
      * Shows the dialog to the user
-     *
-     * @param connection
-     *            the application connection this is related to
      */
-    void show(ApplicationConnection connection);
+    void show();
 
     /**
      * Hides the dialog from the user
@@ -89,5 +84,5 @@ public interface ReconnectDialog {
      * required resources, which might not be available when the server
      * connection is gone
      */
-    void preload(ApplicationConnection connection);
+    void preload();
 }
