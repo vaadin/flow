@@ -20,10 +20,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConfiguration;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
 import com.vaadin.client.Console;
+import com.vaadin.client.Registry;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
@@ -108,8 +108,6 @@ public class AtmospherePushConnection implements PushConnection {
         }
     }
 
-    private ApplicationConnection connection;
-
     private JavaScriptObject socket;
 
     private State state = State.CONNECT_PENDING;
@@ -131,22 +129,18 @@ public class AtmospherePushConnection implements PushConnection {
      */
     private String url;
 
-    public AtmospherePushConnection() {
-    }
+    private final Registry registry;
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Creates a new instance connected to the given registry.
      *
-     * @see
-     * com.vaadin.client.communication.PushConnection#init(ApplicationConnection
-     * , Map<String, String>, CommunicationErrorHandler)
+     * @param registry
+     *            the global registry
      */
-    @Override
-    public void init(final ApplicationConnection connection) {
-        this.connection = connection;
-
-        connection.addHandler(ApplicationStoppedEvent.TYPE,
-                new ApplicationStoppedHandler() {
+    public AtmospherePushConnection(Registry registry) {
+        this.registry = registry;
+        registry.getApplicationConnection().addHandler(
+                ApplicationStoppedEvent.TYPE, new ApplicationStoppedHandler() {
 
                     @Override
                     public void onApplicationStopped(
@@ -196,16 +190,14 @@ public class AtmospherePushConnection implements PushConnection {
         });
     }
 
-    private PushConfiguration getPushConfiguration() {
-        return connection.getMessageSender().getPushConfiguration();
-    }
-
     private void connect() {
-        String baseUrl = connection.translateVaadinUri(url);
+        String baseUrl = registry.getApplicationConnection()
+                .translateVaadinUri(url);
         String extraParams = ApplicationConstants.UI_ID_PARAMETER + "="
-                + connection.getConfiguration().getUIId();
+                + registry.getApplicationConnection().getConfiguration()
+                        .getUIId();
 
-        String csrfToken = connection.getMessageHandler().getCsrfToken();
+        String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
             extraParams += "&" + ApplicationConstants.CSRF_TOKEN_PARAMETER + "="
                     + csrfToken;
@@ -239,7 +231,7 @@ public class AtmospherePushConnection implements PushConnection {
             // If we are not using websockets, we want to send XHRs
             return false;
         }
-        if (getPushConfiguration().isAlwaysXhrToServer()) {
+        if (registry.getPushConfiguration().isAlwaysXhrToServer()) {
             // If user has forced us to use XHR, let's abide
             return false;
         }
@@ -330,13 +322,21 @@ public class AtmospherePushConnection implements PushConnection {
         }
     }
 
+    private PushConfiguration getPushConfiguration() {
+        return registry.getPushConfiguration();
+    }
+
+    private ConnectionStateHandler getConnectionStateHandler() {
+        return registry.getConnectionStateHandler();
+    }
+
     /*
      * (non-Javadoc)
      *
      * @see com.vaadin.client.communication.PushConenction#disconnect()
      */
     @Override
-    public void disconnect(Runnable runnable) {
+    public final void disconnect(Runnable runnable) {
         assert runnable != null;
 
         switch (state) {
@@ -369,7 +369,7 @@ public class AtmospherePushConnection implements PushConnection {
         } else {
             Console.log("Received push (" + getTransportType() + ") message: "
                     + message);
-            connection.getMessageHandler().handleMessage(json);
+            registry.getMessageHandler().handleMessage(json);
         }
     }
 
@@ -499,7 +499,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     }
 
-    protected native AtmosphereConfiguration createConfig()
+    protected final native AtmosphereConfiguration createConfig()
     /*-{
         return {
             transport: 'websocket',
@@ -516,11 +516,10 @@ public class AtmospherePushConnection implements PushConnection {
         };
     }-*/;
 
-    private native JavaScriptObject doConnect(String uri,
+    private final native JavaScriptObject doConnect(String uri,
             JavaScriptObject config)
             /*-{
                 var self = this;
-
                 config.url = uri;
                 config.onOpen = $entry(function(response) {
                     self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
@@ -546,7 +545,6 @@ public class AtmospherePushConnection implements PushConnection {
                 config.onClientTimeout = $entry(function(request) {
                     self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
                 });
-
                 return $wnd.jQueryVaadin.atmosphere.subscribe(config);
             }-*/;
 
@@ -572,28 +570,31 @@ public class AtmospherePushConnection implements PushConnection {
             final String pushJs = getVersionedPushJs();
 
             Console.log("Loading " + pushJs);
-            ResourceLoader.get().loadScript(
-                    connection.getConfiguration().getVaadinDirUrl() + pushJs,
-                    new ResourceLoadListener() {
-                        @Override
-                        public void onLoad(ResourceLoadEvent event) {
-                            if (isAtmosphereLoaded()) {
-                                Console.log(pushJs + " loaded");
-                                command.run();
-                            } else {
-                                // If bootstrap tried to load vaadinPush.js,
-                                // ResourceLoader assumes it succeeded even if
-                                // it failed (#11673)
-                                onError(event);
-                            }
-                        }
+            ResourceLoader loader = ResourceLoader.get();
+            String pushScriptUrl = registry.getApplicationConfiguration()
+                    .getVaadinDirUrl() + pushJs;
+            ResourceLoadListener loadListener = new ResourceLoadListener() {
+                @Override
+                public void onLoad(ResourceLoadEvent event) {
+                    if (isAtmosphereLoaded()) {
+                        Console.log(pushJs + " loaded");
+                        command.run();
+                    } else {
+                        // If bootstrap tried to load
+                        // vaadinPush.js, ResourceLoader assumes it succeeded
+                        // even if it failed (#11673)
+                        onError(event);
+                    }
+                }
 
-                        @Override
-                        public void onError(ResourceLoadEvent event) {
-                            getConnectionStateHandler().pushScriptLoadError(
-                                    event.getResourceUrl());
-                        }
-                    });
+                @Override
+                public void onError(ResourceLoadEvent event) {
+                    getConnectionStateHandler()
+                            .pushScriptLoadError(event.getResourceUrl());
+
+                }
+            };
+            loader.loadScript(pushScriptUrl, loadListener);
         }
     }
 
@@ -612,10 +613,6 @@ public class AtmospherePushConnection implements PushConnection {
     @Override
     public String getTransportType() {
         return transport;
-    }
-
-    private ConnectionStateHandler getConnectionStateHandler() {
-        return connection.getConnectionStateHandler();
     }
 
 }

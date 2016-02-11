@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.hummingbird;
 
+import com.vaadin.client.Registry;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
@@ -37,18 +38,18 @@ public class StateTree {
 
     private final StateNode rootNode = new StateNode(1, this);
 
-    private final ServerRpcQueue rpcQueue;
+    private final Registry registry;
 
     private JsMap<Integer, String> namespaceDebugName;
 
     /**
-     * Creates a new state tree.
+     * Creates a new instance connected to the given registry.
      *
-     * @param rpcQueue
-     *            the RPC queue for sending events to the server
+     * @param registry
+     *            the global registry
      */
-    public StateTree(ServerRpcQueue rpcQueue) {
-        this.rpcQueue = rpcQueue;
+    public StateTree(Registry registry) {
+        this.registry = registry;
         registerNode(rootNode);
     }
 
@@ -145,6 +146,7 @@ public class StateTree {
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_EVENT_TYPE, event.getType());
 
+        ServerRpcQueue rpcQueue = registry.get(ServerRpcQueue.class);
         rpcQueue.add(message);
         rpcQueue.flush();
     }
