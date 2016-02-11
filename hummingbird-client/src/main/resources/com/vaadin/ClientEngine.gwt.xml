@@ -27,7 +27,7 @@
 
 	<!-- Use own Scheduler implementation to be able to track if commands are 
 		running -->
-	<replace-with class="com.vaadin.client.VSchedulerImpl">
+	<replace-with class="com.vaadin.client.SchedulerImpl">
 		<when-type-is class="com.google.gwt.core.client.impl.SchedulerImpl" />
 	</replace-with>
 
