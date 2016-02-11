@@ -15,14 +15,12 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.Console;
-import com.vaadin.client.LoadingIndicator;
+import com.vaadin.client.Registry;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
 
@@ -42,37 +40,22 @@ import elemental.json.JsonValue;
  */
 public class MessageSender {
 
-    private ApplicationConnection connection;
     private boolean hasActiveRequest = false;
 
     /**
      * Counter for the messages send to the server. First sent message has id 0.
      */
     private int clientToServerMessageId = 0;
-    private XhrConnection xhrConnection;
     private PushConnection push;
-    private PushConfiguration pushConfiguration;
 
-    public MessageSender() {
-        xhrConnection = GWT.create(XhrConnection.class);
-        pushConfiguration = GWT.create(PushConfiguration.class);
-    }
+    private final Registry registry;
 
-    /**
-     * Sets the application connection this instance is connected to. Called
-     * internally by the framework.
-     *
-     * @param connection
-     *            the application connection this instance is connected to
-     */
-    public void setConnection(ApplicationConnection connection) {
-        this.connection = connection;
-        xhrConnection.setConnection(connection);
-        pushConfiguration.setConnection(connection);
+    public MessageSender(Registry registry) {
+        this.registry = registry;
     }
 
     public void sendInvocationsToServer() {
-        if (!connection.isApplicationRunning()) {
+        if (!registry.getApplicationConnection().isApplicationRunning()) {
             Console.warn(
                     "Trying to send RPC from not yet started or stopped application");
             return;
@@ -93,7 +76,7 @@ public class MessageSender {
      */
     private void doSendInvocationsToServer() {
 
-        ServerRpcQueue serverRpcQueue = getServerRpcQueue();
+        ServerRpcQueue serverRpcQueue = registry.getServerRpcQueue();
         if (serverRpcQueue.isEmpty()) {
             return;
         }
@@ -111,19 +94,15 @@ public class MessageSender {
         }
 
         JsonObject extraJson = Json.createObject();
-        if (!connection.getConfiguration().isWidgetsetVersionSent()) {
+        if (!registry.getApplicationConfiguration().isWidgetsetVersionSent()) {
             extraJson.put(ApplicationConstants.WIDGETSET_VERSION_ID,
                     Version.getFullVersion());
-            connection.getConfiguration().setWidgetsetVersionSent();
+            registry.getApplicationConfiguration().setWidgetsetVersionSent();
         }
         if (showLoadingIndicator) {
-            connection.getLoadingIndicator().trigger();
+            registry.getLoadingIndicator().trigger();
         }
         send(reqJson, extraJson);
-    }
-
-    private ServerRpcQueue getServerRpcQueue() {
-        return connection.getServerRpcQueue();
     }
 
     /**
@@ -139,13 +118,13 @@ public class MessageSender {
         startRequest();
 
         JsonObject payload = Json.createObject();
-        String csrfToken = getMessageHandler().getCsrfToken();
+        String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
             payload.put(ApplicationConstants.CSRF_TOKEN, csrfToken);
         }
         payload.put(ApplicationConstants.RPC_INVOCATIONS, reqInvocations);
         payload.put(ApplicationConstants.SERVER_SYNC_ID,
-                getMessageHandler().getLastSeenServerSyncId());
+                registry.getMessageHandler().getLastSeenServerSyncId());
         payload.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                 clientToServerMessageId++);
 
@@ -173,7 +152,7 @@ public class MessageSender {
         if (push != null && push.isBidirectional()) {
             push.push(payload);
         } else {
-            xhrConnection.send(payload);
+            registry.getXhrConnection().send(payload);
         }
     }
 
@@ -186,8 +165,7 @@ public class MessageSender {
      */
     public void setPushEnabled(boolean enabled) {
         if (enabled && push == null) {
-            push = GWT.create(PushConnection.class);
-            push.init(connection);
+            push = new AtmospherePushConnection(registry);
         } else if (!enabled && push != null && push.isActive()) {
             push.disconnect(new Runnable() {
                 @Override
@@ -198,7 +176,7 @@ public class MessageSender {
                      * the old connection to disconnect, now is the right time
                      * to open a new connection
                      */
-                    if (getPushConfiguration().isPushEnabled()) {
+                    if (registry.getPushConfiguration().isPushEnabled()) {
                         setPushEnabled(true);
                     }
 
@@ -206,8 +184,8 @@ public class MessageSender {
                      * Send anything that was enqueued while we waited for the
                      * connection to close
                      */
-                    if (getServerRpcQueue().isFlushPending()) {
-                        getServerRpcQueue().flush();
+                    if (registry.getServerRpcQueue().isFlushPending()) {
+                        registry.getServerRpcQueue().flush();
                     }
                 }
             });
@@ -220,7 +198,8 @@ public class MessageSender {
                     "Trying to start a new request while another is active");
         }
         hasActiveRequest = true;
-        connection.fireEvent(new RequestStartingEvent(connection));
+        registry.getApplicationConnection().fireEvent(
+                new RequestStartingEvent(registry.getApplicationConnection()));
     }
 
     public void endRequest() {
@@ -232,11 +211,12 @@ public class MessageSender {
         // the call.
         hasActiveRequest = false;
 
-        if (connection.isApplicationRunning()) {
-            if (getServerRpcQueue().isFlushPending()) {
+        if (registry.getApplicationConnection().isApplicationRunning()) {
+            if (registry.getServerRpcQueue().isFlushPending()) {
                 sendInvocationsToServer();
             }
-            runPostRequestHooks(connection.getConfiguration().getRootPanelId());
+            runPostRequestHooks(
+                    registry.getApplicationConfiguration().getRootPanelId());
         }
 
         // deferring to avoid flickering
@@ -244,9 +224,10 @@ public class MessageSender {
 
             @Override
             public void execute() {
-                if (!connection.isApplicationRunning() || !(hasActiveRequest()
-                        || getServerRpcQueue().isFlushPending())) {
-                    getLoadingIndicator().hide();
+                if (!registry.getApplicationConnection().isApplicationRunning()
+                        || !(hasActiveRequest() || registry.getServerRpcQueue()
+                                .isFlushPending())) {
+                    registry.getLoadingIndicator().hide();
 
                     // If on Liferay and session expiration management is in
                     // use, extend session duration on each request.
@@ -258,7 +239,9 @@ public class MessageSender {
                 }
             }
         });
-        connection.fireEvent(new ResponseHandlingEndedEvent(connection));
+        registry.getApplicationConnection()
+                .fireEvent(new ResponseHandlingEndedEvent(
+                        registry.getApplicationConnection()));
     }
 
     /**
@@ -330,18 +313,6 @@ public class MessageSender {
                 + "server to client: " + serverToClient;
     }
 
-    private ConnectionStateHandler getConnectionStateHandler() {
-        return connection.getConnectionStateHandler();
-    }
-
-    private MessageHandler getMessageHandler() {
-        return connection.getMessageHandler();
-    }
-
-    private LoadingIndicator getLoadingIndicator() {
-        return connection.getLoadingIndicator();
-    }
-
     /**
      * Resynchronize the client side, i.e. reload all component hierarchy and
      * state from the server
@@ -392,14 +363,4 @@ public class MessageSender {
             // Do nothing as they will arrive eventually
         }
     }
-
-    /**
-     * Gets the push configuration object.
-     *
-     * @return the push configuration object
-     */
-    public PushConfiguration getPushConfiguration() {
-        return pushConfiguration;
-    }
-
 }

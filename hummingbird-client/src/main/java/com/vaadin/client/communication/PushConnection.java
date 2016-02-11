@@ -16,29 +16,18 @@
 
 package com.vaadin.client.communication;
 
-import com.vaadin.client.ApplicationConnection;
-
 import elemental.json.JsonObject;
 
 /**
  * Represents the client-side endpoint of a bidirectional ("push") communication
  * channel. Can be used to send UIDL request messages to the server and to
  * receive UIDL messages from the server (either asynchronously or as a response
- * to a UIDL request.) Delegates the UIDL handling to the
- * {@link ApplicationConnection}.
+ * to a UIDL request).
  *
  * @author Vaadin Ltd
  * @since 7.1
  */
 public interface PushConnection {
-
-    /**
-     * Two-phase construction to allow using GWT.create().
-     *
-     * @param connection
-     *            The ApplicationConnection
-     */
-    public void init(ApplicationConnection connection);
 
     /**
      * Pushes a message to the server. Will throw an exception if the connection
