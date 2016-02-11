@@ -17,8 +17,8 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
+import com.vaadin.client.Registry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -35,24 +35,20 @@ public class ServerRpcQueue {
 
     private JsonArray pendingInvocations = Json.createArray();
 
-    protected ApplicationConnection connection;
     private boolean flushPending = false;
 
     private boolean flushScheduled = false;
 
-    public ServerRpcQueue() {
-
-    }
+    private final Registry registry;
 
     /**
-     * Sets the application connection this instance is connected to. Called
-     * internally by the framework.
+     * Creates a new instance connected to the given registry.
      *
-     * @param connection
-     *            the application connection this instance is connected to
+     * @param registry
+     *            the global registry
      */
-    public void setConnection(ApplicationConnection connection) {
-        this.connection = connection;
+    public ServerRpcQueue(Registry registry) {
+        this.registry = registry;
     }
 
     /**
@@ -62,7 +58,7 @@ public class ServerRpcQueue {
      *            RPC method invocation
      */
     public void add(JsonValue invocation) {
-        if (!connection.isApplicationRunning()) {
+        if (!registry.getApplicationConnection().isApplicationRunning()) {
             Console.warn(
                     "Trying to invoke method on not yet started or stopped application");
             return;
@@ -79,7 +75,7 @@ public class ServerRpcQueue {
     }
 
     /**
-     * Returns the current size of the queue
+     * Returns the current size of the queue.
      *
      * @return the number of invocations in the queue
      */
@@ -88,18 +84,7 @@ public class ServerRpcQueue {
     }
 
     /**
-     * Returns the server RPC queue for the given application
-     *
-     * @param connection
-     *            the application connection which owns the queue
-     * @return the server rpc queue for the given application
-     */
-    public static ServerRpcQueue get(ApplicationConnection connection) {
-        return connection.getServerRpcQueue();
-    }
-
-    /**
-     * Checks if the queue is empty
+     * Checks if the queue is empty.
      *
      * @return true if the queue is empty, false otherwise
      */
@@ -127,12 +112,12 @@ public class ServerRpcQueue {
                 // Somebody else cleared the queue before we had the chance
                 return;
             }
-            connection.getMessageSender().sendInvocationsToServer();
+            registry.getMessageSender().sendInvocationsToServer();
         }
     };
 
     /**
-     * Checks if a flush operation is pending
+     * Checks if a flush operation is pending.
      *
      * @return true if a flush is pending, false otherwise
      */
@@ -142,7 +127,7 @@ public class ServerRpcQueue {
 
     /**
      * Checks if a loading indicator should be shown when the RPCs have been
-     * sent to the server and we are waiting for a response
+     * sent to the server and we are waiting for a response.
      *
      * @return true if a loading indicator should be shown, false otherwise
      */
@@ -151,7 +136,7 @@ public class ServerRpcQueue {
     }
 
     /**
-     * Returns the current invocations as JSON
+     * Returns the current invocations as JSON.
      *
      * @return the current invocations in a JSON format ready to be sent to the
      *         server
