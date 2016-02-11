@@ -30,7 +30,7 @@ import org.atmosphere.cpr.AtmosphereResourceImpl;
 
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ServiceException;
-import com.vaadin.server.ServletPortletHelper;
+import com.vaadin.server.ServletHelper;
 import com.vaadin.server.SessionExpiredException;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinRequest;
@@ -216,7 +216,7 @@ public class PushHandler {
                 return;
             } catch (SessionExpiredException e) {
                 SystemMessages msg = service.getSystemMessages(
-                        ServletPortletHelper.findLocale(null, vaadinRequest),
+                        ServletHelper.findLocale(null, vaadinRequest),
                         vaadinRequest);
                 sendNotificationAndDisconnect(resource,
                         VaadinService.createCriticalNotificationJSON(
@@ -242,7 +242,7 @@ public class PushHandler {
                 callErrorHandler(session, e);
             } catch (final Exception e) {
                 SystemMessages msg = service.getSystemMessages(
-                        ServletPortletHelper.findLocale(null, vaadinRequest),
+                        ServletHelper.findLocale(null, vaadinRequest),
                         vaadinRequest);
 
                 AtmosphereResource errorResource = resource;

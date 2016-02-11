@@ -34,7 +34,7 @@ public class VaadinServletService extends VaadinService {
 
     public VaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         super(deploymentConfiguration);
         this.servlet = servlet;
     }
@@ -140,13 +140,13 @@ public class VaadinServletService extends VaadinService {
     private boolean isOtherRequest(VaadinRequest request) {
         // TODO This should be refactored in some way. It should not be
         // necessary to check all these types.
-        return (!ServletPortletHelper.isAppRequest(request)
+        return (!ServletHelper.isAppRequest(request)
                 && !ServletUIInitHandler.isUIInitRequest(request)
-                && !ServletPortletHelper.isFileUploadRequest(request)
-                && !ServletPortletHelper.isHeartbeatRequest(request)
-                && !ServletPortletHelper.isPublishedFileRequest(request)
-                && !ServletPortletHelper.isUIDLRequest(request)
-                && !ServletPortletHelper.isPushRequest(request));
+                && !ServletHelper.isFileUploadRequest(request)
+                && !ServletHelper.isHeartbeatRequest(request)
+                && !ServletHelper.isPublishedFileRequest(request)
+                && !ServletHelper.isUIDLRequest(request)
+                && !ServletHelper.isPushRequest(request));
     }
 
     public static HttpServletRequest getCurrentServletRequest() {
