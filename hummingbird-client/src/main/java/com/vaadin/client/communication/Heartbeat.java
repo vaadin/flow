@@ -17,10 +17,9 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.util.SharedUtil;
@@ -57,16 +56,11 @@ public class Heartbeat {
                         + registry.getApplicationConnection().getConfiguration()
                                 .getUIId());
 
-        registry.getApplicationConnection().addHandler(
-                ApplicationConnection.ApplicationStoppedEvent.TYPE,
-                new ApplicationConnection.ApplicationStoppedHandler() {
-
-                    @Override
-                    public void onApplicationStopped(
-                            ApplicationStoppedEvent event) {
-                        setInterval(-1);
-                    }
-                });
+        registry.getUILifecycle().addHandler(e -> {
+            if (e.getSource().getState() == UIState.TERMINATED) {
+                setInterval(-1);
+            }
+        });
     }
 
     /**

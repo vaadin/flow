@@ -29,7 +29,7 @@ public class Registry {
         // though this is not explicitly specified anywhere.
 
         set(ApplicationConnection.class, connection);
-
+        set(UILifecycle.class, new UILifecycle());
         set(StateTree.class, new StateTree(this));
         set(Heartbeat.class, new Heartbeat(this));
         set(LoadingIndicator.class, new LoadingIndicator());
@@ -123,6 +123,10 @@ public class Registry {
 
     public XhrConnection getXhrConnection() {
         return get(XhrConnection.class);
+    }
+
+    public UILifecycle getUILifecycle() {
+        return get(UILifecycle.class);
     }
 
 }

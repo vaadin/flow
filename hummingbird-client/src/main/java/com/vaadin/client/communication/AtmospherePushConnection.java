@@ -19,13 +19,15 @@ package com.vaadin.client.communication;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
+import com.vaadin.client.UILifecycle;
+import com.vaadin.client.UILifecycle.StateChangeEvent;
+import com.vaadin.client.UILifecycle.StateChangeHandler;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
@@ -132,25 +134,24 @@ public class AtmospherePushConnection implements PushConnection {
 
     public AtmospherePushConnection(Registry registry) {
         this.registry = registry;
-        registry.getApplicationConnection().addHandler(
-                ApplicationStoppedEvent.TYPE, new ApplicationStoppedHandler() {
+        registry.get(UILifecycle.class).addHandler(new StateChangeHandler() {
 
-                    @Override
-                    public void onApplicationStopped(
-                            ApplicationStoppedEvent event) {
-                        if (state == State.DISCONNECT_PENDING
-                                || state == State.DISCONNECTED) {
-                            return;
-                        }
-
-                        disconnect(new Runnable() {
-                            @Override
-                            public void run() {
-                            }
-                        });
-
+            @Override
+            public void onUIStateChanged(StateChangeEvent event) {
+                if (event.getSource().getState() == UIState.TERMINATED) {
+                    if (state == State.DISCONNECT_PENDING
+                            || state == State.DISCONNECTED) {
+                        return;
                     }
-                });
+
+                    disconnect(new Runnable() {
+                        @Override
+                        public void run() {
+                        }
+                    });
+                }
+            }
+        });
         config = createConfig();
         // Always debug for now
         config.setStringValue("logLevel", "debug");
