@@ -17,7 +17,6 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.vaadin.client.ApplicationConnection;
 
 import elemental.json.JsonObject;
 
@@ -33,15 +32,6 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public interface ConnectionStateHandler {
-
-    /**
-     * Sets the application connection this instance is connected to. Called
-     * internally by the framework.
-     *
-     * @param connection
-     *            the application connection this instance is connected to
-     */
-    void setConnection(ApplicationConnection connection);
 
     /**
      * Called when an exception occurs during a {@link Heartbeat} request
@@ -151,7 +141,7 @@ public interface ConnectionStateHandler {
      * Called when invalid content (not JSON) was returned from the server as
      * the result of an XmlHttpRequest request.
      *
-     * @param communicationProblemEvent
+     * @param xhrConnectionError
      *            An event containing what was being sent to the server and what
      *            was returned
      */
@@ -161,7 +151,7 @@ public interface ConnectionStateHandler {
      * Called when invalid status code (not 200) was returned by the server as
      * the result of an XmlHttpRequest.
      *
-     * @param communicationProblemEvent
+     * @param xhrConnectionError
      *            An event containing what was being sent to the server and what
      *            was returned
      */

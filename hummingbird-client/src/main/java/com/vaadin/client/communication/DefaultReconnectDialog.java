@@ -17,7 +17,6 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.WidgetUtil;
 
 import elemental.client.Browser;
@@ -100,7 +99,7 @@ public class DefaultReconnectDialog implements ReconnectDialog {
     }
 
     @Override
-    public void show(ApplicationConnection connection) {
+    public void show() {
         // FIXME Do something else
         if (root.getParentElement() == null) {
             Browser.getDocument().getBody().appendChild(root);
@@ -108,9 +107,9 @@ public class DefaultReconnectDialog implements ReconnectDialog {
     }
 
     @Override
-    public void preload(ApplicationConnection connection) {
+    public void preload() {
         setModal(false); // Don't interfere with application use
-        show(connection);
+        show();
         root.getStyle().setVisibility(Visibility.HIDDEN);
         root.getClassList().add(STYLE_RECONNECTING);
 
