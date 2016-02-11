@@ -21,6 +21,7 @@ import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
 
@@ -61,7 +62,7 @@ public class MessageSender {
     }
 
     public void sendInvocationsToServer() {
-        if (!registry.getApplicationConnection().isApplicationRunning()) {
+        if (registry.getUILifecycle().getState() != UIState.RUNNING) {
             Console.warn(
                     "Trying to send RPC from not yet started or stopped application");
             return;
@@ -228,7 +229,7 @@ public class MessageSender {
         // the call.
         hasActiveRequest = false;
 
-        if (registry.getApplicationConnection().isApplicationRunning()) {
+        if (registry.getUILifecycle().getState() == UIState.RUNNING) {
             if (registry.getServerRpcQueue().isFlushPending()) {
                 sendInvocationsToServer();
             }
@@ -241,7 +242,7 @@ public class MessageSender {
 
             @Override
             public void execute() {
-                if (!registry.getApplicationConnection().isApplicationRunning()
+                if ((registry.getUILifecycle().getState() != UIState.RUNNING)
                         || !(hasActiveRequest() || registry.getServerRpcQueue()
                                 .isFlushPending())) {
                     registry.getLoadingIndicator().hide();

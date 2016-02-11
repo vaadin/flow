@@ -19,6 +19,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle.UIState;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -58,7 +59,7 @@ public class ServerRpcQueue {
      *            RPC method invocation
      */
     public void add(JsonValue invocation) {
-        if (!registry.getApplicationConnection().isApplicationRunning()) {
+        if (registry.getUILifecycle().getState() != UIState.RUNNING) {
             Console.warn(
                     "Trying to invoke method on not yet started or stopped application");
             return;
