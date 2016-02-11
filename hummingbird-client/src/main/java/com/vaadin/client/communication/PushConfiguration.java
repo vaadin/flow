@@ -15,7 +15,7 @@
  */
 package com.vaadin.client.communication;
 
-import com.vaadin.client.ApplicationConnection;
+import com.vaadin.client.Registry;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
@@ -38,16 +38,10 @@ import com.vaadin.hummingbird.shared.Namespaces;
  */
 public class PushConfiguration {
 
-    private ApplicationConnection connection;
+    private final Registry registry;
 
-    /**
-     * Sets the application connection this instance is connected to.
-     *
-     * @param connection
-     *            the application connection
-     */
-    public void setConnection(ApplicationConnection connection) {
-        this.connection = connection;
+    public PushConfiguration(Registry registry) {
+        this.registry = registry;
         setupListener();
     }
 
@@ -73,18 +67,18 @@ public class PushConfiguration {
             // We must wait until all parts of push configuration has been
             // updated
             Reactive.addFlushListener(
-                    () -> connection.getMessageSender().setPushEnabled(true));
+                    () -> registry.getMessageSender().setPushEnabled(true));
         } else if (oldModeEnabled && !newModeEnabled) {
             // Switch push off
             // We must wait until all parts of push configuration has been
             // updated
             Reactive.addFlushListener(
-                    () -> connection.getMessageSender().setPushEnabled(false));
+                    () -> registry.getMessageSender().setPushEnabled(false));
         }
     }
 
     private MapNamespace getConfigurationNamespace() {
-        return connection.getTree().getRootNode()
+        return registry.getStateTree().getRootNode()
                 .getMapNamespace(Namespaces.UI_PUSHCONFIGURATION);
     }
 

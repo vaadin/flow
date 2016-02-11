@@ -17,7 +17,6 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.vaadin.client.ApplicationConnection;
 
 import elemental.json.JsonObject;
 
@@ -33,15 +32,6 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public interface ConnectionStateHandler {
-
-    /**
-     * Sets the application connection this instance is connected to. Called
-     * internally by the framework.
-     *
-     * @param connection
-     *            the application connection this instance is connected to
-     */
-    void setConnection(ApplicationConnection connection);
 
     /**
      * Called when an exception occurs during a {@link Heartbeat} request

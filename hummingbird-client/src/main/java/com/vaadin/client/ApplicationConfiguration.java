@@ -398,9 +398,7 @@ public class ApplicationConfiguration implements EntryPoint {
                 Profiler.enter("ApplicationConfiguration.startApplication");
                 ApplicationConfiguration appConf = getConfigFromDOM(
                         applicationId);
-                ApplicationConnection a = GWT
-                        .create(ApplicationConnection.class);
-                a.init(appConf);
+                ApplicationConnection a = new ApplicationConnection(appConf);
                 runningApplications.push(a);
                 Profiler.leave("ApplicationConfiguration.startApplication");
 
