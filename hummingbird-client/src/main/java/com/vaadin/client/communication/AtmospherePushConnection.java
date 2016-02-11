@@ -18,14 +18,13 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
@@ -162,22 +161,17 @@ public class AtmospherePushConnection implements PushConnection {
      */
     public AtmospherePushConnection(Registry registry) {
         this.registry = registry;
-        registry.getApplicationConnection().addHandler(
-                ApplicationStoppedEvent.TYPE, new ApplicationStoppedHandler() {
+        registry.getUILifecycle().addHandler(event -> {
+            if (event.getUiLifecycle().getState() == UIState.TERMINATED) {
+                if (state == State.DISCONNECT_PENDING
+                        || state == State.DISCONNECTED) {
+                    return;
+                }
 
-                    @Override
-                    public void onApplicationStopped(
-                            ApplicationStoppedEvent event) {
-                        if (state == State.DISCONNECT_PENDING
-                                || state == State.DISCONNECTED) {
-                            return;
-                        }
-
-                        disconnect(() -> {
-                        });
-
-                    }
+                disconnect(() -> {
                 });
+            }
+        });
         config = createConfig();
         // Always debug for now
         config.setStringValue("logLevel", "debug");
