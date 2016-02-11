@@ -15,9 +15,8 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.impl.SchedulerImpl;
-
-public class VSchedulerImpl extends SchedulerImpl {
+public class SchedulerImpl
+        extends com.google.gwt.core.client.impl.SchedulerImpl {
 
     /**
      * Keeps track of if there are deferred commands that are being executed. 0

@@ -16,7 +16,7 @@
 
 package com.vaadin.client;
 
-import com.vaadin.shared.VBrowserDetails;
+import com.vaadin.shared.BrowserDetails;
 
 import elemental.client.Browser;
 
@@ -53,7 +53,7 @@ public class BrowserInfo {
 
     private String cssClass = null;
 
-    private VBrowserDetails browserDetails;
+    private BrowserDetails browserDetails;
     private boolean touchDevice;
 
     static {
@@ -65,7 +65,7 @@ public class BrowserInfo {
     }
 
     private BrowserInfo() {
-        browserDetails = new VBrowserDetails(getBrowserString());
+        browserDetails = new BrowserDetails(getBrowserString());
 
         if (browserDetails.isChrome()) {
             touchDevice = detectChromeTouchDevice();
