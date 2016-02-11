@@ -16,7 +16,6 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.shared.GWT;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
@@ -26,6 +25,7 @@ import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
 import com.vaadin.client.Console;
+import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.AtmospherePushConnection.AtmosphereResponse;
 import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
@@ -47,8 +47,8 @@ import elemental.json.JsonObject;
  */
 public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
-    private ApplicationConnection connection;
-    private ReconnectDialog reconnectDialog = GWT.create(ReconnectDialog.class);
+    private final Registry registry;
+    private ReconnectDialog reconnectDialog = new DefaultReconnectDialog();
     private int reconnectAttempt = 0;
     private Type reconnectionCause = null;
 
@@ -88,12 +88,16 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
     }
 
-    @Override
-    public void setConnection(ApplicationConnection connection) {
-        this.connection = connection;
-
-        connection.addHandler(ApplicationStoppedEvent.TYPE,
-                new ApplicationStoppedHandler() {
+    /**
+     * Creates a new instance connected to the given registry.
+     *
+     * @param registry
+     *            the global registry
+     */
+    public DefaultConnectionStateHandler(Registry registry) {
+        this.registry = registry;
+        registry.getApplicationConnection().addHandler(
+                ApplicationStoppedEvent.TYPE, new ApplicationStoppedHandler() {
                     @Override
                     public void onApplicationStopped(
                             ApplicationStoppedEvent event) {
@@ -110,7 +114,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         // Allow dialog to cache needed resources to make them available when we
         // are offline
-        reconnectDialog.preload(connection);
+        reconnectDialog.preload();
     };
 
     /**
@@ -121,15 +125,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      */
     private boolean isReconnecting() {
         return reconnectionCause != null;
-    }
-
-    /**
-     * Returns the connection this handler is connected to
-     *
-     * @return the connection for this handler
-     */
-    protected ApplicationConnection getConnection() {
-        return connection;
     }
 
     @Override
@@ -152,7 +147,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         if (statusCode == Response.SC_GONE) {
             // Session expired
-            getConnection().showSessionExpiredError(null);
+            registry.getApplicationConnection().showSessionExpiredError(null);
             stopApplication();
         } else if (statusCode == Response.SC_NOT_FOUND) {
             // UI closed, do nothing as the UI will react to this
@@ -180,7 +175,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     /**
      * Called whenever an error occurs in communication which should be handled
      * by showing the reconnect dialog and retrying communication until
-     * successful again
+     * successful again.
      *
      * @param type
      *            The type of failure detected
@@ -190,7 +185,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      */
     protected void handleRecoverableError(Type type, final JsonObject payload) {
         debug("handleTemporaryError(" + type + ")");
-        if (!connection.isApplicationRunning()) {
+        if (!registry.getApplicationConnection().isApplicationRunning()) {
             return;
         }
 
@@ -275,7 +270,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      *            was detected by a heartbeat
      */
     protected void doReconnect(JsonObject payload) {
-        if (!connection.isApplicationRunning()) {
+        if (!registry.getApplicationConnection().isApplicationRunning()) {
             // This should not happen as nobody should call this if the
             // application has been stopped
             Console.warn(
@@ -284,17 +279,17 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
         if (payload != null) {
             Console.log("Re-sending last message to the server...");
-            getConnection().getMessageSender().send(payload);
+            registry.getMessageSender().send(payload);
         } else {
             // Use heartbeat
             Console.log("Trying to re-establish server connection...");
-            getConnection().getHeartbeat().send();
+            registry.getHeartbeat().send();
         }
     }
 
     /**
      * Called whenever a reconnect attempt fails to allow updating of dialog
-     * contents
+     * contents.
      */
     protected void updateDialog() {
         reconnectDialog.setText(getDialogText(reconnectAttempt));
@@ -302,10 +297,9 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     /**
      * Called when we should give up trying to reconnect and let the user decide
-     * how to continue
-     *
+     * how to continue.
      */
-    protected void giveUp() {
+    protected final void giveUp() {
         reconnectionCause = null;
         endRequest();
 
@@ -320,7 +314,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         reconnectDialog.setReconnecting(false);
 
         // Stopping the application stops heartbeats and push
-        connection.setApplicationRunning(false);
+        registry.getApplicationConnection().setApplicationRunning(false);
     }
 
     /**
@@ -344,15 +338,15 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     /**
      * Called when the reconnect dialog should be shown. This is typically when
      * N seconds has passed since a problem with the connection has been
-     * detected
+     * detected.
      */
     protected void showDialog() {
         reconnectDialog.setReconnecting(true);
-        reconnectDialog.show(connection);
+        reconnectDialog.show();
 
         // We never want to show loading indicator and reconnect dialog at the
         // same time
-        connection.getLoadingIndicator().hide();
+        registry.getLoadingIndicator().hide();
     }
 
     /**
@@ -395,7 +389,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private ReconnectDialogConfigurationState getConfiguration() {
-        return connection.getReconnectDialogConfiguration();
+        return registry.getApplicationConnection()
+                .getReconnectDialogConfiguration();
     }
 
     @Override
@@ -464,7 +459,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private void endRequest() {
-        getConnection().getMessageSender().endRequest();
+        registry.get(MessageSender.class).endRequest();
     }
 
     protected void handleUnauthorized(XhrConnectionError xhrConnectionError) {
@@ -472,14 +467,14 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
          * Authorization has failed (401). Could be that the session has timed
          * out.
          */
-        connection.showAuthenticationError("");
+        registry.getApplicationConnection().showAuthenticationError("");
         stopApplication();
     }
 
     private void stopApplication() {
         // Consider application not running any more and prevent all
         // future requests
-        connection.setApplicationRunning(false);
+        registry.getApplicationConnection().setApplicationRunning(false);
     }
 
     private void handleUnrecoverableCommunicationError(String details,
@@ -498,14 +493,14 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     /**
-     * Called when a communication error occurs and we cannot recover from it
+     * Called when a communication error occurs and we cannot recover from it.
      *
      * @since
      * @param details
      * @param statusCode
      */
     protected void handleCommunicationError(String details, int statusCode) {
-        connection.showError("", details, "", null);
+        registry.getApplicationConnection().showError("", details, "", null);
 
     }
 
