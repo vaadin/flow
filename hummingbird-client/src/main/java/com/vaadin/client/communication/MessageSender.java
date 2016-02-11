@@ -61,7 +61,7 @@ public class MessageSender {
     }
 
     public void sendInvocationsToServer() {
-        if (!registry.getApplicationConnection().isApplicationRunning()) {
+        if (!registry.getUILifecycle().isRunning()) {
             Console.warn(
                     "Trying to send RPC from not yet started or stopped application");
             return;
@@ -228,7 +228,7 @@ public class MessageSender {
         // the call.
         hasActiveRequest = false;
 
-        if (registry.getApplicationConnection().isApplicationRunning()) {
+        if (registry.getUILifecycle().isRunning()) {
             if (registry.getServerRpcQueue().isFlushPending()) {
                 sendInvocationsToServer();
             }
@@ -241,7 +241,7 @@ public class MessageSender {
 
             @Override
             public void execute() {
-                if (!registry.getApplicationConnection().isApplicationRunning()
+                if (!registry.getUILifecycle().isRunning()
                         || !(hasActiveRequest() || registry.getServerRpcQueue()
                                 .isFlushPending())) {
                     registry.getLoadingIndicator().hide();

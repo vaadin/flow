@@ -23,7 +23,6 @@ import com.google.gwt.event.shared.EventHandler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 import com.vaadin.client.hummingbird.BasicElementBinder;
@@ -68,12 +67,6 @@ public class ApplicationConnection {
 
     /** Event bus for communication events. */
     private EventBus eventBus = new SimpleEventBus();
-
-    public enum ApplicationState {
-        INITIALIZING, RUNNING, TERMINATED;
-    }
-
-    private ApplicationState applicationState = ApplicationState.INITIALIZING;
 
     /**
      * The communication handler methods are called at certain points during
@@ -161,55 +154,6 @@ public class ApplicationConnection {
         protected void dispatch(CommunicationHandler handler) {
             handler.onResponseHandlingStarted(this);
         }
-    }
-
-    /**
-     * Event triggered when a application is stopped by calling
-     * {@link ApplicationConnection#setApplicationRunning(false)}.
-     *
-     * To listen for the event add a {@link ApplicationStoppedHandler} by
-     * invoking
-     * {@link ApplicationConnection#addHandler(ApplicationConnection.ApplicationStoppedEvent.Type, ApplicationStoppedHandler)}
-     * to the {@link ApplicationConnection}
-     *
-     * @since 7.1.8
-     * @author Vaadin Ltd
-     */
-    public static class ApplicationStoppedEvent
-            extends Event<ApplicationStoppedHandler> {
-
-        public static final Type<ApplicationStoppedHandler> TYPE = new Type<ApplicationStoppedHandler>();
-
-        @Override
-        public Type<ApplicationStoppedHandler> getAssociatedType() {
-            return TYPE;
-        }
-
-        @Override
-        protected void dispatch(ApplicationStoppedHandler listener) {
-            listener.onApplicationStopped(this);
-        }
-    }
-
-    /**
-     * A listener for listening to application stopped events. The listener can
-     * be added to a {@link ApplicationConnection} by invoking
-     * {@link ApplicationConnection#addHandler(ApplicationStoppedEvent.Type, ApplicationStoppedHandler)}
-     *
-     * @since 7.1.8
-     * @author Vaadin Ltd
-     */
-    public interface ApplicationStoppedHandler extends EventHandler {
-
-        /**
-         * Triggered when the {@link ApplicationConnection} marks a previously
-         * running application as stopped by invoking
-         * {@link ApplicationConnection#setApplicationRunning(false)}.
-         *
-         * @param event
-         *            the event triggered by the {@link ApplicationConnection}
-         */
-        void onApplicationStopped(ApplicationStoppedEvent event);
     }
 
     public static class MultiStepDuration extends Duration {
@@ -370,45 +314,6 @@ public class ApplicationConnection {
         return configuration;
     }
 
-    public void setApplicationRunning(boolean applicationRunning) {
-        if (getApplicationState() == ApplicationState.TERMINATED) {
-            if (applicationRunning) {
-                Console.error(
-                        "Tried to restart a terminated application. This is not supported");
-            } else {
-                Console.warn(
-                        "Tried to stop a terminated application. This should not be done");
-            }
-            return;
-        } else if (getApplicationState() == ApplicationState.INITIALIZING) {
-            if (applicationRunning) {
-                applicationState = ApplicationState.RUNNING;
-            } else {
-                Console.warn(
-                        "Tried to stop the application before it has started. This should not be done");
-            }
-        } else if (getApplicationState() == ApplicationState.RUNNING) {
-            if (!applicationRunning) {
-                applicationState = ApplicationState.TERMINATED;
-                eventBus.fireEvent(new ApplicationStoppedEvent());
-            } else {
-                Console.warn(
-                        "Tried to start an already running application. This should not be done");
-            }
-        }
-    }
-
-    /**
-     * Checks if the application is in the {@link ApplicationState#RUNNING}
-     * state.
-     *
-     * @since 7.6
-     * @return true if the application is in the running state, false otherwise
-     */
-    public boolean isApplicationRunning() {
-        return applicationState == ApplicationState.RUNNING;
-    }
-
     public <H extends EventHandler> HandlerRegistration addHandler(
             Event.Type<H> type, H handler) {
         return eventBus.addHandler(type, handler);
@@ -422,19 +327,6 @@ public class ApplicationConnection {
      */
     public void fireEvent(Event<?> event) {
         eventBus.fireEvent(event);
-    }
-
-    /**
-     * Returns the state of this application. An application state goes from
-     * "initializing" to "running" to "stopped". There is no way for an
-     * application to go back to a previous state, i.e. a stopped application
-     * can never be re-started
-     *
-     * @since 7.6
-     * @return the current state of this application
-     */
-    public ApplicationState getApplicationState() {
-        return applicationState;
     }
 
     public ReconnectDialogConfigurationState getReconnectDialogConfiguration() {
