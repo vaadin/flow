@@ -25,7 +25,6 @@ import com.vaadin.client.Console;
 import com.vaadin.client.VLoadingIndicator;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.ui.ui.UIState.PushConfigurationState;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -52,9 +51,11 @@ public class MessageSender {
     private int clientToServerMessageId = 0;
     private XhrConnection xhrConnection;
     private PushConnection push;
+    private PushConfiguration pushConfiguration;
 
     public MessageSender() {
         xhrConnection = GWT.create(XhrConnection.class);
+        pushConfiguration = GWT.create(PushConfiguration.class);
     }
 
     /**
@@ -67,6 +68,7 @@ public class MessageSender {
     public void setConnection(ApplicationConnection connection) {
         this.connection = connection;
         xhrConnection.setConnection(connection);
+        pushConfiguration.setConnection(connection);
     }
 
     public void sendInvocationsToServer() {
@@ -183,12 +185,9 @@ public class MessageSender {
      *            <code>false</code> to disable the push connection.
      */
     public void setPushEnabled(boolean enabled) {
-        final PushConfigurationState pushState = connection
-                .getPushConfiguration();
-
         if (enabled && push == null) {
             push = GWT.create(PushConnection.class);
-            push.init(connection, pushState);
+            push.init(connection);
         } else if (!enabled && push != null && push.isActive()) {
             push.disconnect(new Runnable() {
                 @Override
@@ -199,7 +198,7 @@ public class MessageSender {
                      * the old connection to disconnect, now is the right time
                      * to open a new connection
                      */
-                    if (pushState.mode.isEnabled()) {
+                    if (getPushConfiguration().isPushEnabled()) {
                         setPushEnabled(true);
                     }
 
@@ -392,6 +391,15 @@ public class MessageSender {
             // Server has not yet seen all our messages
             // Do nothing as they will arrive eventually
         }
+    }
+
+    /**
+     * Gets the push configuration object.
+     *
+     * @return the push configuration object
+     */
+    public PushConfiguration getPushConfiguration() {
+        return pushConfiguration;
     }
 
 }

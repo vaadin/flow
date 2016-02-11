@@ -56,12 +56,15 @@ public class StateNode implements Serializable {
      */
     @SafeVarargs
     public StateNode(Class<? extends Namespace>... namespaces) {
+        // Owner is set before namespaces are created so that namespaces can add
+        // child nodes
+        setOwner(new TemporaryOwner());
+
         for (Class<? extends Namespace> namespaceType : namespaces) {
             Namespace namespace = NamespaceRegistry.create(namespaceType, this);
             this.namespaces.put(namespaceType, namespace);
         }
 
-        setOwner(new TemporaryOwner());
     }
 
     /**
