@@ -160,4 +160,8 @@ public class Registry {
         return get(XhrConnection.class);
     }
 
+    public UILifecycle getUILifecycle() {
+        return get(UILifecycle.class);
+    }
+
 }
