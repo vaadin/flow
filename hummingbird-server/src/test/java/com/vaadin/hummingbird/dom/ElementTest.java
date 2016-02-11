@@ -4,9 +4,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 
 public class ElementTest {
 
@@ -30,6 +35,27 @@ public class ElementTest {
     @Test(expected = IllegalArgumentException.class)
     public void createElementWithNullTag() {
         new Element(null);
+    }
+
+    @Test
+    public void elementsUpdateSameData() {
+        Element te = new Element("testelem");
+        Element e = Element.get(te.getNode());
+
+        // Elements must be equal but not necessarily the same
+        Assert.assertEquals(te, e);
+
+        te.setAttribute("foo", "bar");
+        Assert.assertEquals("bar", e.getAttribute("foo"));
+
+        e.setAttribute("baz", "123");
+        Assert.assertEquals("123", te.getAttribute("baz"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getElementFromInvalidNode() {
+        StateNode node = new StateNode(ElementPropertiesNamespace.class);
+        Element.get(node);
     }
 
     @Test
@@ -82,9 +108,44 @@ public class ElementTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void getNullAttribute() {
+        Element e = new Element("div");
+        e.getAttribute(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void hasNullAttribute() {
+        Element e = new Element("div");
+        e.hasAttribute(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeNullAttribute() {
+        Element e = new Element("div");
+        e.removeAttribute(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void setInvalidAttribute() {
         Element e = new Element("div");
         e.setAttribute("\"foo\"", "bar");
+    }
+
+    @Test
+    public void isNullValidAttribute() {
+        Assert.assertFalse(Element.isValidAttributeName(null));
+    }
+
+    @Test
+    public void isEmptyValidAttribute() {
+        Assert.assertFalse(Element.isValidAttributeName(""));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void isUpperCaseValidAttribute() {
+        // isValidAttributeName is designed to only be called with lowercase
+        // attribute names
+        Element.isValidAttributeName("FOO");
     }
 
     @Test
@@ -207,6 +268,18 @@ public class ElementTest {
         parent.appendChild(child);
 
         assertChildren(parent, child);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void appendNullChild() {
+        Element parent = new Element("div");
+        parent.appendChild((Element[]) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void insertNullChild() {
+        Element parent = new Element("div");
+        parent.insertChild(0, (Element[]) null);
     }
 
     @Test
@@ -404,6 +477,24 @@ public class ElementTest {
         assertChildren(parent);
     }
 
+    @Test
+    public void removeFromParent() {
+        Element parent = new Element("div");
+        Element otherElement = new Element("other");
+        parent.appendChild(otherElement);
+        Assert.assertEquals(parent, otherElement.getParent());
+        otherElement.removeFromParent();
+        Assert.assertNull(otherElement.getParent());
+    }
+
+    @Test
+    public void removeDetachedFromParent() {
+        Element otherElement = new Element("other");
+        Assert.assertNull(otherElement.getParent());
+        otherElement.removeFromParent(); // No op
+        Assert.assertNull(otherElement.getParent());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void removeNonChild() {
         Element parent = new Element("div");
@@ -449,4 +540,111 @@ public class ElementTest {
         Assert.assertNull(otherElement.getParent());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void addNullEventListener() {
+        Element e = new Element("div");
+        e.addEventListener("foo", null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addEventListenerForNullType() {
+        Element e = new Element("div");
+        e.addEventListener(null, () -> {
+        });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void replaceNullChild() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        parent.appendChild(child1);
+        parent.setChild(0, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeNullChild() {
+        Element parent = new Element("div");
+        parent.removeChild((Element[]) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void replaceBeforeFirstChild() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1);
+        parent.setChild(-1, child2);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void replaceAfterLastChild() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1);
+        parent.setChild(1, child2);
+    }
+
+    @Test
+    public void replaceFirstChild() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1);
+        parent.setChild(0, child2);
+        Assert.assertNull(child1.getParent());
+        Assert.assertEquals(parent, child2.getParent());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeChildBeforeFirst() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        parent.appendChild(child1);
+        parent.removeChild(-1);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeChildAfterLast() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        parent.appendChild(child1);
+        parent.removeChild(1);
+    }
+
+    @Test
+    public void equalsSelf() {
+        Element e = new Element("div");
+        Assert.assertTrue(e.equals(e));
+    }
+
+    @Test
+    public void notEqualsNull() {
+        Element e = new Element("div");
+        Assert.assertFalse(e.equals(null));
+    }
+
+    @Test
+    public void notEqualsString() {
+        Element e = new Element("div");
+        Assert.assertFalse(e.equals("div"));
+    }
+
+    @Test
+    public void listenerReceivesEvents() {
+        Element e = new Element("div");
+        AtomicInteger listenerCalls = new AtomicInteger(0);
+        DomEventListener myListener = new DomEventListener() {
+
+            @Override
+            public void handleEvent() {
+                listenerCalls.incrementAndGet();
+            }
+        };
+        e.addEventListener("click", myListener);
+        Assert.assertEquals(0, listenerCalls.get());
+        e.getNode().getNamespace(ElementListenersNamespace.class)
+                .fireEvent("click");
+        Assert.assertEquals(1, listenerCalls.get());
+    }
 }
