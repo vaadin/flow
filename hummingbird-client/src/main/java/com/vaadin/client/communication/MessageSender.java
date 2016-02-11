@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConnection;
@@ -50,11 +49,10 @@ public class MessageSender {
      * Counter for the messages send to the server. First sent message has id 0.
      */
     private int clientToServerMessageId = 0;
-    private XhrConnection xhrConnection;
+    private XhrConnection xhrConnection = new XhrConnection();;
     private PushConnection push;
 
     public MessageSender() {
-        xhrConnection = GWT.create(XhrConnection.class);
     }
 
     /**
@@ -187,7 +185,7 @@ public class MessageSender {
                 .getPushConfiguration();
 
         if (enabled && push == null) {
-            push = GWT.create(PushConnection.class);
+            push = new AtmospherePushConnection();
             push.init(connection, pushState);
         } else if (!enabled && push != null && push.isActive()) {
             push.disconnect(new Runnable() {

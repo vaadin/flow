@@ -34,10 +34,12 @@ import elemental.json.JsonObject;
 public interface PushConnection {
 
     /**
-     * Two-phase construction to allow using GWT.create().
+     * Initializes the given push connection
      *
      * @param connection
      *            The ApplicationConnection
+     * @param pushConfigurationState
+     *            push configuration, will be removed shortly
      */
     public void init(ApplicationConnection connection,
             PushConfigurationState pushConfigurationState);
