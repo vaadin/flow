@@ -22,9 +22,9 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.AtmospherePushConnection.AtmosphereResponse;
 import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
@@ -95,17 +95,17 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      */
     public DefaultConnectionStateHandler(Registry registry) {
         this.registry = registry;
-        registry.getApplicationConnection()
-                .addHandler(ApplicationStoppedEvent.TYPE, e -> {
-                    if (isReconnecting()) {
-                        giveUp();
-                    }
-                    if (scheduledReconnect != null
-                            && scheduledReconnect.isRunning()) {
-                        scheduledReconnect.cancel();
-                    }
-
-                });
+        registry.getUILifecycle().addHandler(e -> {
+            if (e.getUiLifecycle().getState() == UIState.TERMINATED) {
+                if (isReconnecting()) {
+                    giveUp();
+                }
+                if (scheduledReconnect != null
+                        && scheduledReconnect.isRunning()) {
+                    scheduledReconnect.cancel();
+                }
+            }
+        });
 
         // Allow dialog to cache needed resources to make them available when we
         // are offline
@@ -180,7 +180,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      */
     protected void handleRecoverableError(Type type, final JsonObject payload) {
         debug("handleTemporaryError(" + type + ")");
-        if (!registry.getApplicationConnection().isApplicationRunning()) {
+        if (!registry.getUILifecycle().isRunning()) {
             return;
         }
 
@@ -265,7 +265,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      *            was detected by a heartbeat
      */
     protected void doReconnect(JsonObject payload) {
-        if (!registry.getApplicationConnection().isApplicationRunning()) {
+        if (!registry.getUILifecycle().isRunning()) {
             // This should not happen as nobody should call this if the
             // application has been stopped
             Console.warn(
@@ -309,7 +309,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         reconnectDialog.setReconnecting(false);
 
         // Stopping the application stops heartbeats and push
-        registry.getApplicationConnection().setApplicationRunning(false);
+        stopApplication();
     }
 
     /**
@@ -469,7 +469,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     private void stopApplication() {
         // Consider application not running any more and prevent all
         // future requests
-        registry.getApplicationConnection().setApplicationRunning(false);
+        registry.getUILifecycle().setState(UIState.TERMINATED);
     }
 
     private void handleUnrecoverableCommunicationError(String details,

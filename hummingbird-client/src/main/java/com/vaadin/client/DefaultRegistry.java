@@ -47,6 +47,7 @@ public class DefaultRegistry extends Registry {
 
         set(ApplicationConnection.class, connection);
 
+        set(UILifecycle.class, new UILifecycle());
         set(StateTree.class, new StateTree(this));
         set(Heartbeat.class, new Heartbeat(this));
         set(LoadingIndicator.class, new LoadingIndicator());

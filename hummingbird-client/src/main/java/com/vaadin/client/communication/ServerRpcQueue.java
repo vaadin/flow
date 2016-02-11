@@ -58,7 +58,7 @@ public class ServerRpcQueue {
      *            RPC method invocation
      */
     public void add(JsonValue invocation) {
-        if (!registry.getApplicationConnection().isApplicationRunning()) {
+        if (!registry.getUILifecycle().isRunning()) {
             Console.warn(
                     "Trying to invoke method on not yet started or stopped application");
             return;
