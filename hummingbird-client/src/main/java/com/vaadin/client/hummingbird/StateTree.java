@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.hummingbird.shared.Namespaces;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.events.Event;
@@ -37,6 +38,8 @@ public class StateTree {
     private final StateNode rootNode = new StateNode(1, this);
 
     private final ServerRpcQueue rpcQueue;
+
+    private JsMap<Integer, String> namespaceDebugName;
 
     /**
      * Creates a new state tree.
@@ -145,4 +148,36 @@ public class StateTree {
         rpcQueue.add(message);
         rpcQueue.flush();
     }
+
+    /**
+     * Returns a human readable string for the name space with the given id.
+     *
+     * @param id
+     *            the namespace id
+     * @return a human readable string describing the namespace
+     */
+    public String getNamespaceDebugName(int id) {
+        if (namespaceDebugName == null) {
+            namespaceDebugName = JsCollections.map();
+            namespaceDebugName.set(Namespaces.ELEMENT_DATA, "elementData");
+            namespaceDebugName.set(Namespaces.ELEMENT_PROPERTIES,
+                    "elementProperties");
+            namespaceDebugName.set(Namespaces.ELEMENT_ATTRIBUTES,
+                    "elementAttributes");
+            namespaceDebugName.set(Namespaces.ELEMENT_CHILDREN,
+                    "elementChildren");
+            namespaceDebugName.set(Namespaces.ELEMENT_LISTENERS,
+                    "elementListeners");
+            namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION,
+                    "pushConfiguration");
+            namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION_PARAMETERS,
+                    "pushConfigurationParameters");
+        }
+        if (namespaceDebugName.has(id)) {
+            return namespaceDebugName.get(id);
+        } else {
+            return "Unknown namespace: " + id;
+        }
+    }
+
 }

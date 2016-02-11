@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 
 /**
  * A registry of namespaces that are available based on type.
@@ -54,6 +55,10 @@ public class NamespaceRegistry {
                 ElementAttributeNamespace::new);
         registerNamespace(ElementListenersNamespace.class,
                 ElementListenersNamespace::new);
+        registerNamespace(PushConfigurationMap.class,
+                PushConfigurationMap::new);
+        registerNamespace(PushConfigurationParametersMap.class,
+                PushConfigurationParametersMap::new);
     }
 
     private NamespaceRegistry() {

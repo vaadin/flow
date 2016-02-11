@@ -23,7 +23,6 @@ import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.namespace.AbstractNamespace;
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.dom.Element;
 import elemental.events.EventRemover;
@@ -146,28 +145,11 @@ public class StateNode {
         forEachNamespace((ns, nsId) -> {
             JsonValue json = ns.getDebugJson();
             if (json != null) {
-                object.put(getNamespaceDebugName(nsId.intValue()), json);
+                object.put(tree.getNamespaceDebugName(nsId.intValue()), json);
             }
         });
 
         return object;
-    }
-
-    private static String getNamespaceDebugName(int id) {
-        switch (id) {
-        case Namespaces.ELEMENT_DATA:
-            return "elementData";
-        case Namespaces.ELEMENT_PROPERTIES:
-            return "elementProperties";
-        case Namespaces.ELEMENT_ATTRIBUTES:
-            return "elementAttributes";
-        case Namespaces.ELEMENT_CHILDREN:
-            return "elementChildren";
-        case Namespaces.ELEMENT_LISTENERS:
-            return "elementListeners";
-        default:
-            return "Unknown namespace: " + id;
-        }
     }
 
     /**

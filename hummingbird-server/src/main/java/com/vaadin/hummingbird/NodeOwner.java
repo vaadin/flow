@@ -39,7 +39,7 @@ public abstract class NodeOwner implements Serializable {
      * @param oldOwner
      *            the node owner from which to adopt nodes
      */
-    public void adoptNodes(NodeOwner oldOwner) {
+    public final void adoptNodes(NodeOwner oldOwner) {
         assert oldOwner != this;
         ArrayList<StateNode> copy = new ArrayList<>(oldOwner.getNodes());
         copy.forEach(node -> node.setOwner(this));
@@ -124,5 +124,15 @@ public abstract class NodeOwner implements Serializable {
         Set<StateNode> collectedNodes = dirtyNodes;
         dirtyNodes = new HashSet<>();
         return collectedNodes;
+    }
+
+    /**
+     * Checks if there are nodes that have been marked as dirty since the last
+     * time {@link #collectDirtyNodes()} was invoked.
+     *
+     * @return true if there are dirty nodes, false otherwise
+     */
+    public boolean hasDirtyNodes() {
+        return !dirtyNodes.isEmpty();
     }
 }
