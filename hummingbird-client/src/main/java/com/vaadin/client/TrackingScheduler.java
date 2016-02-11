@@ -24,7 +24,7 @@ import com.google.gwt.core.client.impl.SchedulerImpl;
  * @author Vaadin
  * @since
  */
-public class VSchedulerImpl extends SchedulerImpl {
+public class TrackingScheduler extends SchedulerImpl {
 
     /**
      * Keeps track of if there are deferred commands that are being executed. 0
