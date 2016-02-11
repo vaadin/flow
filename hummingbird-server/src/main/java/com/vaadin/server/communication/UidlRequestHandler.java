@@ -22,7 +22,7 @@ import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.server.ServletPortletHelper;
+import com.vaadin.server.ServletHelper;
 import com.vaadin.server.SessionExpiredHandler;
 import com.vaadin.server.SynchronizedRequestHandler;
 import com.vaadin.server.SystemMessages;
@@ -59,7 +59,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletPortletHelper.isUIDLRequest(request);
+        return ServletHelper.isUIDLRequest(request);
     }
 
     @Override
@@ -129,12 +129,12 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!ServletPortletHelper.isUIDLRequest(request)) {
+        if (!ServletHelper.isUIDLRequest(request)) {
             return false;
         }
         VaadinService service = request.getService();
         SystemMessages systemMessages = service.getSystemMessages(
-                ServletPortletHelper.findLocale(null, request), request);
+                ServletHelper.findLocale(null, request), request);
 
         service.writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
                 VaadinService.createCriticalNotificationJSON(
