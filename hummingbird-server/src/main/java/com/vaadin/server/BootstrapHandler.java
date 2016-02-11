@@ -16,10 +16,14 @@
 
 package com.vaadin.server;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,13 +57,12 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 /**
+ * Request handler which handles bootstrapping of the application, i.e. the
+ * initial GET request.
  *
  * @author Vaadin Ltd
  * @since 7.0.0
- *
- * @deprecated As of 7.0. Will likely change or be removed in a future version
  */
-@Deprecated
 public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     /**
@@ -68,6 +71,26 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      * should thus be ignored when handling the UI init request.
      */
     public static final String IGNORE_RESTART_PARAM = "ignoreRestart";
+
+    private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
+            + "vaadin.gwtStatsEvents = [];"
+            + "window.__gwtStatsEvent = function(event) {"
+            + "vaadin.gwtStatsEvents.push(event); " + "return true;};};";
+
+    private static String bootstrapJS;
+
+    static {
+        try (InputStream stream = BootstrapHandler.class
+                .getResourceAsStream("BootstrapHandler.js");
+                BufferedReader bf = new BufferedReader(new InputStreamReader(
+                        stream, StandardCharsets.UTF_8));) {
+            StringBuilder sb = new StringBuilder();
+            bf.lines().forEach(sb::append);
+            bootstrapJS = sb.toString();
+        } catch (IOException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     protected class BootstrapContext implements Serializable {
 
@@ -238,7 +261,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     new BootstrapFragmentResponse(this, request, session,
                             uiClass, new ArrayList<Node>(), provider));
 
-            setupMainDiv(context);
+            setupBootstrapScript(context);
 
             String html = getBootstrapHtml(context);
 
@@ -390,49 +413,15 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         Element body = document.body();
         body.attr("scroll", "auto");
         body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
+
+        body.appendElement("noscript").append(
+                "You have to enable javascript in your browser to use this web site.");
     }
 
-    protected String getMainDivStyle(BootstrapContext context) {
-        return null;
-    }
-
-    /**
-     * Method to write the div element into which that actual Vaadin application
-     * is rendered.
-     * <p>
-     * Override this method if you want to add some custom html around around
-     * the div element into which the actual Vaadin application will be
-     * rendered.
-     *
-     * @param context
-     *
-     * @throws IOException
-     */
-    private void setupMainDiv(BootstrapContext context) throws IOException {
-        String style = getMainDivStyle(context);
-
-        /*- Add classnames;
-         *      .v-app
-         *      .v-app-loading
-         *- Additionally added from javascript:
-         *      <themeName, remove non-alphanum>
-         */
-
+    private void setupBootstrapScript(BootstrapContext context)
+            throws IOException {
         List<Node> fragmentNodes = context.getBootstrapResponse()
                 .getFragmentNodes();
-
-        Element mainDiv = new Element(Tag.valueOf("div"), "");
-        mainDiv.attr("id", context.getAppId());
-        mainDiv.addClass("v-app");
-        mainDiv.addClass(context.getUIClass().getSimpleName()
-                .toLowerCase(Locale.ENGLISH));
-        if (style != null && style.length() != 0) {
-            mainDiv.attr("style", style);
-        }
-        mainDiv.appendElement("div").addClass("v-app-loading");
-        mainDiv.appendElement("noscript").append(
-                "You have to enable javascript in your browser to use an application built with Vaadin.");
-        fragmentNodes.add(mainDiv);
 
         VaadinRequest request = context.getRequest();
 
@@ -469,11 +458,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         StringBuilder builder = new StringBuilder();
         builder.append("//<![CDATA[\n");
-        builder.append("if (!window.vaadin) alert(" + JsonUtil.quote(
-                "Failed to load the bootstrap javascript: " + bootstrapLocation)
-                + ");\n");
-
-        appendMainScriptTagContents(context, builder);
+        builder.append(getBootstrapJS(context));
 
         builder.append("//]]>");
         mainScriptTag.appendChild(
@@ -482,41 +467,24 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
-    protected void appendMainScriptTagContents(BootstrapContext context,
-            StringBuilder builder) throws IOException {
-        JsonObject appConfig = context.getApplicationParameters();
+    private String getBootstrapJS(BootstrapContext context) {
 
+        String result = getBootstrapJS().replace("{{appId}}",
+                context.getAppId());
+        JsonObject appConfig = context.getApplicationParameters();
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();
 
         if (isDebug) {
-            /*
-             * Add tracking needed for getting bootstrap metrics to the client
-             * side Profiler if another implementation hasn't already been
-             * added.
-             */
-            builder.append(
-                    "if (typeof window.__gwtStatsEvent != 'function') {\n");
-            builder.append("vaadin.gwtStatsEvents = [];\n");
-            builder.append(
-                    "window.__gwtStatsEvent = function(event) {vaadin.gwtStatsEvents.push(event); return true;};\n");
-            builder.append("}\n");
-        }
-
-        builder.append("vaadin.initApplication(\"");
-        builder.append(context.getAppId());
-        builder.append("\",");
-        appendJsonObject(builder, appConfig, isDebug);
-        builder.append(");\n");
-    }
-
-    private static void appendJsonObject(StringBuilder builder,
-            JsonObject jsonObject, boolean isDebug) {
-        if (isDebug) {
-            builder.append(JsonUtil.stringify(jsonObject, 4));
+            result = result.replace("{{configJSON}}",
+                    JsonUtil.stringify(appConfig, 4));
+            result = result.replace("GWT_STAT_EVENTS", GWT_STAT_EVENTS_JS);
         } else {
-            builder.append(JsonUtil.stringify(jsonObject));
+            result = result.replace("GWT_STAT_EVENTS", "");
+            result = result.replace("{{configJSON}}",
+                    JsonUtil.stringify(appConfig));
         }
+        return result;
     }
 
     protected JsonObject getApplicationParameters(BootstrapContext context) {
@@ -620,7 +588,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 e.getLocalizedMessage());
     }
 
-    private void putValueOrNull(JsonObject object, String key, String value) {
+    private static void putValueOrNull(JsonObject object, String key,
+            String value) {
         assert object != null;
         assert key != null;
         if (value == null) {
@@ -628,5 +597,13 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         } else {
             object.put(key, value);
         }
+    }
+
+    private static String getBootstrapJS() {
+        if (bootstrapJS == null) {
+            throw new IllegalStateException(
+                    "BootstrapHandler.js has not been loaded during initilization");
+        }
+        return bootstrapJS;
     }
 }
