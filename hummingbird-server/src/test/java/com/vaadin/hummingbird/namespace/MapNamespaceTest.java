@@ -16,8 +16,11 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,6 +29,9 @@ import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.MapRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
+
+import elemental.json.Json;
+import elemental.json.JsonValue;
 
 // Using ElementPropertiesNamespace since it closely maps to the underlying map
 public class MapNamespaceTest
@@ -190,4 +196,45 @@ public class MapNamespaceTest
         Assert.assertNull(child.getParent());
     }
 
+    @Test
+    public void testSerializable() {
+        namespace.put("string", "bar");
+        namespace.put("null", null);
+        namespace.put("boolean", Boolean.TRUE);
+        namespace.put("number", Double.valueOf(5));
+
+        namespace.putJson("jsonString", Json.create("bar"));
+        namespace.putJson("jsonNull", Json.createNull());
+        namespace.putJson("jsonBoolean", Json.create(true));
+        namespace.putJson("jsonNumber", Json.create(5));
+        namespace.putJson("jsonObject", Json.createObject());
+        namespace.putJson("jsonArray", Json.createArray());
+
+        Map<String, Object> values = new HashMap<>();
+        namespace.keySet().forEach(key -> values.put(key, namespace.get(key)));
+
+        MapNamespace copy = SerializationUtils
+                .deserialize(SerializationUtils.serialize(namespace));
+
+        Assert.assertNotSame(namespace, copy);
+
+        Assert.assertEquals(values.keySet(), copy.keySet());
+        // Also verify that original value wasn't changed by the serialization
+        Assert.assertEquals(values.keySet(), namespace.keySet());
+
+        values.keySet().forEach(key -> {
+            if (key.startsWith("json")) {
+                // Json values are not equals
+                JsonValue originalValue = (JsonValue) namespace.get(key);
+                JsonValue copyValue = (JsonValue) copy.get(key);
+
+                Assert.assertEquals(originalValue.toJson(), copyValue.toJson());
+            } else {
+                Assert.assertEquals(namespace.get(key), copy.get(key));
+            }
+
+            // Verify original was not touched
+            Assert.assertSame(values.get(key), namespace.get(key));
+        });
+    }
 }
