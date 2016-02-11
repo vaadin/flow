@@ -398,9 +398,7 @@ public class ApplicationConfiguration implements EntryPoint {
                 Profiler.enter("ApplicationConfiguration.startApplication");
                 ApplicationConfiguration appConf = getConfigFromDOM(
                         applicationId);
-                ApplicationConnection a = GWT
-                        .create(ApplicationConnection.class);
-                a.init(appConf);
+                ApplicationConnection a = new ApplicationConnection(appConf);
                 runningApplications.push(a);
                 Profiler.leave("ApplicationConfiguration.startApplication");
 
@@ -421,7 +419,7 @@ public class ApplicationConfiguration implements EntryPoint {
      *            the id of the application to get configuration data for
      * @return a native javascript object containing the configuration data
      */
-    private native static JsoConfiguration getJsoConfiguration(String appId)
+    private static native JsoConfiguration getJsoConfiguration(String appId)
     /*-{
         return $wnd.vaadin.getApp(appId);
      }-*/;

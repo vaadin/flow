@@ -20,6 +20,7 @@ import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.Console;
+import com.vaadin.client.Registry;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.util.SharedUtil;
@@ -39,29 +40,30 @@ public class Heartbeat {
         }
     };
 
-    private ApplicationConnection connection;
     private String uri;
     private int interval = -1;
 
+    private final Registry registry;
+
     /**
-     * Initializes the heartbeat for the given application connection
+     * Creates a new instance connected to the given registry
      *
-     * @param connection
-     *            the connection
+     * @param registry
+     *            the global registry
      */
-    public void init(ApplicationConnection applicationConnection) {
-        connection = applicationConnection;
+    public Heartbeat(Registry registry) {
+        this.registry = registry;
+        setInterval(
+                registry.getApplicationConfiguration().getHeartbeatInterval());
 
-        setInterval(connection.getConfiguration().getHeartbeatInterval());
-
-        uri = SharedUtil.addGetParameters(
-                connection.translateVaadinUri(
-                        ApplicationConstants.APP_PROTOCOL_PREFIX
-                                + ApplicationConstants.HEARTBEAT_PATH + '/'),
+        uri = SharedUtil.addGetParameters(registry.getApplicationConnection()
+                .translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
+                        + ApplicationConstants.HEARTBEAT_PATH + '/'),
                 ApplicationConstants.UI_ID_PARAMETER + "="
-                        + connection.getConfiguration().getUIId());
+                        + registry.getApplicationConnection().getConfiguration()
+                                .getUIId());
 
-        connection.addHandler(
+        registry.getApplicationConnection().addHandler(
                 ApplicationConnection.ApplicationStoppedEvent.TYPE,
                 new ApplicationConnection.ApplicationStoppedHandler() {
 
@@ -84,7 +86,7 @@ public class Heartbeat {
 
             @Override
             public void onSuccess(XMLHttpRequest xhr) {
-                connection.getConnectionStateHandler().heartbeatOk();
+                registry.getConnectionStateHandler().heartbeatOk();
                 schedule();
             }
 
@@ -94,11 +96,11 @@ public class Heartbeat {
                 // Handler should stop the application if heartbeat should no
                 // longer be sent
                 if (e == null) {
-                    connection.getConnectionStateHandler()
+                    registry.getConnectionStateHandler()
                             .heartbeatInvalidStatusCode(xhr);
                 } else {
-                    connection.getConnectionStateHandler()
-                            .heartbeatException(xhr, e);
+                    registry.getConnectionStateHandler().heartbeatException(xhr,
+                            e);
                 }
                 schedule();
 
