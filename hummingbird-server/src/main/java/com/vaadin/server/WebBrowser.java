@@ -21,7 +21,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import com.vaadin.shared.VBrowserDetails;
+import com.vaadin.shared.BrowserDetails;
 
 /**
  * Class that provides information about the web browser the user is using.
@@ -44,7 +44,7 @@ public class WebBrowser implements Serializable {
     private boolean dstInEffect;
     private boolean touchDevice;
 
-    private VBrowserDetails browserDetails;
+    private BrowserDetails browserDetails;
     private long clientServerTimeDelta;
 
     /**
@@ -490,7 +490,7 @@ public class WebBrowser implements Serializable {
 
         if (agent != null) {
             browserApplication = agent;
-            browserDetails = new VBrowserDetails(agent);
+            browserDetails = new BrowserDetails(agent);
         }
 
         if (request.getParameter("v-sw") != null) {

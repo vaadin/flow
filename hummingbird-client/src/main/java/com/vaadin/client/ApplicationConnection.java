@@ -232,7 +232,7 @@ public class ApplicationConnection {
         void onApplicationStopped(ApplicationStoppedEvent event);
     }
 
-    private VLoadingIndicator loadingIndicator;
+    private LoadingIndicator loadingIndicator;
 
     private Heartbeat heartbeat = GWT.create(Heartbeat.class);
 
@@ -278,7 +278,7 @@ public class ApplicationConnection {
     private final StateTree tree;
 
     public ApplicationConnection() {
-        loadingIndicator = GWT.create(VLoadingIndicator.class);
+        loadingIndicator = GWT.create(LoadingIndicator.class);
         connectionStateHandler = GWT.create(ConnectionStateHandler.class);
         messageHandler = GWT.create(MessageHandler.class);
         messageSender = GWT.create(MessageSender.class);
@@ -465,8 +465,8 @@ public class ApplicationConnection {
      */
     private boolean isExecutingDeferredCommands() {
         Scheduler s = Scheduler.get();
-        if (s instanceof VSchedulerImpl) {
-            return ((VSchedulerImpl) s).hasWorkQueued();
+        if (s instanceof TrackingScheduler) {
+            return ((TrackingScheduler) s).hasWorkQueued();
         } else {
             return false;
         }
@@ -477,7 +477,7 @@ public class ApplicationConnection {
      *
      * @return The loading indicator for this ApplicationConnection
      */
-    public VLoadingIndicator getLoadingIndicator() {
+    public LoadingIndicator getLoadingIndicator() {
         return loadingIndicator;
     }
 

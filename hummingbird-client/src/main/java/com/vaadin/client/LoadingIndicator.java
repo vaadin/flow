@@ -34,7 +34,7 @@ import elemental.dom.Element;
  * @author Vaadin Ltd
  * @since 7.1
  */
-public class VLoadingIndicator {
+public class LoadingIndicator {
 
     private static final String PRIMARY_STYLE_NAME = "v-loading-indicator";
 
