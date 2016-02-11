@@ -22,18 +22,19 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 /**
- * Contains helper methods shared by {@link VaadinServlet} and
- * {@link VaadinPortlet}.
+ * Contains helper methods shared by {@link VaadinServlet}.
  *
- * @deprecated As of 7.1. Will be removed or refactored in the future.
  */
-@Deprecated
-public class ServletPortletHelper implements Serializable {
+public class ServletHelper implements Serializable {
+
     public static final String UPLOAD_URL_PREFIX = "APP/UPLOAD/";
     /**
      * The default SystemMessages (read-only).
      */
     static final SystemMessages DEFAULT_SYSTEM_MESSAGES = new SystemMessages();
+
+    private ServletHelper() {
+    }
 
     private static void verifyUIClass(String className, ClassLoader classLoader)
             throws ServiceException {
@@ -58,7 +59,8 @@ public class ServletPortletHelper implements Serializable {
                     "Could not access " + className + " class", e);
         } catch (NoSuchMethodException e) {
             throw new ServiceException(
-                    className + " doesn't have a public no-args constructor");
+                    className + " doesn't have a public no-args constructor",
+                    e);
         }
     }
 
@@ -69,15 +71,8 @@ public class ServletPortletHelper implements Serializable {
             return false;
         }
 
-        if (!prefix.startsWith("/")) {
-            prefix = '/' + prefix;
-        }
-
-        if (pathInfo.startsWith(prefix)) {
-            return true;
-        }
-
-        return false;
+        return pathInfo.startsWith(prefix) || pathInfo
+                .startsWith(new StringBuilder("/").append(prefix).toString());
     }
 
     private static boolean isPathInfo(VaadinRequest request, String string) {
@@ -87,43 +82,95 @@ public class ServletPortletHelper implements Serializable {
             return false;
         }
 
-        if (!string.startsWith("/")) {
-            string = '/' + string;
-        }
-
-        if (pathInfo.equals(string)) {
-            return true;
-        }
-
-        return false;
+        return pathInfo.equals(string) || pathInfo
+                .equals(new StringBuilder("/").append(string).toString());
     }
 
+    /**
+     * Returns whether the given request is a file upload request.
+     *
+     * @param request
+     *            the request to check
+     * @return <code>true</code> if it is a file upload request,
+     *         <code>false</code> if not
+     */
     public static boolean isFileUploadRequest(VaadinRequest request) {
         return hasPathPrefix(request, UPLOAD_URL_PREFIX);
     }
 
+    /**
+     * Returns whether the given request is a published file request.
+     *
+     * @param request
+     *            the request to check
+     * @return <code>true</code> if it is a published file request,
+     *         <code>false</code> if not
+     */
     public static boolean isPublishedFileRequest(VaadinRequest request) {
         return hasPathPrefix(request,
                 ApplicationConstants.PUBLISHED_FILE_PATH + "/");
     }
 
+    /**
+     * Returns whether the given request is a UIDL request.
+     *
+     * @param request
+     *            the request to check
+     * @return <code>true</code> if it is a UIDL request, <code>false</code> if
+     *         not
+     */
     public static boolean isUIDLRequest(VaadinRequest request) {
         return hasPathPrefix(request, ApplicationConstants.UIDL_PATH + '/');
     }
 
+    /**
+     * Returns whether the given request is a app request.
+     *
+     * @param request
+     *            the request to check
+     * @return <code>true</code> if it is a app request, <code>false</code> if
+     *         not
+     */
     public static boolean isAppRequest(VaadinRequest request) {
         return hasPathPrefix(request, ApplicationConstants.APP_PATH + '/');
     }
 
+    /**
+     * Returns whether the given request is a heart beat request.
+     *
+     * @param request
+     *            the request to check
+     * @return <code>true</code> if it is a heart beat request,
+     *         <code>false</code> if not
+     */
     public static boolean isHeartbeatRequest(VaadinRequest request) {
         return hasPathPrefix(request,
                 ApplicationConstants.HEARTBEAT_PATH + '/');
     }
 
+    /**
+     * Returns whether the given request is a push request.
+     *
+     * @param request
+     *            the request to check
+     * @return <code>true</code> if it is a push request, <code>false</code> if
+     *         not
+     */
     public static boolean isPushRequest(VaadinRequest request) {
         return isPathInfo(request, ApplicationConstants.PUSH_PATH);
     }
 
+    /**
+     * Initializes the default UI provider and optional custom ui providers for
+     * the given session.
+     *
+     * @param session
+     *            to add UI providers to
+     * @param vaadinService
+     *            the vaadin service for the session
+     * @throws ServiceException
+     *             if no UI providers could be initialized
+     */
     public static void initDefaultUIProvider(VaadinSession session,
             VaadinService vaadinService) throws ServiceException {
         String uiProperty = vaadinService.getDeploymentConfiguration()
@@ -170,8 +217,15 @@ public class ServletPortletHelper implements Serializable {
         }
     }
 
-    public static void checkUiProviders(VaadinSession session,
-            VaadinService vaadinService) throws ServiceException {
+    /**
+     * Verifies that there is a UI provider available for the given session.
+     *
+     * @param session
+     *            the session to find UI providers from
+     * @throws ServiceException
+     */
+    public static void checkUiProviders(VaadinSession session)
+            throws ServiceException {
         if (session.getUIProviders().isEmpty()) {
             throw new ServiceException(
                     "No UIProvider has been added and there is no \""
@@ -192,6 +246,14 @@ public class ServletPortletHelper implements Serializable {
      * <li>{@link VaadinService#getCurrentRequest()} if defined</li>
      * <li>{@link Locale#getDefault()}</li>
      * </ol>
+     *
+     * @param session
+     *            the session that is searched for locale or <code>null</code>
+     *            if not available
+     * @param request
+     *            the request that is searched for locale or <code>null</code>
+     *            if not available
+     * @return
      */
     public static Locale findLocale(VaadinSession session,
             VaadinRequest request) {
