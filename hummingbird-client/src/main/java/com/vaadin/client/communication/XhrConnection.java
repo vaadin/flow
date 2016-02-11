@@ -17,7 +17,6 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.CommunicationHandler;
 import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
@@ -25,6 +24,7 @@ import com.vaadin.client.ApplicationConnection.ResponseHandlingStartedEvent;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
+import com.vaadin.client.Registry;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.gwt.elemental.js.util.Xhr;
 import com.vaadin.shared.ApplicationConstants;
@@ -45,8 +45,6 @@ import elemental.json.JsonObject;
  */
 public class XhrConnection {
 
-    private ApplicationConnection connection;
-
     /**
      * Webkit will ignore outgoing requests while waiting for a response to a
      * navigation event (indicated by a beforeunload event). When this happens,
@@ -56,7 +54,16 @@ public class XhrConnection {
      */
     private boolean webkitMaybeIgnoringRequests = false;
 
-    public XhrConnection() {
+    private Registry registry;
+
+    /**
+     * Creates a new instance connected to the given registry
+     *
+     * @param registry
+     *            the global registry
+     */
+    public XhrConnection(Registry registry) {
+        this.registry = registry;
         Browser.getWindow().addEventListener("beforeunload",
                 new EventListener() {
                     @Override
@@ -64,20 +71,9 @@ public class XhrConnection {
                         webkitMaybeIgnoringRequests = true;
                     }
                 }, false);
-    }
 
-    /**
-     * Sets the application connection this instance is connected to. Called
-     * internally by the framework.
-     *
-     * @param connection
-     *            the application connection this instance is connected to
-     */
-    public void setConnection(ApplicationConnection connection) {
-        this.connection = connection;
-
-        connection.addHandler(ResponseHandlingEndedEvent.TYPE,
-                new CommunicationHandler() {
+        registry.getApplicationConnection().addHandler(
+                ResponseHandlingEndedEvent.TYPE, new CommunicationHandler() {
                     @Override
                     public void onRequestStarting(RequestStartingEvent e) {
                     }
@@ -125,10 +121,11 @@ public class XhrConnection {
             if (e == null) {
                 // Response other than 200
 
-                getConnectionStateHandler().xhrInvalidStatusCode(errorEvent);
+                registry.getConnectionStateHandler()
+                        .xhrInvalidStatusCode(errorEvent);
                 return;
             } else {
-                getConnectionStateHandler().xhrException(errorEvent);
+                registry.getConnectionStateHandler().xhrException(errorEvent);
             }
 
         }
@@ -144,14 +141,14 @@ public class XhrConnection {
             ValueMap json = MessageHandler.parseWrappedJson(responseText);
             if (json == null) {
                 // Invalid string (not wrapped as expected or can't parse)
-                getConnectionStateHandler().xhrInvalidContent(
+                registry.getConnectionStateHandler().xhrInvalidContent(
                         new XhrConnectionError(xhr, payload, null));
                 return;
             }
 
-            getConnectionStateHandler().xhrOk();
+            registry.getConnectionStateHandler().xhrOk();
             Console.log("Received xhr message: " + responseText);
-            getMessageHandler().handleMessage(json);
+            registry.getMessageHandler().handleMessage(json);
         }
 
         /**
@@ -204,24 +201,16 @@ public class XhrConnection {
      * @return The URI to use for server messages.
      */
     protected String getUri() {
-        String uri = connection
+        String uri = registry.getApplicationConnection()
                 .translateVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
                         + ApplicationConstants.UIDL_PATH + '/');
 
         uri = SharedUtil.addGetParameters(uri,
                 ApplicationConstants.UI_ID_PARAMETER + "="
-                        + connection.getConfiguration().getUIId());
+                        + registry.getApplicationConfiguration().getUIId());
 
         return uri;
 
-    }
-
-    private ConnectionStateHandler getConnectionStateHandler() {
-        return connection.getConnectionStateHandler();
-    }
-
-    private MessageHandler getMessageHandler() {
-        return connection.getMessageHandler();
     }
 
     private static native boolean resendRequest(XMLHttpRequest xhr)

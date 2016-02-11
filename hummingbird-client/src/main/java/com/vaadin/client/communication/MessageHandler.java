@@ -22,11 +22,11 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.ApplicationConfiguration;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.ApplicationState;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
+import com.vaadin.client.Registry;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateTree;
@@ -122,8 +122,7 @@ public class MessageHandler {
      * between the bootstrap HTML being loaded and the first UI being rendered;
      */
     private int lastSeenServerSyncId = UNDEFINED_SYNC_ID;
-
-    private ApplicationConnection connection;
+    private final Registry registry;
 
     /**
      * Data structure holding information about pending UIDL messages.
@@ -140,15 +139,8 @@ public class MessageHandler {
         }
     }
 
-    /**
-     * Sets the application connection this instance is connected to. Called
-     * internally by the framework.
-     *
-     * @param connection
-     *            the application connection this instance is connected to
-     */
-    public void setConnection(ApplicationConnection connection) {
-        this.connection = connection;
+    public MessageHandler(Registry registry) {
+        this.registry = registry;
     }
 
     /**
@@ -168,11 +160,12 @@ public class MessageHandler {
                     + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
         }
 
-        ApplicationState state = connection.getApplicationState();
+        ApplicationState state = registry.getApplicationConnection()
+                .getApplicationState();
         if (state == ApplicationState.INITIALIZING) {
             // Application is starting up for the first time
-            connection.setApplicationRunning(true);
-            state = connection.getApplicationState();
+            registry.getApplicationConnection().setApplicationRunning(true);
+            state = registry.getApplicationConnection().getApplicationState();
         }
 
         if (state == ApplicationState.RUNNING) {
@@ -247,8 +240,8 @@ public class MessageHandler {
         if (valueMap.containsKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
             int serverNextExpected = valueMap
                     .getInt(ApplicationConstants.CLIENT_TO_SERVER_ID);
-            getMessageSender().setClientToServerMessageId(serverNextExpected,
-                    isResynchronize(valueMap));
+            registry.getMessageSender().setClientToServerMessageId(
+                    serverNextExpected, isResynchronize(valueMap));
         }
 
         if (serverId != -1) {
@@ -277,11 +270,11 @@ public class MessageHandler {
 
         Console.log("Handling resource dependencies");
         if (valueMap.containsKey("scriptDependencies")) {
-            connection.loadScriptDependencies(
+            registry.getApplicationConnection().loadScriptDependencies(
                     valueMap.getJSStringArray("scriptDependencies"));
         }
         if (valueMap.containsKey("styleDependencies")) {
-            connection.loadStyleDependencies(
+            registry.getApplicationConnection().loadStyleDependencies(
                     valueMap.getJSStringArray("styleDependencies"));
         }
 
@@ -304,7 +297,7 @@ public class MessageHandler {
 
                 JsonObject json = valueMap.cast();
                 if (json.hasKey("changes")) {
-                    StateTree tree = connection.getTree();
+                    StateTree tree = registry.getStateTree();
                     TreeChangeProcessor.processChanges(tree,
                             json.getArray("changes"));
 
@@ -327,12 +320,14 @@ public class MessageHandler {
                     if (meta.containsKey("appError")) {
                         ValueMap error = meta.getValueMap("appError");
 
-                        connection.showError(error.getString("caption"),
+                        registry.getApplicationConnection().showError(
+                                error.getString("caption"),
                                 error.getString("message"),
                                 error.getString("details"),
                                 error.getString("url"));
 
-                        connection.setApplicationRunning(false);
+                        registry.getApplicationConnection()
+                                .setApplicationRunning(false);
                     }
                     Profiler.leave("Error handling");
                 }
@@ -385,7 +380,7 @@ public class MessageHandler {
         if (isResponse(json)) {
             // End the request if the received message was a
             // response, not sent asynchronously
-            getMessageSender().endRequest();
+            registry.getMessageSender().endRequest();
         }
     }
 
@@ -459,7 +454,7 @@ public class MessageHandler {
                 // has been lost
                 // Drop pending messages and resynchronize
                 pendingUIDLMessages.clear();
-                getMessageSender().resynchronize();
+                registry.getMessageSender().resynchronize();
             }
         }
     };
@@ -587,10 +582,6 @@ public class MessageHandler {
      */
     public boolean isInitialUidlHandled() {
         return bootstrapTime != 0;
-    }
-
-    private MessageSender getMessageSender() {
-        return connection.getMessageSender();
     }
 
     /**
