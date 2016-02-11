@@ -181,7 +181,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         VaadinServletService service = new VaadinServletService(this,
                 deploymentConfiguration);
         service.init();
@@ -359,15 +359,14 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     private boolean ensureCookiesEnabled(VaadinServletRequest request,
             VaadinServletResponse response) throws IOException {
-        if (ServletPortletHelper.isUIDLRequest(request)) {
+        if (ServletHelper.isUIDLRequest(request)) {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
             if (request.getRequestedSessionId() == null) {
                 // User has cookies disabled
                 SystemMessages systemMessages = getService().getSystemMessages(
-                        ServletPortletHelper.findLocale(null, request),
-                        request);
+                        ServletHelper.findLocale(null, request), request);
                 getService().writeStringResponse(response,
                         JsonConstants.JSON_CONTENT_TYPE,
                         VaadinService.createCriticalNotificationJSON(
@@ -431,7 +430,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     private void serveStaticResourcesInVAADIN(String filename,
             HttpServletRequest request, HttpServletResponse response)
-                    throws IOException, ServletException {
+            throws IOException, ServletException {
 
         final ServletContext sc = getServletContext();
         URL resourceUrl = findResourceURL(filename, sc);
@@ -799,19 +798,19 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     @Deprecated
     protected RequestType getRequestType(VaadinServletRequest request) {
-        if (ServletPortletHelper.isFileUploadRequest(request)) {
+        if (ServletHelper.isFileUploadRequest(request)) {
             return RequestType.FILE_UPLOAD;
-        } else if (ServletPortletHelper.isPublishedFileRequest(request)) {
+        } else if (ServletHelper.isPublishedFileRequest(request)) {
             return RequestType.PUBLISHED_FILE;
         } else if (ServletUIInitHandler.isUIInitRequest(request)) {
             return RequestType.BROWSER_DETAILS;
-        } else if (ServletPortletHelper.isUIDLRequest(request)) {
+        } else if (ServletHelper.isUIDLRequest(request)) {
             return RequestType.UIDL;
         } else if (isStaticResourceRequest(request)) {
             return RequestType.STATIC_FILE;
-        } else if (ServletPortletHelper.isAppRequest(request)) {
+        } else if (ServletHelper.isAppRequest(request)) {
             return RequestType.APP;
-        } else if (ServletPortletHelper.isHeartbeatRequest(request)) {
+        } else if (ServletHelper.isHeartbeatRequest(request)) {
             return RequestType.HEARTBEAT;
         }
         return RequestType.OTHER;
@@ -948,7 +947,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
         c > 47 && c < 58 || // alphanum
                 c > 64 && c < 91 || // A-Z
                 c > 96 && c < 123 // a-z
-                ;
+        ;
     }
 
     private static final Logger getLogger() {

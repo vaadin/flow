@@ -228,7 +228,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     protected boolean canHandleRequest(VaadinRequest request) {
         // We do not want to handle /APP requests here, instead let it fall
         // through and produce a 404
-        return !ServletPortletHelper.isAppRequest(request);
+        return !ServletHelper.isAppRequest(request);
     }
 
     @Override
@@ -511,7 +511,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         appConfig.put("versionInfo", versionInfo);
 
         // Use locale from session if set, else from the request
-        Locale locale = ServletPortletHelper.findLocale(context.getSession(),
+        Locale locale = ServletHelper.findLocale(context.getSession(),
                 context.getRequest());
         // Get system messages
         SystemMessages systemMessages = vaadinService.getSystemMessages(locale,
