@@ -17,7 +17,6 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.Duration;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
@@ -30,6 +29,7 @@ import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.communication.ConnectionStateHandler;
+import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
@@ -88,7 +88,7 @@ public class ApplicationConnection {
     private ApplicationConfiguration configuration;
 
     /** Event bus for communication events. */
-    private EventBus eventBus = GWT.create(SimpleEventBus.class);
+    private EventBus eventBus = new SimpleEventBus();
 
     public enum ApplicationState {
         INITIALIZING, RUNNING, TERMINATED;
@@ -233,9 +233,9 @@ public class ApplicationConnection {
         void onApplicationStopped(ApplicationStoppedEvent event);
     }
 
-    private VLoadingIndicator loadingIndicator;
+    private VLoadingIndicator loadingIndicator = new VLoadingIndicator();
 
-    private Heartbeat heartbeat = GWT.create(Heartbeat.class);
+    private Heartbeat heartbeat = new Heartbeat();
 
     private final VaadinUriResolver uriResolver = new VaadinUriResolver() {
         @Override
@@ -279,11 +279,6 @@ public class ApplicationConnection {
     private final StateTree tree;
 
     public ApplicationConnection() {
-        loadingIndicator = GWT.create(VLoadingIndicator.class);
-        connectionStateHandler = GWT.create(ConnectionStateHandler.class);
-        messageHandler = GWT.create(MessageHandler.class);
-        messageSender = GWT.create(MessageSender.class);
-        serverRpcQueue = GWT.create(ServerRpcQueue.class);
 
         tree = new StateTree(serverRpcQueue);
 
@@ -377,7 +372,7 @@ public class ApplicationConnection {
                 return vi;
             }
         }
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::getMessageHandler();
             var pd = [
@@ -388,9 +383,9 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
@@ -398,10 +393,10 @@ public class ApplicationConnection {
         return configuration.getVersionInfoJSObject();
     }
 
-    protected ServerRpcQueue serverRpcQueue;
-    protected ConnectionStateHandler connectionStateHandler;
-    protected MessageHandler messageHandler;
-    protected MessageSender messageSender;
+    protected ServerRpcQueue serverRpcQueue = new ServerRpcQueue();
+    protected ConnectionStateHandler connectionStateHandler = new DefaultConnectionStateHandler();
+    protected MessageHandler messageHandler = new MessageHandler();
+    protected MessageSender messageSender = new MessageSender();;
 
     /**
      * Shows the communication error notification.

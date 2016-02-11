@@ -16,7 +16,6 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.shared.GWT;
 import com.google.gwt.http.client.Response;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
@@ -48,7 +47,7 @@ import elemental.json.JsonObject;
 public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     private ApplicationConnection connection;
-    private ReconnectDialog reconnectDialog = GWT.create(ReconnectDialog.class);
+    private ReconnectDialog reconnectDialog = new DefaultReconnectDialog();
     private int reconnectAttempt = 0;
     private Type reconnectionCause = null;
 
