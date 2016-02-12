@@ -35,6 +35,10 @@ public class BasicElementUI extends UI {
             greeting.setAttribute("class", "thankYou");
             greeting.getNode().getNamespace(ElementPropertiesNamespace.class)
                     .setProperty("textContent", "Thank you for clicking!");
+
+            greeting.addEventListener("click",
+                    () -> greeting.removeFromParent());
+
             bodyElement.appendChild(greeting);
         });
 
