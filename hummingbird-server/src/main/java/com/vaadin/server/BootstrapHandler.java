@@ -448,11 +448,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     .attr("type", "text/javascript").attr("src", pushJS));
         }
 
-        String bootstrapLocation = vaadinLocation
-                + ApplicationConstants.VAADIN_BOOTSTRAP_JS + versionQueryParam;
-        fragmentNodes.add(new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript")
-                .attr("src", bootstrapLocation));
         Element mainScriptTag = new Element(Tag.valueOf("script"), "")
                 .attr("type", "text/javascript");
 
