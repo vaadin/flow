@@ -16,6 +16,7 @@
 package com.vaadin.client.hummingbird;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -127,6 +128,25 @@ public class TreeChangeProcessorTest {
         Assert.assertEquals(myValue, value);
     }
 
+    @Test
+    public void testDetachRemovesNode() {
+        AtomicInteger unregisterCount = new AtomicInteger(0);
+
+        StateNode childNode = new StateNode(2, tree);
+        childNode.addUnregisterListener(e -> unregisterCount.incrementAndGet());
+
+        tree.registerNode(childNode);
+
+        Assert.assertSame(childNode, tree.getNode(childNode.getId()));
+        Assert.assertEquals(0, unregisterCount.get());
+
+        JsonArray changes = toArray(detachChange(childNode.getId()));
+        TreeChangeProcessor.processChanges(tree, changes);
+
+        Assert.assertNull(tree.getNode(childNode.getId()));
+        Assert.assertEquals(1, unregisterCount.get());
+    }
+
     private static JsonArray toArray(JsonValue... changes) {
         return Arrays.stream(changes).collect(JsonStream.asArray());
     }
@@ -148,6 +168,10 @@ public class TreeChangeProcessorTest {
 
     private static JsonObject attachChange(int node) {
         return baseChange(node, JsonConstants.CHANGE_TYPE_ATTACH);
+    }
+
+    private static JsonObject detachChange(int node) {
+        return baseChange(node, JsonConstants.CHANGE_TYPE_DETACH);
     }
 
     private static JsonObject putChange(int node, int ns, String key,
