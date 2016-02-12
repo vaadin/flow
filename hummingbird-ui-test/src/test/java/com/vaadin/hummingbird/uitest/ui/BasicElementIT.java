@@ -1,8 +1,11 @@
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.uitest.PhantomJSTest;
 
@@ -17,10 +20,19 @@ public class BasicElementIT extends PhantomJSTest {
         getDriver().findElement(By.tagName("input")).click();
 
         Assert.assertEquals(1, getThankYouCount());
+
+        // Clicking removes the element
+        getThankYouElements().get(0).click();
+
+        Assert.assertEquals(0, getThankYouCount());
     }
 
     private int getThankYouCount() {
-        return getDriver().findElements(By.cssSelector(".thankYou")).size();
+        return getThankYouElements().size();
+    }
+
+    private List<WebElement> getThankYouElements() {
+        return getDriver().findElements(By.cssSelector(".thankYou"));
     }
 
 }
