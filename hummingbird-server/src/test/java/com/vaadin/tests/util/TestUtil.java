@@ -1,5 +1,6 @@
 package com.vaadin.tests.util;
 
+import java.lang.ref.WeakReference;
 import java.util.Iterator;
 
 import org.junit.Assert;
@@ -42,5 +43,29 @@ public class TestUtil {
                             + i2.next()
                             + " has no match in the first iterable.");
         }
+    }
+
+    /**
+     * Checks whether a weak reference is garbage collected. This methods also
+     * tries to force collection of the reference by doing a few iterations of
+     * {@link System#gc()} and waiting for the result.
+     *
+     * @param ref
+     *            the weak reference to check
+     * @return <code>true</code> if the reference has been collected,
+     *         <code>false</code> if the reference is still reachable
+     * @throws InterruptedException
+     *             if interrupted while waiting for garbage collection to finish
+     */
+    public static boolean isGarbageCollected(WeakReference<?> ref)
+            throws InterruptedException {
+        for (int i = 0; i < 5; i++) {
+            System.gc();
+            if (ref.get() == null) {
+                return true;
+            }
+            Thread.sleep(5);
+        }
+        return false;
     }
 }

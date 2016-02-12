@@ -19,6 +19,7 @@ package com.vaadin.hummingbird;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.change.NodeAttachChange;
@@ -39,7 +40,7 @@ import com.vaadin.hummingbird.namespace.NamespaceRegistry;
 public class StateNode implements Serializable {
     private final Map<Class<? extends Namespace>, Namespace> namespaces = new HashMap<>();
 
-    private NodeOwner owner;
+    private NodeOwner owner = NullOwner.get();
 
     private StateNode parent;
 
@@ -56,10 +57,6 @@ public class StateNode implements Serializable {
      */
     @SafeVarargs
     public StateNode(Class<? extends Namespace>... namespaces) {
-        // Owner is set before namespaces are created so that namespaces can add
-        // child nodes
-        setOwner(new TemporaryOwner());
-
         for (Class<? extends Namespace> namespaceType : namespaces) {
             Namespace namespace = NamespaceRegistry.create(namespaceType, this);
             this.namespaces.put(namespaceType, namespace);
@@ -97,43 +94,102 @@ public class StateNode implements Serializable {
      *            is not attached to another node
      */
     public void setParent(StateNode parent) {
+        boolean wasAttached = isAttached();
+        boolean isAttached = false;
+
         if (parent != null) {
-            assert this.parent == null : "Node is already attached to a: "
-                    + parent;
+            assert this.parent == null : "Node is already attached to a parent: "
+                    + this.parent;
+            assert parent.hasChild(this);
+
+            isAttached = parent.isAttached();
 
             NodeOwner parentOwner = parent.getOwner();
-            if (parentOwner != owner) {
-                // calls setOwner for this node and all descendants
-                parentOwner.adoptNodes(owner);
+            if (parentOwner != owner && parentOwner instanceof StateTree) {
+                setTree((StateTree) parentOwner);
             }
         }
 
         markAsDirty();
         this.parent = parent;
+
+        if (!wasAttached && isAttached) {
+            onAttach();
+        } else if (wasAttached && !isAttached) {
+            onDetach();
+        }
+    }
+
+    @Deprecated
+    // Should only be used for debugging
+    private boolean hasChild(StateNode child) {
+        AtomicBoolean found = new AtomicBoolean(false);
+        forEachChild(c -> {
+            if (c == child) {
+                found.set(true);
+            }
+        });
+        return found.get();
     }
 
     /**
-     * Sets the node owner that this node belongs to.
-     *
-     * @param owner
-     *            the new node owner
+     * Called when this node has been attached to a state tree.
      */
-    // Method is final since we must call it from the constructor
-    public final void setOwner(NodeOwner owner) {
-        assert owner != null;
-
-        if (this.owner != null) {
-            this.owner.unregister(this);
-        }
-
-        this.owner = owner;
+    // protected only to get the root node attached
+    protected void onAttach() {
+        assert isAttached();
 
         int newId = owner.register(this);
-        if (newId != -1 && id != -1) {
-            throw new IllegalStateException(
-                    "Can't change id once it has been assigned");
+
+        if (newId != -1) {
+            if (id == -1) {
+                // Didn't have an id previously, set one now
+                id = newId;
+            } else if (newId != id) {
+                throw new IllegalStateException(
+                        "Can't change id once it has been assigned");
+            }
         }
-        id = newId;
+
+        markAsDirty();
+
+        forEachChild(StateNode::onAttach);
+    }
+
+    /**
+     * Called when this node has been detached from its state tree.
+     */
+    private void onDetach() {
+        assert !isAttached();
+
+        forEachChild(StateNode::onDetach);
+        owner.unregister(this);
+    }
+
+    private void forEachChild(Consumer<StateNode> action) {
+        namespaces.values().forEach(n -> n.forEachChild(action));
+    }
+
+    /**
+     * Sets the state tree that this node belongs to.
+     *
+     * @param tree
+     *            the state tree
+     */
+    // protected only to get the root node attached
+    protected void setTree(StateTree tree) {
+        if (tree == owner) {
+            return;
+        }
+
+        if (owner instanceof StateTree) {
+            throw new IllegalStateException(
+                    "Can't move a node from one state tree to another");
+        }
+
+        owner = tree;
+
+        forEachChild(c -> c.setTree(tree));
     }
 
     /**

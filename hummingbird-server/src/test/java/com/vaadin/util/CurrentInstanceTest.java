@@ -32,6 +32,7 @@ import com.vaadin.hummingbird.testcategory.SlowTests;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.UI;
 
 public class CurrentInstanceTest {
@@ -231,22 +232,10 @@ public class CurrentInstanceTest {
                 session1);
 
         session1 = null;
-        waitUntilGarbageCollected(ref);
+        Assert.assertTrue(TestUtil.isGarbageCollected(ref));
 
         CurrentInstance.restoreInstances(previous);
 
         Assert.assertNull(VaadinSession.getCurrent());
-    }
-
-    private static void waitUntilGarbageCollected(WeakReference<?> ref)
-            throws InterruptedException {
-        for (int i = 0; i < 50; i++) {
-            System.gc();
-            if (ref.get() == null) {
-                return;
-            }
-            Thread.sleep(100);
-        }
-        Assert.fail("Value was not garbage collected.");
     }
 }
