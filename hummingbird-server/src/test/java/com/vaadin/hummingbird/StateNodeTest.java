@@ -26,8 +26,10 @@ import org.junit.Test;
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.Namespace;
 
 public class StateNodeTest {
     @Test
@@ -40,9 +42,6 @@ public class StateNodeTest {
 
         Assert.assertEquals("New node shold have unassigned id", -1,
                 node.getId());
-
-        Assert.assertTrue("Owner should know about the new node",
-                owner.getNodes().contains(node));
 
         Assert.assertFalse("Node should not be attached", node.isAttached());
     }
@@ -83,7 +82,8 @@ public class StateNodeTest {
         Assert.assertTrue("Node should have no changes", changes.isEmpty());
 
         // Attach node
-        node.setParent(new StateTree().getRootNode());
+        setParent(node,
+                new StateTree(ElementChildrenNamespace.class).getRootNode());
 
         node.collectChanges(collector);
 
@@ -96,7 +96,7 @@ public class StateNodeTest {
         Assert.assertTrue("Node should have no changes", changes.isEmpty());
 
         // Detach node
-        node.setParent(null);
+        setParent(node, null);
 
         node.collectChanges(collector);
         Assert.assertEquals("Should have 1 change", 1, changes.size());
@@ -107,15 +107,16 @@ public class StateNodeTest {
 
     @Test
     public void appendChildBeforeParent() {
-        StateNode parent = createEmptyNode("parent");
-        StateNode child = createEmptyNode("child");
+        StateNode parent = createParentNode("parent");
+        StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
 
-        StateNode root = new StateTree().getRootNode();
+        StateNode root = new StateTree(ElementChildrenNamespace.class)
+                .getRootNode();
 
-        grandchild.setParent(child);
-        child.setParent(parent);
-        parent.setParent(root);
+        setParent(grandchild, child);
+        setParent(child, parent);
+        setParent(parent, root);
 
         Assert.assertNotEquals(-1, parent.getId());
         Assert.assertNotEquals(-1, child.getId());
@@ -124,15 +125,16 @@ public class StateNodeTest {
 
     @Test
     public void appendParentBeforeChild() {
-        StateNode parent = createEmptyNode("parent");
-        StateNode child = createEmptyNode("child");
+        StateNode parent = createParentNode("parent");
+        StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
 
-        StateNode root = new StateTree().getRootNode();
+        StateNode root = new StateTree(ElementChildrenNamespace.class)
+                .getRootNode();
 
-        parent.setParent(root);
-        child.setParent(parent);
-        grandchild.setParent(child);
+        setParent(parent, root);
+        setParent(child, parent);
+        setParent(grandchild, child);
 
         Assert.assertNotEquals(-1, parent.getId());
         Assert.assertNotEquals(-1, child.getId());
@@ -144,11 +146,43 @@ public class StateNodeTest {
     }
 
     public static StateNode createEmptyNode(String toString) {
-        return new StateNode() {
+        return createTestNode(toString);
+    }
+
+    public static StateNode createParentNode(String toString) {
+        return createTestNode(toString, ElementChildrenNamespace.class);
+    }
+
+    public static StateNode createTestNode(String toString,
+            Class<? extends Namespace>... namespaces) {
+        return new StateNode(namespaces) {
             @Override
             public String toString() {
-                return toString;
+                if (toString != null) {
+                    return toString;
+                } else {
+                    return super.toString();
+                }
             }
         };
     }
+
+    public static void setParent(StateNode child, StateNode parent) {
+        if (parent == null) {
+            // Remove child
+            parent = child.getParent();
+
+            ElementChildrenNamespace children = parent
+                    .getNamespace(ElementChildrenNamespace.class);
+            children.remove(children.indexOf(child));
+        } else {
+            // Add child
+            assert child.getParent() == null;
+
+            ElementChildrenNamespace children = parent
+                    .getNamespace(ElementChildrenNamespace.class);
+            children.add(children.size(), child);
+        }
+    }
+
 }
