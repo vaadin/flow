@@ -192,12 +192,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         @Override
-        protected String getServiceUrlParameterName() {
-            return getConfigOrNull(
-                    ApplicationConstants.SERVICE_URL_PARAMETER_NAME);
-        }
-
-        @Override
         protected String getServiceUrl() {
             String serviceUrl = getConfigOrNull(
                     ApplicationConstants.SERVICE_URL);
