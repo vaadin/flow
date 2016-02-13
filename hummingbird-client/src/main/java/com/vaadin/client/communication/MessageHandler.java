@@ -21,7 +21,6 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
-import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection.ApplicationState;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.Console;
@@ -29,6 +28,7 @@ import com.vaadin.client.Profiler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.bootstrap.Bootstrapper;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -301,7 +301,7 @@ public class MessageHandler {
                     TreeChangeProcessor.processChanges(tree,
                             json.getArray("changes"));
 
-                    if (ApplicationConfiguration.isDebugMode()) {
+                    if (registry.getApplicationConfiguration().isDebugMode()) {
                         JsonObject debugJson = tree.getRootNode()
                                 .getDebugJson();
                         Console.log("StateTree after applying changes:");
@@ -373,7 +373,7 @@ public class MessageHandler {
             }
 
         };
-        ApplicationConfiguration.runWhenDependenciesLoaded(c);
+        Bootstrapper.runWhenDependenciesLoaded(c);
     }
 
     private void endRequestIfResponse(ValueMap json) {
