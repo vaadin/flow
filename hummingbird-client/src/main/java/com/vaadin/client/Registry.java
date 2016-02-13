@@ -176,4 +176,21 @@ public class Registry {
         return get(XhrConnection.class);
     }
 
+    /**
+     * Gets the {@link URIResolver} singleton.
+     *
+     * @return the {@link URIResolver} singleton
+     */
+    public URIResolver getURIResolver() {
+        return get(URIResolver.class);
+    }
+
+    /**
+     * Gets the {@link DependencyLoader} singleton.
+     *
+     * @return the {@link DependencyLoader} singleton
+     */
+    public DependencyLoader getDependencyLoader() {
+        return get(DependencyLoader.class);
+    }
 }

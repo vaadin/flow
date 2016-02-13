@@ -25,11 +25,11 @@ import com.vaadin.client.ApplicationConnection.ApplicationState;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
+import com.vaadin.client.DependencyLoader;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.bootstrap.Bootstrapper;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -277,11 +277,11 @@ public class MessageHandler {
 
         Console.log("Handling resource dependencies");
         if (valueMap.containsKey("scriptDependencies")) {
-            registry.getApplicationConnection().loadScriptDependencies(
+            registry.getDependencyLoader().loadScriptDependencies(
                     valueMap.getJSStringArray("scriptDependencies"));
         }
         if (valueMap.containsKey("styleDependencies")) {
-            registry.getApplicationConnection().loadStyleDependencies(
+            registry.getDependencyLoader().loadStyleDependencies(
                     valueMap.getJSStringArray("styleDependencies"));
         }
 
@@ -380,7 +380,7 @@ public class MessageHandler {
             }
 
         };
-        Bootstrapper.runWhenDependenciesLoaded(c);
+        DependencyLoader.runWhenDependenciesLoaded(c);
     }
 
     private void endRequestIfResponse(ValueMap json) {
