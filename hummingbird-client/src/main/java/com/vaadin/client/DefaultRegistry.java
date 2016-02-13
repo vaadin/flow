@@ -46,7 +46,8 @@ public class DefaultRegistry extends Registry {
         // though this is not explicitly specified anywhere.
 
         set(ApplicationConnection.class, connection);
-
+        set(URIResolver.class, new URIResolver(this));
+        set(DependencyLoader.class, new DependencyLoader(this));
         set(StateTree.class, new StateTree(this));
         set(Heartbeat.class, new Heartbeat(this));
         set(LoadingIndicator.class, new LoadingIndicator());
