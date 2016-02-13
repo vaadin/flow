@@ -6,6 +6,7 @@ import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.PushConfiguration;
+import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
 import com.vaadin.client.hummingbird.StateTree;
@@ -33,6 +34,7 @@ public class Registry {
         // Classes with no constructor dependencies
         set(UILifecycle.class, new UILifecycle());
         set(LoadingIndicator.class, new LoadingIndicator());
+        set(RequestResponseTracker.class, new RequestResponseTracker(this));
         set(DependencyLoader.class, new DependencyLoader(this));
         set(URIResolver.class, new URIResolver(this));
         set(StateTree.class, new StateTree(this));
@@ -138,5 +140,9 @@ public class Registry {
 
     public DependencyLoader getDependencyLoader() {
         return get(DependencyLoader.class);
+    }
+
+    public RequestResponseTracker getRequestResponseTracker() {
+        return get(RequestResponseTracker.class);
     }
 }

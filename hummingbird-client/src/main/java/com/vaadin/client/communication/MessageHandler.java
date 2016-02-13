@@ -378,7 +378,7 @@ public class MessageHandler {
         if (isResponse(json)) {
             // End the request if the received message was a
             // response, not sent asynchronously
-            registry.getMessageSender().endRequest();
+            registry.getRequestResponseTracker().endRequest();
         }
     }
 
