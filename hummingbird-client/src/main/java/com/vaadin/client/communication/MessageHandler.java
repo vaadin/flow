@@ -269,11 +269,11 @@ public class MessageHandler {
 
         Console.log("Handling resource dependencies");
         if (valueMap.containsKey("scriptDependencies")) {
-            registry.getApplicationConnection().loadScriptDependencies(
+            registry.getDependencyLoader().loadScriptDependencies(
                     valueMap.getJSStringArray("scriptDependencies"));
         }
         if (valueMap.containsKey("styleDependencies")) {
-            registry.getApplicationConnection().loadStyleDependencies(
+            registry.getDependencyLoader().loadStyleDependencies(
                     valueMap.getJSStringArray("styleDependencies"));
         }
 
