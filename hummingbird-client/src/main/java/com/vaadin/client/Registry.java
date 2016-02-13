@@ -24,12 +24,14 @@ public class Registry {
 
     private JsMap<Class<?>, Object> lookupTable = JsCollections.map();
 
-    public Registry(ApplicationConnection connection) {
+    public Registry(ApplicationConnection connection,
+            ApplicationConfiguration applicationConfiguration) {
         // Note that initialization order matters. Many constructors depend on
         // ApplicationConnection, ApplicationConfiguration and StateTree even
         // though this is not explicitly specified anywhere.
 
         set(ApplicationConnection.class, connection);
+        set(ApplicationConfiguration.class, applicationConfiguration);
 
         // Classes with no constructor dependencies
         set(UILifecycle.class, new UILifecycle());
@@ -116,7 +118,7 @@ public class Registry {
     }
 
     public ApplicationConfiguration getApplicationConfiguration() {
-        return get(ApplicationConnection.class).getConfiguration();
+        return get(ApplicationConfiguration.class);
     }
 
     public StateTree getStateTree() {
