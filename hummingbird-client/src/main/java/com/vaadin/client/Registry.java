@@ -176,4 +176,8 @@ public class Registry {
     public RequestResponseTracker getRequestResponseTracker() {
         return get(RequestResponseTracker.class);
     }
+
+    public SystemErrorHandler getSystemErrorHandler() {
+        return get(SystemErrorHandler.class);
+    }
 }
