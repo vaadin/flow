@@ -21,7 +21,6 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
-import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.Registry;

@@ -13,12 +13,14 @@ import com.vaadin.client.hummingbird.StateTree;
 
 public class DefaultRegistry extends Registry {
 
-    public DefaultRegistry(ApplicationConnection connection) {
+    public DefaultRegistry(ApplicationConnection connection,
+            ApplicationConfiguration applicationConfiguration) {
         // Note that initialization order matters. Many constructors depend on
         // ApplicationConnection, ApplicationConfiguration and StateTree even
         // though this is not explicitly specified anywhere.
 
         set(ApplicationConnection.class, connection);
+        set(ApplicationConfiguration.class, applicationConfiguration);
 
         // Classes with no constructor dependencies
         set(UILifecycle.class, new UILifecycle());

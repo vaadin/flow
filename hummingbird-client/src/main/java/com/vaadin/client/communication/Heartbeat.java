@@ -53,8 +53,7 @@ public class Heartbeat {
                 .resolveVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
                         + ApplicationConstants.HEARTBEAT_PATH + '/'),
                 ApplicationConstants.UI_ID_PARAMETER + "="
-                        + registry.getApplicationConnection().getConfiguration()
-                                .getUIId());
+                        + registry.getApplicationConfiguration().getUIId());
 
         registry.getUILifecycle().addHandler(e -> {
             if (e.getSource().getState() == UIState.TERMINATED) {
