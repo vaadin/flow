@@ -17,10 +17,6 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.vaadin.client.ApplicationConnection.CommunicationHandler;
-import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
-import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
-import com.vaadin.client.ApplicationConnection.ResponseHandlingStartedEvent;
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
@@ -72,22 +68,9 @@ public class XhrConnection {
                     }
                 }, false);
 
-        registry.getApplicationConnection().addHandler(
-                ResponseHandlingEndedEvent.TYPE, new CommunicationHandler() {
-                    @Override
-                    public void onRequestStarting(RequestStartingEvent e) {
-                    }
-
-                    @Override
-                    public void onResponseHandlingStarted(
-                            ResponseHandlingStartedEvent e) {
-                    }
-
-                    @Override
-                    public void onResponseHandlingEnded(
-                            ResponseHandlingEndedEvent e) {
-                        webkitMaybeIgnoringRequests = false;
-                    }
+        registry.getRequestResponseTracker()
+                .addResponseHandlingEndedHandler(e -> {
+                    webkitMaybeIgnoringRequests = false;
                 });
 
     }

@@ -240,7 +240,8 @@ public class MessageHandler {
         suspendReponseHandling(lock);
 
         Console.log("Handling message from server");
-
+        registry.getRequestResponseTracker()
+                .fireEvent(new ResponseHandlingStartedEvent());
         // Client id must be updated before server id, as server id update can
         // cause a resync (which must use the updated id)
         if (valueMap.containsKey(ApplicationConstants.CLIENT_TO_SERVER_ID)) {
@@ -385,7 +386,7 @@ public class MessageHandler {
         if (isResponse(json)) {
             // End the request if the received message was a
             // response, not sent asynchronously
-            registry.getMessageSender().endRequest();
+            registry.getRequestResponseTracker().endRequest();
         }
     }
 
