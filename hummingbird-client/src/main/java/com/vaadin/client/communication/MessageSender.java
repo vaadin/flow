@@ -236,7 +236,7 @@ public class MessageSender {
                 sendInvocationsToServer();
             }
             runPostRequestHooks(
-                    registry.getApplicationConfiguration().getRootPanelId());
+                    registry.getApplicationConfiguration().getApplicationId());
         }
 
         // deferring to avoid flickering

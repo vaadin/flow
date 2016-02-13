@@ -43,11 +43,6 @@ public class ApplicationConstants implements Serializable {
 
     public static final String SERVICE_URL = "serviceUrl";
 
-    public static final String SERVICE_URL_PARAMETER_NAME = "pathParameterName";
-
-    // Javadocs in ApplicationConfiguration should be updated if this is changed
-    public static final String V_RESOURCE_PATH = "v-resourcePath";
-
     /**
      * URL parameter used in UIDL requests to indicate that the full server-side
      * state should be returned to the client, i.e. without any incremental

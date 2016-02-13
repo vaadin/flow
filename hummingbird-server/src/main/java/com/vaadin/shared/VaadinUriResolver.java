@@ -17,8 +17,6 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.util.SharedUtil;
-
 /**
  * Utility for translating special Vaadin URIs like theme:// and app:// into
  * URLs usable by the browser. This is an abstract class performing the main
@@ -71,34 +69,11 @@ public abstract class VaadinUriResolver implements Serializable {
                                     .length());
             // Let translation of app:// urls take care of the rest
         }
+
         if (vaadinUri.startsWith(ApplicationConstants.APP_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.APP_PROTOCOL_PREFIX.length());
-            String serviceUrl = getServiceUrl();
-            String serviceUrlParameterName = getServiceUrlParameterName();
-            if (serviceUrlParameterName != null) {
-                // Should put path in v-resourcePath parameter and append query
-                // params to base portlet url
-                String[] parts = relativeUrl.split("\\?", 2);
-                String path = parts[0];
-
-                // If there's a "?" followed by something, append it as a query
-                // string to the base URL
-                if (parts.length > 1) {
-                    String appUrlParams = parts[1];
-                    serviceUrl = SharedUtil.addGetParameters(serviceUrl,
-                            appUrlParams);
-                }
-                if (!path.startsWith("/")) {
-                    path = '/' + path;
-                }
-                String pathParam = serviceUrlParameterName + "="
-                        + encodeQueryStringParameterValue(path);
-                serviceUrl = SharedUtil.addGetParameters(serviceUrl, pathParam);
-                vaadinUri = serviceUrl;
-            } else {
-                vaadinUri = serviceUrl + relativeUrl;
-            }
+            vaadinUri = getServiceUrl() + relativeUrl;
         }
         if (vaadinUri.startsWith(ApplicationConstants.VAADIN_PROTOCOL_PREFIX)) {
             final String vaadinDirUri = getVaadinDirUrl();
@@ -116,17 +91,6 @@ public abstract class VaadinUriResolver implements Serializable {
      * @return the VAADIN directory URL
      */
     protected abstract String getVaadinDirUrl();
-
-    /**
-     * Gets the name of the request parameter that should be used for sending
-     * the requested URL to the {@link #getServiceUrl() service URL}. If
-     * <code>null</code> is returned, the requested URL will instead be appended
-     * to the base service URL.
-     *
-     * @return the parameter name used for passing request URLs, or
-     *         <code>null</code> to send the path as a part of the request path.
-     */
-    protected abstract String getServiceUrlParameterName();
 
     /**
      * Gets the URL handled by {@link com.vaadin.server.VaadinService
