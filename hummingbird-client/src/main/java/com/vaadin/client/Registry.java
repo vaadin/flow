@@ -147,7 +147,7 @@ public class Registry {
      * @return the {@link ApplicationConfiguration} singleton
      */
     public ApplicationConfiguration getApplicationConfiguration() {
-        return get(ApplicationConnection.class).getConfiguration();
+        return get(ApplicationConfiguration.class);
     }
 
     /**

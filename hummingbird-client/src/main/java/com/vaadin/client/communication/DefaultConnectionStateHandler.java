@@ -21,7 +21,6 @@ import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
@@ -401,8 +400,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
          * synchronous refresh. See #8241.
          */
         MatchResult refreshToken = RegExp
-                .compile(ApplicationConnection.UIDL_REFRESH_TOKEN
-                        + "(:\\s*(.*?))?(\\s|$)")
+                .compile(UIDL_REFRESH_TOKEN + "(:\\s*(.*?))?(\\s|$)")
                 .exec(responseText);
         if (refreshToken != null) {
             WidgetUtil.redirect(refreshToken.getGroup(2));
