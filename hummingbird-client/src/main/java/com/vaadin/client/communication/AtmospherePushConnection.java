@@ -19,7 +19,6 @@ package com.vaadin.client.communication;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
 import com.vaadin.client.Console;
@@ -593,10 +592,10 @@ public class AtmospherePushConnection implements PushConnection {
 
     private String getVersionedPushJs() {
         String pushJs;
-        if (ApplicationConfiguration.isProductionMode()) {
-            pushJs = ApplicationConstants.VAADIN_PUSH_JS;
-        } else {
+        if (registry.getApplicationConfiguration().isDebugMode()) {
             pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+        } else {
+            pushJs = ApplicationConstants.VAADIN_PUSH_JS;
         }
         // Parameter appended to bypass caches after version upgrade.
         pushJs += "?v=" + Version.getFullVersion();

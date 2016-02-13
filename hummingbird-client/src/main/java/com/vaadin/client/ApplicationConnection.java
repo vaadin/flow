@@ -25,9 +25,10 @@ import com.google.gwt.http.client.URL;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
-import com.vaadin.client.ApplicationConfiguration.ErrorMessage;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
+import com.vaadin.client.bootstrap.Bootstrapper;
+import com.vaadin.client.bootstrap.ErrorMessage;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 import com.vaadin.client.hummingbird.BasicElementBinder;
@@ -307,9 +308,8 @@ public class ApplicationConnection {
      * to avoid session-id problems.
      *
      */
-    public void start() {
-        String jsonText = configuration.getUIDL();
-        if (jsonText == null) {
+    public void start(String initialUidl) {
+        if (initialUidl == null) {
             // initial UIDL not in DOM, request from server
             registry.getMessageSender().resynchronize();
         } else {
@@ -318,7 +318,7 @@ public class ApplicationConnection {
             // Hack to avoid logging an error in endRequest()
             registry.getMessageSender().startRequest();
             registry.getMessageHandler()
-                    .handleMessage(MessageHandler.parseJson(jsonText));
+                    .handleMessage(MessageHandler.parseJson(initialUidl));
         }
 
     }
@@ -347,7 +347,7 @@ public class ApplicationConnection {
                 return vi;
             }
         }
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
             var pd = [
@@ -358,14 +358,14 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
     private JavaScriptObject getVersionInfo() {
-        return configuration.getVersionInfoJSObject();
+        return configuration.getVersionInfo();
     }
 
     /**
@@ -443,7 +443,7 @@ public class ApplicationConnection {
         ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
             @Override
             public void onLoad(ResourceLoadEvent event) {
-                ApplicationConfiguration.endDependencyLoading();
+                Bootstrapper.endDependencyLoading();
             }
 
             @Override
@@ -457,7 +457,7 @@ public class ApplicationConnection {
         ResourceLoader loader = ResourceLoader.get();
         for (int i = 0; i < dependencies.length(); i++) {
             String url = translateVaadinUri(dependencies.get(i));
-            ApplicationConfiguration.startDependencyLoading();
+            Bootstrapper.startDependencyLoading();
             loader.loadStylesheet(url, resourceLoadListener);
         }
     }
@@ -473,12 +473,12 @@ public class ApplicationConnection {
             public void onLoad(ResourceLoadEvent event) {
                 if (dependencies.length() != 0) {
                     String url = translateVaadinUri(dependencies.shift());
-                    ApplicationConfiguration.startDependencyLoading();
+                    Bootstrapper.startDependencyLoading();
                     // Load next in chain (hopefully already preloaded)
                     event.getResourceLoader().loadScript(url, this);
                 }
                 // Call start for next before calling end for current
-                ApplicationConfiguration.endDependencyLoading();
+                Bootstrapper.endDependencyLoading();
             }
 
             @Override
@@ -493,7 +493,7 @@ public class ApplicationConnection {
 
         // Start chain by loading first
         String url = translateVaadinUri(dependencies.shift());
-        ApplicationConfiguration.startDependencyLoading();
+        Bootstrapper.startDependencyLoading();
         loader.loadScript(url, resourceLoadListener);
 
         for (int i = 0; i < dependencies.length(); i++) {

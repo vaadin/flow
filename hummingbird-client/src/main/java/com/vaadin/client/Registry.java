@@ -130,7 +130,7 @@ public class Registry {
      * @return the {@link ApplicationConfiguration} singleton
      */
     public ApplicationConfiguration getApplicationConfiguration() {
-        return get(ApplicationConfiguration.class);
+        return get(ApplicationConnection.class).getConfiguration();
     }
 
     /**

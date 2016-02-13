@@ -18,7 +18,6 @@ public class DefaultRegistry extends Registry {
         // though this is not explicitly specified anywhere.
 
         set(ApplicationConnection.class, connection);
-        set(ApplicationConfiguration.class, connection.getConfiguration());
 
         set(StateTree.class, new StateTree(this));
         set(Heartbeat.class, new Heartbeat(this));
