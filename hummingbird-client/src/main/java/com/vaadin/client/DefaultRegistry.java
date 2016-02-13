@@ -21,6 +21,7 @@ import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.PushConfiguration;
+import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
 import com.vaadin.client.hummingbird.StateTree;
@@ -53,18 +54,17 @@ public class DefaultRegistry extends Registry {
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
         set(UILifecycle.class, new UILifecycle());
         set(StateTree.class, new StateTree(this));
-        set(Heartbeat.class, new Heartbeat(this));
         set(LoadingIndicator.class, new LoadingIndicator());
-
-        set(ConnectionStateHandler.class,
-                new DefaultConnectionStateHandler(this));
-
+        set(RequestResponseTracker.class, new RequestResponseTracker(this));
         set(MessageHandler.class, new MessageHandler(this));
         set(MessageSender.class, new MessageSender(this));
         set(ServerRpcQueue.class, new ServerRpcQueue(this));
-        set(XhrConnection.class, new XhrConnection(this));
 
+        // Classes with dependencies, in correct order
+        set(Heartbeat.class, new Heartbeat(this));
+        set(ConnectionStateHandler.class,
+                new DefaultConnectionStateHandler(this));
+        set(XhrConnection.class, new XhrConnection(this));
         set(PushConfiguration.class, new PushConfiguration(this));
     }
-
 }
