@@ -176,4 +176,12 @@ public class Registry {
         return get(XhrConnection.class);
     }
 
+    /**
+     * Gets the {@link SystemErrorHandler} singleton.
+     *
+     * @return the {@link SystemErrorHandler} singleton
+     */
+    public SystemErrorHandler getSystemErrorHandler() {
+        return get(SystemErrorHandler.class);
+    }
 }

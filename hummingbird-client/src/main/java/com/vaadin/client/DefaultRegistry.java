@@ -47,6 +47,8 @@ public class DefaultRegistry extends Registry {
 
         set(ApplicationConnection.class, connection);
 
+        // Classes with no constructor dependencies
+        set(SystemErrorHandler.class, new SystemErrorHandler(this));
         set(StateTree.class, new StateTree(this));
         set(Heartbeat.class, new Heartbeat(this));
         set(LoadingIndicator.class, new LoadingIndicator());
