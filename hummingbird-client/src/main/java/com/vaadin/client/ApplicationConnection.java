@@ -19,7 +19,6 @@ package com.vaadin.client;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-import com.vaadin.client.bootstrap.ErrorMessage;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
@@ -168,7 +167,7 @@ public class ApplicationConnection {
                 return vi;
             }
         }
-
+    
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
             var pd = [
@@ -179,63 +178,14 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-
+    
         client.initializing = false;
-
+    
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
     private JavaScriptObject getVersionInfo() {
         return configuration.getVersionInfo();
-    }
-
-    /**
-     * Shows the communication error notification.
-     *
-     * @param details
-     *            Optional details.
-     * @param statusCode
-     *            The status code returned for the request
-     *
-     */
-    public void showCommunicationError(String details, int statusCode) {
-        Console.error("Communication error: " + details);
-        showError(details, configuration.getCommunicationError());
-    }
-
-    /**
-     * Shows the authentication error notification.
-     *
-     * @param details
-     *            Optional details.
-     */
-    public void showAuthenticationError(String details) {
-        Console.error("Authentication error: " + details);
-        showError(details, configuration.getAuthorizationError());
-    }
-
-    /**
-     * Shows the session expiration notification.
-     *
-     * @param details
-     *            Optional details.
-     */
-    public void showSessionExpiredError(String details) {
-        Console.error("Session expired: " + details);
-        showError(details, configuration.getSessionExpiredError());
-    }
-
-    /**
-     * Shows an error notification.
-     *
-     * @param details
-     *            Optional details.
-     * @param message
-     *            An ErrorMessage describing the error.
-     */
-    protected void showError(String details, ErrorMessage message) {
-        showError(message.getCaption(), message.getMessage(), details,
-                message.getUrl());
     }
 
     /**
@@ -272,15 +222,6 @@ public class ApplicationConnection {
     public ReconnectDialogConfigurationState getReconnectDialogConfiguration() {
         // FIXME from the server
         return new ReconnectDialogConfigurationState();
-    }
-
-    public void showError(String caption, String message, String details,
-            String url) {
-        // FIXME Not like this
-        Browser.getWindow().alert(caption + "\n" + message + "\n" + details);
-        if (url != null) {
-            WidgetUtil.redirect(url);
-        }
     }
 
 }

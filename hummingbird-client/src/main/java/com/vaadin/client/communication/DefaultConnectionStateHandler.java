@@ -136,7 +136,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         if (statusCode == Response.SC_GONE) {
             // Session expired
-            registry.getApplicationConnection().showSessionExpiredError(null);
+            registry.getSystemErrorHandler().showSessionExpiredError(null);
             stopApplication();
         } else if (statusCode == Response.SC_NOT_FOUND) {
             // UI closed, do nothing as the UI will react to this
@@ -457,7 +457,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
          * Authorization has failed (401). Could be that the session has timed
          * out.
          */
-        registry.getApplicationConnection().showAuthenticationError("");
+        registry.getSystemErrorHandler().showAuthenticationError("");
         stopApplication();
     }
 
@@ -490,7 +490,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      * @param statusCode
      */
     protected void handleCommunicationError(String details, int statusCode) {
-        registry.getApplicationConnection().showError("", details, "", null);
+        registry.getSystemErrorHandler().showError("", details, "", null);
 
     }
 
