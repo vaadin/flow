@@ -21,7 +21,6 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
-import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
@@ -137,6 +136,44 @@ public class MessageHandler {
 
         public ValueMap getJson() {
             return json;
+        }
+    }
+
+    /**
+     * A utility class for measuring elapsed time in a multiple step operation.
+     * <p>
+     * Logs the duration results using {@link Console}.
+     */
+    public class MultiStepDuration extends Duration {
+        private int previousStep = elapsedMillis();
+
+        /**
+         * Logs the given message
+         *
+         * @param message
+         *            the message to log
+         */
+        public void logDuration(String message) {
+            logDuration(message, 0);
+        }
+
+        /**
+         * Logs the given message if at least the given time has elapsed since
+         * the last time this method was called.
+         *
+         * @param message
+         *            the message to log
+         * @param minDuration
+         *            the time in milliseconds which must have elapsed since the
+         *            last call for logging to take place
+         */
+        public void logDuration(String message, int minDuration) {
+            int currentTime = elapsedMillis();
+            int stepDuration = currentTime - previousStep;
+            if (stepDuration >= minDuration) {
+                Console.log(message + ": " + stepDuration + " ms");
+            }
+            previousStep = currentTime;
         }
     }
 
