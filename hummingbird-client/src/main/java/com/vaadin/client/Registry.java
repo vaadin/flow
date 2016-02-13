@@ -1,5 +1,7 @@
 package com.vaadin.client;
 
+import javax.xml.transform.URIResolver;
+
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
@@ -164,4 +166,11 @@ public class Registry {
         return get(UILifecycle.class);
     }
 
+    public URIResolver getURIResolver() {
+        return get(URIResolver.class);
+    }
+
+    public DependencyLoader getDependencyLoader() {
+        return get(DependencyLoader.class);
+    }
 }
