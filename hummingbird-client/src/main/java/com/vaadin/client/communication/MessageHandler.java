@@ -327,7 +327,7 @@ public class MessageHandler {
                     if (meta.containsKey("appError")) {
                         ValueMap error = meta.getValueMap("appError");
 
-                        registry.getApplicationConnection().showError(
+                        registry.getSystemErrorHandler().showError(
                                 error.getString("caption"),
                                 error.getString("message"),
                                 error.getString("details"),

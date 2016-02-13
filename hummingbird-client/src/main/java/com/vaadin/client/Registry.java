@@ -193,4 +193,13 @@ public class Registry {
     public DependencyLoader getDependencyLoader() {
         return get(DependencyLoader.class);
     }
+
+    /**
+     * Gets the {@link SystemErrorHandler} singleton.
+     *
+     * @return the {@link SystemErrorHandler} singleton
+     */
+    public SystemErrorHandler getSystemErrorHandler() {
+        return get(SystemErrorHandler.class);
+    }
 }
