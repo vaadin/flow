@@ -15,10 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
-import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
@@ -41,8 +37,6 @@ import elemental.json.JsonValue;
  */
 public class MessageSender {
 
-    private boolean hasActiveRequest = false;
-
     /**
      * Counter for the messages send to the server. First sent message has id 0.
      */
@@ -62,7 +56,8 @@ public class MessageSender {
             return;
         }
 
-        if (hasActiveRequest() || (push != null && !push.isActive())) {
+        if (registry.getRequestResponseTracker().hasActiveRequest()
+                || (push != null && !push.isActive())) {
             // There is an active request or push is enabled but not active
             // -> send when current request completes or push becomes active
         } else {
@@ -116,7 +111,7 @@ public class MessageSender {
      */
     protected void send(final JsonArray reqInvocations,
             final JsonObject extraJson) {
-        startRequest();
+        registry.getRequestResponseTracker().startRequest();
 
         JsonObject payload = Json.createObject();
         String csrfToken = registry.getMessageHandler().getCsrfToken();
@@ -191,107 +186,6 @@ public class MessageSender {
                 }
             });
         }
-    }
-
-    public void startRequest() {
-        if (hasActiveRequest) {
-            Console.error(
-                    "Trying to start a new request while another is active");
-        }
-        hasActiveRequest = true;
-        registry.getApplicationConnection().fireEvent(
-                new RequestStartingEvent(registry.getApplicationConnection()));
-    }
-
-    public void endRequest() {
-        if (!hasActiveRequest) {
-            Console.error("No active request");
-        }
-        // After sendInvocationsToServer() there may be a new active
-        // request, so we must set hasActiveRequest to false before, not after,
-        // the call.
-        hasActiveRequest = false;
-
-        if (registry.getUILifecycle().getState() == UIState.RUNNING) {
-            if (registry.getServerRpcQueue().isFlushPending()) {
-                sendInvocationsToServer();
-            }
-            runPostRequestHooks(
-                    registry.getApplicationConfiguration().getRootPanelId());
-        }
-
-        // deferring to avoid flickering
-        Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-
-            @Override
-            public void execute() {
-                if ((registry.getUILifecycle().getState() != UIState.RUNNING)
-                        || !(hasActiveRequest() || registry.getServerRpcQueue()
-                                .isFlushPending())) {
-                    registry.getLoadingIndicator().hide();
-
-                    // If on Liferay and session expiration management is in
-                    // use, extend session duration on each request.
-                    // Doing it here rather than before the request to improve
-                    // responsiveness.
-                    // Postponed until the end of the next request if other
-                    // requests still pending.
-                    extendLiferaySession();
-                }
-            }
-        });
-        registry.getApplicationConnection()
-                .fireEvent(new ResponseHandlingEndedEvent(
-                        registry.getApplicationConnection()));
-    }
-
-    /**
-     * Runs possibly registered client side post request hooks. This is expected
-     * to be run after each uidl request made by Vaadin application.
-     *
-     * @param appId
-     */
-    public static native void runPostRequestHooks(String appId)
-    /*-{
-        if ($wnd.vaadin.postRequestHooks) {
-                for ( var hook in $wnd.vaadin.postRequestHooks) {
-                        if (typeof ($wnd.vaadin.postRequestHooks[hook]) == "function") {
-                                try {
-                                        $wnd.vaadin.postRequestHooks[hook](appId);
-                                } catch (e) {
-                                }
-                        }
-                }
-        }
-    }-*/;
-
-    /**
-     * If on Liferay and logged in, ask the client side session management
-     * JavaScript to extend the session duration.
-     *
-     * Otherwise, Liferay client side JavaScript will explicitly expire the
-     * session even though the server side considers the session to be active.
-     * See ticket #8305 for more information.
-     */
-    public static native void extendLiferaySession()
-    /*-{
-    if ($wnd.Liferay && $wnd.Liferay.Session) {
-        $wnd.Liferay.Session.extend();
-        // if the extend banner is visible, hide it
-        if ($wnd.Liferay.Session.banner) {
-            $wnd.Liferay.Session.banner.remove();
-        }
-    }
-    }-*/;
-
-    /**
-     * Indicates whether or not there are currently active UIDL requests. Used
-     * internally to sequence requests properly, seldom needed in Widgets.
-     *
-     * @return true if there are active requests
-     */
-    public boolean hasActiveRequest() {
-        return hasActiveRequest;
     }
 
     /**

@@ -449,7 +449,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private void endRequest() {
-        registry.get(MessageSender.class).endRequest();
+        registry.getRequestResponseTracker().endRequest();
     }
 
     protected void handleUnauthorized(XhrConnectionError xhrConnectionError) {

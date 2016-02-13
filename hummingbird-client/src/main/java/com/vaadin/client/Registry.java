@@ -1,12 +1,11 @@
 package com.vaadin.client;
 
-import javax.xml.transform.URIResolver;
-
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.PushConfiguration;
+import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
 import com.vaadin.client.hummingbird.StateTree;
@@ -172,5 +171,9 @@ public class Registry {
 
     public DependencyLoader getDependencyLoader() {
         return get(DependencyLoader.class);
+    }
+
+    public RequestResponseTracker getRequestResponseTracker() {
+        return get(RequestResponseTracker.class);
     }
 }

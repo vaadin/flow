@@ -19,13 +19,8 @@ package com.vaadin.client;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.event.shared.EventHandler;
-import com.google.web.bindery.event.shared.Event;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.web.bindery.event.shared.HandlerRegistration;
 import com.vaadin.client.bootstrap.ErrorMessage;
 import com.vaadin.client.communication.MessageHandler;
-import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.shared.Version;
@@ -74,97 +69,6 @@ public class ApplicationConnection {
 
     /** Parameters for this application connection loaded from the web-page. */
     private ApplicationConfiguration configuration;
-
-    /** Event bus for communication events. */
-    private EventBus eventBus = new SimpleEventBus();
-
-    /**
-     * The communication handler methods are called at certain points during
-     * communication with the server. This allows for making add-ons that keep
-     * track of different aspects of the communication.
-     */
-    public interface CommunicationHandler extends EventHandler {
-        void onRequestStarting(RequestStartingEvent e);
-
-        void onResponseHandlingStarted(ResponseHandlingStartedEvent e);
-
-        void onResponseHandlingEnded(ResponseHandlingEndedEvent e);
-    }
-
-    public static class RequestStartingEvent
-            extends ApplicationConnectionEvent {
-
-        public static final Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
-
-        public RequestStartingEvent(ApplicationConnection connection) {
-            super(connection);
-        }
-
-        @Override
-        public Type<CommunicationHandler> getAssociatedType() {
-            return TYPE;
-        }
-
-        @Override
-        protected void dispatch(CommunicationHandler handler) {
-            handler.onRequestStarting(this);
-        }
-    }
-
-    public static class ResponseHandlingEndedEvent
-            extends ApplicationConnectionEvent {
-
-        public static final Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
-
-        public ResponseHandlingEndedEvent(ApplicationConnection connection) {
-            super(connection);
-        }
-
-        @Override
-        public Type<CommunicationHandler> getAssociatedType() {
-            return TYPE;
-        }
-
-        @Override
-        protected void dispatch(CommunicationHandler handler) {
-            handler.onResponseHandlingEnded(this);
-        }
-    }
-
-    public static abstract class ApplicationConnectionEvent
-            extends Event<CommunicationHandler> {
-
-        private ApplicationConnection connection;
-
-        protected ApplicationConnectionEvent(ApplicationConnection connection) {
-            this.connection = connection;
-        }
-
-        public ApplicationConnection getConnection() {
-            return connection;
-        }
-
-    }
-
-    public static class ResponseHandlingStartedEvent
-            extends ApplicationConnectionEvent {
-
-        public ResponseHandlingStartedEvent(ApplicationConnection connection) {
-            super(connection);
-        }
-
-        public static final Type<CommunicationHandler> TYPE = new Type<CommunicationHandler>();
-
-        @Override
-        public Type<CommunicationHandler> getAssociatedType() {
-            return TYPE;
-        }
-
-        @Override
-        protected void dispatch(CommunicationHandler handler) {
-            handler.onResponseHandlingStarted(this);
-        }
-    }
 
     public static class MultiStepDuration extends Duration {
         private int previousStep = elapsedMillis();
@@ -233,7 +137,7 @@ public class ApplicationConnection {
             // initial UIDL provided in DOM, continue as if returned by request
 
             // Hack to avoid logging an error in endRequest()
-            registry.getMessageSender().startRequest();
+            registry.getRequestResponseTracker().startRequest();
             registry.getMessageHandler()
                     .handleMessage(MessageHandler.parseJson(initialUidl));
         }
@@ -247,7 +151,7 @@ public class ApplicationConnection {
      */
     private boolean isActive() {
         return !registry.getMessageHandler().isInitialUidlHandled()
-                || registry.getMessageSender().hasActiveRequest()
+                || registry.getRequestResponseTracker().hasActiveRequest()
                 || isExecutingDeferredCommands();
     }
 
@@ -363,21 +267,6 @@ public class ApplicationConnection {
      */
     public ApplicationConfiguration getConfiguration() {
         return configuration;
-    }
-
-    public <H extends EventHandler> HandlerRegistration addHandler(
-            Event.Type<H> type, H handler) {
-        return eventBus.addHandler(type, handler);
-    }
-
-    /**
-     * Fires the given event using the event bus for this class.
-     *
-     * @param event
-     *            the event to fire
-     */
-    public void fireEvent(Event<?> event) {
-        eventBus.fireEvent(event);
     }
 
     public ReconnectDialogConfigurationState getReconnectDialogConfiguration() {
