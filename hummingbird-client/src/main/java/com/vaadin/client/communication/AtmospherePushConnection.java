@@ -210,8 +210,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     private void connect() {
-        String baseUrl = registry.getApplicationConnection()
-                .translateVaadinUri(url);
+        String baseUrl = registry.getURIResolver().resolveVaadinUri(url);
         String extraParams = ApplicationConstants.UI_ID_PARAMETER + "="
                 + registry.getApplicationConnection().getConfiguration()
                         .getUIId();
