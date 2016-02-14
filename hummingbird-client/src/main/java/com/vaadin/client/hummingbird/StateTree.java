@@ -139,12 +139,23 @@ public class StateTree {
      *            the fired event
      */
     public void sendEventToServer(StateNode node, Event event) {
-        assert assertValidNode(node);
+        sendEventToServer(node, event.getType());
+    }
 
+    /**
+     * Sends an event to the server.
+     *
+     * @param node
+     *            the node that listened to the event
+     * @param eventType
+     *            the type of event
+     */
+    public void sendEventToServer(StateNode node, String eventType) {
+        assert assertValidNode(node);
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         message.put(JsonConstants.RPC_NODE, node.getId());
-        message.put(JsonConstants.RPC_EVENT_TYPE, event.getType());
+        message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
 
         ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
         rpcQueue.add(message);

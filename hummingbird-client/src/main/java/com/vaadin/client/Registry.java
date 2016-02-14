@@ -19,6 +19,7 @@ import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
+import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
@@ -220,5 +221,14 @@ public class Registry {
      */
     public RequestResponseTracker getRequestResponseTracker() {
         return get(RequestResponseTracker.class);
+    }
+
+    /**
+     * Gets the {@link Poller} singleton.
+     *
+     * @return the {@link Poller} singleton
+     */
+    public Poller getPoller() {
+        return get(Poller.class);
     }
 }

@@ -9,10 +9,10 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import com.vaadin.hummingbird.uitest.PhantomJSTest;
 import com.vaadin.testbench.TestBenchTestCase;
 
-public abstract class AbstractBasicPushIT extends PhantomJSTest {
+public abstract class AbstractClientServerCounterIT extends PhantomJSTest {
 
     @Test
-    public void testPush() throws InterruptedException {
+    public void testServerInitiatedCommunication() throws InterruptedException {
         open();
 
         getIncrementButton().click();
@@ -67,20 +67,21 @@ public abstract class AbstractBasicPushIT extends PhantomJSTest {
 
             @Override
             public Boolean apply(WebDriver input) {
-                return AbstractBasicPushIT.getClientCounter(
-                        AbstractBasicPushIT.this) == expectedValue;
+                return AbstractClientServerCounterIT.getClientCounter(
+                        AbstractClientServerCounterIT.this) == expectedValue;
             }
         }, 10);
     }
 
     protected void waitUntilServerCounterChanges() {
-        final int counter = AbstractBasicPushIT.getServerCounter(this);
+        final int counter = AbstractClientServerCounterIT
+                .getServerCounter(this);
         waitUntil(new ExpectedCondition<Boolean>() {
 
             @Override
             public Boolean apply(WebDriver input) {
-                return AbstractBasicPushIT
-                        .getServerCounter(AbstractBasicPushIT.this) > counter;
+                return AbstractClientServerCounterIT.getServerCounter(
+                        AbstractClientServerCounterIT.this) > counter;
             }
         }, 10);
     }
