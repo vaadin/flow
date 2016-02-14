@@ -9,15 +9,18 @@ public class ReflectToolsGetFieldValueByTypeTest {
     @Test
     public void getFieldValue() {
         class MyClass {
+            @SuppressWarnings("unused")
             public Integer getField() {
                 return 1;
             }
 
+            @SuppressWarnings("unused")
             public void setField(Integer i) {
             }
 
         }
         class MySubClass extends MyClass {
+            @SuppressWarnings("unused")
             public String field = "Hello";
         }
 
@@ -41,9 +44,11 @@ public class ReflectToolsGetFieldValueByTypeTest {
     @Test
     public void getFieldValueViaGetter() {
         class MyClass {
+            @SuppressWarnings("unused")
             public Integer field = 1;
         }
         class MySubClass extends MyClass {
+            @SuppressWarnings("unused")
             public String field = "Hello";
         }
 

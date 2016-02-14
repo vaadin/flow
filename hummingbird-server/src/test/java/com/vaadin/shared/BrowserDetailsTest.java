@@ -2,8 +2,6 @@ package com.vaadin.shared;
 
 import org.junit.Assert;
 
-import com.vaadin.shared.BrowserDetails;
-
 import junit.framework.TestCase;
 
 public class BrowserDetailsTest extends TestCase {
@@ -23,7 +21,6 @@ public class BrowserDetailsTest extends TestCase {
     private static final String IE7_WINDOWS = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)";
 
     private static final String IE8_WINDOWS = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; InfoPath.2)";
-    private static final String IE8_IN_IE7_MODE_WINDOWS = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; InfoPath.2)";
 
     private static final String IE9_IN_IE7_MODE_WINDOWS_7 = "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.1; Trident/5.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C)";
     private static final String IE9_BETA_IN_IE8_MODE_WINDOWS_7 = "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/4.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C)";
@@ -367,9 +364,8 @@ public class BrowserDetailsTest extends TestCase {
     }
 
     public void testIE9InIE8CompatibilityMode() {
-        BrowserDetails bd = new BrowserDetails(
-                IE9_BETA_IN_IE8_MODE_WINDOWS_7);
-                // bd.setIE8InCompatibilityMode();
+        BrowserDetails bd = new BrowserDetails(IE9_BETA_IN_IE8_MODE_WINDOWS_7);
+        // bd.setIE8InCompatibilityMode();
 
         /*
          * Trident/4.0 in example user agent string based on beta even though it

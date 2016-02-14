@@ -152,6 +152,7 @@ public class CurrentInstanceTest {
         Assert.assertNull(getInternalCurrentInstanceVariable().get());
     }
 
+    @SuppressWarnings("unchecked")
     private InheritableThreadLocal<Map<Class<?>, CurrentInstance>> getInternalCurrentInstanceVariable()
             throws SecurityException, NoSuchFieldException,
             IllegalAccessException {
