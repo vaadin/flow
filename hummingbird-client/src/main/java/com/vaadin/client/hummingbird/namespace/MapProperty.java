@@ -169,4 +169,56 @@ public class MapProperty implements ReactiveValue {
             ReactiveChangeListener listener) {
         return eventRouter.addReactiveListener(listener);
     }
+
+    /**
+     * Returns the value or the given defaultValue if the property does not have
+     * a value.
+     *
+     * @param defaultValue
+     *            the default value
+     * @return the value of the property or the default value if the property
+     *         does not have a value
+     */
+    public int getValueOrDefault(int defaultValue) {
+        if (hasValue()) {
+            Double d = (Double) getValue();
+            return d.intValue();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Returns the value or the given defaultValue if the property does not have
+     * a value.
+     *
+     * @param defaultValue
+     *            the default value
+     * @return the value of the property or the default value if the property
+     *         does not have a value
+     */
+    public boolean getValueOrDefault(boolean defaultValue) {
+        if (hasValue()) {
+            return (boolean) getValue();
+        } else {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Returns the value or the given defaultValue if the property does not have
+     * a value.
+     *
+     * @param defaultValue
+     *            the default value
+     * @return the value of the property or the default value if the property
+     *         does not have a value
+     */
+    public String getValueOrDefault(String defaultValue) {
+        if (hasValue()) {
+            return (String) getValue();
+        } else {
+            return defaultValue;
+        }
+    }
 }
