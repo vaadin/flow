@@ -18,6 +18,7 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.EventObject;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
@@ -25,13 +26,18 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.event.EventRouter;
+import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
+import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingRunnable;
@@ -75,6 +81,8 @@ import com.vaadin.util.CurrentInstance;
  */
 public abstract class UI implements Serializable, PollNotifier {
 
+    public static final String POLL_DOM_EVENT_NAME = "ui-poll";
+
     /**
      * The application to which this UI belongs
      */
@@ -114,6 +122,14 @@ public abstract class UI implements Serializable, PollNotifier {
     private final StateTree stateTree = new StateTree(getRootNodeNamespaces());
 
     private int serverSyncId = 0;
+
+    private EventRouter eventRouter;
+
+    private PushConnection pushConnection = null;
+
+    private String embedId;
+
+    private EventRegistrationHandle domPollListener = null;
 
     /**
      * Creates a new empty UI.
@@ -219,10 +235,6 @@ public abstract class UI implements Serializable, PollNotifier {
     public int getUIId() {
         return uiId;
     }
-
-    private PushConnection pushConnection = null;
-
-    private String embedId;
 
     /**
      * Internal initialization method, should not be overridden. This method is
@@ -621,8 +633,8 @@ public abstract class UI implements Serializable, PollNotifier {
      *            or -1 to disable polling
      */
     public void setPollInterval(int intervalInMillis) {
-        // FIXME Implement
-        throw new UnsupportedOperationException("FIXME: Implement");
+        getNode().getNamespace(PollConfigurationNamespace.class)
+                .setPollInterval(intervalInMillis);
     }
 
     /**
@@ -632,20 +644,45 @@ public abstract class UI implements Serializable, PollNotifier {
      *         polling is disabled
      */
     public int getPollInterval() {
-        // FIXME Implement
-        throw new UnsupportedOperationException("FIXME: Implement");
+        return getNode().getNamespace(PollConfigurationNamespace.class)
+                .getPollInterval();
+    }
+
+    /**
+     * Returns the event router instance, which is created on the first call to
+     * this method.
+     *
+     * @return the event router for UI
+     */
+    private EventRouter getEventRouter() {
+        if (eventRouter == null) {
+            eventRouter = new EventRouter();
+        }
+        return eventRouter;
+    }
+
+    private void fireEvent(EventObject event) {
+        getEventRouter().fireEvent(event);
     }
 
     @Override
     public void addPollListener(PollListener listener) {
-        // FIXME Implement
-        throw new UnsupportedOperationException("FIXME: Implement");
+        if (domPollListener == null) {
+            domPollListener = getElement().addEventListener(POLL_DOM_EVENT_NAME,
+                    () -> fireEvent(new PollEvent(UI.this)));
+        }
+
+        getEventRouter().addListener(PollEvent.class, listener,
+                PollListener.POLL_METHOD);
     }
 
     @Override
     public void removePollListener(PollListener listener) {
-        // FIXME Implement
-        throw new UnsupportedOperationException("FIXME: Implement");
+        getEventRouter().removeListener(PollEvent.class, listener);
+        if (!getEventRouter().hasListeners(PollEvent.class)) {
+            domPollListener.remove();
+            domPollListener = null;
+        }
     }
 
     /**
@@ -885,6 +922,7 @@ public abstract class UI implements Serializable, PollNotifier {
 
         // Then add our own custom namespaces
         namespaces.add(PushConfigurationMap.class);
+        namespaces.add(PollConfigurationNamespace.class);
 
         // And return them all
         assert namespaces.size() == new HashSet<>(namespaces)
@@ -901,7 +939,16 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return the element for this UI
      */
     public Element getElement() {
-        return Element.get(getStateTree().getRootNode());
+        return Element.get(getNode());
+    }
+
+    /**
+     * Gets the state node for this UI.
+     *
+     * @return the state node for the UI, in practice the state tree root node
+     */
+    private StateNode getNode() {
+        return getStateTree().getRootNode();
     }
 
 }
