@@ -5,6 +5,6 @@ import org.junit.experimental.categories.Category;
 import com.vaadin.hummingbird.testcategory.PushTests;
 
 @Category(PushTests.class)
-public class BasicPushIT extends AbstractBasicPushIT {
+public class BasicPushIT extends AbstractClientServerCounterIT {
 
 }
