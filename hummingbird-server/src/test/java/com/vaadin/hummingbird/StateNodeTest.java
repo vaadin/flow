@@ -153,6 +153,7 @@ public class StateNodeTest {
         return createTestNode(toString, ElementChildrenNamespace.class);
     }
 
+    @SafeVarargs
     public static StateNode createTestNode(String toString,
             Class<? extends Namespace>... namespaces) {
         return new StateNode(namespaces) {

@@ -8,6 +8,7 @@ public class ReflectToolsGetPrimitiveFieldValueTest {
     @Test
     public void getFieldValueViaGetter() {
         class MyClass {
+            @SuppressWarnings("unused")
             public int field = 1;
         }
 

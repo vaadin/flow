@@ -710,7 +710,7 @@ public class Element implements Serializable {
             } else {
                 try {
                     return Double.parseDouble(string);
-                } catch (@SuppressWarnings("unused") NumberFormatException ignore) {
+                } catch (NumberFormatException ignore) {
                     return Double.NaN;
                 }
             }

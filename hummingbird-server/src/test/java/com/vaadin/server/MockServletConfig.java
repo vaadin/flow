@@ -78,6 +78,7 @@ public class MockServletConfig implements ServletConfig {
      *
      * @see javax.servlet.ServletConfig#getInitParameterNames()
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Enumeration getInitParameterNames() {
         return initParameters.propertyNames();

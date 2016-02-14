@@ -482,6 +482,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return result;
     }
 
+    @SuppressWarnings("deprecation")
     protected JsonObject getApplicationParameters(BootstrapContext context) {
         VaadinRequest request = context.getRequest();
         VaadinSession session = context.getSession();
