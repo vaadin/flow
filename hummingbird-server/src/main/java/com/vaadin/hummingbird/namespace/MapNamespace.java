@@ -109,6 +109,63 @@ public abstract class MapNamespace extends Namespace {
     }
 
     /**
+     * Gets the value corresponding to the given key or the given default value
+     * if no value is stored for the given key.
+     *
+     * @param key
+     *            the key to get a value for
+     * @param defaultValue
+     *            the value to return if no value is stored for the given key
+     * @return the value corresponding to the key or the given
+     *         {@code defaultValue} if no value is stored for the key
+     */
+    protected String getOrDefault(String key, String defaultValue) {
+        if (!contains(key)) {
+            return defaultValue;
+        } else {
+            return (String) get(key);
+        }
+    }
+
+    /**
+     * Gets the value corresponding to the given key or the given default value
+     * if no value is stored for the given key.
+     *
+     * @param key
+     *            the key to get a value for
+     * @param defaultValue
+     *            the value to return if no value is stored for the given key
+     * @return the value corresponding to the key or the given
+     *         {@code defaultValue} if no value is stored for the key
+     */
+    protected int getOrDefault(String key, int defaultValue) {
+        if (!contains(key)) {
+            return defaultValue;
+        } else {
+            return (int) get(key);
+        }
+    }
+
+    /**
+     * Gets the value corresponding to the given key or the given default value
+     * if no value is stored for the given key.
+     *
+     * @param key
+     *            the key to get a value for
+     * @param defaultValue
+     *            the value to return if no value is stored for the given key
+     * @return the value corresponding to the key or the given
+     *         {@code defaultValue} if no value is stored for the key
+     */
+    protected boolean getOrDefault(String key, boolean defaultValue) {
+        if (!contains(key)) {
+            return defaultValue;
+        } else {
+            return (boolean) get(key);
+        }
+    }
+
+    /**
      * Gets the defined keys.
      *
      * @return a set containing all the defined keys
