@@ -19,6 +19,7 @@ import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
+import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
@@ -210,6 +211,10 @@ public class Registry {
      */
     public UILifecycle getUILifecycle() {
         return get(UILifecycle.class);
+    }
+
+    public Poller getPoller() {
+        return get(Poller.class);
     }
 
 }

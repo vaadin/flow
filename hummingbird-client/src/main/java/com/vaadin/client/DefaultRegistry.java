@@ -20,6 +20,8 @@ import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
+import com.vaadin.client.communication.PollConfiguration;
+import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.PushConfiguration;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
@@ -65,6 +67,8 @@ public class DefaultRegistry extends Registry {
         set(XhrConnection.class, new XhrConnection(this));
 
         set(PushConfiguration.class, new PushConfiguration(this));
+        set(PollConfiguration.class, new PollConfiguration(this));
+        set(Poller.class, new Poller(this));
     }
 
 }
