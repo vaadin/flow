@@ -27,23 +27,11 @@ public class UIState implements Serializable {
     public LoadingIndicatorConfigurationState loadingIndicatorConfiguration = new LoadingIndicatorConfigurationState();
     public int pollInterval = -1;
 
-    public ReconnectDialogConfigurationState reconnectDialogConfiguration = new ReconnectDialogConfigurationState();
-
     public static class LoadingIndicatorConfigurationState
             implements Serializable {
         public int firstDelay = 300;
         public int secondDelay = 1500;
         public int thirdDelay = 5000;
-    }
-
-    public static class ReconnectDialogConfigurationState
-            implements Serializable {
-        public String dialogText = "Server connection lost, trying to reconnect...";
-        public String dialogTextGaveUp = "Server connection lost.";
-        public int reconnectAttempts = 10000;
-        public int reconnectInterval = 5000;
-        public int dialogGracePeriod = 400;
-        public boolean dialogModal = false;
     }
 
 }

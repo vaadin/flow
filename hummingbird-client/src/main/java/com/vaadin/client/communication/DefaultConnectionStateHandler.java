@@ -26,7 +26,6 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.AtmospherePushConnection.AtmosphereResponse;
-import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
 
 import elemental.json.JsonObject;
 
@@ -196,7 +195,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
             // Show dialog after grace period, still continue to try to
             // reconnect even before it is shown
-            dialogShowTimer.schedule(getConfiguration().dialogGracePeriod);
+            dialogShowTimer.schedule(getConfiguration().getDialogGracePeriod());
         } else {
             // We are currently trying to reconnect
             // Priority is HEARTBEAT -> PUSH -> XHR
@@ -216,7 +215,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         reconnectAttempt++;
         Console.log("Reconnect attempt " + reconnectAttempt + " for " + type);
 
-        if (reconnectAttempt >= getConfiguration().reconnectAttempts) {
+        if (reconnectAttempt >= getConfiguration().getReconnectAttempts()) {
             // Max attempts reached, stop trying
             giveUp();
         } else {
@@ -251,7 +250,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
                     doReconnect(payload);
                 }
             };
-            scheduledReconnect.schedule(getConfiguration().reconnectInterval);
+            scheduledReconnect
+                    .schedule(getConfiguration().getReconnectInterval());
         }
     }
 
@@ -360,7 +360,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      * @return The text to show in the reconnect dialog after giving up
      */
     protected String getDialogTextGaveUp(int reconnectAttempt) {
-        return getConfiguration().dialogTextGaveUp.replace("{0}",
+        return getConfiguration().getDialogTextGaveUp().replace("{0}",
                 reconnectAttempt + "");
     }
 
@@ -372,19 +372,18 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
      * @return The text to show in the reconnect dialog
      */
     protected String getDialogText(int reconnectAttempt) {
-        return getConfiguration().dialogText.replace("{0}",
+        return getConfiguration().getDialogText().replace("{0}",
                 reconnectAttempt + "");
     }
 
     @Override
     public void configurationUpdated() {
         // All other properties are fetched directly from the state when needed
-        reconnectDialog.setModal(getConfiguration().dialogModal);
+        reconnectDialog.setModal(getConfiguration().isDialogModal());
     }
 
-    private ReconnectDialogConfigurationState getConfiguration() {
-        return registry.getApplicationConnection()
-                .getReconnectDialogConfiguration();
+    private ReconnectDialogConfiguration getConfiguration() {
+        return registry.getReconnectDialogConfiguration();
     }
 
     @Override
