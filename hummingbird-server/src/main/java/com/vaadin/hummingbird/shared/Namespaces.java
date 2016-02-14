@@ -21,6 +21,7 @@ import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
+import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 
@@ -64,11 +65,14 @@ public class Namespaces {
      * Id for {@link PushConfigurationParametersMap}.
      */
     public static final int UI_PUSHCONFIGURATION_PARAMETERS = 6;
-
     /**
      * Id for {@link TextNodeNamespace}.
      */
     public static final int TEXT_NODE = 7;
+    /**
+     * Id for {@link PollConfigurationNamespace}.
+     */
+    public static final int POLL_CONFIGURATION = 8;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.
