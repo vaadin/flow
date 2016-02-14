@@ -23,7 +23,6 @@ import com.vaadin.client.communication.Poller;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -163,11 +162,6 @@ public class ApplicationConnection {
         } else {
             return false;
         }
-    }
-
-    public ReconnectDialogConfigurationState getReconnectDialogConfiguration() {
-        // FIXME from the server
-        return new ReconnectDialogConfigurationState();
     }
 
 }

@@ -21,6 +21,7 @@ import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.PushConfiguration;
+import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
@@ -70,5 +71,7 @@ public class DefaultRegistry extends Registry {
                 new DefaultConnectionStateHandler(this));
         set(XhrConnection.class, new XhrConnection(this));
         set(PushConfiguration.class, new PushConfiguration(this));
+        set(ReconnectDialogConfiguration.class,
+                new ReconnectDialogConfiguration(this));
     }
 }

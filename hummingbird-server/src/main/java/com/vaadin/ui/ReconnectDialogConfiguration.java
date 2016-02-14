@@ -18,8 +18,6 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
-
 /**
  * Provides method for configuring the reconnect dialog.
  *
@@ -29,7 +27,7 @@ import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
 public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Gets the text to show in the reconnect dialog when trying to re-establish
-     * the server connection
+     * the server connection.
      *
      * @return the text to show in the reconnect dialog
      */
@@ -37,7 +35,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Sets the text to show in the reconnect dialog when trying to re-establish
-     * the server connection
+     * the server connection.
      *
      * @param dialogText
      *            the text to show in the reconnect dialog
@@ -46,7 +44,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Gets the text to show in the reconnect dialog after giving up trying to
-     * reconnect ({@link #getReconnectAttempts()} reached)
+     * reconnect ({@link #getReconnectAttempts()} reached).
      *
      * @return the text to show in the reconnect dialog after giving up
      */
@@ -54,7 +52,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Sets the text to show in the reconnect dialog after giving up trying to
-     * reconnect ({@link #getReconnectAttempts()} reached)
+     * reconnect ({@link #getReconnectAttempts()} reached).
      *
      * @param dialogText
      *            the text to show in the reconnect dialog after giving up
@@ -63,7 +61,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Gets the number of times to try to reconnect to the server before giving
-     * up
+     * up.
      *
      * @return the number of times to try to reconnect
      */
@@ -71,7 +69,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Sets the number of times to try to reconnect to the server before giving
-     * up
+     * up.
      *
      * @param reconnectAttempts
      *            the number of times to try to reconnect
@@ -79,14 +77,14 @@ public interface ReconnectDialogConfiguration extends Serializable {
     public void setReconnectAttempts(int reconnectAttempts);
 
     /**
-     * Gets the interval (in milliseconds) between reconnect attempts
+     * Gets the interval (in milliseconds) between reconnect attempts.
      *
      * @return the interval (in ms) between reconnect attempts
      */
     public int getReconnectInterval();
 
     /**
-     * Sets the interval (in milliseconds) between reconnect attempts
+     * Sets the interval (in milliseconds) between reconnect attempts.
      *
      * @param reconnectInterval
      *            the interval (in ms) between reconnect attempts
@@ -131,72 +129,4 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * @return true if the dialog is modal, false otherwise
      */
     public boolean isDialogModal();
-}
-
-class ReconnectDialogConfigurationImpl implements ReconnectDialogConfiguration {
-    private ReconnectDialogConfigurationState state = new ReconnectDialogConfigurationState();
-
-    public ReconnectDialogConfigurationImpl() {
-    }
-
-    @Override
-    public String getDialogText() {
-        return state.dialogText;
-    }
-
-    @Override
-    public void setDialogText(String dialogText) {
-        state.dialogText = dialogText;
-    }
-
-    @Override
-    public String getDialogTextGaveUp() {
-        return state.dialogTextGaveUp;
-    }
-
-    @Override
-    public void setDialogTextGaveUp(String dialogTextGaveUp) {
-        state.dialogTextGaveUp = dialogTextGaveUp;
-    }
-
-    @Override
-    public int getReconnectAttempts() {
-        return state.reconnectAttempts;
-    }
-
-    @Override
-    public void setReconnectAttempts(int reconnectAttempts) {
-        state.reconnectAttempts = reconnectAttempts;
-    }
-
-    @Override
-    public int getReconnectInterval() {
-        return state.reconnectInterval;
-    }
-
-    @Override
-    public void setReconnectInterval(int reconnectInterval) {
-        state.reconnectInterval = reconnectInterval;
-    }
-
-    @Override
-    public int getDialogGracePeriod() {
-        return state.dialogGracePeriod;
-    }
-
-    @Override
-    public void setDialogGracePeriod(int dialogGracePeriod) {
-        state.dialogGracePeriod = dialogGracePeriod;
-    }
-
-    @Override
-    public boolean isDialogModal() {
-        return state.dialogModal;
-    }
-
-    @Override
-    public void setDialogModal(boolean dialogModal) {
-        state.dialogModal = dialogModal;
-    }
-
 }

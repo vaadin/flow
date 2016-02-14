@@ -24,6 +24,7 @@ import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
+import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 
 /**
  * Registry of namespace id numbers and map keys shared between server and
@@ -73,6 +74,10 @@ public class Namespaces {
      * Id for {@link PollConfigurationNamespace}.
      */
     public static final int POLL_CONFIGURATION = 8;
+    /**
+     * Id for {@link ReconnectDialogConfigurationNamespace}.
+     */
+    public static final int RECONNECT_DIALOG_CONFIGURATION = 9;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.
