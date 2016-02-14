@@ -203,7 +203,7 @@ public class StateTreeTest {
 
     @Test
     public void testSerializable() {
-
+        @SuppressWarnings("unchecked")
         Class<? extends Namespace>[] namespaces = new Class[] {
                 ElementChildrenNamespace.class, ElementDataNamespace.class,
                 ElementAttributeNamespace.class,

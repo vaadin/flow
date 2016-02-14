@@ -181,7 +181,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+                    throws ServiceException {
         VaadinServletService service = new VaadinServletService(this,
                 deploymentConfiguration);
         service.init();
@@ -430,7 +430,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     private void serveStaticResourcesInVAADIN(String filename,
             HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+                    throws IOException, ServletException {
 
         final ServletContext sc = getServletContext();
         URL resourceUrl = findResourceURL(filename, sc);
@@ -842,21 +842,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
     }
 
     /**
-     * Write a redirect response to the main page of the application.
-     *
-     * @param request
-     * @param response
-     * @throws IOException
-     *             if sending the redirect fails due to an input/output error or
-     *             a bad application URL
-     */
-    private void redirectToApplication(HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-        String applicationUrl = getApplicationUrl(request).toExternalForm();
-        response.sendRedirect(response.encodeRedirectURL(applicationUrl));
-    }
-
-    /**
      * Gets the current application URL from request.
      *
      * @param request
@@ -947,7 +932,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
         c > 47 && c < 58 || // alphanum
                 c > 64 && c < 91 || // A-Z
                 c > 96 && c < 123 // a-z
-        ;
+                ;
     }
 
     private static final Logger getLogger() {

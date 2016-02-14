@@ -33,7 +33,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class ListChangeTest {
-    private ListNamespace namespace = AbstractNamespaceTest
+    private ListNamespace<?> namespace = AbstractNamespaceTest
             .createNamespace(ElementChildrenNamespace.class);
 
     @Test

@@ -109,13 +109,13 @@ public class ClassesSerializableTest extends TestCase {
             String nonSerializableString = "";
             Iterator<Class<?>> it = nonSerializableClasses.iterator();
             while (it.hasNext()) {
-                Class c = it.next();
+                Class<?> c = it.next();
                 nonSerializableString += ", " + c.getName();
                 if (c.isAnonymousClass()) {
                     nonSerializableString += "(super: ";
                     nonSerializableString += c.getSuperclass().getName();
                     nonSerializableString += ", interfaces: ";
-                    for (Class i : c.getInterfaces()) {
+                    for (Class<?> i : c.getInterfaces()) {
                         nonSerializableString += i.getName();
                         nonSerializableString += ",";
                     }
@@ -251,6 +251,7 @@ public class ClassesSerializableTest extends TestCase {
                 classes.add(className);
             }
         }
+        jar.close();
         return classes;
     }
 

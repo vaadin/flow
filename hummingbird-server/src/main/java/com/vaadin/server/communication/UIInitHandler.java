@@ -196,18 +196,6 @@ public abstract class UIInitHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Updates a UI that has already been initialized but is now loaded again,
-     * e.g. because of {@link PreserveOnRefresh}.
-     *
-     * @param ui
-     * @param request
-     */
-    private void reinitUI(UI ui, VaadinRequest request) {
-        UI.setCurrent(ui);
-        ui.doRefresh(request);
-    }
-
-    /**
      * Generates the initial UIDL message that can e.g. be included in a html
      * page to avoid a separate round trip just for getting the UIDL.
      *

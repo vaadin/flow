@@ -235,6 +235,7 @@ public class CurrentInstance implements Serializable {
      * @param old
      *            A Class -> CurrentInstance map to set as current instances
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void restoreInstances(Map<Class<?>, CurrentInstance> old) {
         boolean removeStale = false;
         for (Class c : old.keySet()) {

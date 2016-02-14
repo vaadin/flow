@@ -34,7 +34,7 @@ public class VaadinServletService extends VaadinService {
 
     public VaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+                    throws ServiceException {
         super(deploymentConfiguration);
         this.servlet = servlet;
     }
@@ -172,6 +172,7 @@ public class VaadinServletService extends VaadinService {
             Class<? extends UI> uiClass) {
         String appId = null;
         try {
+            @SuppressWarnings("deprecation")
             URL appUrl = getServlet()
                     .getApplicationUrl((VaadinServletRequest) request);
             appId = appUrl.getPath();

@@ -19,7 +19,6 @@ import org.junit.Test;
 
 import com.vaadin.server.VaadinSession;
 
-@SuppressWarnings("deprecation")
 public class VaadinClasses {
 
     public static List<Class<? extends Object>> getAllServerSideClasses() {
@@ -30,11 +29,6 @@ public class VaadinClasses {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private static <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
-            String basePackage) throws IOException {
-        return findClasses(baseClass, basePackage, new String[] {});
     }
 
     private static <T> List<Class<? extends T>> findClasses(Class<T> baseClass,
