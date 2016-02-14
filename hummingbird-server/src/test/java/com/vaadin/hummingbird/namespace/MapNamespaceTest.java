@@ -36,6 +36,7 @@ import elemental.json.JsonValue;
 // Using ElementPropertiesNamespace since it closely maps to the underlying map
 public class MapNamespaceTest
         extends AbstractNamespaceTest<ElementPropertyNamespace> {
+    private static final String KEY = "key";
     private ElementPropertyNamespace namespace = createNamespace();
 
     @Test
@@ -237,4 +238,50 @@ public class MapNamespaceTest
             Assert.assertSame(values.get(key), namespace.get(key));
         });
     }
+
+    @Test
+    public void testGetIntDefaultValue() {
+        Assert.assertEquals(12, namespace.getOrDefault(KEY, 12));
+
+        namespace.put(KEY, 24);
+        Assert.assertEquals(24, namespace.getOrDefault(KEY, 12));
+
+        namespace.put(KEY, null);
+        Assert.assertEquals(12, namespace.getOrDefault(KEY, 12));
+
+        namespace.remove(KEY);
+        Assert.assertEquals(12, namespace.getOrDefault(KEY, 12));
+    }
+
+    @Test
+    public void testGetBooleanDefaultValue() {
+        Assert.assertTrue(namespace.getOrDefault(KEY, true));
+        Assert.assertFalse(namespace.getOrDefault(KEY, false));
+
+        namespace.put(KEY, true);
+        Assert.assertTrue(namespace.getOrDefault(KEY, false));
+
+        namespace.put(KEY, null);
+        Assert.assertTrue(namespace.getOrDefault(KEY, true));
+        Assert.assertFalse(namespace.getOrDefault(KEY, false));
+
+        namespace.remove(KEY);
+        Assert.assertTrue(namespace.getOrDefault(KEY, true));
+        Assert.assertFalse(namespace.getOrDefault(KEY, false));
+    }
+
+    @Test
+    public void testGetStringDefaultValue() {
+        Assert.assertEquals("default", namespace.getOrDefault(KEY, "default"));
+
+        namespace.put(KEY, "assigned");
+        Assert.assertEquals("assigned", namespace.getOrDefault(KEY, "default"));
+
+        namespace.put(KEY, null);
+        Assert.assertEquals("default", namespace.getOrDefault(KEY, "default"));
+
+        namespace.remove(KEY);
+        Assert.assertEquals("default", namespace.getOrDefault(KEY, "default"));
+    }
+
 }
