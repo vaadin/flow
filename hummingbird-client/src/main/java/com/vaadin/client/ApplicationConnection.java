@@ -20,6 +20,8 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.communication.MessageHandler;
+import com.vaadin.client.communication.PollConfigurator;
+import com.vaadin.client.communication.Poller;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.shared.Version;
@@ -89,8 +91,9 @@ public class ApplicationConnection {
             ApplicationConfiguration applicationConfiguration) {
         configuration = applicationConfiguration;
         registry = new DefaultRegistry(this);
-
         StateNode rootNode = registry.getStateTree().getRootNode();
+
+        PollConfigurator.observe(rootNode, new Poller(registry));
         Element body = Browser.getDocument().getBody();
 
         BasicElementBinder.bind(rootNode, body);
@@ -166,7 +169,7 @@ public class ApplicationConnection {
                 return vi;
             }
         }
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
             var pd = [
@@ -177,9 +180,9 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 
