@@ -383,4 +383,27 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         assertEquals(0, tree.collectedEvents.size());
     }
+
+    public void testAddTextNode() {
+        BasicElementBinder.bind(node, element);
+
+        StateNode textNode = new StateNode(nextId++, node.getTree());
+        MapProperty textProperty = textNode
+                .getMapNamespace(Namespaces.TEXT_NODE)
+                .getProperty(Namespaces.TEXT);
+
+        textProperty.setValue("foo");
+
+        node.getListNamespace(Namespaces.ELEMENT_CHILDREN).splice(0, 0,
+                textNode);
+        Reactive.flush();
+
+        assertEquals("foo", element.getTextContent());
+
+        textProperty.setValue("bar");
+        assertEquals("foo", element.getTextContent());
+
+        Reactive.flush();
+        assertEquals("bar", element.getTextContent());
+    }
 }

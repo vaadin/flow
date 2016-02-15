@@ -201,7 +201,7 @@ public class BasicElementBinder {
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
 
-            Element child = createElement(childNode);
+            Node child = createDomNode(childNode);
 
             element.appendChild(child);
         }
@@ -245,17 +245,20 @@ public class BasicElementBinder {
             }
 
             for (Object newChildObject : add) {
-                Element childElement = createElement(
-                        (StateNode) newChildObject);
+                Node childNode = createDomNode((StateNode) newChildObject);
 
-                element.insertBefore(childElement, beforeRef);
+                element.insertBefore(childNode, beforeRef);
 
-                beforeRef = childElement.getNextSibling();
+                beforeRef = childNode.getNextSibling();
             }
         }
     }
 
-    private static Element createElement(StateNode node) {
+    private static Node createDomNode(StateNode node) {
+        if (node.hasNamespace(Namespaces.TEXT_NODE)) {
+            return TextElementBinder.createAndBind(node);
+        }
+
         String tag = getTag(node);
 
         assert tag != null : "New child must have a tag";

@@ -55,7 +55,7 @@ public class UpdateDivUI extends UI {
     }
 
     private void updateDiv() {
-        div.setProperty("textContent", "Hello world at "
-                + System.currentTimeMillis() + " (" + msgId++ + ")");
+        div.setTextContent("Hello world at " + System.currentTimeMillis() + " ("
+                + msgId++ + ")");
     }
 }

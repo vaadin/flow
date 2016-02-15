@@ -53,6 +53,9 @@ public class ElementPropertyNamespace extends MapNamespace {
     public void setProperty(String name, Serializable value) {
         assert value == null || value instanceof String
                 || value instanceof Boolean || value instanceof Double;
+        assert name != null;
+        assert !name.equals("textContent");
+
         put(name, value);
     }
 

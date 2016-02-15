@@ -25,6 +25,14 @@ public class BasicElementIT extends PhantomJSTest {
         getThankYouElements().get(0).click();
 
         Assert.assertEquals(0, getThankYouCount());
+
+        WebElement helloElement = getDriver().findElement(By.id("hello-world"));
+
+        Assert.assertEquals("Hello world", helloElement.getText());
+
+        helloElement.click();
+
+        Assert.assertEquals("Stop touching me!", helloElement.getText());
     }
 
     private int getThankYouCount() {
