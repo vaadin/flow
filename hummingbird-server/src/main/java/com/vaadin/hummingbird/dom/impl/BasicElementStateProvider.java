@@ -312,4 +312,19 @@ public class BasicElementStateProvider implements ElementStateProvider {
         return getPropertyNamespace(node).getPropertyNames();
     }
 
+    @Override
+    public boolean isTextNode(StateNode node) {
+        return false;
+    }
+
+    @Override
+    public String getTextContent(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setTextContent(StateNode node, String textContent) {
+        throw new UnsupportedOperationException();
+    }
+
 }

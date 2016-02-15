@@ -27,6 +27,7 @@ public class ElementTest {
         Element e = new Element("div");
         Assert.assertEquals("div", e.getTag());
         Assert.assertFalse(e.hasAttribute("is"));
+        Assert.assertFalse(e.isTextNode());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -890,4 +891,80 @@ public class ElementTest {
 
         return element;
     }
+
+    @Test
+    public void testGetTextContent() {
+        Element child = new Element("child");
+        child.appendChild(Element.createText("bar"));
+
+        Element element = new Element("div");
+
+        element.appendChild(Element.createText("foo"));
+        element.appendChild(child);
+
+        Assert.assertEquals("foobar", element.getTextContent());
+    }
+
+    @Test
+    public void testSetTextContent() {
+        Element element = new Element("div");
+        element.setTextContent("foo");
+
+        Assert.assertEquals("foo", element.getTextContent());
+        Assert.assertEquals(1, element.getChildCount());
+        Assert.assertTrue(element.getChild(0).isTextNode());
+    }
+
+    @Test
+    public void testSetTextContentRemovesOldContent() {
+        Element child = new Element("child");
+        Element element = new Element("div");
+        element.appendChild(child);
+
+        element.setTextContent("foo");
+
+        Assert.assertNull(child.getParent());
+        Assert.assertEquals("foo", element.getTextContent());
+    }
+
+    @Test
+    public void testSetTextReplacesOldTextNode() {
+        Element element = new Element("div");
+        Element text = Element.createText("foo");
+        element.appendChild(text);
+
+        element.setTextContent("bar");
+
+        Assert.assertEquals(element, text.getParent());
+        Assert.assertEquals("bar", text.getTextContent());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetTextContentPropertyThrows() {
+        Element element = new Element("element");
+        element.setProperty("textContent", "foo");
+    }
+
+    @Test
+    public void testGetTextContentProperty() {
+        Element element = new Element("div");
+        element.setTextContent("foo");
+
+        Assert.assertFalse(element.hasProperty("textContent"));
+        Assert.assertNull(element.getProperty("textContent"));
+    }
+
+    @Test
+    // Because that's how it works in browsers
+    public void clearTextContentRemovesChild() {
+        Element element = new Element("div");
+        element.setTextContent("foo");
+
+        Assert.assertEquals(1, element.getChildCount());
+
+        element.setTextContent("");
+
+        Assert.assertEquals(0, element.getChildCount());
+    }
+
 }

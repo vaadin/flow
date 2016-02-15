@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.shared;
 
+import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
@@ -65,9 +66,19 @@ public class Namespaces {
     public static final int UI_PUSHCONFIGURATION_PARAMETERS = 6;
 
     /**
+     * Id for {@link TextNodeNamespace}.
+     */
+    public static final int TEXT_NODE = 7;
+
+    /**
      * Key for {@link ElementDataNamespace#getTag()}.
      */
     public static final String TAG = "tag";
+
+    /**
+     * Key for {@link TextNodeNamespace#getText()}.
+     */
+    public static final String TEXT = "text";
 
     private Namespaces() {
         // Only static

@@ -253,4 +253,35 @@ public interface ElementStateProvider extends Serializable {
      * @return the defined property names
      */
     Set<String> getPropertyNames(StateNode node);
+
+    /**
+     * Checks if the state node represents a text node.
+     *
+     * @param node
+     *            the node to check
+     * @return <code>true</code> if the state node represents a text node;
+     *         otherwise <code>false</code>
+     */
+    boolean isTextNode(StateNode node);
+
+    /**
+     * Gets the text content. This is only valid if
+     * {@link #isTextNode(StateNode)} returns <code>true</code>.
+     *
+     * @param node
+     *            the node containing the data
+     * @return the text content
+     */
+    String getTextContent(StateNode node);
+
+    /**
+     * Sets the text content. This is only valid if
+     * {@link #isTextNode(StateNode)} returns <code>true</code>.
+     *
+     * @param node
+     *            the node containing the data
+     * @param textContent
+     *            the text content, not null
+     */
+    void setTextContent(StateNode node, String textContent);
 }

@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
+import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.shared.Namespaces;
 
@@ -68,6 +69,7 @@ public class NamespaceTest {
                 Namespaces.UI_PUSHCONFIGURATION);
         expectedIds.put(PushConfigurationParametersMap.class,
                 Namespaces.UI_PUSHCONFIGURATION_PARAMETERS);
+        expectedIds.put(TextNodeNamespace.class, Namespaces.TEXT_NODE);
 
         Assert.assertEquals(
                 "The number of expected namespaces is not up to date",
