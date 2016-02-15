@@ -87,12 +87,12 @@ public abstract class MapNamespace extends Namespace {
 
     // Internal method to avoid exposing non-serializable setter
     private void doPut(String key, Object value) {
-        attachPotentialChild(value);
-
         setChanged(key);
         Object oldValue = values.put(key, value);
 
         detatchPotentialChild(oldValue);
+
+        attachPotentialChild(value);
     }
 
     /**
@@ -210,4 +210,9 @@ public abstract class MapNamespace extends Namespace {
         stream.writeObject(SerializableJson.createSerializableMap(values));
     }
 
+    @Override
+    public void forEachChild(Consumer<StateNode> action) {
+        values.values().stream().filter(v -> v instanceof StateNode)
+                .forEach(v -> action.accept((StateNode) v));
+    }
 }
