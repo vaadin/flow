@@ -17,8 +17,8 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
+import com.vaadin.client.Registry;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -35,24 +35,14 @@ public class ServerRpcQueue {
 
     private JsonArray pendingInvocations = Json.createArray();
 
-    protected ApplicationConnection connection;
     private boolean flushPending = false;
 
     private boolean flushScheduled = false;
 
-    public ServerRpcQueue() {
+    private final Registry registry;
 
-    }
-
-    /**
-     * Sets the application connection this instance is connected to. Called
-     * internally by the framework.
-     *
-     * @param connection
-     *            the application connection this instance is connected to
-     */
-    public void setConnection(ApplicationConnection connection) {
-        this.connection = connection;
+    public ServerRpcQueue(Registry registry) {
+        this.registry = registry;
     }
 
     /**
@@ -62,7 +52,7 @@ public class ServerRpcQueue {
      *            RPC method invocation
      */
     public void add(JsonValue invocation) {
-        if (!connection.isApplicationRunning()) {
+        if (!registry.getApplicationConnection().isApplicationRunning()) {
             Console.warn(
                     "Trying to invoke method on not yet started or stopped application");
             return;
@@ -85,17 +75,6 @@ public class ServerRpcQueue {
      */
     public int size() {
         return pendingInvocations.length();
-    }
-
-    /**
-     * Returns the server RPC queue for the given application
-     *
-     * @param connection
-     *            the application connection which owns the queue
-     * @return the server rpc queue for the given application
-     */
-    public static ServerRpcQueue get(ApplicationConnection connection) {
-        return connection.getServerRpcQueue();
     }
 
     /**
@@ -127,7 +106,7 @@ public class ServerRpcQueue {
                 // Somebody else cleared the queue before we had the chance
                 return;
             }
-            connection.getMessageSender().sendInvocationsToServer();
+            registry.getMessageSender().sendInvocationsToServer();
         }
     };
 

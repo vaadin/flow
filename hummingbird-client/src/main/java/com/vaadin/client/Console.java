@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import com.google.gwt.core.shared.GWT;
+
 import elemental.client.Browser;
 
 /**
@@ -26,19 +28,35 @@ import elemental.client.Browser;
 public class Console {
 
     public static void debug(Object message) {
-        Browser.getWindow().getConsole().debug(message);
+        if (GWT.isScript()) {
+            Browser.getWindow().getConsole().debug(message);
+        } else {
+            System.out.println(message);
+        }
     }
 
     public static void log(Object message) {
-        Browser.getWindow().getConsole().log(message);
+        if (GWT.isScript()) {
+            Browser.getWindow().getConsole().log(message);
+        } else {
+            System.out.println(message);
+        }
     }
 
     public static void warn(Object message) {
-        Browser.getWindow().getConsole().warn(message);
+        if (GWT.isScript()) {
+            Browser.getWindow().getConsole().warn(message);
+        } else {
+            System.err.println(message);
+        }
     }
 
     public static void error(Object message) {
-        Browser.getWindow().getConsole().error(message);
+        if (GWT.isScript()) {
+            Browser.getWindow().getConsole().error(message);
+        } else {
+            System.err.println(message);
+        }
     }
 
 }

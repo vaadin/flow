@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @author Vaadin Ltd.
  * @since 6.3
  */
-public class VBrowserDetails implements Serializable {
+public class BrowserDetails implements Serializable {
 
     private boolean isGecko = false;
     private boolean isWebKit = false;
@@ -64,7 +64,7 @@ public class VBrowserDetails implements Serializable {
      * @param userAgent
      *            User agent as provided by the browser.
      */
-    public VBrowserDetails(String userAgent) {
+    public BrowserDetails(String userAgent) {
         userAgent = userAgent.toLowerCase();
 
         // browser engine name
