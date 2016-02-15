@@ -17,10 +17,6 @@
 package com.vaadin.hummingbird;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Abstract root of a state node tree. A node always belongs to one specific
@@ -29,23 +25,7 @@ import java.util.Set;
  * @since
  * @author Vaadin Ltd
  */
-public abstract class NodeOwner implements Serializable {
-    private Set<StateNode> dirtyNodes = new HashSet<>();
-
-    /**
-     * Adopts all nodes from another node owner, causing all nodes to be owned
-     * by this owner instead.
-     *
-     * @param oldOwner
-     *            the node owner from which to adopt nodes
-     */
-    public final void adoptNodes(NodeOwner oldOwner) {
-        assert oldOwner != this;
-        ArrayList<StateNode> copy = new ArrayList<>(oldOwner.getNodes());
-        copy.forEach(node -> node.setOwner(this));
-
-        dirtyNodes.addAll(oldOwner.dirtyNodes);
-    }
+public interface NodeOwner extends Serializable {
 
     /**
      * Registers a node with this node owner. The new node should already be set
@@ -55,29 +35,7 @@ public abstract class NodeOwner implements Serializable {
      *            the node to register
      * @return the id of the registered node
      */
-    public int register(StateNode node) {
-        assert node.getOwner() == this;
-
-        markAsDirty(node);
-
-        return doRegister(node);
-    }
-
-    /**
-     * Overridden by subclasses to register a new node.
-     *
-     * @param node
-     *            the node to register
-     * @return the id of the registered node
-     */
-    protected abstract int doRegister(StateNode node);
-
-    /**
-     * Gets a collection of all nodes currently registered to this owner.
-     *
-     * @return a collection of owned nodes
-     */
-    public abstract Collection<StateNode> getNodes();
+    int register(StateNode node);
 
     /**
      * Unregisters a node from this owner. This must be done before the node is
@@ -86,53 +44,14 @@ public abstract class NodeOwner implements Serializable {
      * @param node
      *            the node to unregister
      */
-    public void unregister(StateNode node) {
-        assert node.getOwner() == this;
-        dirtyNodes.remove(node);
-
-        doUnregister(node);
-    }
-
-    /**
-     * Overridden by subclasses to unregister a node.
-     *
-     * @param node
-     *            the node to unregister
-     */
-    public abstract void doUnregister(StateNode node);
+    void unregister(StateNode node);
 
     /**
      * Marks a node owned by this instance as dirty. Dirty nodes are collected
-     * from an owner using {@link #collectDirtyNodes()}.
+     * from an owner using {@link StateTree#collectDirtyNodes()}.
      *
      * @param node
      *            the node to be marked as dirty
      */
-    public void markAsDirty(StateNode node) {
-        assert node.getOwner() == this;
-
-        dirtyNodes.add(node);
-    }
-
-    /**
-     * Gets all the nodes that have been marked as dirty since the last time
-     * this method was invoked.
-     *
-     * @return a set of dirty nodes
-     */
-    public Set<StateNode> collectDirtyNodes() {
-        Set<StateNode> collectedNodes = dirtyNodes;
-        dirtyNodes = new HashSet<>();
-        return collectedNodes;
-    }
-
-    /**
-     * Checks if there are nodes that have been marked as dirty since the last
-     * time {@link #collectDirtyNodes()} was invoked.
-     *
-     * @return true if there are dirty nodes, false otherwise
-     */
-    public boolean hasDirtyNodes() {
-        return !dirtyNodes.isEmpty();
-    }
+    void markAsDirty(StateNode node);
 }
