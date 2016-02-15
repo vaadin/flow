@@ -24,16 +24,17 @@ import elemental.css.CSSStyleDeclaration.Position;
 import elemental.dom.Element;
 
 /**
- * Class representing the loading indicator for Vaadin applications. The loading
- * indicator has four states: "triggered", "first", "second" and "third". When
- * {@link #trigger()} is called the indicator moves to its "triggered" state and
- * then transitions from one state to the next when the timeouts specified using
- * the set*StateDelay methods occur.
+ * Class representing the loading indicator for Vaadin applications.
+ * <p>
+ * The loading indicator has four states: "triggered", "first", "second" and
+ * "third". When {@link #trigger()} is called the indicator moves to its
+ * "triggered" state and then transitions from one state to the next when the
+ * timeouts specified using the set*StateDelay methods occur.
  *
  * @author Vaadin Ltd
  * @since 7.1
  */
-public class VLoadingIndicator {
+public class LoadingIndicator {
 
     private static final String PRIMARY_STYLE_NAME = "v-loading-indicator";
 
@@ -187,7 +188,7 @@ public class VLoadingIndicator {
 
     /**
      * Returns the {@link ApplicationConnection} which uses this loading
-     * indicator
+     * indicator.
      *
      * @return The ApplicationConnection for this loading indicator
      */
@@ -232,7 +233,7 @@ public class VLoadingIndicator {
     }
 
     /**
-     * Returns the root element of the loading indicator
+     * Returns the root element of the loading indicator.
      *
      * @return The loading indicator DOM element
      */
