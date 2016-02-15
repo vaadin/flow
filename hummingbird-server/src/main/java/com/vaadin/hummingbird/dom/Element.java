@@ -24,6 +24,9 @@ import java.util.regex.Pattern;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
+import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -58,19 +61,24 @@ public class Element implements Serializable {
     private static Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
 
     /**
-     * Private constructor for initializing with an existing node.
+     * Private constructor for initializing with an existing node and state
+     * provider.
+     *
+     * @param node
+     *            the state node, not null
+     * @param stateProvider
+     *            the state provider, not null
      */
-    private Element(StateNode node) {
+    private Element(StateNode node, ElementStateProvider stateProvider) {
         assert node != null;
+        assert stateProvider != null;
 
-        // TODO This needs to be fixed once there are several
-        // ElementStateProvider implementations
-        stateProvider = BasicElementStateProvider.get();
         if (!stateProvider.supports(node)) {
             throw new IllegalArgumentException(
                     "BasicElementStateProvider does not support the given state node");
         }
 
+        this.stateProvider = stateProvider;
         this.node = node;
     }
 
@@ -82,7 +90,7 @@ public class Element implements Serializable {
      *            can contain letters, numbers and dashes ({@literal -})
      */
     public Element(String tag) {
-        this(createStateNode(tag));
+        this(createStateNode(tag), BasicElementStateProvider.get());
         assert node != null;
         assert stateProvider != null;
     }
@@ -95,7 +103,30 @@ public class Element implements Serializable {
      * @return the element for the node
      */
     public static Element get(StateNode node) {
-        return new Element(node);
+        if (node.hasNamespace(TextNodeNamespace.class)) {
+            return new Element(node, TextElementStateProvider.get());
+        } else if (node.hasNamespace(ElementDataNamespace.class)) {
+            return new Element(node, BasicElementStateProvider.get());
+        } else {
+            throw new IllegalArgumentException(
+                    "Node is not valid as an element");
+        }
+    }
+
+    /**
+     * Creates a text node with the given text.
+     *
+     * @param text
+     *            the text in the node
+     * @return an element representing the text node
+     */
+    public static Element createText(String text) {
+        if (text == null) {
+            throw new IllegalArgumentException("Text cannot be null");
+        }
+
+        return new Element(TextElementStateProvider.createStateNode(text),
+                TextElementStateProvider.get());
     }
 
     /**
@@ -564,9 +595,7 @@ public class Element implements Serializable {
      */
     // Distinct name so setProperty("foo", null) is not ambiguous
     public Element setPropertyJson(String name, JsonValue value) {
-        if (name == null) {
-            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
-        }
+        verifySetPropertyName(name);
         if (value == null) {
             throw new IllegalArgumentException(
                     "Json.createNull() should be used instead of null for JSON values");
@@ -578,13 +607,22 @@ public class Element implements Serializable {
     }
 
     private Element setRawProperty(String name, Serializable value) {
-        if (name == null) {
-            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
-        }
+        verifySetPropertyName(name);
 
         stateProvider.setProperty(node, name, value);
 
         return this;
+    }
+
+    private static void verifySetPropertyName(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
+        }
+
+        if ("textContent".equals(name)) {
+            throw new IllegalArgumentException(
+                    "Can't set textContent as a property, use setTextContent(String) instead.");
+        }
     }
 
     /**
@@ -805,5 +843,73 @@ public class Element implements Serializable {
         // Intentionally not making a copy for performance reasons
         return Collections
                 .unmodifiableSet(stateProvider.getPropertyNames(node));
+    }
+
+    /**
+     * Checks whether this element represents a text node.
+     *
+     * @return <code>true</code> if this element is a text node; otherwise
+     *         <code>false</code>
+     */
+    public boolean isTextNode() {
+        return stateProvider.isTextNode(node);
+    }
+
+    /**
+     * Sets the text content of this element, replacing any existing children.
+     *
+     * @param textContent
+     *            the text content to set, <code>null</code> is interpreted as
+     *            an empty string
+     * @return this element
+     */
+    public Element setTextContent(String textContent) {
+        if (textContent == null) {
+            // Browsers work this way
+            textContent = "";
+        }
+
+        if (isTextNode()) {
+            stateProvider.setTextContent(node, textContent);
+        } else {
+            boolean hasText = !textContent.isEmpty();
+            if (getChildCount() == 1 && getChild(0).isTextNode() && hasText) {
+                getChild(0).setTextContent(textContent);
+            } else {
+                removeAllChildren();
+                if (hasText) {
+                    appendChild(createText(textContent));
+                }
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Gets the text content of this element. The text content recursively
+     * includes the text content of all child nodes.
+     *
+     * @return the text content
+     */
+    public String getTextContent() {
+        if (isTextNode()) {
+            return stateProvider.getTextContent(node);
+        } else {
+            StringBuilder builder = new StringBuilder();
+            appendTextContent(builder);
+            return builder.toString();
+        }
+    }
+
+    private void appendTextContent(StringBuilder builder) {
+        if (isTextNode()) {
+            builder.append(getTextContent());
+        } else {
+            int childCount = getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                getChild(i).appendTextContent(builder);
+            }
+        }
     }
 }
