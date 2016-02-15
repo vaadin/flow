@@ -36,7 +36,7 @@ import com.vaadin.hummingbird.change.NodeDetachChange;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.tests.util.TestUtil;
 
@@ -207,7 +207,7 @@ public class StateTreeTest {
         Class<? extends Namespace>[] namespaces = new Class[] {
                 ElementChildrenNamespace.class, ElementDataNamespace.class,
                 ElementAttributeNamespace.class,
-                ElementPropertiesNamespace.class };
+                ElementPropertyNamespace.class };
         StateTree tree = new StateTree(namespaces);
 
         StateNode root = tree.getRootNode();

@@ -25,6 +25,9 @@ import java.util.regex.Pattern;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 
+import elemental.json.Json;
+import elemental.json.JsonValue;
+
 /**
  * A class representing an element in the DOM.
  * <p>
@@ -35,6 +38,8 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
  * @since
  */
 public class Element implements Serializable {
+
+    private static final String PROPERTY_NAME_CANNOT_BE_NULL = "Property name cannot be null";
 
     private static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
 
@@ -507,4 +512,298 @@ public class Element implements Serializable {
                 && other.stateProvider.equals(stateProvider);
     }
 
+    /**
+     * Sets the given property to the given string value.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value
+     * @return this element
+     */
+    public Element setProperty(String name, String value) {
+        return setRawProperty(name, value);
+    }
+
+    /**
+     * Sets the given property to the given boolean value.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value
+     * @return this element
+     */
+    public Element setProperty(String name, boolean value) {
+        return setRawProperty(name, Boolean.valueOf(value));
+    }
+
+    /**
+     * Sets the given property to the given numeric value.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value
+     * @return this element
+     */
+    public Element setProperty(String name, double value) {
+        return setRawProperty(name, Double.valueOf(value));
+    }
+
+    /**
+     * Sets the given property to the given JSON value. Please note that this
+     * method does not accept <code>null</code> as a value, since
+     * {@link Json#createNull()} should be used instead for JSON values.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     * @return this element
+     */
+    // Distinct name so setProperty("foo", null) is not ambiguous
+    public Element setPropertyJson(String name, JsonValue value) {
+        if (name == null) {
+            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
+        }
+        if (value == null) {
+            throw new IllegalArgumentException(
+                    "Json.createNull() should be used instead of null for JSON values");
+        }
+
+        stateProvider.setJsonProperty(node, name, value);
+
+        return this;
+    }
+
+    private Element setRawProperty(String name, Serializable value) {
+        if (name == null) {
+            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
+        }
+
+        stateProvider.setProperty(node, name, value);
+
+        return this;
+    }
+
+    /**
+     * Gets the value of the given property as a string. The returned value is
+     * converted to a string if it has been set as some other type.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param defaultValue
+     *            the value to return if the property is not set, or if the
+     *            value is <code>null</code>
+     * @return the property value
+     */
+    public String getProperty(String name, String defaultValue) {
+        Object value = getPropertyRaw(name);
+        if (value == null) {
+            return defaultValue;
+        } else if (value instanceof JsonValue) {
+            return ((JsonValue) value).toJson();
+        } else if (value instanceof Number) {
+            double doubleValue = ((Number) value).doubleValue();
+            int intValue = (int) doubleValue;
+
+            // Special comparison to keep sonarqube happy
+            if (Double.doubleToRawLongBits(doubleValue - intValue) == 0) {
+                // Java adds ".0" at the end of integer-ish doubles
+                return Integer.toString(intValue);
+            } else {
+                return Double.toString(doubleValue);
+            }
+        } else {
+            return value.toString();
+        }
+    }
+
+    /**
+     * Gets the value of the given property as a string.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @return the property value, or <code>null</code> if no value is set
+     */
+    public String getProperty(String name) {
+        return getProperty(name, null);
+    }
+
+    /**
+     * Gets the value of the given property as a boolean, or the given default
+     * value if the underlying value is <code>null</code>.
+     * <p>
+     * A value defined as some other type than boolean is converted according to
+     * JavaScript semantics:
+     * <ul>
+     * <li>String values are <code>true</code>, except for the empty string.
+     * <li>Numerical values are <code>true</code>, except for 0 and
+     * <code>NaN</code>.
+     * <li>JSON object and JSON array values are always <code>true</code>.
+     * </ul>
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param defaultValue
+     *            the value to return if the property is not set, or if the
+     *            value is <code>null</code>
+     * @return the property value
+     */
+    public boolean getProperty(String name, boolean defaultValue) {
+        Object value = getPropertyRaw(name);
+        if (value == null) {
+            return defaultValue;
+        } else if (value instanceof Boolean) {
+            return ((Boolean) value).booleanValue();
+        } else if (value instanceof JsonValue) {
+            return ((JsonValue) value).asBoolean();
+        } else if (value instanceof Number) {
+            double number = ((Number) value).doubleValue();
+            // Special comparison to keep sonarqube happy
+            return !Double.isNaN(number)
+                    && Double.doubleToLongBits(number) != 0;
+        } else if (value instanceof String) {
+            return !((String) value).isEmpty();
+        } else {
+            throw new IllegalStateException(
+                    "Unsupported property type: " + value.getClass());
+        }
+    }
+
+    /**
+     * Gets the value of the given property as a double, or the given default
+     * value if the underlying value is <code>null</code>
+     * <p>
+     * A value defined as some other type than double is converted according to
+     * JavaScript semantics:
+     * <ul>
+     * <li>String values are parsed to a number. <code>NaN</code> is returned if
+     * the string can't be parsed.
+     * <li>boolean <code>true</code> is 1, boolean <code>false</code> is 0.
+     * <li>JSON object and JSON array values are always <code>NaN</code>.
+     * </ul>
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param defaultValue
+     *            the value to return if the property is not set, or if the
+     *            value is <code>null</code>
+     * @return the property value
+     */
+    public double getProperty(String name, double defaultValue) {
+        Object value = getPropertyRaw(name);
+        if (value == null) {
+            return defaultValue;
+        } else if (value instanceof Number) {
+            Number number = (Number) value;
+            return number.doubleValue();
+        } else if (value instanceof JsonValue) {
+            return ((JsonValue) value).asNumber();
+        } else if (value instanceof Boolean) {
+            return ((Boolean) value).booleanValue() ? 1 : 0;
+        } else if (value instanceof String) {
+            String string = (String) value;
+            if (string.isEmpty()) {
+                return 0;
+            } else {
+                try {
+                    return Double.parseDouble(string);
+                } catch (@SuppressWarnings("unused") NumberFormatException ignore) {
+                    return Double.NaN;
+                }
+            }
+        } else {
+            throw new IllegalStateException(
+                    "Unsupported property type: " + value.getClass());
+        }
+    }
+
+    /**
+     * Gets the value of the given property as an integer, or the given default
+     * value if the underlying value is <code>null</code>
+     * <p>
+     * The value is converted in the same way as for
+     * {@link #getProperty(String, double)}, and then truncated to
+     * <code>int</code>.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param defaultValue
+     *            the value to return if the property is not set, or if the
+     *            value is <code>null</code>
+     * @return the property value
+     */
+    public int getProperty(String name, int defaultValue) {
+        return (int) getProperty(name, (double) defaultValue);
+    }
+
+    /**
+     * Gets the raw property value without any value conversion. The type of the
+     * value is {@link String}, {@link Double}, {@link Boolean} or
+     * {@link JsonValue}. <code>null</code> is returned if there is no property
+     * with the given name or if the value is set to <code>null</code>.
+     *
+     * @param name
+     *            the property name, not null
+     * @return the raw property value, or <code>null</code>
+     */
+    public Object getPropertyRaw(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
+        }
+
+        return stateProvider.getProperty(node, name);
+    }
+
+    /**
+     * Removes the given property.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @return this element
+     */
+    public Element removeProperty(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
+        }
+
+        stateProvider.removeProperty(node, name);
+        return this;
+    }
+
+    /**
+     * Checks whether this element has a property with the given name.
+     *
+     * @param name
+     *            the property name, not <code>null</code>
+     * @return <code>true</code> if the property is present; otherwise
+     *         <code>false</code>
+     */
+    public boolean hasProperty(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
+        }
+
+        return stateProvider.hasProperty(node, name);
+    }
+
+    /**
+     * Gets the defined property names.
+     * <p>
+     * The returned collection might be connected so that adding/removing
+     * properties through e.g. {@link #setProperty(String, String)} or
+     * {@link #removeProperty(String)} affects the collection. If you want to
+     * store the property names for later usage, you should make a copy.
+     * <p>
+     * You cannot modify properties through the returned set.
+     *
+     * @return the defined property names
+     */
+    public Set<String> getPropertyNames() {
+        // Intentionally not making a copy for performance reasons
+        return Collections
+                .unmodifiableSet(stateProvider.getPropertyNames(node));
+    }
 }

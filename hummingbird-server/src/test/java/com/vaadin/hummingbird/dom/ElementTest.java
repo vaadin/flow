@@ -1,7 +1,9 @@
 package com.vaadin.hummingbird.dom;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -10,8 +12,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
+
+import elemental.json.Json;
+import elemental.json.JsonValue;
+import elemental.json.impl.JreJsonObject;
 
 public class ElementTest {
 
@@ -54,7 +61,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void getElementFromInvalidNode() {
-        StateNode node = new StateNode(ElementPropertiesNamespace.class);
+        StateNode node = new StateNode(ElementPropertyNamespace.class);
         Element.get(node);
     }
 
@@ -646,5 +653,241 @@ public class ElementTest {
         e.getNode().getNamespace(ElementListenersNamespace.class)
                 .fireEvent("click");
         Assert.assertEquals(1, listenerCalls.get());
+    }
+
+    @Test
+    public void getPropertyDefaults() {
+        Element element = new Element("div");
+
+        element.setProperty("null", null);
+        element.setProperty("empty", "");
+
+        Assert.assertEquals("d", element.getProperty("null", "d"));
+        Assert.assertEquals("d", element.getProperty("notThere", "d"));
+        Assert.assertNotEquals("d", element.getProperty("empty", "d"));
+
+        Assert.assertTrue(element.getProperty("null", true));
+        Assert.assertFalse(element.getProperty("null", false));
+        Assert.assertTrue(element.getProperty("notThere", true));
+        Assert.assertFalse(element.getProperty("notThere", false));
+        Assert.assertFalse(element.getProperty("empty", true));
+        Assert.assertFalse(element.getProperty("empty", false));
+
+        Assert.assertEquals(0.1, element.getProperty("null", 0.1), 0);
+        Assert.assertEquals(0.1, element.getProperty("notThere", 0.1), 0);
+        Assert.assertNotEquals(0.1, element.getProperty("empty", 0.1), 0);
+
+        Assert.assertEquals(42, element.getProperty("null", 42));
+        Assert.assertEquals(42, element.getProperty("notThere", 42));
+        Assert.assertNotEquals(42, element.getProperty("empty", 42));
+    }
+
+    @Test
+    public void getPropertyStringConversions() {
+        assertPropertyString(null, null);
+        assertPropertyString("foo", "foo");
+        assertPropertyString("", "");
+        assertPropertyString("45.6e1", "45.6e1");
+        assertPropertyString("true", Boolean.TRUE);
+        assertPropertyString("false", Boolean.FALSE);
+        assertPropertyString(String.valueOf(143534123423.243e23),
+                Double.valueOf(143534123423.243e23));
+        assertPropertyString("42", Double.valueOf(42));
+
+        assertPropertyString(null, Json.createNull());
+        assertPropertyString("{}", Json.createObject());
+    }
+
+    private static void assertPropertyString(String expected, Object value) {
+        Element element = createPropertyAssertElement(value);
+
+        Assert.assertEquals(expected, element.getProperty("property"));
+    }
+
+    @Test
+    public void testPropertyBooleanConversions() {
+        assertPropertyBoolean(true, Boolean.TRUE);
+        assertPropertyBoolean(false, Boolean.FALSE);
+
+        assertPropertyBoolean(true, "true");
+        assertPropertyBoolean(true, "false");
+        assertPropertyBoolean(false, "");
+
+        assertPropertyBoolean(true, Double.valueOf(1));
+        assertPropertyBoolean(true, Double.valueOf(3.14));
+        assertPropertyBoolean(false, Double.valueOf(0));
+        assertPropertyBoolean(false, Double.valueOf(Double.NaN));
+
+        assertPropertyBoolean(false, Json.createNull());
+        assertPropertyBoolean(false, Json.create(false));
+        assertPropertyBoolean(true, Json.create(true));
+        assertPropertyBoolean(true, Json.createObject());
+    }
+
+    private static void assertPropertyBoolean(boolean expected, Object value) {
+        Element element = createPropertyAssertElement(value);
+
+        // !expected -> default value will always fail
+        boolean actual = element.getProperty("property", !expected);
+
+        if (expected) {
+            Assert.assertTrue(actual);
+        } else {
+            Assert.assertFalse(actual);
+        }
+    }
+
+    @Test
+    public void testPropertyDoubleConversions() {
+        assertPropertyDouble(1, Double.valueOf(1));
+        assertPropertyDouble(.1, Double.valueOf(.1));
+        assertPropertyDouble(Double.NaN, Double.valueOf(Double.NaN));
+
+        assertPropertyDouble(1, "1");
+        assertPropertyDouble(.1, ".1");
+        assertPropertyDouble(12.34e56, "12.34e56");
+        assertPropertyDouble(Double.NaN, "foo");
+
+        assertPropertyDouble(1, Boolean.TRUE);
+        assertPropertyDouble(0, Boolean.FALSE);
+
+        assertPropertyDouble(.1, Json.create(.1));
+        assertPropertyDouble(1, Json.create(true));
+        assertPropertyDouble(0, Json.create(false));
+        assertPropertyDouble(.1, Json.create(".1"));
+        assertPropertyDouble(Double.NaN, Json.create("foo"));
+        assertPropertyDouble(Double.NaN, Json.createObject());
+    }
+
+    private static void assertPropertyDouble(double expected, Object value) {
+        Element element = createPropertyAssertElement(value);
+
+        int delta = 0;
+        double defaultValue = 1234d;
+
+        if (defaultValue == expected) {
+            throw new IllegalArgumentException(
+                    "Expecting the default value might cause unintended results");
+        }
+
+        Assert.assertEquals(expected,
+                element.getProperty("property", defaultValue), delta);
+    }
+
+    @Test
+    public void testPropertyIntConversions() {
+        assertPropertyInt(1, Double.valueOf(1));
+        assertPropertyInt(1, Double.valueOf(1.9));
+        assertPropertyInt(0, Double.valueOf(Double.NaN));
+        assertPropertyInt(Integer.MAX_VALUE, Double.valueOf(12.34e56));
+
+        assertPropertyInt(1, "1");
+        assertPropertyInt(1, "1.9");
+        assertPropertyInt(Integer.MAX_VALUE, "12.34e56");
+        assertPropertyInt(0, "foo");
+
+        assertPropertyInt(1, Boolean.TRUE);
+        assertPropertyInt(0, Boolean.FALSE);
+
+        assertPropertyInt(1, Json.create(1));
+        assertPropertyInt(1, Json.create(1.9));
+        assertPropertyInt(1, Json.create(true));
+        assertPropertyInt(0, Json.create(false));
+        assertPropertyInt(1, Json.create("1"));
+        assertPropertyInt(0, Json.create("foo"));
+        assertPropertyInt(0, Json.createObject());
+    }
+
+    private static void assertPropertyInt(int expected, Object value) {
+        Element element = createPropertyAssertElement(value);
+
+        int defaultValue = 1234;
+
+        if (defaultValue == expected) {
+            throw new IllegalArgumentException(
+                    "Expecting the default value might cause unintended results");
+        }
+
+        Assert.assertEquals(expected,
+                element.getProperty("property", defaultValue));
+    }
+
+    @Test
+    public void propertyRawValues() {
+        Element element = new Element("div");
+
+        element.setProperty("p", "v");
+        Assert.assertEquals("v", element.getPropertyRaw("p"));
+
+        element.setProperty("p", true);
+        Assert.assertEquals(Boolean.TRUE, element.getPropertyRaw("p"));
+
+        element.setProperty("p", 3.14);
+        Assert.assertEquals(Double.valueOf(3.14), element.getPropertyRaw("p"));
+
+        element.setPropertyJson("p", Json.createObject());
+        Assert.assertEquals(JreJsonObject.class,
+                element.getPropertyRaw("p").getClass());
+    }
+
+    @Test
+    public void addAndRemoveProperty() {
+        Element element = new Element("div");
+
+        Assert.assertFalse(element.hasProperty("foo"));
+        element.removeProperty("foo");
+        Assert.assertFalse(element.hasProperty("foo"));
+
+        element.setProperty("foo", "bar");
+        Assert.assertTrue(element.hasProperty("foo"));
+        element.setProperty("foo", null);
+        Assert.assertTrue(element.hasProperty("foo"));
+
+        element.removeProperty("foo");
+        Assert.assertFalse(element.hasProperty("foo"));
+    }
+
+    @Test
+    public void propertyNames() {
+        Element element = new Element("div");
+
+        Assert.assertEquals(Collections.emptySet(), element.getPropertyNames());
+
+        element.setProperty("foo", "bar");
+        Assert.assertEquals(Collections.singleton("foo"),
+                element.getPropertyNames());
+
+        element.removeProperty("foo");
+        Assert.assertEquals(Collections.emptySet(), element.getPropertyNames());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void propertyNamesUnmodifiable() {
+        Element element = new Element("foo");
+
+        element.getPropertyNames().remove("bar");
+    }
+
+    private static Element createPropertyAssertElement(Object value) {
+        Element element = new Element("div");
+
+        if (value instanceof Number && !(value instanceof Double)) {
+            throw new IllegalArgumentException(
+                    "Double is the only accepted numeric type");
+        }
+
+        if (value instanceof Serializable) {
+            BasicElementStateProvider.get().setProperty(element.getNode(),
+                    "property", (Serializable) value);
+        } else if (value instanceof JsonValue) {
+            element.setPropertyJson("property", (JsonValue) value);
+        } else if (value == null) {
+            element.setProperty("property", null);
+        } else {
+            throw new IllegalArgumentException(
+                    "Invalid value type: " + value.getClass());
+        }
+
+        return element;
     }
 }

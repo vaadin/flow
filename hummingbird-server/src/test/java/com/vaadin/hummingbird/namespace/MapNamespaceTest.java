@@ -35,8 +35,8 @@ import elemental.json.JsonValue;
 
 // Using ElementPropertiesNamespace since it closely maps to the underlying map
 public class MapNamespaceTest
-        extends AbstractNamespaceTest<ElementPropertiesNamespace> {
-    private ElementPropertiesNamespace namespace = createNamespace();
+        extends AbstractNamespaceTest<ElementPropertyNamespace> {
+    private ElementPropertyNamespace namespace = createNamespace();
 
     @Test
     public void testBasicFunctionality() {

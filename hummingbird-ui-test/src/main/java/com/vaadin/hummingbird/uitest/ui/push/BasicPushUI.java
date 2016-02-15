@@ -20,7 +20,6 @@ import java.util.TimerTask;
 
 import com.vaadin.annotations.Push;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -115,8 +114,7 @@ public class BasicPushUI extends UI {
     }
 
     private Element setTextContent(Element element, String text) {
-        element.getNode().getNamespace(ElementPropertiesNamespace.class)
-                .setProperty("textContent", text);
+        element.setProperty("textContent", text);
         return element;
     }
 

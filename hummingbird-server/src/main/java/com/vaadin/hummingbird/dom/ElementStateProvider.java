@@ -20,6 +20,8 @@ import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
 
+import elemental.json.JsonValue;
+
 /**
  * Handles storing and retrieval of the state information for an element using a
  * state node.
@@ -183,4 +185,72 @@ public interface ElementStateProvider extends Serializable {
      */
     EventRegistrationHandle addEventListener(StateNode node, String eventType,
             DomEventListener listener);
+
+    /**
+     * Gets the value of the given property.
+     *
+     * @param node
+     *            the node containing the data
+     * @param name
+     *            the property name, not null
+     * @return the property value, or <code>null</code> if the property has not
+     *         been set
+     */
+    Object getProperty(StateNode node, String name);
+
+    /**
+     * Sets the given property to the given value.
+     *
+     * @param node
+     *            the node containing the data
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value
+     */
+    void setProperty(StateNode node, String name, Serializable value);
+
+    /**
+     * Sets the given property to the given JSON value.
+     *
+     * @param node
+     *            the node containing the data
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param value
+     *            the property value, not <code>null</code>
+     */
+    void setJsonProperty(StateNode node, String name, JsonValue value);
+
+    /**
+     * Removes the given property if it has been set.
+     *
+     * @param node
+     *            the node containing the data
+     * @param name
+     *            the property name, not <code>null</code>
+     */
+    void removeProperty(StateNode node, String name);
+
+    /**
+     * Checks if the given property has been set.
+     *
+     * @param node
+     *            the node containing the data
+     * @param name
+     *            the property name, not <code>null</code>
+     *
+     * @return <code>true</code> if the property has been set,
+     *         <code>false</code> otherwise
+     */
+    boolean hasProperty(StateNode node, String name);
+
+    /**
+     * Gets the defined property names.
+     *
+     * @param node
+     *            the node containing the data
+     * @return the defined property names
+     */
+    Set<String> getPropertyNames(StateNode node);
 }
