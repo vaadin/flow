@@ -29,7 +29,7 @@ import elemental.client.Browser;
 public class ApplicationConfiguration implements EntryPoint {
 
     /**
-     * Helper class for reading configuration options from the bootstap
+     * Helper class for reading configuration options from the bootstrap
      * javascript
      *
      * @since 7.0
@@ -57,6 +57,11 @@ public class ApplicationConfiguration implements EntryPoint {
             } else {
                 return value +"";
             }
+        }-*/;
+
+        private native ValueMap getConfigJson(String name)
+        /*-{
+            return this.getConfig(name);
         }-*/;
 
         /**
@@ -168,10 +173,9 @@ public class ApplicationConfiguration implements EntryPoint {
             }
         }-*/;
 
-        private native String getUIDL()
-        /*-{
-           return this.getConfig("uidl");
-         }-*/;
+        private ValueMap getUIDL() {
+            return getConfigJson("uidl");
+        }
     }
 
     /**
@@ -289,7 +293,7 @@ public class ApplicationConfiguration implements EntryPoint {
      *
      * @return
      */
-    public String getUIDL() {
+    public ValueMap getUIDL() {
         return getJsoConfiguration(id).getUIDL();
     }
 

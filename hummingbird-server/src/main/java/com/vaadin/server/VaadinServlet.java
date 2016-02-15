@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
-import com.vaadin.server.communication.ServletUIInitHandler;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
@@ -772,51 +771,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
         return false;
     }
 
-    /**
-     *
-     * @author Vaadin Ltd
-     * @since 7.0
-     *
-     * @deprecated As of 7.0. This is no longer used and only provided for
-     *             backwards compatibility. Each {@link RequestHandler} can
-     *             individually decide whether it wants to handle a request or
-     *             not.
-     */
-    @Deprecated
-    protected enum RequestType {
-        FILE_UPLOAD, BROWSER_DETAILS, UIDL, OTHER, STATIC_FILE, APP, PUBLISHED_FILE, HEARTBEAT;
-    }
-
-    /**
-     * @param request
-     * @return
-     *
-     * @deprecated As of 7.0. This is no longer used and only provided for
-     *             backwards compatibility. Each {@link RequestHandler} can
-     *             individually decide whether it wants to handle a request or
-     *             not.
-     */
-    @Deprecated
-    protected RequestType getRequestType(VaadinServletRequest request) {
-        if (ServletHelper.isFileUploadRequest(request)) {
-            return RequestType.FILE_UPLOAD;
-        } else if (ServletHelper.isPublishedFileRequest(request)) {
-            return RequestType.PUBLISHED_FILE;
-        } else if (ServletUIInitHandler.isUIInitRequest(request)) {
-            return RequestType.BROWSER_DETAILS;
-        } else if (ServletHelper.isUIDLRequest(request)) {
-            return RequestType.UIDL;
-        } else if (isStaticResourceRequest(request)) {
-            return RequestType.STATIC_FILE;
-        } else if (ServletHelper.isAppRequest(request)) {
-            return RequestType.APP;
-        } else if (ServletHelper.isHeartbeatRequest(request)) {
-            return RequestType.HEARTBEAT;
-        }
-        return RequestType.OTHER;
-
-    }
-
     protected boolean isStaticResourceRequest(HttpServletRequest request) {
         return request.getRequestURI()
                 .startsWith(request.getContextPath() + "/VAADIN/");
@@ -839,50 +793,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
         }
 
         return string;
-    }
-
-    /**
-     * Gets the current application URL from request.
-     *
-     * @param request
-     *            the HTTP request.
-     * @throws MalformedURLException
-     *             if the application is denied access to the persistent data
-     *             store represented by the given URL.
-     *
-     * @deprecated As of 7.0. Will likely change or be removed in a future
-     *             version
-     */
-    @Deprecated
-    protected URL getApplicationUrl(HttpServletRequest request)
-            throws MalformedURLException {
-        final URL reqURL = new URL((request.isSecure() ? "https://" : "http://")
-                + request.getServerName()
-                + ((request.isSecure() && request.getServerPort() == 443)
-                        || (!request.isSecure()
-                                && request.getServerPort() == 80) ? ""
-                                        : ":" + request.getServerPort())
-                + request.getRequestURI());
-        String servletPath = "";
-        if (request
-                .getAttribute("javax.servlet.include.servlet_path") != null) {
-            // this is an include request
-            servletPath = request
-                    .getAttribute("javax.servlet.include.context_path")
-                    .toString()
-                    + request
-                            .getAttribute("javax.servlet.include.servlet_path");
-
-        } else {
-            servletPath = request.getContextPath() + request.getServletPath();
-        }
-
-        if (servletPath.length() == 0
-                || servletPath.charAt(servletPath.length() - 1) != '/') {
-            servletPath = servletPath + "/";
-        }
-        URL u = new URL(reqURL, servletPath);
-        return u;
     }
 
     /*

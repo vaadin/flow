@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -132,18 +131,6 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         } finally {
             this.request.set(null);
         }
-    }
-
-    @Override
-    protected URL getApplicationUrl(HttpServletRequest request)
-            throws MalformedURLException {
-        URL url = super.getApplicationUrl(request);
-
-        String path = url.toString();
-        path += getApplicationRunnerApplicationClassName(request);
-        path += "/";
-
-        return new URL(path);
     }
 
     protected void onVaadinSessionStarted(VaadinRequest request,
@@ -331,7 +318,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         VaadinServletService service = super.createServletService(
                 deploymentConfiguration);
         final SystemMessagesProvider provider = service

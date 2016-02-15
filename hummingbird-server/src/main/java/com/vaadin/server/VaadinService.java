@@ -653,9 +653,7 @@ public abstract class VaadinService implements Serializable {
              */
 
             final boolean restartApplication = hasParameter(request,
-                    URL_PARAMETER_RESTART_APPLICATION)
-                    && !hasParameter(request,
-                            BootstrapHandler.IGNORE_RESTART_PARAM);
+                    URL_PARAMETER_RESTART_APPLICATION);
             final boolean closeApplication = hasParameter(request,
                     URL_PARAMETER_CLOSE_APPLICATION);
 

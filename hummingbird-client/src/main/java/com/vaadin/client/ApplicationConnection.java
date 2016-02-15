@@ -337,8 +337,8 @@ public class ApplicationConnection {
      *
      */
     public void start() {
-        String jsonText = configuration.getUIDL();
-        if (jsonText == null) {
+        ValueMap json = configuration.getUIDL();
+        if (json == null) {
             // initial UIDL not in DOM, request from server
             getMessageSender().resynchronize();
         } else {
@@ -346,8 +346,7 @@ public class ApplicationConnection {
 
             // Hack to avoid logging an error in endRequest()
             getMessageSender().startRequest();
-            getMessageHandler()
-                    .handleMessage(MessageHandler.parseJson(jsonText));
+            getMessageHandler().handleMessage(json);
         }
 
     }
