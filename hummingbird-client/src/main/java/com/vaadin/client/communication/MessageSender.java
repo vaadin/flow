@@ -22,7 +22,7 @@ import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.ApplicationConnection.RequestStartingEvent;
 import com.vaadin.client.ApplicationConnection.ResponseHandlingEndedEvent;
 import com.vaadin.client.Console;
-import com.vaadin.client.VLoadingIndicator;
+import com.vaadin.client.LoadingIndicator;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.Version;
 
@@ -338,7 +338,7 @@ public class MessageSender {
         return connection.getMessageHandler();
     }
 
-    private VLoadingIndicator getLoadingIndicator() {
+    private LoadingIndicator getLoadingIndicator() {
         return connection.getLoadingIndicator();
     }
 
