@@ -17,6 +17,13 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
 
+/**
+ * Scheduler implementation which tracks and reports whether there is any work
+ * queued or currently being executed.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class VSchedulerImpl extends SchedulerImpl {
 
     /**
@@ -29,17 +36,16 @@ public class VSchedulerImpl extends SchedulerImpl {
     public void scheduleDeferred(ScheduledCommand cmd) {
         deferredCommandTrackers++;
         super.scheduleDeferred(cmd);
-        super.scheduleDeferred(new ScheduledCommand() {
-
-            @Override
-            public void execute() {
-                deferredCommandTrackers--;
-            }
-        });
+        super.scheduleDeferred(() -> deferredCommandTrackers--);
     }
 
+    /**
+     * Checks if there is work queued or currently being executed.
+     *
+     * @return true if there is work queued or if work is currently being
+     *         executed, false otherwise
+     */
     public boolean hasWorkQueued() {
-        boolean hasWorkQueued = (deferredCommandTrackers != 0);
-        return hasWorkQueued;
+        return (deferredCommandTrackers != 0);
     }
 }
