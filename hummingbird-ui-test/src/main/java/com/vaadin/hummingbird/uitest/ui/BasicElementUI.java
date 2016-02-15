@@ -16,7 +16,6 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -33,14 +32,15 @@ public class BasicElementUI extends UI {
         button.addEventListener("click", () -> {
             Element greeting = new Element("div");
             greeting.setAttribute("class", "thankYou");
-            greeting.getNode().getNamespace(ElementPropertiesNamespace.class)
-                    .setProperty("textContent", "Thank you for clicking!");
-
+            greeting.setProperty("textContent", "Thank you for clicking!");
             greeting.addEventListener("click",
                     () -> greeting.removeFromParent());
 
             bodyElement.appendChild(greeting);
         });
+
+        Element span = new Element("span");
+        span.setProperty("textContent", "Hello world");
 
         bodyElement.appendChild(button);
     }

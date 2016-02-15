@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import com.vaadin.annotations.Push;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -56,8 +55,7 @@ public class UpdateDivUI extends UI {
     }
 
     private void updateDiv() {
-        div.getNode().getNamespace(ElementPropertiesNamespace.class)
-                .setProperty("textContent", "Hello world at "
-                        + System.currentTimeMillis() + " (" + msgId++ + ")");
+        div.setProperty("textContent", "Hello world at "
+                + System.currentTimeMillis() + " (" + msgId++ + ")");
     }
 }

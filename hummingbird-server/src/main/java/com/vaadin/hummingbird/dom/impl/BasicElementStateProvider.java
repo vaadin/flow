@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.dom.impl;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,8 +31,10 @@ import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
+
+import elemental.json.JsonValue;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -53,7 +56,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @SuppressWarnings("unchecked")
     private static Class<? extends Namespace>[] namespaces = new Class[] {
             ElementDataNamespace.class, ElementAttributeNamespace.class,
-            ElementChildrenNamespace.class, ElementPropertiesNamespace.class,
+            ElementChildrenNamespace.class, ElementPropertyNamespace.class,
             ElementListenersNamespace.class };
 
     private BasicElementStateProvider() {
@@ -140,6 +143,11 @@ public class BasicElementStateProvider implements ElementStateProvider {
     private static ElementChildrenNamespace getChildrenNamespace(
             StateNode node) {
         return node.getNamespace(ElementChildrenNamespace.class);
+    }
+
+    private static ElementPropertyNamespace getPropertyNamespace(
+            StateNode node) {
+        return node.getNamespace(ElementPropertyNamespace.class);
     }
 
     @Override
@@ -251,6 +259,57 @@ public class BasicElementStateProvider implements ElementStateProvider {
      */
     public static Collection<Class<? extends Namespace>> getNamespaces() {
         return Collections.unmodifiableCollection(Arrays.asList(namespaces));
+    }
+
+    @Override
+    public Object getProperty(StateNode node, String name) {
+        assert node != null;
+        assert name != null;
+
+        return getPropertyNamespace(node).getProperty(name);
+    }
+
+    @Override
+    public void setProperty(StateNode node, String name, Serializable value) {
+        assert node != null;
+        assert name != null;
+
+        assert value == null || value instanceof String
+                || value instanceof Boolean || value instanceof Double;
+
+        getPropertyNamespace(node).setProperty(name, value);
+    }
+
+    @Override
+    public void setJsonProperty(StateNode node, String name, JsonValue value) {
+        assert node != null;
+        assert name != null;
+        assert value != null;
+
+        getPropertyNamespace(node).setJsonProperty(name, value);
+    }
+
+    @Override
+    public void removeProperty(StateNode node, String name) {
+        assert node != null;
+        assert name != null;
+
+        getPropertyNamespace(node).remove(name);
+    }
+
+    @Override
+    public boolean hasProperty(StateNode node, String name) {
+        assert node != null;
+        assert name != null;
+
+        return getPropertyNamespace(node).hasProperty(name);
+    }
+
+    @Override
+    public Set<String> getPropertyNames(StateNode node) {
+        assert node != null;
+
+        return getPropertyNamespace(node).getPropertyNames();
     }
 
 }
