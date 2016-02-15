@@ -28,6 +28,13 @@ import java.io.Serializable;
  */
 public class VBrowserDetails implements Serializable {
 
+    /**
+     * An enum for detected operating systems.
+     */
+    public enum OperatingSystem {
+        UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID;
+    }
+
     private boolean isGecko = false;
     private boolean isWebKit = false;
     private boolean isPresto = false;
@@ -46,10 +53,6 @@ public class VBrowserDetails implements Serializable {
     private boolean isIPhone;
 
     private OperatingSystem os = OperatingSystem.UNKNOWN;
-
-    public enum OperatingSystem {
-        UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID;
-    }
 
     private float browserEngineVersion = -1;
     private int browserMajorVersion = -1;
@@ -125,8 +128,7 @@ public class VBrowserDetails implements Serializable {
             }
         } catch (Exception e) {
             // Browser engine version parsing failed
-            System.err.println(
-                    "Browser engine version parsing failed for: " + userAgent);
+            log("Browser engine version parsing failed for: " + userAgent, e);
         }
 
         // Browser version
@@ -175,8 +177,8 @@ public class VBrowserDetails implements Serializable {
             }
         } catch (Exception e) {
             // Browser version parsing failed
-            System.err.println(
-                    "Browser version parsing failed for: " + userAgent);
+            log("Browser version parsing failed for: " + userAgent, e);
+
         }
 
         // Operating system
@@ -237,12 +239,14 @@ public class VBrowserDetails implements Serializable {
             try {
                 osMajorVersion = Integer.parseInt(parts[0]);
             } catch (Exception e) {
+                log("Os major version parsing failed for: " + parts[0], e);
             }
         }
         if (parts.length >= 2) {
             try {
                 osMinorVersion = Integer.parseInt(parts[1]);
             } catch (Exception e) {
+                log("Os minor version parsing failed for: " + parts[0], e);
             }
             // Some Androids report version numbers as "2.1-update1"
             if (osMinorVersion == -1 && parts[1].contains("-")) {
@@ -250,6 +254,8 @@ public class VBrowserDetails implements Serializable {
                     osMinorVersion = Integer.parseInt(
                             parts[1].substring(0, parts[1].indexOf('-')));
                 } catch (Exception ee) {
+                    log("Minor version dash parsing failed for: " + parts[0],
+                            ee);
                 }
             }
         }
@@ -277,14 +283,21 @@ public class VBrowserDetails implements Serializable {
         }
     }
 
-    private String safeSubstring(String string, int beginIndex, int endIndex) {
+    private static String safeSubstring(String string, int beginIndex,
+            int endIndex) {
+        int trimmedStart, trimmedEnd;
         if (beginIndex < 0) {
-            beginIndex = 0;
+            trimmedStart = 0;
+        } else {
+            trimmedStart = beginIndex;
         }
+
         if (endIndex < 0 || endIndex > string.length()) {
-            endIndex = string.length();
+            trimmedEnd = string.length();
+        } else {
+            trimmedEnd = endIndex;
         }
-        return string.substring(beginIndex, endIndex);
+        return string.substring(trimmedStart, trimmedEnd);
     }
 
     /**
@@ -297,7 +310,7 @@ public class VBrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is using the Gecko engine
+     * Tests if the browser is using the Gecko engine.
      *
      * @return true if it is Gecko, false otherwise
      */
@@ -306,7 +319,7 @@ public class VBrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is using the WebKit engine
+     * Tests if the browser is using the WebKit engine.
      *
      * @return true if it is WebKit, false otherwise
      */
@@ -315,7 +328,7 @@ public class VBrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is using the Presto engine
+     * Tests if the browser is using the Presto engine.
      *
      * @return true if it is Presto, false otherwise
      */
@@ -324,7 +337,7 @@ public class VBrowserDetails implements Serializable {
     }
 
     /**
-     * Tests if the browser is using the Trident engine
+     * Tests if the browser is using the Trident engine.
      *
      * @since 7.1.7
      * @return true if it is Trident, false otherwise
@@ -550,6 +563,13 @@ public class VBrowserDetails implements Serializable {
         }
 
         return false;
+    }
+
+    private static void log(String error, Exception e) {
+        // "Logs" to stdout so the problem can be found but does not prevent
+        // using the app. As this class is shared, we do not use
+        // java.util.logging
+        System.err.println(error + " " + e.getMessage());
     }
 
 }
