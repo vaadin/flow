@@ -41,16 +41,14 @@ public class BootstrapPageResponse extends BootstrapResponse {
      * @see BootstrapResponse#BootstrapResponse(BootstrapHandler, VaadinRequest,
      *      VaadinSession, Class)
      *
-     * @param handler
-     *            the bootstrap handler that is firing the event
      * @param request
      *            the Vaadin request for which the bootstrap page should be
      *            generated
      * @param session
      *            the service session for which the bootstrap page should be
      *            generated
-     * @param uiClass
-     *            the class of the UI that will be displayed on the page
+     * @param ui
+     *            the UI that will be displayed on the page
      * @param document
      *            the DOM document making up the HTML page
      * @param headers
@@ -58,11 +56,9 @@ public class BootstrapPageResponse extends BootstrapResponse {
      * @param uiProvider
      *            the UI provider for the bootstrap
      */
-    public BootstrapPageResponse(BootstrapHandler handler,
-            VaadinRequest request, VaadinSession session,
-            Class<? extends UI> uiClass, Document document,
-            Map<String, Object> headers, UIProvider uiProvider) {
-        super(handler, request, session, uiClass, uiProvider);
+    public BootstrapPageResponse(VaadinRequest request, VaadinSession session,
+            UI ui, Document document, Map<String, Object> headers) {
+        super(request, session, ui);
         this.headers = headers;
         this.document = document;
     }

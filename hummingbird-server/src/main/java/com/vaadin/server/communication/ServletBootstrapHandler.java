@@ -17,8 +17,13 @@
 package com.vaadin.server.communication;
 
 import com.vaadin.server.BootstrapHandler;
+import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletService;
 
+/**
+ * Request handler for {@link VaadinServlet} which handles bootstrapping of the
+ * application.
+ */
 public class ServletBootstrapHandler extends BootstrapHandler {
     @Override
     protected String getServiceUrl(BootstrapContext context) {

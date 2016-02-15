@@ -16,7 +16,12 @@
 package com.vaadin.server;
 
 import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Locale;
+import java.util.function.BiConsumer;
+
+import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
@@ -284,5 +289,64 @@ public class ServletHelper implements Serializable {
         }
 
         return Locale.getDefault();
+    }
+
+    /**
+     * Sets no cache headers to the specified response.
+     *
+     * @param headerSetter
+     *            setter for string value headers
+     * @param dateHeaderSetter
+     *            setter for long value headers
+     */
+    public static void setResponseNoCacheHeaders(
+            BiConsumer<String, String> headerSetter,
+            BiConsumer<String, Long> dateHeaderSetter) {
+        headerSetter.accept("Cache-Control", "no-cache, no-store");
+        headerSetter.accept("Pragma", "no-cache");
+        dateHeaderSetter.accept("Expires", 0L);
+    }
+
+    /**
+     * Gets the current application URL from request.
+     *
+     * @param request
+     *            the HTTP request.
+     * @return the URL used in the given request
+     * @throws MalformedURLException
+     *             if the application is denied access to the persistent data
+     *             store represented by the given URL.
+     */
+    public static URL getApplicationUrl(HttpServletRequest request)
+            throws MalformedURLException {
+        final boolean secureRequest = request.isSecure();
+        final boolean useStandardPort = (secureRequest
+                && request.getServerPort() == 443)
+                || (!secureRequest && request.getServerPort() == 80);
+
+        final String protocol = secureRequest ? "https://" : "http://";
+        final String port = useStandardPort ? ""
+                : ":" + request.getServerPort();
+        final URL reqURL = new URL(protocol + request.getServerName() + port
+                + request.getRequestURI());
+        String servletPath;
+        if (request
+                .getAttribute("javax.servlet.include.servlet_path") != null) {
+            // this is an include request
+            servletPath = request
+                    .getAttribute("javax.servlet.include.context_path")
+                    .toString()
+                    + request
+                            .getAttribute("javax.servlet.include.servlet_path");
+
+        } else {
+            servletPath = request.getContextPath() + request.getServletPath();
+        }
+
+        if (servletPath.length() == 0
+                || servletPath.charAt(servletPath.length() - 1) != '/') {
+            servletPath = servletPath + "/";
+        }
+        return new URL(reqURL, servletPath);
     }
 }

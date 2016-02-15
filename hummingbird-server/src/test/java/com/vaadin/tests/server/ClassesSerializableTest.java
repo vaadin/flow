@@ -54,6 +54,13 @@ public class ClassesSerializableTest extends TestCase {
             "com\\.vaadin\\.server\\.VaadinSession\\$FutureAccess", //
             "com\\.vaadin\\.external\\.org\\.slf4j\\..*", //
             "com\\.vaadin\\.server\\.communication\\.JSR356WebsocketInitializer.*", //
+            "com\\.vaadin\\.shared\\.VaadinUriResolver", // private inner class not stored
+            // next 5 used only during bootstrap request to store and process data
+            "com\\.vaadin\\.server\\.BootstrapHandler\\$BootstrapContext",
+            "com\\.vaadin\\.server\\.BootstrapHandler\\$BootstrapUriResolver",
+            "com\\.vaadin\\.server\\.BootstrapResponse",
+            "com\\.vaadin\\.server\\.BootstrapPageResponse",
+            "com\\.vaadin\\.server\\.BootstrapFragmentResponse"
     };
 
     /**
