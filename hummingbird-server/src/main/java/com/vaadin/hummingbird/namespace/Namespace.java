@@ -96,4 +96,12 @@ public abstract class Namespace implements Serializable {
             childNode.setParent(null);
         }
     }
+
+    /**
+     * Passes each child node instance to the given consumer.
+     * 
+     * @param action
+     *            the consumer that accepts each child
+     */
+    public abstract void forEachChild(Consumer<StateNode> action);
 }

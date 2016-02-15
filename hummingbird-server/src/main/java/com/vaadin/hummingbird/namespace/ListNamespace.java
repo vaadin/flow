@@ -99,10 +99,11 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
     protected void add(int index, T item) {
         assert item == null || (item instanceof StateNode == nodeValues);
 
+        values.add(index, item);
+
         if (nodeValues) {
             attachPotentialChild(item);
         }
-        values.add(index, item);
 
         addChange(new ListSpliceChange(this, index, 0,
                 Collections.singletonList(item)));
@@ -179,6 +180,13 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
     protected int indexOf(T value) {
         setAccessed();
         return values.indexOf(value);
+    }
+
+    @Override
+    public void forEachChild(Consumer<StateNode> action) {
+        if (nodeValues) {
+            values.forEach(v -> action.accept((StateNode) v));
+        }
     }
 
 }
