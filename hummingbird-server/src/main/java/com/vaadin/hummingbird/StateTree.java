@@ -16,10 +16,10 @@
 
 package com.vaadin.hummingbird;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.change.NodeChange;
@@ -31,7 +31,33 @@ import com.vaadin.hummingbird.namespace.Namespace;
  * @since
  * @author Vaadin Ltd
  */
-public class StateTree extends NodeOwner {
+public class StateTree implements NodeOwner {
+
+    private final class RootNode extends StateNode {
+        private RootNode(Class<? extends Namespace>[] namespaces) {
+            super(namespaces);
+
+            // Bootstrap
+            setTree(StateTree.this);
+
+            // Assign id
+            onAttach();
+        }
+
+        @Override
+        public void setParent(StateNode parent) {
+            throw new IllegalStateException(
+                    "Can't set the parent of the tree root");
+        }
+
+        @Override
+        public boolean isAttached() {
+            // Root is always attached
+            return true;
+        }
+    }
+
+    private Set<StateNode> dirtyNodes = new HashSet<>();
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
     private int nextId = 1;
@@ -47,25 +73,7 @@ public class StateTree extends NodeOwner {
      */
     @SafeVarargs
     public StateTree(Class<? extends Namespace>... namespaces) {
-        rootNode = new StateNode(namespaces) {
-            @Override
-            public void setParent(StateNode parent) {
-                throw new IllegalStateException(
-                        "Can't set the parent of the tree root");
-            }
-
-            @Override
-            public boolean isAttached() {
-                // Root is always attached
-                return true;
-            }
-        };
-        adoptNodes(rootNode.getOwner());
-    }
-
-    @Override
-    public Collection<StateNode> getNodes() {
-        return Collections.unmodifiableCollection(idToNode.values());
+        rootNode = new RootNode(namespaces);
     }
 
     /**
@@ -79,14 +87,31 @@ public class StateTree extends NodeOwner {
     }
 
     @Override
-    public int doRegister(StateNode node) {
-        int nodeId = nextId++;
+    public int register(StateNode node) {
+        assert node.getOwner() == this;
+
+        int id = node.getId();
+
+        int nodeId;
+        if (id > 0 && !idToNode.containsKey(Integer.valueOf(id))) {
+            // Node already had an id, continue using it
+
+            // Don't accept an id that we haven't yet handed out
+            assert id < nextId;
+
+            nodeId = id;
+        } else {
+            nodeId = nextId++;
+        }
+
         idToNode.put(Integer.valueOf(nodeId), node);
         return nodeId;
     }
 
     @Override
-    public void doUnregister(StateNode node) {
+    public void unregister(StateNode node) {
+        assert node.getOwner() == this;
+
         Integer id = Integer.valueOf(node.getId());
 
         StateNode removedNode = idToNode.remove(id);
@@ -126,5 +151,34 @@ public class StateTree extends NodeOwner {
         // TODO fire preCollect events
 
         collectDirtyNodes().forEach(n -> n.collectChanges(collector));
+    }
+
+    @Override
+    public void markAsDirty(StateNode node) {
+        assert node.getOwner() == this;
+
+        dirtyNodes.add(node);
+    }
+
+    /**
+     * Gets all the nodes that have been marked as dirty since the last time
+     * this method was invoked.
+     *
+     * @return a set of dirty nodes
+     */
+    public Set<StateNode> collectDirtyNodes() {
+        Set<StateNode> collectedNodes = dirtyNodes;
+        dirtyNodes = new HashSet<>();
+        return collectedNodes;
+    }
+
+    /**
+     * Checks if there are nodes that have been marked as dirty since the last
+     * time {@link #collectDirtyNodes()} was invoked.
+     *
+     * @return true if there are dirty nodes, false otherwise
+     */
+    public boolean hasDirtyNodes() {
+        return !dirtyNodes.isEmpty();
     }
 }
