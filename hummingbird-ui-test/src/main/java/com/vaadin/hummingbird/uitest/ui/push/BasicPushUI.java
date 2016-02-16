@@ -50,18 +50,18 @@ public class BasicPushUI extends UI {
         spacer();
 
         // Client counter
-        getElement().appendChild(setTextContent(new Element("div"),
+        getElement().appendChild(new Element("div").setTextContent(
                 "Client counter (click 'increment' to update):"));
         Element lbl = new Element("div").setAttribute("id", CLIENT_COUNTER_ID);
-        setTextContent(lbl, clientCounter + "");
+        lbl.setTextContent(clientCounter + "");
         getElement().appendChild(lbl);
 
         Element button = new Element("button").setAttribute("id",
                 INCREMENT_BUTTON_ID);
-        setTextContent(button, "Increment");
+        button.setTextContent("Increment");
         button.addEventListener("click", () -> {
             clientCounter++;
-            setTextContent(lbl, clientCounter + "");
+            lbl.setTextContent(clientCounter + "");
         });
 
         getElement().appendChild(button);
@@ -70,17 +70,17 @@ public class BasicPushUI extends UI {
         /*
          * Server counter
          */
-        getElement().appendChild(setTextContent(new Element("div"),
+        getElement().appendChild(new Element("div").setTextContent(
                 "Server counter (updates each second by server thread):"));
         serverCounterElement = new Element("div").setAttribute("id",
                 SERVER_COUNTER_ID);
-        setTextContent(serverCounterElement, serverCounter + "");
+        serverCounterElement.setTextContent(serverCounter + "");
         getElement().appendChild(serverCounterElement);
 
         Element startTimer = new Element("button").setAttribute("id",
                 START_TIMER_ID);
 
-        setTextContent(startTimer, "Start timer");
+        startTimer.setTextContent("Start timer");
         startTimer.addEventListener("click", () -> {
             serverCounter = 0;
             if (task != null) {
@@ -91,8 +91,7 @@ public class BasicPushUI extends UI {
                 public void run() {
                     access(() -> {
                         serverCounter++;
-                        setTextContent(serverCounterElement,
-                                serverCounter + "");
+                        serverCounterElement.setTextContent(serverCounter + "");
                     });
                 }
             };
@@ -102,7 +101,7 @@ public class BasicPushUI extends UI {
 
         Element stopTimer = new Element("button").setAttribute("id",
                 STOP_TIMER_ID);
-        setTextContent(stopTimer, "Stop timer");
+        stopTimer.setTextContent("Stop timer");
         stopTimer.addEventListener("click", () -> {
             if (task != null) {
                 task.cancel();
@@ -111,11 +110,6 @@ public class BasicPushUI extends UI {
         });
         getElement().appendChild(stopTimer);
 
-    }
-
-    private Element setTextContent(Element element, String text) {
-        element.setProperty("textContent", text);
-        return element;
     }
 
     private void spacer() {

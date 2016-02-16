@@ -123,6 +123,18 @@ public class StateNode {
     }
 
     /**
+     * Checks whether this node has a namespace with the given id.
+     *
+     * @param id
+     *            the id of the namespace
+     * @return <code>true</code> if this node has the given namespace; otherwise
+     *         <code>false</code>
+     */
+    public boolean hasNamespace(int id) {
+        return namespaces.has(Double.valueOf(id));
+    }
+
+    /**
      * Iterates all namespaces in this node.
      *
      * @param callback

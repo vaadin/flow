@@ -32,17 +32,20 @@ public class BasicElementUI extends UI {
         button.addEventListener("click", () -> {
             Element greeting = new Element("div");
             greeting.setAttribute("class", "thankYou");
-            greeting.setProperty("textContent", "Thank you for clicking!");
+            greeting.setTextContent("Thank you for clicking!");
             greeting.addEventListener("click",
                     () -> greeting.removeFromParent());
 
             bodyElement.appendChild(greeting);
         });
 
-        Element span = new Element("span");
-        span.setProperty("textContent", "Hello world");
+        Element span = new Element("div");
+        span.setProperty("id", "hello-world");
+        span.setTextContent("Hello world");
+        span.addEventListener("click",
+                () -> span.setTextContent("Stop touching me!"));
 
-        bodyElement.appendChild(button);
+        bodyElement.appendChild(span, button);
     }
 
 }
