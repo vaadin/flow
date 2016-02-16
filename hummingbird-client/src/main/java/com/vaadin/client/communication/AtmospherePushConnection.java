@@ -89,7 +89,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
 
         /**
-         * Checks if there another fragment which can be retrieved using
+         * Checks if there is another fragment which can be retrieved using
          * {@link #getNextFragment()} or if all fragments have been retrieved.
          *
          * @return true if there is another fragment to retrieve, false
@@ -198,7 +198,7 @@ public class AtmospherePushConnection implements PushConnection {
                     + ApplicationConstants.PUSH_PATH;
         }
         runWhenAtmosphereLoaded(
-                () -> Scheduler.get().scheduleDeferred(() -> connect()));
+                () -> Scheduler.get().scheduleDeferred(this::connect));
     }
 
     private PushConfiguration getPushConfiguration() {
