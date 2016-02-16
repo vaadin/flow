@@ -40,7 +40,6 @@ import org.junit.experimental.categories.Category;
 
 import com.vaadin.hummingbird.testcategory.SlowTests;
 import com.vaadin.server.communication.AtmospherePushConnection;
-import com.vaadin.server.communication.UIInitHandler;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
@@ -123,11 +122,13 @@ public class VaadinSessionTest {
                         || "ignoreRestart".equals(name)
                         || "closeApplication".equals(name)) {
                     return null;
-                } else if (UIInitHandler.BROWSER_DETAILS_PARAMETER
-                        .equals(name)) {
-                    return "1";
                 }
-                return super.getParameter(name);
+                return "1";
+            }
+
+            @Override
+            public String getPathInfo() {
+                return "/APP/";
             }
 
             @Override

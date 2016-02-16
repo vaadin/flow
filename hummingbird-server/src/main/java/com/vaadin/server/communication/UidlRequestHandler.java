@@ -17,6 +17,7 @@
 package com.vaadin.server.communication;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.logging.Level;
@@ -54,9 +55,6 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     private ServerRpcHandler rpcHandler = new ServerRpcHandler();
 
-    public UidlRequestHandler() {
-    }
-
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
         return ServletHelper.isUIDLRequest(request);
@@ -69,7 +67,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            UIInitHandler.commitJsonResponse(request, response,
+            commitJsonResponse(response,
                     getUINotFoundErrorJSON(session.getService(), request));
             return true;
         }
@@ -83,28 +81,26 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         } catch (JsonException e) {
             getLogger().log(Level.SEVERE, "Error writing JSON to response", e);
             // Refresh on client side
-            writeRefresh(request, response);
+            writeRefresh(response);
             return true;
         } catch (InvalidUIDLSecurityKeyException e) {
             getLogger().log(Level.WARNING,
                     "Invalid security key received from {0}",
                     request.getRemoteHost());
             // Refresh on client side
-            writeRefresh(request, response);
+            writeRefresh(response);
             return true;
         } finally {
             stringWriter.close();
         }
 
-        return UIInitHandler.commitJsonResponse(request, response,
-                stringWriter.toString());
+        return commitJsonResponse(response, stringWriter.toString());
     }
 
-    private void writeRefresh(VaadinRequest request, VaadinResponse response)
-            throws IOException {
+    private void writeRefresh(VaadinResponse response) throws IOException {
         String json = VaadinService.createCriticalNotificationJSON(null, null,
                 null, null);
-        UIInitHandler.commitJsonResponse(request, response, json);
+        commitJsonResponse(response, json);
     }
 
     private static void writeUidl(UI ui, Writer writer) throws IOException {
@@ -163,12 +159,42 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         // Session Expired is not really the correct message as the
         // session exists but the requested UI does not.
         // Using Communication Error for now.
-        String json = VaadinService.createCriticalNotificationJSON(
+        return VaadinService.createCriticalNotificationJSON(
                 ci.getCommunicationErrorCaption(),
                 ci.getCommunicationErrorMessage(), null,
                 ci.getCommunicationErrorURL());
-
-        return json;
     }
 
+    /**
+     * Commit the JSON response. We can't write immediately to the output stream
+     * as we want to write only a critical notification if something goes wrong
+     * during the response handling.
+     *
+     * @param response
+     *            The response to write to
+     * @param json
+     *            The JSON to write
+     * @return true if the JSON was written successfully, false otherwise
+     * @throws IOException
+     *             If there was an exception while writing to the output
+     */
+    public static boolean commitJsonResponse(VaadinResponse response,
+            String json) throws IOException {
+        // The response was produced without errors so write it to the client
+        response.setContentType(JsonConstants.JSON_CONTENT_TYPE);
+
+        // Ensure that the browser does not cache UIDL responses.
+        // iOS 6 Safari requires this (#9732)
+        response.setHeader("Cache-Control", "no-cache");
+
+        byte[] b = json.getBytes("UTF-8");
+        response.setContentLength(b.length);
+
+        OutputStream outputStream = response.getOutputStream();
+        outputStream.write(b);
+        // NOTE GateIn requires the buffers to be flushed to work
+        outputStream.flush();
+
+        return true;
+    }
 }

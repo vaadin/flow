@@ -3,7 +3,7 @@ var widgetsets = {};
 	
 	
 var log;
-if (typeof console === "undefined" || !window.location.search.match(/[&?]debug(&|$)/)) {
+if (typeof console === undefined || !window.location.search.match(/[&?]debug(&|$)/)) {
 	/* If no console.log present, just use a no-op */
 	log = function() {};
 } else if (typeof console.log === "function") {
@@ -88,129 +88,36 @@ window.vaadin = window.vaadin || {
 			return value;
 		};
 		
-		var fetchRootConfig = function(callback) {
-			log('Fetching root config');
-			var url = getConfig('browserDetailsUrl');
-			if (!url) {
-				/* No special url defined, use the same URL that loaded this
-				 page (without the fragment) */
-				url = window.location.href.replace(/#.*/,'');
-			}
-			/* Timestamp to avoid caching */
-			url += ((/\?/).test(url) ? "&" : "?") + "v-" + (new Date()).getTime();		
-			
-			var params = "v-browserDetails=1";
-			var rootId = getConfig("v-rootId");
-			if (rootId !== undefined) {
-				params += "&v-rootId=" + rootId;
-			}
-
-			params += "&v-appId=" + appId;
-			
-			var extraParams = getConfig('extraParams');
-			if (extraParams !== undefined) {
-				params += extraParams;
-			}
-			
-			params += '&' + vaadin.getBrowserDetailsParameters(appId, getConfig('sendUrlsAsParameters')); 
-			
-			var r;
-			try {
-				r = new XMLHttpRequest();
-			} catch (e) {
-				r = new ActiveXObject("MSXML2.XMLHTTP.3.0");
-			}
-			r.open('POST', url, true);
-			r.onreadystatechange = function (aEvt) {  
-				if (r.readyState == 4) {
-					/* Save responseStatus so as Offline Applications know what
-					happened
-					when loading root configuration from server, and
-					depending on the
-					error status display an error message or the offline UI. */
-					config.rootResponseStatus = r.status;
-					config.rootResponseText = r.responseText;
-
-					var text = r.responseText;
-					if (r.status == 200){
-						log("Got root config response", text);
-						var updatedConfig = JSON.parse(text);
-						
-						/* Copy new properties to the config object */
-						for (var property in updatedConfig) {
-							if (updatedConfig.hasOwnProperty(property)) {
-								config[property] = updatedConfig[property];
-							}
-						}
-						
-						/* Try bootstrapping again, this time without fetching
-						missing info */
-						bootstrapApp(false);
-					} else {
-						log('Error', r.statusText, text);
-						
-						/* Let TB waitForVaadin work again */
-						delete window.vaadin.clients[testbenchId];
-						
-						/* Show the error in the app's div */
-						var appDiv = document.getElementById(appId);
-						appDiv.innerHTML = text;
-						appDiv.style['overflow'] = 'auto';
-					}
-
-					/* Run the fetchRootConfig callback if present. */
-					callback && callback(r);
-				}  
-			};
-			/* send parameters as POST data */
-			r.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-			r.send(params);
-			
-			log('sending request to ', url);
-		};			
-		
 		/* Export public data */
 		var app = {
-			getConfig: getConfig,
-			/* Used when the app was started in offline, so as it is possible
-			to defer root configuration loading until network is available. */
-			fetchRootConfig: fetchRootConfig
+			getConfig: getConfig
 		};
 		apps[appId] = app;
 		
 		if (!window.name) {
 			window.name =  appId + '-' + Math.random();
 		}
-		
-		var bootstrapApp = function(mayDefer) {
+		var bootstrapApp = function() {
 			var vaadinDir = getConfig('vaadinDir');
-			
+
 			var versionInfo = getConfig('versionInfo');
-			
+
 			var widgetset = "com.vaadin.ClientEngine";
 			var widgetsetUrl = getConfig('widgetsetUrl');
 			if (!widgetsetUrl) {
 				widgetsetUrl = vaadinDir + "client/" + widgetset + "/" + widgetset + ".nocache.js?" + new Date().getTime();
 			}
 			loadWidgetset(widgetsetUrl, widgetset);
-			
-			if (getConfig('uidl') === undefined) {
-				if (mayDefer) {
-					fetchRootConfig();
-				} else {
-					throw "May not defer bootstrap any more";
-				}
-			} else {
-				if (widgetsets[widgetset].callback) {
-					log("Starting from bootstrap", appId);
-					widgetsets[widgetset].callback(appId);
-				}  else {
-					log("Setting pending startup", appId);
-					widgetsets[widgetset].pendingApps.push(appId);
-				}
+
+			if (widgetsets[widgetset].callback) {
+				log("Starting from bootstrap", appId);
+				widgetsets[widgetset].callback(appId);
+			}  else {
+				log("Setting pending startup", appId);
+				widgetsets[widgetset].pendingApps.push(appId);
 			}
 		};
-		bootstrapApp(true);
+		bootstrapApp();
 
 		if (getConfig("debug")) {
 			/* TODO debug state is now global for the entire page, but should
@@ -245,89 +152,6 @@ window.vaadin = window.vaadin || {
 			}
 			ws.pendingApps = null;
 		}
-	},
-	getBrowserDetailsParameters: function(parentElementId, sendUrlsAsParameters) {
-		/* Screen height and width */
-		var params = 'v-sh=' + window.screen.height;
-		params += '&v-sw=' + window.screen.width;
-		
-		/* Window height and width */
-		var cw = 0;
-		var ch = 0;
-		if(typeof(window.innerWidth) == 'number') {
-			/* Modern browsers */
-			cw = window.innerWidth;
-			ch = window.innerHeight;
-		} else {
-			/* IE 8 */
-			cw = document.documentElement.clientWidth;
-			ch = document.documentElement.clientHeight;
-		}
-		params += '&v-cw=' + cw + '&v-ch=' + ch;
-		
-
-		var d = new Date();
-		
-		params += '&v-curdate=' + d.getTime();
-		
-		var tzo1 = d.getTimezoneOffset(); /* current offset */
-		var dstDiff = 0;
-		var rtzo = tzo1;
-		
-		for (var m=12;m>0;m--) {
-			d.setUTCMonth(m);
-			var tzo2 = d.getTimezoneOffset();
-			if (tzo1 != tzo2) {
-				dstDiff =  (tzo1 > tzo2 ? tzo1-tzo2 : tzo2-tzo1); /* offset w/o DST */
-				rtzo = (tzo1 > tzo2 ? tzo1 : tzo2); /* offset w/o DST */
-				break;
-			}
-		}
-
-		/* Time zone offset */
-		params += '&v-tzo=' + tzo1;
-		
-		/* DST difference */
-		params += '&v-dstd=' + dstDiff;
-		
-		/* Raw time zone offset */
-		params += '&v-rtzo=' + rtzo;
-		
-		/* DST in effect? */
-		params += '&v-dston=' + (tzo1 != rtzo);
-		
-		var pe = document.getElementById(parentElementId);
-		if (pe) {
-			params += '&v-vw=' + pe.offsetWidth;
-			params += '&v-vh=' + pe.offsetHeight;
-		}
-		
-		/* Location */
-		if (sendUrlsAsParameters !== false) {
-			params += '&v-loc=' + encodeURIComponent(location.href);
-		}
-
-		/* Window name */
-		if (window.name) {
-			params += '&v-wn=' + encodeURIComponent(window.name);
-		}
-		
-		/* Detect touch device support */
-		var supportsTouch = false;
-		try {
-			document.createEvent("TouchEvent");
-			supportsTouch = true;
-		} catch (e) {
-			/* Chrome and IE10 touch detection */
-			supportsTouch = 'ontouchstart' in window
-					|| navigator.msMaxTouchPoints;
-		}
-
-		if (supportsTouch) {
-			params += "&v-td=1";
-		}
-        
-        return params;
 	}
 };
 
@@ -335,4 +159,7 @@ log('Vaadin bootstrap loaded');
 
 {{GWT_STAT_EVENTS}}
 
-vaadin.initApplication("{{appId}}", {{configJSON}});
+var uidl = {{INITIAL_UIDL}};
+var config = {{CONFIG_JSON}};
+config.uidl = uidl;
+vaadin.initApplication("{{appId}}", config);

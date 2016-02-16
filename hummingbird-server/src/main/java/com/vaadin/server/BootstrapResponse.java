@@ -16,55 +16,36 @@
 
 package com.vaadin.server;
 
-import java.util.EventObject;
-
 import com.vaadin.ui.UI;
 
 /**
  * Base class providing common functionality used in different bootstrap
- * modification events.
+ * responses.
  *
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public abstract class BootstrapResponse extends EventObject {
+public abstract class BootstrapResponse {
     private final VaadinRequest request;
     private final VaadinSession session;
-    private final Class<? extends UI> uiClass;
-    private final UIProvider uiProvider;
+    private final UI ui;
 
     /**
-     * Creates a new bootstrap event.
+     * Creates a new bootstrap response.
      *
-     * @param handler
-     *            the bootstrap handler that is firing the event
      * @param request
      *            the Vaadin request for which the bootstrap page should be
      *            generated
      * @param session
      *            the session for which the bootstrap page should be generated
-     * @param uiClass
-     *            the class of the UI that will be displayed on the page
-     * @param uiProvider
-     *            the UI provider for the bootstrap
+     * @param ui
+     *            the UI that will be displayed on the page
      */
-    public BootstrapResponse(BootstrapHandler handler, VaadinRequest request,
-            VaadinSession session, Class<? extends UI> uiClass,
-            UIProvider uiProvider) {
-        super(handler);
+    public BootstrapResponse(VaadinRequest request, VaadinSession session,
+            UI ui) {
         this.request = request;
         this.session = session;
-        this.uiClass = uiClass;
-        this.uiProvider = uiProvider;
-    }
-
-    /**
-     * Gets the bootstrap handler that fired this event
-     *
-     * @return the bootstrap handler that fired this event
-     */
-    public BootstrapHandler getBootstrapHandler() {
-        return (BootstrapHandler) getSource();
+        this.ui = ui;
     }
 
     /**
@@ -91,23 +72,12 @@ public abstract class BootstrapResponse extends EventObject {
     }
 
     /**
-     * Gets the class of the UI that will be displayed on the generated
-     * bootstrap page.
+     * Gets the UI that will be displayed on the generated bootstrap page.
      *
-     * @return the class of the UI
+     * @return the UI
      */
-    public Class<? extends UI> getUiClass() {
-        return uiClass;
-    }
-
-    /**
-     * Gets the UI provider that is used to provide information about the
-     * bootstapped UI.
-     *
-     * @return the UI provider
-     */
-    public UIProvider getUIProvider() {
-        return uiProvider;
+    public UI getUI() {
+        return ui;
     }
 
 }

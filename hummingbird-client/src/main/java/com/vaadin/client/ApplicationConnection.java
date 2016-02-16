@@ -30,7 +30,6 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.bootstrap.Bootstrapper;
 import com.vaadin.client.bootstrap.ErrorMessage;
-import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
@@ -301,7 +300,7 @@ public class ApplicationConnection {
      * order.
      *
      */
-    public void start(String initialUidl) {
+    public void start(ValueMap initialUidl) {
         if (initialUidl == null) {
             // initial UIDL not in DOM, request from server
             registry.getMessageSender().resynchronize();
@@ -310,8 +309,7 @@ public class ApplicationConnection {
 
             // Hack to avoid logging an error in endRequest()
             registry.getMessageSender().startRequest();
-            registry.getMessageHandler()
-                    .handleMessage(MessageHandler.parseJson(initialUidl));
+            registry.getMessageHandler().handleMessage(initialUidl);
         }
 
     }

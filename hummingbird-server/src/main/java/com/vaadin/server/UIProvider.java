@@ -21,6 +21,8 @@ import java.lang.annotation.Annotation;
 
 import com.vaadin.annotations.Push;
 import com.vaadin.annotations.Title;
+import com.vaadin.annotations.Viewport;
+import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
 import com.vaadin.ui.UI;
@@ -74,14 +76,63 @@ public abstract class UIProvider implements Serializable {
         return null;
     }
 
-    public String getPageTitle(UICreateEvent event) {
-        Title titleAnnotation = getAnnotationFor(event.getUIClass(),
-                Title.class);
+    /**
+     * Returns the title for the given UI class, specified with {@link Title}
+     * annotation.
+     *
+     * @param uiClass
+     *            the ui class with the title
+     * @return the title or <code>null</code> if no title specified
+     */
+    public static String getPageTitle(Class<? extends UI> uiClass) {
+        Title titleAnnotation = getAnnotationFor(uiClass, Title.class);
         if (titleAnnotation == null) {
             return null;
         } else {
             return titleAnnotation.value();
         }
+    }
+
+    /**
+     * Returns the specified viewport content for the given UI class, specified
+     * with {@link Viewport} or {@link ViewportGeneratorClass} annotations.
+     *
+     * @param uiClass
+     *            the ui class whose viewport to get
+     * @param request
+     *            the request for the ui
+     * @return
+     */
+    public static String getViewportContent(Class<? extends UI> uiClass,
+            VaadinRequest request) {
+        String viewportContent = null;
+        Viewport viewportAnnotation = uiClass.getAnnotation(Viewport.class);
+        ViewportGeneratorClass viewportGeneratorClassAnnotation = uiClass
+                .getAnnotation(ViewportGeneratorClass.class);
+        if (viewportAnnotation != null
+                && viewportGeneratorClassAnnotation != null) {
+            throw new IllegalStateException(uiClass.getCanonicalName()
+                    + " cannot be annotated with both @"
+                    + Viewport.class.getSimpleName() + " and @"
+                    + ViewportGeneratorClass.class.getSimpleName());
+        }
+
+        if (viewportAnnotation != null) {
+            viewportContent = viewportAnnotation.value();
+        } else if (viewportGeneratorClassAnnotation != null) {
+            Class<? extends ViewportGenerator> viewportGeneratorClass = viewportGeneratorClassAnnotation
+                    .value();
+            try {
+                viewportContent = viewportGeneratorClass.newInstance()
+                        .getViewport(request);
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                        "Error processing viewport generator "
+                                + viewportGeneratorClass.getCanonicalName(),
+                        e);
+            }
+        }
+        return viewportContent;
     }
 
     /**
