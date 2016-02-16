@@ -16,9 +16,10 @@
 package com.vaadin.client.bootstrap;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.ValueMap;
 
 /**
- * Helper class for reading configuration options from the bootstap javascript
+ * Helper class for reading configuration options from the bootstrap javascript
  *
  * @since 7.0
  */
@@ -45,6 +46,21 @@ public final class JsoConfiguration extends JavaScriptObject {
         } else {
             return value +"";
         }
+    }-*/;
+
+    /**
+     * Reads a configuration parameter as a {@link ValueMap}. Please note that
+     * the javascript value of the parameter should also be a javascript object,
+     * or else an undefined exception may be thrown.
+     *
+     * @param name
+     *            name of the configuration parameter
+     * @return value of the configuration parameter, or <code>null</code>if not
+     *         defined
+     */
+    public native ValueMap getConfigValueMap(String name)
+    /*-{
+        return this.getConfig(name);
     }-*/;
 
     /**
@@ -156,8 +172,12 @@ public final class JsoConfiguration extends JavaScriptObject {
         }
     }-*/;
 
-    public native String getUIDL()
-    /*-{
-       return this.getConfig("uidl");
-     }-*/;
+    /**
+     * Gets the initial UIDL from the bootstrap page.
+     *
+     * @return the initial UIDL
+     */
+    public ValueMap getUIDL() {
+        return getConfigValueMap("uidl");
+    }
 }

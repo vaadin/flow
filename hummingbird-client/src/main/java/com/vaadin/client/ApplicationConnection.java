@@ -19,7 +19,6 @@ package com.vaadin.client;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.shared.Version;
@@ -127,7 +126,7 @@ public class ApplicationConnection {
      * @param initialUidl
      *            the initial UIDL or null if the server did not provide any
      */
-    public void start(String initialUidl) {
+    public void start(ValueMap initialUidl) {
         if (initialUidl == null) {
             // initial UIDL not in DOM, request from server
             registry.getMessageSender().resynchronize();
@@ -136,8 +135,7 @@ public class ApplicationConnection {
 
             // Hack to avoid logging an error in endRequest()
             registry.getRequestResponseTracker().startRequest();
-            registry.getMessageHandler()
-                    .handleMessage(MessageHandler.parseJson(initialUidl));
+            registry.getMessageHandler().handleMessage(initialUidl);
         }
 
     }
@@ -166,7 +164,7 @@ public class ApplicationConnection {
                 return vi;
             }
         }
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
             var pd = [
@@ -177,9 +175,9 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.vaadin.clients[TTAppId] = client;
     }-*/;
 

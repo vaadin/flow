@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
-import com.vaadin.server.communication.ServletUIInitHandler;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
@@ -181,7 +180,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         VaadinServletService service = new VaadinServletService(this,
                 deploymentConfiguration);
         service.init();
@@ -430,7 +429,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     private void serveStaticResourcesInVAADIN(String filename,
             HttpServletRequest request, HttpServletResponse response)
-                    throws IOException, ServletException {
+            throws IOException, ServletException {
 
         final ServletContext sc = getServletContext();
         URL resourceUrl = findResourceURL(filename, sc);
@@ -784,7 +783,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     @Deprecated
     protected enum RequestType {
-        FILE_UPLOAD, BROWSER_DETAILS, UIDL, OTHER, STATIC_FILE, APP, PUBLISHED_FILE, HEARTBEAT;
+        FILE_UPLOAD, UIDL, OTHER, STATIC_FILE, APP, PUBLISHED_FILE, HEARTBEAT;
     }
 
     /**
@@ -802,8 +801,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
             return RequestType.FILE_UPLOAD;
         } else if (ServletHelper.isPublishedFileRequest(request)) {
             return RequestType.PUBLISHED_FILE;
-        } else if (ServletUIInitHandler.isUIInitRequest(request)) {
-            return RequestType.BROWSER_DETAILS;
         } else if (ServletHelper.isUIDLRequest(request)) {
             return RequestType.UIDL;
         } else if (isStaticResourceRequest(request)) {
@@ -932,7 +929,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
         c > 47 && c < 58 || // alphanum
                 c > 64 && c < 91 || // A-Z
                 c > 96 && c < 123 // a-z
-                ;
+        ;
     }
 
     private static final Logger getLogger() {

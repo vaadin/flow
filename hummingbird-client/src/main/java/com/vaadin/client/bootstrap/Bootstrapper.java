@@ -21,6 +21,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Profiler;
+import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
@@ -83,7 +84,7 @@ public class Bootstrapper implements EntryPoint {
             runningApplications.push(applicationConnection);
             Profiler.leave("Bootstrapper.startApplication");
 
-            String initialUidl = getJsoConfiguration(applicationId).getUIDL();
+            ValueMap initialUidl = getJsoConfiguration(applicationId).getUIDL();
             applicationConnection.start(initialUidl);
         });
     }

@@ -26,15 +26,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.server.communication.PushRequestHandler;
 import com.vaadin.server.communication.ServletBootstrapHandler;
-import com.vaadin.server.communication.ServletUIInitHandler;
-import com.vaadin.ui.UI;
 
 public class VaadinServletService extends VaadinService {
     private final VaadinServlet servlet;
 
     public VaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         super(deploymentConfiguration);
         this.servlet = servlet;
     }
@@ -44,7 +42,6 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new ServletBootstrapHandler());
-        handlers.add(new ServletUIInitHandler());
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));
@@ -123,11 +120,7 @@ public class VaadinServletService extends VaadinService {
 
     @Override
     protected boolean requestCanCreateSession(VaadinRequest request) {
-        if (ServletUIInitHandler.isUIInitRequest(request)) {
-            // This is the first request if you are embedding by writing the
-            // embedding code yourself
-            return true;
-        } else if (isOtherRequest(request)) {
+        if (isOtherRequest(request)) {
             /*
              * I.e URIs that are not RPC calls or static (theme) files.
              */
@@ -141,7 +134,6 @@ public class VaadinServletService extends VaadinService {
         // TODO This should be refactored in some way. It should not be
         // necessary to check all these types.
         return (!ServletHelper.isAppRequest(request)
-                && !ServletUIInitHandler.isUIInitRequest(request)
                 && !ServletHelper.isFileUploadRequest(request)
                 && !ServletHelper.isHeartbeatRequest(request)
                 && !ServletHelper.isPublishedFileRequest(request)
@@ -168,8 +160,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public String getMainDivId(VaadinSession session, VaadinRequest request,
-            Class<? extends UI> uiClass) {
+    public String getMainDivId(VaadinSession session, VaadinRequest request) {
         String appId = null;
         try {
             @SuppressWarnings("deprecation")

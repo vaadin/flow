@@ -653,9 +653,7 @@ public abstract class VaadinService implements Serializable {
              */
 
             final boolean restartApplication = hasParameter(request,
-                    URL_PARAMETER_RESTART_APPLICATION)
-                    && !hasParameter(request,
-                            BootstrapHandler.IGNORE_RESTART_PARAM);
+                    URL_PARAMETER_RESTART_APPLICATION);
             final boolean closeApplication = hasParameter(request,
                     URL_PARAMETER_CLOSE_APPLICATION);
 
@@ -1006,13 +1004,11 @@ public abstract class VaadinService implements Serializable {
      *            The service session to which the bootstrapped UI will belong.
      * @param request
      *            The request for which a div id is needed
-     * @param uiClass
-     *            The class of the UI that will be bootstrapped
      *
      * @return the id to use in the DOM
      */
     public abstract String getMainDivId(VaadinSession session,
-            VaadinRequest request, Class<? extends UI> uiClass);
+            VaadinRequest request);
 
     /**
      * Sets the given session to be closed and all its UI state to be discarded

@@ -17,6 +17,7 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.function.BiConsumer;
 
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
@@ -284,5 +285,21 @@ public class ServletHelper implements Serializable {
         }
 
         return Locale.getDefault();
+    }
+
+    /**
+     * Sets no cache headers to the specified response.
+     *
+     * @param headerSetter
+     *            setter for string value headers
+     * @param longHeaderSetter
+     *            setter for long value headers
+     */
+    public static void setResponseNoCacheHeaders(
+            BiConsumer<String, String> headerSetter,
+            BiConsumer<String, Long> longHeaderSetter) {
+        headerSetter.accept("Cache-Control", "no-cache, no-store");
+        headerSetter.accept("Pragma", "no-cache");
+        longHeaderSetter.accept("Expires", 0L);
     }
 }
