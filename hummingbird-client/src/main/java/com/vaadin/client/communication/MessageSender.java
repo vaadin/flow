@@ -173,26 +173,23 @@ public class MessageSender {
         if (enabled && push == null) {
             push = new AtmospherePushConnection(registry);
         } else if (!enabled && push != null && push.isActive()) {
-            push.disconnect(new Runnable() {
-                @Override
-                public void run() {
-                    push = null;
-                    /*
-                     * If push has been enabled again while we were waiting for
-                     * the old connection to disconnect, now is the right time
-                     * to open a new connection
-                     */
-                    if (registry.getPushConfiguration().isPushEnabled()) {
-                        setPushEnabled(true);
-                    }
+            push.disconnect(() -> {
+                push = null;
+                /*
+                 * If push has been enabled again while we were waiting for the
+                 * old connection to disconnect, now is the right time to open a
+                 * new connection
+                 */
+                if (registry.getPushConfiguration().isPushEnabled()) {
+                    setPushEnabled(true);
+                }
 
-                    /*
-                     * Send anything that was enqueued while we waited for the
-                     * connection to close
-                     */
-                    if (registry.getServerRpcQueue().isFlushPending()) {
-                        registry.getServerRpcQueue().flush();
-                    }
+                /*
+                 * Send anything that was enqueued while we waited for the
+                 * connection to close
+                 */
+                if (registry.getServerRpcQueue().isFlushPending()) {
+                    registry.getServerRpcQueue().flush();
                 }
             });
         }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.hummingbird.reactive;
 
+import com.vaadin.client.Command;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsSet;
@@ -39,17 +40,6 @@ import elemental.events.EventRemover;
  * @author Vaadin Ltd
  */
 public class Reactive {
-    /**
-     * A task to be run in a reactive context where dependencies are
-     * automatically registered to accessed reactive values.
-     */
-    @FunctionalInterface
-    public interface ReactiveTask {
-        /**
-         * Runs the task.
-         */
-        public void run();
-    }
 
     // Initializing static fields would cause nasty $clinit in the generated JS
     private static JsArray<FlushListener> flushListeners;
@@ -112,15 +102,15 @@ public class Reactive {
      *
      * @param computation
      *            the computation to set as current
-     * @param task
-     *            the task to run while the computation is set as current
+     * @param command
+     *            the command to run while the computation is set as current
      */
     public static void runWithComputation(Computation computation,
-            ReactiveTask task) {
+            Command command) {
         Computation oldComputation = currentComputation;
         currentComputation = computation;
         try {
-            task.run();
+            command.execute();
         } finally {
             currentComputation = oldComputation;
         }
