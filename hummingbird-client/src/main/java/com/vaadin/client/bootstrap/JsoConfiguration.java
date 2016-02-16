@@ -49,16 +49,16 @@ public final class JsoConfiguration extends JavaScriptObject {
     }-*/;
 
     /**
-     * Reads a configuration parameter as a json. Please note that the
-     * javascript value of the parameter should also be a string, or else an
-     * undefined exception may be thrown.
+     * Reads a configuration parameter as a {@link ValueMap}. Please note that
+     * the javascript value of the parameter should also be a javascript object,
+     * or else an undefined exception may be thrown.
      *
      * @param name
      *            name of the configuration parameter
      * @return value of the configuration parameter, or <code>null</code>if not
      *         defined
      */
-    public native ValueMap getConfigJson(String name)
+    public native ValueMap getConfigValueMap(String name)
     /*-{
         return this.getConfig(name);
     }-*/;
@@ -178,6 +178,6 @@ public final class JsoConfiguration extends JavaScriptObject {
      * @return the initial UIDL
      */
     public ValueMap getUIDL() {
-        return getConfigJson("uidl");
+        return getConfigValueMap("uidl");
     }
 }

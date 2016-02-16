@@ -94,7 +94,8 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             stringWriter.close();
         }
 
-        return commitJsonResponse(response, stringWriter.toString());
+        commitJsonResponse(response, stringWriter.toString());
+        return true;
     }
 
     private void writeRefresh(VaadinResponse response) throws IOException {
@@ -174,13 +175,11 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
      *            The response to write to
      * @param json
      *            The JSON to write
-     * @return true if the JSON was written successfully, false otherwise
      * @throws IOException
      *             If there was an exception while writing to the output
      */
-    public static boolean commitJsonResponse(VaadinResponse response,
-            String json) throws IOException {
-        // The response was produced without errors so write it to the client
+    public static void commitJsonResponse(VaadinResponse response, String json)
+            throws IOException {
         response.setContentType(JsonConstants.JSON_CONTENT_TYPE);
 
         // Ensure that the browser does not cache UIDL responses.
@@ -194,7 +193,5 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         outputStream.write(b);
         // NOTE GateIn requires the buffers to be flushed to work
         outputStream.flush();
-
-        return true;
     }
 }

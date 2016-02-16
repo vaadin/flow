@@ -567,12 +567,11 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             Class<? extends UI> uiClass, VaadinRequest request,
             VaadinSession session) {
         // Check for an existing UI based on embed id
-        String embedId = getEmbedId(request);
         Integer uiId = Integer.valueOf(session.getNextUIid());
 
+        UICreateEvent event = new UICreateEvent(request, uiClass, uiId);
         // Explicit Class.cast to detect if the UIProvider does something
         // unexpected
-        UICreateEvent event = new UICreateEvent(request, uiClass, uiId);
         UI ui = uiClass.cast(provider.createInstance(event));
 
         // Initialize some fields for a newly created UI
@@ -596,7 +595,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
 
-        ui.doInit(request, uiId.intValue(), embedId);
+        ui.doInit(request, uiId.intValue(), null);
 
         session.addUI(ui);
 
@@ -604,8 +603,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Generates the initial UIDL message that can e.g. be included in a html
-     * page to avoid a separate round trip just for getting the UIDL.
+     * Generates the initial UIDL message which is included in the initial
+     * bootstrap page.
      *
      * @param ui
      *            the UI for which the UIDL should be generated
@@ -637,27 +636,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinSession session) {
         String seckey = session.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
-    }
-
-    /**
-     * Constructs an embed id based on information in the request.
-     *
-     * @param request
-     *            the request to get embed information from
-     * @return the embed id, or <code>null</code> if id is not available.
-     *
-     * @see UI#getEmbedId()
-     */
-    protected String getEmbedId(VaadinRequest request) {
-        // Parameters sent by vaadinBootstrap.js
-        String windowName = request.getParameter("v-wn");
-        String appId = request.getParameter("v-appId");
-
-        if (windowName != null && appId != null) {
-            return windowName + '.' + appId;
-        } else {
-            return null;
-        }
     }
 
     private static void putValueOrNull(JsonObject object, String key,
