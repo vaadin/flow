@@ -292,14 +292,14 @@ public class ServletHelper implements Serializable {
      *
      * @param headerSetter
      *            setter for string value headers
-     * @param dateHeaderSetter
+     * @param longHeaderSetter
      *            setter for long value headers
      */
     public static void setResponseNoCacheHeaders(
             BiConsumer<String, String> headerSetter,
-            BiConsumer<String, Long> dateHeaderSetter) {
+            BiConsumer<String, Long> longHeaderSetter) {
         headerSetter.accept("Cache-Control", "no-cache, no-store");
         headerSetter.accept("Pragma", "no-cache");
-        dateHeaderSetter.accept("Expires", 0L);
+        longHeaderSetter.accept("Expires", 0L);
     }
 }

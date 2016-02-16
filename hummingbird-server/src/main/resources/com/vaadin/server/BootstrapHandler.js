@@ -162,4 +162,4 @@ log('Vaadin bootstrap loaded');
 var uidl = {{INITIAL_UIDL}};
 var config = {{CONFIG_JSON}};
 config.uidl = uidl;
-vaadin.initApplication("{{appId}}", config);
+vaadin.initApplication("{{APP_ID}}", config);

@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.server.communication.PushRequestHandler;
 import com.vaadin.server.communication.ServletBootstrapHandler;
-import com.vaadin.ui.UI;
 
 public class VaadinServletService extends VaadinService {
     private final VaadinServlet servlet;
@@ -161,8 +160,7 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public String getMainDivId(VaadinSession session, VaadinRequest request,
-            Class<? extends UI> uiClass) {
+    public String getMainDivId(VaadinSession session, VaadinRequest request) {
         String appId = null;
         try {
             @SuppressWarnings("deprecation")
