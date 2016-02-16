@@ -36,30 +36,24 @@ public class BootstrapFragmentResponse extends BootstrapResponse {
     /**
      * Crate a new bootstrap fragment response.
      *
-     * @see BootstrapResponse#BootstrapResponse(BootstrapHandler, VaadinRequest,
-     *      VaadinSession, Class)
+     * @see BootstrapResponse#BootstrapResponse(VaadinRequest, VaadinSession,
+     *      Class)
      *
-     * @param handler
-     *            the bootstrap handler that is firing the event
      * @param request
      *            the Vaadin request for which the bootstrap page should be
      *            generated
      * @param session
      *            the service session for which the bootstrap page should be
      *            generated
-     * @param uiClass
-     *            the class of the UI that will be displayed on the page
+     * @param ui
+     *            the UI that will be displayed on the page
      * @param fragmentNodes
      *            a mutable list containing the DOM nodes that will make up the
      *            application HTML
-     * @param uiProvider
-     *            the UI provider for the bootstrap
      */
-    public BootstrapFragmentResponse(BootstrapHandler handler,
-            VaadinRequest request, VaadinSession session,
-            Class<? extends UI> uiClass, List<Node> fragmentNodes,
-            UIProvider uiProvider) {
-        super(handler, request, session, uiClass, uiProvider);
+    public BootstrapFragmentResponse(VaadinRequest request,
+            VaadinSession session, UI ui, List<Node> fragmentNodes) {
+        super(request, session, ui);
         this.fragmentNodes = fragmentNodes;
     }
 

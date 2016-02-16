@@ -22,11 +22,14 @@ import java.io.Serializable;
  * URLs usable by the browser. This is an abstract class performing the main
  * logic in {@link #resolveVaadinUri(String)} and using abstract methods in the
  * class for accessing information specific to the current environment.
- *
+ * <p>
+ * Concrete implementations of this class should implement {@link Serializable}
+ * in case a reference to an object of this class is stored on the server side.
+ * 
  * @since 7.4
  * @author Vaadin Ltd
  */
-public abstract class VaadinUriResolver implements Serializable {
+public abstract class VaadinUriResolver {
 
     /**
      * Translates a Vaadin URI to a URL that can be loaded by the browser. The
