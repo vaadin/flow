@@ -21,14 +21,15 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
-import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection.ApplicationState;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
+import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.bootstrap.Bootstrapper;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -52,7 +53,7 @@ public class MessageHandler {
     public static final String JSON_COMMUNICATION_PREFIX = "for(;;);[";
     public static final String JSON_COMMUNICATION_SUFFIX = "]";
 
-    /** The max timeout that response handling may be suspended */
+    /** The max timeout that response handling may be suspended. */
     private static final int MAX_SUSPENDED_TIMEOUT = 5000;
 
     /**
@@ -291,9 +292,9 @@ public class MessageHandler {
             serverTimingInfo = valueMap.getValueMap("timings");
         }
 
-        Runnable c = new Runnable() {
+        Command c = new Command() {
             @Override
-            public void run() {
+            public void execute() {
                 assert serverId == -1 || serverId == lastSeenServerSyncId;
 
                 handleUIDLDuration.logDuration(" * Loading widgets completed",
@@ -307,7 +308,7 @@ public class MessageHandler {
                     TreeChangeProcessor.processChanges(tree,
                             json.getArray("changes"));
 
-                    if (ApplicationConfiguration.isDebugMode()) {
+                    if (registry.getApplicationConfiguration().isDebugMode()) {
                         JsonObject debugJson = tree.getRootNode()
                                 .getDebugJson();
                         Console.log("StateTree after applying changes:");
@@ -379,7 +380,7 @@ public class MessageHandler {
             }
 
         };
-        ApplicationConfiguration.runWhenDependenciesLoaded(c);
+        Bootstrapper.runWhenDependenciesLoaded(c);
     }
 
     private void endRequestIfResponse(ValueMap json) {
