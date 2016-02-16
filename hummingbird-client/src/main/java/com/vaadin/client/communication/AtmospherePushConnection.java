@@ -68,7 +68,8 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Represents a message that should be sent as multiple fragments.
+     * A class for splitting a message into multiple fragments of maximum length
+     * {@link #FRAGMENT_LENGTH}.
      */
     protected static class FragmentedMessage {
 
@@ -77,14 +78,37 @@ public class AtmospherePushConnection implements PushConnection {
         private String message;
         private int index = 0;
 
+        /**
+         * Creates a new instance based on the given message.
+         *
+         * @param message
+         *            the message to wrap
+         */
         public FragmentedMessage(String message) {
             this.message = message;
         }
 
+        /**
+         * Checks if there another fragment which can be retrieved using
+         * {@link #getNextFragment()} or if all fragments have been retrieved.
+         *
+         * @return true if there is another fragment to retrieve, false
+         *         otherwise
+         */
         public boolean hasNextFragment() {
             return index < message.length();
         }
 
+        /**
+         * Gets the following fragment and increments the internal fragment
+         * counter so the following call to this method will return the
+         * following fragment.
+         * <p>
+         * This method should not be called if all fragments have been recieved
+         * ({@link #hasNextFragment()} returns false).
+         *
+         * @return the next fragment
+         */
         public String getNextFragment() {
             assert hasNextFragment();
 
@@ -317,11 +341,6 @@ public class AtmospherePushConnection implements PushConnection {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.client.communication.PushConenction#disconnect()
-     */
     @Override
     public final void disconnect(Command command) {
         assert command != null;
@@ -346,6 +365,12 @@ public class AtmospherePushConnection implements PushConnection {
         }
     }
 
+    /**
+     * Called whenever a message is received by Atmosphere.
+     *
+     * @param response
+     *            the Atmosphere response object, which contains the message
+     */
     protected void onMessage(AtmosphereResponse response) {
         String message = response.getResponseBody();
         ValueMap json = MessageHandler.parseWrappedJson(message);
@@ -371,25 +396,56 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Called if the push connection fails. Atmosphere will automatically retry
-     * the connection until successful.
+     * Called if the push connection fails.
+     * <p>
+     * Atmosphere will automatically retry the connection until successful.
      *
+     * @param response
+     *            the Atmosphere response for the failed connection
      */
     protected void onError(AtmosphereResponse response) {
         state = State.DISCONNECTED;
         getConnectionStateHandler().pushError(this, response);
     }
 
+    /**
+     * Called when the push connection has been closed.
+     * <p>
+     * This does not necessarily indicate an error and Atmosphere might try to
+     * reconnect or downgrade to the fallback transport automatically.
+     *
+     * @param response
+     *            the Atmosphere response which was closed
+     */
     protected void onClose(AtmosphereResponse response) {
         state = State.CONNECT_PENDING;
         getConnectionStateHandler().pushClosed(this, response);
     }
 
+    /**
+     * Called when the Atmosphere client side timeout occurs.
+     * <p>
+     * The connection will be closed at this point and reconnect will not happen
+     * automatically.
+     *
+     * @param response
+     *            the Atmosphere response which was used when the timeout
+     *            occurred
+     */
     protected void onClientTimeout(AtmosphereResponse response) {
         state = State.DISCONNECTED;
         getConnectionStateHandler().pushClientTimeout(this, response);
     }
 
+    /**
+     * Called when the push connection has lost the connection to the server and
+     * will proceed to try to re-establish the connection.
+     *
+     * @param request
+     *            the Atmosphere request
+     * @param response
+     *            the Atmosphere response
+     */
     protected void onReconnect(JavaScriptObject request,
             final AtmosphereResponse response) {
         if (state == State.CONNECTED) {
@@ -398,36 +454,88 @@ public class AtmospherePushConnection implements PushConnection {
         getConnectionStateHandler().pushReconnectPending(this);
     }
 
+    /**
+     * JavaScriptObject class with some helper methods to set and get primitive
+     * values.
+     */
     public static abstract class AbstractJSO extends JavaScriptObject {
+        /**
+         * JavaScriptObject constructor.
+         */
         protected AbstractJSO() {
 
         }
 
+        /**
+         * Gets the given property value as a String.
+         *
+         * @param key
+         *            the key of the property
+         * @return the property value
+         */
         protected final native String getStringValue(String key)
         /*-{
            return this[key];
          }-*/;
 
+        /**
+         * Sets the given property value as a String.
+         *
+         * @param key
+         *            the key of the property
+         * @param value
+         *            the property value
+         */
         protected final native void setStringValue(String key, String value)
         /*-{
             this[key] = value;
         }-*/;
 
+        /**
+         * Gets the given property value as an int.
+         *
+         * @param key
+         *            the key of the property
+         * @return the property value
+         */
         protected final native int getIntValue(String key)
         /*-{
            return this[key];
          }-*/;
 
+        /**
+         * Sets the given property value as an int.
+         *
+         * @param key
+         *            the key of the property
+         * @param value
+         *            the property value
+         */
         protected final native void setIntValue(String key, int value)
         /*-{
             this[key] = value;
         }-*/;
 
+        /**
+         * Gets the given property value as a boolean.
+         *
+         * @param key
+         *            the key of the property
+         * @return the property value
+         */
         protected final native boolean getBooleanValue(String key)
         /*-{
            return this[key];
          }-*/;
 
+        /**
+         * Sets the given property value as a boolean.
+         *
+         * @param key
+         *            the key of the property
+         * @param value
+         *            the property value
+         */
         protected final native void setBooleanValue(String key, boolean value)
         /*-{
             this[key] = value;
@@ -435,57 +543,119 @@ public class AtmospherePushConnection implements PushConnection {
 
     }
 
+    /**
+     * Class which provides information from the Atmosphere configuration
+     * object.
+     */
     public static class AtmosphereConfiguration extends AbstractJSO {
 
+        /**
+         * JavaScriptObject constructor.
+         */
         protected AtmosphereConfiguration() {
             super();
         }
 
+        /**
+         * Gets the transport mechanism.
+         *
+         * @return the transport mechanism
+         */
         public final String getTransport() {
             return getStringValue("transport");
         }
 
+        /**
+         * Gets the fallback transport mechanism.
+         *
+         * @return the fallback transport mechanism
+         */
         public final String getFallbackTransport() {
             return getStringValue("fallbackTransport");
         }
 
+        /**
+         * Sets the transport mechanism to use.
+         *
+         * @param transport
+         *            the transport mechanism
+         */
         public final void setTransport(String transport) {
             setStringValue("transport", transport);
         }
 
+        /**
+         * Sets the fallback transport mechanism to use.
+         *
+         * @param fallbackTransport
+         *            the fallback transport mechanism
+         */
         public final void setFallbackTransport(String fallbackTransport) {
             setStringValue("fallbackTransport", fallbackTransport);
         }
     }
 
+    /**
+     * Class providing data from an Atmosphere response Javascript object.
+     */
     public static class AtmosphereResponse extends AbstractJSO {
 
+        /**
+         * JavaScriptObject constructor.
+         */
         protected AtmosphereResponse() {
 
         }
 
+        /**
+         * Gets the response status code.
+         *
+         * @return the response status code.
+         */
         public final int getStatusCode() {
             return getIntValue("status");
         }
 
+        /**
+         * Gets the response text.
+         *
+         * @return the response body.
+         */
         public final String getResponseBody() {
             return getStringValue("responseBody");
         }
 
+        /**
+         * Gets the Atmosphere reported state.
+         * <p>
+         * The state can be at least {@literal messageReceived},
+         * {@literal error}, {@literal opening}, {@literal messagePublished},
+         * {@literal re-connecting}, {@literal closedByClient},
+         * {@literal re-opening}, {@literal fail-to-reconnect},
+         * {@literal unsubscribe}, {@literal closed}
+         *
+         * @return the state reported by Atmosphere
+         */
         public final String getState() {
             return getStringValue("state");
         }
 
-        public final String getError() {
-            return getStringValue("error");
-        }
-
+        /**
+         * Gets the transport reported by Atmosphere.
+         *
+         * @return the transport
+         */
         public final String getTransport() {
             return getStringValue("transport");
         }
 
     }
 
+    /**
+     * Creates the default Atmosphere configuration object.
+     *
+     * @return the Atmosphere configuration object
+     */
     protected final native AtmosphereConfiguration createConfig()
     /*-{
         return {
