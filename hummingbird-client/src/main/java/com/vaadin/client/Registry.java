@@ -202,4 +202,14 @@ public class Registry {
     public SystemErrorHandler getSystemErrorHandler() {
         return get(SystemErrorHandler.class);
     }
+
+    /**
+     * Gets the {@link UILifecycle} singleton.
+     *
+     * @return the {@link UILifecycle} singleton
+     */
+    public UILifecycle getUILifecycle() {
+        return get(UILifecycle.class);
+    }
+
 }

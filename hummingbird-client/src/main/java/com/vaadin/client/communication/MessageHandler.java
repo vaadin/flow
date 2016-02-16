@@ -21,13 +21,13 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
-import com.vaadin.client.ApplicationConnection.ApplicationState;
 import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateTree;
@@ -167,15 +167,14 @@ public class MessageHandler {
                     + "Please verify that the server is up-to-date and that the response data has not been modified in transmission.");
         }
 
-        ApplicationState state = registry.getApplicationConnection()
-                .getApplicationState();
-        if (state == ApplicationState.INITIALIZING) {
+        UIState state = registry.getUILifecycle().getState();
+        if (state == UIState.INITIALIZING) {
             // Application is starting up for the first time
-            registry.getApplicationConnection().setApplicationRunning(true);
-            state = registry.getApplicationConnection().getApplicationState();
+            state = UIState.RUNNING;
+            registry.getUILifecycle().setState(state);
         }
 
-        if (state == ApplicationState.RUNNING) {
+        if (state == UIState.RUNNING) {
             handleJSON(json);
         } else {
             Console.warn(
@@ -333,8 +332,7 @@ public class MessageHandler {
                                 error.getString("details"),
                                 error.getString("url"));
 
-                        registry.getApplicationConnection()
-                                .setApplicationRunning(false);
+                        registry.getUILifecycle().setState(UIState.TERMINATED);
                     }
                     Profiler.leave("Error handling");
                 }
