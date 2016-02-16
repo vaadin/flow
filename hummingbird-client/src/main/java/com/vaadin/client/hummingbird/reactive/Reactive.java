@@ -102,8 +102,8 @@ public class Reactive {
      *
      * @param computation
      *            the computation to set as current
-     * @param task
-     *            the task to run while the computation is set as current
+     * @param command
+     *            the command to run while the computation is set as current
      */
     public static void runWithComputation(Computation computation,
             Command command) {

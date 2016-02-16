@@ -25,7 +25,6 @@ import com.google.gwt.http.client.URL;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
-import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.bootstrap.Bootstrapper;
@@ -300,6 +299,8 @@ public class ApplicationConnection {
      * Called by the bootstrapper, which ensures applications are started in
      * order.
      *
+     * @param initialUidl
+     *            the initial UIDL or null if the server did not provide any
      */
     public void start(String initialUidl) {
         if (initialUidl == null) {
