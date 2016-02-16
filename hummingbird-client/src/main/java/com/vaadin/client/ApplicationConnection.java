@@ -18,22 +18,17 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayString;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.shared.EventHandler;
-import com.google.gwt.http.client.URL;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
-import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
-import com.vaadin.client.ResourceLoader.ResourceLoadListener;
-import com.vaadin.client.bootstrap.Bootstrapper;
+import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.bootstrap.ErrorMessage;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
-import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
 
@@ -217,23 +212,6 @@ public class ApplicationConnection {
          */
         void onApplicationStopped(ApplicationStoppedEvent event);
     }
-
-    private final VaadinUriResolver uriResolver = new VaadinUriResolver() {
-        @Override
-        protected String getVaadinDirUrl() {
-            return getConfiguration().getVaadinDirUrl();
-        }
-
-        @Override
-        protected String getServiceUrl() {
-            return getConfiguration().getServiceUrl();
-        }
-
-        @Override
-        protected String encodeQueryStringParameterValue(String queryString) {
-            return URL.encodeQueryString(queryString);
-        }
-    };
 
     public static class MultiStepDuration extends Duration {
         private int previousStep = elapsedMillis();
@@ -430,101 +408,6 @@ public class ApplicationConnection {
         } else {
             return false;
         }
-    }
-
-    /**
-     * Loads the given stylsheets and ensures any callbacks registered using
-     * {@link Bootstrapper#runWhenDependenciesLoaded(Command)} are run when all
-     * dependencies have been loaded.
-     *
-     * @param dependencies
-     *            a list of dependency URLs to load, will be translated using
-     *            {@link #translateVaadinUri(String)} before they are loaded
-     */
-    public void loadStyleDependencies(JsArrayString dependencies) {
-        // Assuming no reason to interpret in a defined order
-        ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
-            @Override
-            public void onLoad(ResourceLoadEvent event) {
-                Bootstrapper.endDependencyLoading();
-            }
-
-            @Override
-            public void onError(ResourceLoadEvent event) {
-                Console.error(event.getResourceUrl()
-                        + " could not be loaded, or the load detection failed because the stylesheet is empty.");
-                // The show must go on
-                onLoad(event);
-            }
-        };
-        ResourceLoader loader = ResourceLoader.get();
-        for (int i = 0; i < dependencies.length(); i++) {
-            String url = translateVaadinUri(dependencies.get(i));
-            Bootstrapper.startDependencyLoading();
-            loader.loadStylesheet(url, resourceLoadListener);
-        }
-    }
-
-    /**
-     * Loads the given scripts and ensures any callbacks registered using
-     * {@link Bootstrapper#runWhenDependenciesLoaded(Command)} are run when all
-     * dependencies have been loaded.
-     *
-     * @param dependencies
-     *            a list of dependency URLs to load, will be translated using
-     *            {@link #translateVaadinUri(String)} before they are loaded
-     */
-    public void loadScriptDependencies(final JsArrayString dependencies) {
-        if (dependencies.length() == 0) {
-            return;
-        }
-
-        // Listener that loads the next when one is completed
-        ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
-            @Override
-            public void onLoad(ResourceLoadEvent event) {
-                if (dependencies.length() != 0) {
-                    String url = translateVaadinUri(dependencies.shift());
-                    Bootstrapper.startDependencyLoading();
-                    // Load next in chain (hopefully already preloaded)
-                    event.getResourceLoader().loadScript(url, this);
-                }
-                // Call start for next before calling end for current
-                Bootstrapper.endDependencyLoading();
-            }
-
-            @Override
-            public void onError(ResourceLoadEvent event) {
-                Console.error(event.getResourceUrl() + " could not be loaded.");
-                // The show must go on
-                onLoad(event);
-            }
-        };
-
-        ResourceLoader loader = ResourceLoader.get();
-
-        // Start chain by loading first
-        String url = translateVaadinUri(dependencies.shift());
-        Bootstrapper.startDependencyLoading();
-        loader.loadScript(url, resourceLoadListener);
-
-        for (int i = 0; i < dependencies.length(); i++) {
-            String preloadUrl = translateVaadinUri(dependencies.get(i));
-            loader.loadScript(preloadUrl, null);
-        }
-    }
-
-    /**
-     * Translates custom protocols in UIDL URI's to be recognizable by browser.
-     * All uri's from UIDL should be routed via this method before giving them
-     * to browser due URI's in UIDL may contain custom protocols like theme://.
-     *
-     * @param uidlUri
-     *            Vaadin URI from uidl
-     * @return translated URI ready for browser
-     */
-    public String translateVaadinUri(String uidlUri) {
-        return uriResolver.resolveVaadinUri(uidlUri);
     }
 
     /**

@@ -20,7 +20,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
-import com.vaadin.client.Command;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -43,10 +42,6 @@ import elemental.client.Browser;
 public class Bootstrapper implements EntryPoint {
 
     private static boolean moduleLoaded = false;
-
-    private static JsArray<Command> callbacks = JsCollections.array();
-
-    private static int dependenciesLoading;
 
     private static JsArray<ApplicationConnection> runningApplications = JsCollections
             .array();
@@ -239,51 +234,5 @@ public class Bootstrapper implements EntryPoint {
         var callbackHandler = $entry(@com.vaadin.client.bootstrap.Bootstrapper::startApplication(Ljava/lang/String;));
         $wnd.vaadin.registerWidgetset(widgetsetName, callbackHandler);
     }-*/;
-
-    /**
-     * Adds a command to be run when all dependencies have finished loading.
-     * <p>
-     * If no dependencies are currently being loaded, runs the command
-     * immediately.
-     *
-     * @see #startDependencyLoading()
-     * @see #endDependencyLoading()
-     * @param command
-     *            the command to run when dependencies have been loaded
-     */
-    public static void runWhenDependenciesLoaded(Command command) {
-        if (dependenciesLoading == 0) {
-            command.execute();
-        } else {
-            callbacks.push(command);
-        }
-    }
-
-    /**
-     * Marks that loading of a dependency has started.
-     *
-     * @see #runWhenDependenciesLoaded(Command)
-     * @see #endDependencyLoading()
-     */
-    public static void startDependencyLoading() {
-        dependenciesLoading++;
-    }
-
-    /**
-     * Marks that loading of a dependency has ended.
-     * <p>
-     * If all pending dependencies have been loaded, calls any callback
-     * registered using {@link #runWhenDependenciesLoaded(Command)}.
-     */
-    public static void endDependencyLoading() {
-        dependenciesLoading--;
-        if (dependenciesLoading == 0 && callbacks.length() != 0) {
-            for (int i = 0; i < callbacks.length(); i++) {
-                Command cmd = callbacks.get(i);
-                cmd.execute();
-            }
-            callbacks.clear();
-        }
-    }
 
 }
