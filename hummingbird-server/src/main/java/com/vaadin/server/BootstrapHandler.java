@@ -76,6 +76,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static String bootstrapJS;
 
+    private static Logger getLogger() {
+        return Logger.getLogger(BootstrapHandler.class.getName());
+    }
+
     static {
         try (InputStream stream = BootstrapHandler.class
                 .getResourceAsStream("BootstrapHandler.js");
@@ -121,10 +125,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             return bootstrapResponse.getUI();
         }
 
-        public Class<? extends UI> getUIClass() {
-            return bootstrapResponse.getUI().getClass();
-        }
-
         public PushMode getPushMode() {
             if (pushMode == null) {
 
@@ -150,7 +150,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         public String getAppId() {
             if (appId == null) {
                 appId = getRequest().getService().getMainDivId(getSession(),
-                        getRequest(), getUIClass());
+                        getRequest(), getUI().getClass());
             }
             return appId;
         }
@@ -316,7 +316,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 response.setDateHeader(header.getKey(),
                         ((Long) value).longValue());
             } else {
-                throw new UnsupportedOperationException(
+                throw new IllegalArgumentException(
                         "Unsupported header value: " + value);
             }
         }
@@ -352,7 +352,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement("meta").attr("http-equiv", "X-UA-Compatible")
                 .attr("content", "IE=11;chrome=1");
 
-        Class<? extends UI> uiClass = context.getUIClass();
+        Class<? extends UI> uiClass = context.getUI().getClass();
 
         String viewportContent = UIProvider.getViewportContent(uiClass,
                 context.getRequest());
@@ -429,9 +429,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
-    private static String getBootstrapJS(BootstrapContext context) {
-        String result = getBootstrapJS().replace("{{appId}}",
-                context.getAppId());
+    private static String getBootstrapJS(BootstrapContext context)
+            throws IOException {
+        String result = getBootstrapJS();
         JsonObject appConfig = context.getApplicationParameters();
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();
@@ -440,28 +440,23 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         if (isDebug) {
             indent = 4;
         }
-        JsonValue initialUIDL = Json.createNull();
-        try {
-            initialUIDL = getInitialUidl(context.getUI());
-        } catch (IOException e) {
-            Logger.getLogger(BootstrapHandler.class.getName()).log(Level.SEVERE,
-                    "Unable to create initial UIDL", e);
-        }
+        JsonValue initialUIDL = getInitialUidl(context.getUI());
+
         String appConfigString = JsonUtil.stringify(appConfig, indent);
         String initialUIDLString = JsonUtil.stringify(initialUIDL, indent);
         if (isDebug) {
             initialUIDLString = initialUIDLString.replace("\n", "\n       ");
             appConfigString = appConfigString.replace("\n", "\n       ");
 
+            // only used in debug mode by profiler
             result = result.replace("{{GWT_STAT_EVENTS}}", GWT_STAT_EVENTS_JS);
         } else {
             result = result.replace("{{GWT_STAT_EVENTS}}", "");
         }
+
+        result = result.replace("{{APP_ID}}", context.getAppId());
         result = result.replace("{{INITIAL_UIDL}}", initialUIDLString);
         result = result.replace("{{CONFIG_JSON}}", appConfigString);
-        if (isDebug) {
-            result = result.replace(";", ";\n").replace("{", "{\n");
-        }
         return result;
     }
 
@@ -566,18 +561,16 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     protected UI createAndInitUI(UIProvider provider,
             Class<? extends UI> uiClass, VaadinRequest request,
             VaadinSession session) {
-        // Check for an existing UI based on embed id
-        String embedId = getEmbedId(request);
         Integer uiId = Integer.valueOf(session.getNextUIid());
 
+        UICreateEvent event = new UICreateEvent(request, uiClass, uiId);
         // Explicit Class.cast to detect if the UIProvider does something
         // unexpected
-        UICreateEvent event = new UICreateEvent(request, uiClass, uiId);
         UI ui = uiClass.cast(provider.createInstance(event));
 
         // Initialize some fields for a newly created UI
         if (ui.getSession() != session) {
-            // Session already set
+            // set the session or let UI throw errors
             ui.setSession(session);
         }
 
@@ -596,7 +589,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
 
-        ui.doInit(request, uiId.intValue(), embedId);
+        ui.doInit(request, uiId.intValue(), null);
 
         session.addUI(ui);
 
@@ -604,32 +597,32 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Generates the initial UIDL message that can e.g. be included in a html
-     * page to avoid a separate round trip just for getting the UIDL.
+     * Generates the initial UIDL message which is included in the initial
+     * bootstrap page.
      *
      * @param ui
      *            the UI for which the UIDL should be generated
-     * @return a json object with the initial UIDL message
-     * @throws IOException
+     * @return a JSON object with the initial UIDL message
      */
-    protected static JsonObject getInitialUidl(UI ui) throws IOException {
+    protected static JsonObject getInitialUidl(UI ui) {
         JsonObject json = new UidlWriter().createUidl(ui, false);
 
         VaadinSession session = ui.getSession();
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
             writeSecurityKeyUIDL(json, session);
         }
-        Logger.getLogger(BootstrapHandler.class.getName())
-                .fine("Initial UIDL:" + json.asString());
+        if (getLogger().getLevel() == Level.FINE) {
+            getLogger().fine("Initial UIDL:" + json.asString());
+        }
         return json;
     }
 
     /**
-     * Writes the security key (and generates one if needed) as to the UIDL
-     * response JSON object given.
+     * Writes the security key (and generates one if needed) to the given JSON
+     * object.
      *
      * @param response
-     *            the response json object to write security key into
+     *            the response JSON object to write security key into
      * @param session
      *            the vaadin session to which the security key belongs
      */
@@ -637,27 +630,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinSession session) {
         String seckey = session.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
-    }
-
-    /**
-     * Constructs an embed id based on information in the request.
-     *
-     * @param request
-     *            the request to get embed information from
-     * @return the embed id, or <code>null</code> if id is not available.
-     *
-     * @see UI#getEmbedId()
-     */
-    protected String getEmbedId(VaadinRequest request) {
-        // Parameters sent by vaadinBootstrap.js
-        String windowName = request.getParameter("v-wn");
-        String appId = request.getParameter("v-appId");
-
-        if (windowName != null && appId != null) {
-            return windowName + '.' + appId;
-        } else {
-            return null;
-        }
     }
 
     private static void putValueOrNull(JsonObject object, String key,

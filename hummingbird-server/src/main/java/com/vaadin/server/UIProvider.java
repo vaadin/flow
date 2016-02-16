@@ -101,7 +101,7 @@ public abstract class UIProvider implements Serializable {
      *            the ui class whose viewport to get
      * @param request
      *            the request for the ui
-     * @return
+     * @return the content value string for viewport meta tag
      */
     public static String getViewportContent(Class<? extends UI> uiClass,
             VaadinRequest request) {
