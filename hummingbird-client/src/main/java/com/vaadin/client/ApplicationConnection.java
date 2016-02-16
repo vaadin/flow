@@ -433,8 +433,8 @@ public class ApplicationConnection {
 
     /**
      * Loads the given stylsheets and ensures any callbacks registered using
-     * {@link ApplicationConfiguration#runWhenDependenciesLoaded(Runnable)} are
-     * run when all dependencies have been loaded.
+     * {@link Bootstrapper#runWhenDependenciesLoaded(Command)} are run when all
+     * dependencies have been loaded.
      *
      * @param dependencies
      *            a list of dependency URLs to load, will be translated using
@@ -466,8 +466,8 @@ public class ApplicationConnection {
 
     /**
      * Loads the given scripts and ensures any callbacks registered using
-     * {@link ApplicationConfiguration#runWhenDependenciesLoaded(Runnable)} are
-     * run when all dependencies have been loaded.
+     * {@link Bootstrapper#runWhenDependenciesLoaded(Command)} are run when all
+     * dependencies have been loaded.
      *
      * @param dependencies
      *            a list of dependency URLs to load, will be translated using

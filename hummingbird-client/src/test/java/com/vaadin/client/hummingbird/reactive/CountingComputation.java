@@ -15,15 +15,17 @@
  */
 package com.vaadin.client.hummingbird.reactive;
 
+import com.vaadin.client.Command;
+
 public class CountingComputation extends Computation {
 
-    private Runnable reader;
+    private Command reader;
 
     public CountingComputation(ReactiveEventRouter<?, ?> eventRouter) {
         this(eventRouter::registerRead);
     }
 
-    public CountingComputation(Runnable reader) {
+    public CountingComputation(Command reader) {
         this.reader = reader;
     }
 
@@ -32,7 +34,7 @@ public class CountingComputation extends Computation {
     @Override
     protected void doRecompute() {
         count++;
-        reader.run();
+        reader.execute();
     }
 
     public int getCount() {

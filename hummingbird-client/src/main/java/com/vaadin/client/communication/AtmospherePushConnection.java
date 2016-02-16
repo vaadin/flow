@@ -18,9 +18,9 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedEvent;
 import com.vaadin.client.ApplicationConnection.ApplicationStoppedHandler;
+import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ResourceLoader;
@@ -121,7 +121,7 @@ public class AtmospherePushConnection implements PushConnection {
      * Keeps track of the disconnect confirmation command for cases where
      * pending messages should be pushed before actually disconnecting.
      */
-    private Runnable pendingDisconnectCommand;
+    private Command pendingDisconnectCommand;
 
     /**
      * The url to use for push requests
@@ -149,10 +149,7 @@ public class AtmospherePushConnection implements PushConnection {
                             return;
                         }
 
-                        disconnect(new Runnable() {
-                            @Override
-                            public void run() {
-                            }
+                        disconnect(() -> {
                         });
 
                     }
@@ -176,17 +173,8 @@ public class AtmospherePushConnection implements PushConnection {
             url = ApplicationConstants.APP_PROTOCOL_PREFIX
                     + ApplicationConstants.PUSH_PATH;
         }
-        runWhenAtmosphereLoaded(new Runnable() {
-            @Override
-            public void run() {
-                Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-                    @Override
-                    public void execute() {
-                        connect();
-                    }
-                });
-            }
-        });
+        runWhenAtmosphereLoaded(
+                () -> Scheduler.get().scheduleDeferred(() -> connect()));
     }
 
     private PushConfiguration getPushConfiguration() {
@@ -335,21 +323,21 @@ public class AtmospherePushConnection implements PushConnection {
      * @see com.vaadin.client.communication.PushConenction#disconnect()
      */
     @Override
-    public final void disconnect(Runnable runnable) {
-        assert runnable != null;
+    public final void disconnect(Command command) {
+        assert command != null;
 
         switch (state) {
         case CONNECT_PENDING:
             // Make the connection callback initiate the disconnection again
             state = State.DISCONNECT_PENDING;
-            pendingDisconnectCommand = runnable;
+            pendingDisconnectCommand = command;
             break;
         case CONNECTED:
             // Normal disconnect
             Console.log("Closing push connection");
             doDisconnect(uri);
             state = State.DISCONNECTED;
-            runnable.run();
+            command.execute();
             break;
         case DISCONNECT_PENDING:
         case DISCONNECTED:
@@ -562,9 +550,9 @@ public class AtmospherePushConnection implements PushConnection {
         return $wnd.jQueryVaadin != undefined;
     }-*/;
 
-    private void runWhenAtmosphereLoaded(final Runnable command) {
+    private void runWhenAtmosphereLoaded(final Command command) {
         if (isAtmosphereLoaded()) {
-            command.run();
+            command.execute();
         } else {
             final String pushJs = getVersionedPushJs();
 
@@ -577,7 +565,7 @@ public class AtmospherePushConnection implements PushConnection {
                 public void onLoad(ResourceLoadEvent event) {
                     if (isAtmosphereLoaded()) {
                         Console.log(pushJs + " loaded");
-                        command.run();
+                        command.execute();
                     } else {
                         // If bootstrap tried to load
                         // vaadinPush.js, ResourceLoader assumes it succeeded

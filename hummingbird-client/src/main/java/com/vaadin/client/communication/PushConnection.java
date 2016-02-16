@@ -16,6 +16,8 @@
 
 package com.vaadin.client.communication;
 
+import com.vaadin.client.Command;
+
 import elemental.json.JsonObject;
 
 /**
@@ -53,7 +55,7 @@ public interface PushConnection {
     /**
      * Checks whether this push connection is in a state where it can push
      * messages to the server. A connection is active until
-     * {@link #disconnect(Runnable)} has been called.
+     * {@link #disconnect(Command)} has been called.
      *
      * @return <code>true</code> if this connection can accept new messages;
      *         <code>false</code> if this connection is disconnected or
@@ -72,13 +74,13 @@ public interface PushConnection {
      * <code>false</code>. Calling this method for a connection that is no
      * longer active will throw an exception.
      *
-     * @param runnable
+     * @param command
      *            command to invoke when the connection has been properly
      *            disconnected
      * @throws IllegalStateException
      *             if this connection is not active
      */
-    public void disconnect(Runnable runnable);
+    public void disconnect(Command command);
 
     /**
      * Returns a human readable string representation of the transport type used
