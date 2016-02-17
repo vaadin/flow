@@ -23,6 +23,7 @@ import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
+import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
@@ -84,7 +85,6 @@ public class Namespaces {
      * Id for {@link ReconnectDialogConfigurationNamespace}.
      */
     public static final int LOADING_INDICATOR_CONFIGURATION = 10;
-
     /**
      * Id for {@link ClassListNamespace}.
      */
@@ -93,6 +93,10 @@ public class Namespaces {
      * Id for {@link DependencyListNamespace}.
      */
     public static final Integer DEPENDENCY_LIST = 12;
+    /**
+     * Id for {@link ElementStylePropertyNamespace}.
+     */
+    public static final int ELEMENT_STYLE_PROPERTIES = 13;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.
