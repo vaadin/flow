@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird.collection;
 
+import java.util.logging.Logger;
+
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.BasicElementBinder;
@@ -111,11 +113,13 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         titleProperty.setValue("bar");
         idAttribute.setValue("bar");
+        attributes.getProperty("lang").setValue("newValue");
 
         Reactive.flush();
 
         assertEquals("", element.getTitle());
         assertEquals("", element.getId());
+        assertEquals("", element.getLang());
     }
 
     public void testUnbindAfterFlush() {
@@ -130,11 +134,13 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         titleProperty.setValue("bar");
         idAttribute.setValue("bar");
+        attributes.getProperty("lang").setValue("newValue");
 
         Reactive.flush();
 
         assertEquals("foo", element.getTitle());
         assertEquals("foo", element.getId());
+        assertEquals("", element.getLang());
     }
 
     public void testRemoveArbitraryProperty() {
@@ -214,7 +220,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertEquals("", element.getId());
     }
 
-    public void restRemoveAttribute() {
+    public void testRemoveAttribute() {
         BasicElementBinder.bind(node, element);
 
         idAttribute.setValue("foo");
@@ -225,7 +231,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         Reactive.flush();
 
-        assertEquals(null, element.getId());
+        assertEquals("", element.getId());
     }
 
     private StateNode createChildNode(String id) {
@@ -448,5 +454,62 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         node.getListNamespace(Namespaces.CLASS_LIST).add(0, "bar");
 
         assertEquals("foo", element.getClassName());
+    }
+
+    public void testAddStylesBeforeBind() {
+        Logger.getLogger("Foo").severe("testAddStylesBeforeBind");
+
+        node.getMapNamespace(Namespaces.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("color").setValue("green");
+
+        BasicElementBinder.bind(node, element);
+
+        Reactive.flush();
+        assertEquals("green", element.getStyle().getColor());
+    }
+
+    public void testAddStylesAfterBind() {
+        BasicElementBinder.bind(node, element);
+        node.getMapNamespace(Namespaces.ELEMENT_STYLE_PROPERTIES)
+                .getProperty("color").setValue("green");
+
+        Reactive.flush();
+        assertEquals("green", element.getStyle().getColor());
+    }
+
+    public void testRemoveStyles() {
+        BasicElementBinder.bind(node, element);
+
+        MapNamespace styleMap = node
+                .getMapNamespace(Namespaces.ELEMENT_STYLE_PROPERTIES);
+        styleMap.getProperty("background").setValue("blue");
+        styleMap.getProperty("color").setValue("white");
+
+        Reactive.flush();
+        assertEquals("background: blue; color: white;",
+                element.getAttribute("style"));
+
+        styleMap.getProperty("color").removeValue();
+
+        Reactive.flush();
+        assertEquals("background: blue;", element.getAttribute("style"));
+    }
+
+    public void testAddStylesAfterUnbind() {
+        BasicElementBinder binder = BasicElementBinder.bind(node, element);
+
+        MapNamespace styleMap = node
+                .getMapNamespace(Namespaces.ELEMENT_STYLE_PROPERTIES);
+
+        styleMap.getProperty("color").setValue("red");
+        Reactive.flush();
+
+        binder.remove();
+
+        styleMap.getProperty("color").setValue("blue");
+        styleMap.getProperty("font-size").setValue("12px");
+
+        Reactive.flush();
+        assertEquals("color: red;", element.getAttribute("style"));
     }
 }

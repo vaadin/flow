@@ -68,6 +68,8 @@ public class NamespaceRegistry {
         registerNamespace(LoadingIndicatorConfigurationNamespace.class,
                 LoadingIndicatorConfigurationNamespace::new);
         registerNamespace(ClassListNamespace.class, ClassListNamespace::new);
+        registerNamespace(ElementStylePropertyNamespace.class,
+                ElementStylePropertyNamespace::new);
     }
 
     private NamespaceRegistry() {
