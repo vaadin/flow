@@ -720,7 +720,6 @@ public abstract class VaadinService implements Serializable {
         session.setLocale(locale);
         session.setConfiguration(getDeploymentConfiguration());
 
-        ServletHelper.initDefaultUIProvider(session, this);
         onVaadinSessionStarted(request, session);
 
         return session;
@@ -748,8 +747,6 @@ public abstract class VaadinService implements Serializable {
 
         eventRouter.fireEvent(new SessionInitEvent(this, session, request),
                 session.getErrorHandler());
-
-        ServletHelper.checkUiProviders(session);
     }
 
     private void closeSession(VaadinSession vaadinSession,
