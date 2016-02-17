@@ -29,6 +29,7 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration;
 import elemental.dom.DOMTokenList;
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -48,6 +49,8 @@ public class BasicElementBinder {
     }
 
     private final JsMap<String, Computation> propertyBindings = JsCollections
+            .map();
+    private final JsMap<String, Computation> stylePropertyBindings = JsCollections
             .map();
     private final JsMap<String, Computation> attributeBindings = JsCollections
             .map();
@@ -76,6 +79,8 @@ public class BasicElementBinder {
 
         bindMap(Namespaces.ELEMENT_PROPERTIES, propertyBindings,
                 this::updateProperty);
+        bindMap(Namespaces.ELEMENT_STYLE_PROPERTIES, stylePropertyBindings,
+                this::updateStyleProperty);
 
         bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
                 this::updateAttribute);
@@ -200,6 +205,18 @@ public class BasicElementBinder {
             // Can't delete inherited property, so instead just clear
             // the value
             WidgetUtil.setJsProperty(element, name, null);
+        }
+    }
+
+    private void updateStyleProperty(MapProperty mapProperty) {
+        String name = mapProperty.getName();
+        CSSStyleDeclaration styleElement = element.getStyle();
+        if (mapProperty.hasValue()) {
+            WidgetUtil.setJsProperty(styleElement, name,
+                    mapProperty.getValue());
+        } else {
+            // Can't delete a style property, so just clear the value
+            WidgetUtil.setJsProperty(styleElement, name, null);
         }
     }
 

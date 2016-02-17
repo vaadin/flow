@@ -130,7 +130,54 @@ public class Element implements Serializable {
         }
     }
 
-    private static final String PROPERTY_NAME_CANNOT_BE_NULL = "Property name cannot be null";
+    /**
+     * Emulates the <code>style</code> attribute by delegating to
+     * {@link Element#getStyle()}.
+     */
+    private static class StyleAttributeHandler implements CustomAttribute {
+        @Override
+        public boolean hasAttribute(Element element) {
+            return !element.getStyle().getNames().isEmpty();
+        }
+
+        @Override
+        public String getAttribute(Element element) {
+            Set<String> styleNames = element.getStyle().getNames();
+            if (styleNames.isEmpty()) {
+                return null;
+            } else {
+                return styleNames.stream()
+                        .map(styleName -> styleName + ":"
+                                + element.getStyle().get(styleName))
+                        .collect(Collectors.joining(";"));
+            }
+        }
+
+        @Override
+        public void setAttribute(Element element, String attributeValue) {
+            element.getStyle().clear();
+
+            String[] styles = attributeValue.split(";");
+            for (String style : styles) {
+                String[] parts = style.split(":");
+                if (parts.length != 2) {
+                    throw new IllegalArgumentException("Style '" + style
+                            + "' is not a valid style definition");
+                }
+
+                String name = parts[0].trim();
+                String value = parts[1].trim();
+                element.getStyle().set(name, value);
+            }
+        }
+
+        @Override
+        public void removeAttribute(Element element) {
+            element.getStyle().clear();
+        }
+    }
+
+    public static final String PROPERTY_NAME_CANNOT_BE_NULL = "Property name cannot be null";
 
     private static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
 
@@ -138,10 +185,13 @@ public class Element implements Serializable {
 
     private static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
 
+    public static final String STYLE_PROPERTY_CANNOT_CONTAIN_SEMICOLON = "A style property cannot contain semicolons";
+
     private static final Map<String, CustomAttribute> customAttributes = new HashMap<>();
 
     static {
         customAttributes.put("class", new ClassAttributeHandler());
+        customAttributes.put("style", new StyleAttributeHandler());
     }
 
     // Can't set $name as a property, use $replacement instead.
@@ -1072,5 +1122,14 @@ public class Element implements Serializable {
      */
     public Set<String> getClassList() {
         return stateProvider.getClassList(node);
+    }
+
+    /**
+     * Gets the style instance for managing element inline styles.
+     *
+     * @return the style object for the element
+     */
+    public Style getStyle() {
+        return stateProvider.getStyle(node);
     }
 }

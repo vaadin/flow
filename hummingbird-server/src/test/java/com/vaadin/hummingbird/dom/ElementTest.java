@@ -1083,4 +1083,130 @@ public class ElementTest {
         new Element("div").setProperty("className", "foo");
     }
 
+    public void setStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        Assert.assertEquals("bar", s.get("foo"));
+    }
+
+    @Test
+    public void getUnsetStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        Assert.assertNull(s.get("foo"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getNullStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.get(null);
+    }
+
+    @Test
+    public void replaceStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        s.set("foo", "baz");
+        Assert.assertEquals("baz", s.get("foo"));
+    }
+
+    @Test
+    public void removeStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        s.remove("foo");
+        Assert.assertEquals(null, s.get("foo"));
+    }
+
+    @Test
+    public void emptyStyleAsAttribute() {
+        Element e = new Element("div");
+        Assert.assertFalse(e.hasAttribute("style"));
+        Assert.assertNull(e.getAttribute("style"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void semicolonInStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1 px solid black;");
+    }
+
+    @Test
+    public void singleStyleAsAttribute() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1px solid black");
+        Assert.assertTrue(e.hasAttribute("style"));
+        Assert.assertEquals("border:1px solid black", e.getAttribute("style"));
+    }
+
+    @Test
+    public void multipleStylesAsAttribute() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1px solid black");
+        s.set("margin", "1em");
+        Assert.assertTrue(e.hasAttribute("style"));
+        Assert.assertEquals("border:1px solid black;margin:1em",
+                e.getAttribute("style"));
+    }
+
+    @Test
+    public void testSetStyleAttribute() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+
+        // Get instance right away to see that changes are live
+        Set<String> styleNames = s.getNames();
+
+        e.setAttribute("style", "foo:12; bar:abc");
+
+        Assert.assertEquals(2, styleNames.size());
+        Assert.assertTrue(styleNames.contains("foo"));
+        Assert.assertTrue(styleNames.contains("bar"));
+        Assert.assertEquals("12", s.get("foo"));
+        Assert.assertEquals("abc", s.get("bar"));
+
+        Assert.assertNull("style should not be stored as a regular attribute",
+                e.getNode().getNamespace(ElementAttributeNamespace.class)
+                        .get("style"));
+    }
+
+    @Test
+    public void testRemoveStyle() {
+        Element element = new Element("div");
+
+        element.setAttribute("style", "zIndex:12;background:blue;");
+
+        element.getStyle().remove("background");
+
+        Assert.assertEquals("zIndex:12", element.getAttribute("style"));
+
+        element.getStyle().remove("zIndex");
+
+        Assert.assertNull(element.getAttribute("style"));
+        Assert.assertFalse(element.hasAttribute("style"));
+
+        Assert.assertEquals(Collections.emptySet(),
+                element.getStyle().getNames());
+    }
+
+    @Test
+    public void testRemoveStyleAttribute() {
+        Element element = new Element("div");
+
+        Style style = element.getStyle();
+
+        style.set("border", "1px solid green");
+
+        element.removeAttribute("style");
+
+        Assert.assertEquals(Collections.emptySet(), style.getNames());
+    }
+
 }

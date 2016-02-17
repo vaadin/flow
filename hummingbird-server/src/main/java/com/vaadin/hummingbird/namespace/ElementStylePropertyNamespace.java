@@ -16,49 +16,35 @@
 
 package com.vaadin.hummingbird.namespace;
 
-import java.io.Serializable;
-
 import com.vaadin.hummingbird.StateNode;
-
-import elemental.json.JsonValue;
+import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.dom.impl.BasicElementStyle;
 
 /**
- * Namespace for element property values.
+ * Namespace for element style values.
  *
  * @since
  * @author Vaadin Ltd
  */
-public class ElementPropertyNamespace extends AbstractPropertyNamespace {
+public class ElementStylePropertyNamespace extends AbstractPropertyNamespace {
 
     /**
-     * Creates a new element property namespace for the given node.
+     * Creates a new element style namespace for the given node.
      *
      * @param node
      *            the node that the namespace belongs to
      */
-    public ElementPropertyNamespace(StateNode node) {
+    public ElementStylePropertyNamespace(StateNode node) {
         super(node);
     }
 
-    @Override
-    public void setProperty(String name, Serializable value) {
-        assert !"textContent".equals(name);
-        assert !"classList".equals(name);
-        assert !"className".equals(name);
-
-        super.setProperty(name, value);
-    }
-
     /**
-     * Sets a property to the given JSON value.
+     * Returns a style instance for managing element inline styles.
      *
-     * @param name
-     *            the property name
-     * @param value
-     *            the JSON value
+     * @return a Style instance connected to this namespace
      */
-    public void setJsonProperty(String name, JsonValue value) {
-        putJson(name, value);
+    public Style getStyle() {
+        return new BasicElementStyle(this);
     }
 
 }
