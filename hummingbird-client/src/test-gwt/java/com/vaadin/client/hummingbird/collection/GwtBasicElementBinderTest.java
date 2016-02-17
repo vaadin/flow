@@ -355,6 +355,8 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
                 .setValue(Double.valueOf(1));
         Reactive.flush();
 
+        Browser.getDocument().getBody().appendChild(element);
+
         element.click();
 
         assertEquals(1, tree.collectedEvents.size());

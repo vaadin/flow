@@ -23,6 +23,12 @@ public abstract class ClientEngineTestBase extends GWTTestCase {
 
     private static native void installCollectionsPolyfill()
     /*-{
+        // Remove broken HtmlUnit versions (polyfill checks window, but installs to $wnd)
+        delete window.Set;
+        delete window.Map;
+        delete window.WeakSet;
+        delete window.WeakMap;
+    
         // es6-collections 0.5.5 (with 'window' replaced to '$wnd' at the end)
 
         (function(e){function f(a,c){function b(a){if(!this||this.constructor!==b)return new b(a);this._keys=[];this._values=[];this._itp=[];this.objectOnly=c;a&&v.call(this,a)}c||w(a,"size",{get:x});a.constructor=b;b.prototype=a;return b}function v(a){this.add?a.forEach(this.add,this):a.forEach(function(a){this.set(a[0],a[1])},this)}function d(a){this.has(a)&&(this._keys.splice(b,1),this._values.splice(b,1),this._itp.forEach(function(a){b<a[0]&&a[0]--}));return-1<b}function m(a){return this.has(a)?this._values[b]:
