@@ -59,4 +59,5 @@ public abstract class AbstractNamespaceTest<T extends Namespace> {
 
         return changes;
     }
+
 }
