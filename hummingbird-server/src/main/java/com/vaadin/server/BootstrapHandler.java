@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +44,9 @@ import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
 import com.google.gwt.thirdparty.guava.common.net.UrlEscapers;
+import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.Viewport;
+import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -228,29 +232,14 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         try {
-            List<UIProvider> uiProviders = session.getUIProviders();
+            // Find UI class
+            Class<? extends UI> uiClass = getUIClass(request);
 
-            UIClassSelectionEvent classSelectionEvent = new UIClassSelectionEvent(
-                    request);
-
-            // Find UI provider and UI class
-            Class<? extends UI> uiClass = null;
-            UIProvider provider = null;
-            for (UIProvider p : uiProviders) {
-                uiClass = p.getUIClass(classSelectionEvent);
-                // If we found something
-                if (uiClass != null) {
-                    provider = p;
-                    break;
-                }
+            if (uiClass == null) {
+                throw new IllegalStateException(
+                        "Cannot find UI class for the initial bootstrap request");
             }
-
-            if (provider == null) {
-                // Can't generate bootstrap if no UI provider matches
-                return false;
-            }
-
-            UI ui = createAndInitUI(provider, uiClass, request, session);
+            UI ui = createAndInitUI(uiClass, request, session);
 
             BootstrapContext context = new BootstrapContext(response,
                     new BootstrapFragmentResponse(request, session, ui,
@@ -354,18 +343,16 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         Class<? extends UI> uiClass = context.getUI().getClass();
 
-        String viewportContent = UIProvider.getViewportContent(uiClass,
+        String viewportContent = getViewportContent(uiClass,
                 context.getRequest());
         if (viewportContent != null) {
             head.appendElement("meta").attr("name", "viewport").attr("content",
                     viewportContent);
         }
-
-        String title = UIProvider.getPageTitle(uiClass);
+        String title = AnnotationReader.getPageTitle(uiClass);
         if (title != null) {
             head.appendElement("title").appendText(title);
         }
-
         head.appendElement("style").attr("type", "text/css")
                 .appendText("html, body {height:100%;margin:0;}");
 
@@ -554,27 +541,23 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 e.getLocalizedMessage());
     }
 
-    protected UI createAndInitUI(UIProvider provider,
-            Class<? extends UI> uiClass, VaadinRequest request,
-            VaadinSession session) {
+    protected UI createAndInitUI(Class<? extends UI> uiClass,
+            VaadinRequest request, VaadinSession session) {
         Integer uiId = Integer.valueOf(session.getNextUIid());
 
-        UICreateEvent event = new UICreateEvent(request, uiClass, uiId);
-        // Explicit Class.cast to detect if the UIProvider does something
-        // unexpected
-        UI ui = uiClass.cast(provider.createInstance(event));
+        UI ui = createInstance(uiClass);
 
         // Initialize some fields for a newly created UI
         ui.setSession(session);
 
-        PushMode pushMode = provider.getPushMode(event);
+        PushMode pushMode = AnnotationReader.getPushMode(uiClass);
         if (pushMode == null) {
             pushMode = session.getService().getDeploymentConfiguration()
                     .getPushMode();
         }
         ui.getPushConfiguration().setPushMode(pushMode);
 
-        Transport transport = provider.getPushTransport(event);
+        Transport transport = AnnotationReader.getPushTransport(uiClass);
         if (transport != null) {
             ui.getPushConfiguration().setTransport(transport);
         }
@@ -642,5 +625,92 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     "BootstrapHandler.js has not been loaded during initilization");
         }
         return bootstrapJS;
+    }
+
+    private static UI createInstance(Class<? extends UI> uiClass) {
+        try {
+            return uiClass.newInstance();
+        } catch (InstantiationException e) {
+            throw new IllegalStateException(
+                    "Bootstrap failed: Could not create an instance of the UI class "
+                            + uiClass.getName(),
+                    e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(
+                    "Bootstrap failed: No public no-args constructor available for the UI "
+                            + uiClass.getName(),
+                    e);
+        }
+    }
+
+    private static Class<? extends UI> getUIClass(VaadinRequest request) {
+        String uiClassName = request.getService().getDeploymentConfiguration()
+                .getUIClassName();
+        if (uiClassName != null) {
+            ClassLoader classLoader = request.getService().getClassLoader();
+            try {
+                return Class.forName(uiClassName, true, classLoader)
+                        .asSubclass(UI.class);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException(
+                        "Bootstrap failed: Vaadin Servlet mapped to the request path "
+                                + request.getPathInfo()
+                                + " cannot find the mapped UI class with name "
+                                + uiClassName,
+                        e);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the specified viewport content for the given UI class, specified
+     * with {@link Viewport} or {@link ViewportGeneratorClass} annotations.
+     *
+     * @param uiClass
+     *            the ui class whose viewport to get
+     * @param request
+     *            the request for the ui
+     * @return the content value string for viewport meta tag
+     */
+    private static String getViewportContent(Class<? extends UI> uiClass,
+            VaadinRequest request) {
+        String viewportContent = null;
+        Optional<Viewport> viewportAnnotation = AnnotationReader
+                .getAnnotationFor(uiClass, Viewport.class);
+        Optional<ViewportGeneratorClass> viewportGeneratorClassAnnotation = AnnotationReader
+                .getAnnotationFor(uiClass, ViewportGeneratorClass.class);
+        if (viewportAnnotation.isPresent() && viewportAnnotation.isPresent()) {
+            throw new IllegalStateException(
+                    "Bootstrap failed: " + uiClass.getCanonicalName()
+                            + " cannot be annotated with both @"
+                            + Viewport.class.getSimpleName() + " and @"
+                            + ViewportGeneratorClass.class.getSimpleName());
+        }
+
+        if (viewportAnnotation.isPresent()) {
+            viewportContent = viewportAnnotation.get().value();
+        } else if (viewportGeneratorClassAnnotation.isPresent()) {
+            Class<? extends ViewportGenerator> viewportGeneratorClass = viewportGeneratorClassAnnotation
+                    .get().value();
+            try {
+                viewportContent = viewportGeneratorClass.newInstance()
+                        .getViewport(request);
+            } catch (InstantiationException e) {
+                throw new IllegalStateException(
+                        "Bootstrap failed: Could not create an instance of viewport generator class "
+                                + viewportGeneratorClass.getName() + " for UI "
+                                + uiClass.getName(),
+                        e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException(
+                        "Bootstrap failed: No public no-args constructor available for viewport generator class "
+                                + viewportGeneratorClass.getName()
+                                + " was available for UI " + uiClass.getName(),
+                        e);
+            }
+        }
+        return viewportContent;
     }
 }

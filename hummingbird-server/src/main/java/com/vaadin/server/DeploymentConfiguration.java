@@ -142,15 +142,6 @@ public interface DeploymentConfiguration extends Serializable {
     public String getUIClassName();
 
     /**
-     * Gets UI provider class configuration option value.
-     *
-     * @since 7.4
-     *
-     * @return UI class name
-     */
-    public String getUIProviderClassName();
-
-    /**
      * Gets resources path configuration option value.
      *
      * @since 7.4
