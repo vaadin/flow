@@ -112,7 +112,6 @@ public interface Constants {
     static final String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = "heartbeatInterval";
     static final String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
     static final String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
-    static final String SERVLET_PARAMETER_UI_PROVIDER = "UIProvider";
     static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     static final String SERVLET_PARAMETER_SENDURLSASPARAMETERS = "sendUrlsAsParameters";
     static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
