@@ -17,6 +17,7 @@
 package com.vaadin.client;
 
 import com.google.gwt.user.client.Timer;
+import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
@@ -38,9 +39,9 @@ public class LoadingIndicator {
 
     private static final String PRIMARY_STYLE_NAME = "v-loading-indicator";
 
-    private int firstDelay = 300;
-    private int secondDelay = 1500;
-    private int thirdDelay = 5000;
+    private int firstDelay = LoadingIndicatorConfigurationNamespace.FIRST_DELAY_DEFAULT;
+    private int secondDelay = LoadingIndicatorConfigurationNamespace.SECOND_DELAY_DEFAULT;
+    private int thirdDelay = LoadingIndicatorConfigurationNamespace.THIRD_DELAY_DEFAULT;
 
     private Timer firstTimer = new Timer() {
         @Override

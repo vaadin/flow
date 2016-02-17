@@ -78,6 +78,10 @@ public class Namespaces {
      * Id for {@link ReconnectDialogConfigurationNamespace}.
      */
     public static final int RECONNECT_DIALOG_CONFIGURATION = 9;
+    /**
+     * Id for {@link ReconnectDialogConfigurationNamespace}.
+     */
+    public static final int LOADING_INDICATOR_CONFIGURATION = 10;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.
