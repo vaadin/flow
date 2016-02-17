@@ -34,6 +34,7 @@ import jsinterop.annotations.JsType;
  *            the type of the array items
  */
 @JsType(isNative = true, name = "Array", namespace = JsPackage.GLOBAL)
+@SuppressWarnings("deprecation")
 public class JsArray<T> {
     /*
      * Don't look at this class as an example of how to integrate a JS API with
@@ -84,13 +85,30 @@ public class JsArray<T> {
     }
 
     /**
-     * Adds an item to the end of this array.
+     * Adds items to the end of this array.
      *
-     * @param value
-     *            the new value to add
+     * @param values
+     *            the new values to add
      * @return the new length of the array
      */
-    public native int push(T value);
+    public native int push(@SuppressWarnings("unchecked") T... values);
+
+    /**
+     * Adds items to the end of this array.
+     *
+     * @param values
+     *            the new values to add
+     * @return the new length of the array
+     */
+    @JsOverlay
+    public final int pushArray(JsArray<? extends T> values) {
+        if (GWT.isScript()) {
+            return JsniHelper.pushArray(this, values);
+        } else {
+            spliceArray(length(), 0, values);
+            return length();
+        }
+    }
 
     /**
      * Gets the current length of this array.
@@ -111,26 +129,29 @@ public class JsArray<T> {
      *            new items to add
      * @return an array of removed items
      */
-    @SafeVarargs
     @JsOverlay
-    public final JsArray<T> splice(int index, int remove, T... add) {
+    public final JsArray<T> spliceArray(int index, int remove,
+            JsArray<? extends T> add) {
         if (GWT.isScript()) {
-            return JsniHelper.splice(this, index, remove, add);
+            return JsniHelper.spliceArray(this, index, remove, add);
         } else {
-            return ((JreJsArray<T>) this).doSplice(index, remove, add);
+            return ((JreJsArray<T>) this).doSliceArray(index, remove, add);
         }
     }
 
     /**
-     * Removes a number of items at the given index.
+     * Removes and adds a number of items at the given index.
      *
      * @param index
      *            the index at which do do the operation
      * @param remove
      *            the number of items to remove
+     * @param add
+     *            new items to add
      * @return an array of removed items
      */
-    public native JsArray<T> splice(int index, int remove);
+    public native JsArray<T> splice(int index, int remove,
+            @SuppressWarnings("unchecked") T... add);
 
     /**
      * Removes the item at the given index.
@@ -140,6 +161,7 @@ public class JsArray<T> {
      * @return the remove item
      */
     @JsOverlay
+    @SuppressWarnings("unchecked")
     public final T remove(int index) {
         return splice(index, 1).get(0);
     }
@@ -170,24 +192,6 @@ public class JsArray<T> {
     }
 
     /**
-     * Add all items in the source array to the end of this array.
-     *
-     * @param source
-     *            the source array to read from
-     */
-    @JsOverlay
-    public final void addAll(JsArray<T> source) {
-        if (this == source) {
-            throw new IllegalArgumentException(
-                    "Target and source cannot be the same array");
-        }
-
-        for (int i = 0; i < source.length(); i++) {
-            push(source.get(i));
-        }
-    }
-
-    /**
      * Removes the given item from the array.
      *
      * @param toRemove
@@ -214,13 +218,16 @@ class JsniHelper {
         // Only static stuff here, should never be instantiated
     }
 
-    static native <T> JsArray<T> splice(JsArray<T> array, int index, int remove,
-            T[] add)
+    static native <T> int pushArray(JsArray<T> array,
+            JsArray<? extends T> values)
             /*-{
-                var args = [index, remove];
-                args.push.apply(args, add);
+                return array.push.apply(array, values);
+            }-*/;
 
-                return array.splice.apply(array, args);
+    static native <T> JsArray<T> spliceArray(JsArray<T> array, int index,
+            int remove, JsArray<? extends T> add)
+            /*-{
+                return array.splice.apply(array, [index, remove].concat(add));
             }-*/;
 
     static native void clear(JsArray<?> array)
