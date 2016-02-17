@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.util.Set;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -26,6 +27,7 @@ public class BasicElementUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
         Element bodyElement = getElement();
+        bodyElement.getStyle().set("margin", "1em");
 
         Element button = new Element("input");
         button.setAttribute("type", "button");
@@ -41,19 +43,22 @@ public class BasicElementUI extends UI {
             bodyElement.appendChild(greeting);
         });
 
-        Element span = new Element("div");
+        Element helloWorldElement = new Element("div");
 
-        Set<String> spanClasses = span.getClassList();
+        Set<String> spanClasses = helloWorldElement.getClassList();
 
-        span.setProperty("id", "hello-world");
-        span.setTextContent("Hello world");
+        helloWorldElement.setProperty("id", "hello-world");
+        helloWorldElement.setTextContent("Hello world");
         spanClasses.add("hello");
-        span.addEventListener("click", () -> {
-            span.setTextContent("Stop touching me!");
+        helloWorldElement.addEventListener("click", () -> {
+            helloWorldElement.setTextContent("Stop touching me!");
             spanClasses.clear();
         });
+        Style s = helloWorldElement.getStyle();
+        s.set("color", "red");
+        s.set("fontWeight", "bold");
 
-        bodyElement.appendChild(span, button);
+        bodyElement.appendChild(helloWorldElement, button);
     }
 
 }

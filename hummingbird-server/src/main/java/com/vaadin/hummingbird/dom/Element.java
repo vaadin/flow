@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.StateNode;
@@ -130,18 +129,52 @@ public class Element implements Serializable {
         }
     }
 
-    private static final String PROPERTY_NAME_CANNOT_BE_NULL = "Property name cannot be null";
+    /**
+     * Emulates the <code>style</code> attribute by delegating to
+     * {@link Element#getStyle()}.
+     */
+    private static class StyleAttributeHandler implements CustomAttribute {
+        @Override
+        public boolean hasAttribute(Element element) {
+            return !element.getStyle().getNames().isEmpty();
+        }
 
-    private static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
+        @Override
+        public String getAttribute(Element element) {
+            Style style = element.getStyle();
+            Set<String> styleNames = style.getNames();
+            if (styleNames.isEmpty()) {
+                return null;
+            } else {
+                return styleNames.stream().map(styleName -> {
+                    return styleName + ":" + style.get(styleName);
+                }).collect(Collectors.joining(";"));
+            }
+        }
 
-    private static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
+        @Override
+        public void setAttribute(Element element, String attributeValue) {
+            throw new UnsupportedOperationException(
+                    "Styles must be set using Element.getStyles()");
+        }
 
-    private static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
+        @Override
+        public void removeAttribute(Element element) {
+            element.getStyle().clear();
+        }
+    }
+
+    static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
+
+    static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
+
+    static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
 
     private static final Map<String, CustomAttribute> customAttributes = new HashMap<>();
 
     static {
         customAttributes.put("class", new ClassAttributeHandler());
+        customAttributes.put("style", new StyleAttributeHandler());
     }
 
     // Can't set $name as a property, use $replacement instead.
@@ -156,13 +189,6 @@ public class Element implements Serializable {
 
     private ElementStateProvider stateProvider;
     private StateNode node;
-
-    /**
-     * Pattern for maching valid tag names, according to
-     * https://www.w3.org/TR/html-markup/syntax.html#tag-name "HTML elements all
-     * have names that only use characters in the range 0–9, a–z, and A–Z."
-     */
-    private static Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
 
     /**
      * Private constructor for initializing with an existing node and state
@@ -240,7 +266,7 @@ public class Element implements Serializable {
      *            the tag name of the element.
      */
     private static StateNode createStateNode(String tag) {
-        if (!isValidTagName(tag)) {
+        if (!ElementUtil.isValidTagName(tag)) {
             throw new IllegalArgumentException(
                     "Tag " + tag + " is not a valid tag name");
         }
@@ -288,7 +314,7 @@ public class Element implements Serializable {
         }
 
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!isValidAttributeName(lowerCaseAttribute)) {
+        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
             throw new IllegalArgumentException(String.format(
                     "Attribute \"%s\" is not a valid attribute name",
                     lowerCaseAttribute));
@@ -445,46 +471,6 @@ public class Element implements Serializable {
         }
 
         return stateProvider.addEventListener(node, eventType, listener);
-    }
-
-    /**
-     * Checks if the given tag name is valid.
-     *
-     * @param tag
-     *            the tag name
-     * @return true if the string is valid as a tag name, false otherwise
-     */
-    public static boolean isValidTagName(String tag) {
-        return tag != null && tagNamePattern.matcher(tag).matches();
-    }
-
-    /**
-     * Checks if the given attribute name is valid.
-     *
-     * @param attribute
-     *            the name of the attribute in lower case
-     * @return true if the name is valid, false otherwise
-     */
-    public static boolean isValidAttributeName(String attribute) {
-        if (attribute == null || attribute.isEmpty()) {
-            return false;
-        }
-        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
-
-        // https://html.spec.whatwg.org/multipage/syntax.html#attributes-2
-        // Attribute names must consist of one or more characters other than the
-        // space characters, U+0000 NULL, U+0022 QUOTATION MARK ("), U+0027
-        // APOSTROPHE ('), U+003E GREATER-THAN SIGN (>), U+002F SOLIDUS (/), and
-        // U+003D EQUALS SIGN (=) characters, the control characters, and any
-        // characters that are not defined by Unicode.
-        char[] illegalCharacters = new char[] { 0, ' ', '"', '\'', '>', '/',
-                '=' };
-        for (char c : illegalCharacters) {
-            if (attribute.indexOf(c) != -1) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -761,7 +747,8 @@ public class Element implements Serializable {
 
     private static void verifySetPropertyName(String name) {
         if (name == null) {
-            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(
+                    "A property name cannot be null");
         }
 
         String replacement = illegalPropertyReplacements.get(name);
@@ -934,10 +921,6 @@ public class Element implements Serializable {
      * @return the raw property value, or <code>null</code>
      */
     public Object getPropertyRaw(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
-        }
-
         return stateProvider.getProperty(node, name);
     }
 
@@ -949,10 +932,6 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element removeProperty(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
-        }
-
         stateProvider.removeProperty(node, name);
         return this;
     }
@@ -966,10 +945,6 @@ public class Element implements Serializable {
      *         <code>false</code>
      */
     public boolean hasProperty(String name) {
-        if (name == null) {
-            throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
-        }
-
         return stateProvider.hasProperty(node, name);
     }
 
@@ -1073,4 +1048,14 @@ public class Element implements Serializable {
     public Set<String> getClassList() {
         return stateProvider.getClassList(node);
     }
+
+    /**
+     * Gets the style instance for managing element inline styles.
+     *
+     * @return the style object for the element
+     */
+    public Style getStyle() {
+        return stateProvider.getStyle(node);
+    }
+
 }
