@@ -3,10 +3,12 @@ package com.vaadin.hummingbird.dom;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -79,6 +81,9 @@ public class ElementTest {
 
         for (Method m : Element.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
+                continue;
+            }
+            if (Modifier.isStatic(m.getModifiers())) {
                 continue;
             }
             if (m.getName().startsWith("get") || m.getName().startsWith("has")
@@ -1083,4 +1088,187 @@ public class ElementTest {
         new Element("div").setProperty("className", "foo");
     }
 
+    public void setStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        Assert.assertEquals("bar", s.get("foo"));
+    }
+
+    @Test
+    public void getUnsetStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        Assert.assertNull(s.get("foo"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getNullStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.get(null);
+    }
+
+    @Test
+    public void replaceStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        s.set("foo", "baz");
+        Assert.assertEquals("baz", s.get("foo"));
+    }
+
+    @Test
+    public void removeStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        s.remove("foo");
+        Assert.assertEquals(null, s.get("foo"));
+    }
+
+    @Test
+    public void emptyStyleAsAttribute() {
+        Element e = new Element("div");
+        Assert.assertFalse(e.hasAttribute("style"));
+        Assert.assertNull(e.getAttribute("style"));
+    }
+
+    public void semicolonInStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1 px solid black;");
+    }
+
+    @Test
+    public void singleStyleAsAttribute() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1px solid black");
+        Assert.assertTrue(e.hasAttribute("style"));
+        Assert.assertEquals("border:1px solid black", e.getAttribute("style"));
+    }
+
+    @Test
+    public void multipleStylesAsAttribute() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1px solid black");
+        s.set("margin", "1em");
+        Assert.assertTrue(e.hasAttribute("style"));
+        assertEqualsOne(
+                new String[] { "border:1px solid black;margin:1em",
+                        "margin:1em;border:1px solid black" },
+                e.getAttribute("style"));
+    }
+
+    private void assertEqualsOne(String[] expected, String actual) {
+        for (int i = 0; i < expected.length; i++) {
+            if (expected[i].equals(actual)) {
+                return;
+            }
+        }
+        String expectedString = Arrays.stream(expected)
+                .collect(Collectors.joining("> or <"));
+        Assert.fail(
+                "expected: <" + expectedString + "> but was <" + actual + ">");
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetEmptyStyle() {
+        Element e = new Element("div");
+        e.getStyle().set("", "");
+        Assert.assertNull(e.getAttribute("style"));
+    }
+
+    @Test
+    public void testSetStyleAttributeExtraWhitespace() {
+        Element e = new Element("div");
+        e.getStyle().set("   color", "red   ");
+        Assert.assertEquals("color:red", e.getAttribute("style"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetWhitespaceStyleAttribute() {
+        Element e = new Element("div");
+        e.getStyle().set("      ", "   ");
+    }
+
+    @Test
+    public void setInvalidStyleDoesNotOverwrite() {
+        Element e = new Element("div");
+        e.getStyle().set("foo", "bar");
+        e.getStyle().set("baz", "123");
+        try {
+            e.setAttribute("style", "balaahlahasd");
+        } catch (Exception ignore) {
+
+        }
+        Assert.assertEquals("foo:bar;baz:123", e.getAttribute("style"));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testSetStyleAttribute() {
+        Element e = new Element("div");
+        e.setAttribute("style", "foo: bar;");
+    }
+
+    @Test
+    public void testRemoveStyle() {
+        Element element = new Element("div");
+
+        element.getStyle().set("zIndex", "12");
+        element.getStyle().set("background", "blue");
+
+        element.getStyle().remove("background");
+
+        Assert.assertEquals("zIndex:12", element.getAttribute("style"));
+
+        element.getStyle().remove("zIndex");
+
+        Assert.assertNull(element.getAttribute("style"));
+        Assert.assertFalse(element.hasAttribute("style"));
+
+        Assert.assertEquals(Collections.emptySet(),
+                element.getStyle().getNames());
+    }
+
+    @Test
+    public void testRemoveStyleAttribute() {
+        Element element = new Element("div");
+
+        Style style = element.getStyle();
+
+        style.set("border", "1px solid green");
+
+        element.removeAttribute("style");
+
+        Assert.assertEquals(Collections.emptySet(), style.getNames());
+    }
+
+    @Test
+    public void validStyleWithSemicolon() {
+        Element element = new Element("div");
+        String validStyle = "background: url('foo;bar')";
+        Style style = element.getStyle();
+        style.set("background", validStyle);
+        Assert.assertEquals(validStyle, style.get("background"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void warnAboutDashSeparated() {
+        Element element = new Element("div");
+
+        Style style = element.getStyle();
+        style.set("border-color", "blue");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nullStyleValue() {
+        Element element = new Element("div");
+
+        Style style = element.getStyle();
+        style.set("border-color", null);
+    }
 }

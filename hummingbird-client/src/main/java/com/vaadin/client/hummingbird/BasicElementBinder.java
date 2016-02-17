@@ -29,6 +29,7 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
+import elemental.css.CSSStyleDeclaration;
 import elemental.dom.DOMTokenList;
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -49,6 +50,8 @@ public class BasicElementBinder {
 
     private final JsMap<String, Computation> propertyBindings = JsCollections
             .map();
+    private final JsMap<String, Computation> stylePropertyBindings = JsCollections
+            .map();
     private final JsMap<String, Computation> attributeBindings = JsCollections
             .map();
     private final JsMap<String, Computation> listenerBindings = JsCollections
@@ -56,10 +59,7 @@ public class BasicElementBinder {
     private final JsMap<String, EventRemover> listenerRemovers = JsCollections
             .map();
 
-    private final EventRemover unregisterListener;
-    private final EventRemover listenersListener;
-    private final EventRemover childrenListener;
-    private final EventRemover childListListener;
+    private final JsArray<EventRemover> listeners = JsCollections.array();
 
     private final Element element;
     private final StateNode node;
@@ -74,19 +74,20 @@ public class BasicElementBinder {
         assert nsTag == null
                 || element.getTagName().toLowerCase().equals(nsTag);
 
-        bindMap(Namespaces.ELEMENT_PROPERTIES, propertyBindings,
-                this::updateProperty);
+        listeners.push(bindMap(Namespaces.ELEMENT_PROPERTIES, propertyBindings,
+                this::updateProperty));
+        listeners.push(bindMap(Namespaces.ELEMENT_STYLE_PROPERTIES,
+                stylePropertyBindings, this::updateStyleProperty));
+        listeners.push(bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
+                this::updateAttribute));
 
-        bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
-                this::updateAttribute);
+        listeners.push(bindChildren());
 
-        childrenListener = bindChildren();
+        listeners.push(node.addUnregisterListener(e -> remove()));
 
-        unregisterListener = node.addUnregisterListener(e -> remove());
+        listeners.push(bindListeners());
 
-        listenersListener = bindListeners();
-
-        childListListener = bindClassList();
+        listeners.push(bindClassList());
 
         node.setElement(element);
     }
@@ -166,13 +167,13 @@ public class BasicElementBinder {
         remover.remove();
     }
 
-    private void bindMap(int namespaceId, JsMap<String, Computation> bindings,
-            PropertyUser user) {
+    private EventRemover bindMap(int namespaceId,
+            JsMap<String, Computation> bindings, PropertyUser user) {
         MapNamespace namespace = node.getMapNamespace(namespaceId);
         namespace.forEachProperty(
                 (property, name) -> bindProperty(bindings, user, property));
 
-        namespace.addPropertyAddListener(
+        return namespace.addPropertyAddListener(
                 e -> bindProperty(bindings, user, e.getProperty()));
     }
 
@@ -182,8 +183,9 @@ public class BasicElementBinder {
 
         assert !bindings.has(name) : "There's already a binding for " + name;
 
-        Computation computation = Reactive
-                .runWhenDepedenciesChange(() -> user.use(property));
+        Computation computation = Reactive.runWhenDepedenciesChange(() -> {
+            user.use(property);
+        });
 
         bindings.set(name, computation);
 
@@ -200,6 +202,18 @@ public class BasicElementBinder {
             // Can't delete inherited property, so instead just clear
             // the value
             WidgetUtil.setJsProperty(element, name, null);
+        }
+    }
+
+    private void updateStyleProperty(MapProperty mapProperty) {
+        String name = mapProperty.getName();
+        CSSStyleDeclaration styleElement = element.getStyle();
+        if (mapProperty.hasValue()) {
+            WidgetUtil.setJsProperty(styleElement, name,
+                    mapProperty.getValue());
+        } else {
+            // Can't delete a style property, so just clear the value
+            WidgetUtil.setJsProperty(styleElement, name, null);
         }
     }
 
@@ -298,16 +312,15 @@ public class BasicElementBinder {
         ForEachCallback<String, Computation> computationStopper = (computation,
                 name) -> computation.stop();
 
+        stylePropertyBindings.forEach(computationStopper);
         propertyBindings.forEach(computationStopper);
         attributeBindings.forEach(computationStopper);
         listenerBindings.forEach(computationStopper);
 
         listenerRemovers.forEach((remover, name) -> remover.remove());
-
-        listenersListener.remove();
-        unregisterListener.remove();
-        childrenListener.remove();
-        childListListener.remove();
+        for (int i = 0; i < listeners.length(); i++) {
+            listeners.get(i).remove();
+        }
     }
 
     /**

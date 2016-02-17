@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -212,6 +213,15 @@ public abstract class MapNamespace extends Namespace {
         setChanged(key);
         Object oldValue = values.remove(key);
         detatchPotentialChild(oldValue);
+    }
+
+    /**
+     * Removes the values for all stored keys.
+     */
+    protected void clear() {
+        for (String key : new ArrayList<>(keySet())) {
+            remove(key);
+        }
     }
 
     private void setChanged(String key) {
