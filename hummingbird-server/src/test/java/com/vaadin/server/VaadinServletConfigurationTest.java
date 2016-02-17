@@ -39,10 +39,10 @@ public class VaadinServletConfigurationTest {
         ServletInUI servlet = new MockUIContainingServlet.ServletInUI();
         servlet.init(new MockServletConfig());
 
-        Class<? extends UI> uiClass = new DefaultUIProvider()
-                .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
+        Class<? extends UI> uiClass = BootstrapHandler
+                .getUIClass(new VaadinServletRequest(
                         EasyMock.createMock(HttpServletRequest.class),
-                        servlet.getService())));
+                        servlet.getService()));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
@@ -58,10 +58,10 @@ public class VaadinServletConfigurationTest {
         Assert.assertEquals(1234, configuration.getHeartbeatInterval());
         Assert.assertEquals(4321, configuration.getResourceCacheTime());
 
-        Class<? extends UI> uiClass = new DefaultUIProvider()
-                .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
+        Class<? extends UI> uiClass = BootstrapHandler
+                .getUIClass(new VaadinServletRequest(
                         EasyMock.createMock(HttpServletRequest.class),
-                        servlet.getService())));
+                        servlet.getService()));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 
@@ -84,10 +84,10 @@ public class VaadinServletConfigurationTest {
         Assert.assertEquals(true, configuration.isCloseIdleSessions());
         Assert.assertEquals(4321, configuration.getResourceCacheTime());
 
-        Class<? extends UI> uiClass = new DefaultUIProvider()
-                .getUIClass(new UIClassSelectionEvent(new VaadinServletRequest(
+        Class<? extends UI> uiClass = BootstrapHandler
+                .getUIClass(new VaadinServletRequest(
                         EasyMock.createMock(HttpServletRequest.class),
-                        servlet.getService())));
+                        servlet.getService()));
         Assert.assertEquals(MockUIContainingServlet.class, uiClass);
     }
 }

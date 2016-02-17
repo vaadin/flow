@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.annotations.AnnotationParser;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.shared.JsonConstants;
@@ -111,7 +112,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     private void readConfigurationAnnotation(Properties initParameters)
             throws ServletException {
-        VaadinServletConfiguration configAnnotation = UIProvider
+        VaadinServletConfiguration configAnnotation = AnnotationParser
                 .getAnnotationFor(getClass(), VaadinServletConfiguration.class);
         if (configAnnotation != null) {
             Method[] methods = VaadinServletConfiguration.class

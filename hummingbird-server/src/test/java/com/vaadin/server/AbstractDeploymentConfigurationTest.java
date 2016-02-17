@@ -40,16 +40,6 @@ public class AbstractDeploymentConfigurationTest {
     }
 
     @Test
-    public void getUIProviderClass_returnsUIProviderPropertyValue() {
-        String uiProvider = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(
-                Constants.SERVLET_PARAMETER_UI_PROVIDER, uiProvider);
-        Assert.assertEquals(
-                "Unexpected UI providerclass configuration option value",
-                uiProvider, config.getUIProviderClassName());
-    }
-
-    @Test
     public void getResourcesPath_returnsResourcesPathPropertyValue() {
         String resources = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig(
