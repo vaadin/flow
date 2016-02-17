@@ -32,12 +32,6 @@ public abstract class AbstractDeploymentConfiguration
     }
 
     @Override
-    public String getUIProviderClassName() {
-        return getApplicationOrSystemProperty(
-                Constants.SERVLET_PARAMETER_UI_PROVIDER, null);
-    }
-
-    @Override
     public String getResourcesPath() {
         return getApplicationOrSystemProperty(
                 Constants.PARAMETER_VAADIN_RESOURCES, null);
