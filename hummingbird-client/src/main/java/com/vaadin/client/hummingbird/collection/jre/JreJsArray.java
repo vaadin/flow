@@ -33,14 +33,42 @@ import com.vaadin.client.hummingbird.collection.JsArray;
  */
 @Deprecated
 public class JreJsArray<T> extends JsArray<T> {
-    private List<T> values = new ArrayList<>();
+    private final List<T> values;
 
-    // Special name since actual method must be final
+    /**
+     * Creates a new array with the given values.
+     *
+     * @param values
+     *            the values of the new array
+     */
+    @SafeVarargs
+    public JreJsArray(T... values) {
+        this(Arrays.asList(values));
+    }
+
+    private JreJsArray(List<T> values) {
+        this.values = new ArrayList<>(values);
+    }
+
+    /**
+     * JRE implementation of the final {@link #get(int)} method.
+     *
+     * @param index
+     *            the index
+     * @return the value at the index
+     */
     public T doGet(int index) {
         return values.get(index);
     }
 
-    // Special name since the actual method must be final
+    /**
+     * JRE implementation of the final {@link #set(int, Object)} method.
+     *
+     * @param index
+     *            the index to set
+     * @param value
+     *            the value to set
+     */
     public void doSet(int index, T value) {
         while (index >= values.size()) {
             // Setting outside the current range should extend the array as it
@@ -51,9 +79,9 @@ public class JreJsArray<T> extends JsArray<T> {
     }
 
     @Override
-    public int push(T value) {
-        values.add(value);
-        return values.size();
+    public int push(@SuppressWarnings("unchecked") T... values) {
+        this.values.addAll(Arrays.asList(values));
+        return this.values.size();
     }
 
     @Override
@@ -62,7 +90,7 @@ public class JreJsArray<T> extends JsArray<T> {
     }
 
     /**
-     * JRE implementation of the final {@link #splice(int, int, Object...)}
+     * JRE implementation of the final {@link #spliceArray(int, int, JsArray)}
      * method.
      *
      * @param index
@@ -73,25 +101,31 @@ public class JreJsArray<T> extends JsArray<T> {
      *            new items to add
      * @return an array of removed items
      */
-    public JsArray<T> doSplice(int index, int remove, T[] add) {
-        JreJsArray<T> removed = new JreJsArray<>();
-        if (remove > 0) {
-            List<T> removeRange = values.subList(index, index + remove);
-            removed.values.addAll(removeRange);
-
-            removeRange.clear();
-        }
-
-        if (add != null) {
-            values.addAll(index, Arrays.asList(add));
-        }
-
-        return removed;
+    public JsArray<T> doSliceArray(int index, int remove,
+            JsArray<? extends T> add) {
+        return doSplice(index, remove, ((JreJsArray<T>) add).values);
     }
 
     @Override
-    public JsArray<T> splice(int index, int remove) {
-        return doSplice(index, remove, null);
+    public JsArray<T> splice(int index, int remove,
+            @SuppressWarnings("unchecked") T... add) {
+        return doSplice(index, remove, Arrays.asList(add));
+    }
+
+    private JreJsArray<T> doSplice(int index, int remove, List<T> add) {
+        JreJsArray<T> removed;
+        if (remove > 0) {
+            List<T> removeRange = values.subList(index, index + remove);
+            removed = new JreJsArray<>(removeRange);
+
+            removeRange.clear();
+        } else {
+            removed = new JreJsArray<>();
+        }
+
+        values.addAll(index, add);
+
+        return removed;
     }
 
     /**

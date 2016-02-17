@@ -258,8 +258,8 @@ public class SimpleEventBus extends EventBus {
         JsArray<H> globalHandlers = getHandlerList(type, null);
 
         JsArray<H> rtn = JsCollections.array();
-        rtn.addAll(directHandlers);
-        rtn.addAll(globalHandlers);
+        rtn.pushArray(directHandlers);
+        rtn.pushArray(globalHandlers);
         return rtn;
     }
 

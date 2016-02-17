@@ -43,6 +43,13 @@ public class JreArrayTest {
     }
 
     @Test
+    public void testArrayWithValues() {
+        JsArray<String> array = JsCollections.array("1", "2");
+
+        assertArray(array, "1", "2");
+    }
+
+    @Test
     public void testAppendUsingSet() {
         JsArray<String> array = JsCollections.array();
         array.set(0, "0");
@@ -134,6 +141,15 @@ public class JreArrayTest {
     }
 
     @Test
+    public void testArraySpliceArray() {
+        JsArray<Object> array = JsCollections.array("1", "2");
+
+        array.spliceArray(1, 1, JsCollections.array("3", "4"));
+
+        assertArray(array, "1", "3", "4");
+    }
+
+    @Test
     public void testJreJsArrayHasNoNative() {
         // Check that the JRE version overrides all native methods
         for (Method method : JreJsArray.class.getMethods()) {
@@ -147,8 +163,7 @@ public class JreArrayTest {
         }
     }
 
-    @Test
-    public void testArrayAddAll() {
+    public void testArrayPush() {
         JsArray<String> array = JsCollections.array();
         JsArray<String> source = JsCollections.array();
 
@@ -156,22 +171,25 @@ public class JreArrayTest {
         source.push("1");
         source.push("2");
 
-        array.addAll(source);
+        array.pushArray(source);
         assertArray(array, "1", "2");
 
-        array.addAll(source);
+        array.pushArray(source);
         assertArray(array, "1", "2", "1", "2");
 
+        array.push("3", "4");
+        assertArray(array, "1", "2", "1", "2", "3", "4");
     }
 
-    @Test(expected = IllegalArgumentException.class)
     public void testArrayAddAllSelf() {
         JsArray<String> array = JsCollections.array();
         // 1, 2
         array.push("1");
         array.push("2");
 
-        array.addAll(array);
+        array.pushArray(array);
+
+        assertArray(array, "1", "2", "1", "2");
     }
 
 }
