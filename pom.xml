@@ -41,7 +41,7 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<gwt.version>2.8.0-beta1</gwt.version>
+		<gwt.version>2.8.0.snapshot20160216</gwt.version>
 		<sonar.java.source>8</sonar.java.source>
 		<sonar.analysis.mode>preview</sonar.analysis.mode>
 		<sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
