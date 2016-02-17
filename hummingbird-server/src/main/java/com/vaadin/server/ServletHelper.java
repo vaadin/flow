@@ -38,34 +38,6 @@ public class ServletHelper implements Serializable {
     private ServletHelper() {
     }
 
-    private static void verifyUIClass(String className, ClassLoader classLoader)
-            throws ServiceException {
-        if (className == null) {
-            throw new ServiceException(
-                    VaadinSession.UI_PARAMETER + " init parameter not defined");
-        }
-
-        // Check that the UI layout class can be found
-        try {
-            Class<?> uiClass = classLoader.loadClass(className);
-            if (!UI.class.isAssignableFrom(uiClass)) {
-                throw new ServiceException(
-                        className + " does not implement UI");
-            }
-            // Try finding a default constructor, else throw exception
-            uiClass.getConstructor();
-        } catch (ClassNotFoundException e) {
-            throw new ServiceException(className + " could not be loaded", e);
-        } catch (SecurityException e) {
-            throw new ServiceException(
-                    "Could not access " + className + " class", e);
-        } catch (NoSuchMethodException e) {
-            throw new ServiceException(
-                    className + " doesn't have a public no-args constructor",
-                    e);
-        }
-    }
-
     private static boolean hasPathPrefix(VaadinRequest request, String prefix) {
         String pathInfo = request.getPathInfo(); // always starts with /
 
@@ -164,80 +136,6 @@ public class ServletHelper implements Serializable {
      */
     public static boolean isPushRequest(VaadinRequest request) {
         return isPathInfo(request, '/' + ApplicationConstants.PUSH_PATH);
-    }
-
-    /**
-     * Initializes the default UI provider and optional custom ui providers for
-     * the given session.
-     *
-     * @param session
-     *            to add UI providers to
-     * @param vaadinService
-     *            the vaadin service for the session
-     * @throws ServiceException
-     *             if no UI providers could be initialized
-     */
-    public static void initDefaultUIProvider(VaadinSession session,
-            VaadinService vaadinService) throws ServiceException {
-        String uiProperty = vaadinService.getDeploymentConfiguration()
-                .getUIClassName();
-
-        // Add provider for UI parameter first to give it lower priority
-        // (providers are FILO)
-        if (uiProperty != null) {
-            verifyUIClass(uiProperty, vaadinService.getClassLoader());
-            session.addUIProvider(new DefaultUIProvider());
-        }
-
-        String uiProviderProperty = vaadinService.getDeploymentConfiguration()
-                .getUIProviderClassName();
-        // Then add custom UI provider if defined
-        if (uiProviderProperty != null) {
-            UIProvider uiProvider = getUIProvider(uiProviderProperty,
-                    vaadinService.getClassLoader());
-            session.addUIProvider(uiProvider);
-        }
-    }
-
-    private static UIProvider getUIProvider(String uiProviderProperty,
-            ClassLoader classLoader) throws ServiceException {
-        try {
-            Class<?> providerClass = classLoader.loadClass(uiProviderProperty);
-            Class<? extends UIProvider> subclass = providerClass
-                    .asSubclass(UIProvider.class);
-            return subclass.newInstance();
-        } catch (ClassNotFoundException e) {
-            throw new ServiceException(
-                    "Could not load UIProvider class " + uiProviderProperty, e);
-        } catch (ClassCastException e) {
-            throw new ServiceException("UIProvider class " + uiProviderProperty
-                    + " does not extend UIProvider", e);
-        } catch (InstantiationException e) {
-            throw new ServiceException(
-                    "Could not instantiate UIProvider " + uiProviderProperty,
-                    e);
-        } catch (IllegalAccessException e) {
-            throw new ServiceException(
-                    "Could not instantiate UIProvider " + uiProviderProperty,
-                    e);
-        }
-    }
-
-    /**
-     * Verifies that there is a UI provider available for the given session.
-     *
-     * @param session
-     *            the session to find UI providers from
-     * @throws ServiceException
-     */
-    public static void checkUiProviders(VaadinSession session)
-            throws ServiceException {
-        if (session.getUIProviders().isEmpty()) {
-            throw new ServiceException(
-                    "No UIProvider has been added and there is no \""
-                            + VaadinSession.UI_PARAMETER
-                            + "\" init parameter.");
-        }
     }
 
     /**

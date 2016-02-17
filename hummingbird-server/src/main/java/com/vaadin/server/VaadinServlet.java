@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.Enumeration;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +36,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
 import com.vaadin.shared.JsonConstants;
@@ -111,9 +113,9 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     private void readConfigurationAnnotation(Properties initParameters)
             throws ServletException {
-        VaadinServletConfiguration configAnnotation = UIProvider
+        Optional<VaadinServletConfiguration> optionalConfigAnnotation = AnnotationReader
                 .getAnnotationFor(getClass(), VaadinServletConfiguration.class);
-        if (configAnnotation != null) {
+        if (optionalConfigAnnotation.isPresent()) {
             Method[] methods = VaadinServletConfiguration.class
                     .getDeclaredMethods();
             for (Method method : methods) {
@@ -122,7 +124,8 @@ public class VaadinServlet extends HttpServlet implements Constants {
                 assert name != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
 
                 try {
-                    Object value = method.invoke(configAnnotation);
+                    Object value = method
+                            .invoke(optionalConfigAnnotation.get());
 
                     String stringValue;
                     if (value instanceof Class<?>) {

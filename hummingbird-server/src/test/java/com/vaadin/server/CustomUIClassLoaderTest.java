@@ -1,4 +1,4 @@
-package com.vaadin.tests.server.component.ui;
+package com.vaadin.server;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,13 +6,6 @@ import java.util.Properties;
 
 import org.easymock.EasyMock;
 
-import com.vaadin.server.DefaultDeploymentConfiguration;
-import com.vaadin.server.DefaultUIProvider;
-import com.vaadin.server.DeploymentConfiguration;
-import com.vaadin.server.UIClassSelectionEvent;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinService;
-import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.ui.UI;
 
@@ -57,10 +50,8 @@ public class CustomUIClassLoaderTest extends TestCase {
         VaadinSession application = createStubApplication();
         application.setConfiguration(createConfigurationMock());
 
-        DefaultUIProvider uiProvider = new DefaultUIProvider();
-        Class<? extends UI> uiClass = uiProvider
-                .getUIClass(new UIClassSelectionEvent(
-                        createRequestMock(getClass().getClassLoader())));
+        Class<? extends UI> uiClass = BootstrapHandler
+                .getUIClass(createRequestMock(getClass().getClassLoader()));
 
         assertEquals(MyUI.class, uiClass);
     }
@@ -101,10 +92,8 @@ public class CustomUIClassLoaderTest extends TestCase {
     public void testWithClassLoader() throws Exception {
         LoggingClassLoader loggingClassLoader = new LoggingClassLoader();
 
-        DefaultUIProvider uiProvider = new DefaultUIProvider();
-        Class<? extends UI> uiClass = uiProvider
-                .getUIClass(new UIClassSelectionEvent(
-                        createRequestMock(loggingClassLoader)));
+        Class<? extends UI> uiClass = BootstrapHandler
+                .getUIClass(createRequestMock(loggingClassLoader));
 
         assertEquals(MyUI.class, uiClass);
         assertEquals(1, loggingClassLoader.requestedClasses.size());
