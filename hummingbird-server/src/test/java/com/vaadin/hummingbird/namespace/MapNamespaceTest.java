@@ -284,4 +284,15 @@ public class MapNamespaceTest
         Assert.assertEquals("default", namespace.getOrDefault(KEY, "default"));
     }
 
+    @Test
+    public void testClear() {
+        namespace.put("foo", 1);
+        namespace.put("bar", 1);
+        namespace.put("baz", 1);
+        namespace.clear();
+        Assert.assertEquals(0, namespace.getPropertyNames().size());
+        Assert.assertFalse(namespace.hasProperty("foo"));
+        Assert.assertFalse(namespace.hasProperty("bar"));
+        Assert.assertFalse(namespace.hasProperty("baz"));
+    }
 }

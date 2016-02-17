@@ -63,6 +63,7 @@ public class ClassesSerializableTest extends TestCase {
             "com\\.vaadin\\.server\\.BootstrapResponse",
             "com\\.vaadin\\.server\\.BootstrapPageResponse",
             "com\\.vaadin\\.annotations\\.AnnotationReader", // utility
+            "com\\.vaadin\\.hummingbird\\.dom\\.ElementUtil", // utility
     };
 
     /**
