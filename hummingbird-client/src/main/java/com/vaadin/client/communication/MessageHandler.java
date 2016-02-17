@@ -21,7 +21,6 @@ import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
-import com.vaadin.client.ApplicationConnection.MultiStepDuration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.DependencyLoader;
@@ -267,8 +266,6 @@ public class MessageHandler {
             return;
         }
 
-        final MultiStepDuration handleUIDLDuration = new MultiStepDuration();
-
         // Get security key
         if (valueMap.containsKey(ApplicationConstants.UIDL_SECURITY_TOKEN_ID)) {
             csrfToken = valueMap
@@ -296,9 +293,6 @@ public class MessageHandler {
             @Override
             public void execute() {
                 assert serverId == -1 || serverId == lastSeenServerSyncId;
-
-                handleUIDLDuration.logDuration(" * Loading widgets completed",
-                        10);
 
                 double processUidlStart = Duration.currentTimeMillis();
 

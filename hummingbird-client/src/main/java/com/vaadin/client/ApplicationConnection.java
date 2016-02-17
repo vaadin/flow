@@ -16,7 +16,6 @@
 
 package com.vaadin.client;
 
-import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.communication.PollConfigurator;
@@ -36,48 +35,6 @@ import elemental.dom.Element;
  */
 public class ApplicationConnection {
 
-    /**
-     * A string that, if found in a non-JSON response to a UIDL request, will
-     * cause the browser to refresh the page. If followed by a colon, optional
-     * whitespace, and a URI, causes the browser to synchronously load the URI.
-     *
-     * <p>
-     * This allows, for instance, a servlet filter to redirect the application
-     * to a custom login page when the session expires. For example:
-     * </p>
-     *
-     * <pre>
-     * if (sessionExpired) {
-     *     response.setHeader(&quot;Content-Type&quot;, &quot;text/html&quot;);
-     *     response.getWriter().write(myLoginPageHtml + &quot;&lt;!-- Vaadin-Refresh: &quot;
-     *             + request.getContextPath() + &quot; --&gt;&quot;);
-     * }
-     * </pre>
-     */
-    public static final String UIDL_REFRESH_TOKEN = "Vaadin-Refresh";
-
-    protected boolean cssLoaded = false;
-
-    /** Parameters for this application connection loaded from the web-page. */
-    private ApplicationConfiguration configuration;
-
-    public static class MultiStepDuration extends Duration {
-        private int previousStep = elapsedMillis();
-
-        public void logDuration(String message) {
-            logDuration(message, 0);
-        }
-
-        public void logDuration(String message, int minDuration) {
-            int currentTime = elapsedMillis();
-            int stepDuration = currentTime - previousStep;
-            if (stepDuration >= minDuration) {
-                Console.log(message + ": " + stepDuration + " ms");
-            }
-            previousStep = currentTime;
-        }
-    }
-
     private final Registry registry;
 
     /**
@@ -88,8 +45,7 @@ public class ApplicationConnection {
      */
     public ApplicationConnection(
             ApplicationConfiguration applicationConfiguration) {
-        configuration = applicationConfiguration;
-        registry = new DefaultRegistry(this);
+        registry = new DefaultRegistry(this, applicationConfiguration);
         StateNode rootNode = registry.getStateTree().getRootNode();
 
         PollConfigurator.observe(rootNode, new Poller(registry));
@@ -101,9 +57,9 @@ public class ApplicationConnection {
                 + applicationConfiguration.getApplicationId());
 
         Console.log("Vaadin application servlet version: "
-                + configuration.getServletVersion());
+                + applicationConfiguration.getServletVersion());
 
-        if (!configuration.getServletVersion()
+        if (!applicationConfiguration.getServletVersion()
                 .equals(Version.getFullVersion())) {
             Console.error(
                     "Warning: your widget set seems to be built with a different "
@@ -185,7 +141,7 @@ public class ApplicationConnection {
     }-*/;
 
     private JavaScriptObject getVersionInfo() {
-        return configuration.getVersionInfo();
+        return registry.getApplicationConfiguration().getVersionInfo();
     }
 
     /**
@@ -207,16 +163,6 @@ public class ApplicationConnection {
         } else {
             return false;
         }
-    }
-
-    /**
-     * Gets the {@link ApplicationConfiguration} for the current application.
-     *
-     * @see ApplicationConfiguration
-     * @return the configuration for this application
-     */
-    public ApplicationConfiguration getConfiguration() {
-        return configuration;
     }
 
     public ReconnectDialogConfigurationState getReconnectDialogConfiguration() {

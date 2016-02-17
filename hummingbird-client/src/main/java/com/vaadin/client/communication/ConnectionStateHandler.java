@@ -34,6 +34,26 @@ import elemental.json.JsonObject;
 public interface ConnectionStateHandler {
 
     /**
+     * A string that, if found in a non-JSON response to a UIDL request, will
+     * cause the browser to refresh the page. If followed by a colon, optional
+     * whitespace, and a URI, causes the browser to synchronously load the URI.
+     *
+     * <p>
+     * This allows, for instance, a servlet filter to redirect the application
+     * to a custom login page when the session expires. For example:
+     * </p>
+     *
+     * <pre>
+     * if (sessionExpired) {
+     *     response.setHeader(&quot;Content-Type&quot;, &quot;text/html&quot;);
+     *     response.getWriter().write(myLoginPageHtml + &quot;&lt;!-- Vaadin-Refresh: &quot;
+     *             + request.getContextPath() + &quot; --&gt;&quot;);
+     * }
+     * </pre>
+     */
+    public static final String UIDL_REFRESH_TOKEN = "Vaadin-Refresh";
+
+    /**
      * Called when an exception occurs during a {@link Heartbeat} request
      *
      * @param request

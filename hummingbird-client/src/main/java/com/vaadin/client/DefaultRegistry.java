@@ -35,18 +35,22 @@ import com.vaadin.client.hummingbird.StateTree;
 public class DefaultRegistry extends Registry {
 
     /**
-     * Constructs a registry based on the given application connection
-     * reference.
+     * Constructs a registry based on the given application connection and
+     * configuration references.
      *
      * @param connection
      *            the application connection
+     * @param applicationConfiguration
+     *            the application configuration
      */
-    public DefaultRegistry(ApplicationConnection connection) {
+    public DefaultRegistry(ApplicationConnection connection,
+            ApplicationConfiguration applicationConfiguration) {
         // Note that initialization order matters. Many constructors depend on
         // ApplicationConnection, ApplicationConfiguration and StateTree even
         // though this is not explicitly specified anywhere.
 
         set(ApplicationConnection.class, connection);
+        set(ApplicationConfiguration.class, applicationConfiguration);
 
         // Classes with no constructor dependencies
         set(URIResolver.class, new URIResolver(this));

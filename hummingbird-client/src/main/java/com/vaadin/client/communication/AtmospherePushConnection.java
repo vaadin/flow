@@ -205,8 +205,7 @@ public class AtmospherePushConnection implements PushConnection {
     private void connect() {
         String baseUrl = registry.getURIResolver().resolveVaadinUri(url);
         String extraParams = ApplicationConstants.UI_ID_PARAMETER + "="
-                + registry.getApplicationConnection().getConfiguration()
-                        .getUIId();
+                + registry.getApplicationConfiguration().getUIId();
 
         String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
@@ -669,6 +668,7 @@ public class AtmospherePushConnection implements PushConnection {
             JavaScriptObject config)
             /*-{
                 var self = this;
+
                 config.url = uri;
                 config.onOpen = $entry(function(response) {
                     self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
@@ -694,6 +694,7 @@ public class AtmospherePushConnection implements PushConnection {
                 config.onClientTimeout = $entry(function(request) {
                     self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
                 });
+            
                 return $wnd.jQueryVaadin.atmosphere.subscribe(config);
             }-*/;
 
