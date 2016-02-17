@@ -41,7 +41,6 @@ import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingRunnable;
-import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
@@ -62,10 +61,9 @@ import com.vaadin.util.CurrentInstance;
  * </p>
  * <p>
  * When a new UI instance is needed, typically because the user opens a URL in a
- * browser window which points to e.g. {@link VaadinServlet}, all
- * {@link UIProvider}s registered to the current {@link VaadinSession} are
- * queried for the UI class that should be used. The selection is by default
- * based on the <code>UI</code> init parameter from web.xml.
+ * browser window which points to e.g. {@link VaadinServlet}, the UI mapped to
+ * that servlet is opened. The selection is based on the <code>UI</code> init
+ * parameter.
  * </p>
  * <p>
  * After a UI has been created by the application, it is initialized using
@@ -75,7 +73,6 @@ import com.vaadin.util.CurrentInstance;
  * </p>
  *
  * @see #init(VaadinRequest)
- * @see UIProvider
  *
  * @since 7.0
  */

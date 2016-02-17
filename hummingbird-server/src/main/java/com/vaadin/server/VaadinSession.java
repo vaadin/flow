@@ -25,7 +25,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
@@ -227,8 +226,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private transient WrappedSession session;
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
-
-    private LinkedList<UIProvider> uiProviders = new LinkedList<UIProvider>();
 
     private transient VaadinService service;
 
@@ -924,38 +921,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                 previousUi.close();
             }
         }
-    }
-
-    /**
-     * Adds a UI provider to this session.
-     *
-     * @param uiProvider
-     *            the UI provider that should be added
-     */
-    public void addUIProvider(UIProvider uiProvider) {
-        assert hasLock();
-        uiProviders.addFirst(uiProvider);
-    }
-
-    /**
-     * Removes a UI provider association from this session.
-     *
-     * @param uiProvider
-     *            the UI provider that should be removed
-     */
-    public void removeUIProvider(UIProvider uiProvider) {
-        assert hasLock();
-        uiProviders.remove(uiProvider);
-    }
-
-    /**
-     * Gets the UI providers configured for this session.
-     *
-     * @return an unmodifiable list of UI providers
-     */
-    public List<UIProvider> getUIProviders() {
-        assert hasLock();
-        return Collections.unmodifiableList(uiProviders);
     }
 
     public VaadinService getService() {
