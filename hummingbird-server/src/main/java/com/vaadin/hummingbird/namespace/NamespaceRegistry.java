@@ -70,6 +70,8 @@ public class NamespaceRegistry {
         registerNamespace(ClassListNamespace.class, ClassListNamespace::new);
         registerNamespace(DependencyListNamespace.class,
                 DependencyListNamespace::new);
+        registerNamespace(ElementStylePropertyNamespace.class,
+                ElementStylePropertyNamespace::new);
     }
 
     private NamespaceRegistry() {
