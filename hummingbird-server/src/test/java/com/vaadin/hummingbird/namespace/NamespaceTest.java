@@ -76,6 +76,7 @@ public class NamespaceTest {
                 Namespaces.RECONNECT_DIALOG_CONFIGURATION);
         expectedIds.put(LoadingIndicatorConfigurationNamespace.class,
                 Namespaces.LOADING_INDICATOR_CONFIGURATION);
+        expectedIds.put(ClassListNamespace.class, Namespaces.CLASS_LIST);
 
         Assert.assertEquals(
                 "The number of expected namespaces is not up to date",

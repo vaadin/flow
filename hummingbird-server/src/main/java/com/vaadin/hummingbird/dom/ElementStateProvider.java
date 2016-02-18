@@ -284,4 +284,13 @@ public interface ElementStateProvider extends Serializable {
      *            the text content, not null
      */
     void setTextContent(StateNode node, String textContent);
+
+    /**
+     * Gets a list representation of all CSS class names set for an element.
+     *
+     * @param node
+     *            the node containing the data
+     * @return the class list
+     */
+    Set<String> getClassList(StateNode node);
 }

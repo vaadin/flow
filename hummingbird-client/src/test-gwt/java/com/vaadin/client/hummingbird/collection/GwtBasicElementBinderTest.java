@@ -408,4 +408,45 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         Reactive.flush();
         assertEquals("bar", element.getTextContent());
     }
+
+    public void testAddClassesBeforeBind() {
+        node.getListNamespace(Namespaces.CLASS_LIST).add(0, "foo");
+
+        BasicElementBinder.bind(node, element);
+
+        assertEquals("foo", element.getClassName());
+    }
+
+    public void testAddClassesAfterBind() {
+        BasicElementBinder.bind(node, element);
+
+        node.getListNamespace(Namespaces.CLASS_LIST).add(0, "foo");
+
+        assertEquals("foo", element.getClassName());
+    }
+
+    public void testRemoveClasses() {
+        BasicElementBinder.bind(node, element);
+
+        node.getListNamespace(Namespaces.CLASS_LIST).splice(0, 0,
+                JsCollections.array("one", "two", "three"));
+
+        assertEquals("one two three", element.getClassName());
+
+        node.getListNamespace(Namespaces.CLASS_LIST).splice(1, 1);
+
+        assertEquals("one three", element.getClassName());
+    }
+
+    public void testAddClassesAfterUnbind() {
+        BasicElementBinder binder = BasicElementBinder.bind(node, element);
+
+        node.getListNamespace(Namespaces.CLASS_LIST).add(0, "foo");
+
+        binder.remove();
+
+        node.getListNamespace(Namespaces.CLASS_LIST).add(0, "bar");
+
+        assertEquals("foo", element.getClassName());
+    }
 }

@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.shared;
 
 import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
+import com.vaadin.hummingbird.namespace.ClassListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
@@ -82,6 +83,11 @@ public class Namespaces {
      * Id for {@link ReconnectDialogConfigurationNamespace}.
      */
     public static final int LOADING_INDICATOR_CONFIGURATION = 10;
+
+    /**
+     * Id for {@link ClassListNamespace}.
+     */
+    public static final int CLASS_LIST = 11;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.
