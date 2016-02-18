@@ -74,6 +74,7 @@ public class NamespaceTest {
                 Namespaces.POLL_CONFIGURATION);
         expectedIds.put(ReconnectDialogConfigurationNamespace.class,
                 Namespaces.RECONNECT_DIALOG_CONFIGURATION);
+        expectedIds.put(ClassListNamespace.class, Namespaces.CLASS_LIST);
 
         Assert.assertEquals(
                 "The number of expected namespaces is not up to date",

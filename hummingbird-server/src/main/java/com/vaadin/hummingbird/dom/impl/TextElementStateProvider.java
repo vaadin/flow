@@ -190,4 +190,9 @@ public class TextElementStateProvider implements ElementStateProvider {
 
         node.getNamespace(TextNodeNamespace.class).setText(textContent);
     }
+
+    @Override
+    public Set<String> getClassList(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
 }
