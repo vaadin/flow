@@ -61,7 +61,9 @@ public class NamespaceRegistry {
         registerNamespace(PushConfigurationParametersMap.class,
                 PushConfigurationParametersMap::new);
         registerNamespace(TextNodeNamespace.class, TextNodeNamespace::new);
-        registerNamespace(PollConfigurationNamespace.class, PollConfigurationNamespace::new);
+        registerNamespace(PollConfigurationNamespace.class,
+                PollConfigurationNamespace::new);
+        registerNamespace(ClassListNamespace.class, ClassListNamespace::new);
     }
 
     private NamespaceRegistry() {

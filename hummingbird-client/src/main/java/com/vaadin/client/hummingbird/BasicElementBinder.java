@@ -29,6 +29,7 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
+import elemental.dom.DOMTokenList;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.NodeList;
@@ -58,6 +59,7 @@ public class BasicElementBinder {
     private final EventRemover unregisterListener;
     private final EventRemover listenersListener;
     private final EventRemover childrenListener;
+    private final EventRemover childListListener;
 
     private final Element element;
     private final StateNode node;
@@ -84,7 +86,31 @@ public class BasicElementBinder {
 
         listenersListener = bindListeners();
 
+        childListListener = bindChildList();
+
         node.setElement(element);
+    }
+
+    private EventRemover bindChildList() {
+        ListNamespace namespace = node.getListNamespace(Namespaces.CLASS_LIST);
+
+        for (int i = 0; i < namespace.length(); i++) {
+            element.getClassList().add((String) namespace.get(i));
+        }
+
+        return namespace.addSpliceListener(e -> {
+            DOMTokenList classList = element.getClassList();
+
+            JsArray<?> add = e.getAdd();
+            for (int i = 0; i < add.length(); i++) {
+                classList.add((String) add.get(i));
+            }
+
+            JsArray<?> remove = e.getRemove();
+            for (int i = 0; i < remove.length(); i++) {
+                classList.remove((String) remove.get(i));
+            }
+        });
     }
 
     private static String getTag(StateNode node) {
@@ -281,6 +307,7 @@ public class BasicElementBinder {
         listenersListener.remove();
         unregisterListener.remove();
         childrenListener.remove();
+        childListListener.remove();
     }
 
     /**

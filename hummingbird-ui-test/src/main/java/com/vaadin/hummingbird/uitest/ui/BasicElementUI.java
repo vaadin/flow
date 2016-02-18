@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.List;
+
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
@@ -40,10 +42,16 @@ public class BasicElementUI extends UI {
         });
 
         Element span = new Element("div");
+
+        List<String> spanClasses = span.getClassList();
+
         span.setProperty("id", "hello-world");
         span.setTextContent("Hello world");
-        span.addEventListener("click",
-                () -> span.setTextContent("Stop touching me!"));
+        spanClasses.add("hello");
+        span.addEventListener("click", () -> {
+            span.setTextContent("Stop touching me!");
+            spanClasses.clear();
+        });
 
         bodyElement.appendChild(span, button);
     }

@@ -114,13 +114,15 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
      *
      * @param index
      *            index of the item to remove
+     * @return the element previously at the specified position
      */
-    public void remove(int index) {
-        Object removed = values.remove(index);
+    public T remove(int index) {
+        T removed = values.remove(index);
         detatchPotentialChild(removed);
 
         addChange(
                 new ListSpliceChange(this, index, 1, Collections.emptyList()));
+        return removed;
     }
 
     private void addChange(ListSpliceChange change) {

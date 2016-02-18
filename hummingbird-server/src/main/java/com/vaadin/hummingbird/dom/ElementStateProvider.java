@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
@@ -284,4 +285,13 @@ public interface ElementStateProvider extends Serializable {
      *            the text content, not null
      */
     void setTextContent(StateNode node, String textContent);
+
+    /**
+     * Gets a list representation of all CSS class names set for an element.
+     *
+     * @param node
+     *            the node containing the data
+     * @return the class list
+     */
+    List<String> getClassList(StateNode node);
 }

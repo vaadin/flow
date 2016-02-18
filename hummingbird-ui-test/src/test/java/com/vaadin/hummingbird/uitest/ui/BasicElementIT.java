@@ -29,10 +29,12 @@ public class BasicElementIT extends PhantomJSTest {
         WebElement helloElement = getDriver().findElement(By.id("hello-world"));
 
         Assert.assertEquals("Hello world", helloElement.getText());
+        Assert.assertEquals("hello", helloElement.getAttribute("class"));
 
         helloElement.click();
 
         Assert.assertEquals("Stop touching me!", helloElement.getText());
+        Assert.assertEquals("", helloElement.getAttribute("class"));
     }
 
     private int getThankYouCount() {

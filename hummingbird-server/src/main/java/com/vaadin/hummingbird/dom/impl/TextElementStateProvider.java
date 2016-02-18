@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
@@ -189,5 +190,10 @@ public class TextElementStateProvider implements ElementStateProvider {
         assert textContent != null;
 
         node.getNamespace(TextNodeNamespace.class).setText(textContent);
+    }
+
+    @Override
+    public List<String> getClassList(StateNode node) {
+        throw new UnsupportedOperationException();
     }
 }

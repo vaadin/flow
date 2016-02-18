@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.shared;
 
 import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
+import com.vaadin.hummingbird.namespace.ClassListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
@@ -73,6 +74,11 @@ public class Namespaces {
      * Id for {@link PollConfigurationNamespace}.
      */
     public static final int POLL_CONFIGURATION = 8;
+
+    /**
+     * Id for {@link ClassListNamespace}.
+     */
+    public static final int CLASS_LIST = 9;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.

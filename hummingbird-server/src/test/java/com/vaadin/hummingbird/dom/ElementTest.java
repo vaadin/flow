@@ -3,8 +3,10 @@ package com.vaadin.hummingbird.dom;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,6 +15,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
+import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 
@@ -967,4 +970,124 @@ public class ElementTest {
         Assert.assertEquals(0, element.getChildCount());
     }
 
+    @Test
+    public void newElementClasses() {
+        Element element = new Element("div");
+
+        Assert.assertFalse(element.hasAttribute("class"));
+        Assert.assertEquals(Collections.emptyList(), element.getClassList());
+    }
+
+    @Test
+    public void addElementClasses() {
+        Element element = new Element("div");
+
+        element.getClassList().add("foo");
+
+        Assert.assertEquals(Collections.singletonList("foo"),
+                element.getClassList());
+        Assert.assertTrue(element.hasAttribute("class"));
+
+        Assert.assertEquals(Collections.singleton("class"),
+                element.getAttributeNames());
+        Assert.assertTrue(element.hasAttribute("class"));
+        Assert.assertEquals("foo", element.getAttribute("class"));
+
+        element.getClassList().add("bar");
+
+        Assert.assertEquals("foo bar", element.getAttribute("class"));
+    }
+
+    @Test
+    public void testSetClassAttribute() {
+        Element element = new Element("div");
+
+        // Get instance right away to see that changes are live
+        List<String> classList = element.getClassList();
+
+        element.setAttribute("class", "foo bar");
+
+        Assert.assertEquals(Arrays.asList("foo", "bar"), classList);
+
+        Assert.assertNull("class should not be stored as a regular attribute",
+                element.getNode().getNamespace(ElementAttributeNamespace.class)
+                        .get("class"));
+    }
+
+    @Test
+    public void testRemoveClassName() {
+        Element element = new Element("div");
+
+        element.setAttribute("class", "foo bar");
+
+        element.getClassList().remove("foo");
+
+        Assert.assertEquals("bar", element.getAttribute("class"));
+
+        element.getClassList().remove(0);
+
+        Assert.assertNull(element.getAttribute("class"));
+        Assert.assertFalse(element.hasAttribute("class"));
+
+        Assert.assertEquals(Collections.emptySet(),
+                element.getAttributeNames());
+    }
+
+    @Test
+    public void testRemoveClassAttribute() {
+        Element element = new Element("div");
+
+        List<String> classList = element.getClassList();
+
+        classList.add("foo");
+
+        element.removeAttribute("class");
+
+        Assert.assertEquals(Collections.emptyList(), classList);
+    }
+
+    @Test
+    public void addExistingClass_noop() {
+        Element element = new Element("div");
+
+        element.setAttribute("class", "foo");
+
+        element.getClassList().add("foo");
+
+        Assert.assertEquals(Collections.singletonList("foo"),
+                element.getClassList());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void addClassNotEnd_throws() {
+        Element element = new Element("div");
+
+        element.setAttribute("class", "foo");
+
+        element.getClassList().add(0, "bar");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void classListReplace_throws() {
+        Element element = new Element("div");
+
+        element.setAttribute("class", "foo");
+
+        element.getClassList().set(0, "bar");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddClassWithSpaces_throws() {
+        new Element("div").getClassList().add("foo bar");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRemoveClassWithSpaces_throws() {
+        new Element("div").getClassList().remove("foo bar");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testContainsClassWithSpaces_throws() {
+        new Element("div").getClassList().contains("foo bar");
+    }
 }
