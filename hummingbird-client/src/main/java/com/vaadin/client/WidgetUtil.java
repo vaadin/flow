@@ -20,6 +20,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
+import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -69,14 +71,14 @@ public class WidgetUtil {
      *            the JSON array to convert
      * @return the converted Java array
      */
-    public static Object[] jsonArrayToJavaArray(JsonArray array) {
-        Object[] add;
+    public static JsArray<Object> jsonArrayAsJsArray(JsonArray array) {
+        JsArray<Object> add;
         if (GWT.isScript()) {
             add = WidgetUtil.crazyJsCast(array);
         } else {
-            add = new Object[array.length()];
-            for (int i = 0; i < add.length; i++) {
-                add[i] = jsonValueToJavaValue(array.get(i));
+            add = JsCollections.array();
+            for (int i = 0; i < array.length(); i++) {
+                add.push(jsonValueToJavaValue(array.get(i)));
             }
         }
         return add;
@@ -104,8 +106,6 @@ public class WidgetUtil {
                 return value.asNumber();
             case NULL:
                 return null;
-            case ARRAY:
-                return jsonArrayToJavaArray((JsonArray) value);
             default:
                 throw new IllegalArgumentException(
                         "Can't convert " + value.getType());
