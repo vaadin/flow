@@ -107,6 +107,19 @@ public class ListNamespace extends AbstractNamespace implements ReactiveValue {
     }
 
     /**
+     * Shorthand for adding the given item at the given index. This does perform
+     * a {@link #splice(int, int, JsArray)} and fires events accordingly.
+     *
+     * @param index
+     *            the index where the item should be added
+     * @param item
+     *            the new item to add
+     */
+    public void add(int index, Object item) {
+        splice(index, 0, JsCollections.array(item));
+    }
+
+    /**
      * Removes a number of items at the given index. This causes a
      * {@link ListSpliceEvent} to be fired.
      *
@@ -117,8 +130,8 @@ public class ListNamespace extends AbstractNamespace implements ReactiveValue {
      */
     public void splice(int index, int remove) {
         JsArray<Object> removed = values.splice(index, remove);
-        eventRouter.fireEvent(
-                new ListSpliceEvent(this, index, removed, new Object[0]));
+        eventRouter.fireEvent(new ListSpliceEvent(this, index, removed,
+                JsCollections.array()));
     }
 
     /**
@@ -131,11 +144,12 @@ public class ListNamespace extends AbstractNamespace implements ReactiveValue {
      * @param remove
      *            the number of items to remove
      * @param add
-     *            a new item to add
+     *            an array of new items to add
      */
-    @SafeVarargs
-    public final <T> void splice(int index, int remove, T... add) {
-        JsArray<Object> removed = values.splice(index, remove, add);
+    public final void splice(int index, int remove, JsArray<?> add) {
+        @SuppressWarnings("unchecked")
+        JsArray<Object> addObject = (JsArray<Object>) add;
+        JsArray<Object> removed = values.spliceArray(index, remove, addObject);
         eventRouter.fireEvent(new ListSpliceEvent(this, index, removed, add));
     }
 

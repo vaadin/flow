@@ -27,8 +27,8 @@ import com.vaadin.client.hummingbird.reactive.ReactiveChangeEvent;
 public class ListSpliceEvent extends ReactiveChangeEvent {
 
     private int index;
-    private JsArray<Object> remove;
-    private Object[] add;
+    private JsArray<?> remove;
+    private JsArray<?> add;
 
     /**
      * Creates a new list splice event.
@@ -42,8 +42,8 @@ public class ListSpliceEvent extends ReactiveChangeEvent {
      * @param add
      *            the added items, not <code>null</code>
      */
-    public ListSpliceEvent(ListNamespace source, int index,
-            JsArray<Object> remove, Object[] add) {
+    public ListSpliceEvent(ListNamespace source, int index, JsArray<?> remove,
+            JsArray<?> add) {
         super(source);
 
         assert remove != null;
@@ -73,7 +73,7 @@ public class ListSpliceEvent extends ReactiveChangeEvent {
      *
      * @return array of removed items, not <code>null</code>
      */
-    public JsArray<Object> getRemove() {
+    public JsArray<?> getRemove() {
         return remove;
     }
 
@@ -82,7 +82,7 @@ public class ListSpliceEvent extends ReactiveChangeEvent {
      *
      * @return array of added items, not <code>null</code>
      */
-    public Object[] getAdd() {
+    public JsArray<?> getAdd() {
         return add;
     }
 }
