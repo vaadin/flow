@@ -33,7 +33,8 @@ public abstract class AbstractDeploymentConfiguration
 
     @Override
     public String getResourcesPath() {
-        return getApplicationOrSystemProperty("Resources", null);
+        return getApplicationOrSystemProperty(
+                Constants.PARAMETER_VAADIN_RESOURCES, null);
     }
 
     @Override
