@@ -45,6 +45,7 @@ import elemental.json.JsonObject;
  */
 public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
+    private static final boolean DEBUG = false;
     private final Registry registry;
     private ReconnectDialog reconnectDialog = new DefaultReconnectDialog();
     private int reconnectAttempt = 0;
@@ -161,8 +162,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     private void debug(String msg) {
-        if (false) {
-            Console.warn(msg);
+        if (DEBUG) {
+            Console.debug(msg);
         }
     }
 
