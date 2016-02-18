@@ -16,6 +16,7 @@
 package com.vaadin.client.hummingbird.collection;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 import com.vaadin.client.hummingbird.collection.jre.JreJsMap;
 import com.vaadin.client.hummingbird.collection.jre.JreJsSet;
@@ -28,6 +29,7 @@ import com.vaadin.client.hummingbird.collection.jre.JreJsWeakMap;
  * @since
  * @author Vaadin Ltd
  */
+@SuppressWarnings("deprecation")
 public class JsCollections {
     private JsCollections() {
         // Only static stuff here, should never be instantiated
@@ -40,9 +42,26 @@ public class JsCollections {
      */
     public static <T> JsArray<T> array() {
         if (GWT.isScript()) {
-            return createNativeArray();
+            return asArray(JavaScriptObject.createArray());
         } else {
             return new JreJsArray<>();
+        }
+    }
+
+    /**
+     * Creates a new JavaScript Array with the given contents.
+     *
+     * @param values
+     *            the values of the new array
+     *
+     * @return a new JS array instance
+     */
+    @SafeVarargs
+    public static <T> JsArray<T> array(T... values) {
+        if (GWT.isScript()) {
+            return asArray(values);
+        } else {
+            return new JreJsArray<>(values);
         }
     }
 
@@ -115,9 +134,9 @@ public class JsCollections {
         return result;
     }
 
-    private static native <T> JsArray<T> createNativeArray()
+    private static native <T> JsArray<T> asArray(Object values)
     /*-{
-        return new $wnd.Array();
+        return values;
     }-*/;
 
     private static native <K, V> JsMap<K, V> createNativeMap()

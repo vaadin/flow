@@ -38,6 +38,12 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
 
         assertEquals("bar", array.get(0));
     }
+    
+    public void testArrayWithValues() {
+        JsArray<String> array = JsCollections.array("1", "2");
+        
+        assertArray(array, "1", "2");
+    }
 
     @Test
     public void testAppendUsingSet() {
@@ -129,7 +135,15 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
         assertEquals("2", array.get(1));
     }
 
-    public void testArrayAddAll() {
+    public void testArraySpliceArray() {
+        JsArray<Object> array = JsCollections.array("1", "2");
+
+        array.spliceArray(1, 1, JsCollections.array("3", "4"));
+
+        assertArray(array, "1", "3", "4");
+    }
+
+    public void testArrayPush() {
         JsArray<String> array = JsCollections.array();
         JsArray<String> source = JsCollections.array();
 
@@ -137,25 +151,25 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
         source.push("1");
         source.push("2");
 
-        array.addAll(source);
+        array.pushArray(source);
         assertArray(array, "1", "2");
 
-        array.addAll(source);
+        array.pushArray(source);
         assertArray(array, "1", "2", "1", "2");
 
+        array.push("3", "4");
+        assertArray(array, "1", "2", "1", "2", "3", "4");
     }
 
-    public void testArrayAddAllSelf() {
+    public void testArrayPushSelf() {
         JsArray<String> array = JsCollections.array();
         // 1, 2
         array.push("1");
         array.push("2");
-        try {
-            array.addAll(array);
-            fail();
-        } catch (IllegalArgumentException e) {
-            // Expected
-        }
+
+        array.pushArray(array);
+
+        assertArray(array, "1", "2", "1", "2");
     }
 
     /**
@@ -169,5 +183,9 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
     public void testCanCast() {
         // Ok if this doesn't throw ClassCastException
         JsArray<Object> array = WidgetUtil.crazyJsCast(JsCollections.array());
+
+        // Ok if this doesn't throw ClassCastException
+        JsArray<Object> array2 = WidgetUtil
+                .crazyJsCast(JsCollections.array("a", "b"));
     }
 }
