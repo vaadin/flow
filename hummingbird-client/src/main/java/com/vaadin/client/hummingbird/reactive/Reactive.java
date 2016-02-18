@@ -150,4 +150,23 @@ public class Reactive {
             copy.forEach(listener -> listener.onChange(event));
         }
     }
+
+    /**
+     * Evaluates the given command whenever there is a change in any
+     * {@link ReactiveValue} used in the command.
+     *
+     * @param command
+     *            the command to run
+     * @return A {@link Computation} object which can be used to control the
+     *         evaluation
+     */
+    public static Computation runWhenDepedenciesChange(Command command) {
+        return new Computation() {
+            @Override
+            protected void doRecompute() {
+                command.execute();
+            }
+        };
+    }
+
 }

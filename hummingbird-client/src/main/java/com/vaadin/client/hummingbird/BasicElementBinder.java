@@ -106,25 +106,21 @@ public class BasicElementBinder {
         String name = eventHandlerProperty.getName();
         assert !listenerBindings.has(name);
 
-        Computation computation = new Computation() {
-            @Override
-            protected void doRecompute() {
-                String name = eventHandlerProperty.getName();
+        Computation computation = Reactive.runWhenDepedenciesChange(() -> {
+            boolean hasValue = eventHandlerProperty.hasValue();
+            boolean hasListener = listenerRemovers.has(name);
 
-                boolean hasValue = eventHandlerProperty.hasValue();
-                boolean hasListener = listenerRemovers.has(name);
-
-                if (hasValue != hasListener) {
-                    if (hasValue) {
-                        addEventHandler(name);
-                    } else {
-                        removeEventHandler(name);
-                    }
+            if (hasValue != hasListener) {
+                if (hasValue) {
+                    addEventHandler(name);
+                } else {
+                    removeEventHandler(name);
                 }
             }
-        };
+        });
 
         listenerBindings.set(name, computation);
+
     }
 
     private void addEventHandler(String eventType) {
@@ -160,14 +156,11 @@ public class BasicElementBinder {
 
         assert !bindings.has(name) : "There's already a binding for " + name;
 
-        Computation computation = new Computation() {
-            @Override
-            protected void doRecompute() {
-                user.use(property);
-            }
-        };
+        Computation computation = Reactive
+                .runWhenDepedenciesChange(() -> user.use(property));
 
         bindings.set(name, computation);
+
     }
 
     private void updateProperty(MapProperty mapProperty) {
