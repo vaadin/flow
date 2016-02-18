@@ -27,6 +27,7 @@ import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.namespace.ClassListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
@@ -57,7 +58,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     private static Class<? extends Namespace>[] namespaces = new Class[] {
             ElementDataNamespace.class, ElementAttributeNamespace.class,
             ElementChildrenNamespace.class, ElementPropertyNamespace.class,
-            ElementListenersNamespace.class };
+            ElementListenersNamespace.class, ClassListNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -325,6 +326,11 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @Override
     public void setTextContent(StateNode node, String textContent) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<String> getClassList(StateNode node) {
+        return node.getNamespace(ClassListNamespace.class).getAsSet();
     }
 
 }

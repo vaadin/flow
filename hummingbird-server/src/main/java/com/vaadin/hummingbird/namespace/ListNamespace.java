@@ -19,6 +19,7 @@ package com.vaadin.hummingbird.namespace;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -114,13 +115,15 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
      *
      * @param index
      *            index of the item to remove
+     * @return the element previously at the specified position
      */
-    public void remove(int index) {
-        Object removed = values.remove(index);
+    public T remove(int index) {
+        T removed = values.remove(index);
         detatchPotentialChild(removed);
 
         addChange(
                 new ListSpliceChange(this, index, 1, Collections.emptyList()));
+        return removed;
     }
 
     private void addChange(ListSpliceChange change) {
@@ -189,4 +192,12 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
         }
     }
 
+    /**
+     * Gets an iterator returning all items in this namespace.
+     * 
+     * @return an iterator returning all items
+     */
+    protected Iterator<T> iterator() {
+        return values.iterator();
+    }
 }

@@ -16,11 +16,17 @@
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -41,6 +47,88 @@ import elemental.json.JsonValue;
  * @since
  */
 public class Element implements Serializable {
+    /**
+     * Callbacks for handling attributes with special semantics. This is used
+     * for e.g. <code>class</code> which is assembled from a separate list of
+     * tokens instead of being stored as a regular attribute string.
+     */
+    private interface CustomAttribute extends Serializable {
+        /**
+         * Checks what {@link Element#hasAttribute(String)} should return for
+         * this attribute.
+         *
+         * @param element
+         *            the element to check
+         * @return <code>true</code> if the element has a value for this
+         *         attribute, otherwise <code>false</code>
+         */
+        boolean hasAttribute(Element element);
+
+        /**
+         * Gets the value that should be returned by
+         * {@link Element#getAttribute(String)} for this attribute.
+         *
+         * @param element
+         *            the element to check.
+         * @return the attribute value
+         */
+        String getAttribute(Element element);
+
+        /**
+         * Sets the value when {@link Element#setAttribute(String, String)} is
+         * called for this attribute.
+         *
+         * @param element
+         *            the element to check.
+         * @param value
+         *            the new attribute value
+         */
+        void setAttribute(Element element, String value);
+
+        /**
+         * Removes the attribute when {@link Element#removeAttribute(String)} is
+         * called for this attribute.
+         *
+         * @param element
+         *            the element to check.
+         */
+        void removeAttribute(Element element);
+    }
+
+    /**
+     * Emulates the <code>class</code> attribute by delegating to
+     * {@link Element#getClassList()}.
+     */
+    private static class ClassAttributeHandler implements CustomAttribute {
+        @Override
+        public boolean hasAttribute(Element element) {
+            return !element.getClassList().isEmpty();
+        }
+
+        @Override
+        public String getAttribute(Element element) {
+            Set<String> classList = element.getClassList();
+            if (classList.isEmpty()) {
+                return null;
+            } else {
+                return classList.stream().collect(Collectors.joining(" "));
+            }
+        }
+
+        @Override
+        public void setAttribute(Element element, String value) {
+            Set<String> classList = element.getClassList();
+            classList.clear();
+
+            String[] parts = value.split("\\s+");
+            classList.addAll(Arrays.asList(parts));
+        }
+
+        @Override
+        public void removeAttribute(Element element) {
+            element.getClassList().clear();
+        }
+    }
 
     private static final String PROPERTY_NAME_CANNOT_BE_NULL = "Property name cannot be null";
 
@@ -49,6 +137,22 @@ public class Element implements Serializable {
     private static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
 
     private static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
+
+    private static final Map<String, CustomAttribute> customAttributes = new HashMap<>();
+
+    static {
+        customAttributes.put("class", new ClassAttributeHandler());
+    }
+
+    // Can't set $name as a property, use $replacement instead.
+    private static final Map<String, String> illegalPropertyReplacements = new HashMap<>();
+
+    static {
+        illegalPropertyReplacements.put("textContent",
+                "setTextContent(String)");
+        illegalPropertyReplacements.put("classList", "getClassList()");
+        illegalPropertyReplacements.put("className", "getClassList()");
+    }
 
     private ElementStateProvider stateProvider;
     private StateNode node;
@@ -196,7 +300,13 @@ public class Element implements Serializable {
             throw new IllegalArgumentException("Value cannot be null");
         }
 
-        stateProvider.setAttribute(node, lowerCaseAttribute, value);
+        CustomAttribute customAttribute = customAttributes
+                .get(lowerCaseAttribute);
+        if (customAttribute != null) {
+            customAttribute.setAttribute(this, value);
+        } else {
+            stateProvider.setAttribute(node, lowerCaseAttribute, value);
+        }
         return this;
     }
 
@@ -217,8 +327,15 @@ public class Element implements Serializable {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
-        return stateProvider.getAttribute(node,
-                attribute.toLowerCase(Locale.ENGLISH));
+
+        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
+        CustomAttribute customAttribute = customAttributes
+                .get(lowerCaseAttribute);
+        if (customAttribute != null) {
+            return customAttribute.getAttribute(this);
+        } else {
+            return stateProvider.getAttribute(node, lowerCaseAttribute);
+        }
     }
 
     /**
@@ -235,8 +352,15 @@ public class Element implements Serializable {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
-        return stateProvider.hasAttribute(node,
-                attribute.toLowerCase(Locale.ENGLISH));
+        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
+        CustomAttribute customAttribute = customAttributes
+                .get(lowerCaseAttribute);
+        if (customAttribute != null) {
+            return customAttribute.hasAttribute(this);
+        } else {
+            return stateProvider.hasAttribute(node, lowerCaseAttribute);
+        }
+
     }
 
     /**
@@ -255,9 +379,26 @@ public class Element implements Serializable {
      * @return the defined attribute names
      */
     public Set<String> getAttributeNames() {
-        // Intentionally not making a copy for performance reasons
-        return Collections
-                .unmodifiableSet(stateProvider.getAttributeNames(node));
+        Set<String> regularNames = stateProvider.getAttributeNames(node);
+
+        Set<String> attributeNames = null;
+
+        for (Entry<String, CustomAttribute> entry : customAttributes
+                .entrySet()) {
+            if (entry.getValue().hasAttribute(this)) {
+                if (attributeNames == null) {
+                    attributeNames = new HashSet<>(regularNames);
+                }
+                attributeNames.add(entry.getKey());
+            }
+        }
+
+        if (attributeNames != null) {
+            return attributeNames;
+        } else {
+            // Intentionally not making a copy for performance reasons
+            return Collections.unmodifiableSet(regularNames);
+        }
     }
 
     /**
@@ -276,8 +417,14 @@ public class Element implements Serializable {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
-        stateProvider.removeAttribute(node,
-                attribute.toLowerCase(Locale.ENGLISH));
+        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
+        CustomAttribute customAttribute = customAttributes
+                .get(lowerCaseAttribute);
+        if (customAttribute != null) {
+            customAttribute.removeAttribute(this);
+        } else {
+            stateProvider.removeAttribute(node, lowerCaseAttribute);
+        }
         return this;
     }
 
@@ -619,9 +766,10 @@ public class Element implements Serializable {
             throw new IllegalArgumentException(PROPERTY_NAME_CANNOT_BE_NULL);
         }
 
-        if ("textContent".equals(name)) {
-            throw new IllegalArgumentException(
-                    "Can't set textContent as a property, use setTextContent(String) instead.");
+        String replacement = illegalPropertyReplacements.get(name);
+        if (replacement != null) {
+            throw new IllegalArgumentException("Can't set " + name
+                    + " as a property, use " + replacement + " instead.");
         }
     }
 
@@ -911,5 +1059,20 @@ public class Element implements Serializable {
                 getChild(i).appendTextContent(builder);
             }
         }
+    }
+
+    /**
+     * Gets the set of CSS class names used for this element. The returned set
+     * can be modified to add or remove class names. The contents of the set is
+     * also reflected in the value of the <code>class</code> attribute.
+     * <p>
+     * Despite the name implying a list being returned, the return type is
+     * actually a {@link Set} since the the in-browser return value behaves like
+     * a <code>Set</code> in Java.
+     *
+     * @return a list of class names
+     */
+    public Set<String> getClassList() {
+        return stateProvider.getClassList(node);
     }
 }
