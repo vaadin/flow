@@ -220,18 +220,6 @@ public abstract class VaadinService implements Serializable {
     public abstract String getStaticFileLocation(VaadinRequest request);
 
     /**
-     * Checks whether the UI will be rendered on its own in the browser or
-     * whether it will be included into some other context. A standalone UI may
-     * do things that might interfere with other parts of a page, e.g. changing
-     * the page title and requesting focus upon loading.
-     *
-     * @param request
-     *            the request for which the UI is loaded
-     * @return a boolean indicating whether the UI should be standalone
-     */
-    public abstract boolean isStandalone(VaadinRequest request);
-
-    /**
      * Gets the class loader to use for loading classes loaded by name, e.g.
      * custom UI classes. This is by default the class loader that was used to
      * load the Servlet or Portlet class to which this service belongs.
