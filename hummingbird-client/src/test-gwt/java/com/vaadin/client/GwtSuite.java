@@ -1,6 +1,7 @@
 package com.vaadin.client;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
+import com.vaadin.client.hummingbird.GwtTreeChangeProcessorTest;
 import com.vaadin.client.hummingbird.collection.GwtBasicElementBinderTest;
 import com.vaadin.client.hummingbird.collection.GwtJsArrayTest;
 import com.vaadin.client.hummingbird.collection.GwtJsMapTest;
@@ -23,6 +24,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtJsWeakMapTest.class);
         suite.addTestSuite(GwtJsSetTest.class);
         suite.addTestSuite(GwtBasicElementBinderTest.class);
+        suite.addTestSuite(GwtTreeChangeProcessorTest.class);
         return suite;
     }
 }
