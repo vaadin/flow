@@ -101,17 +101,14 @@ public class ComputationTest {
 
         TestReactiveEventRouter otherRouter = new TestReactiveEventRouter();
 
-        Computation computation = new Computation() {
-            @Override
-            protected void doRecompute() {
-                int count = computeCount.incrementAndGet();
-                if (count % 2 == 0) {
-                    router.registerRead();
-                } else {
-                    otherRouter.registerRead();
-                }
+        Reactive.runWhenDepedenciesChange(() -> {
+            int count = computeCount.incrementAndGet();
+            if (count % 2 == 0) {
+                router.registerRead();
+            } else {
+                otherRouter.registerRead();
             }
-        };
+        });
 
         Reactive.flush();
         // Now depending on otherRouter
@@ -146,20 +143,17 @@ public class ComputationTest {
 
     @Test
     public void testReactiveListeners() {
-        Computation computation = new Computation() {
-            @Override
-            protected void doRecompute() {
-                if (computeCount.get() == 0) {
-                    router.addListener(new ReactiveChangeListener() {
-                        @Override
-                        public void onChange(ReactiveChangeEvent event) {
-                            computeCount.incrementAndGet();
-                        }
-                    });
-                    router.registerRead();
-                }
+        Reactive.runWhenDepedenciesChange(() -> {
+            if (computeCount.get() == 0) {
+                router.addListener(new ReactiveChangeListener() {
+                    @Override
+                    public void onChange(ReactiveChangeEvent event) {
+                        computeCount.incrementAndGet();
+                    }
+                });
+                router.registerRead();
             }
-        };
+        });
 
         Reactive.flush();
 
@@ -188,13 +182,10 @@ public class ComputationTest {
 
     @Test
     public void escapeReactive() {
-        Computation computation = new Computation() {
-            @Override
-            protected void doRecompute() {
-                computeCount.incrementAndGet();
-                Reactive.runWithComputation(null, router::registerRead);
-            }
-        };
+        Reactive.runWhenDepedenciesChange(() -> {
+            computeCount.incrementAndGet();
+            Reactive.runWithComputation(null, router::registerRead);
+        });
 
         Reactive.flush();
 

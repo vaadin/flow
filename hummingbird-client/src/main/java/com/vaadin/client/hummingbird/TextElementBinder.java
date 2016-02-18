@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
+import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
 
@@ -48,12 +49,8 @@ public class TextElementBinder {
         MapNamespace textNamespace = node.getMapNamespace(Namespaces.TEXT_NODE);
         MapProperty textProperty = textNamespace.getProperty(Namespaces.TEXT);
 
-        computation = new Computation() {
-            @Override
-            protected void doRecompute() {
-                text.setData((String) textProperty.getValue());
-            }
-        };
+        computation = Reactive.runWhenDepedenciesChange(
+                () -> text.setData((String) textProperty.getValue()));
 
         node.addUnregisterListener(e -> remove());
     }
