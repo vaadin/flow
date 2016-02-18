@@ -96,6 +96,7 @@ public class GwtJsSetTest extends ClientEngineTestBase {
      * JavaScript instanceof check for @JsType classes, thus failing if the type
      * defined in the annotation doesn't match the runtime type.
      */
+    @SuppressWarnings("unused")
     public void testCanCast() {
         // Ok if this doesn't throw ClassCastException
         JsSet<Object> set = WidgetUtil.crazyJsCast(JsCollections.set());

@@ -101,6 +101,7 @@ public class JreJsArray<T> extends JsArray<T> {
      *            new items to add
      * @return an array of removed items
      */
+    @SuppressWarnings("unchecked")
     public JsArray<T> doSliceArray(int index, int remove,
             JsArray<? extends T> add) {
         return doSplice(index, remove, ((JreJsArray<T>) add).values);

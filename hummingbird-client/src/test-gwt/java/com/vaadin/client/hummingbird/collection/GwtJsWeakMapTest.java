@@ -60,6 +60,7 @@ public class GwtJsWeakMapTest extends ClientEngineTestBase {
         }
     }
 
+    @SuppressWarnings("unused")
     public void testCanCast() {
         // Ok if this doesn't throw ClassCastException
         JsWeakMap<Object, Object> map = WidgetUtil

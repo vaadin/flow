@@ -38,10 +38,10 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
 
         assertEquals("bar", array.get(0));
     }
-    
+
     public void testArrayWithValues() {
         JsArray<String> array = JsCollections.array("1", "2");
-        
+
         assertArray(array, "1", "2");
     }
 
@@ -106,7 +106,8 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
         assertTrue(array.isEmpty());
     }
 
-    private <T> void assertArray(JsArray<T> array, T... values) {
+    @SafeVarargs
+    private final <T> void assertArray(JsArray<T> array, T... values) {
         assertEquals(values.length, array.length());
         for (int i = 0; i < values.length; i++) {
             assertEquals(values[i], array.get(i));
@@ -180,6 +181,7 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
      * JavaScript instanceof check for @JsType classes, thus failing if the type
      * defined in the annotation doesn't match the runtime type.
      */
+    @SuppressWarnings("unused")
     public void testCanCast() {
         // Ok if this doesn't throw ClassCastException
         JsArray<Object> array = WidgetUtil.crazyJsCast(JsCollections.array());
