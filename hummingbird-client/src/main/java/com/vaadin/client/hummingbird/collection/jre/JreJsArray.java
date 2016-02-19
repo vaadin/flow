@@ -103,7 +103,7 @@ public class JreJsArray<T> extends JsArray<T> {
      */
     public JsArray<T> doSpliceArray(int index, int remove,
             JsArray<? extends T> add) {
-        return doSplice(index, remove, ((JreJsArray<T>) add).values);
+        return doSplice(index, remove, ((JreJsArray<? extends T>) add).values);
     }
 
     @Override
@@ -112,7 +112,8 @@ public class JreJsArray<T> extends JsArray<T> {
         return doSplice(index, remove, Arrays.asList(add));
     }
 
-    private JreJsArray<T> doSplice(int index, int remove, List<T> add) {
+    private JreJsArray<T> doSplice(int index, int remove,
+            List<? extends T> add) {
         JreJsArray<T> removed;
         if (remove > 0) {
             List<T> removeRange = values.subList(index, index + remove);

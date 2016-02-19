@@ -64,6 +64,7 @@ public class GwtJsWeakMapTest extends ClientEngineTestBase {
         // Ok if this doesn't throw ClassCastException
         JsWeakMap<Object, Object> map = WidgetUtil
                 .crazyJsCast(JsCollections.weakMap());
+        assertNotNull(map);
     }
 
 }

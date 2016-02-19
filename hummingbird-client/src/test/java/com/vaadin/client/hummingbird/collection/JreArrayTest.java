@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 
+@SuppressWarnings("deprecation")
 public class JreArrayTest {
     @Test
     public void testArray() {
@@ -110,7 +111,8 @@ public class JreArrayTest {
         Assert.assertTrue(array.isEmpty());
     }
 
-    private <T> void assertArray(JsArray<T> array, T... values) {
+    @SafeVarargs
+    private final <T> void assertArray(JsArray<T> array, T... values) {
         Assert.assertEquals(values.length, array.length());
         for (int i = 0; i < values.length; i++) {
             Assert.assertEquals(values[i], array.get(i));

@@ -156,6 +156,7 @@ public class SimpleEventBus extends EventBus {
         };
     }
 
+    @SuppressWarnings("unchecked")
     private <H> void doAddNow(Event.Type<H> type, Object source, H handler) {
         JsArray<H> l = ensureHandlerList(type, source);
         l.push(handler);

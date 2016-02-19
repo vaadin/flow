@@ -99,5 +99,6 @@ public class GwtJsSetTest extends ClientEngineTestBase {
     public void testCanCast() {
         // Ok if this doesn't throw ClassCastException
         JsSet<Object> set = WidgetUtil.crazyJsCast(JsCollections.set());
+        assertNotNull(set);
     }
 }
