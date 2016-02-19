@@ -39,6 +39,7 @@ import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
+import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingRunnable;
 import com.vaadin.server.VaadinRequest;
@@ -106,7 +107,6 @@ public abstract class UI implements Serializable, PollNotifier {
     private boolean closing = false;
 
     private PushConfiguration pushConfiguration;
-    private ReconnectDialogConfiguration reconnectDialogConfiguration = new ReconnectDialogConfigurationImpl();
 
     /**
      * Tracks which message from the client should come next. First message from
@@ -806,7 +806,8 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return The instance used for reconnect dialog configuration
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
-        return reconnectDialogConfiguration;
+        return getStateTree().getRootNode()
+                .getNamespace(ReconnectDialogConfigurationNamespace.class);
     }
 
     private static Logger getLogger() {
@@ -920,6 +921,7 @@ public abstract class UI implements Serializable, PollNotifier {
         // Then add our own custom namespaces
         namespaces.add(PushConfigurationMap.class);
         namespaces.add(PollConfigurationNamespace.class);
+        namespaces.add(ReconnectDialogConfigurationNamespace.class);
 
         // And return them all
         assert namespaces.size() == new HashSet<>(namespaces)
