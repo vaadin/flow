@@ -23,6 +23,8 @@ import org.junit.Test;
 
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 import com.vaadin.client.hummingbird.reactive.CountingComputation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 
@@ -39,7 +41,7 @@ public class ListNamespaceTest {
 
     @Test
     public void testSplice() {
-        namespace.splice(0, 0, "1", "2", "3");
+        namespace.splice(0, 0, JsCollections.array("1", "2", "3"));
 
         Assert.assertEquals(3, namespace.length());
         Assert.assertEquals("1", namespace.get(0));
@@ -66,30 +68,30 @@ public class ListNamespaceTest {
                     }
                 });
 
-        namespace.splice(0, 0, "1", "2", "3");
+        namespace.splice(0, 0, JsCollections.array("1", "2", "3"));
 
         ListSpliceEvent addEvent = lastEvent.get();
         Assert.assertSame(namespace, addEvent.getSource());
         Assert.assertEquals(0, addEvent.getIndex());
         Assert.assertEquals(0, addEvent.getRemove().length());
         Assert.assertEquals(Arrays.asList("1", "2", "3"),
-                Arrays.asList(addEvent.getAdd()));
+                JreJsArray.asList(addEvent.getAdd()));
 
         lastEvent.set(null);
 
         namespace.splice(1, 2);
         ListSpliceEvent removeEvent = lastEvent.get();
         Assert.assertEquals(1, removeEvent.getIndex());
-        Assert.assertEquals(0, removeEvent.getAdd().length);
+        Assert.assertEquals(0, removeEvent.getAdd().length());
 
-        JsArray<Object> removed = removeEvent.getRemove();
+        JsArray<?> removed = removeEvent.getRemove();
         Assert.assertEquals(2, removed.length());
         Assert.assertEquals("2", removed.get(0));
         Assert.assertEquals("3", removed.get(1));
 
         remover.remove();
 
-        namespace.splice(0, 0, "1", "2", "3");
+        namespace.splice(0, 0, JsCollections.array("1", "2", "3"));
         Assert.assertSame("No new event should have been fired", removeEvent,
                 lastEvent.get());
     }
@@ -103,7 +105,7 @@ public class ListNamespaceTest {
 
         Assert.assertEquals(1, computation.getCount());
 
-        namespace.splice(0, 0, "1");
+        namespace.add(0, "1");
 
         Assert.assertEquals(1, computation.getCount());
 
