@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -422,6 +423,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         if (atmosphereVersion != null) {
             versionInfo.put("atmosphereVersion", atmosphereVersion);
         }
+        appConfig.put("clientEngineFile", getClientEngineFileName());
 
         appConfig.put("versionInfo", versionInfo);
 
@@ -489,6 +491,19 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         return appConfig;
+    }
+
+    private static String getClientEngineFileName() {
+        try {
+            InputStream prop = BootstrapHandler.class.getResourceAsStream(
+                    "/VAADIN/client/client/compile.properties");
+            Properties p = new Properties();
+            p.load(prop);
+            return p.getProperty("jsFile");
+        } catch (Exception e) {
+            throw new RuntimeException(
+                    "Bootstrap failed: No compile.properties file found for ClientEngine");
+        }
     }
 
     protected abstract String getServiceUrl(BootstrapContext context);

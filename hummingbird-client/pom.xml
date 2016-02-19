@@ -42,7 +42,7 @@
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-dev</artifactId>
-			<scope>test</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.google.gwt</groupId>
@@ -167,7 +167,7 @@
 		<profile>
 			<id>sdm</id>
 			<properties>
-				<gwt.module>com.vaadin.ClientEngine</gwt.module>
+				<gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
 			</properties>
 		</profile>
 	</profiles>
