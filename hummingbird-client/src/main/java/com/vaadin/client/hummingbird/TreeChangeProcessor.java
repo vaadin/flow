@@ -16,6 +16,8 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
@@ -148,7 +150,7 @@ public class TreeChangeProcessor {
             JsonArray addJson = change
                     .getArray(JsonConstants.CHANGE_SPLICE_ADD);
 
-            Object[] add = WidgetUtil.jsonArrayToJavaArray(addJson);
+            JsArray<Object> add = WidgetUtil.jsonArrayAsJsArray(addJson);
 
             namespace.splice(index, remove, add);
         } else if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES)) {
@@ -156,7 +158,7 @@ public class TreeChangeProcessor {
                     .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
             int length = addNodes.length();
 
-            StateNode[] add = new StateNode[length];
+            JsArray<StateNode> add = JsCollections.array();
 
             StateTree tree = node.getTree();
             for (int i = 0; i < length; i++) {
@@ -164,7 +166,7 @@ public class TreeChangeProcessor {
                 StateNode child = tree.getNode(childId);
                 assert child != null : "No child node found with id " + childId;
 
-                add[i] = child;
+                add.set(i, child);
             }
 
             namespace.splice(index, remove, add);
