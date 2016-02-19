@@ -135,7 +135,7 @@ public class JsArray<T> {
         if (GWT.isScript()) {
             return JsniHelper.spliceArray(this, index, remove, add);
         } else {
-            return ((JreJsArray<T>) this).doSliceArray(index, remove, add);
+            return ((JreJsArray<T>) this).doSpliceArray(index, remove, add);
         }
     }
 
