@@ -14,10 +14,10 @@ then
 
 	# Trigger Sonar analysis
 	echo "Running Sonar"
-	mvn -B -e -V -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= -Dsonar.verbose=true -Dsonar.analysis.mode=issues -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.host.url=$SONAR_HOST -Dsonar.github.oauth=$SONAR_GITHUB_OAUTH -Dsonar.login=$SONAR_LOGIN -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar
+	mvn -B -e -V -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= -Dsonar.verbose=true -Dsonar.analysis.mode=issues -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.host.url=$SONAR_HOST -Dsonar.github.oauth=$SONAR_GITHUB_OAUTH -Dsonar.login=$SONAR_LOGIN -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar javadoc:javadoc
 else
 	# Something else than a "safe" pull request
-	mvn -B -e -V -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= verify
+	mvn -B -e -V -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= verify javadoc:javadoc
 fi
 
 
