@@ -233,7 +233,7 @@ public class CurrentInstance implements Serializable {
      * @since 7.1
      *
      * @param old
-     *            A Class -> CurrentInstance map to set as current instances
+     *            A Class -&lt; CurrentInstance map to set as current instances
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void restoreInstances(Map<Class<?>, CurrentInstance> old) {

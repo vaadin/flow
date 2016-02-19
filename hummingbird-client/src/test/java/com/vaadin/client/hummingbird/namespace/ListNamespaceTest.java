@@ -30,6 +30,7 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 
 import elemental.events.EventRemover;
 
+@SuppressWarnings("deprecation")
 public class ListNamespaceTest {
     private ListNamespace namespace = new StateTree(null).getRootNode()
             .getListNamespace(0);

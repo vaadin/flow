@@ -28,33 +28,24 @@ import java.io.Serializable;
  * MyApplication.getSystemMessages() and returning CustomizedSystemMessages.
  * Note that getSystemMessages() is static - changing the system messages will
  * by default change the message for all users of the application.
- * </p>
  * <p>
  * The default behavior is to show a notification, and restart the application
- * the the user clicks the message. <br/>
+ * the the user clicks the message.<br>
  * Instead of restarting the application, you can set a specific URL that the
- * user is taken to.<br/>
+ * user is taken to.<br>
  * Setting both caption and message to null will restart the application (or go
  * to the specified URL) without displaying a notification.
  * set*NotificationEnabled(false) will achieve the same thing.
- * </p>
  * <p>
  * The situations are:
+ * <ul>
  * <li>Session expired: the user session has expired, usually due to inactivity.
- * </li>
  * <li>Communication error: the client failed to contact the server, or the
- * server returned and invalid response.</li>
+ * server returned and invalid response.
  * <li>Internal error: unhandled critical server error (e.g out of memory,
  * database crash)
- * <li>Out of sync: the client is not in sync with the server. E.g the user
- * opens two windows showing the same application, but the application does not
- * support this and uses the same Window instance. When the user makes changes
- * in one of the windows - the other window is no longer in sync, and (for
- * instance) pressing a button that is no longer present in the UI will cause a
- * out-of-sync -situation.
- * </p>
+ * </ul>
  */
-
 public class CustomizedSystemMessages extends SystemMessages
         implements Serializable {
 

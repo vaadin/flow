@@ -288,43 +288,6 @@ public abstract class UI implements Serializable, PollNotifier {
     protected abstract void init(VaadinRequest request);
 
     /**
-     * Internal reinitialization method, should not be overridden.
-     *
-     * @since 7.2
-     * @param request
-     *            the request that caused this UI to be reloaded
-     */
-    public void doRefresh(VaadinRequest request) {
-        // This is a horrible hack. We want to have the most recent location and
-        // browser window size available in refresh(), but we want to call
-        // listeners, if any, only after refresh(). So we momentarily assign the
-        // old values back before setting the new values again to ensure the
-        // events are properly fired.
-
-        // Reset heartbeat timeout to avoid surprise if it's almost expired
-        setLastHeartbeatTimestamp(System.currentTimeMillis());
-
-        refresh(request);
-
-    }
-
-    /**
-     * Reinitializes this UI after a browser refresh if the UI is set to be
-     * preserved on refresh, typically using the {@link PreserveOnRefresh}
-     * annotation. This method is intended to be overridden by subclasses if
-     * needed; the default implementation is empty.
-     * <p>
-     * The {@link VaadinRequest} can be used to get information about the
-     * request that caused this UI to be reloaded.
-     *
-     * @since 7.2
-     * @param request
-     *            the request that caused this UI to be reloaded
-     */
-    protected void refresh(VaadinRequest request) {
-    }
-
-    /**
      * Sets the thread local for the current UI. This method is used by the
      * framework to set the current application whenever a new request is
      * processed and it is cleared when the request has been processed.
@@ -410,7 +373,7 @@ public abstract class UI implements Serializable, PollNotifier {
      * Note that this method is strictly for users to explicitly signal the
      * framework that the UI should be detached. Overriding it is not a reliable
      * way to catch UIs that are to be detached. Instead, {@code UI.detach()}
-     * should be overridden or a {@link DetachListener} used.
+     * should be overridden.
      */
     public void close() {
         closing = true;
@@ -464,8 +427,8 @@ public abstract class UI implements Serializable, PollNotifier {
      * </ul>
      * <p>
      * Note that when a UI is detached, any changes made in the {@code detach}
-     * methods of any children or {@link DetachListener}s that would be
-     * communicated to the client are silently ignored.
+     * methods of any children that would be communicated to the client are
+     * silently ignored.
      */
     public void detach() {
     }
@@ -478,7 +441,6 @@ public abstract class UI implements Serializable, PollNotifier {
      * {@link #access(Runnable)} can be used while holding the lock of another
      * session. To avoid causing deadlocks, this methods throws an exception if
      * it is detected than another session is also locked by the current thread.
-     * </p>
      * <p>
      * This method behaves differently than {@link #access(Runnable)} in some
      * situations:
@@ -491,7 +453,6 @@ public abstract class UI implements Serializable, PollNotifier {
      * to be available whereas {@link #access(Runnable)} defers the task to a
      * later point in time.</li>
      * </ul>
-     * </p>
      *
      * @since 7.1
      *
@@ -845,7 +806,7 @@ public abstract class UI implements Serializable, PollNotifier {
      *
      * Used internally for communication tracking.
      *
-     * @param lastProcessedServerMessageId
+     * @param lastProcessedClientToServerId
      *            the id of the last processed server message
      * @since 7.6
      */

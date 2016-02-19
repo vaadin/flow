@@ -137,8 +137,6 @@ public final class JsoConfiguration extends JavaScriptObject {
      * Gets the version of the Vaadin framework used on the server.
      *
      * @return a string with the version
-     *
-     * @see com.vaadin.server.VaadinServlet#VERSION
      */
     public native String getVaadinVersion()
     /*-{
@@ -149,8 +147,6 @@ public final class JsoConfiguration extends JavaScriptObject {
      * Gets the version of the Atmosphere framework.
      *
      * @return a string with the version
-     *
-     * @see org.atmosphere.util#getRawVersion()
      */
     public native String getAtmosphereVersion()
     /*-{

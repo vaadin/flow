@@ -230,8 +230,8 @@ public class AtmospherePushConnection implements PushConnection {
 
     /**
      * Associates this {@code AtmospherePushConnection} with the given
-     * {@AtmosphereResource} representing an established push connection. If
-     * already connected, calls {@link #disconnect()} first. If there is a
+     * {@link AtmosphereResource} representing an established push connection.
+     * If already connected, calls {@link #disconnect()} first. If there is a
      * deferred push, carries it out via the new connection.
      *
      * @since 7.2
