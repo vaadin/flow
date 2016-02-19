@@ -246,7 +246,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         StateNode childNode = createChildNode("child");
 
-        children.splice(0, 0, childNode);
+        children.add(0, childNode);
 
         Reactive.flush();
 
@@ -263,7 +263,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         StateNode childNode = createChildNode(null);
 
-        children.splice(0, 0, childNode);
+        children.add(0, childNode);
 
         Reactive.flush();
 
@@ -282,7 +282,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         BasicElementBinder.bind(node, element);
 
         StateNode childNode = createChildNode("child");
-        children.splice(0, 0, childNode);
+        children.add(0, childNode);
         Reactive.flush();
 
         Element firstChildElement = element.getFirstElementChild();
@@ -305,8 +305,9 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testAddRemoveMultiple() {
         BasicElementBinder.bind(node, element);
 
-        children.splice(0, 0, createChildNode("1"), createChildNode("2"),
-                createChildNode("3"), createChildNode("4"));
+        children.splice(0, 0,
+                JsCollections.array(createChildNode("1"), createChildNode("2"),
+                        createChildNode("3"), createChildNode("4")));
 
         Reactive.flush();
 
@@ -337,7 +338,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         StateNode childNode = new StateNode(nextId++, node.getTree());
 
-        children.splice(0, 0, childNode);
+        children.add(0, childNode);
 
         childNode.getMapNamespace(Namespaces.ELEMENT_DATA)
                 .getProperty(Namespaces.TAG).setValue("span");
@@ -396,8 +397,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         textProperty.setValue("foo");
 
-        node.getListNamespace(Namespaces.ELEMENT_CHILDREN).splice(0, 0,
-                textNode);
+        node.getListNamespace(Namespaces.ELEMENT_CHILDREN).add(0, textNode);
         Reactive.flush();
 
         assertEquals("foo", element.getTextContent());
