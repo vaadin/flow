@@ -55,7 +55,7 @@ public class UILifecycle {
      * Sets the state of the UI to the given value.
      * <p>
      * Only allows state changes in one direction: {@link UIState#INITIALIZING}
-     * -> {@link UIState#RUNNING} -> {@link UIState#TERMINATED}.
+     * -&gt; {@link UIState#RUNNING} -&gt; {@link UIState#TERMINATED}.
      * <p>
      * Changing the state fires a {@link StateChangeEvent}.
      *

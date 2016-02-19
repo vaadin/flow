@@ -173,8 +173,8 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
     /**
      * Gets the position of a value in the list.
      *
-     * @param node
-     *            the node to look for
+     * @param value
+     *            the value to look for
      * @return the position in the list or -1 if not found
      */
     protected int indexOf(T value) {
