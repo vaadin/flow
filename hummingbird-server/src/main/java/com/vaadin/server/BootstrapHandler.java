@@ -28,8 +28,6 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.DocumentType;
@@ -50,7 +48,6 @@ import com.vaadin.shared.ui.ui.Transport;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
-import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
@@ -225,24 +222,20 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        try {
-            // Find UI class
-            Class<? extends UI> uiClass = getUIClass(request);
+        // Find UI class
+        Class<? extends UI> uiClass = getUIClass(request);
 
-            UI ui = createAndInitUI(uiClass, request, session);
+        UI ui = createAndInitUI(uiClass, request, session);
 
-            BootstrapContext context = new BootstrapContext(request, response,
-                    session, ui);
+        BootstrapContext context = new BootstrapContext(request, response,
+                session, ui);
 
-            String html = getBootstrapPageHtml(context);
+        String html = getBootstrapPageHtml(context);
 
-            ServletHelper.setResponseNoCacheHeaders(response::setHeader,
-                    response::setDateHeader);
+        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+                response::setDateHeader);
 
-            writeBootstrapPage(response, html);
-        } catch (JsonException e) {
-            writeError(response, e);
-        }
+        writeBootstrapPage(response, html);
 
         return true;
     }
@@ -271,7 +264,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void setupDocumentHead(BootstrapContext context,
-            BootstrapPageResponse response) throws IOException {
+            BootstrapPageResponse response) {
         Document document = response.getDocument();
 
         DocumentType doctype = new DocumentType("html", "", "",
@@ -352,8 +345,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
     }
 
-    private static Element getBootstrapScript(BootstrapContext context)
-            throws IOException {
+    private static Element getBootstrapScript(BootstrapContext context) {
         Element mainScript = new Element(Tag.valueOf("script"), "").attr("type",
                 TYPE_TEXT_JAVASCRIPT);
 
@@ -367,8 +359,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return mainScript;
     }
 
-    private static String getBootstrapJS(BootstrapContext context)
-            throws IOException {
+    private static String getBootstrapJS(BootstrapContext context) {
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();
         String result = getBootstrapJS();
@@ -482,12 +473,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected abstract String getServiceUrl(BootstrapContext context);
 
-    protected void writeError(VaadinResponse response, Throwable e)
-            throws IOException {
-        response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                e.getLocalizedMessage());
-    }
-
     protected UI createAndInitUI(Class<? extends UI> uiClass,
             VaadinRequest request, VaadinSession session) {
         Integer uiId = Integer.valueOf(session.getNextUIid());
@@ -568,7 +553,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static String getBootstrapJS() {
         if (bootstrapJS == null) {
-            throw new IllegalStateException(
+            throw new BootstrapException(
                     "BootstrapHandler.js has not been loaded during initilization");
         }
         return bootstrapJS;
@@ -578,13 +563,13 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         try {
             return uiClass.newInstance();
         } catch (InstantiationException e) {
-            throw new IllegalStateException(
-                    "Bootstrap failed: Could not create an instance of the UI class "
+            throw new BootstrapException(
+                    "Could not create an instance of the UI class "
                             + uiClass.getName(),
                     e);
         } catch (IllegalAccessException e) {
-            throw new IllegalStateException(
-                    "Bootstrap failed: No public no-args constructor available for the UI "
+            throw new BootstrapException(
+                    "No public no-args constructor available for the UI "
                             + uiClass.getName(),
                     e);
         }
@@ -599,13 +584,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
      *            the request for the UI
      * @return the UI class for the request
      */
-    // FIXME will fix exceptions from BoostrapHandler later on
     protected static Class<? extends UI> getUIClass(VaadinRequest request) {
         String uiClassName = request.getService().getDeploymentConfiguration()
                 .getUIClassName();
         if (uiClassName == null) {
-            throw new RuntimeException(
-                    "Bootstrap failed: Could not determine the uiClassName for the request path "
+            throw new BootstrapException(
+                    "Could not determine the uiClassName for the request path "
                             + request.getPathInfo());
         }
 
@@ -614,8 +598,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             return Class.forName(uiClassName, true, classLoader)
                     .asSubclass(UI.class);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(
-                    "Bootstrap failed: Vaadin Servlet mapped to the request path "
+            throw new BootstrapException(
+                    "Vaadin Servlet mapped to the request path "
                             + request.getPathInfo()
                             + " cannot find the mapped UI class with name "
                             + uiClassName,
@@ -642,11 +626,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 .getAnnotationFor(uiClass, ViewportGeneratorClass.class);
         if (viewportAnnotation.isPresent()
                 && viewportGeneratorClassAnnotation.isPresent()) {
-            throw new IllegalStateException(
-                    "Bootstrap failed: " + uiClass.getCanonicalName()
-                            + " cannot be annotated with both @"
-                            + Viewport.class.getSimpleName() + " and @"
-                            + ViewportGeneratorClass.class.getSimpleName());
+            throw new IllegalStateException(uiClass.getCanonicalName()
+                    + " cannot be annotated with both @"
+                    + Viewport.class.getSimpleName() + " and @"
+                    + ViewportGeneratorClass.class.getSimpleName());
         }
 
         if (viewportAnnotation.isPresent()) {
@@ -658,13 +641,13 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 viewportContent = viewportGeneratorClass.newInstance()
                         .getViewport(request);
             } catch (InstantiationException e) {
-                throw new IllegalStateException(
+                throw new BootstrapException(
                         "Bootstrap failed: Could not create an instance of viewport generator class "
                                 + viewportGeneratorClass.getName() + " for UI "
                                 + uiClass.getName(),
                         e);
             } catch (IllegalAccessException e) {
-                throw new IllegalStateException(
+                throw new BootstrapException(
                         "Bootstrap failed: No public no-args constructor available for viewport generator class "
                                 + viewportGeneratorClass.getName()
                                 + " was available for UI " + uiClass.getName(),
