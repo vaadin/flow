@@ -16,23 +16,25 @@
 
 package com.vaadin.server;
 
-import org.jsoup.nodes.Document;
+import java.util.List;
+
+import org.jsoup.nodes.Node;
 
 import com.vaadin.ui.UI;
 
 /**
- * A representation of a bootstrap page being generated. The bootstrap page
- * contains the full DOM of the HTML document.
+ * A representation of a bootstrap fragment being generated. The bootstrap
+ * fragment is the HTML code that will make up the actual application. This also
+ * includes the JavaScript that initializes the application.
  *
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public class BootstrapPageResponse extends BootstrapResponse {
-
-    private final Document document;
+public class BootstrapFragmentResponse extends BootstrapResponse {
+    private final List<Node> fragmentNodes;
 
     /**
-     * Crate a new bootstrap page response.
+     * Crate a new bootstrap fragment response.
      *
      * @see BootstrapResponse#BootstrapResponse(VaadinRequest, VaadinSession,
      *      UI)
@@ -45,24 +47,26 @@ public class BootstrapPageResponse extends BootstrapResponse {
      *            generated
      * @param ui
      *            the UI that will be displayed on the page
-     * @param document
-     *            the DOM document making up the HTML page
+     * @param fragmentNodes
+     *            a mutable list containing the DOM nodes that will make up the
+     *            application HTML
      */
-    public BootstrapPageResponse(VaadinRequest request, VaadinSession session,
-            UI ui, Document document) {
+    public BootstrapFragmentResponse(VaadinRequest request,
+            VaadinSession session, UI ui, List<Node> fragmentNodes) {
         super(request, session, ui);
-        this.document = document;
+        this.fragmentNodes = fragmentNodes;
     }
 
     /**
-     * Gets the document node representing the root of the DOM hierarchy that
-     * will be used to generate the HTML page. Changes to the document will be
-     * reflected in the HTML.
+     * Gets the list of DOM nodes that will be used to generate the fragment
+     * HTML. Changes to the returned list will be reflected in the generated
+     * HTML.
      *
-     * @return the document node
+     * @return the current list of DOM nodes that makes up the application
+     *         fragment
      */
-    public Document getDocument() {
-        return document;
+    public List<Node> getFragmentNodes() {
+        return fragmentNodes;
     }
 
 }

@@ -485,7 +485,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * <p>
      * Handlers are called in reverse order of addition, so the most recently
      * added handler will be called first.
-     * </p>
      *
      * @param handler
      *            the request handler to add
@@ -596,7 +595,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Returns a UI with the given id.
      * <p>
      * This is meant for framework internal use.
-     * </p>
      *
      * @param uiId
      *            The UI id
@@ -802,8 +800,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * <p>
      * The fully qualified name of the type is used as the name when storing the
      * value. The outcome of calling this method is thus the same as if calling
-     * <br />
-     * <br />
+     * <p>
      * <code>setAttribute(type.getName(), value);</code>
      *
      * @see #getAttribute(Class)
@@ -854,8 +851,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * <p>
      * The fully qualified name of the type is used as the name when getting the
      * value. The outcome of calling this method is thus the same as if calling
-     * <br />
-     * <br />
+     * <br>
+     * <br>
      * <code>getAttribute(type.getName());</code>
      *
      * @see #setAttribute(Class, Object)
@@ -935,10 +932,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * After the session has been discarded, any UIs that have been left open
      * will give a Session Expired error and a new session will be created for
      * serving new UIs.
-     * <p>
-     * To avoid causing out of sync errors, you should typically redirect to
-     * some other page using {@link Page#setLocation(String)} to make the
-     * browser unload the invalidated UI.
      *
      * @see SystemMessages#getSessionExpiredCaption()
      *
@@ -987,7 +980,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * {@link #access(Runnable)} can be used while holding the lock of another
      * session. To avoid causing deadlocks, this methods throws an exception if
      * it is detected than another session is also locked by the current thread.
-     * </p>
      * <p>
      * This method behaves differently than {@link #access(Runnable)} in some
      * situations:
@@ -1000,7 +992,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * to be available whereas {@link #access(Runnable)} defers the task to a
      * later point in time.</li>
      * </ul>
-     * </p>
      *
      * @param runnable
      *            the runnable which accesses the session
@@ -1040,12 +1031,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * exclusive access to this session. If this session is not locked, the lock
      * will be acquired and the runnable is run right away. If this session is
      * currently locked, the runnable will be run before that lock is released.
-     * </p>
      * <p>
      * RPC handlers for components inside this session do not need to use this
      * method as the session is automatically locked by the framework during RPC
      * handling.
-     * </p>
      * <p>
      * Please note that the runnable might be invoked on a different thread or
      * later on the current thread, which means that custom thread locals might
@@ -1056,13 +1045,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * before executing the runnable. Non-inheritable CurrentInstance values
      * including {@link VaadinService#getCurrentRequest()} and
      * {@link VaadinService#getCurrentResponse()} will not be defined.
-     * </p>
      * <p>
      * The returned future can be used to check for task completion and to
      * cancel the task. To help avoiding deadlocks, {@link Future#get()} throws
      * an exception if it is detected that the current thread holds the lock for
      * some other session.
-     * </p>
      *
      * @see #lock()
      * @see #getCurrent()

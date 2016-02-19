@@ -19,9 +19,7 @@ import java.io.Serializable;
 
 /**
  * Class that parses the user agent string from the browser and provides
- * information about the browser. Used internally by
- * {@link com.vaadin.client.BrowserInfo} and
- * {@link com.vaadin.server.WebBrowser}. Should not be used directly.
+ * information about the browser.
  *
  * @author Vaadin Ltd.
  * @since 6.3
@@ -532,10 +530,7 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Checks if the browser is so old that it simply won't work with a Vaadin
-     * application. NOTE that the browser might still be capable of running
-     * Crome Frame, so you might still want to check
-     * {@link #isChromeFrameCapable()} if this returns true.
+     * Checks if the browser is so old that it simply won't work.
      *
      * @return true if the browser won't work, false if not the browser is
      *         supported or might work

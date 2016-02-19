@@ -41,18 +41,16 @@ import java.io.Serializable;
  * <li><b>internalErrorURL</b> = null</li>
  * <li><b>internalErrorNotificationEnabled</b> = true</li>
  * <li><b>internalErrorCaption</b> = "Internal error"</li>
- * <li><b>internalErrorMessage</b> = "Please notify the administrator.<br/>
+ * <li><b>internalErrorMessage</b> = "Please notify the administrator.<br>
  * Take note of any unsaved data, and <u>click here</u> to continue."</li>
  * <li><b>cookiesDisabledURL</b> = null</li>
  * <li><b>cookiesDisabledNotificationEnabled</b> = true</li>
  * <li><b>cookiesDisabledCaption</b> = "Cookies disabled"</li>
  * <li><b>cookiesDisabledMessage</b> = "This application requires cookies to
- * function.<br/>
+ * function.<br>
  * Please enable cookies in your browser and <u>click here</u> to try again.
  * </li>
  * </ul>
- * </p>
- *
  */
 public class SystemMessages implements Serializable {
     protected String sessionExpiredURL = null;
@@ -73,12 +71,12 @@ public class SystemMessages implements Serializable {
     protected String internalErrorURL = null;
     protected boolean internalErrorNotificationEnabled = true;
     protected String internalErrorCaption = "Internal error";
-    protected String internalErrorMessage = "Please notify the administrator.<br/>Take note of any unsaved data, and <u>click here</u> or press ESC to continue.";
+    protected String internalErrorMessage = "Please notify the administrator.<br>Take note of any unsaved data, and <u>click here</u> or press ESC to continue.";
 
     protected String cookiesDisabledURL = null;
     protected boolean cookiesDisabledNotificationEnabled = true;
     protected String cookiesDisabledCaption = "Cookies disabled";
-    protected String cookiesDisabledMessage = "This application requires cookies to function.<br/>Please enable cookies in your browser and <u>click here</u> or press ESC to try again.";
+    protected String cookiesDisabledMessage = "This application requires cookies to function.<br>Please enable cookies in your browser and <u>click here</u> or press ESC to try again.";
 
     /**
      * Use {@link CustomizedSystemMessages} to customize
@@ -202,7 +200,7 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * @return "Please notify the administrator.<br/>
+     * @return "Please notify the administrator.<br>
      *         Take note of any unsaved data, and <u>click here</u> to
      *         continue."
      */
