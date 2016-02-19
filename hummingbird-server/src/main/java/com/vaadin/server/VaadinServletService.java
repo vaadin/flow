@@ -109,11 +109,6 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public boolean isStandalone(VaadinRequest request) {
-        return true;
-    }
-
-    @Override
     public String getMimeType(String resourceName) {
         return getServlet().getServletContext().getMimeType(resourceName);
     }

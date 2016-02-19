@@ -62,7 +62,6 @@ public class ClassesSerializableTest extends TestCase {
             "com\\.vaadin\\.server\\.BootstrapHandler\\$BootstrapUriResolver",
             "com\\.vaadin\\.server\\.BootstrapResponse",
             "com\\.vaadin\\.server\\.BootstrapPageResponse",
-            "com\\.vaadin\\.server\\.BootstrapFragmentResponse",
             "com\\.vaadin\\.annotations\\.AnnotationReader", // utility
     };
 
