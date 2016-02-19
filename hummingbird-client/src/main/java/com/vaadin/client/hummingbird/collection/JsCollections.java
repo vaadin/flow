@@ -127,6 +127,7 @@ public class JsCollections {
      *            the source map
      * @return an array of the values in the map
      */
+    @SuppressWarnings("unchecked")
     public static <K, V> JsArray<V> mapValues(JsMap<K, V> map) {
         JsArray<V> result = JsCollections.array();
         map.forEach((value, key) -> result.push(value));
