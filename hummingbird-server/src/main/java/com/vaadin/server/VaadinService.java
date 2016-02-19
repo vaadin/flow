@@ -95,13 +95,13 @@ public abstract class VaadinService implements Serializable {
                     ServiceDestroyEvent.class);
 
     /**
-     * @deprecated As of 7.0. Only supported for {@link LegacyApplication}.
+     * @deprecated As of 7.0.
      */
     @Deprecated
     public static final String URL_PARAMETER_RESTART_APPLICATION = "restartApplication";
 
     /**
-     * @deprecated As of 7.0. Only supported for {@link LegacyApplication}.
+     * @deprecated As of 7.0.
      */
     @Deprecated
     public static final String URL_PARAMETER_CLOSE_APPLICATION = "closeApplication";
@@ -638,7 +638,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
-            throws SessionExpiredException, ServiceException {
+                    throws SessionExpiredException, ServiceException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -1015,10 +1015,6 @@ public abstract class VaadinService implements Serializable {
      * After the session has been discarded, any UIs that have been left open
      * will give a Session Expired error and a new session will be created for
      * serving new UIs.
-     * <p>
-     * To avoid causing out of sync errors, you should typically redirect to
-     * some other page using {@link Page#setLocation(String)} to make the
-     * browser unload the invalidated UI.
      *
      * @see SystemMessages#getSessionExpiredCaption()
      *
@@ -1321,7 +1317,7 @@ public abstract class VaadinService implements Serializable {
 
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
-            throws ServiceException {
+                    throws ServiceException {
         if (vaadinSession != null) {
             vaadinSession.lock();
         }

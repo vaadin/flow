@@ -155,8 +155,6 @@ public class Element implements Serializable {
     /**
      * Gets the tag name for the element.
      *
-     * @param node
-     *            the node containing the data
      * @return the tag name
      */
     public String getTag() {

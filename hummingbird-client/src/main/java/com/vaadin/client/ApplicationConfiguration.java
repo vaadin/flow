@@ -67,12 +67,7 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the URL to the server-side VaadinService. If
-     * {@link #useServiceUrlPathParam()} return <code>true</code>, the requested
-     * path info should be in the <code>v-resourcePath</code> query parameter;
-     * else the path info should be appended to the end of the URL.
-     *
-     * @see #useServiceUrlPathParam()
+     * Gets the URL to the server-side VaadinService.
      *
      * @return the URL to the server-side service as a string
      */
@@ -128,7 +123,7 @@ public class ApplicationConfiguration {
      * Sets whether the application is running in standalone mode (owns the
      * whole page) or in embedded mode (only owns its own part of the page).
      *
-     * @param true
+     * @param standalone
      *            if this application owns the page, false if the application is
      *            embedded into a page
      */

@@ -105,8 +105,8 @@ public class PushConfiguration {
     }
 
     /**
-     * Checks if XHR should be used for client -> server messages even though we
-     * are using a bidirectional push transport such as websockets.
+     * Checks if XHR should be used for client -&gt; server messages even though
+     * we are using a bidirectional push transport such as websockets.
      *
      * @return true if XHR should always be used, false otherwise
      */

@@ -37,7 +37,7 @@ public class BootstrapFragmentResponse extends BootstrapResponse {
      * Crate a new bootstrap fragment response.
      *
      * @see BootstrapResponse#BootstrapResponse(VaadinRequest, VaadinSession,
-     *      Class)
+     *      UI)
      *
      * @param request
      *            the Vaadin request for which the bootstrap page should be
