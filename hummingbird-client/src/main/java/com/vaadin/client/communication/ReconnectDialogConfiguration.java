@@ -15,23 +15,11 @@
  */
 package com.vaadin.client.communication;
 
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_MODAL_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_MODAL_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_KEY;
-
 import com.vaadin.client.Registry;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 /**
@@ -85,8 +73,10 @@ public class ReconnectDialogConfiguration {
      * @return true if the dialog is modal, false otherwise
      */
     public boolean isDialogModal() {
-        return getProperty(DIALOG_MODAL_KEY)
-                .getValueOrDefault(DIALOG_MODAL_DEFAULT);
+        return getProperty(
+                ReconnectDialogConfigurationNamespace.DIALOG_MODAL_KEY)
+                        .getValueOrDefault(
+                                ReconnectDialogConfigurationNamespace.DIALOG_MODAL_DEFAULT);
     }
 
     /**
@@ -95,8 +85,10 @@ public class ReconnectDialogConfiguration {
      * @return the text to show in the reconnect dialog.
      */
     public String getDialogText() {
-        return getProperty(DIALOG_TEXT_KEY)
-                .getValueOrDefault(DIALOG_TEXT_DEFAULT);
+        return getProperty(
+                ReconnectDialogConfigurationNamespace.DIALOG_TEXT_KEY)
+                        .getValueOrDefault(
+                                ReconnectDialogConfigurationNamespace.DIALOG_TEXT_DEFAULT);
     }
 
     /**
@@ -107,8 +99,10 @@ public class ReconnectDialogConfiguration {
      *         reconnect
      */
     public String getDialogTextGaveUp() {
-        return getProperty(DIALOG_TEXT_GAVE_UP_KEY)
-                .getValueOrDefault(DIALOG_TEXT_GAVE_UP_DEFAULT);
+        return getProperty(
+                ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_KEY)
+                        .getValueOrDefault(
+                                ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_DEFAULT);
     }
 
     /**
@@ -118,8 +112,10 @@ public class ReconnectDialogConfiguration {
      * @return the number of reconnect attempts to perform
      */
     public int getReconnectAttempts() {
-        return getProperty(RECONNECT_ATTEMPTS_KEY)
-                .getValueOrDefault(RECONNECT_ATTEMPTS_DEFAULT);
+        return getProperty(
+                ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_KEY)
+                        .getValueOrDefault(
+                                ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_DEFAULT);
     }
 
     /**
@@ -128,8 +124,10 @@ public class ReconnectDialogConfiguration {
      * @return the interval in milliseconds to wait between reconnect attempts
      */
     public int getReconnectInterval() {
-        return getProperty(RECONNECT_INTERVAL_KEY)
-                .getValueOrDefault(RECONNECT_INTERVAL_DEFAULT);
+        return getProperty(
+                ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_KEY)
+                        .getValueOrDefault(
+                                ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_DEFAULT);
     }
 
     /**
@@ -139,8 +137,10 @@ public class ReconnectDialogConfiguration {
      * @return the time in milliseconds to wait before showing the dialog
      */
     public int getDialogGracePeriod() {
-        return getProperty(DIALOG_GRACE_PERIOD_KEY)
-                .getValueOrDefault(DIALOG_GRACE_PERIOD_DEFAULT);
+        return getProperty(
+                ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_KEY)
+                        .getValueOrDefault(
+                                ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_DEFAULT);
     }
 
 }

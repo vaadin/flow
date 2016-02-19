@@ -25,7 +25,7 @@ import java.io.Serializable;
  * <p>
  * Concrete implementations of this class should implement {@link Serializable}
  * in case a reference to an object of this class is stored on the server side.
- * 
+ *
  * @since 7.4
  * @author Vaadin Ltd
  */
@@ -37,10 +37,6 @@ public abstract class VaadinUriResolver {
      * <ul>
      * <li><code>theme://</code> - resolves to the URL of the currently active
      * theme.</li>
-     * <li><code>published://</code> - resolves to resources on the classpath
-     * published by {@link com.vaadin.annotations.JavaScript @JavaScript} or
-     * {@link com.vaadin.annotations.StyleSheet @StyleSheet} annotations on
-     * connectors.</li>
      * <li><code>app://</code> - resolves to a URL that will be routed to the
      * currently registered {@link com.vaadin.server.RequestHandler
      * RequestHandler} instances.</li>
