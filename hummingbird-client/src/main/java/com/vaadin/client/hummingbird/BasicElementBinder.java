@@ -210,7 +210,7 @@ public class BasicElementBinder {
     }
 
     private void handleChildrenSplice(ListSpliceEvent event) {
-        JsArray<Object> remove = event.getRemove();
+        JsArray<?> remove = event.getRemove();
         for (int i = 0; i < remove.length(); i++) {
             StateNode childNode = (StateNode) remove.get(i);
             Element child = childNode.getElement();
@@ -223,8 +223,8 @@ public class BasicElementBinder {
             element.removeChild(child);
         }
 
-        Object[] add = event.getAdd();
-        if (add.length != 0) {
+        JsArray<?> add = event.getAdd();
+        if (add.length() != 0) {
             int insertIndex = event.getIndex();
             NodeList childNodes = element.getChildNodes();
 
@@ -237,7 +237,8 @@ public class BasicElementBinder {
                 beforeRef = null;
             }
 
-            for (Object newChildObject : add) {
+            for (int i = 0; i < add.length(); i++) {
+                Object newChildObject = add.get(i);
                 Node childNode = createDomNode((StateNode) newChildObject);
 
                 element.insertBefore(childNode, beforeRef);

@@ -135,4 +135,17 @@ public class JreJsArray<T> extends JsArray<T> {
     public void doClear() {
         values.clear();
     }
+
+    /**
+     * Gets the values of this array as a list. This method is only exposed to
+     * simplify testing.
+     *
+     * @param array
+     *            the js array to get the values from
+     *
+     * @return the values as a list
+     */
+    public static <T> List<T> asList(JsArray<T> array) {
+        return ((JreJsArray<T>) array).values;
+    }
 }
