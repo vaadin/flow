@@ -245,6 +245,8 @@ public class StateNode implements Serializable {
 
     /**
      * Marks this node as dirty.
+     *
+     * @see StateTree#collectDirtyNodes()
      */
     public void markAsDirty() {
         owner.markAsDirty(this);
