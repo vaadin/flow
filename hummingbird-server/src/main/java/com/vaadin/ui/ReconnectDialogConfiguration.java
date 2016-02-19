@@ -18,10 +18,10 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
+import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 
 /**
- * Provides method for configuring the reconnect dialog.
+ * Provides methods for configuring the reconnect dialog.
  *
  * @since 7.6
  * @author Vaadin Ltd
@@ -29,7 +29,10 @@ import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
 public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Gets the text to show in the reconnect dialog when trying to re-establish
-     * the server connection
+     * the server connection.
+     * <p>
+     * The default is
+     * {@value ReconnectDialogConfigurationNamespace#DIALOG_TEXT_DEFAULT}
      *
      * @return the text to show in the reconnect dialog
      */
@@ -37,7 +40,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Sets the text to show in the reconnect dialog when trying to re-establish
-     * the server connection
+     * the server connection.
      *
      * @param dialogText
      *            the text to show in the reconnect dialog
@@ -46,7 +49,10 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Gets the text to show in the reconnect dialog after giving up trying to
-     * reconnect ({@link #getReconnectAttempts()} reached)
+     * reconnect ({@link #getReconnectAttempts()} reached).
+     * <p>
+     * The default is
+     * {@value ReconnectDialogConfigurationNamespace#DIALOG_TEXT_GAVE_UP_DEFAULT}
      *
      * @return the text to show in the reconnect dialog after giving up
      */
@@ -54,7 +60,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Sets the text to show in the reconnect dialog after giving up trying to
-     * reconnect ({@link #getReconnectAttempts()} reached)
+     * reconnect ({@link #getReconnectAttempts()} reached).
      *
      * @param dialogText
      *            the text to show in the reconnect dialog after giving up
@@ -63,7 +69,10 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Gets the number of times to try to reconnect to the server before giving
-     * up
+     * up.
+     * <p>
+     * The default is
+     * {@value ReconnectDialogConfigurationNamespace#RECONNECT_ATTEMPTS_DEFAULT}
      *
      * @return the number of times to try to reconnect
      */
@@ -71,7 +80,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
 
     /**
      * Sets the number of times to try to reconnect to the server before giving
-     * up
+     * up.
      *
      * @param reconnectAttempts
      *            the number of times to try to reconnect
@@ -79,14 +88,17 @@ public interface ReconnectDialogConfiguration extends Serializable {
     public void setReconnectAttempts(int reconnectAttempts);
 
     /**
-     * Gets the interval (in milliseconds) between reconnect attempts
+     * Gets the interval (in milliseconds) between reconnect attempts.
+     * <p>
+     * The default is
+     * {@value ReconnectDialogConfigurationNamespace#RECONNECT_INTERVAL_DEFAULT}
      *
      * @return the interval (in ms) between reconnect attempts
      */
     public int getReconnectInterval();
 
     /**
-     * Sets the interval (in milliseconds) between reconnect attempts
+     * Sets the interval (in milliseconds) between reconnect attempts.
      *
      * @param reconnectInterval
      *            the interval (in ms) between reconnect attempts
@@ -96,6 +108,9 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Gets the timeout (in milliseconds) between noticing a loss of connection
      * and showing the dialog.
+     * <p>
+     * The default is
+     * {@value ReconnectDialogConfigurationNamespace#DIALOG_GRACE_PERIOD_DEFAULT}
      *
      * @return the time to wait before showing a dialog
      */
@@ -126,77 +141,11 @@ public interface ReconnectDialogConfiguration extends Serializable {
     /**
      * Checks the modality of the dialog.
      * <p>
+     * The default is
+     * {@value ReconnectDialogConfigurationNamespace#DIALOG_MODAL_DEFAULT}
      *
      * @see #setDialogModal(boolean)
      * @return true if the dialog is modal, false otherwise
      */
     public boolean isDialogModal();
-}
-
-class ReconnectDialogConfigurationImpl implements ReconnectDialogConfiguration {
-    private ReconnectDialogConfigurationState state = new ReconnectDialogConfigurationState();
-
-    public ReconnectDialogConfigurationImpl() {
-    }
-
-    @Override
-    public String getDialogText() {
-        return state.dialogText;
-    }
-
-    @Override
-    public void setDialogText(String dialogText) {
-        state.dialogText = dialogText;
-    }
-
-    @Override
-    public String getDialogTextGaveUp() {
-        return state.dialogTextGaveUp;
-    }
-
-    @Override
-    public void setDialogTextGaveUp(String dialogTextGaveUp) {
-        state.dialogTextGaveUp = dialogTextGaveUp;
-    }
-
-    @Override
-    public int getReconnectAttempts() {
-        return state.reconnectAttempts;
-    }
-
-    @Override
-    public void setReconnectAttempts(int reconnectAttempts) {
-        state.reconnectAttempts = reconnectAttempts;
-    }
-
-    @Override
-    public int getReconnectInterval() {
-        return state.reconnectInterval;
-    }
-
-    @Override
-    public void setReconnectInterval(int reconnectInterval) {
-        state.reconnectInterval = reconnectInterval;
-    }
-
-    @Override
-    public int getDialogGracePeriod() {
-        return state.dialogGracePeriod;
-    }
-
-    @Override
-    public void setDialogGracePeriod(int dialogGracePeriod) {
-        state.dialogGracePeriod = dialogGracePeriod;
-    }
-
-    @Override
-    public boolean isDialogModal() {
-        return state.dialogModal;
-    }
-
-    @Override
-    public void setDialogModal(boolean dialogModal) {
-        state.dialogModal = dialogModal;
-    }
-
 }

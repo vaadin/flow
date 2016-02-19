@@ -135,4 +135,50 @@ public class MapPropertyTest {
         Assert.assertFalse(property.hasValue());
         Assert.assertNull(property.getValue());
     }
+
+    @Test
+    public void testGetIntDefaultValue() {
+        Assert.assertEquals(12, property.getValueOrDefault(12));
+
+        property.setValue(24.0); // Server side sets everything as double
+        Assert.assertEquals(24, property.getValueOrDefault(12));
+
+        property.setValue(null);
+        Assert.assertEquals(12, property.getValueOrDefault(12));
+
+        property.removeValue();
+        Assert.assertEquals(12, property.getValueOrDefault(12));
+    }
+
+    @Test
+    public void testGetBooleanDefaultValue() {
+        Assert.assertTrue(property.getValueOrDefault(true));
+        Assert.assertFalse(property.getValueOrDefault(false));
+
+        property.setValue(true);
+        Assert.assertTrue(property.getValueOrDefault(false));
+
+        property.setValue(null);
+        Assert.assertTrue(property.getValueOrDefault(true));
+        Assert.assertFalse(property.getValueOrDefault(false));
+
+        property.removeValue();
+        Assert.assertTrue(property.getValueOrDefault(true));
+        Assert.assertFalse(property.getValueOrDefault(false));
+    }
+
+    @Test
+    public void testGetStringDefaultValue() {
+        Assert.assertEquals("default", property.getValueOrDefault("default"));
+
+        property.setValue("assigned");
+        Assert.assertEquals("assigned", property.getValueOrDefault("default"));
+
+        property.setValue(null);
+        Assert.assertEquals("default", property.getValueOrDefault("default"));
+
+        property.removeValue();
+        Assert.assertEquals("default", property.getValueOrDefault("default"));
+    }
+
 }
