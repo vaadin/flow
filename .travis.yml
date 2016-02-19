@@ -2,3 +2,12 @@ language: java
 jdk: oraclejdk8
 before_install: ./.travis.before_install.sh
 script: ./.travis.script.sh
+
+cache:
+  directories:
+  - phantomjs-2.1.1-linux-x86_64
+  - $HOME/.m2
+before_cache:
+  # remove all build artifacts
+  - rm -rf $HOME/.m2/repository/com/vaadin/hummingbird-*
+
