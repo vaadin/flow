@@ -23,14 +23,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +34,6 @@ import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
 import org.jsoup.parser.Tag;
 
 import com.google.gwt.thirdparty.guava.common.net.UrlEscapers;
@@ -77,6 +70,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             + "vaadin.gwtStatsEvents.push(event); " + "return true;};};";
 
     private static final String TYPE_TEXT_JAVASCRIPT = "text/javascript";
+    private static final String CONTENT_ATTRIBUTE = "content";
+    private static final String META_TAG = "meta";
 
     private static String bootstrapJS;
 
@@ -99,18 +94,22 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
     protected class BootstrapContext {
 
+        private final VaadinRequest request;
         private final VaadinResponse response;
-        private final BootstrapFragmentResponse bootstrapResponse;
+        private final VaadinSession session;
+        private final UI ui;
 
         private String appId;
         private PushMode pushMode;
         private JsonObject applicationParameters;
         private VaadinUriResolver uriResolver;
 
-        protected BootstrapContext(VaadinResponse response,
-                BootstrapFragmentResponse bootstrapResponse) {
+        protected BootstrapContext(VaadinRequest request,
+                VaadinResponse response, VaadinSession session, UI ui) {
+            this.request = request;
             this.response = response;
-            this.bootstrapResponse = bootstrapResponse;
+            this.session = session;
+            this.ui = ui;
         }
 
         public VaadinResponse getResponse() {
@@ -118,22 +117,21 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         public VaadinRequest getRequest() {
-            return bootstrapResponse.getRequest();
+            return request;
         }
 
         public VaadinSession getSession() {
-            return bootstrapResponse.getSession();
+            return session;
         }
 
         public UI getUI() {
-            return bootstrapResponse.getUI();
+            return ui;
         }
 
         public PushMode getPushMode() {
             if (pushMode == null) {
 
-                pushMode = getBootstrapResponse().getUI().getPushConfiguration()
-                        .getPushMode();
+                pushMode = getUI().getPushConfiguration().getPushMode();
                 if (pushMode == null) {
                     pushMode = getRequest().getService()
                             .getDeploymentConfiguration().getPushMode();
@@ -157,10 +155,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                         getRequest());
             }
             return appId;
-        }
-
-        public BootstrapFragmentResponse getBootstrapResponse() {
-            return bootstrapResponse;
         }
 
         public JsonObject getApplicationParameters() {
@@ -237,13 +231,13 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
             UI ui = createAndInitUI(uiClass, request, session);
 
-            BootstrapContext context = new BootstrapContext(response,
-                    new BootstrapFragmentResponse(request, session, ui,
-                            new ArrayList<>()));
+            BootstrapContext context = new BootstrapContext(request, response,
+                    session, ui);
 
-            setupBootstrapScript(context);
+            String html = getBootstrapPageHtml(context);
 
-            String html = getBootstrapHtml(context);
+            ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+                    response::setDateHeader);
 
             writeBootstrapPage(response, html);
         } catch (JsonException e) {
@@ -253,58 +247,18 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return true;
     }
 
-    private static String getBootstrapHtml(BootstrapContext context) {
+    private static String getBootstrapPageHtml(BootstrapContext context)
+            throws IOException {
         VaadinRequest request = context.getRequest();
-        VaadinResponse response = context.getResponse();
-        VaadinService vaadinService = request.getService();
 
-        BootstrapFragmentResponse fragmentResponse = context
-                .getBootstrapResponse();
+        Document document = Document.createShell("");
+        BootstrapPageResponse pageResponse = new BootstrapPageResponse(request,
+                context.getSession(), context.getUI(), document);
 
-        if (vaadinService.isStandalone(request)) {
-            Map<String, Object> headers = new LinkedHashMap<String, Object>();
-            Document document = Document.createShell("");
-            BootstrapPageResponse pageResponse = new BootstrapPageResponse(
-                    request, context.getSession(), context.getUI(), document,
-                    headers);
-            List<Node> fragmentNodes = fragmentResponse.getFragmentNodes();
-            Element body = document.body();
-            for (Node node : fragmentNodes) {
-                body.appendChild(node);
-            }
+        setupDocumentHead(context, pageResponse);
+        setupDocumentBody(pageResponse);
 
-            setupStandaloneDocument(context, pageResponse);
-            sendBootstrapHeaders(response, headers);
-
-            return document.outerHtml();
-        } else {
-            StringBuilder sb = new StringBuilder();
-            for (Node node : fragmentResponse.getFragmentNodes()) {
-                if (sb.length() != 0) {
-                    sb.append('\n');
-                }
-                sb.append(node.outerHtml());
-            }
-
-            return sb.toString();
-        }
-    }
-
-    private static void sendBootstrapHeaders(VaadinResponse response,
-            Map<String, Object> headers) {
-        Set<Entry<String, Object>> entrySet = headers.entrySet();
-        for (Entry<String, Object> header : entrySet) {
-            Object value = header.getValue();
-            if (value instanceof String) {
-                response.setHeader(header.getKey(), (String) value);
-            } else if (value instanceof Long) {
-                response.setDateHeader(header.getKey(),
-                        ((Long) value).longValue());
-            } else {
-                throw new IllegalArgumentException(
-                        "Unsupported header value: " + value);
-            }
-        }
+        return document.outerHtml();
     }
 
     private static void writeBootstrapPage(VaadinResponse response, String html)
@@ -316,11 +270,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         writer.close();
     }
 
-    private static void setupStandaloneDocument(BootstrapContext context,
-            BootstrapPageResponse response) {
-        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
-                response::setDateHeader);
-
+    private static void setupDocumentHead(BootstrapContext context,
+            BootstrapPageResponse response) throws IOException {
         Document document = response.getDocument();
 
         DocumentType doctype = new DocumentType("html", "", "",
@@ -328,22 +279,22 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         document.child(0).before(doctype);
 
         Element head = document.head();
-        head.appendElement("meta").attr("http-equiv", "Content-Type")
-                .attr("content", "text/html; charset=utf-8");
+        head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
+                .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
         /*
          * Enable Chrome Frame in all versions of IE if installed.
          */
-        head.appendElement("meta").attr("http-equiv", "X-UA-Compatible")
-                .attr("content", "IE=11;chrome=1");
+        head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
+                .attr(CONTENT_ATTRIBUTE, "IE=11;chrome=1");
 
         Class<? extends UI> uiClass = context.getUI().getClass();
 
         String viewportContent = getViewportContent(uiClass,
                 context.getRequest());
         if (viewportContent != null) {
-            head.appendElement("meta").attr("name", "viewport").attr("content",
-                    viewportContent);
+            head.appendElement(META_TAG).attr("name", "viewport")
+                    .attr(CONTENT_ATTRIBUTE, viewportContent);
         }
         String title = AnnotationReader.getPageTitle(uiClass);
         if (title != null) {
@@ -360,7 +311,15 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                             .resolveVaadinUri("vaadin://es6-collections.js"));
         }
 
-        Element body = document.body();
+        if (context.getPushMode().isEnabled()) {
+            head.appendChild(getPushScript(context));
+        }
+
+        head.appendChild(getBootstrapScript(context));
+    }
+
+    private static void setupDocumentBody(BootstrapPageResponse response) {
+        Element body = response.getDocument().body();
         body.attr("scroll", "auto");
         body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
 
@@ -368,11 +327,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 "You have to enable javascript in your browser to use this web site.");
     }
 
-    private static void setupBootstrapScript(BootstrapContext context)
-            throws IOException {
-        List<Node> fragmentNodes = context.getBootstrapResponse()
-                .getFragmentNodes();
-
+    private static Element getPushScript(BootstrapContext context) {
         VaadinRequest request = context.getRequest();
 
         VaadinService vaadinService = request.getService();
@@ -382,42 +337,42 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
-        if (context.getPushMode().isEnabled()) {
-            // Load client-side dependencies for push support
-            String pushJS = vaadinLocation + "push/";
-            if (context.getRequest().getService().getDeploymentConfiguration()
-                    .isProductionMode()) {
-                pushJS += ApplicationConstants.VAADIN_PUSH_JS;
-            } else {
-                pushJS += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-            }
-
-            pushJS += versionQueryParam;
-
-            fragmentNodes.add(new Element(Tag.valueOf("script"), "")
-                    .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS));
+        // Load client-side dependencies for push support
+        String pushJS = vaadinLocation + "push/";
+        if (context.getRequest().getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            pushJS += ApplicationConstants.VAADIN_PUSH_JS;
+        } else {
+            pushJS += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
-        Element mainScriptTag = new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT);
+        pushJS += versionQueryParam;
+
+        return new Element(Tag.valueOf("script"), "")
+                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
+    }
+
+    private static Element getBootstrapScript(BootstrapContext context)
+            throws IOException {
+        Element mainScript = new Element(Tag.valueOf("script"), "").attr("type",
+                TYPE_TEXT_JAVASCRIPT);
 
         StringBuilder builder = new StringBuilder();
         builder.append("//<![CDATA[\n");
         builder.append(getBootstrapJS(context));
 
         builder.append("//]]>");
-        mainScriptTag.appendChild(
-                new DataNode(builder.toString(), mainScriptTag.baseUri()));
-        fragmentNodes.add(mainScriptTag);
-
+        mainScript.appendChild(
+                new DataNode(builder.toString(), mainScript.baseUri()));
+        return mainScript;
     }
 
     private static String getBootstrapJS(BootstrapContext context)
             throws IOException {
-        String result = getBootstrapJS();
-        JsonObject appConfig = context.getApplicationParameters();
         boolean isDebug = !context.getSession().getConfiguration()
                 .isProductionMode();
+        String result = getBootstrapJS();
+        JsonObject appConfig = context.getApplicationParameters();
 
         int indent = 0;
         if (isDebug) {
@@ -506,10 +461,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         if (!session.getConfiguration().isProductionMode()) {
             appConfig.put("debug", true);
-        }
-
-        if (vaadinService.isStandalone(request)) {
-            appConfig.put("standalone", true);
         }
 
         appConfig.put("heartbeatInterval", vaadinService

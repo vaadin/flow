@@ -152,9 +152,6 @@ public class Bootstrapper implements EntryPoint {
                 .getConfigInteger(ApplicationConstants.UI_ID_PARAMETER)
                 .intValue());
 
-        // null -> false
-        conf.setStandalone(jsoConfiguration.getConfigBoolean("standalone"));
-
         conf.setHeartbeatInterval(
                 jsoConfiguration.getConfigInteger("heartbeatInterval"));
 
