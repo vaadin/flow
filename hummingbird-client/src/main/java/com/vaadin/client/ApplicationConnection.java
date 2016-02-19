@@ -20,10 +20,10 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.Poller;
+import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.shared.Version;
-import com.vaadin.shared.ui.ui.UIState.ReconnectDialogConfigurationState;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -48,7 +48,10 @@ public class ApplicationConnection {
         registry = new DefaultRegistry(this, applicationConfiguration);
         StateNode rootNode = registry.getStateTree().getRootNode();
 
+        // Bind UI configuration objects
         PollConfigurator.observe(rootNode, new Poller(registry));
+        ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
+
         Element body = Browser.getDocument().getBody();
 
         BasicElementBinder.bind(rootNode, body);
@@ -163,11 +166,6 @@ public class ApplicationConnection {
         } else {
             return false;
         }
-    }
-
-    public ReconnectDialogConfigurationState getReconnectDialogConfiguration() {
-        // FIXME from the server
-        return new ReconnectDialogConfigurationState();
     }
 
 }

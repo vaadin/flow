@@ -70,7 +70,10 @@ public class NamespaceTest {
         expectedIds.put(PushConfigurationParametersMap.class,
                 Namespaces.UI_PUSHCONFIGURATION_PARAMETERS);
         expectedIds.put(TextNodeNamespace.class, Namespaces.TEXT_NODE);
-        expectedIds.put(PollConfigurationNamespace.class, Namespaces.POLL_CONFIGURATION);
+        expectedIds.put(PollConfigurationNamespace.class,
+                Namespaces.POLL_CONFIGURATION);
+        expectedIds.put(ReconnectDialogConfigurationNamespace.class,
+                Namespaces.RECONNECT_DIALOG_CONFIGURATION);
 
         Assert.assertEquals(
                 "The number of expected namespaces is not up to date",

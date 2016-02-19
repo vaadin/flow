@@ -20,6 +20,7 @@ import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.PushConfiguration;
+import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
@@ -222,4 +223,12 @@ public class Registry {
         return get(RequestResponseTracker.class);
     }
 
+    /**
+     * Gets the {@link ReconnectDialogConfiguration} singleton.
+     *
+     * @return the {@link ReconnectDialogConfiguration} singleton
+     */
+    public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
+        return get(ReconnectDialogConfiguration.class);
+    }
 }
