@@ -26,7 +26,6 @@ import com.vaadin.server.VaadinRequest;
 public class UIInitRefreshTest {
 
     private boolean initCalled;
-    private boolean refreshCalled;
 
     private class TestUI extends UI {
         @Override
@@ -34,15 +33,11 @@ public class UIInitRefreshTest {
             initCalled = true;
         }
 
-        @Override
-        protected void refresh(VaadinRequest request) {
-            refreshCalled = true;
-        }
     }
 
     @Before
     public void setUp() {
-        initCalled = refreshCalled = false;
+        initCalled = false;
     }
 
     @Test
@@ -68,8 +63,5 @@ public class UIInitRefreshTest {
 
         Assert.assertTrue(initCalled);
 
-        ui.doRefresh(reinitRequest);
-
-        Assert.assertTrue(refreshCalled);
     }
 }
