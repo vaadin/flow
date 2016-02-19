@@ -66,12 +66,7 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the URL to the server-side VaadinService. If
-     * {@link #useServiceUrlPathParam()} return <code>true</code>, the requested
-     * path info should be in the <code>v-resourcePath</code> query parameter;
-     * else the path info should be appended to the end of the URL.
-     *
-     * @see #useServiceUrlPathParam()
+     * Gets the URL to the server-side VaadinService.
      *
      * @return the URL to the server-side service as a string
      */

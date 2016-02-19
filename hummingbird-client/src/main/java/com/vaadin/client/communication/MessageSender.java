@@ -111,7 +111,7 @@ public class MessageSender {
      *
      * @param reqInvocations
      *            Data containing RPC invocations and all related information.
-     * @param extraParams
+     * @param extraJson
      *            Parameters that are added to the payload
      */
     protected void send(final JsonArray reqInvocations,
@@ -144,8 +144,6 @@ public class MessageSender {
      * Sends an asynchronous or synchronous UIDL request to the server using the
      * given URI.
      *
-     * @param uri
-     *            The URI to use for the request. May includes GET parameters
      * @param payload
      *            The contents of the request to send
      */
@@ -224,7 +222,7 @@ public class MessageSender {
     /**
      * Used internally to update what the server expects
      *
-     * @param clientToServerMessageId
+     * @param nextExpectedId
      *            the new client id to set
      * @param force
      *            true if the id must be updated, false otherwise

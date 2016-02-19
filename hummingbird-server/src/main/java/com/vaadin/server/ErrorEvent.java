@@ -19,10 +19,7 @@ import java.io.Serializable;
 
 /**
  * An error thrown by the framework and handled by an {@link ErrorHandler}.
- * Typically handled by {@link VaadinSession#getErrorHandler()} but can also be
- * handled by a {@link Connector} specific handler, set using
- * {@link ClientConnector#setErrorHandler(ErrorHandler)}.
- *
+ * Typically handled by {@link VaadinSession#getErrorHandler()}.
  */
 public class ErrorEvent implements Serializable {
 
@@ -48,9 +45,8 @@ public class ErrorEvent implements Serializable {
     /**
      * Method for finding the error handler for the given session.
      *
-     * @param connector
-     *            The target connector
-     *
+     * @param session
+     *            the active session
      * @return An ErrorHandler for the session or null if none was found
      */
     public static ErrorHandler findErrorHandler(VaadinSession session) {

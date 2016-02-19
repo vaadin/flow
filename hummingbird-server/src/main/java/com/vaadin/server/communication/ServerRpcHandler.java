@@ -38,8 +38,7 @@ import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
 /**
- * Handles a client-to-server message containing serialized {@link ServerRpc
- * server RPC} invocations.
+ * Handles a client-to-server message containing serialized RPC invocations.
  *
  * @author Vaadin Ltd
  * @since 7.1

@@ -373,7 +373,7 @@ public abstract class UI implements Serializable, PollNotifier {
      * Note that this method is strictly for users to explicitly signal the
      * framework that the UI should be detached. Overriding it is not a reliable
      * way to catch UIs that are to be detached. Instead, {@code UI.detach()}
-     * should be overridden or a {@link DetachListener} used.
+     * should be overridden.
      */
     public void close() {
         closing = true;
@@ -427,8 +427,8 @@ public abstract class UI implements Serializable, PollNotifier {
      * </ul>
      * <p>
      * Note that when a UI is detached, any changes made in the {@code detach}
-     * methods of any children or {@link DetachListener}s that would be
-     * communicated to the client are silently ignored.
+     * methods of any children that would be communicated to the client are
+     * silently ignored.
      */
     public void detach() {
     }
@@ -441,7 +441,6 @@ public abstract class UI implements Serializable, PollNotifier {
      * {@link #access(Runnable)} can be used while holding the lock of another
      * session. To avoid causing deadlocks, this methods throws an exception if
      * it is detected than another session is also locked by the current thread.
-     * </p>
      * <p>
      * This method behaves differently than {@link #access(Runnable)} in some
      * situations:
@@ -454,7 +453,6 @@ public abstract class UI implements Serializable, PollNotifier {
      * to be available whereas {@link #access(Runnable)} defers the task to a
      * later point in time.</li>
      * </ul>
-     * </p>
      *
      * @since 7.1
      *
@@ -808,7 +806,7 @@ public abstract class UI implements Serializable, PollNotifier {
      *
      * Used internally for communication tracking.
      *
-     * @param lastProcessedServerMessageId
+     * @param lastProcessedClientToServerId
      *            the id of the last processed server message
      * @since 7.6
      */
