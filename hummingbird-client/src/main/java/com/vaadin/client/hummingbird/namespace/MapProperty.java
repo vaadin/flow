@@ -181,11 +181,11 @@ public class MapProperty implements ReactiveValue {
      */
     public int getValueOrDefault(int defaultValue) {
         if (hasValue()) {
-            Object value = getValue();
-            if (value == null) {
+            Object v = getValue();
+            if (v == null) {
                 return defaultValue;
             }
-            return ((Double) value).intValue();
+            return ((Double) v).intValue();
         } else {
             return defaultValue;
         }
@@ -202,11 +202,11 @@ public class MapProperty implements ReactiveValue {
      */
     public boolean getValueOrDefault(boolean defaultValue) {
         if (hasValue()) {
-            Object value = getValue();
-            if (value == null) {
+            Object v = getValue();
+            if (v == null) {
                 return defaultValue;
             }
-            return (boolean) value;
+            return (boolean) v;
         } else {
             return defaultValue;
         }
@@ -223,8 +223,8 @@ public class MapProperty implements ReactiveValue {
      */
     public String getValueOrDefault(String defaultValue) {
         if (hasValue()) {
-            Object value = getValue();
-            if (value == null) {
+            Object v = getValue();
+            if (v == null) {
                 return defaultValue;
             }
             return (String) getValue();
