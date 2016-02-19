@@ -85,7 +85,7 @@ public interface ConnectionStateHandler {
      *
      * @param pushConnection
      *            The push connection which was closed
-     * @param response
+     * @param responseObject
      *            An object containing response data
      */
     void pushClosed(PushConnection pushConnection,
@@ -195,9 +195,10 @@ public interface ConnectionStateHandler {
      * Called when invalid content (not JSON) was pushed from the server through
      * the push connection.
      *
-     * @param communicationProblemEvent
-     *            An event containing what was being sent to the server and what
-     *            was returned
+     * @param pushConnection
+     *            the push connection which was used
+     * @param message
+     *            the received message
      */
     void pushInvalidContent(PushConnection pushConnection, String message);
 

@@ -26,6 +26,7 @@ import com.vaadin.server.SynchronizedRequestHandler;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 /**
@@ -49,8 +50,8 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
 
     /**
      * Handles a heartbeat request for the given session. Reads the GET
-     * parameter named {@link UIConstants#UI_ID_PARAMETER} to identify the UI.
-     * If the UI is found in the session, sets it
+     * parameter named {@link ApplicationConstants#UI_ID_PARAMETER} to identify
+     * the UI. If the UI is found in the session, sets it
      * {@link UI#getLastHeartbeatTimestamp() heartbeat timestamp} to the current
      * time. Otherwise, writes a HTTP Not Found error to the response.
      */
