@@ -109,59 +109,74 @@ public abstract class MapNamespace extends Namespace {
     }
 
     /**
-     * Gets the value corresponding to the given key or the given default value
-     * if no value is stored for the given key.
+     * Gets the value corresponding to the given key, or the given default value
+     * if no value is stored for the given key or the value is null.
      *
      * @param key
      *            the key to get a value for
      * @param defaultValue
      *            the value to return if no value is stored for the given key
      * @return the value corresponding to the key or the given
-     *         {@code defaultValue} if no value is stored for the key
+     *         {@code defaultValue} if no value is stored for the key or the
+     *         stored value is null
      */
     protected String getOrDefault(String key, String defaultValue) {
-        if (!contains(key)) {
-            return defaultValue;
+        if (contains(key)) {
+            Object value = get(key);
+            if (value == null) {
+                return defaultValue;
+            }
+            return (String) value;
         } else {
-            return (String) get(key);
+            return defaultValue;
         }
     }
 
     /**
-     * Gets the value corresponding to the given key or the given default value
-     * if no value is stored for the given key.
+     * Gets the value corresponding to the given key, or the given default value
+     * if no value is stored for the given key or the value is null.
      *
      * @param key
      *            the key to get a value for
      * @param defaultValue
      *            the value to return if no value is stored for the given key
      * @return the value corresponding to the key or the given
-     *         {@code defaultValue} if no value is stored for the key
+     *         {@code defaultValue} if no value is stored for the key or the
+     *         stored value is null
      */
     protected int getOrDefault(String key, int defaultValue) {
-        if (!contains(key)) {
-            return defaultValue;
+        if (contains(key)) {
+            Object value = get(key);
+            if (value == null) {
+                return defaultValue;
+            }
+            return (Integer) value;
         } else {
-            return (int) get(key);
+            return defaultValue;
         }
     }
 
     /**
-     * Gets the value corresponding to the given key or the given default value
-     * if no value is stored for the given key.
+     * Gets the value corresponding to the given key, or the given default value
+     * if no value is stored for the given key or the value is null.
      *
      * @param key
      *            the key to get a value for
      * @param defaultValue
      *            the value to return if no value is stored for the given key
      * @return the value corresponding to the key or the given
-     *         {@code defaultValue} if no value is stored for the key
+     *         {@code defaultValue} if no value is stored for the key or the
+     *         stored value is null
      */
     protected boolean getOrDefault(String key, boolean defaultValue) {
-        if (!contains(key)) {
-            return defaultValue;
+        if (contains(key)) {
+            Object value = get(key);
+            if (value == null) {
+                return defaultValue;
+            }
+            return (boolean) value;
         } else {
-            return (boolean) get(key);
+            return defaultValue;
         }
     }
 

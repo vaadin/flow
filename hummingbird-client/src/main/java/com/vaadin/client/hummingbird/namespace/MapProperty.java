@@ -171,51 +171,62 @@ public class MapProperty implements ReactiveValue {
     }
 
     /**
-     * Returns the value or the given defaultValue if the property does not have
-     * a value.
+     * Returns the value, or the given defaultValue if the property does not
+     * have a value or the property value is null.
      *
      * @param defaultValue
      *            the default value
      * @return the value of the property or the default value if the property
-     *         does not have a value
+     *         does not have a value or the property value is null
      */
     public int getValueOrDefault(int defaultValue) {
         if (hasValue()) {
-            Double d = (Double) getValue();
-            return d.intValue();
+            Object value = getValue();
+            if (value == null) {
+                return defaultValue;
+            }
+            return ((Double) value).intValue();
         } else {
             return defaultValue;
         }
     }
 
     /**
-     * Returns the value or the given defaultValue if the property does not have
-     * a value.
+     * Returns the value, or the given defaultValue if the property does not
+     * have a value or the property value is null.
      *
      * @param defaultValue
      *            the default value
      * @return the value of the property or the default value if the property
-     *         does not have a value
+     *         does not have a value or the property value is null
      */
     public boolean getValueOrDefault(boolean defaultValue) {
         if (hasValue()) {
-            return (boolean) getValue();
+            Object value = getValue();
+            if (value == null) {
+                return defaultValue;
+            }
+            return (boolean) value;
         } else {
             return defaultValue;
         }
     }
 
     /**
-     * Returns the value or the given defaultValue if the property does not have
-     * a value.
+     * Returns the value, or the given defaultValue if the property does not
+     * have a value or the property value is null.
      *
      * @param defaultValue
      *            the default value
      * @return the value of the property or the default value if the property
-     *         does not have a value
+     *         does not have a value or the property value is null
      */
     public String getValueOrDefault(String defaultValue) {
         if (hasValue()) {
+            Object value = getValue();
+            if (value == null) {
+                return defaultValue;
+            }
             return (String) getValue();
         } else {
             return defaultValue;
