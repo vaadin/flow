@@ -288,43 +288,6 @@ public abstract class UI implements Serializable, PollNotifier {
     protected abstract void init(VaadinRequest request);
 
     /**
-     * Internal reinitialization method, should not be overridden.
-     *
-     * @since 7.2
-     * @param request
-     *            the request that caused this UI to be reloaded
-     */
-    public void doRefresh(VaadinRequest request) {
-        // This is a horrible hack. We want to have the most recent location and
-        // browser window size available in refresh(), but we want to call
-        // listeners, if any, only after refresh(). So we momentarily assign the
-        // old values back before setting the new values again to ensure the
-        // events are properly fired.
-
-        // Reset heartbeat timeout to avoid surprise if it's almost expired
-        setLastHeartbeatTimestamp(System.currentTimeMillis());
-
-        refresh(request);
-
-    }
-
-    /**
-     * Reinitializes this UI after a browser refresh if the UI is set to be
-     * preserved on refresh, typically using the {@link PreserveOnRefresh}
-     * annotation. This method is intended to be overridden by subclasses if
-     * needed; the default implementation is empty.
-     * <p>
-     * The {@link VaadinRequest} can be used to get information about the
-     * request that caused this UI to be reloaded.
-     *
-     * @since 7.2
-     * @param request
-     *            the request that caused this UI to be reloaded
-     */
-    protected void refresh(VaadinRequest request) {
-    }
-
-    /**
      * Sets the thread local for the current UI. This method is used by the
      * framework to set the current application whenever a new request is
      * processed and it is cleared when the request has been processed.
