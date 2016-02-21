@@ -46,6 +46,7 @@
 		<sonar.analysis.mode>preview</sonar.analysis.mode>
 		<sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
 		<sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
+		<maven.javadoc.skip>true</maven.javadoc.skip>
 	</properties>
 
 	<repositories>
@@ -190,6 +191,21 @@
 						<phase>verify</phase>
 						<goals>
 							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar</goal>
 						</goals>
 					</execution>
 				</executions>
