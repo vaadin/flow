@@ -58,7 +58,7 @@ public class StateTreeTest {
         AtomicReference<NodeUnregisterEvent> lastEvent = new AtomicReference<>();
         node.addUnregisterListener(new NodeUnregisterListener() {
             @Override
-            public void onUnregsiter(NodeUnregisterEvent event) {
+            public void onUnregister(NodeUnregisterEvent event) {
                 Assert.assertNull("Unexpected event fired", lastEvent.get());
                 lastEvent.set(event);
             }

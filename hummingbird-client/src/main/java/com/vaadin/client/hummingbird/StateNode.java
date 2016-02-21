@@ -195,7 +195,7 @@ public class StateNode {
 
         JsSet<NodeUnregisterListener> copy = JsCollections
                 .set(unregisterListeners);
-        copy.forEach(l -> l.onUnregsiter(event));
+        copy.forEach(l -> l.onUnregister(event));
     }
 
     /**
