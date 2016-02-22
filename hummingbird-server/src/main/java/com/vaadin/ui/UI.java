@@ -36,6 +36,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
@@ -94,8 +95,6 @@ public abstract class UI implements Serializable, PollNotifier {
      * @see VaadinSession#getNextUIid()
      */
     private int uiId = -1;
-
-    private LoadingIndicatorConfiguration loadingIndicatorConfiguration = new LoadingIndicatorConfigurationImpl();
 
     /**
      * Timestamp keeping track of the last heartbeat of this UI. Updated to the
@@ -649,7 +648,8 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return The instance used for configuring the loading indicator
      */
     public LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
-        return loadingIndicatorConfiguration;
+        return getStateTree().getRootNode()
+                .getNamespace(LoadingIndicatorConfigurationNamespace.class);
     }
 
     /**
@@ -883,6 +883,7 @@ public abstract class UI implements Serializable, PollNotifier {
         namespaces.add(PushConfigurationMap.class);
         namespaces.add(PollConfigurationNamespace.class);
         namespaces.add(ReconnectDialogConfigurationNamespace.class);
+        namespaces.add(LoadingIndicatorConfigurationNamespace.class);
 
         // And return them all
         assert namespaces.size() == new HashSet<>(namespaces)
