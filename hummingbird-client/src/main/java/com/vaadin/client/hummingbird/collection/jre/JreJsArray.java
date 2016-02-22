@@ -148,4 +148,9 @@ public class JreJsArray<T> extends JsArray<T> {
     public static <T> List<T> asList(JsArray<T> array) {
         return ((JreJsArray<T>) array).values;
     }
+
+    @Override
+    public T shift() {
+        return isEmpty() ? null : remove(0);
+    }
 }
