@@ -64,10 +64,11 @@ public class ListNamespaceTest
         Assert.assertEquals(Arrays.asList(value2),
                 secondAddChange.getNewItems());
 
-        namespace.remove(0);
+        StateNode removedItem = namespace.remove(0);
 
         Assert.assertEquals(1, namespace.size());
         Assert.assertSame(value1, namespace.get(0));
+        Assert.assertSame(value2, removedItem);
 
         List<NodeChange> removeChanges = collectChanges(namespace);
         Assert.assertEquals(1, removeChanges.size());
