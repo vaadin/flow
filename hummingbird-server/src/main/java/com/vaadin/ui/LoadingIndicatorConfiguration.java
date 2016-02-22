@@ -17,8 +17,6 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.shared.ui.ui.UIState.LoadingIndicatorConfigurationState;
-
 /**
  * Provides method for configuring the loading indicator.
  *
@@ -79,77 +77,4 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      * @return The delay before going into the "third" state (in ms)
      */
     public int getThirdDelay();
-}
-
-class LoadingIndicatorConfigurationImpl
-        implements LoadingIndicatorConfiguration {
-    private LoadingIndicatorConfigurationState state = new LoadingIndicatorConfigurationState();
-
-    public LoadingIndicatorConfigurationImpl() {
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.LoadingIndicator#setFirstDelay(int)
-     */
-    @Override
-    public void setFirstDelay(int firstDelay) {
-        getState().firstDelay = firstDelay;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.LoadingIndicator#getFirstDelay()
-     */
-    @Override
-    public int getFirstDelay() {
-        return getState().firstDelay;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.LoadingIndicator#setSecondDelay(int)
-     */
-    @Override
-    public void setSecondDelay(int secondDelay) {
-        getState().secondDelay = secondDelay;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.LoadingIndicator#getSecondDelay()
-     */
-    @Override
-    public int getSecondDelay() {
-        return getState().secondDelay;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.LoadingIndicator#setThirdDelay(int)
-     */
-    @Override
-    public void setThirdDelay(int thirdDelay) {
-        getState().thirdDelay = thirdDelay;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.vaadin.ui.LoadingIndicator#getThirdDelay()
-     */
-    @Override
-    public int getThirdDelay() {
-        return getState().thirdDelay;
-    }
-
-    private LoadingIndicatorConfigurationState getState() {
-        return state;
-    }
-
 }

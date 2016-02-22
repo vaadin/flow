@@ -65,6 +65,8 @@ public class NamespaceRegistry {
                 PollConfigurationNamespace::new);
         registerNamespace(ReconnectDialogConfigurationNamespace.class,
                 ReconnectDialogConfigurationNamespace::new);
+        registerNamespace(LoadingIndicatorConfigurationNamespace.class,
+                LoadingIndicatorConfigurationNamespace::new);
     }
 
     private NamespaceRegistry() {

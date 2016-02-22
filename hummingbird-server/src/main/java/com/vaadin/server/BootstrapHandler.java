@@ -293,8 +293,28 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         if (title != null) {
             head.appendElement("title").appendText(title);
         }
-        head.appendElement("style").attr("type", "text/css")
-                .appendText("html, body {height:100%;margin:0;}");
+        Element styles = head.appendElement("style").attr("type", "text/css");
+        styles.appendText("html, body {height:100%;margin:0;}");
+        // Basic reconnect dialog style just to make it visible and outside of
+        // normal flow
+        styles.appendText(".v-reconnect-dialog {" //
+                + "position: absolute;" //
+                + "top: 1em;" //
+                + "right: 1em;" //
+                + "border: 1px solid black;" //
+                + "padding: 1em;" //
+                + "}");
+
+        // Basic system error dialog style just to make it visible and outside
+        // of normal flow
+        styles.appendText(".v-system-error {" //
+                + "background: white;" //
+                + "position: absolute;" //
+                + "top: 1em;" //
+                + "right: 1em;" //
+                + "border: 1px solid black;" //
+                + "padding: 1em;" //
+                + "}");
 
         if (context.getSession().getBrowser().isPhantomJS()) {
             // Collections polyfill needed only for PhantomJS
