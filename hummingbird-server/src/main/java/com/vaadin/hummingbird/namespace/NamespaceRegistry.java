@@ -67,6 +67,7 @@ public class NamespaceRegistry {
                 ReconnectDialogConfigurationNamespace::new);
         registerNamespace(LoadingIndicatorConfigurationNamespace.class,
                 LoadingIndicatorConfigurationNamespace::new);
+        registerNamespace(ClassListNamespace.class, ClassListNamespace::new);
     }
 
     private NamespaceRegistry() {
