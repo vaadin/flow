@@ -92,7 +92,7 @@ public class Namespaces {
     /**
      * Id for {@link DependencyListNamespace}.
      */
-    public static final Integer DEPENDENCY_LIST = 12;
+    public static final int DEPENDENCY_LIST = 12;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.

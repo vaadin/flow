@@ -718,4 +718,12 @@ public abstract class UI implements Serializable, PollNotifier {
         return frameworkData;
     }
 
+    /**
+     * Gets the object representing the page on which this UI exists.
+     *
+     * @return an object representing the page on which this UI exists
+     */
+    public Page getPage() {
+        return new Page(getFrameworkData().getStateTree().getRootNode());
+    }
 }
