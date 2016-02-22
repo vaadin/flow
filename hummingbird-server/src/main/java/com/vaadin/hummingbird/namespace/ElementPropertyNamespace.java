@@ -55,6 +55,8 @@ public class ElementPropertyNamespace extends MapNamespace {
                 || value instanceof Boolean || value instanceof Double;
         assert name != null;
         assert !"textContent".equals(name);
+        assert !"classList".equals(name);
+        assert !"className".equals(name);
 
         put(name, value);
     }
