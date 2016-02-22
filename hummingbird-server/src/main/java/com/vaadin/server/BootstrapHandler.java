@@ -305,6 +305,17 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 + "padding: 1em;" //
                 + "}");
 
+        // Basic system error dialog style just to make it visible and outside
+        // of normal flow
+        styles.appendText(".v-system-error {" //
+                + "background: white;" //
+                + "position: absolute;" //
+                + "top: 1em;" //
+                + "right: 1em;" //
+                + "border: 1px solid black;" //
+                + "padding: 1em;" //
+                + "}");
+
         if (context.getSession().getBrowser().isPhantomJS()) {
             // Collections polyfill needed only for PhantomJS
 
