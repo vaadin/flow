@@ -183,9 +183,13 @@ public class Bootstrapper implements EntryPoint {
         String[] keyValues = Browser.getDocument().getLocation().getSearch()
                 .substring(1).split("&");
         for (String keyValue : keyValues) {
-            String[] param = keyValue.split("=", 1);
+            String[] param = keyValue.split("=", 2);
             if (param[0].equals(parameter)) {
-                return param[1];
+                if (param.length != 2) {
+                    return "";
+                } else {
+                    return param[1];
+                }
             }
         }
 
