@@ -51,6 +51,7 @@ public class ApplicationConnection {
         // Bind UI configuration objects
         PollConfigurator.observe(rootNode, new Poller(registry));
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
+        DependencyLoader.bind(registry.getDependencyLoader(), rootNode);
 
         Element body = Browser.getDocument().getBody();
 

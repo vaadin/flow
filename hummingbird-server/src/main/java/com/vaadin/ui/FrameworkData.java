@@ -21,6 +21,7 @@ import java.util.HashSet;
 
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
+import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
@@ -188,6 +189,7 @@ public class FrameworkData implements Serializable {
         namespaces.add(PollConfigurationNamespace.class);
         namespaces.add(ReconnectDialogConfigurationNamespace.class);
         namespaces.add(LoadingIndicatorConfigurationNamespace.class);
+        namespaces.add(DependencyListNamespace.class);
 
         // And return them all
         assert namespaces.size() == new HashSet<>(namespaces)
