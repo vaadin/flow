@@ -176,20 +176,9 @@ public class Bootstrapper implements EntryPoint {
      * @return {@code true} if debug mode is active, {@code false} otherwise
      */
     private static boolean isDebugMode() {
-        return isDebugAvailable() && getParameter("debug") != null;
-    }
-
-    private static String getParameter(String parameter) {
-        String[] keyValues = Browser.getDocument().getLocation().getSearch()
-                .substring(1).split("&");
-        for (String keyValue : keyValues) {
-            String[] param = keyValue.split("=", 1);
-            if (param[0].equals(parameter)) {
-                return param[1];
-            }
-        }
-
-        return null;
+        return isDebugAvailable() && LocationParser.getParameter(
+                Browser.getDocument().getLocation().getSearch(),
+                "debug") != null;
     }
 
     private static native boolean isDebugAvailable()
