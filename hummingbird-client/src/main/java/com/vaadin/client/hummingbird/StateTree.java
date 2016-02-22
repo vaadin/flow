@@ -185,6 +185,16 @@ public class StateTree {
                     "pushConfiguration");
             namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION_PARAMETERS,
                     "pushConfigurationParameters");
+            namespaceDebugName.set(Namespaces.TEXT_NODE, "textNode");
+            namespaceDebugName.set(Namespaces.POLL_CONFIGURATION,
+                    "pollConfiguration");
+            namespaceDebugName.set(Namespaces.RECONNECT_DIALOG_CONFIGURATION,
+                    "reconnectDialogConfiguration");
+            namespaceDebugName.set(Namespaces.LOADING_INDICATOR_CONFIGURATION,
+                    "loadingIndicatorConfiguration");
+            namespaceDebugName.set(Namespaces.CLASS_LIST, "classList");
+            namespaceDebugName.set(Namespaces.DEPENDENCY_LIST,
+                    "dependencyList");
         }
         if (namespaceDebugName.has(id)) {
             return namespaceDebugName.get(id);

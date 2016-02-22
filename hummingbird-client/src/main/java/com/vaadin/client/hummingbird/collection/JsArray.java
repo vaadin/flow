@@ -210,6 +210,13 @@ public class JsArray<T> {
         return false;
     }
 
+    /**
+     * Removes and returns the first value from the array.
+     *
+     * @return the first value of the array or null if the array is empty
+     */
+    public native T shift();
+
 }
 
 // Helper for stuff not allowed in a @JsType class
