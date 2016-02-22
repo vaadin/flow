@@ -18,6 +18,8 @@ package com.vaadin.client;
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
+import elemental.dom.Document;
+import elemental.dom.Element;
 
 /**
  * Class handling system errors in the application.
@@ -103,11 +105,34 @@ public class SystemErrorHandler {
      */
     public void showError(String caption, String message, String details,
             String url) {
-        // FIXME Not like this
-        Browser.getWindow().alert(caption + "\n" + message + "\n" + details);
-        if (url != null) {
-            WidgetUtil.redirect(url);
+        Document document = Browser.getDocument();
+        Element systemErrorContainer = document.createDivElement();
+        systemErrorContainer.setClassName("v-system-error");
+
+        if (caption != null) {
+            Element captionDiv = document.createDivElement();
+            captionDiv.setClassName("caption");
+            captionDiv.setInnerHTML(caption);
+            systemErrorContainer.appendChild(captionDiv);
         }
+        if (message != null) {
+            Element messageDiv = document.createDivElement();
+            messageDiv.setClassName("message");
+            messageDiv.setInnerHTML(message);
+            systemErrorContainer.appendChild(messageDiv);
+        }
+        if (details != null) {
+            Element detailsDiv = document.createDivElement();
+            detailsDiv.setClassName("details");
+            detailsDiv.setInnerHTML(details);
+            systemErrorContainer.appendChild(detailsDiv);
+        }
+
+        systemErrorContainer.addEventListener("click", e -> {
+            WidgetUtil.redirect(url);
+        } , false);
+
+        document.getBody().appendChild(systemErrorContainer);
     }
 
 }
