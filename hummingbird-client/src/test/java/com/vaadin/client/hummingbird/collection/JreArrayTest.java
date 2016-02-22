@@ -16,6 +16,8 @@
 
 package com.vaadin.client.hummingbird.collection;
 
+import static org.junit.Assert.assertEquals;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -194,6 +196,22 @@ public class JreArrayTest {
         array.pushArray(array);
 
         assertArray(array, "1", "2", "1", "2");
+    }
+
+    @Test
+    public void testShift() {
+        JsArray<String> array = JsCollections.array();
+        array.push("1");
+        array.push("2");
+        array.push("3");
+        assertEquals("1", array.shift());
+        assertEquals(2, array.length());
+        assertEquals("2", array.shift());
+        assertEquals(1, array.length());
+        assertEquals("3", array.shift());
+        assertEquals(0, array.length());
+        assertEquals(null, array.shift());
+        assertEquals(0, array.length());
     }
 
 }

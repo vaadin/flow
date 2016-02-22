@@ -15,11 +15,17 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.JsArrayString;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
+import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.namespace.ListNamespace;
+import com.vaadin.client.hummingbird.namespace.ListSpliceEvent;
+import com.vaadin.hummingbird.namespace.DependencyListNamespace;
+import com.vaadin.hummingbird.shared.Namespaces;
+
+import elemental.json.JsonObject;
 
 /**
  * Class which handles loading of dependencies (stylesheets and scripts) in the
@@ -55,7 +61,7 @@ public class DependencyLoader {
      *            a list of dependency URLs to load, will be translated using
      *            {@link #translateVaadinUri(String)} before they are loaded
      */
-    public void loadStyleDependencies(JsArrayString dependencies) {
+    public void loadStyleDependencies(JsArray<String> dependencies) {
         // Assuming no reason to interpret in a defined order
         ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
             @Override
@@ -88,7 +94,7 @@ public class DependencyLoader {
      *            a list of dependency URLs to load, will be translated using
      *            {@link #translateVaadinUri(String)} before they are loaded
      */
-    public void loadScriptDependencies(final JsArrayString dependencies) {
+    public void loadScriptDependencies(final JsArray<String> dependencies) {
         if (dependencies.length() == 0) {
             return;
         }
@@ -183,6 +189,42 @@ public class DependencyLoader {
             }
             callbacks.clear();
         }
+    }
+
+    public static void bind(DependencyLoader dependencyLoader,
+            StateNode rootNode) {
+        ListNamespace namespace = rootNode
+                .getListNamespace(Namespaces.DEPENDENCY_LIST);
+        namespace.addSpliceListener(dependencyLoader::onDependencySplice);
+    }
+
+    private void onDependencySplice(ListSpliceEvent event) {
+        JsArray<String> scripts = JsCollections.array();
+        JsArray<String> stylesheets = JsCollections.array();
+
+        JsArray<?> added = event.getAdd();
+        for (int i = 0; i < added.length(); i++) {
+            JsonObject dependencyJson = (JsonObject) added.get(i);
+            String type = dependencyJson
+                    .getString(DependencyListNamespace.KEY_TYPE);
+            String url = dependencyJson
+                    .getString(DependencyListNamespace.KEY_URL);
+            if (DependencyListNamespace.TYPE_STYLESHEET.equals(type)) {
+                stylesheets.push(url);
+            } else if (DependencyListNamespace.TYPE_JAVASCRIPT.equals(type)) {
+                scripts.push(url);
+            } else {
+                Console.error("Unknown dependency type " + type);
+            }
+        }
+
+        if (!scripts.isEmpty()) {
+            loadScriptDependencies(scripts);
+        }
+        if (!stylesheets.isEmpty()) {
+            loadStyleDependencies(stylesheets);
+        }
+
     }
 
 }

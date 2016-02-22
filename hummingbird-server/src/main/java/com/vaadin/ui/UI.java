@@ -35,6 +35,7 @@ import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
+import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
@@ -884,6 +885,7 @@ public abstract class UI implements Serializable, PollNotifier {
         namespaces.add(PollConfigurationNamespace.class);
         namespaces.add(ReconnectDialogConfigurationNamespace.class);
         namespaces.add(LoadingIndicatorConfigurationNamespace.class);
+        namespaces.add(DependencyListNamespace.class);
 
         // And return them all
         assert namespaces.size() == new HashSet<>(namespaces)
@@ -912,4 +914,12 @@ public abstract class UI implements Serializable, PollNotifier {
         return getStateTree().getRootNode();
     }
 
+    /**
+     * Gets the object representing the page on which this UI exists.
+     *
+     * @return an object representing the page on which this UI exists
+     */
+    public Page getPage() {
+        return new Page(this);
+    }
 }

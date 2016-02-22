@@ -16,7 +16,6 @@
 
 package com.vaadin.hummingbird.namespace;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -35,7 +34,7 @@ import com.vaadin.hummingbird.change.NodeChange;
  * @param <T>
  *            the type of the items in the list
  */
-public abstract class ListNamespace<T extends Serializable> extends Namespace {
+public abstract class ListNamespace<T> extends Namespace {
 
     private List<T> values = new ArrayList<>();
 
@@ -194,7 +193,7 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
 
     /**
      * Gets an iterator returning all items in this namespace.
-     * 
+     *
      * @return an iterator returning all items
      */
     protected Iterator<T> iterator() {

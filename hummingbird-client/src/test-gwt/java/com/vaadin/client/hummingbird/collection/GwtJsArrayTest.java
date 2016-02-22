@@ -190,4 +190,20 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
                 .crazyJsCast(JsCollections.array("a", "b"));
         assertNotNull(array2);
     }
+
+    public void testShift() {
+        JsArray<String> array = JsCollections.array();
+        array.push("1");
+        array.push("2");
+        array.push("3");
+        assertEquals("1", array.shift());
+        assertEquals(2, array.length());
+        assertEquals("2", array.shift());
+        assertEquals(1, array.length());
+        assertEquals("3", array.shift());
+        assertEquals(0, array.length());
+        assertEquals(null, array.shift());
+        assertEquals(0, array.length());
+    }
+
 }

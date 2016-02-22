@@ -19,8 +19,8 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
+import com.vaadin.client.hummingbird.collection.JsArray;
 
 public final class ValueMap extends JavaScriptObject {
     protected ValueMap() {
@@ -58,7 +58,7 @@ public final class ValueMap extends JavaScriptObject {
         return a;
     }-*/;
 
-    public native JsArrayString getJSStringArray(String name)
+    public native JsArray<String> getJSStringArray(String name)
     /*-{
         return this[name];
     }-*/;
@@ -69,7 +69,7 @@ public final class ValueMap extends JavaScriptObject {
     }-*/;
 
     public String[] getStringArray(final String name) {
-        JsArrayString stringArrayAttribute = getJSStringArray(name);
+        JsArray<String> stringArrayAttribute = getJSStringArray(name);
         final String[] s = new String[stringArrayAttribute.length()];
         for (int i = 0; i < stringArrayAttribute.length(); i++) {
             s[i] = stringArrayAttribute.get(i);
@@ -78,7 +78,7 @@ public final class ValueMap extends JavaScriptObject {
     }
 
     public int[] getIntArray(final String name) {
-        JsArrayString stringArrayAttribute = getJSStringArray(name);
+        JsArray<String> stringArrayAttribute = getJSStringArray(name);
         final int[] s = new int[stringArrayAttribute.length()];
         for (int i = 0; i < stringArrayAttribute.length(); i++) {
             s[i] = Integer.parseInt(stringArrayAttribute.get(i));
