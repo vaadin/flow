@@ -123,8 +123,6 @@ public abstract class UI implements Serializable, PollNotifier {
 
     private PushConnection pushConnection = null;
 
-    private String embedId;
-
     private EventRegistrationHandle domPollListener = null;
 
     /**
@@ -241,14 +239,10 @@ public abstract class UI implements Serializable, PollNotifier {
      *            the initialization request
      * @param uiId
      *            the id of the new ui
-     * @param embedId
-     *            the embed id of this UI, or <code>null</code> if no id is
-     *            known
      *
      * @see #getUIId()
-     * @see #getEmbedId()
      */
-    public void doInit(VaadinRequest request, int uiId, String embedId) {
+    public void doInit(VaadinRequest request, int uiId) {
         if (this.uiId != -1) {
             String message = "This UI instance is already initialized (as UI id "
                     + this.uiId
@@ -264,7 +258,6 @@ public abstract class UI implements Serializable, PollNotifier {
             throw new IllegalStateException(message);
         }
         this.uiId = uiId;
-        this.embedId = embedId;
 
         // Call the init overridden by the application developer
         init(request);
@@ -773,19 +766,6 @@ public abstract class UI implements Serializable, PollNotifier {
 
     private static Logger getLogger() {
         return Logger.getLogger(UI.class.getName());
-    }
-
-    /**
-     * Gets a string the uniquely distinguishes this UI instance based on where
-     * it is embedded. The embed identifier is based on the
-     * <code>window.name</code> DOM attribute of the browser window where the UI
-     * is displayed and the id of the div element where the UI is embedded.
-     *
-     * @since 7.2
-     * @return the embed id for this UI, or <code>null</code> if no id known
-     */
-    public String getEmbedId() {
-        return embedId;
     }
 
     /**

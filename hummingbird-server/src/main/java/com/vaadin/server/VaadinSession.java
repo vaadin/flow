@@ -211,8 +211,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private int nextUIId = 0;
     private Map<Integer, UI> uIs = new HashMap<Integer, UI>();
 
-    private final Map<String, Integer> embedIdMap = new HashMap<String, Integer>();
-
     protected WebBrowser browser = new WebBrowser();
 
     private long cumulativeRequestDuration = 0;
@@ -642,10 +640,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         Integer id = Integer.valueOf(ui.getUIId());
         ui.setSession(null);
         uIs.remove(id);
-        String embedId = ui.getEmbedId();
-        if (embedId != null && id.equals(embedIdMap.get(embedId))) {
-            embedIdMap.remove(embedId);
-        }
     }
 
     /**
@@ -905,19 +899,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
         Integer uiId = Integer.valueOf(ui.getUIId());
         uIs.put(uiId, ui);
-
-        String embedId = ui.getEmbedId();
-        if (embedId != null) {
-            Integer previousUiId = embedIdMap.put(embedId, uiId);
-            if (previousUiId != null) {
-                UI previousUi = uIs.get(previousUiId);
-                assert previousUi != null && embedId.equals(previousUi
-                        .getEmbedId()) : "UI id map and embed id map not in sync";
-
-                // Will fire cleanup events at the end of the request handling.
-                previousUi.close();
-            }
-        }
     }
 
     public VaadinService getService() {
@@ -1104,26 +1085,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             pendingAccessQueue = new ConcurrentLinkedQueue<FutureAccess>();
         } finally {
             CurrentInstance.restoreInstances(old);
-        }
-    }
-
-    /**
-     * Finds the UI with the corresponding embed id.
-     *
-     * @since 7.2
-     * @param embedId
-     *            the embed id
-     * @return the UI with the corresponding embed id, or <code>null</code> if
-     *         no UI is found
-     *
-     * @see UI#getEmbedId()
-     */
-    public UI getUIByEmbedId(String embedId) {
-        Integer uiId = embedIdMap.get(embedId);
-        if (uiId == null) {
-            return null;
-        } else {
-            return getUIById(uiId.intValue());
         }
     }
 

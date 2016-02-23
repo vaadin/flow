@@ -517,7 +517,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
 
-        ui.doInit(request, uiId.intValue(), null);
+        ui.doInit(request, uiId.intValue());
 
         session.addUI(ui);
 
