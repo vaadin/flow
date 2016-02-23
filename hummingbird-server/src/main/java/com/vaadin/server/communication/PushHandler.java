@@ -246,13 +246,15 @@ public class PushHandler {
                         vaadinRequest);
 
                 AtmosphereResource errorResource = resource;
-                if (ui != null && ui.getPushConnection() != null) {
+                if (ui != null
+                        && ui.getFrameworkData().getPushConnection() != null) {
                     // We MUST use the opened push connection if there is one.
                     // Otherwise we will write the response to the wrong request
                     // when using streaming (the client -> server request
                     // instead of the opened push channel)
                     errorResource = ((AtmospherePushConnection) ui
-                            .getPushConnection()).getResource();
+                            .getFrameworkData().getPushConnection())
+                                    .getResource();
                 }
 
                 sendNotificationAndDisconnect(errorResource,
@@ -291,7 +293,8 @@ public class PushHandler {
     }
 
     private static AtmospherePushConnection getConnectionForUI(UI ui) {
-        PushConnection pushConnection = ui.getPushConnection();
+        PushConnection pushConnection = ui.getFrameworkData()
+                .getPushConnection();
         if (pushConnection instanceof AtmospherePushConnection) {
             return (AtmospherePushConnection) pushConnection;
         } else {
@@ -404,7 +407,8 @@ public class PushHandler {
     private static UI findUiUsingResource(AtmosphereResource resource,
             Collection<UI> uIs) {
         for (UI ui : uIs) {
-            PushConnection pushConnection = ui.getPushConnection();
+            PushConnection pushConnection = ui.getFrameworkData()
+                    .getPushConnection();
             if (pushConnection instanceof AtmospherePushConnection) {
                 if (((AtmospherePushConnection) pushConnection)
                         .getResource() == resource) {
