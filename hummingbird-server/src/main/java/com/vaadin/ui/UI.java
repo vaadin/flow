@@ -717,5 +717,4 @@ public abstract class UI implements Serializable, PollNotifier {
     public FrameworkData getFrameworkData() {
         return frameworkData;
     }
-
 }

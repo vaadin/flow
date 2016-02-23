@@ -47,6 +47,8 @@ public class ListSpliceChange extends NamespaceChange {
      *
      * @param namespace
      *            the changed namespace
+     * @param nodeValues
+     *            true if the values are {@link StateNode}s, false otherwise
      * @param index
      *            the index of the splice operation
      * @param removeCount
@@ -54,13 +56,13 @@ public class ListSpliceChange extends NamespaceChange {
      * @param newItems
      *            a list of new items
      */
-    public ListSpliceChange(ListNamespace<?> namespace, int index,
-            int removeCount, List<?> newItems) {
+    public ListSpliceChange(ListNamespace<?> namespace, boolean nodeValues,
+            int index, int removeCount, List<?> newItems) {
         super(namespace);
         this.index = index;
         this.removeCount = removeCount;
         this.newItems = newItems;
-        nodeValues = namespace.isNodeValues();
+        this.nodeValues = nodeValues;
     }
 
     /**
@@ -79,6 +81,12 @@ public class ListSpliceChange extends NamespaceChange {
      */
     public int getRemoveCount() {
         return removeCount;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Class<? extends ListNamespace<?>> getNamespace() {
+        return (Class<? extends ListNamespace<?>>) super.getNamespace();
     }
 
     /**

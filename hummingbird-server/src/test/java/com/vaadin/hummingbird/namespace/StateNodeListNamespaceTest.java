@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.change.NodeChange;
 
-public class ListNamespaceTest
+public class StateNodeListNamespaceTest
         extends AbstractNamespaceTest<ElementChildrenNamespace> {
     private ListNamespace<StateNode> namespace = createNamespace();
 
@@ -137,4 +137,5 @@ public class ListNamespaceTest
         namespace.clear();
         Assert.assertEquals(0, namespace.size());
     }
+
 }

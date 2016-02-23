@@ -13,55 +13,50 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.hummingbird.namespace;
+
+import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
 
 /**
- * Namespace for nodes describing the child elements of an element.
+ * A list namespace which contains {@link StateNode}s.
  *
+ * @author Vaadin
  * @since
- * @author Vaadin Ltd
  */
-public class ElementChildrenNamespace extends StateNodeListNamespace {
+public abstract class StateNodeListNamespace extends ListNamespace<StateNode> {
+
     /**
-     * Creates a new element children namespace for the given node.
+     * Creates a new namespace for the given node.
      *
      * @param node
      *            the node that the namespace belongs to
      */
-    public ElementChildrenNamespace(StateNode node) {
+    protected StateNodeListNamespace(StateNode node) {
         super(node);
     }
 
     @Override
-    public void add(int index, StateNode node) {
-        super.add(index, node);
+    protected boolean isNodeValues() {
+        return true;
     }
 
     @Override
-    public StateNode get(int index) {
-        return super.get(index);
+    protected void add(int index, StateNode item) {
+        super.add(index, item);
+        attachPotentialChild(item);
     }
 
     @Override
-    public StateNode remove(int index) {
-        return super.remove(index);
+    protected StateNode remove(int index) {
+        StateNode removed = super.remove(index);
+        detatchPotentialChild(removed);
+        return removed;
     }
 
     @Override
-    public void clear() {
-        super.clear();
-    }
-
-    @Override
-    public int indexOf(StateNode node) {
-        return super.indexOf(node);
-    }
-
-    @Override
-    public int size() {
-        return super.size();
+    public void forEachChild(Consumer<StateNode> action) {
+        iterator().forEachRemaining(action);
     }
 }
