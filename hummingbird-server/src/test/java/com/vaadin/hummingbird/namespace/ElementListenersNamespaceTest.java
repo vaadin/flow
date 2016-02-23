@@ -15,17 +15,28 @@
  */
 package com.vaadin.hummingbird.namespace;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.DomEventListener;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.util.JsonStream;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 public class ElementListenersNamespaceTest
         extends AbstractNamespaceTest<ElementListenersNamespace> {
-    private static final DomEventListener noOp = () -> {
+    private static final DomEventListener noOp = e -> {
         // no op
     };
 
@@ -33,34 +44,104 @@ public class ElementListenersNamespaceTest
 
     @Test
     public void testAddedListenerGetsEvent() {
+
         AtomicInteger eventCount = new AtomicInteger();
 
         EventRegistrationHandle handle = ns.add("foo",
-                eventCount::incrementAndGet);
+                e -> eventCount.incrementAndGet(), new String[0]);
 
         Assert.assertEquals(0, eventCount.get());
 
-        ns.fireEvent("foo");
+        ns.fireEvent(createEvent("foo"));
 
         Assert.assertEquals(1, eventCount.get());
 
         handle.remove();
 
-        ns.fireEvent("foo");
+        ns.fireEvent(createEvent("foo"));
 
         Assert.assertEquals(1, eventCount.get());
+    }
+
+    private static DomEvent createEvent(String type) {
+        return new DomEvent(new Element("fake"), type, Json.createObject());
     }
 
     @Test
     public void testEventNameInClientData() {
         Assert.assertFalse(ns.contains("foo"));
 
-        EventRegistrationHandle handle = ns.add("foo", noOp);
+        EventRegistrationHandle handle = ns.add("foo", noOp, new String[0]);
 
-        Assert.assertTrue(ns.contains("foo"));
+        Assert.assertEquals(0, getExpressions("foo").size());
 
         handle.remove();
 
         Assert.assertFalse(ns.contains("foo"));
+    }
+
+    @Test
+    public void testAddAndRemoveEventData() {
+        ns.add("eventType", noOp, new String[] { "data1", "data2" });
+
+        Set<String> expressions = getExpressions("eventType");
+        Assert.assertTrue(expressions.contains("data1"));
+        Assert.assertTrue(expressions.contains("data2"));
+        Assert.assertFalse(expressions.contains("data3"));
+
+        EventRegistrationHandle handle = ns.add("eventType",
+                new DomEventListener() {
+                    /*
+                     * Can't use the existing noOp instance since there would
+                     * then not be any listeners left after calling remove()
+                     */
+
+                    @Override
+                    public void handleEvent(DomEvent event) {
+                        // no op
+                    }
+                }, new String[] { "data3" });
+
+        expressions = getExpressions("eventType");
+        Assert.assertTrue(expressions.contains("data1"));
+        Assert.assertTrue(expressions.contains("data2"));
+        Assert.assertTrue(expressions.contains("data3"));
+
+        handle.remove();
+
+        expressions = getExpressions("eventType");
+        Assert.assertTrue(expressions.contains("data1"));
+        Assert.assertTrue(expressions.contains("data2"));
+        // data3 might still be there, but we don't care
+    }
+
+    @Test
+    public void testEventDataInEvent() {
+        AtomicReference<JsonObject> eventDataReference = new AtomicReference<>();
+        ns.add("foo", e -> {
+            Assert.assertNull(eventDataReference.get());
+            eventDataReference.set(e.getEventData());
+        } , new String[0]);
+
+        Assert.assertNull(eventDataReference.get());
+
+        JsonObject eventData = Json.createObject();
+        eventData.put("baz", true);
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
+
+        JsonObject capturedJson = eventDataReference.get();
+        Assert.assertNotNull(capturedJson);
+
+        Assert.assertEquals(1, capturedJson.keys().length);
+        Assert.assertEquals("true", capturedJson.get("baz").toJson());
+    }
+
+    private Set<String> getExpressions(String name) {
+        JsonArray json = (JsonArray) ns.get(name);
+        if (json == null) {
+            return null;
+        }
+        return JsonStream.stream(json).map(JsonValue::asString)
+                .collect(Collectors.toSet());
     }
 }

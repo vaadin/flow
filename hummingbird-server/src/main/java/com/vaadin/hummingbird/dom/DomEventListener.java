@@ -27,6 +27,9 @@ import java.io.Serializable;
 public interface DomEventListener extends Serializable {
     /**
      * Invoked when a DOM event has been fired.
+     *
+     * @param event
+     *            the fired event
      */
-    public void handleEvent();
+    public void handleEvent(DomEvent event);
 }

@@ -428,23 +428,46 @@ public class Element implements Serializable {
 
     /**
      * Adds an event listener for the given event type.
+     * <p>
+     * When an event is fired in the browser, custom JavaScript expressions
+     * defined in the <code>evendDataDefinitions</code> parameter are evaluated
+     * to extract data that is sent back to the server. The expression is
+     * evaluated in a context where <code>element</code> refers to this element
+     * and <code>event</code> refers to the fired event. The result of the
+     * evaluation is available in {@link DomEvent#getEventData()} with the
+     * expression as the key in the JSON object. An expression might be e.g.
+     *
+     * <ul>
+     * <li><code>element.value</code> the get the value of an input element for
+     * a change event.
+     * <li><code>event.button === 0</code> to get true for click events
+     * triggered by the primary mouse button.
+     * </ul>
      *
      * @param eventType
      *            the type of event to listen to, not <code>null</code>
      * @param listener
      *            the listener to add, not <code>null</code>
+     * @param eventDataExpressions
+     *            definitions for data that should be passed back to the server
+     *            together with the event
      * @return a handle that can be used for removing the listener
      */
     public EventRegistrationHandle addEventListener(String eventType,
-            DomEventListener listener) {
+            DomEventListener listener, String... eventDataExpressions) {
         if (eventType == null) {
             throw new IllegalArgumentException("Event type must not be null");
         }
         if (listener == null) {
             throw new IllegalArgumentException("Listener must not be null");
         }
+        if (eventDataExpressions == null) {
+            throw new IllegalArgumentException(
+                    "The event data expressions array must not be null");
+        }
 
-        return stateProvider.addEventListener(node, eventType, listener);
+        return stateProvider.addEventListener(node, eventType, listener,
+                eventDataExpressions);
     }
 
     /**

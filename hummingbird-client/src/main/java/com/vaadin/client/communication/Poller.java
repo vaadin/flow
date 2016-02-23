@@ -74,7 +74,7 @@ public class Poller {
                 public void run() {
                     StateTree stateTree = registry.getStateTree();
                     stateTree.sendEventToServer(stateTree.getRootNode(),
-                            UI.POLL_DOM_EVENT_NAME);
+                            UI.POLL_DOM_EVENT_NAME, null);
                 }
             };
             pollTimer.scheduleRepeating(interval);

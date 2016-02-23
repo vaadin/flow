@@ -558,7 +558,7 @@ public class ElementTest {
     @Test(expected = IllegalArgumentException.class)
     public void addEventListenerForNullType() {
         Element e = new Element("div");
-        e.addEventListener(null, () -> {
+        e.addEventListener(null, ignore -> {
         });
     }
 
@@ -643,17 +643,12 @@ public class ElementTest {
     public void listenerReceivesEvents() {
         Element e = new Element("div");
         AtomicInteger listenerCalls = new AtomicInteger(0);
-        DomEventListener myListener = new DomEventListener() {
+        DomEventListener myListener = event -> listenerCalls.incrementAndGet();
 
-            @Override
-            public void handleEvent() {
-                listenerCalls.incrementAndGet();
-            }
-        };
         e.addEventListener("click", myListener);
         Assert.assertEquals(0, listenerCalls.get());
         e.getNode().getNamespace(ElementListenersNamespace.class)
-                .fireEvent("click");
+                .fireEvent(new DomEvent(e, "click", Json.createObject()));
         Assert.assertEquals(1, listenerCalls.get());
     }
 
