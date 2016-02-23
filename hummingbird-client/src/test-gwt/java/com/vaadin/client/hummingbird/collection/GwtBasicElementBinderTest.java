@@ -29,20 +29,23 @@ import com.vaadin.hummingbird.shared.Namespaces;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
-import elemental.events.Event;
+import elemental.json.JsonObject;
+import elemental.json.JsonType;
 
 public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     private static class CollectingStateTree extends StateTree {
-        // Assuming each event is only collected for one node
-        JsMap<Event, StateNode> collectedEvents = JsCollections.map();
+        JsArray<StateNode> collectedNodes = JsCollections.array();
+        JsArray<JsonObject> collectedEventData = JsCollections.array();
 
         public CollectingStateTree() {
             super(null);
         }
 
         @Override
-        public void sendEventToServer(StateNode node, Event event) {
-            collectedEvents.set(event, node);
+        public void sendEventToServer(StateNode node, String eventType,
+                JsonObject eventData) {
+            collectedNodes.push(node);
+            collectedEventData.push(eventData);
         }
     }
 
@@ -352,20 +355,32 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testEventFired() {
         BasicElementBinder.bind(node, element);
 
+        // User agent is "Mozilla/5.0..."
+        String booleanExpression = "window.navigator.userAgent[0] === 'M'";
+        String numberExpression = "event.button";
+        String stringExpression = "element.tagName";
+
         node.getMapNamespace(Namespaces.ELEMENT_LISTENERS).getProperty("click")
-                .setValue(Double.valueOf(1));
+                .setValue(JsCollections.array(booleanExpression,
+                        numberExpression, stringExpression));
         Reactive.flush();
 
         Browser.getDocument().getBody().appendChild(element);
 
         element.click();
 
-        assertEquals(1, tree.collectedEvents.size());
+        assertEquals(1, tree.collectedNodes.length());
 
-        JsArray<StateNode> targets = JsCollections
-                .mapValues(tree.collectedEvents);
+        assertSame(node, tree.collectedNodes.get(0));
 
-        assertSame(node, targets.get(0));
+        JsonObject eventData = tree.collectedEventData.get(0);
+
+        assertEquals(3, eventData.keys().length);
+
+        assertEquals(JsonType.NUMBER,
+                eventData.get(numberExpression).getType());
+        assertEquals("DIV", eventData.getString(stringExpression));
+        assertEquals(true, eventData.getBoolean(booleanExpression));
     }
 
     public void testRemovedEventNotFired() {
@@ -384,7 +399,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         element.click();
 
-        assertEquals(0, tree.collectedEvents.size());
+        assertEquals(0, tree.collectedNodes.length());
     }
 
     public void testAddTextNode() {

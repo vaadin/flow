@@ -22,7 +22,6 @@ import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.hummingbird.shared.Namespaces;
 import com.vaadin.shared.JsonConstants;
 
-import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
@@ -131,31 +130,26 @@ public class StateTree {
     }
 
     /**
-     * Sends a DOM event to the server.
-     *
-     * @param node
-     *            the node that listened to the event
-     * @param event
-     *            the fired event
-     */
-    public void sendEventToServer(StateNode node, Event event) {
-        sendEventToServer(node, event.getType());
-    }
-
-    /**
      * Sends an event to the server.
      *
      * @param node
      *            the node that listened to the event
      * @param eventType
      *            the type of event
+     * @param eventData
+     *            extra data associated with the event
      */
-    public void sendEventToServer(StateNode node, String eventType) {
+    public void sendEventToServer(StateNode node, String eventType,
+            JsonObject eventData) {
         assert assertValidNode(node);
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
+
+        if (eventData != null) {
+            message.put(JsonConstants.RPC_EVENT_DATA, eventData);
+        }
 
         ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
         rpcQueue.add(message);
