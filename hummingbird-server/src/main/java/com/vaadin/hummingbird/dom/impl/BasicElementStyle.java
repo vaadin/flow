@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.dom.impl;
 import java.util.Collections;
 import java.util.Set;
 
-import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 
@@ -30,8 +30,7 @@ import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
  */
 public class BasicElementStyle implements Style {
 
-    private static final String STYLE_VALUE_CANNOT_BE_NULL = "A style value cannot be null";
-    private static final String STYLE_VALUE_CANNOT_END_IN_A_SEMICOLON = "A style value cannot end in a semicolon";;
+    private static final String STYLE_VALUE_CANNOT_END_IN_A_SEMICOLON = "A style value cannot end in a semicolon";
     private ElementStylePropertyNamespace namespace;
 
     /**
@@ -46,23 +45,20 @@ public class BasicElementStyle implements Style {
 
     @Override
     public void set(String name, String value) {
-        String trimmedName = name.trim();
-        Element.validateStylePropertyName(trimmedName);
-        if (value == null) {
-            throw new IllegalArgumentException(STYLE_VALUE_CANNOT_BE_NULL);
-        }
+        ElementUtil.validateStylePropertyName(name);
+        ElementUtil.validateStylePropertyValue(value);
         String trimmedValue = value.trim();
         if (trimmedValue.endsWith(";")) {
             throw new IllegalArgumentException(
                     STYLE_VALUE_CANNOT_END_IN_A_SEMICOLON);
         }
 
-        namespace.setProperty(trimmedName, trimmedValue);
+        namespace.setProperty(name, trimmedValue);
     }
 
     @Override
     public void remove(String name) {
-        Element.validateStylePropertyName(name);
+        ElementUtil.validateStylePropertyName(name);
 
         namespace.removeProperty(name);
     }
@@ -74,7 +70,7 @@ public class BasicElementStyle implements Style {
 
     @Override
     public String get(String name) {
-        Element.validateStylePropertyName(name);
+        ElementUtil.validateStylePropertyName(name);
 
         return (String) namespace.getProperty(name);
     }

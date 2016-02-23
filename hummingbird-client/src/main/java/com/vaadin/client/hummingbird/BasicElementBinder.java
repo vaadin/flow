@@ -120,12 +120,12 @@ public class BasicElementBinder {
     }
 
     private EventRemover bindListeners() {
-        MapNamespace listeners = node
+        MapNamespace elementListeners = node
                 .getMapNamespace(Namespaces.ELEMENT_LISTENERS);
-        listeners.forEachProperty(
+        elementListeners.forEachProperty(
                 (property, name) -> bindEventHandlerProperty(property));
 
-        return listeners.addPropertyAddListener(
+        return elementListeners.addPropertyAddListener(
                 event -> bindEventHandlerProperty(event.getProperty()));
     }
 
@@ -183,9 +183,8 @@ public class BasicElementBinder {
 
         assert !bindings.has(name) : "There's already a binding for " + name;
 
-        Computation computation = Reactive.runWhenDepedenciesChange(() -> {
-            user.use(property);
-        });
+        Computation computation = Reactive
+                .runWhenDepedenciesChange(() -> user.use(property));
 
         bindings.set(name, computation);
 

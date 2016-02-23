@@ -16,7 +16,10 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.io.Serializable;
+
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.dom.impl.BasicElementStyle;
 
@@ -36,6 +39,12 @@ public class ElementStylePropertyNamespace extends AbstractPropertyNamespace {
      */
     public ElementStylePropertyNamespace(StateNode node) {
         super(node);
+    }
+
+    @Override
+    public void setProperty(String name, Serializable value) {
+        assert ElementUtil.isValidStylePropertyValue(value);
+        super.setProperty(name, value);
     }
 
     /**

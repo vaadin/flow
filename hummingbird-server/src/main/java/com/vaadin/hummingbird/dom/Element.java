@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.StateNode;
@@ -165,16 +164,11 @@ public class Element implements Serializable {
         }
     }
 
-    private static final String PROPERTY_NAME_CANNOT_BE_NULL_OR_EMPTY = "Property name cannot be null or empty";
+    static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
 
-    private static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
+    static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
 
-    private static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
-
-    private static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
-
-    private static final String STYLE_PROPERTY_CANNOT_CONTAIN_COLON = "A style property name cannot contain colons";
-    private static final String STYLE_PROPERTY_CANNOT_CONTAIN_DASH = "A style property name cannot contain dashes. Use the camelCase style property name.";
+    static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
 
     private static final Map<String, CustomAttribute> customAttributes = new HashMap<>();
 
@@ -195,13 +189,6 @@ public class Element implements Serializable {
 
     private ElementStateProvider stateProvider;
     private StateNode node;
-
-    /**
-     * Pattern for maching valid tag names, according to
-     * https://www.w3.org/TR/html-markup/syntax.html#tag-name "HTML elements all
-     * have names that only use characters in the range 0–9, a–z, and A–Z."
-     */
-    private static Pattern tagNamePattern = Pattern.compile("^[a-zA-Z0-9-]+$");
 
     /**
      * Private constructor for initializing with an existing node and state
@@ -279,7 +266,7 @@ public class Element implements Serializable {
      *            the tag name of the element.
      */
     private static StateNode createStateNode(String tag) {
-        if (!isValidTagName(tag)) {
+        if (!ElementUtil.isValidTagName(tag)) {
             throw new IllegalArgumentException(
                     "Tag " + tag + " is not a valid tag name");
         }
@@ -327,7 +314,7 @@ public class Element implements Serializable {
         }
 
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!isValidAttributeName(lowerCaseAttribute)) {
+        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
             throw new IllegalArgumentException(String.format(
                     "Attribute \"%s\" is not a valid attribute name",
                     lowerCaseAttribute));
@@ -484,46 +471,6 @@ public class Element implements Serializable {
         }
 
         return stateProvider.addEventListener(node, eventType, listener);
-    }
-
-    /**
-     * Checks if the given tag name is valid.
-     *
-     * @param tag
-     *            the tag name
-     * @return true if the string is valid as a tag name, false otherwise
-     */
-    public static boolean isValidTagName(String tag) {
-        return tag != null && tagNamePattern.matcher(tag).matches();
-    }
-
-    /**
-     * Checks if the given attribute name is valid.
-     *
-     * @param attribute
-     *            the name of the attribute in lower case
-     * @return true if the name is valid, false otherwise
-     */
-    public static boolean isValidAttributeName(String attribute) {
-        if (attribute == null || attribute.isEmpty()) {
-            return false;
-        }
-        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
-
-        // https://html.spec.whatwg.org/multipage/syntax.html#attributes-2
-        // Attribute names must consist of one or more characters other than the
-        // space characters, U+0000 NULL, U+0022 QUOTATION MARK ("), U+0027
-        // APOSTROPHE ('), U+003E GREATER-THAN SIGN (>), U+002F SOLIDUS (/), and
-        // U+003D EQUALS SIGN (=) characters, the control characters, and any
-        // characters that are not defined by Unicode.
-        char[] illegalCharacters = new char[] { 0, ' ', '"', '\'', '>', '/',
-                '=' };
-        for (char c : illegalCharacters) {
-            if (attribute.indexOf(c) != -1) {
-                return false;
-            }
-        }
-        return true;
     }
 
     /**
@@ -799,10 +746,7 @@ public class Element implements Serializable {
     }
 
     private static void verifySetPropertyName(String name) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(
-                    PROPERTY_NAME_CANNOT_BE_NULL_OR_EMPTY);
-        }
+        ElementUtil.validatePropertyName(name);
 
         String replacement = illegalPropertyReplacements.get(name);
         if (replacement != null) {
@@ -974,11 +918,7 @@ public class Element implements Serializable {
      * @return the raw property value, or <code>null</code>
      */
     public Object getPropertyRaw(String name) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(
-                    PROPERTY_NAME_CANNOT_BE_NULL_OR_EMPTY);
-        }
-
+        ElementUtil.validatePropertyName(name);
         return stateProvider.getProperty(node, name);
     }
 
@@ -990,11 +930,7 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element removeProperty(String name) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(
-                    PROPERTY_NAME_CANNOT_BE_NULL_OR_EMPTY);
-        }
-
+        ElementUtil.validatePropertyName(name);
         stateProvider.removeProperty(node, name);
         return this;
     }
@@ -1008,10 +944,7 @@ public class Element implements Serializable {
      *         <code>false</code>
      */
     public boolean hasProperty(String name) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(
-                    PROPERTY_NAME_CANNOT_BE_NULL_OR_EMPTY);
-        }
+        ElementUtil.validatePropertyName(name);
 
         return stateProvider.hasProperty(node, name);
     }
@@ -1126,26 +1059,4 @@ public class Element implements Serializable {
         return stateProvider.getStyle(node);
     }
 
-    /**
-     * Validates the given style property name and throws an exception if the
-     * name is invalid.
-     *
-     * @param name
-     *            the style property name to validate
-     */
-    public static void validateStylePropertyName(String name) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException(
-                    PROPERTY_NAME_CANNOT_BE_NULL_OR_EMPTY);
-        }
-        if (name.contains(":")) {
-            throw new IllegalArgumentException(
-                    STYLE_PROPERTY_CANNOT_CONTAIN_COLON);
-        }
-        if (name.contains("-")) {
-            throw new IllegalArgumentException(
-                    STYLE_PROPERTY_CANNOT_CONTAIN_DASH);
-        }
-
-    }
 }

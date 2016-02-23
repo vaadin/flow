@@ -26,6 +26,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
+import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
@@ -84,7 +85,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
      * @return a initialized and compatible state node
      */
     public static StateNode createStateNode(String tag) {
-        assert Element.isValidTagName(tag) : "Invalid tag name " + tag;
+        assert ElementUtil.isValidTagName(tag) : "Invalid tag name " + tag;
         StateNode node = new StateNode(namespaces);
 
         node.getNamespace(ElementDataNamespace.class).setTag(tag);

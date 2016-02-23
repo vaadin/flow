@@ -147,19 +147,19 @@ public class ElementTest {
 
     @Test
     public void isNullValidAttribute() {
-        Assert.assertFalse(Element.isValidAttributeName(null));
+        Assert.assertFalse(ElementUtil.isValidAttributeName(null));
     }
 
     @Test
     public void isEmptyValidAttribute() {
-        Assert.assertFalse(Element.isValidAttributeName(""));
+        Assert.assertFalse(ElementUtil.isValidAttributeName(""));
     }
 
     @Test(expected = AssertionError.class)
     public void isUpperCaseValidAttribute() {
         // isValidAttributeName is designed to only be called with lowercase
         // attribute names
-        Element.isValidAttributeName("FOO");
+        ElementUtil.isValidAttributeName("FOO");
     }
 
     @Test
@@ -1119,7 +1119,7 @@ public class ElementTest {
     }
 
     @Test
-    public void removeStyle() {
+    public void removeSingleStyle() {
         Element e = new Element("div");
         Style s = e.getStyle();
         s.set("foo", "bar");
@@ -1134,6 +1134,7 @@ public class ElementTest {
         Assert.assertNull(e.getAttribute("style"));
     }
 
+    @Test(expected = IllegalArgumentException.class)
     public void semicolonInStyle() {
         Element e = new Element("div");
         Style s = e.getStyle();
@@ -1176,46 +1177,39 @@ public class ElementTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSetEmptyStyle() {
+    public void setEmptyStyleName() {
         Element e = new Element("div");
-        e.getStyle().set("", "");
-        Assert.assertNull(e.getAttribute("style"));
-    }
-
-    @Test
-    public void testSetStyleAttributeExtraWhitespace() {
-        Element e = new Element("div");
-        e.getStyle().set("   color", "red   ");
-        Assert.assertEquals("color:red", e.getAttribute("style"));
+        e.getStyle().set("", "foo");
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testSetWhitespaceStyleAttribute() {
+    public void testSetStyleNameExtraWhitespace() {
+        Element e = new Element("div");
+        e.getStyle().set("   color", "red");
+    }
+
+    @Test
+    public void setStyleValueExtraWhitespace() {
+        Element e = new Element("div");
+        e.getStyle().set("color", "red   ");
+        Assert.assertEquals("color:red", e.getAttribute("style"));
+        Assert.assertEquals("red", e.getStyle().get("color"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setWhitespaceStyleAttribute() {
         Element e = new Element("div");
         e.getStyle().set("      ", "   ");
     }
 
-    @Test
-    public void setInvalidStyleDoesNotOverwrite() {
-        Element e = new Element("div");
-        e.getStyle().set("foo", "bar");
-        e.getStyle().set("baz", "123");
-        try {
-            e.setAttribute("style", "balaahlahasd");
-        } catch (Exception ignore) {
-
-        }
-        Assert.assertEquals("foo:bar;baz:123", e.getAttribute("style"));
-    }
-
     @Test(expected = UnsupportedOperationException.class)
-    public void testSetStyleAttribute() {
+    public void setStyleAttribute() {
         Element e = new Element("div");
         e.setAttribute("style", "foo: bar;");
     }
 
     @Test
-    public void testRemoveStyle() {
+    public void removeStyles() {
         Element element = new Element("div");
 
         element.getStyle().set("zIndex", "12");
@@ -1235,7 +1229,7 @@ public class ElementTest {
     }
 
     @Test
-    public void testRemoveStyleAttribute() {
+    public void removeStyleAttribute() {
         Element element = new Element("div");
 
         Style style = element.getStyle();

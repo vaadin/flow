@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementUtil;
 
 /**
  * Abstract namespace to be used as a parent for namespaces which supports
@@ -50,53 +50,10 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
      *            <code>null</code>
      */
     public void setProperty(String name, Serializable value) {
-        assert isValidPropertyValue(value);
-        assert isValidPropertyName(name);
+        assert ElementUtil.isValidPropertyValue(value);
+        assert ElementUtil.isValidPropertyName(name);
 
         put(name, value);
-    }
-
-    /**
-     * Checks if the given property value is valid.
-     * <p>
-     * Only to be used in assertions.
-     *
-     * @param name
-     *            the value to validate
-     * @return true if the value is valid, false otherwise
-     */
-    private boolean isValidPropertyValue(Serializable value) {
-        if (value == null) {
-            return true;
-        }
-
-        if (value instanceof String) {
-            return !((String) value).endsWith(";");
-        } else if (value instanceof Boolean) {
-            return true;
-        } else if (value instanceof Double) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Checks if the given property name is valid.
-     * <p>
-     * Only to be used in assertions.
-     *
-     * @param name
-     *            the name to validate
-     * @return true if the name is valid, false otherwise
-     */
-    private boolean isValidPropertyName(String name) {
-        try {
-            Element.validateStylePropertyName(name);
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
     }
 
     /**
@@ -108,7 +65,7 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
      *         <code>false</code> if there is no property
      */
     public boolean hasProperty(String name) {
-        assert isValidPropertyName(name);
+        assert ElementUtil.isValidPropertyName(name);
         return contains(name);
     }
 
@@ -119,7 +76,7 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
      *            the name of the property to remove
      */
     public void removeProperty(String name) {
-        assert isValidPropertyName(name);
+        assert ElementUtil.isValidPropertyName(name);
         super.remove(name);
     }
 
@@ -140,7 +97,7 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
      *         if the value is explicitly set to null
      */
     public Object getProperty(String name) {
-        assert isValidPropertyName(name);
+        assert ElementUtil.isValidPropertyName(name);
         return get(name);
     }
 
