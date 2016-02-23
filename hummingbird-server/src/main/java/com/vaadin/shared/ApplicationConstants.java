@@ -17,7 +17,7 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.UI;
+import com.vaadin.ui.FrameworkData;
 
 public class ApplicationConstants implements Serializable {
 
@@ -108,7 +108,7 @@ public class ApplicationConstants implements Serializable {
      * set to -1 e.g. when testing with pre-recorded requests to make the
      * framework ignore the sync id.
      *
-     * @see UI#getServerSyncId()
+     * @see FrameworkData#getServerSyncId()
      * @since 7.2
      */
     public static final String SERVER_SYNC_ID = "syncId";

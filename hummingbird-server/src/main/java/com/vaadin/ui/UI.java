@@ -17,9 +17,7 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -31,15 +29,11 @@ import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
-import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
-import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
-import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingRunnable;
@@ -96,43 +90,25 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     private int uiId = -1;
 
-    /**
-     * Timestamp keeping track of the last heartbeat of this UI. Updated to the
-     * current time whenever the application receives a heartbeat or UIDL
-     * request from the client for this UI.
-     */
-    private long lastHeartbeatTimestamp = System.currentTimeMillis();
-
     private boolean closing = false;
 
     private PushConfiguration pushConfiguration;
 
-    /**
-     * Tracks which message from the client should come next. First message from
-     * the client has id 0.
-     */
-    private int lastProcessedClientToServerId = -1;
-
     private Locale locale = Locale.getDefault();
 
-    private final StateTree stateTree = new StateTree(getRootNodeNamespaces());
-
-    private int serverSyncId = 0;
-
     private EventRouter eventRouter;
-
-    private PushConnection pushConnection = null;
 
     private String embedId;
 
     private EventRegistrationHandle domPollListener = null;
 
+    private final FrameworkData frameworkData = new FrameworkData(this);
+
     /**
      * Creates a new empty UI.
      */
     public UI() {
-        stateTree.getRootNode().getNamespace(ElementDataNamespace.class)
-                .setTag("body");
+        getNode().getNamespace(ElementDataNamespace.class).setTag("body");
         pushConfiguration = new PushConfigurationImpl(this);
     }
 
@@ -196,7 +172,7 @@ public abstract class UI implements Serializable, PollNotifier {
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 getPushConfiguration().setPushMode(PushMode.DISABLED);
-                setPushConnection(null);
+                getFrameworkData().setPushConnection(null);
             }
             this.session = session;
         }
@@ -325,39 +301,6 @@ public abstract class UI implements Serializable, PollNotifier {
     }
 
     /**
-     * Returns the timestamp of the last received heartbeat for this UI.
-     * <p>
-     * This method is not intended to be overridden. If it is overridden, care
-     * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
-     *
-     * @see VaadinService#closeInactiveUIs(VaadinSession)
-     *
-     * @return The time the last heartbeat request occurred, in milliseconds
-     *         since the epoch.
-     */
-    public long getLastHeartbeatTimestamp() {
-        return lastHeartbeatTimestamp;
-    }
-
-    /**
-     * Sets the last heartbeat request timestamp for this UI. Called by the
-     * framework whenever the application receives a valid heartbeat request for
-     * this UI.
-     * <p>
-     * This method is not intended to be overridden. If it is overridden, care
-     * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
-     *
-     * @param lastHeartbeat
-     *            The time the last heartbeat request occurred, in milliseconds
-     *            since the epoch.
-     */
-    public void setLastHeartbeatTimestamp(long lastHeartbeat) {
-        lastHeartbeatTimestamp = lastHeartbeat;
-    }
-
-    /**
      * Marks this UI to be {@link #detach() detached} from the session at the
      * end of the current request, or the next request if there is no current
      * request (if called from a background thread, for instance.)
@@ -379,7 +322,8 @@ public abstract class UI implements Serializable, PollNotifier {
 
         // FIXME Send info to client
 
-        if (getPushConnection() != null) {
+        PushConnection pushConnection = getFrameworkData().getPushConnection();
+        if (pushConnection != null) {
             // Push the Rpc to the client. The connection will be closed when
             // the UI is detached and cleaned up.
 
@@ -387,7 +331,7 @@ public abstract class UI implements Serializable, PollNotifier {
             if (session != null) {
                 session.getService().runPendingAccessTasks(session);
             }
-            getPushConnection().push();
+            pushConnection.push();
         }
 
     }
@@ -648,7 +592,7 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return The instance used for configuring the loading indicator
      */
     public LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
-        return getStateTree().getRootNode()
+        return getNode()
                 .getNamespace(LoadingIndicatorConfigurationNamespace.class);
     }
 
@@ -685,6 +629,8 @@ public abstract class UI implements Serializable, PollNotifier {
         if (!getPushConfiguration().getPushMode().isEnabled()) {
             throw new IllegalStateException("Push not enabled");
         }
+
+        PushConnection pushConnection = getFrameworkData().getPushConnection();
         assert pushConnection != null;
 
         /*
@@ -694,56 +640,12 @@ public abstract class UI implements Serializable, PollNotifier {
          */
         session.getService().runPendingAccessTasks(session);
 
-        if (!stateTree.hasDirtyNodes()) {
+        if (!getFrameworkData().getStateTree().hasDirtyNodes()) {
             // Do not push if there is nothing to push
             return;
         }
 
         pushConnection.push();
-    }
-
-    /**
-     * Returns the internal push connection object used by this UI. This method
-     * should only be called by the framework.
-     * <p>
-     * This method is not intended to be overridden. If it is overridden, care
-     * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
-     *
-     * @return the push connection used by this UI, or {@code null} if push is
-     *         not available.
-     */
-    public PushConnection getPushConnection() {
-        assert !(getPushConfiguration().getPushMode().isEnabled()
-                && pushConnection == null);
-        return pushConnection;
-    }
-
-    /**
-     * Sets the internal push connection object used by this UI. This method
-     * should only be called by the framework.
-     * <p>
-     * The {@code pushConnection} argument must be non-null if and only if
-     * {@code getPushConfiguration().getPushMode().isEnabled()}.
-     *
-     * @param pushConnection
-     *            the push connection to use for this UI
-     */
-    public void setPushConnection(PushConnection pushConnection) {
-        // If pushMode is disabled then there should never be a pushConnection;
-        // if enabled there should always be
-        assert (pushConnection == null)
-                ^ getPushConfiguration().getPushMode().isEnabled();
-
-        if (pushConnection == this.pushConnection) {
-            return;
-        }
-
-        if (this.pushConnection != null && this.pushConnection.isConnected()) {
-            this.pushConnection.disconnect();
-        }
-
-        this.pushConnection = pushConnection;
     }
 
     /**
@@ -767,7 +669,7 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return The instance used for reconnect dialog configuration
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
-        return getStateTree().getRootNode()
+        return getNode()
                 .getNamespace(ReconnectDialogConfigurationNamespace.class);
     }
 
@@ -789,72 +691,6 @@ public abstract class UI implements Serializable, PollNotifier {
     }
 
     /**
-     * Gets the last processed server message id.
-     *
-     * Used internally for communication tracking.
-     *
-     * @return lastProcessedServerMessageId the id of the last processed server
-     *         message
-     * @since 7.6
-     */
-    public int getLastProcessedClientToServerId() {
-        return lastProcessedClientToServerId;
-    }
-
-    /**
-     * Sets the last processed server message id.
-     *
-     * Used internally for communication tracking.
-     *
-     * @param lastProcessedClientToServerId
-     *            the id of the last processed server message
-     * @since 7.6
-     */
-    public void setLastProcessedClientToServerId(
-            int lastProcessedClientToServerId) {
-        this.lastProcessedClientToServerId = lastProcessedClientToServerId;
-    }
-
-    /**
-     * Gets the state tree of this UI.
-     *
-     * @return the state tree
-     */
-    public StateTree getStateTree() {
-        return stateTree;
-    }
-
-    /**
-     * Gets the server sync id.
-     * <p>
-     * The sync id is incremented by one whenever a new response is written.
-     * This id is then sent over to the client. The client then adds the most
-     * recent sync id to each communication packet it sends back to the server.
-     * This way, the server knows at what state the client is when the packet is
-     * sent. If the state has changed on the server side since that, the server
-     * can try to adjust the way it handles the actions from the client side.
-     * <p>
-     * The sync id value <code>-1</code> is ignored to facilitate testing with
-     * pre-recorded requests.
-     *
-     * @since
-     * @return the server sync id
-     */
-    public int getServerSyncId() {
-        return serverSyncId;
-    }
-
-    /**
-     * Increments the server sync id.
-     * <p>
-     * This should only be called by whoever sends a message to the client,
-     * after the message has been sent.
-     */
-    public void incrementServerId() {
-        serverSyncId++;
-    }
-
-    /**
      * * Gets the locale for this UI.
      *
      * @return the locale in use
@@ -871,25 +707,6 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     public void setLocale(Locale locale) {
         this.locale = locale;
-    }
-
-    @SuppressWarnings("unchecked")
-    private static Class<? extends Namespace>[] getRootNodeNamespaces() {
-        // Start with all element namespaces
-        ArrayList<Class<? extends Namespace>> namespaces = new ArrayList<>(
-                BasicElementStateProvider.getNamespaces());
-
-        // Then add our own custom namespaces
-        namespaces.add(PushConfigurationMap.class);
-        namespaces.add(PollConfigurationNamespace.class);
-        namespaces.add(ReconnectDialogConfigurationNamespace.class);
-        namespaces.add(LoadingIndicatorConfigurationNamespace.class);
-
-        // And return them all
-        assert namespaces.size() == new HashSet<>(namespaces)
-                .size() : "There are duplicates";
-        return (Class<? extends Namespace>[]) namespaces
-                .toArray(new Class<?>[0]);
     }
 
     /**
@@ -909,7 +726,16 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return the state node for the UI, in practice the state tree root node
      */
     private StateNode getNode() {
-        return getStateTree().getRootNode();
+        return getFrameworkData().getStateTree().getRootNode();
+    }
+
+    /**
+     * Gets the framework data object for this UI.
+     *
+     * @return the framework data object
+     */
+    public FrameworkData getFrameworkData() {
+        return frameworkData;
     }
 
 }
