@@ -59,7 +59,7 @@ public class UIInitRefreshTest {
         control.replay();
 
         UI ui = new TestUI();
-        ui.doInit(initRequest, 0, "");
+        ui.doInit(initRequest, 0);
 
         Assert.assertTrue(initCalled);
 
