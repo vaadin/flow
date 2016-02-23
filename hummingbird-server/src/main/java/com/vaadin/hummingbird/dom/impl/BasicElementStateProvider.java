@@ -246,11 +246,12 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public EventRegistrationHandle addEventListener(StateNode node,
-            String eventType, DomEventListener listener) {
+            String eventType, DomEventListener listener,
+            String[] eventDataExpressions) {
         ElementListenersNamespace listeners = node
                 .getNamespace(ElementListenersNamespace.class);
 
-        return listeners.add(eventType, listener);
+        return listeners.add(eventType, listener, eventDataExpressions);
     }
 
     /**

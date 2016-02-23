@@ -23,6 +23,8 @@ import java.security.GeneralSecurityException;
 import java.util.logging.Logger;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.DomEvent;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
@@ -32,6 +34,7 @@ import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
 import com.vaadin.ui.UI;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -358,7 +361,15 @@ public class ServerRpcHandler implements Serializable {
         String eventType = invocationJson
                 .getString(JsonConstants.RPC_EVENT_TYPE);
 
-        node.getNamespace(ElementListenersNamespace.class).fireEvent(eventType);
+        JsonObject eventData = invocationJson
+                .getObject(JsonConstants.RPC_EVENT_DATA);
+        if (eventData == null) {
+            eventData = Json.createObject();
+        }
+
+        DomEvent event = new DomEvent(Element.get(node), eventType, eventData);
+
+        node.getNamespace(ElementListenersNamespace.class).fireEvent(event);
     }
 
     protected String getMessage(Reader reader) throws IOException {
