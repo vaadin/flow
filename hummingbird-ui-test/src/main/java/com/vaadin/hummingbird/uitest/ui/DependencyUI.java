@@ -39,7 +39,7 @@ public class DependencyUI extends UI {
 
         Element jsOrder = new Element("button").setTextContent("Test JS order")
                 .setAttribute("id", "loadJs");
-        jsOrder.addEventListener("click", () -> {
+        jsOrder.addEventListener("click", e -> {
             getPage().addDependency(new Dependency(Type.JAVASCRIPT,
                     "/VAADIN/test-files/js/set-global-var.js"));
             getPage().addDependency(new Dependency(Type.JAVASCRIPT,
@@ -48,7 +48,7 @@ public class DependencyUI extends UI {
         Element allBlue = new Element("button")
                 .setTextContent("Load 'everything blue' stylesheet")
                 .setAttribute("id", "loadBlue");
-        allBlue.addEventListener("click", () -> {
+        allBlue.addEventListener("click", e -> {
             getPage().addDependency(new Dependency(Type.STYLESHEET,
                     "/VAADIN/test-files/css/allblueimportant.css"));
 
