@@ -20,7 +20,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.vaadin.annotations.Push;
-import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
@@ -35,8 +34,7 @@ public class UpdateDivUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
         ip = request.getRemoteAddr();
-        StateNode rootNode = getStateTree().getRootNode();
-        Element bodyElement = Element.get(rootNode);
+        Element bodyElement = getElement();
         bodyElement.appendChild(div);
         updateDiv();
 

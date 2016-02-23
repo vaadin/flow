@@ -237,7 +237,8 @@ public class ServerRpcHandler implements Serializable {
 
         checkWidgetsetVersion(rpcRequest.getWidgetsetVersion());
 
-        int expectedId = ui.getLastProcessedClientToServerId() + 1;
+        int expectedId = ui.getFrameworkData()
+                .getLastProcessedClientToServerId() + 1;
         if (rpcRequest.getClientToServerId() != -1
                 && rpcRequest.getClientToServerId() != expectedId) {
             // Invalid message id, skip RPC processing but force a full
@@ -271,7 +272,7 @@ public class ServerRpcHandler implements Serializable {
                     "FIXME: Implement resync and call it above");
         } else {
             // Message id ok, process RPCs
-            ui.setLastProcessedClientToServerId(expectedId);
+            ui.getFrameworkData().setLastProcessedClientToServerId(expectedId);
             handleInvocations(ui, rpcRequest.getSyncId(),
                     rpcRequest.getRpcInvocationsData());
         }
@@ -342,7 +343,8 @@ public class ServerRpcHandler implements Serializable {
         assert invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE);
 
         int nodeId = (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
-        StateNode node = ui.getStateTree().getNodeById(nodeId);
+        StateNode node = ui.getFrameworkData().getStateTree()
+                .getNodeById(nodeId);
 
         if (node == null) {
             getLogger()

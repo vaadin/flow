@@ -19,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
@@ -49,8 +48,7 @@ public class AddDivUI extends UI {
     }
 
     private void addDiv() {
-        StateNode rootNode = getStateTree().getRootNode();
-        Element bodyElement = Element.get(rootNode);
+        Element bodyElement = getElement();
         Element div = new Element("div");
         div.setTextContent("Hello world at " + System.currentTimeMillis() + " ("
                 + msgId++ + ")");

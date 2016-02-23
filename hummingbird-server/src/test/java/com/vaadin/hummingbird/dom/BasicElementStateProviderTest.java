@@ -33,7 +33,7 @@ public class BasicElementStateProviderTest {
 
             }
         };
-        StateNode rootNode = ui.getStateTree().getRootNode();
+        StateNode rootNode = ui.getFrameworkData().getStateTree().getRootNode();
         Assert.assertTrue(provider.supports(rootNode));
 
     }
