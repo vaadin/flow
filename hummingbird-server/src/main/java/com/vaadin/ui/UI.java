@@ -80,6 +80,131 @@ import com.vaadin.util.CurrentInstance;
  */
 public abstract class UI implements Serializable, PollNotifier {
 
+    /**
+     * Holds UI-specific data that is mainly intended for internal use by the
+     * framework. API for accessing this data is located in this class to reduce
+     * the clutter in the API of the UI class.
+     *
+     * @since
+     */
+    public static class FrameworkData implements Serializable {
+
+        /**
+         * Tracks which message from the client should come next. First message
+         * from the client has id 0.
+         */
+        private int lastProcessedClientToServerId = -1;
+
+        private int serverSyncId = 0;
+
+        private final StateTree stateTree = new StateTree(
+                getRootNodeNamespaces());
+
+        /**
+         * Timestamp keeping track of the last heartbeat of this UI. Updated to
+         * the current time whenever the application receives a heartbeat or
+         * UIDL request from the client for this UI.
+         */
+        private long lastHeartbeatTimestamp = System.currentTimeMillis();
+
+        /**
+         * Gets the state tree of this UI.
+         *
+         * @return the state tree
+         */
+        public StateTree getStateTree() {
+            return stateTree;
+        }
+
+        /**
+         * Gets the last processed server message id.
+         *
+         * Used internally for communication tracking.
+         *
+         * @return lastProcessedServerMessageId the id of the last processed
+         *         server message
+         */
+        public int getLastProcessedClientToServerId() {
+            return lastProcessedClientToServerId;
+        }
+
+        /**
+         * Sets the last processed server message id.
+         *
+         * Used internally for communication tracking.
+         *
+         * @param lastProcessedClientToServerId
+         *            the id of the last processed server message
+         */
+        public void setLastProcessedClientToServerId(
+                int lastProcessedClientToServerId) {
+            this.lastProcessedClientToServerId = lastProcessedClientToServerId;
+        }
+
+        /**
+         * Gets the server sync id.
+         * <p>
+         * The sync id is incremented by one whenever a new response is written.
+         * This id is then sent over to the client. The client then adds the
+         * most recent sync id to each communication packet it sends back to the
+         * server. This way, the server knows at what state the client is when
+         * the packet is sent. If the state has changed on the server side since
+         * that, the server can try to adjust the way it handles the actions
+         * from the client side.
+         * <p>
+         * The sync id value <code>-1</code> is ignored to facilitate testing
+         * with pre-recorded requests.
+         *
+         * @return the server sync id
+         */
+        public int getServerSyncId() {
+            return serverSyncId;
+        }
+
+        /**
+         * Increments the server sync id.
+         * <p>
+         * This should only be called by whoever sends a message to the client,
+         * after the message has been sent.
+         */
+        public void incrementServerId() {
+            serverSyncId++;
+        }
+
+        /**
+         * Returns the timestamp of the last received heartbeat for this UI.
+         * <p>
+         * This method is not intended to be overridden. If it is overridden,
+         * care should be taken since this method might be called in situations
+         * where {@link UI#getCurrent()} does not return this UI.
+         *
+         * @see VaadinService#closeInactiveUIs(VaadinSession)
+         *
+         * @return The time the last heartbeat request occurred, in milliseconds
+         *         since the epoch.
+         */
+        public long getLastHeartbeatTimestamp() {
+            return lastHeartbeatTimestamp;
+        }
+
+        /**
+         * Sets the last heartbeat request timestamp for this UI. Called by the
+         * framework whenever the application receives a valid heartbeat request
+         * for this UI.
+         * <p>
+         * This method is not intended to be overridden. If it is overridden,
+         * care should be taken since this method might be called in situations
+         * where {@link UI#getCurrent()} does not return this UI.
+         *
+         * @param lastHeartbeat
+         *            The time the last heartbeat request occurred, in
+         *            milliseconds since the epoch.
+         */
+        public void setLastHeartbeatTimestamp(long lastHeartbeat) {
+            lastHeartbeatTimestamp = lastHeartbeat;
+        }
+    }
+
     public static final String POLL_DOM_EVENT_NAME = "ui-poll";
 
     /**
@@ -96,28 +221,11 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     private int uiId = -1;
 
-    /**
-     * Timestamp keeping track of the last heartbeat of this UI. Updated to the
-     * current time whenever the application receives a heartbeat or UIDL
-     * request from the client for this UI.
-     */
-    private long lastHeartbeatTimestamp = System.currentTimeMillis();
-
     private boolean closing = false;
 
     private PushConfiguration pushConfiguration;
 
-    /**
-     * Tracks which message from the client should come next. First message from
-     * the client has id 0.
-     */
-    private int lastProcessedClientToServerId = -1;
-
     private Locale locale = Locale.getDefault();
-
-    private final StateTree stateTree = new StateTree(getRootNodeNamespaces());
-
-    private int serverSyncId = 0;
 
     private EventRouter eventRouter;
 
@@ -127,12 +235,13 @@ public abstract class UI implements Serializable, PollNotifier {
 
     private EventRegistrationHandle domPollListener = null;
 
+    private final FrameworkData frameworkData = new FrameworkData();
+
     /**
      * Creates a new empty UI.
      */
     public UI() {
-        stateTree.getRootNode().getNamespace(ElementDataNamespace.class)
-                .setTag("body");
+        getNode().getNamespace(ElementDataNamespace.class).setTag("body");
         pushConfiguration = new PushConfigurationImpl(this);
     }
 
@@ -322,39 +431,6 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     public static UI getCurrent() {
         return CurrentInstance.get(UI.class);
-    }
-
-    /**
-     * Returns the timestamp of the last received heartbeat for this UI.
-     * <p>
-     * This method is not intended to be overridden. If it is overridden, care
-     * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
-     *
-     * @see VaadinService#closeInactiveUIs(VaadinSession)
-     *
-     * @return The time the last heartbeat request occurred, in milliseconds
-     *         since the epoch.
-     */
-    public long getLastHeartbeatTimestamp() {
-        return lastHeartbeatTimestamp;
-    }
-
-    /**
-     * Sets the last heartbeat request timestamp for this UI. Called by the
-     * framework whenever the application receives a valid heartbeat request for
-     * this UI.
-     * <p>
-     * This method is not intended to be overridden. If it is overridden, care
-     * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
-     *
-     * @param lastHeartbeat
-     *            The time the last heartbeat request occurred, in milliseconds
-     *            since the epoch.
-     */
-    public void setLastHeartbeatTimestamp(long lastHeartbeat) {
-        lastHeartbeatTimestamp = lastHeartbeat;
     }
 
     /**
@@ -648,7 +724,7 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return The instance used for configuring the loading indicator
      */
     public LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
-        return getStateTree().getRootNode()
+        return getNode()
                 .getNamespace(LoadingIndicatorConfigurationNamespace.class);
     }
 
@@ -694,7 +770,7 @@ public abstract class UI implements Serializable, PollNotifier {
          */
         session.getService().runPendingAccessTasks(session);
 
-        if (!stateTree.hasDirtyNodes()) {
+        if (!getFrameworkData().getStateTree().hasDirtyNodes()) {
             // Do not push if there is nothing to push
             return;
         }
@@ -767,7 +843,7 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return The instance used for reconnect dialog configuration
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
-        return getStateTree().getRootNode()
+        return getNode()
                 .getNamespace(ReconnectDialogConfigurationNamespace.class);
     }
 
@@ -786,72 +862,6 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     public String getEmbedId() {
         return embedId;
-    }
-
-    /**
-     * Gets the last processed server message id.
-     *
-     * Used internally for communication tracking.
-     *
-     * @return lastProcessedServerMessageId the id of the last processed server
-     *         message
-     * @since 7.6
-     */
-    public int getLastProcessedClientToServerId() {
-        return lastProcessedClientToServerId;
-    }
-
-    /**
-     * Sets the last processed server message id.
-     *
-     * Used internally for communication tracking.
-     *
-     * @param lastProcessedClientToServerId
-     *            the id of the last processed server message
-     * @since 7.6
-     */
-    public void setLastProcessedClientToServerId(
-            int lastProcessedClientToServerId) {
-        this.lastProcessedClientToServerId = lastProcessedClientToServerId;
-    }
-
-    /**
-     * Gets the state tree of this UI.
-     *
-     * @return the state tree
-     */
-    public StateTree getStateTree() {
-        return stateTree;
-    }
-
-    /**
-     * Gets the server sync id.
-     * <p>
-     * The sync id is incremented by one whenever a new response is written.
-     * This id is then sent over to the client. The client then adds the most
-     * recent sync id to each communication packet it sends back to the server.
-     * This way, the server knows at what state the client is when the packet is
-     * sent. If the state has changed on the server side since that, the server
-     * can try to adjust the way it handles the actions from the client side.
-     * <p>
-     * The sync id value <code>-1</code> is ignored to facilitate testing with
-     * pre-recorded requests.
-     *
-     * @since
-     * @return the server sync id
-     */
-    public int getServerSyncId() {
-        return serverSyncId;
-    }
-
-    /**
-     * Increments the server sync id.
-     * <p>
-     * This should only be called by whoever sends a message to the client,
-     * after the message has been sent.
-     */
-    public void incrementServerId() {
-        serverSyncId++;
     }
 
     /**
@@ -909,7 +919,16 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return the state node for the UI, in practice the state tree root node
      */
     private StateNode getNode() {
-        return getStateTree().getRootNode();
+        return getFrameworkData().getStateTree().getRootNode();
+    }
+
+    /**
+     * Gets the framework data object for this UI.
+     *
+     * @return the framework data object
+     */
+    public FrameworkData getFrameworkData() {
+        return frameworkData;
     }
 
 }

@@ -26,6 +26,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.UI.FrameworkData;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -55,6 +56,8 @@ public class UidlWriter implements Serializable {
     public JsonObject createUidl(UI ui, boolean async) {
         JsonObject response = Json.createObject();
 
+        FrameworkData frameworkData = ui.getFrameworkData();
+
         VaadinSession session = ui.getSession();
         VaadinService service = session.getService();
 
@@ -66,11 +69,11 @@ public class UidlWriter implements Serializable {
         getLogger().log(Level.FINE, "* Creating response to client");
 
         int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? ui.getServerSyncId() : -1;
+                ? frameworkData.getServerSyncId() : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
-        int nextClientToServerMessageId = ui.getLastProcessedClientToServerId()
-                + 1;
+        int nextClientToServerMessageId = frameworkData
+                .getLastProcessedClientToServerId() + 1;
         response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                 nextClientToServerMessageId);
 
@@ -87,7 +90,7 @@ public class UidlWriter implements Serializable {
         }
 
         response.put("timings", createPerformanceData(ui));
-        ui.incrementServerId();
+        frameworkData.incrementServerId();
         return response;
     }
 
@@ -101,7 +104,7 @@ public class UidlWriter implements Serializable {
     private JsonArray encodeChanges(UI ui) {
         JsonArray changes = Json.createArray();
 
-        StateTree stateTree = ui.getStateTree();
+        StateTree stateTree = ui.getFrameworkData().getStateTree();
 
         stateTree.collectChanges(
                 change -> changes.set(changes.length(), change.toJson()));

@@ -174,7 +174,7 @@ class PushConfigurationImpl implements PushConfiguration {
     }
 
     private PushConfigurationMap getPushConfigurationMap() {
-        return ui.getStateTree().getRootNode()
+        return ui.getFrameworkData().getStateTree().getRootNode()
                 .getNamespace(PushConfigurationMap.class);
     }
 
