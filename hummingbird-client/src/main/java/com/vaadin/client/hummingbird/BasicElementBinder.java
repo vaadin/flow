@@ -26,6 +26,7 @@ import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
@@ -34,7 +35,12 @@ import elemental.dom.DOMTokenList;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.NodeList;
+import elemental.events.Event;
 import elemental.events.EventRemover;
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binds element related state node namespaces to an element instance.
@@ -47,6 +53,20 @@ public class BasicElementBinder {
     private interface PropertyUser {
         public void use(MapProperty property);
     }
+
+    /**
+     * Callback interface for an event data expression parsed using new
+     * Function() in JavaScript.
+     */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    private interface EventDataExpression {
+        JsonValue evaluate(Event event, Element element);
+    }
+
+    private static final JsMap<String, EventDataExpression> expressionCache = JsCollections
+            .map();
 
     private final JsMap<String, Computation> propertyBindings = JsCollections
             .map();
@@ -120,13 +140,16 @@ public class BasicElementBinder {
     }
 
     private EventRemover bindListeners() {
-        MapNamespace elementListeners = node
-                .getMapNamespace(Namespaces.ELEMENT_LISTENERS);
+        MapNamespace elementListeners = getDomEventListenerNamespace();
         elementListeners.forEachProperty(
                 (property, name) -> bindEventHandlerProperty(property));
 
         return elementListeners.addPropertyAddListener(
                 event -> bindEventHandlerProperty(event.getProperty()));
+    }
+
+    private MapNamespace getDomEventListenerNamespace() {
+        return node.getMapNamespace(Namespaces.ELEMENT_LISTENERS);
     }
 
     private void bindEventHandlerProperty(MapProperty eventHandlerProperty) {
@@ -154,9 +177,52 @@ public class BasicElementBinder {
         assert !listenerRemovers.has(eventType);
 
         EventRemover remover = element.addEventListener(eventType,
-                e -> node.getTree().sendEventToServer(node, e), false);
+                this::handleDomEvent, false);
 
         listenerRemovers.set(eventType, remover);
+    }
+
+    private void handleDomEvent(Event event) {
+        String type = event.getType();
+
+        MapNamespace listeners = getDomEventListenerNamespace();
+
+        @SuppressWarnings("unchecked")
+        JsArray<String> dataExpressions = (JsArray<String>) listeners
+                .getProperty(type).getValue();
+
+        JsonObject eventData;
+        if (dataExpressions == null || dataExpressions.isEmpty()) {
+            eventData = null;
+        } else {
+            eventData = Json.createObject();
+
+            for (int i = 0; i < dataExpressions.length(); i++) {
+                String expressionString = dataExpressions.get(i);
+
+                EventDataExpression expression = getOrCreateExpression(
+                        expressionString);
+
+                JsonValue expressionValue = expression.evaluate(event, element);
+
+                eventData.put(expressionString, expressionValue);
+            }
+        }
+
+        node.getTree().sendEventToServer(node, type, eventData);
+    }
+
+    private static EventDataExpression getOrCreateExpression(
+            String expressionString) {
+        EventDataExpression expression = expressionCache.get(expressionString);
+
+        if (expression == null) {
+            expression = NativeFunction.create("event", "element",
+                    "return (" + expressionString + ")");
+            expressionCache.set(expressionString, expression);
+        }
+
+        return expression;
     }
 
     private void removeEventHandler(String eventType) {

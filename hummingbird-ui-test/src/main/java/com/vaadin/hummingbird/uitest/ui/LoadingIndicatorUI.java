@@ -47,7 +47,7 @@ public class LoadingIndicatorUI extends UI {
             Element button = new Element("button").setTextContent(
                     "Trigger event which takes " + delay + "ms");
             button.setAttribute("id", "wait" + delay);
-            button.addEventListener("click", () -> delay(delay));
+            button.addEventListener("click", e -> delay(delay));
             getElement().appendChild(button);
         }
     }
