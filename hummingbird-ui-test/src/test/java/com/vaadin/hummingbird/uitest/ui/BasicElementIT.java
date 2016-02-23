@@ -21,6 +21,9 @@ public class BasicElementIT extends PhantomJSTest {
 
         Assert.assertEquals(1, getThankYouCount());
 
+        Assert.assertEquals("Thank you for clicking at \"Click me\"!",
+                getThankYouElements().get(0).getText());
+
         // Clicking removes the element
         getThankYouElements().get(0).click();
 

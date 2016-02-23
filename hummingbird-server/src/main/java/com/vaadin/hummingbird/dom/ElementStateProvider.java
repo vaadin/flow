@@ -181,10 +181,12 @@ public interface ElementStateProvider extends Serializable {
      *            the event type
      * @param listener
      *            the listener
+     * @param eventDataExpressions
+     *            the event data expressions
      * @return a handle for removing the listener
      */
     EventRegistrationHandle addEventListener(StateNode node, String eventType,
-            DomEventListener listener);
+            DomEventListener listener, String[] eventDataExpressions);
 
     /**
      * Gets the value of the given property.

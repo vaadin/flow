@@ -42,7 +42,7 @@ public class ClientServerCounterUI extends UI {
         Element button = new Element("button").setAttribute("id",
                 INCREMENT_BUTTON_ID);
         button.setTextContent("Increment");
-        button.addEventListener("click", () -> {
+        button.addEventListener("click", e -> {
             clientCounter++;
             lbl.setTextContent(clientCounter + "");
         });
@@ -64,7 +64,7 @@ public class ClientServerCounterUI extends UI {
                 START_TIMER_ID);
 
         startTimer.setTextContent("Start timer");
-        startTimer.addEventListener("click", () -> {
+        startTimer.addEventListener("click", e -> {
             serverCounter = 0;
             if (task != null) {
                 task.cancel();
@@ -85,7 +85,7 @@ public class ClientServerCounterUI extends UI {
         Element stopTimer = new Element("button").setAttribute("id",
                 STOP_TIMER_ID);
         stopTimer.setTextContent("Stop timer");
-        stopTimer.addEventListener("click", () -> {
+        stopTimer.addEventListener("click", e -> {
             if (task != null) {
                 task.cancel();
                 task = null;
