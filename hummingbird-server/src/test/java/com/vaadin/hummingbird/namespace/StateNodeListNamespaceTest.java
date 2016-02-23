@@ -16,9 +16,11 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,7 +29,7 @@ import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.change.NodeChange;
 
-public class ListNamespaceTest
+public class StateNodeListNamespaceTest
         extends AbstractNamespaceTest<ElementChildrenNamespace> {
     private ListNamespace<StateNode> namespace = createNamespace();
 
@@ -136,5 +138,45 @@ public class ListNamespaceTest
         Assert.assertEquals(2, namespace.size());
         namespace.clear();
         Assert.assertEquals(0, namespace.size());
+    }
+
+    @Test(expected = AssertionError.class)
+    public void nullNotAllowed() {
+        namespace.add(null);
+    }
+
+    @Test
+    public void testSerializable() {
+        StateNode one = StateNodeTest.createTestNode("one",
+                ClassListNamespace.class);
+        one.getNamespace(ClassListNamespace.class).add("foo");
+        one.getNamespace(ClassListNamespace.class).add("bar");
+        StateNode two = StateNodeTest.createTestNode("two",
+                ClassListNamespace.class);
+        two.getNamespace(ClassListNamespace.class).add("baz");
+        namespace.add(one);
+        namespace.add(two);
+
+        List<StateNode> values = new ArrayList<>();
+        int size = namespace.size();
+        for (int i = 0; i < size; i++) {
+            values.add(namespace.get(i));
+        }
+
+        ListNamespace<StateNode> copy = SerializationUtils
+                .deserialize(SerializationUtils.serialize(namespace));
+
+        Assert.assertNotSame(namespace, copy);
+
+        Assert.assertEquals(values.size(), copy.size());
+        for (int i = 0; i < size; i++) {
+            assertNodeEquals(values.get(i), copy.get(i));
+        }
+        // Also verify that original value wasn't changed by the serialization
+        Assert.assertEquals(values.size(), namespace.size());
+        for (int i = 0; i < size; i++) {
+            assertNodeEquals(values.get(i), namespace.get(i));
+        }
+
     }
 }
