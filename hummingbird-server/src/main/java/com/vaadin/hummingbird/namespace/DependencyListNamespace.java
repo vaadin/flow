@@ -13,55 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.hummingbird.namespace;
 
 import com.vaadin.hummingbird.StateNode;
 
 /**
- * Namespace for nodes describing the child elements of an element.
+ * Placeholder for the upcoming dependency list namespace. Introduced early to
+ * be able to test JsonListNamespace.
  *
+ * @author Vaadin
  * @since
- * @author Vaadin Ltd
  */
-public class ElementChildrenNamespace extends StateNodeListNamespace {
+public class DependencyListNamespace extends JsonListNamespace {
+
     /**
-     * Creates a new element children namespace for the given node.
+     * Creates a new namespace for the given node.
      *
      * @param node
      *            the node that the namespace belongs to
      */
-    public ElementChildrenNamespace(StateNode node) {
+    protected DependencyListNamespace(StateNode node) {
         super(node);
     }
 
-    @Override
-    public void add(int index, StateNode node) {
-        super.add(index, node);
-    }
-
-    @Override
-    public StateNode get(int index) {
-        return super.get(index);
-    }
-
-    @Override
-    public StateNode remove(int index) {
-        return super.remove(index);
-    }
-
-    @Override
-    public void clear() {
-        super.clear();
-    }
-
-    @Override
-    public int indexOf(StateNode node) {
-        return super.indexOf(node);
-    }
-
-    @Override
-    public int size() {
-        return super.size();
-    }
 }
