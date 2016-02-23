@@ -137,7 +137,7 @@ public class TextElementStateProvider implements ElementStateProvider {
 
     @Override
     public EventRegistrationHandle addEventListener(StateNode node,
-            String eventType, DomEventListener listener) {
+            String eventType, DomEventListener listener, String[] eventDataExpressions) {
         throw new UnsupportedOperationException();
     }
 

@@ -626,7 +626,7 @@ public abstract class UI implements Serializable, PollNotifier {
     public void addPollListener(PollListener listener) {
         if (domPollListener == null) {
             domPollListener = getElement().addEventListener(POLL_DOM_EVENT_NAME,
-                    () -> fireEvent(new PollEvent(UI.this)));
+                    e -> fireEvent(new PollEvent(UI.this)));
         }
 
         getEventRouter().addListener(PollEvent.class, listener,

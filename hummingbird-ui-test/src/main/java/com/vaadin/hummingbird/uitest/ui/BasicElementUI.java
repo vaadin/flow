@@ -31,15 +31,18 @@ public class BasicElementUI extends UI {
         button.setAttribute("type", "button");
         button.setAttribute("value", "Click me");
 
-        button.addEventListener("click", () -> {
+        button.addEventListener("click", e -> {
+            String buttonText = e.getEventData().getString("element.value");
+
             Element greeting = new Element("div");
             greeting.setAttribute("class", "thankYou");
-            greeting.setTextContent("Thank you for clicking!");
+            greeting.setTextContent(
+                    "Thank you for clicking at \"" + buttonText + "\"!");
             greeting.addEventListener("click",
-                    () -> greeting.removeFromParent());
+                    e2 -> greeting.removeFromParent());
 
             bodyElement.appendChild(greeting);
-        });
+        } , "element.value");
 
         Element span = new Element("div");
 
@@ -48,7 +51,7 @@ public class BasicElementUI extends UI {
         span.setProperty("id", "hello-world");
         span.setTextContent("Hello world");
         spanClasses.add("hello");
-        span.addEventListener("click", () -> {
+        span.addEventListener("click", e -> {
             span.setTextContent("Stop touching me!");
             spanClasses.clear();
         });
