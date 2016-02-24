@@ -25,6 +25,7 @@ import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
+import com.vaadin.client.hummingbird.ExecuteJavaScriptProcessor;
 import com.vaadin.client.hummingbird.StateTree;
 
 /**
@@ -64,6 +65,8 @@ public class DefaultRegistry extends Registry {
         set(MessageHandler.class, new MessageHandler(this));
         set(MessageSender.class, new MessageSender(this));
         set(ServerRpcQueue.class, new ServerRpcQueue(this));
+        set(ExecuteJavaScriptProcessor.class,
+                new ExecuteJavaScriptProcessor(this));
 
         // Classes with dependencies, in correct order
         set(Heartbeat.class, new Heartbeat(this));

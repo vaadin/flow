@@ -102,6 +102,8 @@ public abstract class UI implements Serializable, PollNotifier {
 
     private final FrameworkData frameworkData = new FrameworkData(this);
 
+    private final Page page = new Page(this);
+
     /**
      * Creates a new empty UI.
      */
@@ -724,6 +726,6 @@ public abstract class UI implements Serializable, PollNotifier {
      * @return an object representing the page on which this UI exists
      */
     public Page getPage() {
-        return new Page(getFrameworkData().getStateTree().getRootNode());
+        return page;
     }
 }
