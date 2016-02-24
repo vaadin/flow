@@ -17,6 +17,8 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
+import com.vaadin.ui.Page;
+
 public class JsonConstants implements Serializable {
     public static final String VTYPE_CONNECTOR = "c";
     public static final String VTYPE_BOOLEAN = "b";
@@ -173,4 +175,12 @@ public class JsonConstants implements Serializable {
      * @since
      */
     public static final String RPC_EVENT_DATA = "data";
+
+    /**
+     * Key used for data related to
+     * {@link Page#executeJavaScript(String, Object...)} in UIDL messages.
+     *
+     * @since
+     */
+    public static final String UIDL_KEY_EXECUTE = "execute";
 }
