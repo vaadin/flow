@@ -113,7 +113,9 @@ public class ServerRpcQueue {
         }
         flushPending = true;
         flushScheduled = true;
-        Scheduler.get().scheduleFinally(scheduledFlushCommand);
+        // Deferred so we can be sure that all event handlers have been invoked
+        // before flushing the queue
+        Scheduler.get().scheduleDeferred(scheduledFlushCommand);
     }
 
     /**

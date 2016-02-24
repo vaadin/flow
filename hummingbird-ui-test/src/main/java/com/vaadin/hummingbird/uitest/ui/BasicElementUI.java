@@ -29,22 +29,27 @@ public class BasicElementUI extends UI {
         Element bodyElement = getElement();
         bodyElement.getStyle().set("margin", "1em");
 
-        Element button = new Element("input");
-        button.setAttribute("type", "button");
-        button.setAttribute("value", "Click me");
+        Element button = new Element("button");
+        button.setTextContent("Click me");
+
+        Element input = new Element("input")
+                .setAttribute("placeholder", "Synchronized on change event")
+                .setSynchronizedProperties("value")
+                .setSynchronizedPropertiesEvents("change");
 
         button.addEventListener("click", e -> {
-            String buttonText = e.getEventData().getString("element.value");
+            String buttonText = e.getEventData()
+                    .getString("element.textContent");
 
             Element greeting = new Element("div");
             greeting.setAttribute("class", "thankYou");
-            greeting.setTextContent(
-                    "Thank you for clicking at \"" + buttonText + "\"!");
+            greeting.setTextContent("Thank you for clicking at \"" + buttonText
+                    + "\"! The field value is " + input.getProperty("value"));
             greeting.addEventListener("click",
                     e2 -> greeting.removeFromParent());
 
             bodyElement.appendChild(greeting);
-        } , "element.value");
+        } , "element.textContent");
 
         Element helloWorldElement = new Element("div");
 
@@ -61,7 +66,7 @@ public class BasicElementUI extends UI {
         s.set("color", "red");
         s.set("fontWeight", "bold");
 
-        bodyElement.appendChild(helloWorldElement, button);
+        bodyElement.appendChild(helloWorldElement, button, input);
     }
 
 }

@@ -24,11 +24,13 @@ import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.NodeList;
+import elemental.events.Event;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 
@@ -36,6 +38,8 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     private static class CollectingStateTree extends StateTree {
         JsArray<StateNode> collectedNodes = JsCollections.array();
         JsArray<JsonObject> collectedEventData = JsCollections.array();
+        JsMap<StateNode, JsMap<String, Object>> synchronizedProperties = JsCollections
+                .map();
 
         public CollectingStateTree() {
             super(null);
@@ -47,31 +51,58 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
             collectedNodes.push(node);
             collectedEventData.push(eventData);
         }
+
+        @Override
+        public void sendPropertySyncToServer(StateNode node, String property,
+                Object value) {
+            if (!synchronizedProperties.has(node)) {
+                synchronizedProperties.set(node, JsCollections.map());
+            }
+            JsMap<String, Object> nodeMap = synchronizedProperties.get(node);
+            assertFalse(nodeMap.has(property));
+            nodeMap.set(property, value);
+        }
+
+        public void clearSynchronizedProperties() {
+            synchronizedProperties.clear();
+        }
     }
 
-    private CollectingStateTree tree = new CollectingStateTree();
+    private CollectingStateTree tree;
 
-    private StateNode node = tree.getRootNode();
+    private StateNode node;
 
-    private MapNamespace properties = node
-            .getMapNamespace(Namespaces.ELEMENT_PROPERTIES);
-    private MapNamespace attributes = node
-            .getMapNamespace(Namespaces.ELEMENT_ATTRIBUTES);
-    private MapNamespace elementData = node
-            .getMapNamespace(Namespaces.ELEMENT_DATA);
-    private ListNamespace children = node
-            .getListNamespace(Namespaces.ELEMENT_CHILDREN);
+    private MapNamespace properties;
+    private MapNamespace attributes;
+    private MapNamespace elementData;
+    private ListNamespace children;
+    private MapNamespace synchronizedPropertyNamespace;
 
-    private MapProperty titleProperty = properties.getProperty("title");
-    private MapProperty idAttribute = attributes.getProperty("id");
+    private MapProperty titleProperty;
+    private MapProperty idAttribute;
 
-    private int nextId = node.getId() + 1;
+    private int nextId;
 
     private Element element;
 
     @Override
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
+        Reactive.reset();
+        tree = new CollectingStateTree();
+
+        node = tree.getRootNode();
+        properties = node.getMapNamespace(Namespaces.ELEMENT_PROPERTIES);
+        attributes = node.getMapNamespace(Namespaces.ELEMENT_ATTRIBUTES);
+        elementData = node.getMapNamespace(Namespaces.ELEMENT_DATA);
+        children = node.getListNamespace(Namespaces.ELEMENT_CHILDREN);
+        synchronizedPropertyNamespace = node
+                .getMapNamespace(Namespaces.SYNCHRONIZED_PROPERTIES);
+
+        titleProperty = properties.getProperty("title");
+        idAttribute = attributes.getProperty("id");
+
+        nextId = node.getId() + 1;
 
         element = Browser.getDocument().createElement("div");
     }
@@ -368,7 +399,6 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
                 .setValue(JsCollections.array(booleanExpression,
                         numberExpression, stringExpression));
         Reactive.flush();
-
         Browser.getDocument().getBody().appendChild(element);
 
         element.click();
@@ -524,4 +554,142 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         Reactive.flush();
         assertEquals("color: red;", element.getAttribute("style"));
     }
+
+    private void setSyncEvents(String... eventTypes) {
+        synchronizedPropertyNamespace
+                .getProperty(SynchronizedPropertiesNamespace.KEY_EVENTS)
+                .setValue(JsCollections.array(eventTypes));
+    }
+
+    private void setSyncProperties(String... properties) {
+        synchronizedPropertyNamespace
+                .getProperty(SynchronizedPropertiesNamespace.KEY_PROPERTIES)
+                .setValue(JsCollections.array(properties));
+    }
+
+    public void testSynchronizePropertySendsToServer() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+        BasicElementBinder.bind(node, element);
+
+        setSyncEvents("event1");
+        setSyncProperties("offsetWidth", "tagName");
+        Reactive.flush();
+
+        assertSynchronized();
+        dispatchEvent("event1");
+        assertSynchronized("offsetWidth", "tagName");
+    }
+
+    public void testSynchronizePropertyOnlyOnChange() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+        BasicElementBinder.bind(node, element);
+
+        setSyncEvents("event");
+        setSyncProperties("offsetWidth", "offsetHeight");
+        Reactive.flush();
+
+        dispatchEvent("event");
+        assertSynchronized("offsetWidth", "offsetHeight");
+        tree.clearSynchronizedProperties();
+
+        dispatchEvent("event");
+        assertSynchronized();
+        tree.clearSynchronizedProperties();
+
+        element.getStyle().setWidth("123px");
+        dispatchEvent("event");
+        assertSynchronized("offsetWidth");
+        tree.clearSynchronizedProperties();
+
+        element.getStyle().setHeight("123px");
+        dispatchEvent("event");
+        assertSynchronized("offsetHeight");
+    }
+
+    public void testSynchronizePropertyAddRemoveEvent() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+        BasicElementBinder.bind(node, element);
+
+        setSyncEvents("event1", "event2");
+        setSyncProperties("offsetWidth");
+        Reactive.flush();
+
+        setSyncEvents("event2");
+        Reactive.flush();
+
+        dispatchEvent("event1");
+        assertSynchronized();
+        tree.clearSynchronizedProperties();
+        dispatchEvent("event2");
+        assertSynchronized("offsetWidth");
+        tree.clearSynchronizedProperties();
+
+        synchronizedPropertyNamespace
+                .getProperty(SynchronizedPropertiesNamespace.KEY_EVENTS)
+                .removeValue();
+        dispatchEvent("event2");
+        assertSynchronized();
+
+    }
+
+    public void testSynchronizePropertyAddRemoveProperties() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+        BasicElementBinder.bind(node, element);
+
+        setSyncEvents("event1");
+        setSyncProperties("offsetWidth");
+        Reactive.flush();
+
+        element.getStyle().setHeight("1px");
+        element.getStyle().setWidth("1px");
+        dispatchEvent("event1");
+        assertSynchronized("offsetWidth");
+        tree.clearSynchronizedProperties();
+
+        setSyncProperties("offsetWidth", "offsetHeight");
+        Reactive.flush();
+
+        element.getStyle().setHeight("2px");
+        element.getStyle().setWidth("2px");
+        dispatchEvent("event1");
+        assertSynchronized("offsetWidth", "offsetHeight");
+        tree.clearSynchronizedProperties();
+
+        setSyncProperties();
+        Reactive.flush();
+        element.getStyle().setHeight("3px");
+        element.getStyle().setWidth("3px");
+        dispatchEvent("event1");
+        assertSynchronized();
+        tree.clearSynchronizedProperties();
+    }
+
+    private void dispatchEvent(String eventType) {
+        element.dispatchEvent(createEvent(eventType));
+    }
+
+    private static native Event createEvent(String type)
+    /*-{
+        return new Event(type);
+     }-*/;
+
+    private void assertSynchronized(String... properties) {
+        if (properties.length == 0) {
+            assertEquals(0, tree.synchronizedProperties.size());
+        } else {
+            assertEquals(1, tree.synchronizedProperties.size());
+            tree.synchronizedProperties.forEach((v, k) -> {
+                assertEquals(node, k);
+                assertEquals(properties.length, v.size());
+                for (String property : properties) {
+                    assertTrue(v.has(property));
+                }
+            });
+        }
+    }
+
 }

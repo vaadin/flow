@@ -183,6 +183,7 @@ public interface ElementStateProvider extends Serializable {
      *            the listener
      * @param eventDataExpressions
      *            the event data expressions
+     *
      * @return a handle for removing the listener
      */
     EventRegistrationHandle addEventListener(StateNode node, String eventType,
@@ -209,8 +210,11 @@ public interface ElementStateProvider extends Serializable {
      *            the property name, not <code>null</code>
      * @param value
      *            the property value
+     * @param emitChange
+     *            true to create a change event for the client side
      */
-    void setProperty(StateNode node, String name, Serializable value);
+    void setProperty(StateNode node, String name, Serializable value,
+            boolean emitChange);
 
     /**
      * Sets the given property to the given JSON value.
@@ -304,5 +308,53 @@ public interface ElementStateProvider extends Serializable {
      * @return the element styles
      */
     Style getStyle(StateNode node);
+
+    /**
+     * Sets the names of the properties to synchronize from the client side to
+     * the server.
+     * <p>
+     * The events which trigger synchronization are defined using
+     * {@link #setSynchronizedPropertiesEvents(StateNode, String[])}.
+     *
+     * @param node
+     *            the node containing the data
+     * @param propertyNames
+     *            the names of the properties to synchronize
+     */
+    void setSynchronizedProperties(StateNode node, String[] propertyNames);
+
+    /**
+     * Gets the names of the properties to synchronize from the client side to
+     * the server.
+     *
+     * @param node
+     *            the node containing the data
+     * @return the names of the properties to synchronize
+     */
+    Set<String> getSynchronizedProperties(StateNode node);
+
+    /**
+     * Sets the event types which should trigger synchronization of properties
+     * from the client side to the server.
+     * <p>
+     * The properties which are synchronized are defined using
+     * {@link #setSynchronizedProperties(StateNode, String[])}.
+     *
+     * @param node
+     *            the node containing the data
+     * @param eventTypes
+     *            the event types which should trigger synchronization
+     */
+    void setSynchronizedPropertiesEvents(StateNode node, String[] eventTypes);
+
+    /**
+     * Gets the event types which should trigger synchronization of properties
+     * from the client side to the server.
+     *
+     * @param node
+     *            the node containing the data
+     * @return the event types which should trigger synchronization
+     */
+    Set<String> getSynchronizedPropertiesEvents(StateNode node);
 
 }

@@ -910,7 +910,7 @@ public class ElementTest {
 
         if (value instanceof Serializable) {
             BasicElementStateProvider.get().setProperty(element.getNode(),
-                    "property", (Serializable) value);
+                    "property", (Serializable) value, true);
         } else if (value instanceof JsonValue) {
             element.setPropertyJson("property", (JsonValue) value);
         } else if (value == null) {
@@ -1324,4 +1324,71 @@ public class ElementTest {
         Assert.assertEquals(2, invocations.get());
     }
 
+    @Test
+    public void getSetSynchronizedProperty() {
+        Element e = new Element("div");
+        e.setSynchronizedProperties("foo", "bar");
+        String[] expected = new String[] { "bar", "foo" };
+
+        Assert.assertArrayEquals(expected,
+                e.getSynchronizedProperties().toArray());
+
+    }
+
+    @Test
+    public void setSameSynchronizedPropertyManyTimes() {
+        Element e = new Element("div");
+        e.setSynchronizedProperties("foo", "foo");
+        String[] expected = new String[] { "foo" };
+
+        Assert.assertArrayEquals(expected,
+                e.getSynchronizedProperties().toArray());
+
+    }
+
+    @Test
+    public void getDefaultSynchronizedProperties() {
+        Element e = new Element("div");
+        Assert.assertEquals(0, e.getSynchronizedProperties().size());
+    }
+
+    @Test
+    public void getDefaultSynchronizedPropertiesEvent() {
+        Element e = new Element("div");
+        Assert.assertEquals(0, e.getSynchronizedPropertiesEvents().size());
+    }
+
+    @Test
+    public void getSetSynchronizedEvent() {
+        Element e = new Element("div");
+        e.setSynchronizedPropertiesEvents("foo", "bar");
+        String[] expected = new String[] { "bar", "foo" };
+
+        Assert.assertArrayEquals(expected,
+                e.getSynchronizedPropertiesEvents().toArray());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setNullSynchronizedEvent() {
+        Element e = new Element("div");
+        e.setSynchronizedPropertiesEvents((String[]) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setNullSynchronizedEventType() {
+        Element e = new Element("div");
+        e.setSynchronizedPropertiesEvents((String) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setNullSynchronizedProperty() {
+        Element e = new Element("div");
+        e.setSynchronizedProperties((String[]) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setNullSynchronizedPropertyType() {
+        Element e = new Element("div");
+        e.setSynchronizedProperties((String) null);
+    }
 }

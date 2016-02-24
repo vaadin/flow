@@ -72,6 +72,8 @@ public class NamespaceRegistry {
                 DependencyListNamespace::new);
         registerNamespace(ElementStylePropertyNamespace.class,
                 ElementStylePropertyNamespace::new);
+        registerNamespace(SynchronizedPropertiesNamespace.class,
+                SynchronizedPropertiesNamespace::new);
     }
 
     private NamespaceRegistry() {
