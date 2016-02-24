@@ -19,6 +19,7 @@ package com.vaadin.client.hummingbird.collection.jre;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.vaadin.client.hummingbird.collection.JsCollections.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.JsSet;
 
 /**
@@ -76,7 +77,7 @@ public class JreJsSet<V> implements JsSet<V> {
     }
 
     @Override
-    public void forEach(JsSet.ForEachCallback<V> callback) {
+    public void forEach(ForEachCallback<V> callback) {
         // Can't use values.forEach because of GWT
         for (V value : values) {
             callback.accept(value);

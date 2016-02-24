@@ -16,6 +16,10 @@
 
 package com.vaadin.client.hummingbird.collection;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Test;
 
 import com.vaadin.client.ClientEngineTestBase;
@@ -204,6 +208,21 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
         assertEquals(0, array.length());
         assertEquals(null, array.shift());
         assertEquals(0, array.length());
+    }
+
+    public void testForEach() {
+        List<Integer> seenValues = new ArrayList<>();
+
+        JsArray<Integer> array = JsCollections.array();
+
+        array.push(1, 2, 3, 4);
+
+        array.forEach((value) -> seenValues.add(value));
+
+        List<Integer> expectedValues = new ArrayList<>();
+        expectedValues.addAll(Arrays.asList(new Integer[] { 1, 2, 3, 4 }));
+
+        assertEquals(expectedValues, seenValues);
     }
 
 }
