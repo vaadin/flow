@@ -27,6 +27,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import elemental.json.impl.JreJsonNull;
 
 public class JsonUtilTest {
     @Test
@@ -160,6 +161,23 @@ public class JsonUtilTest {
         JsonArray array = stream.collect(JsonUtil.asArray());
 
         Assert.assertTrue(JsonUtil.jsonEquals(createTestArray1(), array));
+    }
+
+    @Test
+    public void testCreateArray() {
+        JsonArray array = JsonUtil.createArray(Json.create("string"),
+                Json.createNull());
+
+        Assert.assertEquals(2, array.length());
+        Assert.assertEquals("string", array.getString(0));
+        Assert.assertSame(JreJsonNull.class, array.get(1).getClass());
+    }
+
+    @Test
+    public void testCreateEmptyArray() {
+        JsonArray array = JsonUtil.createArray();
+
+        Assert.assertEquals(0, array.length());
     }
 
 }

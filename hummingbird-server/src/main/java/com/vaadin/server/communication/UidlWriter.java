@@ -17,15 +17,20 @@
 package com.vaadin.server.communication;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.FrameworkData;
+import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -89,9 +94,34 @@ public class UidlWriter implements Serializable {
             response.put("changes", changes);
         }
 
+        List<JavaScriptInvocation> executeJavaScriptList = frameworkData
+                .dumpPendingJavaScriptInvocations();
+        if (!executeJavaScriptList.isEmpty()) {
+            response.put("execute",
+                    encodeExecuteJavaScriptList(executeJavaScriptList));
+        }
+
         response.put("timings", createPerformanceData(ui));
         frameworkData.incrementServerId();
         return response;
+    }
+
+    // non-private for testing purposes
+    static JsonArray encodeExecuteJavaScriptList(
+            List<JavaScriptInvocation> executeJavaScriptList) {
+        return executeJavaScriptList.stream()
+                .map(UidlWriter::encodeExecuteJavaScript)
+                .collect(JsonUtil.asArray());
+    }
+
+    private static JsonArray encodeExecuteJavaScript(
+            JavaScriptInvocation executeJavaScript) {
+        // [script, argument1, argument2, ...]
+        return Stream.concat(
+                Stream.of(Json.create(executeJavaScript.getExpression())),
+                executeJavaScript.getParameters().stream()
+                        .map(JsonCodec::encodeComplexValue))
+                .collect(JsonUtil.asArray());
     }
 
     /**
