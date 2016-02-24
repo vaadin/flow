@@ -10,7 +10,7 @@ public class ClientEngineSizeIT {
     @Test
     public void testClientEngineSize() throws Exception {
         File compiledModuleFolder = new File(
-                "target/classes/VAADIN/client/client");
+"target/classes/VAADIN/client");
         if (!compiledModuleFolder.exists()) {
             throw new IOException(
                     "Folder with compiled client engine does not exist: "

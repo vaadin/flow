@@ -93,15 +93,21 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             throw new ExceptionInInitializerError(e);
         }
         // read client engine file name
-        InputStream prop = BootstrapHandler.class
-                .getResourceAsStream("/VAADIN/client/compile.properties");
-        Properties p = new Properties();
-        try {
-            p.load(prop);
+        try (InputStream prop = BootstrapHandler.class
+                .getResourceAsStream("/VAADIN/client/compile.properties")) {
+            // null when running SDM or tests
+            if (prop != null) {
+                Properties p = new Properties();
+                p.load(prop);
+                clientEngineFileName = p.getProperty("jsFile");
+            } else {
+                getLogger().warning(
+                        "No compile.properties available on initialization, "
+                                + "could not read client engine file name.");
+            }
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
-        clientEngineFileName = p.getProperty("jsFile");
     }
 
     protected class BootstrapContext {
