@@ -24,17 +24,17 @@ package com.vaadin.shared.ui.ui;
  */
 public enum Transport {
     /**
-     * Websockets
+     * Websocket.
      */
     WEBSOCKET("websocket"),
     /**
-     * Websockets for server to client, XHR for client to server
+     * Websocket for server to client, XHR for client to server.
      *
      * @since 7.6
      */
     WEBSOCKET_XHR("websocket-xhr"),
     /**
-     * HTTP long polling
+     * HTTP long polling.
      */
     LONG_POLLING("long-polling");
 

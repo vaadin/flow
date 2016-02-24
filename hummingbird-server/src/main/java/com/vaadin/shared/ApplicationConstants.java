@@ -140,7 +140,7 @@ public class ApplicationConstants implements Serializable {
     public static final String WIDGETSET_VERSION_ID = "wsver";
 
     /**
-     * Name of the parameter used to transmit UI ids back and forth
+     * Name of the parameter used to transmit UI ids back and forth.
      */
     public static final String UI_ID_PARAMETER = "v-uiId";
 }

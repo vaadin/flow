@@ -633,7 +633,7 @@ public class ListenerMethod implements EventListener, Serializable {
     }
 
     /**
-     * Compares the type of this ListenerMethod to the given type
+     * Compares the type of this ListenerMethod to the given type.
      *
      * @param eventType
      *            The type to compare with
@@ -645,7 +645,7 @@ public class ListenerMethod implements EventListener, Serializable {
     }
 
     /**
-     * Compares the type of this ListenerMethod to the given type
+     * Compares the type of this ListenerMethod to the given type.
      *
      * @param eventType
      *            The type to compare with

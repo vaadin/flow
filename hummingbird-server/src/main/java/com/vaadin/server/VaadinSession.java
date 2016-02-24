@@ -83,7 +83,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         private Runnable runnable;
 
         /**
-         * Creates an instance for the given runnable
+         * Creates an instance for the given runnable.
          *
          * @param session
          *            the session to which the task belongs
@@ -416,7 +416,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the configuration for this session
+     * Gets the configuration for this session.
      *
      * @return the deployment configuration
      */
