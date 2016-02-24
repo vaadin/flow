@@ -16,15 +16,25 @@
 package com.vaadin.hummingbird.namespace;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.ui.Dependency;
+import com.vaadin.ui.Dependency.Type;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
- * Placeholder for the upcoming dependency list namespace. Introduced early to
- * be able to test JsonListNamespace.
+ * List for storing dependencies/files (Javascript, Stylesheets) to be loaded
+ * and included on the client side.
  *
  * @author Vaadin
  * @since
  */
 public class DependencyListNamespace extends JsonListNamespace {
+
+    public static final String KEY_URL = "url";
+    public static final String KEY_TYPE = "type";
+    public static final String TYPE_STYLESHEET = "css";
+    public static final String TYPE_JAVASCRIPT = "js";
 
     /**
      * Creates a new namespace for the given node.
@@ -36,4 +46,36 @@ public class DependencyListNamespace extends JsonListNamespace {
         super(node);
     }
 
+    /**
+     * Adds the given dependency to be loaded by the client side.
+     *
+     * @param dependency
+     *            the dependency to include on the page
+     */
+    public void add(Dependency dependency) {
+        JsonObject jsonObject = Json.createObject();
+        jsonObject.put(KEY_URL, dependency.getUrl());
+        jsonObject.put(KEY_TYPE, getType(dependency));
+
+        super.add(jsonObject);
+    }
+
+    /**
+     * Gets the type string to be sent to the client.
+     *
+     * @param dependency
+     *            the dependency
+     * @return the type for the JSON
+     */
+    private static String getType(Dependency dependency) {
+        if (dependency.getType() == Type.JAVASCRIPT) {
+            return TYPE_JAVASCRIPT;
+        } else if (dependency.getType() == Type.STYLESHEET) {
+            return TYPE_STYLESHEET;
+        } else {
+            throw new IllegalArgumentException(
+                    "Unknown dependency type: " + dependency.getType());
+        }
+
+    }
 }

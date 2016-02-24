@@ -16,7 +16,7 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArrayString;
+import com.vaadin.client.hummingbird.collection.JsArray;
 
 /**
  * Old abstraction for a UIDL JSON message.
@@ -62,7 +62,7 @@ public final class ValueMap extends JavaScriptObject {
      *            the map key
      * @return the value as a string array
      */
-    public native JsArrayString getJSStringArray(String name)
+    public native JsArray<String> getJSStringArray(String name)
     /*-{
         return this[name];
     }-*/;
