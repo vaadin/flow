@@ -45,7 +45,7 @@ public class TextNodeNamespace extends MapNamespace {
     public void setText(String text) {
         assert text != null;
 
-        put(Namespaces.TEXT, text);
+        put(Namespaces.TEXT, text,true);
     }
 
     /**

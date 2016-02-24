@@ -98,4 +98,29 @@ public class ClientJsonCodecTest {
 
         Assert.assertSame(element, decoded);
     }
+
+    @Test
+    public void encodeWithoutTypeInfo() {
+        encodePrimitiveValues(ClientJsonCodec::encodeWithoutTypeInfo);
+    }
+
+    private static void encodePrimitiveValues(
+            Function<Object, JsonValue> encoder) {
+
+        assertJsonEquals(Json.create("string"), encoder.apply("string"));
+
+        assertJsonEquals(Json.create(3.14),
+                encoder.apply(Double.valueOf(3.14)));
+
+        assertJsonEquals(Json.create(true), encoder.apply(Boolean.TRUE));
+
+        assertJsonEquals(Json.createNull(), encoder.apply(null));
+    }
+
+    private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
+        Assert.assertTrue(
+                actual.toJson() + " does not equal " + expected.toJson(),
+                JsonUtil.jsonEquals(expected, actual));
+    }
+
 }
