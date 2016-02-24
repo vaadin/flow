@@ -117,11 +117,29 @@ public class MapProperty implements ReactiveValue {
      *            the new property value
      */
     public void setValue(Object value) {
+        setValue(value, true);
+    }
+
+    /**
+     * Sets the property value.
+     * <p>
+     * Changing the value fires a {@link MapPropertyChangeEvent} if
+     * {@code fireEvent} is {@literal true}.
+     *
+     * @see #addChangeListener(MapPropertyChangeListener)
+     *
+     * @param value
+     *            the new property value
+     * @param fireEvent
+     *            true to fire a change event, false to silently update the
+     *            value
+     */
+    public void setValue(Object value, boolean fireEvent) {
         if (hasValue && Objects.equals(value, this.value)) {
             // Nothing to do
             return;
         }
-        updateValue(value, true);
+        updateValue(value, true, fireEvent);
     }
 
     /**
@@ -138,18 +156,21 @@ public class MapProperty implements ReactiveValue {
      */
     public void removeValue() {
         if (hasValue) {
-            updateValue(null, false);
+            updateValue(null, false, true);
         }
     }
 
-    private void updateValue(Object value, boolean hasValue) {
+    private void updateValue(Object value, boolean hasValue,
+            boolean fireEvent) {
         Object oldValue = this.value;
 
         this.hasValue = hasValue;
         this.value = value;
 
-        eventRouter
-                .fireEvent(new MapPropertyChangeEvent(this, oldValue, value));
+        if (fireEvent) {
+            eventRouter.fireEvent(
+                    new MapPropertyChangeEvent(this, oldValue, value));
+        }
     }
 
     /**

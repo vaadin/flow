@@ -46,6 +46,8 @@ import elemental.json.JsonValue;
  * @since
  */
 public class Element implements Serializable {
+    private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
+
     /**
      * Callbacks for handling attributes with special semantics. This is used
      * for e.g. <code>class</code> which is assembled from a separate list of
@@ -484,7 +486,7 @@ public class Element implements Serializable {
     public EventRegistrationHandle addEventListener(String eventType,
             DomEventListener listener, String... eventDataExpressions) {
         if (eventType == null) {
-            throw new IllegalArgumentException("Event type must not be null");
+            throw new IllegalArgumentException(EVENT_TYPE_MUST_NOT_BE_NULL);
         }
         if (listener == null) {
             throw new IllegalArgumentException("Listener must not be null");
@@ -765,7 +767,7 @@ public class Element implements Serializable {
     private Element setRawProperty(String name, Serializable value) {
         verifySetPropertyName(name);
 
-        stateProvider.setProperty(node, name, value);
+        stateProvider.setProperty(node, name, value, true);
 
         return this;
     }
@@ -1081,6 +1083,48 @@ public class Element implements Serializable {
      */
     public Style getStyle() {
         return stateProvider.getStyle(node);
+    }
+
+    /**
+     * Defines the properties whose values should automatically be synchronized
+     * from the client side and updated in this {@link Element}.
+     * <p>
+     * Synchronization takes place whenever one of the events defined using
+     * {@link #setSynchronizedPropertiesEvents(String...)} is fired for the
+     * element.
+     * <p>
+     * Only properties which can be set using setProperty can be synchronized,
+     * e.g. classList cannot be synchronized.
+     *
+     * @param propertyNames
+     *            the property names to synchronize
+     * @return this element
+     */
+    public Element setSynchronizedProperties(String... propertyNames) {
+        stateProvider.setSynchronizedProperties(node, propertyNames);
+        return this;
+    }
+
+    /**
+     * Sets the events to use for property synchronization from the client side.
+     * <p>
+     * Synchronization takes place whenever one of the given events is fired for
+     * the element (on the client side).
+     * <p>
+     * Use {@link #setSynchronizedProperties(String...)} to define which
+     * properties to synchronize.
+     *
+     * @param eventTypes
+     *            the client side events which trigger synchronization of the
+     *            property values to the server
+     * @return this element
+     */
+    public Element setSynchronizedPropertiesEvents(String... eventTypes) {
+        if (eventTypes == null) {
+            throw new IllegalArgumentException(EVENT_TYPE_MUST_NOT_BE_NULL);
+        }
+        stateProvider.setSynchronizedPropertiesEvents(node, eventTypes);
+        return this;
     }
 
 }

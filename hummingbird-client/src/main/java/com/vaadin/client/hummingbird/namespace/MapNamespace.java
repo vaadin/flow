@@ -72,8 +72,9 @@ public class MapNamespace extends AbstractNamespace implements ReactiveValue {
     }
 
     /**
-     * Gets the property with a given name, creating it if necessary. A
-     * {@link MapPropertyAddEvent} is fired if a new property instance is
+     * Gets the property with a given name, creating it if necessary.
+     * <p>
+     * A {@link MapPropertyAddEvent} is fired if a new property instance is
      * created.
      *
      * @param name

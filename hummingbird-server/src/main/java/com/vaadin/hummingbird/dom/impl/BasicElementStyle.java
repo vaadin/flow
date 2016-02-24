@@ -52,7 +52,7 @@ public class BasicElementStyle implements Style {
         String trimmedValue = value.trim();
         ElementUtil.validateStylePropertyValue(trimmedValue);
 
-        namespace.setProperty(name, trimmedValue);
+        namespace.setProperty(name, trimmedValue, true);
         return this;
     }
 
