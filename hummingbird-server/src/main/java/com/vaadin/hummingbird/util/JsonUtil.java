@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.util;
+package com.vaadin.hummingbird.util;
 
 import java.util.AbstractList;
 import java.util.Collections;
@@ -32,15 +32,106 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonNumber;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * Helpers for using <code>elemental.json</code> together with the Stream API.
+ * Helpers for using <code>elemental.json</code>.
  *
  * @since
  * @author Vaadin Ltd
  */
-public class JsonStream {
+public class JsonUtil {
+
+    /**
+     * Compares two json values for deep equality.
+     * <p>
+     * This is a helper for overcoming the fact that
+     * {@link JsonValue#equals(Object)} only does an identity check and
+     * {@link JsonValue#jsEquals(JsonValue)} is defined to use JavaScript
+     * semantics where arrays and objects are equals only based on identity.
+     *
+     * @param a
+     *            the first json value to check, may not be null
+     * @param b
+     *            the second json value to check, may not be null
+     * @return <code>true</code> if both json values are the same;
+     *         <code>false</code> otherwise
+     */
+    public static boolean equals(JsonValue a, JsonValue b) {
+        assert a != null;
+        assert b != null;
+
+        if (a == b) {
+            return true;
+        }
+
+        JsonType type = a.getType();
+        if (type != b.getType()) {
+            return false;
+        }
+
+        switch (type) {
+        case NULL:
+            return true;
+        case BOOLEAN:
+            return a.asBoolean() == b.asBoolean();
+        case NUMBER:
+            return a.asNumber() == b.asNumber();
+        case STRING:
+            return a.asString().equals(b.asString());
+        case OBJECT:
+            return jsonObjectEquals((JsonObject) a, (JsonObject) b);
+        case ARRAY:
+            return jsonArrayEquals((JsonArray) a, (JsonArray) b);
+        default:
+            throw new IllegalArgumentException("Unsupported JsonType: " + type);
+        }
+    }
+
+    private static boolean jsonObjectEquals(JsonObject a, JsonObject b) {
+        assert a != null;
+        assert b != null;
+
+        if (a == b) {
+            return true;
+        }
+
+        String[] keys = a.keys();
+
+        if (keys.length != b.keys().length) {
+            return false;
+        }
+
+        for (String key : keys) {
+            JsonValue value = b.get(key);
+            if (value == null || !equals(a.get(key), value)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean jsonArrayEquals(JsonArray a, JsonArray b) {
+        assert a != null;
+        assert b != null;
+
+        if (a == b) {
+            return true;
+        }
+
+        if (a.length() != b.length()) {
+            return false;
+        }
+        for (int i = 0; i < a.length(); i++) {
+            if (!equals(a.get(i), b.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * Collects a stream of JSON values to a JSON array.
      *
@@ -84,7 +175,7 @@ public class JsonStream {
             .unmodifiableSet(
                     EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
 
-    private JsonStream() {
+    private JsonUtil() {
         // Static-only class
     }
 
@@ -132,7 +223,7 @@ public class JsonStream {
      * @return a double stream of the values in the array
      */
     public static DoubleStream numberStream(JsonArray array) {
-        return JsonStream.<JsonNumber> stream(array)
+        return JsonUtil.<JsonNumber> stream(array)
                 .mapToDouble(JsonNumber::getNumber);
     }
 
