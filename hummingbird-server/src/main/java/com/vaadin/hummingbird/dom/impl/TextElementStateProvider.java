@@ -138,7 +138,8 @@ public class TextElementStateProvider implements ElementStateProvider {
 
     @Override
     public EventRegistrationHandle addEventListener(StateNode node,
-            String eventType, DomEventListener listener, String[] eventDataExpressions) {
+            String eventType, DomEventListener listener,
+            String[] eventDataExpressions) {
         throw new UnsupportedOperationException();
     }
 
@@ -148,7 +149,8 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void setProperty(StateNode node, String name, Serializable value) {
+    public void setProperty(StateNode node, String name, Serializable value,
+            boolean emitChange) {
         throw new UnsupportedOperationException();
     }
 
@@ -199,6 +201,18 @@ public class TextElementStateProvider implements ElementStateProvider {
 
     @Override
     public Style getStyle(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setSynchronizedProperties(StateNode node,
+            String[] propertyNames) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setSynchronizedPropertiesEvents(StateNode node,
+            String[] eventTypes) {
         throw new UnsupportedOperationException();
     }
 }

@@ -37,6 +37,7 @@ import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 
 import elemental.json.JsonValue;
 
@@ -62,7 +63,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementDataNamespace.class, ElementAttributeNamespace.class,
             ElementChildrenNamespace.class, ElementPropertyNamespace.class,
             ElementListenersNamespace.class, ClassListNamespace.class,
-            ElementStylePropertyNamespace.class };
+            ElementStylePropertyNamespace.class,
+            SynchronizedPropertiesNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -276,14 +278,15 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void setProperty(StateNode node, String name, Serializable value) {
+    public void setProperty(StateNode node, String name, Serializable value,
+            boolean emitChange) {
         assert node != null;
         assert name != null;
 
         assert value == null || value instanceof String
                 || value instanceof Boolean || value instanceof Double;
 
-        getPropertyNamespace(node).setProperty(name, value);
+        getPropertyNamespace(node).setProperty(name, value, emitChange);
     }
 
     @Override
@@ -342,6 +345,22 @@ public class BasicElementStateProvider implements ElementStateProvider {
     public Style getStyle(StateNode node) {
         return node.getNamespace(ElementStylePropertyNamespace.class)
                 .getStyle();
+    }
+
+    @Override
+    public void setSynchronizedProperties(StateNode node,
+            String[] propertyNames) {
+        node.getNamespace(SynchronizedPropertiesNamespace.class)
+                .setSynchronizedProperties(propertyNames);
+
+    }
+
+    @Override
+    public void setSynchronizedPropertiesEvents(StateNode node,
+            String[] eventTypes) {
+        node.getNamespace(SynchronizedPropertiesNamespace.class)
+                .setSynchronizedPropertiesEvents(eventTypes);
+
     }
 
 }

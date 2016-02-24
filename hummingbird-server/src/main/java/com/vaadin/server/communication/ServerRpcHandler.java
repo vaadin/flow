@@ -22,10 +22,12 @@ import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.util.logging.Logger;
 
+import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
+import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -324,6 +326,17 @@ public class ServerRpcHandler implements Serializable {
      */
     private void handleInvocations(UI ui, int lastSyncIdSeenByClient,
             JsonArray invocationsData) {
+
+        for (int i = 0; i < invocationsData.length(); i++) {
+            JsonObject invocationJson = invocationsData.getObject(i);
+            String type = invocationJson.getString(JsonConstants.RPC_TYPE);
+            assert type != null;
+            if (JsonConstants.RPC_TYPE_PROPERTY_SYNC.equals(type)) {
+                // Handle these before any RPC
+                handlePropertySync(ui, invocationJson);
+            }
+        }
+
         for (int i = 0; i < invocationsData.length(); i++) {
             JsonObject invocationJson = invocationsData.getObject(i);
             String type = invocationJson.getString(JsonConstants.RPC_TYPE);
@@ -333,6 +346,9 @@ public class ServerRpcHandler implements Serializable {
             case JsonConstants.RPC_TYPE_EVENT:
                 handleEventInvocation(ui, invocationJson);
                 break;
+            case JsonConstants.RPC_TYPE_PROPERTY_SYNC:
+                // Handled above
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Unsupported event type: " + type);
@@ -340,23 +356,53 @@ public class ServerRpcHandler implements Serializable {
         }
     }
 
+    private static void handlePropertySync(UI ui, JsonObject invocationJson) {
+        assert invocationJson.hasKey(JsonConstants.RPC_NODE);
+        assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
+        assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
+
+        StateNode node = getNode(ui, invocationJson);
+        if (node == null) {
+            return;
+        }
+        String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
+        Serializable value = JsonCodec.decodeWithoutTypeInfo(
+                invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
+        node.getNamespace(ElementPropertyNamespace.class).setProperty(property,
+                value, false);
+
+    }
+
+    private static int getNodeId(JsonObject invocationJson) {
+        return (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
+    }
+
+    private static StateNode getNode(UI ui, JsonObject invocationJson) {
+        StateNode node = ui.getFrameworkData().getStateTree()
+                .getNodeById(getNodeId(invocationJson));
+
+        if (node == null) {
+            getLogger().warning("Got an RPC for non-existent node: "
+                    + getNodeId(invocationJson));
+            return null;
+        }
+
+        if (!node.isAttached()) {
+            getLogger().warning("Got an RPC for detached node: "
+                    + getNodeId(invocationJson));
+            return null;
+        }
+        return node;
+
+    }
+
     private static void handleEventInvocation(UI ui,
             JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_NODE);
         assert invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE);
 
-        int nodeId = (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
-        StateNode node = ui.getFrameworkData().getStateTree()
-                .getNodeById(nodeId);
-
+        StateNode node = getNode(ui, invocationJson);
         if (node == null) {
-            getLogger()
-                    .warning("Got an event for non-existent node: " + nodeId);
-            return;
-        }
-
-        if (!node.isAttached()) {
-            getLogger().warning("Got an event for detached node: " + nodeId);
             return;
         }
 
