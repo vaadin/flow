@@ -22,8 +22,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
+import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.util.JsonStream;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -148,7 +148,7 @@ public class TreeChangeProcessorTest {
     }
 
     private static JsonArray toArray(JsonValue... changes) {
-        return Arrays.stream(changes).collect(JsonStream.asArray());
+        return Arrays.stream(changes).collect(JsonUtil.asArray());
     }
 
     private static JsonObject baseChange(int node, String type) {
@@ -220,7 +220,7 @@ public class TreeChangeProcessorTest {
 
         if (children != null && children.length != 0) {
             JsonArray add = Arrays.stream(children).mapToObj(Json::create)
-                    .collect(JsonStream.asArray());
+                    .collect(JsonUtil.asArray());
             json.put(JsonConstants.CHANGE_SPLICE_ADD_NODES, add);
         }
 

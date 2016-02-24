@@ -22,8 +22,8 @@ import java.util.function.Function;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.namespace.ListNamespace;
+import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.util.JsonStream;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -122,7 +122,7 @@ public class ListSpliceChange extends NamespaceChange {
             }
 
             JsonArray newItemsJson = newItems.stream().map(mapper)
-                    .collect(JsonStream.asArray());
+                    .collect(JsonUtil.asArray());
             json.put(addKey, newItemsJson);
         }
     }
