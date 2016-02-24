@@ -93,15 +93,18 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             throw new ExceptionInInitializerError(e);
         }
         // read client engine file name
-        InputStream prop = BootstrapHandler.class
-                .getResourceAsStream("/VAADIN/client/compile.properties");
-        Properties p = new Properties();
-        try {
+        try (InputStream prop = BootstrapHandler.class
+                .getResourceAsStream("/VAADIN/client/compile.properties")) {
+            Properties p = new Properties();
             p.load(prop);
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
+            clientEngineFileName = p.getProperty("jsFile");
+        } catch (IOException | NullPointerException e) {
+            // we cannot fail here since compile.properties might not been
+            // written by the compiler when running server side tests.
+            getLogger().log(Level.SEVERE,
+                    "Could not resolve file compile.properties for client engine file name",
+                    e);
         }
-        clientEngineFileName = p.getProperty("jsFile");
     }
 
     protected class BootstrapContext {
