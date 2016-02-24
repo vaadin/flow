@@ -129,12 +129,12 @@ public abstract class VaadinService implements Serializable {
     private boolean pushWarningEmitted = false;
 
     /**
-     * Has {@link #init()} been run?
+     * Set to true when {@link #init()} been run.
      */
     private boolean initialized = false;
 
     /**
-     * Creates a new vaadin service based on a deployment configuration
+     * Creates a new vaadin service based on a deployment configuration.
      *
      * @param deploymentConfiguration
      *            the deployment configuration for the service
@@ -714,7 +714,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Creates a new Vaadin session for this service and request
+     * Creates a new Vaadin session for this service and request.
      *
      * @param request
      *            The request for which to create a VaadinSession
@@ -1193,7 +1193,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Called before the framework starts handling a request
+     * Called before the framework starts handling a request.
      *
      * @param request
      *            The request

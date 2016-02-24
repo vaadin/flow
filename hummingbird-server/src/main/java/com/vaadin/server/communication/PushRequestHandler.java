@@ -137,7 +137,7 @@ public class PushRequestHandler
     /**
      * Returns an AtmosphereFramework instance which was initialized in the
      * servlet context init phase by {@link JSR356WebsocketInitializer}, if such
-     * exists
+     * exists.
      */
     private AtmosphereFramework getPreInitializedAtmosphere(
             ServletConfig vaadinServletConfig) {

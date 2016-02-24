@@ -62,7 +62,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
 
     /**
      * "ServletConfig" which only provides information from a
-     * {@link ServletRegistration} and its {@link ServletContext}
+     * {@link ServletRegistration} and its {@link ServletContext}.
      */
     public static class FakeServletConfig implements ServletConfig {
 
@@ -159,7 +159,7 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
 
     /**
      * Returns the name of the attribute in the servlet context where the
-     * pre-initialized Atmosphere object is stored
+     * pre-initialized Atmosphere object is stored.
      *
      * @param servletName
      *            The name of the servlet

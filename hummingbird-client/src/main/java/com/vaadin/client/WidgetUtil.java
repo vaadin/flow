@@ -28,7 +28,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Utility methods which are related to client side code only
+ * Utility methods which are related to client side code only.
  */
 public class WidgetUtil {
 
