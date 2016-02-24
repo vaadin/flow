@@ -138,6 +138,22 @@ public class WidgetUtil {
             }-*/;
 
     /**
+     * Retrieves the value of a JavaScript property.
+     *
+     * @since
+     *
+     * @param object
+     *            the target object
+     * @param name
+     *            the property name
+     * @return
+     */
+    public static native Object getJsProperty(Object object, String name)
+    /*-{
+        return object[name];
+    }-*/;
+
+    /**
      * Checks whether the provided object itself has a JavaScript property with
      * the given name. Inherited properties are not taken into account.
      *
