@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -212,6 +214,23 @@ public class JreArrayTest {
         assertEquals(0, array.length());
         assertEquals(null, array.shift());
         assertEquals(0, array.length());
+    }
+
+    @Test
+    public void testForEach() {
+        Set<Integer> seenValues = new HashSet<>();
+
+        JsArray<Integer> array = JsCollections.array();
+
+        array.push(1, 2);
+
+        array.forEach((value) -> seenValues.add(value));
+
+        Set<Integer> expectedValues = new HashSet<>();
+        expectedValues.add(1);
+        expectedValues.add(2);
+
+        assertEquals(expectedValues, seenValues);
     }
 
 }

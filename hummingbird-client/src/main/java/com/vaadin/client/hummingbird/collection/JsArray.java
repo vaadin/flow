@@ -17,6 +17,7 @@
 package com.vaadin.client.hummingbird.collection;
 
 import com.google.gwt.core.client.GWT;
+import com.vaadin.client.hummingbird.collection.JsSet.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.jre.JreJsArray;
 
 import jsinterop.annotations.JsOverlay;
@@ -216,6 +217,14 @@ public class JsArray<T> {
      * @return the first value of the array or null if the array is empty
      */
     public native T shift();
+
+    /**
+     * Invokes the provided callback for each value in this set.
+     *
+     * @param callback
+     *            the callback to invoke for each value
+     */
+    public native void forEach(ForEachCallback<T> callback);
 
 }
 

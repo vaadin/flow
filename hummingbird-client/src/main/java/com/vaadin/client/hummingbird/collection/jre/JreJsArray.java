@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsSet;
 
 /**
  * JRE implementation of {@link JsArray}, should only be used for testing.
@@ -153,4 +154,12 @@ public class JreJsArray<T> extends JsArray<T> {
     public T shift() {
         return isEmpty() ? null : remove(0);
     }
+
+    @Override
+    public void forEach(JsSet.ForEachCallback<T> callback) {
+        for (T value : values) {
+            callback.accept(value);
+        }
+    }
+
 }

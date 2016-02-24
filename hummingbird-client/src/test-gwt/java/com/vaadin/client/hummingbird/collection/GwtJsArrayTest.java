@@ -16,6 +16,9 @@
 
 package com.vaadin.client.hummingbird.collection;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Test;
 
 import com.vaadin.client.ClientEngineTestBase;
@@ -204,6 +207,22 @@ public class GwtJsArrayTest extends ClientEngineTestBase {
         assertEquals(0, array.length());
         assertEquals(null, array.shift());
         assertEquals(0, array.length());
+    }
+
+    public void testForEach() {
+        Set<Integer> seenValues = new HashSet<>();
+
+        JsArray<Integer> array = JsCollections.array();
+
+        array.push(1, 2);
+
+        array.forEach((value) -> seenValues.add(value));
+
+        Set<Integer> expectedValues = new HashSet<>();
+        expectedValues.add(1);
+        expectedValues.add(2);
+
+        assertEquals(expectedValues, seenValues);
     }
 
 }
