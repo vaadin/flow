@@ -15,8 +15,10 @@
  */
 package com.vaadin.hummingbird.util;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -100,7 +102,7 @@ public class SerializableJsonTest {
     }
 
     @Test
-    public void testUnwrap() {
+    public void testUnwrapMap() {
         HashMap<Object, Object> map = new HashMap<Object, Object>();
 
         Object object = new Object();
@@ -115,4 +117,48 @@ public class SerializableJsonTest {
         Assert.assertEquals("{}", ((JsonValue) map.get("bar")).toJson());
         Assert.assertEquals("{}", ((JsonValue) map.get("baz")).toJson());
     }
+
+    @Test
+    public void testSerializableListJsonWrapped() {
+        List<Object> input = Collections.singletonList(Json.create(true));
+
+        ArrayList<Object> result = SerializableJson
+                .createSerializableList(input);
+
+        // Input should not be modified
+        Assert.assertNotEquals(input, result);
+
+        SerializableJson wrapped = (SerializableJson) result.get(0);
+        Assert.assertEquals("true", wrapped.getValue().toJson());
+    }
+
+    @Test
+    public void testSerializableListObjectNotWrapped() {
+        List<Object> input = Collections
+                .singletonList(new SerializableJson(Json.create("bar")));
+
+        ArrayList<Object> result = SerializableJson
+                .createSerializableList(input);
+
+        Assert.assertNotSame(input, result);
+        Assert.assertEquals(input, result);
+    }
+
+    @Test
+    public void testUnwrapList() {
+        ArrayList<Object> list = new ArrayList<Object>();
+
+        Object object = new Object();
+        list.add(object);
+        list.add(new SerializableJson(Json.createObject()));
+        list.add(Json.createObject());
+
+        SerializableJson.unwrapList(list);
+
+        Assert.assertEquals(3, list.size());
+        Assert.assertSame(object, list.get(0));
+        Assert.assertEquals("{}", ((JsonValue) list.get(1)).toJson());
+        Assert.assertEquals("{}", ((JsonValue) list.get(2)).toJson());
+    }
+
 }

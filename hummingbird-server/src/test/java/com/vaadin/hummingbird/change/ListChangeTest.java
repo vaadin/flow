@@ -40,7 +40,7 @@ public class ListChangeTest {
     public void testBasicJson() {
         StateNode child1 = StateNodeTest.createEmptyNode("child1");
         StateNode child2 = StateNodeTest.createEmptyNode("child2");
-        ListSpliceChange change = new ListSpliceChange(namespace, 0, 1,
+        ListSpliceChange change = new ListSpliceChange(namespace, true, 0, 1,
                 Arrays.asList(child1, child2));
 
         JsonObject json = change.toJson();
@@ -66,7 +66,7 @@ public class ListChangeTest {
 
     @Test
     public void testZeroRemoveNotInJson() {
-        ListSpliceChange change = new ListSpliceChange(namespace, 1, 0,
+        ListSpliceChange change = new ListSpliceChange(namespace, false, 1, 0,
                 Arrays.asList());
 
         JsonObject json = change.toJson();
@@ -76,7 +76,7 @@ public class ListChangeTest {
 
     @Test
     public void testEmptyAddNotInJson() {
-        ListSpliceChange change = new ListSpliceChange(namespace, 1, 0,
+        ListSpliceChange change = new ListSpliceChange(namespace, false, 1, 0,
                 Arrays.asList());
 
         JsonObject json = change.toJson();

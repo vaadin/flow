@@ -16,6 +16,9 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,32 +32,29 @@ import com.vaadin.hummingbird.change.NodeChange;
 
 /**
  * A state node namespace that structures data as a list.
+ * <p>
+ * Should not be used directly, use one of the extending classes instead, which
+ * provide a type safe API while ensuring the list is {@link Serializable}.
  *
  * @since
  * @author Vaadin Ltd
  * @param <T>
  *            the type of the items in the list
  */
-public abstract class ListNamespace<T extends Serializable> extends Namespace {
+public abstract class ListNamespace<T> extends Namespace {
 
-    private List<T> values = new ArrayList<>();
+    private transient List<T> values = new ArrayList<>();
 
-    private List<ListSpliceChange> changes = new ArrayList<>();
-
-    private boolean nodeValues;
+    private transient List<ListSpliceChange> changes = new ArrayList<>();
 
     /**
      * Creates a new list namespace for the given node.
      *
      * @param node
      *            the node that the namespace belongs to
-     * @param nodeValues
-     *            <code>true</code> if this list contains child nodes;
-     *            <code>false</code> if this list contains primitive value
      */
-    public ListNamespace(StateNode node, boolean nodeValues) {
+    protected ListNamespace(StateNode node) {
         super(node);
-        this.nodeValues = nodeValues;
     }
 
     /**
@@ -62,7 +62,7 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
      *
      * @return the number of items
      */
-    public int size() {
+    protected int size() {
         setAccessed();
         return values.size();
     }
@@ -98,15 +98,9 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
      *            the item to insert
      */
     protected void add(int index, T item) {
-        assert item == null || (item instanceof StateNode == nodeValues);
-
         values.add(index, item);
 
-        if (nodeValues) {
-            attachPotentialChild(item);
-        }
-
-        addChange(new ListSpliceChange(this, index, 0,
+        addChange(new ListSpliceChange(this, isNodeValues(), index, 0,
                 Collections.singletonList(item)));
     }
 
@@ -117,12 +111,11 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
      *            index of the item to remove
      * @return the element previously at the specified position
      */
-    public T remove(int index) {
+    protected T remove(int index) {
         T removed = values.remove(index);
-        detatchPotentialChild(removed);
 
-        addChange(
-                new ListSpliceChange(this, index, 1, Collections.emptyList()));
+        addChange(new ListSpliceChange(this, isNodeValues(), index, 1,
+                Collections.emptyList()));
         return removed;
     }
 
@@ -146,11 +139,15 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
     }
 
     @Override
+    public void forEachChild(Consumer<StateNode> action) {
+    }
+
+    @Override
     public void resetChanges() {
         changes.clear();
         if (!values.isEmpty()) {
-            changes.add(
-                    new ListSpliceChange(this, 0, 0, new ArrayList<>(values)));
+            changes.add(new ListSpliceChange(this, isNodeValues(), 0, 0,
+                    new ArrayList<>(values)));
         }
     }
 
@@ -160,8 +157,8 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
      * @return <code>true</code> if this list contains node values;
      *         <code>false</code> if this list contains primitive values
      */
-    public boolean isNodeValues() {
-        return nodeValues;
+    protected boolean isNodeValues() {
+        return false;
     }
 
     /**
@@ -185,19 +182,82 @@ public abstract class ListNamespace<T extends Serializable> extends Namespace {
         return values.indexOf(value);
     }
 
-    @Override
-    public void forEachChild(Consumer<StateNode> action) {
-        if (nodeValues) {
-            values.forEach(v -> action.accept((StateNode) v));
-        }
-    }
-
     /**
      * Gets an iterator returning all items in this namespace.
-     * 
+     *
      * @return an iterator returning all items
      */
     protected Iterator<T> iterator() {
         return values.iterator();
     }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+
+        changes = (List<ListSpliceChange>) stream.readObject();
+        values = (List<T>) stream.readObject();
+
+        postReadChanges(changes);
+        postReadList((List) values);
+    }
+
+    /**
+     * Called after deserializing the internal value list.
+     * <p>
+     * Extending classes can override this method to do in-place transformations
+     * of the list.
+     *
+     * @param list
+     *            the list which was deserialized
+     */
+    protected void postReadList(List<Object> list) {
+    }
+
+    /**
+     * Called after deserializing the internal changes list.
+     * <p>
+     * Extending classes can override this method to do inplace transformations
+     * of the list, if needed.
+     *
+     * @param list
+     *            the list which was deserialized
+     */
+    protected void postReadChanges(List<ListSpliceChange> list) {
+    }
+
+    /**
+     * Called before serializing the internal values list.
+     * <p>
+     * Extending classes can override this method and to do transformations on a
+     * copy of the list, if needed. No modifications can be done to the list
+     * itself.
+     *
+     * @return the original list or a modified copy of the list
+     */
+    protected Serializable preWriteValues(List<T> list) {
+        return (Serializable) list;
+    }
+
+    /**
+     * Called before serializing the internal changes list.
+     * <p>
+     * Extending classes can override this method and to do transformations on a
+     * copy of the list, if needed. No modifications can be done to the list
+     * itself.
+     *
+     * @return the original list or a modified copy of the list
+     */
+    protected Serializable preWriteChanges(List<ListSpliceChange> list) {
+        return (Serializable) list;
+    }
+
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+
+        stream.writeObject(preWriteChanges(changes));
+        stream.writeObject(preWriteValues(values));
+    }
+
 }

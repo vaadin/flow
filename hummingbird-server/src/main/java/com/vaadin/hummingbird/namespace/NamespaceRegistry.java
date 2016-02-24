@@ -68,6 +68,8 @@ public class NamespaceRegistry {
         registerNamespace(LoadingIndicatorConfigurationNamespace.class,
                 LoadingIndicatorConfigurationNamespace::new);
         registerNamespace(ClassListNamespace.class, ClassListNamespace::new);
+        registerNamespace(DependencyListNamespace.class,
+                DependencyListNamespace::new);
     }
 
     private NamespaceRegistry() {
