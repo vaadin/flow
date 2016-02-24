@@ -88,7 +88,7 @@ public class XhrConnection {
         }
 
         /**
-         * Sets the payload which was sent to the server
+         * Sets the payload which was sent to the server.
          *
          * @param payload
          *            the payload which was sent to the server

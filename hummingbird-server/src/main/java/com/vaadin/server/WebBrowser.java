@@ -86,12 +86,20 @@ public class WebBrowser implements Serializable {
         return address;
     }
 
-    /** Get the default locate of the browser. */
+    /**
+     * Gets the locale reported by the browser.
+     *
+     * @return the browser reported locale
+     */
     public Locale getLocale() {
         return locale;
     }
 
-    /** Is the connection made using HTTPS? */
+    /**
+     * Checks if the connection was established using HTTPS.
+     *
+     * @return true if HTTPS was used, false otherwise
+     */
     public boolean isSecureConnection() {
         return secureConnection;
     }
@@ -397,7 +405,10 @@ public class WebBrowser implements Serializable {
     }
 
     /**
-     * @return true if the browser is detected to support touch events
+     * Checks if the browser supports touch events.
+     *
+     * @return true if the browser is detected to support touch events, false
+     *         otherwise
      */
     public boolean isTouchDevice() {
         return touchDevice;

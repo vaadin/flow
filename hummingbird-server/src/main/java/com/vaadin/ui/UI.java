@@ -77,7 +77,7 @@ public abstract class UI implements Serializable, PollNotifier {
     public static final String POLL_DOM_EVENT_NAME = "ui-poll";
 
     /**
-     * The application to which this UI belongs
+     * The Vaadin session to which this UI belongs.
      */
     private volatile VaadinSession session;
 

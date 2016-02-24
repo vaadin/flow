@@ -136,7 +136,7 @@ public class ServerRpcHandler implements Serializable {
         }
 
         /**
-         * Checks if this is a request to resynchronize the client side
+         * Checks if this is a request to resynchronize the client side.
          *
          * @return true if this is a resynchronization request, false otherwise
          */

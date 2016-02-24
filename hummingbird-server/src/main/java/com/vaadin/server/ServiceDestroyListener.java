@@ -30,7 +30,7 @@ import java.io.Serializable;
  */
 public interface ServiceDestroyListener extends Serializable {
     /**
-     * Invoked when a service is destroyed
+     * Invoked when a service is destroyed.
      *
      * @param event
      *            the event

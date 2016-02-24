@@ -74,7 +74,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         }
 
         /**
-         * Checks if this type is of higher priority than the given type
+         * Checks if this type is of higher priority than the given type.
          *
          * @param type
          *            the type to compare to
@@ -112,7 +112,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     };
 
     /**
-     * Checks if we are currently trying to reconnect
+     * Checks if we are currently trying to reconnect.
      *
      * @return true if we have noted a problem and are trying to re-establish
      *         server connection, false otherwise
@@ -258,7 +258,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
     /**
      * Re-sends the payload to the server (if not null) or re-sends a heartbeat
-     * request immediately
+     * request immediately.
      *
      * @param payload
      *            the payload that did not reach the server, null if the problem
@@ -313,7 +313,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     /**
-     * Ensures the reconnect dialog does not popup some time from now
+     * Ensures the reconnect dialog does not popup some time from now.
      */
     private void stopDialogTimer() {
         if (dialogShowTimer.isRunning()) {
@@ -322,7 +322,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     }
 
     /**
-     * Checks if the reconnect dialog is visible to the user
+     * Checks if the reconnect dialog is visible to the user.
      *
      * @return true if the user can see the dialog, false otherwise
      */

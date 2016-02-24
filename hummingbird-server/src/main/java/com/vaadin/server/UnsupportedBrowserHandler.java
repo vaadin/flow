@@ -26,7 +26,7 @@ import java.io.Writer;
 @SuppressWarnings("serial")
 public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
 
-    /** Cookie used to ignore browser checks */
+    /** Cookie used to ignore browser checks. */
     public static final String FORCE_LOAD_COOKIE = "vaadinforceload=1";
 
     @Override

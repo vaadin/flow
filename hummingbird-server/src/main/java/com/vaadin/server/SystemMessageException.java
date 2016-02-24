@@ -19,7 +19,7 @@ package com.vaadin.server;
 public class SystemMessageException extends RuntimeException {
 
     /**
-     * Cause of the method exception
+     * Cause of the method exception.
      */
     private Throwable cause;
 

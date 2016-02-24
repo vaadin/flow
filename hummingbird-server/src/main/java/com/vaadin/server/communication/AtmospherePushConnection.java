@@ -175,7 +175,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     /**
      * Sends the given message to the current client. Cannot be called if
-     * {@isConnected()} is false.
+     * {@link #isConnected()} returns false.
      *
      * @param message
      *            The message to send
