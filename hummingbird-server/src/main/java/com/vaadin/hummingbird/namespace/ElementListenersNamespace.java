@@ -15,9 +15,9 @@
  */
 package com.vaadin.hummingbird.namespace;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,7 +41,7 @@ import elemental.json.JsonValue;
  */
 public class ElementListenersNamespace extends MapNamespace {
     // Server-side only data
-    private HashMap<String, HashSet<DomEventListener>> listeners = new HashMap<>();
+    private HashMap<String, ArrayList<DomEventListener>> listeners = new HashMap<>();
 
     /**
      * Creates a new element listener namespace for the given node.
@@ -76,7 +76,7 @@ public class ElementListenersNamespace extends MapNamespace {
         if (!contains(eventType)) {
             assert !listeners.containsKey(eventType);
 
-            listeners.put(eventType, new HashSet<>());
+            listeners.put(eventType, new ArrayList<>());
             putJson(eventType, Json.createArray());
         }
 
@@ -100,12 +100,12 @@ public class ElementListenersNamespace extends MapNamespace {
     }
 
     private void removeListener(String eventType, DomEventListener listener) {
-        Set<DomEventListener> set = listeners.get(eventType);
-        if (set != null) {
-            set.remove(listener);
+        ArrayList<DomEventListener> listenerList = listeners.get(eventType);
+        if (listenerList != null) {
+            listenerList.remove(listener);
 
             // No more listeners of this type?
-            if (set.isEmpty()) {
+            if (listenerList.isEmpty()) {
                 listeners.remove(eventType);
 
                 // Remove from the set that is synchronized with the client
@@ -121,13 +121,14 @@ public class ElementListenersNamespace extends MapNamespace {
      *            the event to fire
      */
     public void fireEvent(DomEvent event) {
-        Set<DomEventListener> typeListeners = listeners.get(event.getType());
+        ArrayList<DomEventListener> typeListeners = listeners
+                .get(event.getType());
         if (typeListeners == null) {
             return;
         }
 
         // Copy to allow concurrent modification
-        HashSet<DomEventListener> copy = new HashSet<>(typeListeners);
+        ArrayList<DomEventListener> copy = new ArrayList<>(typeListeners);
 
         copy.forEach(l -> l.handleEvent(event));
     }
