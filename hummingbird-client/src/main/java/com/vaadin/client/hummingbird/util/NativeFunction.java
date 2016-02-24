@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird.util;
 
+import com.vaadin.client.hummingbird.collection.JsArray;
+
 import jsinterop.annotations.JsFunction;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
@@ -35,12 +37,24 @@ public class NativeFunction {
      * @param paramsAndCode
      *            parameter names followed by the code of the function
      */
-    private NativeFunction(String... paramsAndCode) {
+    public NativeFunction(String... paramsAndCode) {
         /*
          * The GWT compiler will replace this JsInterop constructor with a JS
          * invocation of new Function(<arguments>)
          */
     }
+
+    /**
+     * Invokes this function with a given <code>this</code> and arguments
+     * provided as an array.
+     *
+     * @param thisArg
+     *            the value of <code>this</code>
+     * @param arguments
+     *            an array of arguments
+     * @return the return value of the invocation
+     */
+    public native Object apply(Object thisArg, JsArray<?> arguments);
 
     /**
      * Creates a new function with the given parameters and implementation. The

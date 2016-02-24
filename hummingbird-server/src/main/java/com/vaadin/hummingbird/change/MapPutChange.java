@@ -84,7 +84,7 @@ public class MapPutChange extends NamespaceChange {
                     Json.create(node.getId()));
         } else {
             json.put(JsonConstants.CHANGE_PUT_VALUE,
-                    JsonCodec.encodePrimitiveValue(value));
+                    JsonCodec.encodeSimpleValue(value));
         }
     }
 }

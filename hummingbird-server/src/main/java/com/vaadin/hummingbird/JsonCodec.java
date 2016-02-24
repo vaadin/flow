@@ -15,7 +15,12 @@
  */
 package com.vaadin.hummingbird;
 
+import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.util.JsonUtil;
+
 import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
@@ -30,14 +35,62 @@ public class JsonCodec {
     }
 
     /**
-     * Helper for encoding any primitive value as JSON.
+     * Type id for a complex type array containing an {@link Element}.
+     */
+    public static final int ELEMENT_TYPE = 0;
+
+    /**
+     * Type id for a complex type array containing a {@link JsonArray}.
+     */
+    public static final int ARRAY_TYPE = 1;
+
+    /**
+     * Helper for encoding complex values as JSON. Some complex types are
+     * encoded as an JSON array starting with an id defining the actual type and
+     * followed by the actual data. Supported value types are any "simple" type
+     * (see {@link #encodeSimpleValue(Object)}) and {@link Element}.
      *
      * @param value
      *            the value to encode
-     * @return the encode JSON value
+     * @return the value encoded as JSON
      */
-    public static JsonValue encodePrimitiveValue(Object value) {
-        if (value instanceof String) {
+    public static JsonValue encodeComplexValue(Object value) {
+        if (value instanceof Element) {
+            Element element = (Element) value;
+            StateNode node = element.getNode();
+            if (node.isAttached()) {
+                return wrapComplexValue(ELEMENT_TYPE,
+                        Json.create(node.getId()));
+            } else {
+                return Json.createNull();
+            }
+        } else {
+            JsonValue encoded = encodeSimpleValue(value);
+            if (encoded.getType() == JsonType.ARRAY) {
+                // Must "escape" arrays
+                encoded = wrapComplexValue(ARRAY_TYPE, encoded);
+            }
+            return encoded;
+        }
+    }
+
+    private static JsonArray wrapComplexValue(int typeId, JsonValue value) {
+        return JsonUtil.createArray(Json.create(typeId), value);
+    }
+
+    /**
+     * Helper for encoding any simple value as JSON. Supported values types are
+     * {@link String}, {@link Number}, {@link Boolean}, {@link JsonValue}.
+     * <code>null</code> is also supported.
+     *
+     * @param value
+     *            the value to encode
+     * @return the value encoded as JSON
+     */
+    public static JsonValue encodeSimpleValue(Object value) {
+        if (value instanceof JsonValue) {
+            return (JsonValue) value;
+        } else if (value instanceof String) {
             return Json.create((String) value);
         } else if (value instanceof Number) {
             return Json.create(((Number) value).doubleValue());

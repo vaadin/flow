@@ -20,10 +20,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.AnchorElement;
 import com.google.gwt.dom.client.Document;
-import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.client.hummingbird.collection.JsCollections;
 
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -61,57 +58,6 @@ public class WidgetUtil {
         AnchorElement a = Document.get().createAnchorElement();
         a.setHref(url);
         return a.getHref();
-    }
-
-    /**
-     * Converts a JSON array to a JS array. This is a no-op in compiled
-     * JavaScipt, but needs special handling for tests running in the JVM.
-     *
-     * @param jsonArray
-     *            the JSON array to convert
-     * @return the converted JS array
-     */
-    public static JsArray<Object> jsonArrayAsJsArray(JsonArray jsonArray) {
-        JsArray<Object> jsArray;
-        if (GWT.isScript()) {
-            jsArray = WidgetUtil.crazyJsCast(jsonArray);
-        } else {
-            jsArray = JsCollections.array();
-            for (int i = 0; i < jsonArray.length(); i++) {
-                jsArray.push(jsonValueToJavaValue(jsonArray.get(i)));
-            }
-        }
-        return jsArray;
-    }
-
-    /**
-     * Converts a JSON value to a Java value. This is a no-op in compiled
-     * JavaScipt, but needs special handling for tests running in the JVM.
-     *
-     * @param value
-     *            the JSON value to convert
-     * @return the converted Java value
-     */
-    @SuppressWarnings("boxing")
-    public static Object jsonValueToJavaValue(JsonValue value) {
-        if (GWT.isScript()) {
-            return value;
-        } else {
-            // JRE implementation for cases that have so far been needed
-            switch (value.getType()) {
-            case BOOLEAN:
-                return value.asBoolean();
-            case STRING:
-                return value.asString();
-            case NUMBER:
-                return value.asNumber();
-            case NULL:
-                return null;
-            default:
-                throw new IllegalArgumentException(
-                        "Can't (yet) convert " + value.getType());
-            }
-        }
     }
 
     /**
