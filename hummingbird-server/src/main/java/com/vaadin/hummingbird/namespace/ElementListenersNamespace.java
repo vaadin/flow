@@ -15,13 +15,21 @@
  */
 package com.vaadin.hummingbird.namespace;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.util.JsonUtil;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonValue;
 
 /**
  * Namespace recording DOM events with server-side listeners. The key set of
@@ -32,9 +40,6 @@ import com.vaadin.hummingbird.dom.EventRegistrationHandle;
  * @author Vaadin Ltd
  */
 public class ElementListenersNamespace extends MapNamespace {
-    // The most compact single JSON value
-    private static final Integer HAS_LISTENERS_VALUE = Integer.valueOf(1);
-
     // Server-side only data
     private HashMap<String, HashSet<DomEventListener>> listeners = new HashMap<>();
 
@@ -56,22 +61,40 @@ public class ElementListenersNamespace extends MapNamespace {
      *            the event type
      * @param listener
      *            the listener to add
+     * @param eventDataExpressions
+     *            the event data expressions
      * @return a handle for removing the listener
      */
     public EventRegistrationHandle add(String eventType,
-            DomEventListener listener) {
+            DomEventListener listener, String[] eventDataExpressions) {
         assert eventType != null;
         assert listener != null;
+        assert eventDataExpressions != null;
 
-        Set<DomEventListener> typeListeners = listeners
-                .computeIfAbsent(eventType, key -> {
-                    // Add to the set that is synchronized with the client
-                    put(key, HAS_LISTENERS_VALUE);
+        // Could optimize slightly by integrating the initialization into the
+        // main logic, but that would make the code much harder to read
+        if (!contains(eventType)) {
+            assert !listeners.containsKey(eventType);
 
-                    // Create a set to store listener instances in
-                    return new HashSet<>();
-                });
-        typeListeners.add(listener);
+            listeners.put(eventType, new HashSet<>());
+            putJson(eventType, Json.createArray());
+        }
+
+        listeners.get(eventType).add(listener);
+
+        if (eventDataExpressions.length != 0) {
+            JsonArray eventDataJson = (JsonArray) get(eventType);
+
+            Set<String> eventData = JsonUtil.stream(eventDataJson)
+                    .map(JsonValue::asString).collect(Collectors.toSet());
+
+            if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
+                // Send full new event data to the client if the set changed
+
+                putJson(eventType, eventData.stream().map(Json::create)
+                        .collect(JsonUtil.asArray()));
+            }
+        }
 
         return () -> removeListener(eventType, listener);
     }
@@ -94,11 +117,11 @@ public class ElementListenersNamespace extends MapNamespace {
     /**
      * Fires an event to all listeners registered for the given type.
      *
-     * @param eventType
-     *            the event type
+     * @param event
+     *            the event to fire
      */
-    public void fireEvent(String eventType) {
-        Set<DomEventListener> typeListeners = listeners.get(eventType);
+    public void fireEvent(DomEvent event) {
+        Set<DomEventListener> typeListeners = listeners.get(event.getType());
         if (typeListeners == null) {
             return;
         }
@@ -106,6 +129,6 @@ public class ElementListenersNamespace extends MapNamespace {
         // Copy to allow concurrent modification
         HashSet<DomEventListener> copy = new HashSet<>(typeListeners);
 
-        copy.forEach(DomEventListener::handleEvent);
+        copy.forEach(l -> l.handleEvent(event));
     }
 }

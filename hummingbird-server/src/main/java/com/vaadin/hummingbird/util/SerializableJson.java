@@ -164,4 +164,48 @@ public final class SerializableJson implements Serializable {
             }
         });
     }
+
+    /**
+     * Writes a JSON value or <code>null</code> to a stream.
+     *
+     * @param stream
+     *            the stream to write to
+     * @param value
+     *            the JSON value to write, or <code>null</code>
+     * @throws IOException
+     *             if writing to the stream fails
+     */
+    public static void writeNullable(ObjectOutputStream stream, JsonValue value)
+            throws IOException {
+        if (value == null) {
+            stream.writeObject(null);
+        } else {
+            stream.writeObject(new SerializableJson(value));
+        }
+    }
+
+    /**
+     * Reads a JSON value or <code>null</code> from a stream.
+     *
+     * @param stream
+     *            the stream to read from
+     * @return the read JSON value, or <code>null</code>
+     * @throws IOException
+     *             if reading from the stream fails or if an unexpected value is
+     *             read
+     * @throws ClassNotFoundException
+     *             if reading from the stream fails
+     */
+    public static JsonValue readNullable(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        Object object = stream.readObject();
+        if (object == null) {
+            return null;
+        } else if (object instanceof SerializableJson) {
+            SerializableJson serializableJson = (SerializableJson) object;
+            return serializableJson.getValue();
+        } else {
+            throw new IOException("Read unexpected type: " + object.getClass());
+        }
+    }
 }

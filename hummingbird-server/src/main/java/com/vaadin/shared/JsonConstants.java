@@ -166,4 +166,11 @@ public class JsonConstants implements Serializable {
      * @since
      */
     public static final String RPC_EVENT_TYPE = "event";
+
+    /**
+     * Key holding the event data in event messages sent from the client.
+     *
+     * @since
+     */
+    public static final String RPC_EVENT_DATA = "data";
 }

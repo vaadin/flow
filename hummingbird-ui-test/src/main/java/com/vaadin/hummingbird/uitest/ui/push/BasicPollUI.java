@@ -42,14 +42,14 @@ public class BasicPollUI extends ClientServerCounterUI {
         Element stopPolling = new Element("button").setAttribute("id",
                 STOP_POLLING_BUTTON);
         stopPolling.setTextContent("Stop polling");
-        stopPolling.addEventListener("click", () -> {
+        stopPolling.addEventListener("click", e -> {
             setPollInterval(-1);
             updatePollIntervalText();
         });
         Element startPolling = new Element("button").setAttribute("id",
                 START_POLLING_BUTTON);
         startPolling.setTextContent("Start polling");
-        startPolling.addEventListener("click", () -> {
+        startPolling.addEventListener("click", e -> {
             setPollInterval(500);
             updatePollIntervalText();
         });
