@@ -52,7 +52,7 @@ public class XhrConnectionError {
     }
 
     /**
-     * Returns the exception which caused the problem, if available
+     * Returns the exception which caused the problem, if available.
      *
      * @return the exception which caused the problem, or null if not available
      */

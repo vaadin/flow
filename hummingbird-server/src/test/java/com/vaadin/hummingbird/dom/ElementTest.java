@@ -3,10 +3,12 @@ package com.vaadin.hummingbird.dom;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,6 +83,9 @@ public class ElementTest {
             if (!Modifier.isPublic(m.getModifiers())) {
                 continue;
             }
+            if (Modifier.isStatic(m.getModifiers())) {
+                continue;
+            }
             if (m.getName().startsWith("get") || m.getName().startsWith("has")
                     || m.getName().startsWith("is")
                     || ignore.contains(m.getName())) {
@@ -142,19 +147,19 @@ public class ElementTest {
 
     @Test
     public void isNullValidAttribute() {
-        Assert.assertFalse(Element.isValidAttributeName(null));
+        Assert.assertFalse(ElementUtil.isValidAttributeName(null));
     }
 
     @Test
     public void isEmptyValidAttribute() {
-        Assert.assertFalse(Element.isValidAttributeName(""));
+        Assert.assertFalse(ElementUtil.isValidAttributeName(""));
     }
 
     @Test(expected = AssertionError.class)
     public void isUpperCaseValidAttribute() {
         // isValidAttributeName is designed to only be called with lowercase
         // attribute names
-        Element.isValidAttributeName("FOO");
+        ElementUtil.isValidAttributeName("FOO");
     }
 
     @Test
@@ -1081,6 +1086,178 @@ public class ElementTest {
     @Test(expected = IllegalArgumentException.class)
     public void testClassNameProperty_throws() {
         new Element("div").setProperty("className", "foo");
+    }
+
+    public void setStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        Assert.assertEquals("bar", s.get("foo"));
+    }
+
+    @Test
+    public void getUnsetStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        Assert.assertNull(s.get("foo"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getNullStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.get(null);
+    }
+
+    @Test
+    public void replaceStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        s.set("foo", "baz");
+        Assert.assertEquals("baz", s.get("foo"));
+    }
+
+    @Test
+    public void removeSingleStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("foo", "bar");
+        s.remove("foo");
+        Assert.assertEquals(null, s.get("foo"));
+    }
+
+    @Test
+    public void emptyStyleAsAttribute() {
+        Element e = new Element("div");
+        Assert.assertFalse(e.hasAttribute("style"));
+        Assert.assertNull(e.getAttribute("style"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void semicolonInStyle() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1 px solid black;");
+    }
+
+    @Test
+    public void singleStyleAsAttribute() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1px solid black");
+        Assert.assertTrue(e.hasAttribute("style"));
+        Assert.assertEquals("border:1px solid black", e.getAttribute("style"));
+    }
+
+    @Test
+    public void multipleStylesAsAttribute() {
+        Element e = new Element("div");
+        Style s = e.getStyle();
+        s.set("border", "1px solid black");
+        s.set("margin", "1em");
+        Assert.assertTrue(e.hasAttribute("style"));
+        assertEqualsOne(
+                new String[] { "border:1px solid black;margin:1em",
+                        "margin:1em;border:1px solid black" },
+                e.getAttribute("style"));
+    }
+
+    private void assertEqualsOne(String[] expected, String actual) {
+        for (int i = 0; i < expected.length; i++) {
+            if (expected[i].equals(actual)) {
+                return;
+            }
+        }
+        String expectedString = Arrays.stream(expected)
+                .collect(Collectors.joining("> or <"));
+        Assert.fail(
+                "expected: <" + expectedString + "> but was <" + actual + ">");
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setEmptyStyleName() {
+        Element e = new Element("div");
+        e.getStyle().set("", "foo");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setStyleNameExtraWhitespace() {
+        Element e = new Element("div");
+        e.getStyle().set("   color", "red");
+    }
+
+    @Test
+    public void setStyleValueExtraWhitespace() {
+        Element e = new Element("div");
+        e.getStyle().set("color", "red   ");
+        Assert.assertEquals("color:red", e.getAttribute("style"));
+        Assert.assertEquals("red", e.getStyle().get("color"));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void setStyleAttribute() {
+        Element e = new Element("div");
+        e.setAttribute("style", "foo: bar;");
+    }
+
+    @Test
+    public void removeStyles() {
+        Element element = new Element("div");
+
+        element.getStyle().set("zIndex", "12");
+        element.getStyle().set("background", "blue");
+
+        element.getStyle().remove("background");
+
+        Assert.assertEquals("zIndex:12", element.getAttribute("style"));
+
+        element.getStyle().remove("zIndex");
+
+        Assert.assertNull(element.getAttribute("style"));
+        Assert.assertFalse(element.hasAttribute("style"));
+
+        Assert.assertEquals(Collections.emptySet(),
+                element.getStyle().getNames());
+    }
+
+    @Test
+    public void removeStyleAttribute() {
+        Element element = new Element("div");
+
+        Style style = element.getStyle();
+
+        style.set("border", "1px solid green");
+
+        element.removeAttribute("style");
+
+        Assert.assertEquals(Collections.emptySet(), style.getNames());
+    }
+
+    @Test
+    public void validStyleWithSemicolon() {
+        Element element = new Element("div");
+        String validStyle = "background: url('foo;bar')";
+        Style style = element.getStyle();
+        style.set("background", validStyle);
+        Assert.assertEquals(validStyle, style.get("background"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void warnAboutDashSeparated() {
+        Element element = new Element("div");
+
+        Style style = element.getStyle();
+        style.set("border-color", "blue");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nullStyleValue() {
+        Element element = new Element("div");
+
+        Style style = element.getStyle();
+        style.set("borderColor", null);
     }
 
 }

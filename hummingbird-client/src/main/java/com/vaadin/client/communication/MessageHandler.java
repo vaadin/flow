@@ -70,7 +70,7 @@ public class MessageHandler {
     private JsSet<Object> responseHandlingLocks = JsCollections.set();
 
     /**
-     * Contains all UIDL messages received while response handling is suspended
+     * Contains all UIDL messages received while response handling is suspended.
      */
     private JsArray<PendingUIDLMessage> pendingUIDLMessages = JsCollections
             .array();
@@ -79,7 +79,7 @@ public class MessageHandler {
     private String csrfToken = ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE;
 
     /**
-     * Holds the time spent rendering the last request
+     * Holds the time spent rendering the last request.
      */
     protected int lastProcessingTime;
 
@@ -398,7 +398,7 @@ public class MessageHandler {
 
     /**
      * Checks if the given serverId is the one we are currently waiting for from
-     * the server
+     * the server.
      */
     private boolean isNextExpectedMessage(int serverId) {
         if (serverId == -1) {
@@ -500,7 +500,7 @@ public class MessageHandler {
 
     /**
      * Finds the next pending UIDL message and handles it (next pending is
-     * decided based on the server id)
+     * decided based on the server id).
      *
      * @return true if a message was handled, false otherwise
      */
@@ -575,7 +575,7 @@ public class MessageHandler {
     }
 
     /**
-     * Checks if the first UIDL has been handled
+     * Checks if the first UIDL has been handled.
      *
      * @return true if the initial UIDL has already been processed, false
      *         otherwise
@@ -609,7 +609,7 @@ public class MessageHandler {
     }
 
     /**
-     * Unwraps and parses the given JSON, originating from the server
+     * Unwraps and parses the given JSON, originating from the server.
      *
      * @param jsonText
      *            the json from the server
@@ -638,7 +638,7 @@ public class MessageHandler {
     }-*/;
 
     /**
-     * Parse the given wrapped JSON, received from the server, to a ValueMap
+     * Parse the given wrapped JSON, received from the server, to a ValueMap.
      *
      * @param wrappedJsonText
      *            the json, wrapped as done by the server

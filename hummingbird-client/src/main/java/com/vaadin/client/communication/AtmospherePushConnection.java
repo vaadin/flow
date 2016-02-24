@@ -41,9 +41,12 @@ import elemental.json.JsonObject;
  */
 public class AtmospherePushConnection implements PushConnection {
 
+    /**
+     * Represents the connection state of a push connection.
+     */
     protected enum State {
         /**
-         * Opening request has been sent, but still waiting for confirmation
+         * Opening request has been sent, but still waiting for confirmation.
          */
         CONNECT_PENDING,
 
@@ -146,7 +149,7 @@ public class AtmospherePushConnection implements PushConnection {
     private Command pendingDisconnectCommand;
 
     /**
-     * The url to use for push requests
+     * The url to use for push requests.
      */
     private String url;
 
@@ -378,7 +381,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     /**
      * Called if the transport mechanism cannot be used and the fallback will be
-     * tried
+     * tried.
      */
     protected void onTransportFailure() {
         Console.warn("Push connection using primary method ("

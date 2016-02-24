@@ -105,7 +105,7 @@ public class Profiler {
         }
 
         /**
-         * Gets the name of the node
+         * Gets the name of the node.
          *
          * @return the name of the node
          */
@@ -136,7 +136,7 @@ public class Profiler {
 
         /**
          * Gets the total time spent in this node, including time spent in sub
-         * nodes
+         * nodes.
          *
          * @return the total time spent, in milliseconds
          */
@@ -146,7 +146,7 @@ public class Profiler {
 
         /**
          * Gets the minimum time spent for one invocation of this node,
-         * including time spent in sub nodes
+         * including time spent in sub nodes.
          *
          * @return the time spent for the fastest invocation, in milliseconds
          */
@@ -156,7 +156,7 @@ public class Profiler {
 
         /**
          * Gets the maximum time spent for one invocation of this node,
-         * including time spent in sub nodes
+         * including time spent in sub nodes.
          *
          * @return the time spent for the slowest invocation, in milliseconds
          */
@@ -165,7 +165,7 @@ public class Profiler {
         }
 
         /**
-         * Gets the number of times this node has been entered
+         * Gets the number of times this node has been entered.
          *
          * @return the number of times the node has been entered
          */
@@ -175,7 +175,7 @@ public class Profiler {
 
         /**
          * Gets the total time spent in this node, excluding time spent in sub
-         * nodes
+         * nodes.
          *
          * @return the total time spent, in milliseconds
          */
@@ -188,7 +188,7 @@ public class Profiler {
         }
 
         /**
-         * Gets the child nodes of this node
+         * Gets the child nodes of this node.
          *
          * @return a collection of child nodes
          */
@@ -267,7 +267,10 @@ public class Profiler {
         }
 
         /**
+         * Marks the time spent in the child node.
+         *
          * @param timestamp
+         *            the timestamp for when the node was left
          */
         public void leave(double timestamp) {
             double elapsed = (timestamp - enterTime);

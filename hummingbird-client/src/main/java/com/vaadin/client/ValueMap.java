@@ -13,95 +13,80 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package com.vaadin.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.google.gwt.core.client.JsArrayString;
 
+/**
+ * Old abstraction for a UIDL JSON message.
+ *
+ * @author Vaadin
+ * @since
+ */
 public final class ValueMap extends JavaScriptObject {
+    /**
+     * JSO constructor.
+     */
     protected ValueMap() {
     }
 
-    public native double getRawNumber(final String name)
-    /*-{
-        return this[name];
-    }-*/;
-
+    /**
+     * Gets the value with the given key as an integer.
+     *
+     * @param name
+     *            the map key
+     * @return the value as an integer
+     */
     public native int getInt(final String name)
     /*-{
         return this[name];
     }-*/;
 
-    public native boolean getBoolean(final String name)
-    /*-{
-        return Boolean(this[name]);
-    }-*/;
-
+    /**
+     * Gets the value with the given key as a string.
+     *
+     * @param name
+     *            the map key
+     * @return the value as a string
+     */
     public native String getString(String name)
     /*-{
         return this[name];
     }-*/;
 
-    public native JsArrayString getKeyArray()
-    /*-{
-        var a = new Array();
-        var attr = this;
-        for(var j in attr) {
-            // workaround for the infamous chrome hosted mode hack (__gwt_ObjectId)
-            if(attr.hasOwnProperty(j))
-                a.push(j);
-        }
-        return a;
-    }-*/;
-
+    /**
+     * Gets the value with the given key as an string array.
+     *
+     * @param name
+     *            the map key
+     * @return the value as a string array
+     */
     public native JsArrayString getJSStringArray(String name)
     /*-{
         return this[name];
     }-*/;
 
-    public native JsArray<ValueMap> getJSValueMapArray(String name)
-    /*-{
-        return this[name];
-    }-*/;
-
-    public String[] getStringArray(final String name) {
-        JsArrayString stringArrayAttribute = getJSStringArray(name);
-        final String[] s = new String[stringArrayAttribute.length()];
-        for (int i = 0; i < stringArrayAttribute.length(); i++) {
-            s[i] = stringArrayAttribute.get(i);
-        }
-        return s;
-    }
-
-    public int[] getIntArray(final String name) {
-        JsArrayString stringArrayAttribute = getJSStringArray(name);
-        final int[] s = new int[stringArrayAttribute.length()];
-        for (int i = 0; i < stringArrayAttribute.length(); i++) {
-            s[i] = Integer.parseInt(stringArrayAttribute.get(i));
-        }
-        return s;
-    }
-
+    /**
+     * Checks if the map contains the given key.
+     *
+     * @param name
+     *            the map key
+     * @return true if the map contains the key, false otherwise
+     */
     public native boolean containsKey(final String name)
     /*-{
          return name in this;
     }-*/;
 
+    /**
+     * Gets the value with the given key as a map.
+     *
+     * @param name
+     *            the map key
+     * @return the value as a map
+     */
     public native ValueMap getValueMap(String name)
-    /*-{
-        return this[name];
-    }-*/;
-
-    public native String getAsString(String name)
-    /*-{
-        return '' + this[name];
-    }-*/;
-
-    public native JavaScriptObject getJavaScriptObject(String name)
     /*-{
         return this[name];
     }-*/;

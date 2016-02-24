@@ -68,7 +68,7 @@ public class Heartbeat {
     }
 
     /**
-     * Sends a heartbeat to the server
+     * Sends a heartbeat to the server.
      */
     public void send() {
         timer.cancel();
@@ -102,7 +102,7 @@ public class Heartbeat {
     }
 
     /**
-     * @return the interval at which heartbeat requests are sent
+     * @return the interval at which heartbeat requests are sent.
      */
     public int getInterval() {
         return interval;

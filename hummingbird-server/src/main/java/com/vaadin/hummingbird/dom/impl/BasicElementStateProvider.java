@@ -26,13 +26,16 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
+import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
+import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 
 import elemental.json.JsonValue;
@@ -58,7 +61,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
     private static Class<? extends Namespace>[] namespaces = new Class[] {
             ElementDataNamespace.class, ElementAttributeNamespace.class,
             ElementChildrenNamespace.class, ElementPropertyNamespace.class,
-            ElementListenersNamespace.class, ClassListNamespace.class };
+            ElementListenersNamespace.class, ClassListNamespace.class,
+            ElementStylePropertyNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -81,7 +85,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
      * @return a initialized and compatible state node
      */
     public static StateNode createStateNode(String tag) {
-        assert Element.isValidTagName(tag) : "Invalid tag name " + tag;
+        assert ElementUtil.isValidTagName(tag) : "Invalid tag name " + tag;
         StateNode node = new StateNode(namespaces);
 
         node.getNamespace(ElementDataNamespace.class).setTag(tag);
@@ -295,7 +299,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyNamespace(node).remove(name);
+        getPropertyNamespace(node).removeProperty(name);
     }
 
     @Override
@@ -331,6 +335,12 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @Override
     public Set<String> getClassList(StateNode node) {
         return node.getNamespace(ClassListNamespace.class).getAsSet();
+    }
+
+    @Override
+    public Style getStyle(StateNode node) {
+        return node.getNamespace(ElementStylePropertyNamespace.class)
+                .getStyle();
     }
 
 }
