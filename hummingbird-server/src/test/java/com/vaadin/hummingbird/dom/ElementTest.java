@@ -3,6 +3,7 @@ package com.vaadin.hummingbird.dom;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -1253,6 +1254,45 @@ public class ElementTest {
 
         Style style = element.getStyle();
         style.set("borderColor", null);
+    }
+
+    @Test
+    public void listenersFiredInRegisteredOrder() {
+        Element element = new Element("div");
+        ArrayList<Integer> eventOrder = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            final int j = i;
+            element.addEventListener("click", e -> {
+                eventOrder.add(j);
+            });
+        }
+        fireEvent(element, "click");
+        Assert.assertArrayEquals(new Object[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+                eventOrder.toArray());
+    }
+
+    private void fireEvent(Element element, String eventType) {
+        element.getNode().getNamespace(ElementListenersNamespace.class)
+                .fireEvent(
+                        new DomEvent(element, eventType, Json.createObject()));
+
+    }
+
+    @Test
+    public void eventsWhenListenerIsRegisteredManyTimes() {
+        AtomicInteger invocations = new AtomicInteger(0);
+
+        DomEventListener listener = e -> {
+            invocations.incrementAndGet();
+        };
+        Element element = new Element("div");
+        element.addEventListener("click", listener);
+        element.addEventListener("click", listener);
+
+        fireEvent(element, "click");
+
+        Assert.assertEquals(2, invocations.get());
     }
 
 }
