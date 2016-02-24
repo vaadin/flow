@@ -183,6 +183,7 @@ public interface ElementStateProvider extends Serializable {
      *            the listener
      * @param eventDataExpressions
      *            the event data expressions
+     *
      * @return a handle for removing the listener
      */
     EventRegistrationHandle addEventListener(StateNode node, String eventType,
@@ -210,7 +211,8 @@ public interface ElementStateProvider extends Serializable {
      * @param value
      *            the property value
      */
-    void setProperty(StateNode node, String name, Serializable value);
+    void setProperty(StateNode node, String name, Serializable value,
+            boolean emitChange);
 
     /**
      * Sets the given property to the given JSON value.
@@ -304,5 +306,9 @@ public interface ElementStateProvider extends Serializable {
      * @return the element styles
      */
     Style getStyle(StateNode node);
+
+    void setSynchronizedProperties(StateNode node, String[] propertyNames);
+
+    void setSynchronizedPropertiesEvents(StateNode node, String[] eventTypes);
 
 }

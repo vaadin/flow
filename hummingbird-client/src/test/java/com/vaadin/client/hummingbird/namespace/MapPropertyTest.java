@@ -91,6 +91,24 @@ public class MapPropertyTest {
     }
 
     @Test
+    public void testNoChangeEvent() {
+        AtomicReference<MapPropertyChangeEvent> lastEvent = new AtomicReference<>();
+
+        property.addChangeListener(new MapPropertyChangeListener() {
+            @Override
+            public void onPropertyChange(MapPropertyChangeEvent event) {
+                lastEvent.set(event);
+            }
+        });
+
+        Assert.assertNull(lastEvent.get());
+        property.setValue("foo", false);
+        Assert.assertNull(lastEvent.get());
+        property.setValue("bar", true);
+        Assert.assertNotNull(lastEvent.get());
+    }
+
+    @Test
     public void testReactive() {
         CountingComputation computation = new CountingComputation(
                 () -> property.getValue());

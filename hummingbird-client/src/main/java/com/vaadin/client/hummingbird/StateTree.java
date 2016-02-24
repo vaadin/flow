@@ -19,6 +19,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.util.ClientJsonCodec;
 import com.vaadin.hummingbird.shared.Namespaces;
 import com.vaadin.shared.JsonConstants;
 
@@ -150,6 +151,32 @@ public class StateTree {
         if (eventData != null) {
             message.put(JsonConstants.RPC_EVENT_DATA, eventData);
         }
+
+        ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
+        rpcQueue.add(message);
+        rpcQueue.flush();
+    }
+
+    /**
+     * Sends an property sync to the server.
+     *
+     * @param node
+     *            the node containing the property
+     * @param property
+     *            the property name
+     * @param value
+     *            the property value
+     */
+    public void sendPropertySyncToServer(StateNode node, String property,
+            Object value) {
+        assert assertValidNode(node);
+        JsonObject message = Json.createObject();
+        message.put(JsonConstants.RPC_TYPE,
+                JsonConstants.RPC_TYPE_PROPERTY_SYNC);
+        message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_PROPERTY, property);
+        message.put(JsonConstants.RPC_PROPERTY_VALUE,
+                ClientJsonCodec.encodeWithoutTypeInfo(value));
 
         ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
         rpcQueue.add(message);

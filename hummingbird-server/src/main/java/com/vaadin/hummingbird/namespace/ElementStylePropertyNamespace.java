@@ -42,10 +42,11 @@ public class ElementStylePropertyNamespace extends AbstractPropertyNamespace {
     }
 
     @Override
-    public void setProperty(String name, Serializable value) {
+    public void setProperty(String name, Serializable value,
+            boolean emitChange) {
         assert value instanceof String;
         assert ElementUtil.isValidStylePropertyValue((String) value);
-        super.setProperty(name, value);
+        super.setProperty(name, value, emitChange);
     }
 
     /**

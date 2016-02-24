@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird;
 
+import java.io.Serializable;
+
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.util.JsonUtil;
 
@@ -103,6 +105,32 @@ public class JsonCodec {
             throw new IllegalArgumentException(
                     "Can't encode" + value.getClass() + " to json");
         }
+    }
+
+    /**
+     * Helper for decoding any "primitive" value that is directly supported in
+     * JSON. Supported values types are {@link String}, {@link Number},
+     * {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
+     *
+     * @param value
+     *            the JSON value to decode
+     * @return the decoded value
+     */
+    public static Serializable decodeWithoutTypeInfo(JsonValue json) {
+        switch (json.getType()) {
+        case BOOLEAN:
+            return json.asBoolean();
+        case STRING:
+            return json.asString();
+        case NUMBER:
+            return json.asNumber();
+        case NULL:
+            return null;
+        default:
+            throw new IllegalArgumentException(
+                    "Can't (yet) decode " + json.getType());
+        }
+
     }
 
 }

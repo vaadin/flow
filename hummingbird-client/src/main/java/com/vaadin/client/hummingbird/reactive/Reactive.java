@@ -169,4 +169,19 @@ public class Reactive {
         };
     }
 
+    /**
+     * Resets Reactive to the initial state.
+     * <p>
+     * Intended for test cases to call in setup to avoid having tests affect
+     * each other as Reactive state is static and shared.
+     * <p>
+     * Should never be called from non-test code!
+     *
+     */
+    public static void reset() {
+        flushListeners = null;
+        eventCollectors = null;
+        currentComputation = null;
+    }
+
 }

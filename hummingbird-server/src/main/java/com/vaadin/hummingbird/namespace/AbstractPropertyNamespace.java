@@ -48,12 +48,13 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
      *            the value, must be a string, a boolean, a double or
      *            <code>null</code>
      */
-    public void setProperty(String name, Serializable value) {
+    public void setProperty(String name, Serializable value,
+            boolean emitChange) {
         assert name != null;
         assert value == null || value instanceof String
                 || value instanceof Boolean || value instanceof Double;
 
-        put(name, value);
+        put(name, value, emitChange);
     }
 
     /**

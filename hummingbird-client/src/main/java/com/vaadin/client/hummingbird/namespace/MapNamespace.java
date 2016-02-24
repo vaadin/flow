@@ -72,8 +72,9 @@ public class MapNamespace extends AbstractNamespace implements ReactiveValue {
     }
 
     /**
-     * Gets the property with a given name, creating it if necessary. A
-     * {@link MapPropertyAddEvent} is fired if a new property instance is
+     * Gets the property with a given name, creating it if necessary.
+     * <p>
+     * A {@link MapPropertyAddEvent} is fired if a new property instance is
      * created.
      *
      * @param name
@@ -81,12 +82,31 @@ public class MapNamespace extends AbstractNamespace implements ReactiveValue {
      * @return the property instance
      */
     public MapProperty getProperty(String name) {
+        return getProperty(name, true);
+    }
+
+    /**
+     * Gets the property with a given name, creating it if necessary.
+     * <p>
+     * A {@link MapPropertyAddEvent} is fired if a new property instance is
+     * created and {@code fireEvent} is set to {@literal true}.
+     *
+     * @param name
+     *            the name of the property
+     * @param fireEvent
+     *            true to fire a an add event if the property is created, false
+     *            to prevent the event from being fired
+     * @return the property instance
+     */
+    public MapProperty getProperty(String name, boolean fireEvent) {
         MapProperty property = properties.get(name);
         if (property == null) {
             property = new MapProperty(name, this);
             properties.set(name, property);
 
-            eventRouter.fireEvent(new MapPropertyAddEvent(this, property));
+            if (fireEvent) {
+                eventRouter.fireEvent(new MapPropertyAddEvent(this, property));
+            }
         }
 
         return property;

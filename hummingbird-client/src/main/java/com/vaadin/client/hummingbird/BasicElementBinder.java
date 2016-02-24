@@ -15,11 +15,14 @@
  */
 package com.vaadin.client.hummingbird;
 
+import java.util.Objects;
+
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
+import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.ListSpliceEvent;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
@@ -27,6 +30,7 @@ import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.util.NativeFunction;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
@@ -78,8 +82,11 @@ public class BasicElementBinder {
             .map();
     private final JsMap<String, EventRemover> listenerRemovers = JsCollections
             .map();
+    private Computation synchronizedPropertyComputation;
 
     private final JsArray<EventRemover> listeners = JsCollections.array();
+    private final JsSet<EventRemover> synchronizedPropertyEventListeners = JsCollections
+            .set();
 
     private final Element element;
     private final StateNode node;
@@ -101,15 +108,46 @@ public class BasicElementBinder {
         listeners.push(bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
                 this::updateAttribute));
 
+        bindSynchronizedProperties();
+
         listeners.push(bindChildren());
 
         listeners.push(node.addUnregisterListener(e -> remove()));
 
-        listeners.push(bindListeners());
+        listeners.push(bindDomEventListeners());
 
         listeners.push(bindClassList());
 
         node.setElement(element);
+    }
+
+    private void bindSynchronizedProperties() {
+        MapProperty eventTypesProperty = node
+                .getMapNamespace(Namespaces.SYNCHRONIZED_PROPERTIES)
+                .getProperty(SynchronizedPropertiesNamespace.KEY_EVENTS);
+        synchronizedPropertyComputation = Reactive
+                .runWhenDepedenciesChange(() -> {
+                    synchronizeEventTypesChanged(eventTypesProperty);
+                });
+    }
+
+    @SuppressWarnings("unchecked")
+    private void synchronizeEventTypesChanged(MapProperty eventTypesProperty) {
+        // Remove all old listeners and add new ones
+        synchronizedPropertyEventListeners.forEach(EventRemover::remove);
+        synchronizedPropertyEventListeners.clear();
+
+        if (eventTypesProperty.hasValue()) {
+            JsArray<String> syncEvents = (JsArray<String>) eventTypesProperty
+                    .getValue();
+
+            syncEvents.forEach(eventType -> {
+                EventRemover remover = element.addEventListener(eventType,
+                        this::handlePropertySyncDomEvent, false);
+                synchronizedPropertyEventListeners.add(remover);
+            });
+        }
+
     }
 
     private EventRemover bindClassList() {
@@ -139,7 +177,7 @@ public class BasicElementBinder {
                 .getProperty(Namespaces.TAG).getValue();
     }
 
-    private EventRemover bindListeners() {
+    private EventRemover bindDomEventListeners() {
         MapNamespace elementListeners = getDomEventListenerNamespace();
         elementListeners.forEachProperty(
                 (property, name) -> bindEventHandlerProperty(property));
@@ -258,7 +296,6 @@ public class BasicElementBinder {
 
     private void updateProperty(MapProperty mapProperty) {
         String name = mapProperty.getName();
-
         if (mapProperty.hasValue()) {
             WidgetUtil.setJsProperty(element, name, mapProperty.getValue());
         } else if (WidgetUtil.hasOwnJsProperty(element, name)) {
@@ -290,6 +327,48 @@ public class BasicElementBinder {
         } else {
             element.removeAttribute(name);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private JsArray<String> getPropertiesToSync() {
+        MapNamespace namespace = node
+                .getMapNamespace(Namespaces.SYNCHRONIZED_PROPERTIES);
+        MapProperty p = namespace
+                .getProperty(SynchronizedPropertiesNamespace.KEY_PROPERTIES);
+        if (!p.hasValue()) {
+            // No properties to sync
+            return JsCollections.array();
+        }
+
+        return (JsArray<String>) p.getValue();
+    }
+
+    private void handlePropertySyncDomEvent(Event event) {
+        getPropertiesToSync().forEach(propertyName -> {
+            Object currentValue = WidgetUtil.getJsProperty(element,
+                    propertyName);
+
+            // Server side value from tree
+            Object treeValue = null;
+            // We must not send an add event or the property namespace
+            // listener will try to set the property (which can be read-only)
+            MapProperty treeProperty = node
+                    .getMapNamespace(Namespaces.ELEMENT_PROPERTIES)
+                    .getProperty(propertyName, false);
+            if (treeProperty.hasValue()) {
+                treeValue = treeProperty.getValue();
+            }
+
+            if (!Objects.equals(currentValue, treeValue)) {
+                node.getTree().sendPropertySyncToServer(node, propertyName,
+                        currentValue);
+                // Update tree so we don't send this again and again.
+                // We must not send a change event or the property namespace
+                // listener will try to set the property (which can be
+                // read-only)
+                treeProperty.setValue(currentValue, false);
+            }
+        });
     }
 
     private EventRemover bindChildren() {
@@ -381,11 +460,11 @@ public class BasicElementBinder {
         propertyBindings.forEach(computationStopper);
         attributeBindings.forEach(computationStopper);
         listenerBindings.forEach(computationStopper);
+        synchronizedPropertyComputation.stop();
 
         listenerRemovers.forEach((remover, name) -> remover.remove());
-        for (int i = 0; i < listeners.length(); i++) {
-            listeners.get(i).remove();
-        }
+        listeners.forEach(EventRemover::remove);
+        synchronizedPropertyEventListeners.forEach(EventRemover::remove);
     }
 
     /**

@@ -22,6 +22,7 @@ import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.hummingbird.JsonCodec;
 
+import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -95,6 +96,36 @@ public class ClientJsonCodec {
             default:
                 throw new IllegalArgumentException(
                         "Can't (yet) convert " + json.getType());
+            }
+        }
+    }
+
+    /**
+     * Helper for encoding any "primitive" value that is directly supported in
+     * JSON. Supported values types are {@link String}, {@link Number},
+     * {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
+     *
+     * @param value
+     *            the value to encode
+     * @return the value encoded as JSON
+     */
+    public static JsonValue encodeWithoutTypeInfo(Object value) {
+        if (GWT.isScript()) {
+            return WidgetUtil.crazyJsoCast(value);
+        } else {
+            if (value instanceof String) {
+                return Json.create((String) value);
+            } else if (value instanceof Number) {
+                return Json.create(((Number) value).doubleValue());
+            } else if (value instanceof Boolean) {
+                return Json.create(((Boolean) value).booleanValue());
+            } else if (value instanceof JsonValue) {
+                return (JsonValue) value;
+            } else if (value == null) {
+                return Json.createNull();
+            } else {
+                throw new IllegalArgumentException(
+                        "Can't encode" + value.getClass() + " to json");
             }
         }
     }
