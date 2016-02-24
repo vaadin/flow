@@ -85,6 +85,19 @@ public class MapNamespaceTest
     }
 
     @Test
+    public void testNoChangeEvent() {
+        namespace.put("key", "value", false);
+        List<NodeChange> changes = collectChanges(namespace);
+        Assert.assertEquals(0, changes.size());
+        namespace.put("key", "value", true);
+        changes = collectChanges(namespace);
+        Assert.assertEquals(0, changes.size());
+        namespace.put("key", "bar", true);
+        changes = collectChanges(namespace);
+        Assert.assertEquals(1, changes.size());
+    }
+
+    @Test
     public void testCoalescePutRemove() {
         namespace.put("key", "value");
         namespace.remove("key");

@@ -70,7 +70,22 @@ public abstract class MapNamespace extends Namespace {
      *            the value to store
      */
     protected void put(String key, Serializable value) {
-        doPut(key, value);
+        doPut(key, value, true);
+    }
+
+    /**
+     * Stores a value with the given key, replacing any value previously stored
+     * with the same key.
+     *
+     * @param key
+     *            the key to use
+     * @param value
+     *            the value to store
+     * @param emitChange
+     *            true to create a change event for the client side
+     */
+    protected void put(String key, Serializable value, boolean emitChange) {
+        doPut(key, value, emitChange);
     }
 
     /**
@@ -83,12 +98,14 @@ public abstract class MapNamespace extends Namespace {
      *            the value to store
      */
     protected void putJson(String key, JsonValue value) {
-        doPut(key, value);
+        doPut(key, value, true);
     }
 
     // Internal method to avoid exposing non-serializable setter
-    private void doPut(String key, Object value) {
-        setChanged(key);
+    private void doPut(String key, Object value, boolean emitChange) {
+        if (emitChange) {
+            setChanged(key);
+        }
         Object oldValue = values.put(key, value);
 
         detatchPotentialChild(oldValue);

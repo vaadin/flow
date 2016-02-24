@@ -17,11 +17,13 @@ public class BasicElementIT extends PhantomJSTest {
 
         Assert.assertEquals(0, getThankYouCount());
 
-        getDriver().findElement(By.tagName("input")).click();
+        findElement(By.tagName("input")).sendKeys("abc");
+        findElement(By.tagName("button")).click();
 
         Assert.assertEquals(1, getThankYouCount());
 
-        Assert.assertEquals("Thank you for clicking at \"Click me\"!",
+        Assert.assertEquals(
+                "Thank you for clicking at \"Click me\"! The field value is abc",
                 getThankYouElements().get(0).getText());
 
         // Clicking removes the element
@@ -29,7 +31,7 @@ public class BasicElementIT extends PhantomJSTest {
 
         Assert.assertEquals(0, getThankYouCount());
 
-        WebElement helloElement = getDriver().findElement(By.id("hello-world"));
+        WebElement helloElement = findElement(By.id("hello-world"));
 
         Assert.assertEquals("Hello world", helloElement.getText());
         Assert.assertEquals("hello", helloElement.getAttribute("class"));
@@ -45,7 +47,7 @@ public class BasicElementIT extends PhantomJSTest {
     }
 
     private List<WebElement> getThankYouElements() {
-        return getDriver().findElements(By.cssSelector(".thankYou"));
+        return findElements(By.cssSelector(".thankYou"));
     }
 
 }

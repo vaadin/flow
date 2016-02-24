@@ -97,6 +97,23 @@ public class MapNamespaceTest {
     }
 
     @Test
+    public void testNoAddPropertyEvent() {
+        AtomicReference<MapPropertyAddEvent> lastEvent = new AtomicReference<>();
+
+        namespace.addPropertyAddListener(e -> {
+            Assert.assertNull("Got unexpected event", lastEvent.get());
+            lastEvent.set(e);
+        });
+
+        Assert.assertNull(lastEvent.get());
+
+        namespace.getProperty("foo", false);
+        Assert.assertNull(lastEvent.get());
+        namespace.getProperty("bar", true);
+        Assert.assertNotNull(lastEvent.get());
+    }
+
+    @Test
     public void testReactiveInvalidation() {
         CountingComputation computation = new CountingComputation(
                 () -> namespace.forEachProperty((a, b) -> {
@@ -150,4 +167,5 @@ public class MapNamespaceTest {
         p.removeValue();
         Assert.assertFalse(namespace.hasPropertyValue("foo"));
     }
+
 }

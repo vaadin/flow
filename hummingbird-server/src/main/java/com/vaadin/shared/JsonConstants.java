@@ -169,6 +169,7 @@ public class JsonConstants implements Serializable {
      */
     public static final String RPC_EVENT_TYPE = "event";
 
+    public static final String RPC_TYPE_PROPERTY_SYNC = "pSync";
     /**
      * Key holding the event data in event messages sent from the client.
      *
@@ -183,4 +184,6 @@ public class JsonConstants implements Serializable {
      * @since
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
+    public static final String RPC_PROPERTY = "property";
+    public static final String RPC_PROPERTY_VALUE = "value";
 }
