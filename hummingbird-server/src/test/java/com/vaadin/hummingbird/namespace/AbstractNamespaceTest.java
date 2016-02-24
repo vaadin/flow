@@ -20,6 +20,8 @@ import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
+
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.NodeChange;
 
@@ -59,4 +61,51 @@ public abstract class AbstractNamespaceTest<T extends Namespace> {
 
         return changes;
     }
+
+    protected void assertNodeEquals(StateNode node1, StateNode node2) {
+        Assert.assertEquals(node1.getId(), node2.getId());
+        NamespaceRegistry.namespaces.keySet().forEach(k -> {
+            Assert.assertEquals(node1.hasNamespace(k), node2.hasNamespace(k));
+            if (node1.hasNamespace(k)) {
+                assertNamespaceEquals(node1.getNamespace(k),
+                        node2.getNamespace(k));
+            }
+        });
+
+    }
+
+    @SuppressWarnings("rawtypes")
+    protected void assertNamespaceEquals(Namespace namespace1,
+            Namespace namespace2) {
+        Assert.assertEquals(namespace1.getClass(), namespace2.getClass());
+        if (namespace1 instanceof MapNamespace) {
+            assertMapNamespaceEquals((MapNamespace) namespace1,
+                    (MapNamespace) namespace2);
+        } else if (namespace1 instanceof ListNamespace) {
+            assertListNamespaceEquals((ListNamespace) namespace1,
+                    (ListNamespace) namespace2);
+        } else {
+            Assert.fail("Unknonwn namespace type "
+                    + namespace1.getClass().getName());
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    protected void assertListNamespaceEquals(ListNamespace namespace1,
+            ListNamespace namespace2) {
+        Assert.assertEquals(namespace1.size(), namespace2.size());
+        for (int i = 0; i < namespace1.size(); i++) {
+            Assert.assertEquals(namespace1.get(i), namespace2.get(i));
+        }
+    }
+
+    protected void assertMapNamespaceEquals(MapNamespace namespace1,
+            MapNamespace namespace2) {
+        Assert.assertEquals(namespace1.keySet().size(),
+                namespace2.keySet().size());
+        namespace1.keySet().forEach(k -> {
+            Assert.assertEquals(namespace1.get(k), namespace2.get(k));
+        });
+    }
+
 }

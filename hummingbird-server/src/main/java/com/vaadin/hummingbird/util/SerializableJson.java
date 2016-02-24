@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import elemental.json.Json;
@@ -98,6 +100,34 @@ public final class SerializableJson implements Serializable {
     }
 
     /**
+     * Creates a new list with the same contents as the original list, except
+     * that all JSON values are wrapped as {@link SerializableJson}. List values
+     * of other types are included without modification. The created list can be
+     * serialized using {@link ObjectOutputStream#writeObject(Object)}.
+     * <p>
+     * This method is defined to return the implementation type
+     * {@link ArrayList} since the {@link List} interface is not
+     * {@link Serializable}.
+     *
+     * @param list
+     *            the list to make serializable
+     * @return a new serializable list
+     */
+    public static ArrayList<Object> createSerializableList(List<Object> list) {
+        ArrayList<Object> output = new ArrayList<>();
+
+        list.forEach(value -> {
+            if (value instanceof JsonValue) {
+                JsonValue jsonValue = (JsonValue) value;
+                value = new SerializableJson(jsonValue);
+            }
+            output.add(value);
+        });
+
+        return output;
+    }
+
+    /**
      * Unwraps any {@link SerializableJson} value in place in the provided map.
      * Map values of other types are not modified. The provided map is typically
      * received from {@link ObjectInputStream#readObject()}.
@@ -107,6 +137,25 @@ public final class SerializableJson implements Serializable {
      */
     public static <K> void unwrapMap(Map<K, Object> deserializedMap) {
         deserializedMap.replaceAll((key, value) -> {
+            if (value instanceof SerializableJson) {
+                SerializableJson json = (SerializableJson) value;
+                return json.getValue();
+            } else {
+                return value;
+            }
+        });
+    }
+
+    /**
+     * Unwraps any {@link SerializableJson} value in place in the provided list.
+     * List values of other types are not modified. The provided list is
+     * typically received from {@link ObjectInputStream#readObject()}.
+     *
+     * @param deserializedList
+     *            the list with JSON values to unwrap.
+     */
+    public static void unwrapList(List<Object> deserializedList) {
+        deserializedList.replaceAll(value -> {
             if (value instanceof SerializableJson) {
                 SerializableJson json = (SerializableJson) value;
                 return json.getValue();

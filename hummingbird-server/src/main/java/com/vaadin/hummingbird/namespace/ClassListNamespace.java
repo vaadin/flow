@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.StateNode;
  * @since
  * @author Vaadin Ltd
  */
-public class ClassListNamespace extends ListNamespace<String> {
+public class ClassListNamespace extends SerializableListNamespace<String> {
 
     /**
      * Provides access to the namespace contents as a set of strings.
@@ -106,7 +106,7 @@ public class ClassListNamespace extends ListNamespace<String> {
      *            the node that the namespace belongs to
      */
     public ClassListNamespace(StateNode node) {
-        super(node, false);
+        super(node);
     }
 
     /**
