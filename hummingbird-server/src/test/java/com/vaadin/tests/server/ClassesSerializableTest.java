@@ -40,8 +40,8 @@ public class ClassesSerializableTest extends TestCase {
             "com\\.vaadin\\.server\\.communication\\.PushRequestHandler.*",
             "com\\.vaadin\\.server\\.communication\\.PushHandler.*", // PushHandler
             // and its inner classes do not need to be serializable
-            "com\\.vaadin\\.util\\.JsonStream.*", // fully static
             "com\\.vaadin\\.hummingbird\\.JsonCodec", // fully static
+            "com\\.vaadin\\.hummingbird\\.util\\.JsonUtil.*", // fully static
             "com\\.vaadin\\.hummingbird\\.shared\\.Namespaces", // fully static
             "com\\.vaadin\\.hummingbird\\.namespace\\.NamespaceRegistry.*", // static
             // class level filtering, also affecting nested classes and
