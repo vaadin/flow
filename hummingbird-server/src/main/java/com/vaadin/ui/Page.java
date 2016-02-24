@@ -16,9 +16,12 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
-import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.JsonCodec;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
+import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
@@ -29,16 +32,16 @@ import com.vaadin.hummingbird.namespace.DependencyListNamespace;
  */
 public class Page implements Serializable {
 
-    private DependencyListNamespace namespace;
+    private UI ui;
 
     /**
      * Creates a page instance for the given UI.
      *
-     * @param node
-     *            the state node this page instance is connected to
+     * @param ui
+     *            the UI that this page instance is connected to
      */
-    public Page(StateNode node) {
-        namespace = node.getNamespace(DependencyListNamespace.class);
+    public Page(UI ui) {
+        this.ui = ui;
     }
 
     /**
@@ -49,6 +52,45 @@ public class Page implements Serializable {
      *            the dependency to load
      */
     public void addDependency(Dependency dependency) {
+        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+                .getRootNode().getNamespace(DependencyListNamespace.class);
+
         namespace.add(dependency);
+    }
+
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser. The
+     * given parameters will be available to the expression as variables named
+     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
+     * are:
+     * <ul>
+     * <li>{@link String}
+     * <li>{@link Integer}
+     * <li>{@link Double}
+     * <li>{@link Boolean}
+     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
+     * element instance is not attached when the invocation is sent to the
+     * client)
+     * </ul>
+     *
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
+     */
+    public void executeJavaScript(String expression, Object... parameters) {
+        /*
+         * To ensure attached elements are actually attached, the parameters
+         * won't be serialized until the phase the UIDL message is created. To
+         * give the user immediate feedback if using a parameter type that can't
+         * be serialized, we do a dry run at this point.
+         */
+        for (Object argument : parameters) {
+            // Throws IAE for unsupported types
+            JsonCodec.encodeWithTypeInfo(argument);
+        }
+
+        ui.getFrameworkData().addJavaScriptInvocation(new JavaScriptInvocation(
+                expression, Arrays.asList(parameters)));
     }
 }

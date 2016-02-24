@@ -15,12 +15,12 @@
  */
 package com.vaadin.client.hummingbird;
 
-import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
+import com.vaadin.client.hummingbird.util.ClientJsonCodec;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonArray;
@@ -118,7 +118,7 @@ public class TreeChangeProcessor {
 
         if (change.hasKey(JsonConstants.CHANGE_PUT_VALUE)) {
             JsonValue jsonValue = change.get(JsonConstants.CHANGE_PUT_VALUE);
-            Object value = WidgetUtil.jsonValueToJavaValue(jsonValue);
+            Object value = ClientJsonCodec.decodeWithoutTypeInfo(jsonValue);
             property.setValue(value);
         } else if (change.hasKey(JsonConstants.CHANGE_PUT_NODE_VALUE)) {
             int childId = (int) change
@@ -150,7 +150,7 @@ public class TreeChangeProcessor {
             JsonArray addJson = change
                     .getArray(JsonConstants.CHANGE_SPLICE_ADD);
 
-            JsArray<Object> add = WidgetUtil.jsonArrayAsJsArray(addJson);
+            JsArray<Object> add = ClientJsonCodec.jsonArrayAsJsArray(addJson);
 
             namespace.splice(index, remove, add);
         } else if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES)) {

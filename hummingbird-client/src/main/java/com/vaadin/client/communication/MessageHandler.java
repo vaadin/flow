@@ -36,6 +36,7 @@ import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
@@ -319,6 +320,11 @@ public class MessageHandler {
                         Console.log("StateTree after applying changes:");
                         Console.log(debugJson);
                     }
+                }
+
+                if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
+                    registry.getExecuteJavaScriptProcessor().execute(
+                            json.getArray(JsonConstants.UIDL_KEY_EXECUTE));
                 }
 
                 Console.log("handleUIDLMessage: "
