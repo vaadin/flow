@@ -35,8 +35,9 @@ import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
-import com.vaadin.server.ErrorHandlingRunnable;
+import com.vaadin.server.ErrorHandlingCommand;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
@@ -370,40 +371,40 @@ public abstract class UI implements Serializable, PollNotifier {
     }
 
     /**
-     * Locks the session of this UI and runs the provided Runnable right away.
+     * Locks the session of this UI and runs the provided command right away.
      * <p>
-     * It is generally recommended to use {@link #access(Runnable)} instead of
+     * It is generally recommended to use {@link #access(Command)} instead of
      * this method for accessing a session from a different thread as
-     * {@link #access(Runnable)} can be used while holding the lock of another
+     * {@link #access(Command)} can be used while holding the lock of another
      * session. To avoid causing deadlocks, this methods throws an exception if
      * it is detected than another session is also locked by the current thread.
      * <p>
-     * This method behaves differently than {@link #access(Runnable)} in some
+     * This method behaves differently than {@link #access(Command)} in some
      * situations:
      * <ul>
      * <li>If the current thread is currently holding the lock of the session,
-     * {@link #accessSynchronously(Runnable)} runs the task right away whereas
-     * {@link #access(Runnable)} defers the task to a later point in time.</li>
+     * {@link #accessSynchronously(Command)} runs the task right away whereas
+     * {@link #access(Command)} defers the task to a later point in time.</li>
      * <li>If some other thread is currently holding the lock for the session,
-     * {@link #accessSynchronously(Runnable)} blocks while waiting for the lock
-     * to be available whereas {@link #access(Runnable)} defers the task to a
+     * {@link #accessSynchronously(Command)} blocks while waiting for the lock
+     * to be available whereas {@link #access(Command)} defers the task to a
      * later point in time.</li>
      * </ul>
      *
      * @since 7.1
      *
-     * @param runnable
-     *            the runnable which accesses the UI
+     * @param command
+     *            the command which accesses the UI
      * @throws UIDetachedException
      *             if the UI is not attached to a session (and locking can
      *             therefore not be done)
      * @throws IllegalStateException
      *             if the current thread holds the lock for another session
      *
-     * @see #access(Runnable)
-     * @see VaadinSession#accessSynchronously(Runnable)
+     * @see #access(Command)
+     * @see VaadinSession#accessSynchronously(Command)
      */
-    public void accessSynchronously(Runnable runnable)
+    public void accessSynchronously(Command command)
             throws UIDetachedException {
         Map<Class<?>, CurrentInstance> old = null;
 
@@ -423,7 +424,7 @@ public abstract class UI implements Serializable, PollNotifier {
                 throw new UIDetachedException();
             }
             old = CurrentInstance.setCurrent(this);
-            runnable.run();
+            command.execute();
         } finally {
             session.unlock();
             if (old != null) {
@@ -437,10 +438,10 @@ public abstract class UI implements Serializable, PollNotifier {
      * Provides exclusive access to this UI from outside a request handling
      * thread.
      * <p>
-     * The given runnable is executed while holding the session lock to ensure
+     * The given command is executed while holding the session lock to ensure
      * exclusive access to this UI. If the session is not locked, the lock will
-     * be acquired and the runnable is run right away. If the session is
-     * currently locked, the runnable will be run before that lock is released.
+     * be acquired and the command is run right away. If the session is
+     * currently locked, the command will be run before that lock is released.
      * </p>
      * <p>
      * RPC handlers for components inside this UI do not need to use this method
@@ -448,13 +449,13 @@ public abstract class UI implements Serializable, PollNotifier {
      * handling.
      * </p>
      * <p>
-     * Please note that the runnable might be invoked on a different thread or
+     * Please note that the command might be invoked on a different thread or
      * later on the current thread, which means that custom thread locals might
-     * not have the expected values when the runnable is executed. Inheritable
+     * not have the expected values when the command is executed. Inheritable
      * values in {@link CurrentInstance} will have the same values as when this
      * method was invoked. {@link UI#getCurrent()},
      * {@link VaadinSession#getCurrent()} and {@link VaadinService#getCurrent()}
-     * are set according to this UI before executing the runnable.
+     * are set according to this UI before executing the command.
      * Non-inheritable CurrentInstance values including
      * {@link VaadinService#getCurrentRequest()} and
      * {@link VaadinService#getCurrentResponse()} will not be defined.
@@ -465,39 +466,39 @@ public abstract class UI implements Serializable, PollNotifier {
      * </p>
      *
      * @see #getCurrent()
-     * @see #accessSynchronously(Runnable)
-     * @see VaadinSession#access(Runnable)
+     * @see #accessSynchronously(Command)
+     * @see VaadinSession#access(Command)
      * @see VaadinSession#lock()
      *
      * @since 7.1
      *
-     * @param runnable
-     *            the runnable which accesses the UI
+     * @param command
+     *            the command which accesses the UI
      * @throws UIDetachedException
      *             if the UI is not attached to a session (and locking can
      *             therefore not be done)
      * @return a future that can be used to check for task completion and to
      *         cancel the task
      */
-    public Future<Void> access(final Runnable runnable) {
+    public Future<Void> access(final Command command) {
         VaadinSession session = getSession();
 
         if (session == null) {
             throw new UIDetachedException();
         }
 
-        return session.access(new ErrorHandlingRunnable() {
+        return session.access(new ErrorHandlingCommand() {
             @Override
-            public void run() {
-                accessSynchronously(runnable);
+            public void execute() {
+                accessSynchronously(command);
             }
 
             @Override
             public void handleError(Exception exception) {
                 try {
-                    if (runnable instanceof ErrorHandlingRunnable) {
-                        ErrorHandlingRunnable errorHandlingRunnable = (ErrorHandlingRunnable) runnable;
-                        errorHandlingRunnable.handleError(exception);
+                    if (command instanceof ErrorHandlingCommand) {
+                        ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
+                        errorHandlingCommand.handleError(exception);
                     } else {
                         getSession().getErrorHandler()
                                 .error(new ErrorEvent(exception));
@@ -600,7 +601,7 @@ public abstract class UI implements Serializable, PollNotifier {
      * method. It is also recommended that {@link UI#getCurrent()} is set up to
      * return this UI since writing the response may invoke logic in any
      * attached component or extension. The recommended way of fulfilling these
-     * conditions is to use {@link #access(Runnable)}.
+     * conditions is to use {@link #access(Command)}.
      *
      * @throws IllegalStateException
      *             if push is disabled.

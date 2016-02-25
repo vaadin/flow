@@ -64,8 +64,8 @@ import com.vaadin.util.CurrentInstance;
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**
-     * Encapsulates a {@link Runnable} submitted using
-     * {@link VaadinSession#access(Runnable)}. This class is used internally by
+     * Encapsulates a {@link Command} submitted using
+     * {@link VaadinSession#access(Command)}. This class is used internally by
      * the framework and is not intended to be directly used by application
      * developers.
      *
@@ -80,22 +80,20 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         private final Map<Class<?>, CurrentInstance> instances = CurrentInstance
                 .getInstances(true);
         private final VaadinSession session;
-        private Runnable runnable;
+        private Command command;
 
         /**
-         * Creates an instance for the given runnable.
+         * Creates an instance for the given command.
          *
          * @param session
          *            the session to which the task belongs
-         *
-         * @param runnable
-         *            the runnable to run when this task is purged from the
-         *            queue
+         * @param command
+         *            the command to run when this task is purged from the queue
          */
-        public FutureAccess(VaadinSession session, Runnable runnable) {
-            super(runnable, null);
+        public FutureAccess(VaadinSession session, Command command) {
+            super(() -> command.execute(), null);
             this.session = session;
-            this.runnable = runnable;
+            this.command = command;
         }
 
         @Override
@@ -106,7 +104,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
              * does not have the same detection since a sensible timeout should
              * avoid completely locking up the application.
              *
-             * Even though no deadlock could occur after the runnable has been
+             * Even though no deadlock could occur after the command has been
              * run, the check is always done as the deterministic behavior makes
              * it easier to detect potential problems.
              */
@@ -135,10 +133,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
          */
         public void handleError(Exception exception) {
             try {
-                if (runnable instanceof ErrorHandlingRunnable) {
-                    ErrorHandlingRunnable errorHandlingRunnable = (ErrorHandlingRunnable) runnable;
+                if (command instanceof ErrorHandlingCommand) {
+                    ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
 
-                    errorHandlingRunnable.handleError(exception);
+                    errorHandlingCommand.handleError(exception);
                 } else {
                     ErrorEvent errorEvent = new ErrorEvent(exception);
 
@@ -666,12 +664,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Locks this session to protect its data from concurrent access. Accessing
      * the UI state from outside the normal request handling should always lock
      * the session and unlock it when done. The preferred way to ensure locking
-     * is done correctly is to wrap your code using {@link UI#access(Runnable)}
-     * (or {@link VaadinSession#access(Runnable)} if you are only touching the
+     * is done correctly is to wrap your code using {@link UI#access(Command)}
+     * (or {@link VaadinSession#access(Command)} if you are only touching the
      * session and not any UI), e.g.:
      *
      * <pre>
-     * myUI.access(new Runnable() {
+     * myUI.access(new Command() {
      *     &#064;Override
      *     public void run() {
      *         // Here it is safe to update the UI.
@@ -954,28 +952,28 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Locks this session and runs the provided Runnable right away.
+     * Locks this session and runs the provided Command right away.
      * <p>
-     * It is generally recommended to use {@link #access(Runnable)} instead of
+     * It is generally recommended to use {@link #access(Command)} instead of
      * this method for accessing a session from a different thread as
-     * {@link #access(Runnable)} can be used while holding the lock of another
+     * {@link #access(Command)} can be used while holding the lock of another
      * session. To avoid causing deadlocks, this methods throws an exception if
      * it is detected than another session is also locked by the current thread.
      * <p>
-     * This method behaves differently than {@link #access(Runnable)} in some
+     * This method behaves differently than {@link #access(Command)} in some
      * situations:
      * <ul>
      * <li>If the current thread is currently holding the lock of this session,
-     * {@link #accessSynchronously(Runnable)} runs the task right away whereas
-     * {@link #access(Runnable)} defers the task to a later point in time.</li>
+     * {@link #accessSynchronously(Command)} runs the task right away whereas
+     * {@link #access(Command)} defers the task to a later point in time.</li>
      * <li>If some other thread is currently holding the lock for this session,
-     * {@link #accessSynchronously(Runnable)} blocks while waiting for the lock
-     * to be available whereas {@link #access(Runnable)} defers the task to a
+     * {@link #accessSynchronously(Command)} blocks while waiting for the lock
+     * to be available whereas {@link #access(Command)} defers the task to a
      * later point in time.</li>
      * </ul>
      *
-     * @param runnable
-     *            the runnable which accesses the session
+     * @param command
+     *            the command which accesses the session
      *
      * @throws IllegalStateException
      *             if the current thread holds the lock for another session
@@ -984,17 +982,17 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @see #lock()
      * @see #getCurrent()
-     * @see #access(Runnable)
-     * @see UI#accessSynchronously(Runnable)
+     * @see #access(Command)
+     * @see UI#accessSynchronously(Command)
      */
-    public void accessSynchronously(Runnable runnable) {
+    public void accessSynchronously(Command command) {
         VaadinService.verifyNoOtherSessionLocked(this);
 
         Map<Class<?>, CurrentInstance> old = null;
         lock();
         try {
             old = CurrentInstance.setCurrent(this);
-            runnable.run();
+            command.execute();
         } finally {
             unlock();
             if (old != null) {
@@ -1008,22 +1006,22 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Provides exclusive access to this session from outside a request handling
      * thread.
      * <p>
-     * The given runnable is executed while holding the session lock to ensure
+     * The given command is executed while holding the session lock to ensure
      * exclusive access to this session. If this session is not locked, the lock
-     * will be acquired and the runnable is run right away. If this session is
-     * currently locked, the runnable will be run before that lock is released.
+     * will be acquired and the command is run right away. If this session is
+     * currently locked, the command will be run before that lock is released.
      * <p>
      * RPC handlers for components inside this session do not need to use this
      * method as the session is automatically locked by the framework during RPC
      * handling.
      * <p>
-     * Please note that the runnable might be invoked on a different thread or
+     * Please note that the command might be invoked on a different thread or
      * later on the current thread, which means that custom thread locals might
-     * not have the expected values when the runnable is executed. Inheritable
+     * not have the expected values when the command is executed. Inheritable
      * values in {@link CurrentInstance} will have the same values as when this
      * method was invoked. {@link VaadinSession#getCurrent()} and
      * {@link VaadinService#getCurrent()} are set according to this session
-     * before executing the runnable. Non-inheritable CurrentInstance values
+     * before executing the command. Non-inheritable CurrentInstance values
      * including {@link VaadinService#getCurrentRequest()} and
      * {@link VaadinService#getCurrentResponse()} will not be defined.
      * <p>
@@ -1034,22 +1032,22 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *
      * @see #lock()
      * @see #getCurrent()
-     * @see #accessSynchronously(Runnable)
-     * @see UI#access(Runnable)
+     * @see #accessSynchronously(Command)
+     * @see UI#access(Command)
      *
      * @since 7.1
      *
-     * @param runnable
-     *            the runnable which accesses the session
+     * @param command
+     *            the command which accesses the session
      * @return a future that can be used to check for task completion and to
      *         cancel the task
      */
-    public Future<Void> access(Runnable runnable) {
-        return getService().accessSession(this, runnable);
+    public Future<Void> access(Command command) {
+        return getService().accessSession(this, command);
     }
 
     /**
-     * Gets the queue of tasks submitted using {@link #access(Runnable)}. It is
+     * Gets the queue of tasks submitted using {@link #access(Command)}. It is
      * safe to call this method and access the returned queue without holding
      * the {@link #lock() session lock}.
      *
