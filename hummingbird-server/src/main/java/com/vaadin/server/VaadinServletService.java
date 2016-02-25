@@ -32,7 +32,7 @@ public class VaadinServletService extends VaadinService {
 
     public VaadinServletService(VaadinServlet servlet,
             DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+                    throws ServiceException {
         super(deploymentConfiguration);
         this.servlet = servlet;
     }

@@ -19,7 +19,6 @@ package com.vaadin.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
 import java.util.Enumeration;
@@ -39,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public interface VaadinRequest extends Serializable {
+public interface VaadinRequest {
     /**
      * Gets the named request parameter This is typically a HTTP GET or POST
      * parameter, though other request types might have other ways of

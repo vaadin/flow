@@ -19,7 +19,6 @@ package com.vaadin.server;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.io.Serializable;
 
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletResponse;
@@ -34,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @since 7.0
  */
-public interface VaadinResponse extends Serializable {
+public interface VaadinResponse {
 
     /**
      * Sets the (http) status code for the response. If you want to include an
