@@ -56,19 +56,8 @@ public class ApplicationConstants implements Serializable {
      * Configuration parameter giving the (in some cases relative) URL to the
      * VAADIN folder from where themes and widgetsets are loaded.
      * <p>
-     * <b>Refactor warning:</b> This value is also hardcoded in
-     * vaadinBootstrap.js.
-     * </p>
      */
     public static final String VAADIN_DIR_URL = "vaadinDir";
-
-    /**
-     * The name of the javascript containing the bootstrap code. The file is
-     * located in the VAADIN directory.
-     *
-     * @since 7.3
-     */
-    public static final String VAADIN_BOOTSTRAP_JS = "vaadinBootstrap.js";
 
     /**
      * The name of the javascript containing push support. The file is located
@@ -143,4 +132,9 @@ public class ApplicationConstants implements Serializable {
      * Name of the parameter used to transmit UI ids back and forth.
      */
     public static final String UI_ID_PARAMETER = "v-uiId";
+
+    /**
+     * Relative path of the Vaadin client engine folder.
+     */
+    public static final String CLIENT_ENGINE_FOLDER_PATH = "/VAADIN/client/";
 }
