@@ -118,7 +118,7 @@ public class ListSpliceChange extends NamespaceChange {
                 mapper = item -> Json.create(((StateNode) item).getId());
             } else {
                 addKey = JsonConstants.CHANGE_SPLICE_ADD;
-                mapper = JsonCodec::encodePrimitiveValue;
+                mapper = JsonCodec::encodeWithoutTypeInfo;
             }
 
             JsonArray newItemsJson = newItems.stream().map(mapper)

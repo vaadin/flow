@@ -24,6 +24,7 @@ import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
+import com.vaadin.client.hummingbird.ExecuteJavaScriptProcessor;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
@@ -230,5 +231,14 @@ public class Registry {
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
         return get(ReconnectDialogConfiguration.class);
+    }
+
+    /**
+     * Gets the {@link ExecuteJavaScriptProcessor} singleton.
+     * 
+     * @return the {@link ExecuteJavaScriptProcessor} singleton
+     */
+    public ExecuteJavaScriptProcessor getExecuteJavaScriptProcessor() {
+        return get(ExecuteJavaScriptProcessor.class);
     }
 }
