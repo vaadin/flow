@@ -4,8 +4,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.vaadin</groupId>
-	<artifactId>hummingbird-parent</artifactId>
-	<name>Hummingbird Parent Project</name>
+	<artifactId>hummingbird-project</artifactId>
+	<name>Hummingbird</name>
 	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 
