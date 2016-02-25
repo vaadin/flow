@@ -452,7 +452,7 @@ public class AtmospherePushConnection implements PushConnection {
      * JavaScriptObject class with some helper methods to set and get primitive
      * values.
      */
-    public static abstract class AbstractJSO extends JavaScriptObject {
+    public abstract static class AbstractJSO extends JavaScriptObject {
         /**
          * JavaScriptObject constructor.
          */

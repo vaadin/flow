@@ -41,6 +41,18 @@ public class ServerRpcQueue {
 
     private final Registry registry;
 
+    private final ScheduledCommand scheduledFlushCommand = new ScheduledCommand() {
+        @Override
+        public void execute() {
+            flushScheduled = false;
+            if (!isFlushPending()) {
+                // Somebody else cleared the queue before we had the chance
+                return;
+            }
+            registry.getMessageSender().sendInvocationsToServer();
+        }
+    };
+
     /**
      * Creates a new instance connected to the given registry.
      *
@@ -103,18 +115,6 @@ public class ServerRpcQueue {
         flushScheduled = true;
         Scheduler.get().scheduleFinally(scheduledFlushCommand);
     }
-
-    private final ScheduledCommand scheduledFlushCommand = new ScheduledCommand() {
-        @Override
-        public void execute() {
-            flushScheduled = false;
-            if (!isFlushPending()) {
-                // Somebody else cleared the queue before we had the chance
-                return;
-            }
-            registry.getMessageSender().sendInvocationsToServer();
-        }
-    };
 
     /**
      * Checks if a flush operation is pending.

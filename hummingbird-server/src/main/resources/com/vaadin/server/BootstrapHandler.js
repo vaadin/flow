@@ -102,11 +102,9 @@ window.vaadin = window.vaadin || {
 
 			var versionInfo = getConfig('versionInfo');
 
-			var widgetset = "com.vaadin.ClientEngine";
-			var widgetsetUrl = getConfig('widgetsetUrl');
-			if (!widgetsetUrl) {
-				widgetsetUrl = vaadinDir + "client/" + widgetset + "/" + widgetset + ".nocache.js?" + new Date().getTime();
-			}
+			var widgetset = "client";
+			var clientEngineFileName = getConfig("clientEngineFile");
+			widgetsetUrl = vaadinDir + "client/" +clientEngineFileName;
 			loadWidgetset(widgetsetUrl, widgetset);
 
 			if (widgetsets[widgetset].callback) {

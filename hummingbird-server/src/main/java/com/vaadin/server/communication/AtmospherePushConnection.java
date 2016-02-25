@@ -47,6 +47,12 @@ import elemental.json.JsonObject;
  */
 public class AtmospherePushConnection implements PushConnection {
 
+    private UI ui;
+    private transient State state = State.DISCONNECTED;
+    private transient AtmosphereResource resource;
+    private transient FragmentedMessage incomingMessage;
+    private transient Future<Object> outgoingMessage;
+
     public static String getAtmosphereVersion() {
         try {
             String v = Version.getRawVersion();
@@ -130,12 +136,6 @@ public class AtmospherePushConnection implements PushConnection {
          */
         CONNECTED;
     }
-
-    private UI ui;
-    private transient State state = State.DISCONNECTED;
-    private transient AtmosphereResource resource;
-    private transient FragmentedMessage incomingMessage;
-    private transient Future<Object> outgoingMessage;
 
     public AtmospherePushConnection(UI ui) {
         this.ui = ui;

@@ -127,8 +127,6 @@ public interface Constants {
 
     static final int DEFAULT_THEME_CACHETIME = 1000 * 60 * 60 * 24;
 
-    static final String WIDGETSET_DIR_PATH = "VAADIN/client";
-
     static final String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
 
     // portal configuration parameters
