@@ -1,6 +1,8 @@
 #!/bin/bash
 
 PR=$1
+GITHUB_REPOSITORY=$(git config --get remote.origin.url|grep github.com:|sed "s/.*github.com://"|grep .git|sed "s/.git.*//")
+TARGET_BRANCH=master
 
 if [ "$PR" = "" ]
 then
@@ -14,10 +16,15 @@ then
 	exit 2
 fi
 
+if [ "$GITHUB_REPOSITORY" = "" ]
+then
+	echo "Unable to determine GitHub repository from the origin remote URL. Ensure you have cloned the project from GitHub"
+	exit 3
+fi
 
 BRANCH=pr-$PR
 git branch -D $BRANCH
-git fetch && git checkout origin/master && git checkout -b $BRANCH
+git fetch && git checkout origin/$TARGET_BRANCH && git checkout -b $BRANCH
 if [ "$?" != "0" ]
 then
 	echo "Failed to create branch $BRANCH"
@@ -25,7 +32,7 @@ then
 fi
 
 head=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/vaadin/hummingbird/pulls/$PR|jq .head.sha|cut -d\" -f 2)
-commits=$(git log origin/master..$head --reverse --oneline|cut -d' ' -f 1)
+commits=$(git log origin/$TARGET_BRANCH..$head --reverse --oneline|cut -d' ' -f 1)
 prtitle=$(curl -s -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/vaadin/hummingbird/pulls/$PR|jq .title|sed "s/^.//"|sed "s/.$//")
 
 echo "$prtitle" > COMMIT_MSG
@@ -49,7 +56,7 @@ do
 		if [ "$?" != "0" ]
 		then
 			echo "Cherry-pick of $commit failed, aborting"
-			exit 3
+			exit 4
 		fi
 	else
 		echo "Skipping merge commit $(git show -s --oneline $commit)"
@@ -64,6 +71,6 @@ git commit --author "$AUTHOR"  -F COMMIT_MSG  --edit
 echo
 echo "If everything is ok, do"
 echo
-echo "git push origin $BRANCH:master"
+echo "git push origin $BRANCH:$TARGET_BRANCH"
 
 rm -f COMMIT_MSG
