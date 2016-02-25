@@ -310,6 +310,11 @@ public class MessageHandler {
                     }
                 }
 
+                if (json.hasKey("execute")) {
+                    registry.getExecuteJavaScriptProcessor()
+                            .execute(json.getArray("execute"));
+                }
+
                 Console.log("handleUIDLMessage: "
                         + (Duration.currentTimeMillis() - processUidlStart)
                         + " ms");

@@ -236,4 +236,15 @@ public class JsonUtil {
     public static Collector<JsonValue, ?, JsonArray> asArray() {
         return new JsonArrayCollector();
     }
+
+    /**
+     * Creates a new JSON array with the given values.
+     * 
+     * @param values
+     *            the values that should be in the created array
+     * @return the created array
+     */
+    public static JsonArray createArray(JsonValue... values) {
+        return Stream.of(values).collect(asArray());
+    }
 }

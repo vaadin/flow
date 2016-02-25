@@ -15,9 +15,14 @@
  */
 package com.vaadin.ui;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -27,6 +32,7 @@ import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.hummingbird.util.SerializableJson;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -41,6 +47,64 @@ import com.vaadin.server.communication.PushConnection;
  * @since
  */
 public class FrameworkData implements Serializable {
+
+    /**
+     * A {@link Page#executeJavaScript(String, Object...)} invocation that has
+     * not yet been sent to the client.
+     */
+    public static class JavaScriptInvocation implements Serializable {
+
+        private String expression;
+        private transient List<Object> parameters;
+
+        /**
+         * Creates a new invocation.
+         *
+         * @param expression
+         *            the expression to invoke
+         * @param parameters
+         *            a list of parameters to use when invoking the script
+         */
+        public JavaScriptInvocation(String expression,
+                List<Object> parameters) {
+            this.expression = expression;
+            this.parameters = parameters;
+        }
+
+        /**
+         * Gets the JavaScript expression to invoke
+         *
+         * @return the JavaScript expression
+         */
+        public String getExpression() {
+            return expression;
+        }
+
+        /**
+         * Gets the parameters to use when invoking the script.
+         *
+         * @return a list of parameters to use
+         */
+        public List<Object> getParameters() {
+            return Collections.unmodifiableList(parameters);
+        }
+
+        @SuppressWarnings("unchecked")
+        private void readObject(ObjectInputStream stream)
+                throws IOException, ClassNotFoundException {
+            stream.defaultReadObject();
+
+            parameters = (List<Object>) stream.readObject();
+            SerializableJson.unwrapList(parameters);
+        }
+
+        private void writeObject(ObjectOutputStream stream) throws IOException {
+            stream.defaultWriteObject();
+
+            stream.writeObject(
+                    SerializableJson.createSerializableList(parameters));
+        }
+    }
 
     /**
      * Tracks which message from the client should come next. First message from
@@ -69,6 +133,8 @@ public class FrameworkData implements Serializable {
      * request from the client for this UI.
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
+
+    private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
     private final UI ui;
 
@@ -257,6 +323,31 @@ public class FrameworkData implements Serializable {
         }
 
         this.pushConnection = pushConnection;
+    }
+
+    /**
+     * Adds a JavaScript invocation to be sent to the client.
+     *
+     * @param invocation
+     *            the invocation to add
+     */
+    public void enqueueJavaScriptInvocation(JavaScriptInvocation invocation) {
+        pendingJsInvocations.add(invocation);
+    }
+
+    /**
+     * Gets all the pending JavaScript invocations and clears the queue.
+     *
+     * @return a list of pending JavaScript invocations
+     */
+    public List<JavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+        if (pendingJsInvocations.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<JavaScriptInvocation> currentList = pendingJsInvocations;
+        pendingJsInvocations = new ArrayList<>();
+        return currentList;
     }
 
 }
