@@ -82,66 +82,6 @@ public class ListenerMethod implements EventListener, Serializable {
      */
     private int eventArgumentIndex;
 
-    /* Special serialization to handle method references */
-    private void writeObject(java.io.ObjectOutputStream out)
-            throws IOException {
-        try {
-            out.defaultWriteObject();
-            String name = method.getName();
-            Class<?>[] paramTypes = method.getParameterTypes();
-            out.writeObject(name);
-            out.writeObject(paramTypes);
-        } catch (NotSerializableException e) {
-            getLogger().log(Level.WARNING,
-                    "Error in serialization of the application: Class {0} must implement serialization.",
-                    target.getClass().getName());
-            throw e;
-        }
-
-    }
-
-    /* Special serialization to handle method references */
-    private void readObject(java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
-        try {
-            String name = (String) in.readObject();
-            Class<?>[] paramTypes = (Class<?>[]) in.readObject();
-            // We can not use getMethod directly as we want to support anonymous
-            // inner classes
-            method = findHighestMethod(target.getClass(), name, paramTypes);
-        } catch (SecurityException e) {
-            getLogger().log(Level.SEVERE, "Internal deserialization error", e);
-        }
-    }
-
-    private static Method findHighestMethod(Class<?> cls, String method,
-            Class<?>[] paramTypes) {
-        Class<?>[] ifaces = cls.getInterfaces();
-        for (int i = 0; i < ifaces.length; i++) {
-            Method ifaceMethod = findHighestMethod(ifaces[i], method,
-                    paramTypes);
-            if (ifaceMethod != null) {
-                return ifaceMethod;
-            }
-        }
-        if (cls.getSuperclass() != null) {
-            Method parentMethod = findHighestMethod(cls.getSuperclass(), method,
-                    paramTypes);
-            if (parentMethod != null) {
-                return parentMethod;
-            }
-        }
-        Method[] methods = cls.getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            // we ignore parameter types for now - you need to add this
-            if (methods[i].getName().equals(method)) {
-                return methods[i];
-            }
-        }
-        return null;
-    }
-
     /**
      * <p>
      * Constructs a new event listener from a trigger method, it's arguments and
@@ -667,6 +607,66 @@ public class ListenerMethod implements EventListener, Serializable {
 
     private static final Logger getLogger() {
         return Logger.getLogger(ListenerMethod.class.getName());
+    }
+
+    /* Special serialization to handle method references */
+    private void writeObject(java.io.ObjectOutputStream out)
+            throws IOException {
+        try {
+            out.defaultWriteObject();
+            String name = method.getName();
+            Class<?>[] paramTypes = method.getParameterTypes();
+            out.writeObject(name);
+            out.writeObject(paramTypes);
+        } catch (NotSerializableException e) {
+            getLogger().log(Level.WARNING,
+                    "Error in serialization of the application: Class {0} must implement serialization.",
+                    target.getClass().getName());
+            throw e;
+        }
+
+    }
+
+    /* Special serialization to handle method references */
+    private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        try {
+            String name = (String) in.readObject();
+            Class<?>[] paramTypes = (Class<?>[]) in.readObject();
+            // We can not use getMethod directly as we want to support anonymous
+            // inner classes
+            method = findHighestMethod(target.getClass(), name, paramTypes);
+        } catch (SecurityException e) {
+            getLogger().log(Level.SEVERE, "Internal deserialization error", e);
+        }
+    }
+
+    private static Method findHighestMethod(Class<?> cls, String method,
+            Class<?>[] paramTypes) {
+        Class<?>[] ifaces = cls.getInterfaces();
+        for (int i = 0; i < ifaces.length; i++) {
+            Method ifaceMethod = findHighestMethod(ifaces[i], method,
+                    paramTypes);
+            if (ifaceMethod != null) {
+                return ifaceMethod;
+            }
+        }
+        if (cls.getSuperclass() != null) {
+            Method parentMethod = findHighestMethod(cls.getSuperclass(), method,
+                    paramTypes);
+            if (parentMethod != null) {
+                return parentMethod;
+            }
+        }
+        Method[] methods = cls.getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            // we ignore parameter types for now - you need to add this
+            if (methods[i].getName().equals(method)) {
+                return methods[i];
+            }
+        }
+        return null;
     }
 
 }

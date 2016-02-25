@@ -236,6 +236,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<FutureAccess>();
 
+    private final String csrfToken = UUID.randomUUID().toString();
+
     /**
      * Creates a new VaadinSession tied to a VaadinService.
      *
@@ -586,8 +588,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert hasLock();
         return Collections.unmodifiableCollection(uIs.values());
     }
-
-    private final String csrfToken = UUID.randomUUID().toString();
 
     /**
      * Returns a UI with the given id.
