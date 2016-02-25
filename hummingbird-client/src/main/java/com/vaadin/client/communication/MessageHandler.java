@@ -125,6 +125,17 @@ public class MessageHandler {
     private final Registry registry;
 
     /**
+     * Timer used to make sure that no misbehaving components can delay response
+     * handling forever.
+     */
+    Timer forceHandleMessage = new Timer() {
+        @Override
+        public void run() {
+            forceMessageHandling();
+        }
+    };
+
+    /**
      * Data structure holding information about pending UIDL messages.
      */
     private static class PendingUIDLMessage {
@@ -427,37 +438,30 @@ public class MessageHandler {
         return lastSeenServerSyncId + 1;
     }
 
-    /**
-     * Timer used to make sure that no misbehaving components can delay response
-     * handling forever.
-     */
-    Timer forceHandleMessage = new Timer() {
-        @Override
-        public void run() {
-            if (!JsCollections.isEmpty(responseHandlingLocks)) {
-                // Lock which was never release -> bug in locker or things just
-                // too slow
-                Console.warn(
-                        "WARNING: reponse handling was never resumed, forcibly removing locks...");
-                responseHandlingLocks.clear();
-            } else {
-                // Waited for out-of-order message which never arrived
-                // Do one final check and resynchronize if the message is not
-                // there. The final check is only a precaution as this timer
-                // should have been cancelled if the message has arrived
-                Console.warn("Gave up waiting for message "
-                        + getExpectedServerId() + " from the server");
+    private void forceMessageHandling() {
+        if (!JsCollections.isEmpty(responseHandlingLocks)) {
+            // Lock which was never release -> bug in locker or things just
+            // too slow
+            Console.warn(
+                    "WARNING: reponse handling was never resumed, forcibly removing locks...");
+            responseHandlingLocks.clear();
+        } else {
+            // Waited for out-of-order message which never arrived
+            // Do one final check and resynchronize if the message is not
+            // there. The final check is only a precaution as this timer
+            // should have been cancelled if the message has arrived
+            Console.warn("Gave up waiting for message " + getExpectedServerId()
+                    + " from the server");
 
-            }
-            if (!handlePendingMessages() && !pendingUIDLMessages.isEmpty()) {
-                // There are messages but the next id was not found, likely it
-                // has been lost
-                // Drop pending messages and resynchronize
-                pendingUIDLMessages.clear();
-                registry.getMessageSender().resynchronize();
-            }
         }
-    };
+        if (!handlePendingMessages() && !pendingUIDLMessages.isEmpty()) {
+            // There are messages but the next id was not found, likely it
+            // has been lost
+            // Drop pending messages and resynchronize
+            pendingUIDLMessages.clear();
+            registry.getMessageSender().resynchronize();
+        }
+    }
 
     /**
      * This method can be used to postpone rendering of a response for a short
@@ -488,7 +492,7 @@ public class MessageHandler {
         }
     }
 
-    private static native final int calculateBootstrapTime()
+    private static final native int calculateBootstrapTime()
     /*-{
         if ($wnd.performance && $wnd.performance.timing) {
             return (new Date).getTime() - $wnd.performance.timing.responseStart;

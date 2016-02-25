@@ -48,7 +48,7 @@ class VaadinServiceClassLoaderUtil {
      *             if current security policy doesn't allow acquiring current
      *             thread's context class loader
      */
-    static protected ClassLoader findDefaultClassLoader()
+    protected static ClassLoader findDefaultClassLoader()
             throws SecurityException {
         return AccessController.doPrivileged(
                 new VaadinServiceClassLoaderUtil.GetClassLoaderPrivilegedAction());
