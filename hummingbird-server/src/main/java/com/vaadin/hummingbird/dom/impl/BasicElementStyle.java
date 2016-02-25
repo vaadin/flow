@@ -43,7 +43,7 @@ public class BasicElementStyle implements Style {
     }
 
     @Override
-    public void set(String name, String value) {
+    public Style set(String name, String value) {
         ElementUtil.validateStylePropertyName(name);
         if (value == null) {
             throw new IllegalArgumentException(
@@ -53,18 +53,21 @@ public class BasicElementStyle implements Style {
         ElementUtil.validateStylePropertyValue(trimmedValue);
 
         namespace.setProperty(name, trimmedValue);
+        return this;
     }
 
     @Override
-    public void remove(String name) {
+    public Style remove(String name) {
         ElementUtil.validateStylePropertyName(name);
 
         namespace.removeProperty(name);
+        return this;
     }
 
     @Override
-    public void clear() {
+    public Style clear() {
         namespace.removeAllProperties();
+        return this;
     }
 
     @Override

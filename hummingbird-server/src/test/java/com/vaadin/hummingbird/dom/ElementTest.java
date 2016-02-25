@@ -71,7 +71,7 @@ public class ElementTest {
     }
 
     @Test
-    public void publicMethodsShouldReturnElement() {
+    public void publicElementMethodsShouldReturnElement() {
         HashSet<String> ignore = new HashSet<>();
         ignore.add("toString");
         ignore.add("hashCode");
@@ -97,6 +97,35 @@ public class ElementTest {
                 Assert.assertEquals(
                         "Method " + m.getName() + " has invalid return type",
                         Element.class, returnType);
+            }
+        }
+
+    }
+
+    @Test
+    public void publicElementStyleMethodsShouldReturnElement() {
+        HashSet<String> ignore = new HashSet<>();
+        ignore.add("toString");
+        ignore.add("hashCode");
+        ignore.add("equals");
+
+        for (Method m : Style.class.getDeclaredMethods()) {
+            if (!Modifier.isPublic(m.getModifiers())) {
+                continue;
+            }
+            if (Modifier.isStatic(m.getModifiers())) {
+                continue;
+            }
+            if (m.getName().startsWith("get") || m.getName().startsWith("has")
+                    || m.getName().startsWith("is")
+                    || ignore.contains(m.getName())) {
+                // Ignore
+            } else {
+                // Setters and such
+                Class<?> returnType = m.getReturnType();
+                Assert.assertEquals(
+                        "Method " + m.getName() + " has invalid return type",
+                        Style.class, returnType);
             }
         }
 
