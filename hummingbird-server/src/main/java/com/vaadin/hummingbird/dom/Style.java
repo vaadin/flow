@@ -49,7 +49,7 @@ public interface Style extends Serializable {
      * @param value
      *            the style property value, not <code>null</code>
      */
-    void set(String name, String value);
+    Style set(String name, String value);
 
     /**
      * Removes the given style property if it has been set.
@@ -60,12 +60,12 @@ public interface Style extends Serializable {
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      */
-    void remove(String name);
+    Style remove(String name);
 
     /**
      * Removes all set style properties.
      */
-    void clear();
+    Style clear();
 
     /**
      * Checks if the given style property has been set.
