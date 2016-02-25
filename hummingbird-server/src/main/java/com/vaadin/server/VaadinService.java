@@ -393,9 +393,9 @@ public abstract class VaadinService implements Serializable {
      */
     public void fireSessionDestroy(VaadinSession vaadinSession) {
         final VaadinSession session = vaadinSession;
-        session.access(new Runnable() {
+        session.access(new Command() {
             @Override
-            public void run() {
+            public void execute() {
                 if (session.getState() == State.CLOSED) {
                     return;
                 }
@@ -404,9 +404,9 @@ public abstract class VaadinService implements Serializable {
                 }
                 ArrayList<UI> uis = new ArrayList<UI>(session.getUIs());
                 for (final UI ui : uis) {
-                    ui.accessSynchronously(new Runnable() {
+                    ui.accessSynchronously(new Command() {
                         @Override
-                        public void run() {
+                        public void execute() {
                             /*
                              * close() called here for consistency so that it is
                              * always called before a UI is removed.
@@ -1059,9 +1059,9 @@ public abstract class VaadinService implements Serializable {
         ArrayList<UI> uis = new ArrayList<UI>(session.getUIs());
         for (final UI ui : uis) {
             if (ui.isClosing()) {
-                ui.accessSynchronously(new Runnable() {
+                ui.accessSynchronously(new Command() {
                     @Override
-                    public void run() {
+                    public void execute() {
                         getLogger().log(Level.FINER, "Removing closed UI {0}",
                                 ui.getUIId());
                         session.removeUI(ui);
@@ -1081,9 +1081,9 @@ public abstract class VaadinService implements Serializable {
         final String sessionId = session.getSession().getId();
         for (final UI ui : session.getUIs()) {
             if (!isUIActive(ui) && !ui.isClosing()) {
-                ui.accessSynchronously(new Runnable() {
+                ui.accessSynchronously(new Command() {
                     @Override
-                    public void run() {
+                    public void execute() {
                         getLogger().log(Level.FINE,
                                 "Closing inactive UI #{0} in session {1}",
                                 new Object[] { ui.getUIId(), sessionId });
@@ -1528,9 +1528,8 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Checks that another {@link VaadinSession} instance is not locked. This is
-     * internally used by {@link VaadinSession#accessSynchronously(Runnable)}
-     * and {@link UI#accessSynchronously(Runnable)} to help avoid causing
-     * deadlocks.
+     * internally used by {@link VaadinSession#accessSynchronously(Command)} and
+     * {@link UI#accessSynchronously(Command)} to help avoid causing deadlocks.
      *
      * @since 7.1
      * @param session
@@ -1602,24 +1601,23 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Implementation for {@link VaadinSession#access(Runnable)}. This method is
+     * Implementation for {@link VaadinSession#access(Command)}. This method is
      * implemented here instead of in {@link VaadinSession} to enable overriding
      * the implementation without using a custom subclass of VaadinSession.
      *
      * @since 7.1
-     * @see VaadinSession#access(Runnable)
+     * @see VaadinSession#access(Command)
      *
      * @param session
      *            the vaadin session to access
-     * @param runnable
-     *            the runnable to run with the session locked
+     * @param command
+     *            the command to run with the session locked
      *
      * @return a future that can be used to check for task completion and to
      *         cancel the task
      */
-    public Future<Void> accessSession(VaadinSession session,
-            Runnable runnable) {
-        FutureAccess future = new FutureAccess(session, runnable);
+    public Future<Void> accessSession(VaadinSession session, Command command) {
+        FutureAccess future = new FutureAccess(session, command);
         session.getPendingAccessQueue().add(future);
 
         ensureAccessQueuePurged(session);
@@ -1665,7 +1663,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Purges the queue of pending access invocations enqueued with
-     * {@link VaadinSession#access(Runnable)}.
+     * {@link VaadinSession#access(Command)}.
      * <p>
      * This method is automatically run by the framework at appropriate
      * situations and is not intended to be used by application developers.

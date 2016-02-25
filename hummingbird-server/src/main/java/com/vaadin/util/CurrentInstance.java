@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.server.Command;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
@@ -37,7 +38,7 @@ import com.vaadin.ui.UI;
  * instances are automatically cleared after handling a request from the client
  * to avoid leaking memory. The inheritable values are also maintained when
  * execution is moved to another thread, both when a new thread is created and
- * when {@link VaadinSession#access(Runnable)} or {@link UI#access(Runnable)} is
+ * when {@link VaadinSession#access(Command)} or {@link UI#access(Command)} is
  * used.
  * <p>
  * Please note that the instances are stored using {@link WeakReference}. This
@@ -168,8 +169,8 @@ public class CurrentInstance implements Serializable {
     /**
      * Sets the current inheritable instance of the given type. A current
      * instance that is inheritable will be available for child threads and in
-     * code run by {@link VaadinSession#access(Runnable)} and
-     * {@link UI#access(Runnable)}.
+     * code run by {@link VaadinSession#access(Command)} and
+     * {@link UI#access(Command)}.
      *
      * @see #set(Class, Object)
      * @see InheritableThreadLocal
