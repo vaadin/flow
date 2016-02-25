@@ -124,7 +124,7 @@ public class BrowserInfo {
      *
      * @return
      */
-    public String getCSSClass() {
+    private String getCSSClass() {
         String prefix = "v-";
 
         if (cssClass == null) {
@@ -216,34 +216,65 @@ public class BrowserInfo {
         return null;
     }
 
+    /**
+     * Checks if the browser is IE.
+     *
+     * @return true if the browser is IE, false otherwise
+     */
     public boolean isIE() {
         return browserDetails.isIE();
     }
 
+    /**
+     * Checks if the browser is Edge.
+     *
+     * @return true if the browser is Edge, false otherwise
+     */
     public boolean isEdge() {
         return browserDetails.isEdge();
     }
 
+    /**
+     * Checks if the browser is Firefox.
+     *
+     * @return true if the browser is Firefox, false otherwise
+     */
     public boolean isFirefox() {
         return browserDetails.isFirefox();
     }
 
+    /**
+     * Checks if the browser is Safari.
+     *
+     * @return true if the browser is Safari, false otherwise
+     */
     public boolean isSafari() {
         return browserDetails.isSafari();
     }
 
-    public boolean isIE11() {
-        return isIE() && getBrowserMajorVersion() == 11;
-    }
-
+    /**
+     * Checks if the browser is Chrome.
+     *
+     * @return true if the browser is Chrome, false otherwise
+     */
     public boolean isChrome() {
         return browserDetails.isChrome();
     }
 
+    /**
+     * Checks if the browser using the Gecko engine.
+     *
+     * @return true if the browser is using Gecko, false otherwise
+     */
     public boolean isGecko() {
         return browserDetails.isGecko();
     }
 
+    /**
+     * Checks if the browser using the Webkit engine.
+     *
+     * @return true if the browser is using Webkit, false otherwise
+     */
     public boolean isWebkit() {
         return browserDetails.isWebKit();
     }
@@ -276,51 +307,24 @@ public class BrowserInfo {
         return browserDetails.getBrowserEngineVersion();
     }
 
-    public float getIEVersion() {
-        if (!browserDetails.isIE()) {
-            return -1;
-        }
-
-        return getBrowserMajorVersion();
-    }
-
-    public float getOperaVersion() {
-        if (!browserDetails.isOpera()) {
-            return -1;
-        }
-
-        return getBrowserMajorVersion();
-    }
-
+    /**
+     * Checks if the browser is Opera.
+     *
+     * @return true if the browser is Opera, false otherwise
+     */
     public boolean isOpera() {
         return browserDetails.isOpera();
     }
 
-    public boolean isOpera10() {
-        return browserDetails.isOpera() && getBrowserMajorVersion() == 10;
-    }
-
-    public boolean isOpera11() {
-        return browserDetails.isOpera() && getBrowserMajorVersion() == 11;
-    }
-
-    public native static String getBrowserString()
+    private static native String getBrowserString()
     /*-{
         return $wnd.navigator.userAgent;
     }-*/;
 
-    public native int getScreenWidth()
-    /*-{
-        return $wnd.screen.width;
-    }-*/;
-
-    public native int getScreenHeight()
-    /*-{
-        return $wnd.screen.height;
-    }-*/;
-
     /**
-     * @return true if the browser runs on a touch based device.
+     * Checks if the browser runs on a touch capable device.
+     *
+     * @return true if the browser runs on a touch based device, false otherwise
      */
     public boolean isTouchDevice() {
         return touchDevice;
@@ -333,16 +337,6 @@ public class BrowserInfo {
      */
     public boolean isIOS() {
         return browserDetails.isIOS();
-    }
-
-    /**
-     * Checks if the browser is run on iOS 6.
-     *
-     * @since 7.1.1
-     * @return true if the browser is run on iOS 6, false otherwise
-     */
-    public boolean isIOS6() {
-        return isIOS() && getOperatingSystemMajorVersion() == 6;
     }
 
     /**
@@ -370,8 +364,7 @@ public class BrowserInfo {
             return false;
         }
         // iOS 6+ Safari supports native scrolling; iOS 5 suffers from #8792
-        // TODO Should test other iOS browsers
-        if (isIOS() && isWebkit() && getOperatingSystemMajorVersion() >= 6) {
+        if (isIOS()) {
             return false;
         }
 
@@ -394,17 +387,8 @@ public class BrowserInfo {
                 || getOperatingSystemMajorVersion() == 4);
     }
 
-    public boolean isAndroid23() {
-        return isAndroid() && getOperatingSystemMajorVersion() == 2
-                && getOperatingSystemMinorVersion() == 3;
-    }
-
     private int getOperatingSystemMajorVersion() {
         return browserDetails.getOperatingSystemMajorVersion();
-    }
-
-    private int getOperatingSystemMinorVersion() {
-        return browserDetails.getOperatingSystemMinorVersion();
     }
 
     /**
@@ -432,25 +416,4 @@ public class BrowserInfo {
         return browserDetails.getBrowserMinorVersion();
     }
 
-    /**
-     * Checks if the browser version is newer or equal to the given major+minor
-     * version.
-     *
-     * @param majorVersion
-     *            The major version to check for
-     * @param minorVersion
-     *            The minor version to check for
-     * @return true if the browser version is newer or equal to the given
-     *         version
-     */
-    public boolean isBrowserVersionNewerOrEqual(int majorVersion,
-            int minorVersion) {
-        if (getBrowserMajorVersion() == majorVersion) {
-            // Same major
-            return (getBrowserMinorVersion() >= minorVersion);
-        }
-
-        // Older or newer major
-        return (getBrowserMajorVersion() > majorVersion);
-    }
 }
