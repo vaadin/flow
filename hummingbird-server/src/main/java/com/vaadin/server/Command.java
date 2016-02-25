@@ -15,24 +15,16 @@
  */
 package com.vaadin.server;
 
-import java.io.Serializable;
-
 /**
- * Defines the interface to handle exceptions thrown during the execution of a
- * FutureAccess.
+ * A generic command interface meant to be used for passing lambdas around.
  *
- * @since 7.1.8
- * @author Vaadin Ltd
+ * @author Vaadin
+ * @since
  */
-public interface ErrorHandlingRunnable extends Runnable, Serializable {
-
+@FunctionalInterface
+public interface Command {
     /**
-     * Handles exceptions thrown during the execution of a FutureAccess.
-     *
-     * @since 7.1.8
-     * @param exception
-     *            the thrown exception.
+     * Runs the given command.
      */
-    public void handleError(Exception exception);
-
+    void execute();
 }

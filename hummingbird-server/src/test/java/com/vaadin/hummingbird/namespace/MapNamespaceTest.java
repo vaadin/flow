@@ -29,6 +29,7 @@ import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.MapRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.server.Command;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -159,10 +160,10 @@ public class MapNamespaceTest
         assertFailsAssert("remove(null)", () -> namespace.remove(null));
     }
 
-    private static void assertFailsAssert(String name, Runnable runnable) {
+    private static void assertFailsAssert(String name, Command command) {
         boolean threw = false;
         try {
-            runnable.run();
+            command.execute();
         } catch (AssertionError expected) {
             threw = true;
         }
