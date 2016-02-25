@@ -97,25 +97,18 @@ window.vaadin = window.vaadin || {
 		if (!window.name) {
 			window.name =  appId + '-' + Math.random();
 		}
-		var bootstrapApp = function() {
-			var vaadinDir = getConfig('vaadinDir');
 
-			var versionInfo = getConfig('versionInfo');
-
-			var widgetset = "client";
-			var clientEngineFileName = getConfig("clientEngineFile");
-			widgetsetUrl = vaadinDir + "client/" +clientEngineFileName;
-			loadWidgetset(widgetsetUrl, widgetset);
-
-			if (widgetsets[widgetset].callback) {
-				log("Starting from bootstrap", appId);
-				widgetsets[widgetset].callback(appId);
-			}  else {
-				log("Setting pending startup", appId);
-				widgetsets[widgetset].pendingApps.push(appId);
-			}
-		};
-		bootstrapApp();
+		var widgetset = "client";
+		widgetsets[widgetset] = {
+				pendingApps: []
+			};
+		if (widgetsets[widgetset].callback) {
+			log("Starting from bootstrap", appId);
+			widgetsets[widgetset].callback(appId);
+		}  else {
+			log("Setting pending startup", appId);
+			widgetsets[widgetset].pendingApps.push(appId);
+		}
 
 		if (getConfig("debug")) {
 			/* TODO debug state is now global for the entire page, but should

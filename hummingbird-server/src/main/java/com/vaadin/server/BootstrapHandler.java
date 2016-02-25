@@ -71,10 +71,11 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String META_TAG = "meta";
 
-    private static final String CLIENT_ENGINE_NOCACHE_JS = "client.nocache.js";
+    private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_FOLDER
+            + "/client.nocache.js";
 
     private static String bootstrapJS;
-    private static String clientEngineFileName;
+    private static String clientEngineFile;
 
     private static Logger getLogger() {
         return Logger.getLogger(BootstrapHandler.class.getName());
@@ -93,13 +94,16 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             throw new ExceptionInInitializerError(e);
         }
         // read client engine file name
-        try (InputStream prop = BootstrapHandler.class
-                .getResourceAsStream("/VAADIN/client/compile.properties")) {
+        try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
+                "/VAADIN/" + ApplicationConstants.CLIENT_ENGINE_FOLDER
+                        + "/compile.properties")) {
             // null when running SDM or tests
             if (prop != null) {
                 Properties p = new Properties();
                 p.load(prop);
-                clientEngineFileName = p.getProperty("jsFile");
+                clientEngineFile = ApplicationConstants.CLIENT_ENGINE_FOLDER
+                        + "/"
+                        + p.getProperty("jsFile");
             } else {
                 getLogger().warning(
                         "No compile.properties available on initialization, "
@@ -350,6 +354,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         head.appendChild(getBootstrapScript(context));
+
+        head.appendChild(getClientEngineScript(context));
     }
 
     private static void setupDocumentBody(BootstrapPageResponse response) {
@@ -427,6 +433,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return result;
     }
 
+    private static Element getClientEngineScript(BootstrapContext context) {
+        return new Element(Tag.valueOf("script"), "")
+                .attr("type", TYPE_TEXT_JAVASCRIPT)
+                .attr("src", getClientEngineUrl(context));
+    }
+
     protected JsonObject getApplicationParameters(BootstrapContext context) {
         VaadinRequest request = context.getRequest();
         VaadinSession session = context.getSession();
@@ -445,8 +457,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         if (atmosphereVersion != null) {
             versionInfo.put("atmosphereVersion", atmosphereVersion);
         }
-        appConfig.put("clientEngineFile",
-                getClientEngineFileName(productionMode));
 
         appConfig.put("versionInfo", versionInfo);
 
@@ -604,19 +614,23 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return bootstrapJS;
     }
 
-    private static String getClientEngineFileName(boolean productionMode) {
+    private static String getClientEngineUrl(BootstrapContext context) {
         // when NOT in production, use nocache version of client engine if it
         // has been compiled by SDM or eclipse
-        if (!productionMode && BootstrapHandler.class.getResource(
-                "/VAADIN/client/" + CLIENT_ENGINE_NOCACHE_JS) != null) {
-            return CLIENT_ENGINE_NOCACHE_JS;
+        final boolean productionMode = context.getSession().getConfiguration()
+                .isProductionMode();
+        if (!productionMode && BootstrapHandler.class
+                .getResource("/VAADIN/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
+            return context.getUriResolver()
+                    .resolveVaadinUri("vaadin://" + CLIENT_ENGINE_NOCACHE_FILE);
         }
 
-        if (clientEngineFileName == null) {
+        if (clientEngineFile == null) {
             throw new BootstrapException(
                     "Client engine file name has not been resolved during initialization");
         }
-        return clientEngineFileName;
+        return context.getUriResolver()
+                .resolveVaadinUri("vaadin://" + clientEngineFile);
     }
 
     private static UI createInstance(Class<? extends UI> uiClass) {
