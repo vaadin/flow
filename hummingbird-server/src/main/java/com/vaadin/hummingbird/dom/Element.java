@@ -469,6 +469,8 @@ public class Element implements Serializable {
      * <li><code>event.button === 0</code> to get true for click events
      * triggered by the primary mouse button.
      * </ul>
+     * <p>
+     * Event listeners are triggered in the order they are registered.
      *
      * @param eventType
      *            the type of event to listen to, not <code>null</code>
