@@ -15,7 +15,8 @@
  */
 package com.vaadin.client.hummingbird.collection;
 
-import jsinterop.annotations.JsFunction;
+import com.vaadin.client.hummingbird.collection.JsCollections.ForEachCallback;
+
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -30,23 +31,6 @@ import jsinterop.annotations.JsType;
  */
 @JsType(isNative = true)
 public interface JsSet<V> {
-    /**
-     * Functional interface for iterating all the entries in a {@link JsSet}.
-     *
-     * @param <V>
-     *            the value type
-     */
-    @FunctionalInterface
-    @JsFunction
-    public interface ForEachCallback<V> {
-        /**
-         * Receives one value.
-         *
-         * @param value
-         *            the value
-         */
-        public void accept(V value);
-    }
 
     /**
      * Adds a value to this set, overwriting any previous value if present.

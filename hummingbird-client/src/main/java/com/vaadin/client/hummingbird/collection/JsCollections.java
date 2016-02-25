@@ -22,6 +22,8 @@ import com.vaadin.client.hummingbird.collection.jre.JreJsMap;
 import com.vaadin.client.hummingbird.collection.jre.JreJsSet;
 import com.vaadin.client.hummingbird.collection.jre.JreJsWeakMap;
 
+import jsinterop.annotations.JsFunction;
+
 /**
  * Factory for JavaScript collection implementations with support for
  * alternative JRE implementations.
@@ -31,6 +33,26 @@ import com.vaadin.client.hummingbird.collection.jre.JreJsWeakMap;
  */
 @SuppressWarnings("deprecation")
 public class JsCollections {
+
+    /**
+     * Functional interface for iterating all the entries in a {@link JsSet} or
+     * {@link JsArray}.
+     *
+     * @param <V>
+     *            the value type
+     */
+    @FunctionalInterface
+    @JsFunction
+    public interface ForEachCallback<V> {
+        /**
+         * Receives one value.
+         *
+         * @param value
+         *            the value
+         */
+        public void accept(V value);
+    }
+
     private JsCollections() {
         // Only static stuff here, should never be instantiated
     }
