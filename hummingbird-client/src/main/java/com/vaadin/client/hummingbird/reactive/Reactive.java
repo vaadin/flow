@@ -44,6 +44,8 @@ public class Reactive {
     // Initializing static fields would cause nasty $clinit in the generated JS
     private static JsArray<FlushListener> flushListeners;
 
+    private static JsArray<FlushListener> postFlushListeners;
+
     private static JsSet<ReactiveChangeListener> eventCollectors;
 
     private static Computation currentComputation = null;
@@ -68,17 +70,58 @@ public class Reactive {
     }
 
     /**
-     * Flushes all flush listeners. A flush listener is discarded after it has
-     * been invoked once. This means that there will be no flush listeners
-     * registered for the next flush at the time this method return.
+     * Adds a listener that will be invoked during the next {@link #flush()}
+     * after all regular flush listeners have been invoked. If a post flush
+     * listener adds new flush listeners, those flush listeners will be invoked
+     * before the next post flush listener is invoked.
+     *
+     * @param postFlushListener
+     *            the listener to add
+     */
+    public static void addPostFlushListener(FlushListener postFlushListener) {
+        if (postFlushListeners == null) {
+            postFlushListeners = JsCollections.array();
+        }
+        postFlushListeners.push(postFlushListener);
+    }
+
+    private static void reset() {
+        // Method added just to give compile errors if trying to merge this
+        // without taking Artur's reset implementation into account.
+    }
+
+    /**
+     * Flushes all flush listeners and post flush listeners. A listener is
+     * discarded after it has been invoked once. This means that there will be
+     * no listeners registered for the next flush at the time this method
+     * returns.
      *
      * @see #addFlushListener(FlushListener)
+     * @see #addPostFlushListener(FlushListener)
      */
     public static void flush() {
-        while (flushListeners != null && !flushListeners.isEmpty()) {
-            FlushListener oldestListener = flushListeners.remove(0);
-            oldestListener.flush();
+        while (hasFlushListeners() || hasPostFlushCommands()) {
+            // Purge all flush listeners
+            while (hasFlushListeners()) {
+                FlushListener oldestListener = flushListeners.remove(0);
+                oldestListener.flush();
+            }
+
+            // Purge one post flush listener, then look if there are new flush
+            // listeners to purge
+            if (hasPostFlushCommands()) {
+                FlushListener oldestListener = postFlushListeners.remove(0);
+                oldestListener.flush();
+            }
         }
+    }
+
+    private static boolean hasPostFlushCommands() {
+        return postFlushListeners != null && !postFlushListeners.isEmpty();
+    }
+
+    private static boolean hasFlushListeners() {
+        return flushListeners != null && !flushListeners.isEmpty();
     }
 
     /**

@@ -38,7 +38,19 @@ public class ExecJavaScriptUI extends UI {
                 "console.log($0)", JsonUtil.createArray(
                         Json.create("Hello world"), Json.create(true)));
 
-        root.appendChild(alertButton, focusButton, swapText, logButton);
+        Element createElementButton = new Element("button")
+                .setAttribute("id", "createButton")
+                .setTextContent("Create and update element");
+        createElementButton.addEventListener("click", e -> {
+            Element newElement = new Element("input").setAttribute("class",
+                    "newInput");
+            getPage().executeJavaScript("$0.value = $1", newElement,
+                    "Value from js");
+            root.appendChild(newElement);
+        });
+
+        root.appendChild(alertButton, focusButton, swapText, logButton,
+                createElementButton);
     }
 
     private Element createJsButton(String text, String id, String script,
