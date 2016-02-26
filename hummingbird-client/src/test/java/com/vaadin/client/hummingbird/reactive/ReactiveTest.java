@@ -15,6 +15,10 @@
  */
 package com.vaadin.client.hummingbird.reactive;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
@@ -83,4 +87,77 @@ public class ReactiveTest {
         Assert.assertEquals("Event should no longer trigger collector", 2,
                 count.get());
     }
+
+    @Test
+    public void testPostFlushListenerInvokedDuringFlush() {
+        AtomicInteger invokeCount = new AtomicInteger();
+        Reactive.addPostFlushListener(invokeCount::incrementAndGet);
+
+        Assert.assertEquals(0, invokeCount.get());
+
+        Reactive.flush();
+
+        Assert.assertEquals(1, invokeCount.get());
+    }
+
+    @Test
+    public void testPostFlushListenerRemovedAfterFlush() {
+        AtomicInteger invokeCount = new AtomicInteger();
+        Reactive.addPostFlushListener(invokeCount::incrementAndGet);
+
+        Reactive.flush();
+        Assert.assertEquals(1, invokeCount.get());
+
+        Reactive.flush();
+        Assert.assertEquals(1, invokeCount.get());
+    }
+
+    @Test
+    public void testPostFlushListenerInvokedInAddOrder() {
+        List<Integer> order = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            final int iFinal = i;
+            Reactive.addPostFlushListener(
+                    () -> order.add(Integer.valueOf(iFinal)));
+        }
+
+        Reactive.flush();
+
+        for (int i = 0; i < 10; i++) {
+            Assert.assertEquals(Integer.valueOf(i), order.get(i));
+        }
+    }
+
+    @Test
+    public void testPostFlushListenerInvokedAfterRegularFlushListener() {
+        List<String> order = new ArrayList<>();
+
+        Reactive.addPostFlushListener(() -> order.add("postFlush"));
+        Reactive.addFlushListener(() -> order.add("flush"));
+
+        Assert.assertEquals(Collections.emptyList(), order);
+
+        Reactive.flush();
+
+        Assert.assertEquals(Arrays.asList("flush", "postFlush"), order);
+    }
+
+    @Test
+    public void testNewFlushListenerInvokedBeforeNextPostListener() {
+        List<String> order = new ArrayList<>();
+
+        Reactive.addPostFlushListener(() -> order.add("postFlush1"));
+        Reactive.addPostFlushListener(
+                () -> Reactive.addFlushListener(() -> order.add("flush2")));
+        Reactive.addPostFlushListener(() -> order.add("postFlush2"));
+        Reactive.addFlushListener(() -> order.add("flush1"));
+
+        Reactive.flush();
+
+        Assert.assertEquals(
+                Arrays.asList("flush1", "postFlush1", "flush2", "postFlush2"),
+                order);
+    }
+
 }
