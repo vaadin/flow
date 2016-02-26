@@ -47,13 +47,16 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
      * @param value
      *            the value, must be a string, a boolean, a double or
      *            <code>null</code>
+     * @param emitChange
+     *            true to create a change event for the client side
      */
-    public void setProperty(String name, Serializable value) {
+    public void setProperty(String name, Serializable value,
+            boolean emitChange) {
         assert name != null;
         assert value == null || value instanceof String
                 || value instanceof Boolean || value instanceof Double;
 
-        put(name, value);
+        put(name, value, emitChange);
     }
 
     /**

@@ -85,11 +85,6 @@ public class Reactive {
         postFlushListeners.push(postFlushListener);
     }
 
-    private static void reset() {
-        // Method added just to give compile errors if trying to merge this
-        // without taking Artur's reset implementation into account.
-    }
-
     /**
      * Flushes all flush listeners and post flush listeners. A listener is
      * discarded after it has been invoked once. This means that there will be
@@ -210,6 +205,22 @@ public class Reactive {
                 command.execute();
             }
         };
+    }
+
+    /**
+     * Resets Reactive to the initial state.
+     * <p>
+     * Intended for test cases to call in setup to avoid having tests affect
+     * each other as Reactive state is static and shared.
+     * <p>
+     * Should never be called from non-test code!
+     *
+     */
+    public static void reset() {
+        flushListeners = null;
+        eventCollectors = null;
+        currentComputation = null;
+        postFlushListeners = null;
     }
 
 }

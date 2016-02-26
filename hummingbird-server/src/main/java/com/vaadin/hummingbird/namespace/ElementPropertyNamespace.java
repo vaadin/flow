@@ -41,12 +41,13 @@ public class ElementPropertyNamespace extends AbstractPropertyNamespace {
     }
 
     @Override
-    public void setProperty(String name, Serializable value) {
+    public void setProperty(String name, Serializable value,
+            boolean emitChange) {
         assert !"textContent".equals(name);
         assert !"classList".equals(name);
         assert !"className".equals(name);
 
-        super.setProperty(name, value);
+        super.setProperty(name, value, emitChange);
     }
 
     /**
