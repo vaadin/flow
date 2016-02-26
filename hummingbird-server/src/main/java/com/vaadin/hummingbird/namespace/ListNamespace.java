@@ -188,7 +188,29 @@ public abstract class ListNamespace<T> extends Namespace {
      * @return an iterator returning all items
      */
     protected Iterator<T> iterator() {
-        return values.iterator();
+        Iterator<T> arrayIterator = values.iterator();
+        return new Iterator<T>() {
+            int index = -1;
+
+            @Override
+            public boolean hasNext() {
+                return arrayIterator.hasNext();
+            }
+
+            @Override
+            public T next() {
+                index++;
+                return arrayIterator.next();
+            }
+
+            @Override
+            public void remove() {
+                arrayIterator.remove();
+                addChange(new ListSpliceChange(ListNamespace.this,
+                        isNodeValues(), index, 1, Collections.emptyList()));
+                index--;
+            }
+        };
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

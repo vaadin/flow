@@ -17,11 +17,15 @@ package com.vaadin.hummingbird.namespace;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.NodeChange;
 
 public class SerializableListNamespaceTest
         extends AbstractNamespaceTest<ClassListNamespace> {
@@ -56,4 +60,62 @@ public class SerializableListNamespaceTest
 
     }
 
+    @Test
+    public void testRemoveUsingIterator() {
+        namespace.add("1");
+        namespace.add("2");
+        namespace.add("3");
+        namespace.add("4");
+        namespace.add("5");
+        collectChanges(namespace);
+
+        Iterator<String> i = namespace.iterator();
+        i.next();
+        i.remove();
+        List<NodeChange> changes = collectChanges(namespace);
+        Assert.assertEquals(1, changes.size());
+        Assert.assertEquals(0, ((ListSpliceChange) changes.get(0)).getIndex());
+        Assert.assertEquals(1,
+                ((ListSpliceChange) changes.get(0)).getRemoveCount());
+
+        i.next();
+        i.next();
+        i.remove();
+        changes = collectChanges(namespace);
+        Assert.assertEquals(1, changes.size());
+        Assert.assertEquals(1, ((ListSpliceChange) changes.get(0)).getIndex());
+        Assert.assertEquals(1,
+                ((ListSpliceChange) changes.get(0)).getRemoveCount());
+
+        List<String> actual = new ArrayList<>();
+        for (int j = 0; j < namespace.size(); j++) {
+            actual.add(namespace.get(j));
+        }
+        Assert.assertArrayEquals(new String[] { "2", "4", "5" },
+                actual.toArray());
+
+    }
+
+    @Test
+    public void clearUsingIterator() {
+        namespace.add("1");
+        namespace.add("2");
+        collectChanges(namespace);
+
+        Iterator<String> i = namespace.iterator();
+        i.next();
+        i.remove();
+        i.next();
+        i.remove();
+
+        List<NodeChange> changes = collectChanges(namespace);
+        Assert.assertEquals(2, changes.size());
+        Assert.assertEquals(0, ((ListSpliceChange) changes.get(0)).getIndex());
+        Assert.assertEquals(0, ((ListSpliceChange) changes.get(1)).getIndex());
+        Assert.assertEquals(1,
+                ((ListSpliceChange) changes.get(0)).getRemoveCount());
+        Assert.assertEquals(1,
+                ((ListSpliceChange) changes.get(1)).getRemoveCount());
+        Assert.assertEquals(0, namespace.size());
+    }
 }

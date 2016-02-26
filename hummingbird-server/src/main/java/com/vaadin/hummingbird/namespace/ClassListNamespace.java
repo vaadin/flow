@@ -67,6 +67,7 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
         @Override
         public boolean remove(Object o) {
             verifyClassName(o);
+            // Uses iterator() which supports proper remove()
             return super.remove(o);
         }
 
