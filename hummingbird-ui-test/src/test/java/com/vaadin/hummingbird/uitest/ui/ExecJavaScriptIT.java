@@ -34,6 +34,11 @@ public class ExecJavaScriptIT extends PhantomJSTest {
 
         Assert.assertEquals(focusText, getButton("alertButton").getText());
         Assert.assertEquals(alertText, getButton("focusButton").getText());
+
+        getButton("createButton").click();
+
+        WebElement findElement = findElement(By.className("newInput"));
+        Assert.assertEquals("Value from js", findElement.getAttribute("value"));
     }
 
     private WebElement getButton(String id) {
