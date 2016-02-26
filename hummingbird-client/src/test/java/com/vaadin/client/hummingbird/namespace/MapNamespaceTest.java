@@ -150,4 +150,5 @@ public class MapNamespaceTest {
         p.removeValue();
         Assert.assertFalse(namespace.hasPropertyValue("foo"));
     }
+
 }
