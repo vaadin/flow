@@ -43,11 +43,16 @@ public class Dependency implements Serializable {
      * custom protocols such as "vaadin://" can be used.
      *
      * @param type
-     *            the type of the dependency
+     *            the type of the dependency, not <code>null</code>
      * @param url
-     *            the URL to load the dependency from
+     *            the URL to load the dependency from, not <code>null</code>
      */
     public Dependency(Type type, String url) {
+        if (url == null) {
+            throw new IllegalArgumentException("url cannot be null");
+        }
+        assert type != null;
+
         this.type = type;
         this.url = url;
     }
