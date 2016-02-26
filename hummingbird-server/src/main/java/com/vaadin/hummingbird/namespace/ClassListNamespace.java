@@ -67,7 +67,13 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
         @Override
         public boolean remove(Object o) {
             verifyClassName(o);
-            return super.remove(o);
+            int i = namespace.indexOf((String) o);
+            if (i == -1) {
+                return false;
+            } else {
+                namespace.remove(i);
+                return true;
+            }
         }
 
         @Override
