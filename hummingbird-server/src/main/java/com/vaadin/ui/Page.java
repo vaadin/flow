@@ -21,6 +21,7 @@ import java.util.Arrays;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
+import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
 
 /**
@@ -45,13 +46,43 @@ public class Page implements Serializable {
     }
 
     /**
+     * Adds the given stylesheet to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * The URL is passed through the translation mechanism before loading, so
+     * custom protocols such as "vaadin://" can be used.
+     *
+     * @param url
+     *            the URL to load the stylesheet from, not <code>null</code>
+     */
+    public void addStylesheet(String url) {
+        addDependency(new Dependency(Type.STYLESHEET, url));
+    }
+
+    /**
+     * Adds the given JavaScript to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * The URL is passed through the translation mechanism before loading, so
+     * custom protocols such as "vaadin://" can be used.
+     *
+     * @param url
+     *            the URL to load the JavaScript from, not <code>null</code>
+     */
+    public void addJavaScript(String url) {
+        addDependency(new Dependency(Type.JAVASCRIPT, url));
+    }
+
+    /**
      * Adds the given dependency to the page and ensures that it is loaded
      * successfully.
      *
      * @param dependency
      *            the dependency to load
      */
-    public void addDependency(Dependency dependency) {
+    private void addDependency(Dependency dependency) {
+        assert dependency != null;
+
         DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
 
