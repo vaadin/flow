@@ -323,8 +323,11 @@ public class MessageHandler {
                 }
 
                 if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
-                    registry.getExecuteJavaScriptProcessor().execute(
-                            json.getArray(JsonConstants.UIDL_KEY_EXECUTE));
+                    // Invoke JS only after all tree changes have been
+                    // propagated
+                    Reactive.addPostFlushListener(() -> registry
+                            .getExecuteJavaScriptProcessor().execute(json
+                                    .getArray(JsonConstants.UIDL_KEY_EXECUTE)));
                 }
 
                 Console.log("handleUIDLMessage: "
