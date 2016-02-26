@@ -10,7 +10,7 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<modules>
-		<module>hummingbird-bom</module>
+		<module>hummingbird</module>
 		<module>hummingbird-server</module>
 		<module>hummingbird-push</module>
 		<module>hummingbird-client</module>
