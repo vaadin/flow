@@ -118,7 +118,7 @@ public class VaadinSessionTest {
                 EasyMock.createMock(HttpServletRequest.class), mockService) {
             @Override
             public String getParameter(String name) {
-                if ("theme".equals(name) || "restartApplication".equals(name)
+                if ("restartApplication".equals(name)
                         || "ignoreRestart".equals(name)
                         || "closeApplication".equals(name)) {
                     return null;

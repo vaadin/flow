@@ -74,7 +74,6 @@ public class WrappedHttpSession implements WrappedSession {
         return enumerationToSet(attributeNames);
     }
 
-    // Helper shared with WrappedPortletSession
     static <T> Set<T> enumerationToSet(Enumeration<T> values) {
         HashSet<T> set = new HashSet<T>();
         while (values.hasMoreElements()) {

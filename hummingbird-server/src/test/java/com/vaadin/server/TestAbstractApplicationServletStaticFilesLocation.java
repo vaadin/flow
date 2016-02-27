@@ -59,13 +59,6 @@ public class TestAbstractApplicationServletStaticFilesLocation
                 "/servlet", "/extra/stuff");
         assertEquals("./../..", location);
 
-        /* Include requests */
-        // Include request support dropped with support for portlet1
-        // Might reconsider when JSP integration support is implemented
-        // location = testIncludedLocation("http://my.portlet.server", "/user",
-        // "/tmpservletlocation1", "");
-        // assertEquals("Wrong widgetset location", "/user", location);
-
     }
 
     private String testLocation(String base, String contextPath,

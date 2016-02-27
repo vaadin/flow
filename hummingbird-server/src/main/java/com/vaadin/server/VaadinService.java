@@ -38,8 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.portlet.Portlet;
-import javax.portlet.PortletContext;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
@@ -204,10 +202,8 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Return the URL from where static files, e.g. the widgetset and the theme,
-     * are served. In a standard configuration the VAADIN folder inside the
-     * returned folder is what is used for widgetsets and themes.
-     *
+     * Return the URL from where static files are served.
+     * <p>
      * The returned folder is usually the same as the context path and
      * independent of e.g. the servlet mapping.
      *
@@ -222,7 +218,7 @@ public abstract class VaadinService implements Serializable {
     /**
      * Gets the class loader to use for loading classes loaded by name, e.g.
      * custom UI classes. This is by default the class loader that was used to
-     * load the Servlet or Portlet class to which this service belongs.
+     * load the Servlet class to which this service belongs.
      *
      * @return the class loader to use, or <code>null</code>
      *
@@ -263,7 +259,6 @@ public abstract class VaadinService implements Serializable {
      * @return a String specifying the file's MIME type
      *
      * @see ServletContext#getMimeType(String)
-     * @see PortletContext#getMimeType(String)
      */
     public abstract String getMimeType(String resourceName);
 
@@ -886,7 +881,7 @@ public abstract class VaadinService implements Serializable {
      * Gets a unique name for this service. The name should be unique among
      * different services of the same type but the same for corresponding
      * instances running in different JVMs in a cluster. This is typically based
-     * on e.g. the configured servlet's or portlet's name.
+     * on e.g. the configured servlet's name.
      *
      * @return the unique name of this service instance.
      */
@@ -1738,13 +1733,12 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Called when the servlet, portlet or similar for this service is being
-     * destroyed. After this method has been called, no more requests will be
-     * handled by this service.
+     * Called when the servlet or similar for this service is being destroyed.
+     * After this method has been called, no more requests will be handled by
+     * this service.
      *
      * @see #addServiceDestroyListener(ServiceDestroyListener)
      * @see Servlet#destroy()
-     * @see Portlet#destroy()
      *
      * @since 7.2
      */

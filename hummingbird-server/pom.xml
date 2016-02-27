@@ -29,23 +29,8 @@
 		<!-- API DEPENDENCIES -->
 
 		<dependency>
-			<groupId>com.liferay.portal</groupId>
-			<artifactId>portal-service</artifactId>
-			<version>6.0.2</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-		<!--Portlet API version 2.0 (JSR-286) -->
-
-		<dependency>
-			<groupId>javax.portlet</groupId>
-			<artifactId>portlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
 
