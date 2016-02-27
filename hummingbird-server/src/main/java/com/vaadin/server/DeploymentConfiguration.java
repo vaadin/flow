@@ -109,7 +109,7 @@ public interface DeploymentConfiguration extends Serializable {
 
     /**
      * Gets the properties configured for the deployment, e.g. as init
-     * parameters to the servlet or portlet.
+     * parameters to the servlet.
      *
      * @return properties for the application.
      */

@@ -19,13 +19,11 @@ package com.vaadin.server;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.portlet.PortletSession;
 import javax.servlet.http.HttpSession;
 
 /**
  * A generic session, wrapping a more specific session implementation, e.g.
- * {@link HttpSession} or {@link PortletSession}.
- *
+ * {@link HttpSession}.
  *
  * @author Vaadin Ltd
  * @since 7.0.0
@@ -39,7 +37,6 @@ public interface WrappedSession extends Serializable {
      *         open between client requests
      *
      * @see javax.servlet.http.HttpSession#getMaxInactiveInterval()
-     * @see javax.portlet.PortletSession#getMaxInactiveInterval()
      */
     public int getMaxInactiveInterval();
 
@@ -52,7 +49,6 @@ public interface WrappedSession extends Serializable {
      *         defined in the session
      *
      * @see javax.servlet.http.HttpSession#getAttribute(String)
-     * @see javax.portlet.PortletSession#getAttribute(String)
      */
     public Object getAttribute(String name);
 
@@ -65,7 +61,6 @@ public interface WrappedSession extends Serializable {
      *            the attribute value
      *
      * @see javax.servlet.http.HttpSession#setAttribute(String, Object)
-     * @see javax.portlet.PortletSession#setAttribute(String, Object)
      */
     public void setAttribute(String name, Object value);
 
@@ -75,7 +70,6 @@ public interface WrappedSession extends Serializable {
      * @return an unmodifiable set of the current attribute names
      *
      * @see HttpSession#getAttributeNames()
-     * @see PortletSession#getAttributeNames()
      */
     public Set<String> getAttributeNames();
 
@@ -83,7 +77,6 @@ public interface WrappedSession extends Serializable {
      * Invalidates this session then unbinds any objects bound to it.
      *
      * @see HttpSession#invalidate()
-     * @see PortletSession#invalidate()
      */
     public void invalidate();
 
@@ -93,7 +86,6 @@ public interface WrappedSession extends Serializable {
      * @return a unique session id string
      *
      * @see HttpSession#getId()
-     * @see PortletSession#getId()
      */
     public String getId();
 
@@ -107,7 +99,6 @@ public interface WrappedSession extends Serializable {
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
      * @see HttpSession#getCreationTime()
-     * @see PortletSession#getCreationTime()
      */
     public long getCreationTime();
 
@@ -127,7 +118,6 @@ public interface WrappedSession extends Serializable {
      *             if this method is called on an invalidated session
      *
      * @see HttpSession#getLastAccessedTime()
-     * @see PortletSession#getLastAccessedTime()
      */
     public long getLastAccessedTime();
 
@@ -142,7 +132,6 @@ public interface WrappedSession extends Serializable {
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
      * @see HttpSession#isNew()
-     * @see PortletSession#isNew()
      */
     public boolean isNew();
 
@@ -156,7 +145,6 @@ public interface WrappedSession extends Serializable {
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
      * @see HttpSession#removeAttribute(String)
-     * @see PortletSession#removeAttribute(String)
      */
     public void removeAttribute(String name);
 
@@ -168,7 +156,6 @@ public interface WrappedSession extends Serializable {
      * @param interval
      *            An integer specifying the number of seconds
      * @see HttpSession#setMaxInactiveInterval(int)
-     * @see PortletSession#setMaxInactiveInterval(int)
      */
     public void setMaxInactiveInterval(int interval);
 

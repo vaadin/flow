@@ -25,15 +25,13 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.portlet.ClientDataRequest;
-import javax.portlet.PortletRequest;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * A generic request to the server, wrapping a more specific request type, e.g.
- * HttpServletReqest or PortletRequest.
+ * HttpServletReqest.
  *
  * @author Vaadin Ltd
  * @since 7.0.0
@@ -45,7 +43,6 @@ public interface VaadinRequest {
      * representing parameters.
      *
      * @see javax.servlet.ServletRequest#getParameter(String)
-     * @see javax.portlet.PortletRequest#getParameter(String)
      *
      * @param parameter
      *            the name of the parameter
@@ -55,14 +52,11 @@ public interface VaadinRequest {
     public String getParameter(String parameter);
 
     /**
-     * Gets all the parameters of the request. Framework's internal init
-     * parameters have prefix "v-" (does not include such parameters as "theme"
-     * and "debug").
+     * Gets all the parameters of the request.
      *
      * @see #getParameter(String)
      *
      * @see javax.servlet.ServletRequest#getParameterMap()
-     * @see javax.portlet.PortletRequest#getParameter(String)
      *
      * @return A mapping of parameter names to arrays of parameter values
      */
@@ -73,7 +67,6 @@ public interface VaadinRequest {
      * stream returned by {@link #getInputStream()}.
      *
      * @see javax.servlet.ServletRequest#getContentLength()
-     * @see javax.portlet.ClientDataRequest#getContentLength()
      *
      * @return content length in bytes
      */
@@ -85,7 +78,6 @@ public interface VaadinRequest {
      * without reading the full stream contents.
      *
      * @see javax.servlet.ServletRequest#getInputStream()
-     * @see javax.portlet.ClientDataRequest#getPortletInputStream()
      *
      * @return the input stream from which the contents of the request can be
      *         read
@@ -103,7 +95,6 @@ public interface VaadinRequest {
      *         attribute with the given name
      *
      * @see javax.servlet.ServletRequest#getAttribute(String)
-     * @see javax.portlet.PortletRequest#getAttribute(String)
      */
     public Object getAttribute(String name);
 
@@ -116,7 +107,6 @@ public interface VaadinRequest {
      *            the attribute value
      *
      * @see javax.servlet.ServletRequest#setAttribute(String, Object)
-     * @see javax.portlet.PortletRequest#setAttribute(String, Object)
      */
     public void setAttribute(String name, Object value);
 
@@ -136,7 +126,6 @@ public interface VaadinRequest {
      * request. The context path always comes first in a request URI.
      *
      * @see HttpServletRequest#getContextPath()
-     * @see PortletRequest#getContextPath()
      *
      * @return a String specifying the portion of the request URI that indicates
      *         the context of the request
@@ -149,7 +138,6 @@ public interface VaadinRequest {
      *
      * @see WrappedSession
      * @see HttpServletRequest#getSession()
-     * @see PortletRequest#getPortletSession()
      *
      * @return the wrapped session for this request
      */
@@ -166,7 +154,6 @@ public interface VaadinRequest {
      *
      * @see WrappedSession
      * @see HttpServletRequest#getSession(boolean)
-     * @see PortletRequest#getPortletSession(boolean)
      *
      * @return the wrapped session for this request
      */
@@ -180,7 +167,6 @@ public interface VaadinRequest {
      *         null if the type is not known
      *
      * @see javax.servlet.ServletRequest#getContentType()
-     * @see javax.portlet.ResourceRequest#getContentType()
      *
      */
     public String getContentType();
@@ -192,7 +178,6 @@ public interface VaadinRequest {
      * @return the preferred Locale
      *
      * @see ServletRequest#getLocale()
-     * @see PortletRequest#getLocale()
      */
     public Locale getLocale();
 
@@ -214,7 +199,6 @@ public interface VaadinRequest {
      * @return a boolean indicating if the request is secure
      *
      * @see ServletRequest#isSecure()
-     * @see PortletRequest#isSecure()
      */
     public boolean isSecure();
 
@@ -249,7 +233,6 @@ public interface VaadinRequest {
      *         request, or <code>null</code> if the request has no cookies
      *
      * @see HttpServletRequest#getCookies()
-     * @see PortletRequest#getCookies()
      */
     public Cookie[] getCookies();
 
@@ -263,7 +246,6 @@ public interface VaadinRequest {
      *         <code>null</code> if the request was not authenticated.
      *
      * @see HttpServletRequest#getAuthType()
-     * @see PortletRequest#getAuthType()
      */
     public String getAuthType();
 
@@ -277,7 +259,6 @@ public interface VaadinRequest {
      *         <code>null</code> if the user login is not known.
      *
      * @see HttpServletRequest#getRemoteUser()
-     * @see PortletRequest#getRemoteUser()
      */
     public String getRemoteUser();
 
@@ -291,7 +272,6 @@ public interface VaadinRequest {
      *         been authenticated
      *
      * @see HttpServletRequest#getUserPrincipal()
-     * @see PortletRequest#getUserPrincipal()
      */
     public Principal getUserPrincipal();
 
@@ -308,7 +288,6 @@ public interface VaadinRequest {
      *         authenticated
      *
      * @see HttpServletRequest#isUserInRole(String)
-     * @see PortletRequest#isUserInRole(String)
      */
     public boolean isUserInRole(String role);
 
@@ -321,7 +300,6 @@ public interface VaadinRequest {
      *            a String specifying the name of the attribute to remove
      *
      * @see ServletRequest#removeAttribute(String)
-     * @see PortletRequest#removeAttribute(String)
      */
     public void removeAttribute(String name);
 
@@ -334,7 +312,6 @@ public interface VaadinRequest {
      *         attributes
      *
      * @see ServletRequest#getAttributeNames()
-     * @see PortletRequest#getAttributeNames()
      */
     public Enumeration<String> getAttributeNames();
 
@@ -348,7 +325,6 @@ public interface VaadinRequest {
      * @return an Enumeration of preferred Locale objects for the client
      *
      * @see HttpServletRequest#getLocales()
-     * @see PortletRequest#getLocales()
      */
     public Enumeration<Locale> getLocales();
 
@@ -385,7 +361,6 @@ public interface VaadinRequest {
      *         if the request does not specify a character encoding
      *
      * @see ServletRequest#getCharacterEncoding()
-     * @see ClientDataRequest#getCharacterEncoding()
      */
     public String getCharacterEncoding();
 
@@ -407,7 +382,6 @@ public interface VaadinRequest {
      *             if an input or output exception occurred
      *
      * @see ServletRequest#getReader()
-     * @see ClientDataRequest#getReader()
      */
     public BufferedReader getReader() throws IOException;
 
@@ -419,7 +393,6 @@ public interface VaadinRequest {
      *         request was made
      *
      * @see HttpServletRequest#getMethod()
-     * @see ClientDataRequest#getMethod()
      */
     public String getMethod();
 
