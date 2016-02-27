@@ -117,7 +117,7 @@ public class VaadinServletService extends VaadinService {
     protected boolean requestCanCreateSession(VaadinRequest request) {
         if (isOtherRequest(request)) {
             /*
-             * I.e URIs that are not RPC calls or static (theme) files.
+             * I.e URIs that are not RPC calls or static file requests.
              */
             return true;
         }

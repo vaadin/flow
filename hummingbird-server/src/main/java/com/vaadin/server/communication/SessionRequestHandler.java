@@ -27,7 +27,7 @@ import com.vaadin.server.VaadinSession;
  * Handles a request by passing it to each registered {@link RequestHandler} in
  * the session in turn until one produces a response. This method is used for
  * requests that have not been handled by any specific functionality in the
- * servlet/portlet.
+ * servlet.
  * <p>
  * The request handlers are invoked in the reverse order in which they were
  * added to the session until a response has been produced. This means that the

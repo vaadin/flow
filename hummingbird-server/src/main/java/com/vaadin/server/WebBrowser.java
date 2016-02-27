@@ -77,10 +77,10 @@ public class WebBrowser implements Serializable {
     }
 
     /**
-     * Gets the IP-address of the web browser. If the application is running
-     * inside a portlet, this method will return null.
+     * Gets the IP-address of the web browser, if available.
      *
-     * @return IP-address in 1.12.123.123 -format
+     * @return IP-address in 1.12.123.123 -format or null if the address is not
+     *         available
      */
     public String getAddress() {
         return address;
@@ -415,8 +415,8 @@ public class WebBrowser implements Serializable {
     }
 
     /**
-     * For internal use by VaadinServlet/VaadinPortlet only. Updates all
-     * properties in the class according to the given information.
+     * For internal use only. Updates all properties in the class according to
+     * the given information.
      *
      * @param sw
      *            Screen width
@@ -485,8 +485,8 @@ public class WebBrowser implements Serializable {
     }
 
     /**
-     * For internal use by VaadinServlet/VaadinPortlet only. Updates all
-     * properties in the class according to the given information.
+     * For internal use only. Updates all properties in the class according to
+     * the given information.
      *
      * @param request
      *            the Vaadin request to read the information from
