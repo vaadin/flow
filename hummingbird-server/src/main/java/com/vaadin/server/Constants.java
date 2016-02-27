@@ -103,8 +103,6 @@ public interface Constants {
             + "NullPointerExceptions will be thrown later."
             + "=================================================================";
 
-    static final String URL_PARAMETER_THEME = "theme";
-
     static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
     // Javadocs for VaadinService should be updated if this value is changed
     static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
@@ -123,17 +121,6 @@ public interface Constants {
 
     static final int MAX_BUFFER_SIZE = 64 * 1024;
 
-    final String THEME_DIR_PATH = "VAADIN/themes";
-
-    static final int DEFAULT_THEME_CACHETIME = 1000 * 60 * 60 * 24;
-
     static final String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
-
-    // portal configuration parameters
-    static final String PORTAL_PARAMETER_VAADIN_WIDGETSET = "vaadin.widgetset";
-    static final String PORTAL_PARAMETER_VAADIN_RESOURCE_PATH = "vaadin.resources.path";
-    static final String PORTAL_PARAMETER_VAADIN_THEME = "vaadin.theme";
-
-    static final String PORTLET_CONTEXT = "PORTLET_CONTEXT";
 
 }

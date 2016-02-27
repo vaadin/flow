@@ -183,7 +183,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+                    throws ServiceException {
         VaadinServletService service = new VaadinServletService(this,
                 deploymentConfiguration);
         service.init();
@@ -432,7 +432,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     private void serveStaticResourcesInVAADIN(String filename,
             HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+                    throws IOException, ServletException {
 
         final ServletContext sc = getServletContext();
         URL resourceUrl = findResourceURL(filename, sc);
@@ -440,8 +440,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
         if (resourceUrl == null) {
             // cannot serve requested file
             getLogger().log(Level.INFO,
-                    "Requested resource [{0}] not found from filesystem or through class loader."
-                            + " Add widgetset and/or theme JAR to your classpath or add files to WebContent/VAADIN folder.",
+                    "Requested resource [{0}] not found from filesystem or through class loader.",
                     filename);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
@@ -932,7 +931,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
         c > 47 && c < 58 || // alphanum
                 c > 64 && c < 91 || // A-Z
                 c > 96 && c < 123 // a-z
-        ;
+                ;
     }
 
     private static final Logger getLogger() {

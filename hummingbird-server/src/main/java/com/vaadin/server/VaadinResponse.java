@@ -20,16 +20,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import javax.portlet.MimeResponse;
-import javax.portlet.PortletResponse;
-import javax.portlet.ResourceResponse;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
 /**
  * A generic response from the server, wrapping a more specific response type,
- * e.g. HttpServletResponse or PortletResponse.
+ * e.g. HttpServletResponse.
  *
  * @since 7.0
  */
@@ -44,7 +41,6 @@ public interface VaadinResponse {
      *            the status code to set
      * @see HttpServletResponse#setStatus(int)
      *
-     * @see ResourceResponse#HTTP_STATUS_CODE
      */
     public void setStatus(int statusCode);
 
@@ -57,7 +53,6 @@ public interface VaadinResponse {
      *            a string specifying the MIME type of the content
      *
      * @see ServletResponse#setContentType(String)
-     * @see MimeResponse#setContentType(String)
      */
     public void setContentType(String contentType);
 
@@ -71,7 +66,6 @@ public interface VaadinResponse {
      *            the header value.
      *
      * @see HttpServletResponse#setHeader(String, String)
-     * @see PortletResponse#setProperty(String, String)
      */
     public void setHeader(String name, String value);
 
@@ -101,7 +95,6 @@ public interface VaadinResponse {
      *
      * @see #getWriter()
      * @see ServletResponse#getOutputStream()
-     * @see MimeResponse#getPortletOutputStream()
      */
     public OutputStream getOutputStream() throws IOException;
 
@@ -119,7 +112,6 @@ public interface VaadinResponse {
      *
      * @see #getOutputStream()
      * @see ServletResponse#getWriter()
-     * @see MimeResponse#getWriter()
      */
     public PrintWriter getWriter() throws IOException;
 
@@ -165,15 +157,12 @@ public interface VaadinResponse {
      *            the Cookie to return to the client
      *
      * @see HttpServletResponse#addCookie(Cookie)
-     * @see PortletResponse#addProperty(Cookie)
      */
     public void addCookie(Cookie cookie);
 
     /**
      * Sets the length of the content body in the response In HTTP servlets,
-     * this method sets the HTTP Content-Length header. For some portlet
-     * responses, this method sets the content-length header, for others this
-     * method does nothing.
+     * this method sets the HTTP Content-Length header.
      *
      * @param len
      *            an integer specifying the length of the content being returned
