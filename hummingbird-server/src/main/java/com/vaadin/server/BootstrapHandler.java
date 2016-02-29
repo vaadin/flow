@@ -35,7 +35,6 @@ import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 
-import com.google.gwt.thirdparty.guava.common.net.UrlEscapers;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
@@ -102,8 +101,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 Properties p = new Properties();
                 p.load(prop);
                 clientEngineFile = ApplicationConstants.CLIENT_ENGINE_FOLDER
-                        + "/"
-                        + p.getProperty("jsFile");
+                        + "/" + p.getProperty("jsFile");
             } else {
                 getLogger().warning(
                         "No compile.properties available on initialization, "
@@ -231,10 +229,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             }
         }
 
-        @Override
-        protected String encodeQueryStringParameterValue(String queryString) {
-            return UrlEscapers.urlFormParameterEscaper().escape(queryString);
-        }
     }
 
     @Override
