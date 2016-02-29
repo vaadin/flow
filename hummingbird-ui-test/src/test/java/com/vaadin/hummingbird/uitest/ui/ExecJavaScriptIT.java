@@ -20,9 +20,9 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.uitest.PhantomJSTest;
+import com.vaadin.hummingbird.testutil.PhantomJSVersionIT;
 
-public class ExecJavaScriptIT extends PhantomJSTest {
+public class ExecJavaScriptIT extends PhantomJSVersionIT {
     @Test
     public void testExecuteJavaScript() {
         open();

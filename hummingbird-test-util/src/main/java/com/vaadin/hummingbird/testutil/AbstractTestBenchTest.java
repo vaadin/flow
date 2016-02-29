@@ -1,4 +1,4 @@
-package com.vaadin.hummingbird.uitest;
+package com.vaadin.hummingbird.testutil;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -7,6 +7,9 @@ import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.ui.UI;
 
+/**
+ * Abstract base class for hummingbird testbench tests.
+ */
 public class AbstractTestBenchTest extends TestBenchHelpers {
 
     private String baseUrl = "http://localhost:8888";
@@ -37,6 +40,8 @@ public class AbstractTestBenchTest extends TestBenchHelpers {
     /**
      * Returns the URL to be used for the test for the provided UI class.
      *
+     * @param uiClass
+     *            the UI class to show
      * @return the URL for the test
      */
     protected String getTestURL(Class<?> uiClass) {
@@ -82,10 +87,12 @@ public class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Executes the given Javascript
+     * Executes the given Javascript.
      *
      * @param script
      *            the script to execute
+     * @param args
+     *            optional arguments for the script
      * @return whatever
      *         {@link org.openqa.selenium.JavascriptExecutor#executeScript(String, Object...)}
      *         returns
