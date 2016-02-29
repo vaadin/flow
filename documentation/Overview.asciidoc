@@ -14,6 +14,108 @@ These mechanisms are intended to be encapsulated into reusable components with a
 The current version only implements the DOM tree and beginnings of the RPC mechanism.
 Further functionality will be implemented in future versions.
 
+
+== Getting Started
+
+=== Building a Hello World Application
+
+The simplest possible Hello World application displays the text "Hello world" on the screen and does nothing else. To accomplish this we need two things:
+
+* A UI class containing our UI elements
+* A servlet handling the rendering of the UI class
+
+Let's start from the UI class and its init method:
+
+[source,java]
+----
+public class HelloWorldUI extends UI {
+
+    @Override
+    protected void init(VaadinRequest request) {
+        // Called whenever a user opens the page
+    }
+}
+----
+
+The main purpose of the init method is to populate the UI with elements. For the Hello world application we only need one element containing the "Hello world" text:
+[source,java]
+----
+Element div = new Element("div");
+div.setTextContent("Hello world");
+----
+
+We also need to attach the element to our UI through the UI's element, which represents the `<body>` tag on the page:
+[source,java]
+----
+getElement().appendChild(div);
+----
+
+We thus end up with a `UI` class looking like
+
+[source,java]
+----
+public class HelloWorldUI extends UI {
+
+    @Override
+    protected void init(VaadinRequest request) {
+        Element div = new Element("div");
+        div.setTextContent("Hello world");
+        getElement().appendChild(div);
+    }
+}
+----
+
+To get this to show up in the browser, we need to add a servlet configured for the UI:
+[source,java]
+----
+@WebServlet(urlPatterns = "/*", name = "HelloWorldServlet")
+@VaadinServletConfiguration(ui = HelloWorldUI.class, productionMode = false)
+public class HelloWorldServlet extends VaadinServlet {
+}
+----
+This will listen to all paths (`"/*"`) for HTTP requests and serve the `HelloWorldUI` to the user. Deploy the application to a servlet container, and open the URL (typically `http://localhost:8080/<name-of-project>`) to see the "Hello world" text.
+
+=== Adding Event Listeners
+To make the application interactive, we need to react to events from the user. We can extend our "Hello world" with a button as follows:
+[source,java]
+----
+Element helloButton = new Element("button").setTextContent("Say hello");
+helloButton.addEventListener("click", e -> {
+    Element response = new Element("div").setTextContent("Hello!");
+    getElement().appendChild(response);
+});
+getElement().appendChild(helloButton);
+----
+Clicking in the browser on the "Say hello" button will now send the event to the server, where it is processed and a new "Hello!" element is added to the DOM.
+
+=== Processing User Input
+To make it a fully functional application we also need to be able to accept input from the user. We can add a text field to let the user enter her name as follows:
+[source,java]
+----
+Element textInput =  new Element("input").setAttribute("placeholder", "Please enter your name");
+
+getElement().appendChild(textInput);
+----
+
+To get the value from the input to the server, we can ask the client to update the server side input element every time the value changes in the browser:
+
+[source,java]
+----
+textInput.setSynchronizedProperties("value");
+textInput.setSynchronizedPropertiesEvents("change");
+----
+
+The synchronized properties can be retrieved using the `Element.getProperty` API so our button click listener then looks like:
+
+[source,java]
+----
+helloButton.addEventListener("click", e -> {
+    String responseText = "Hello " + textInput.getProperty("value");
+    Element response = new Element("div").setTextContent(responseText);
+    getElement().appendChild(response);
+});
+----
+
 == Server-side DOM tree
 
 Hummingbird allows Java code to control the DOM in the user's browser through a server-side representation of the same DOM tree.
@@ -117,7 +219,7 @@ As a practical example, this snippet will show the dimensions of the given eleme
 
 == Style and script dependencies
 
-External JavaScript or CSS dependencies can be added to the page using `Page.addJavaScript(String)` and `Page.addStyleSheet(String)` respecitvely.
+External JavaScript or CSS dependencies can be added to the page using `Page.addJavaScript(String)` and `Page.addStyleSheet(String)` respectively.
 The URL can be a regular absolute URL or use one of the special protocols `app://` and `vaadin://`.
 The `app://` protocol resolves URLs relative to the root of the servlet mapping for the used `VaadinServlet` instance.
 The `vaadin://` protocol resolves URLs relative to the location of the `VAADIN` folder which is intended for static resources.
