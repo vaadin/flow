@@ -1,4 +1,4 @@
-package com.vaadin.hummingbird.uitest;
+package com.vaadin.hummingbird.testutil;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -9,6 +9,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.vaadin.testbench.TestBenchTestCase;
 
+/**
+ * Helpers for running testbench tests.
+ */
 public class TestBenchHelpers extends TestBenchTestCase {
     /**
      * Waits up to 10s for the given condition to become true. Use e.g. as
@@ -28,6 +31,8 @@ public class TestBenchHelpers extends TestBenchTestCase {
      *
      * @param condition
      *            the condition to wait for to become true
+     * @param timeoutInSeconds
+     *            the number of seconds to wait
      */
     protected <T> void waitUntil(ExpectedCondition<T> condition,
             long timeoutInSeconds) {
@@ -54,6 +59,8 @@ public class TestBenchHelpers extends TestBenchTestCase {
      *
      * @param condition
      *            the condition to wait for to become false
+     * @param timeoutInSeconds
+     *            the number of seconds to wait
      */
     protected <T> void waitUntilNot(ExpectedCondition<T> condition,
             long timeoutInSeconds) {

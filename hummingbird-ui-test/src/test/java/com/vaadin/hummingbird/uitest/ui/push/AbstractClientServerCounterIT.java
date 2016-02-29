@@ -6,10 +6,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
-import com.vaadin.hummingbird.uitest.PhantomJSTest;
+import com.vaadin.hummingbird.testutil.PhantomJSVersionIT;
 import com.vaadin.testbench.TestBenchTestCase;
 
-public abstract class AbstractClientServerCounterIT extends PhantomJSTest {
+public abstract class AbstractClientServerCounterIT extends PhantomJSVersionIT {
 
     @Test
     public void testServerInitiatedCommunication() throws InterruptedException {
