@@ -26,9 +26,9 @@ public class DependencyUI extends UI {
         getElement().appendChild(new Element("div").setTextContent(
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
         getElement().appendChild(new Element("hr"));
-        getPage().addStyleSheet("vaadin://test-files/css/allred.css");
-        getPage()
-                .addJavaScript("vaadin://test-files/js/body-click-listener.js");
+        getPage().addStyleSheet("../VAADIN/test-files/css/allred.css");
+        getPage().addJavaScript(
+                "../VAADIN/test-files/js/body-click-listener.js");
         getElement()
                 .appendChild(new Element("div")
                         .setTextContent("Hello, click the body please"))
@@ -37,16 +37,17 @@ public class DependencyUI extends UI {
         Element jsOrder = new Element("button").setTextContent("Test JS order")
                 .setAttribute("id", "loadJs");
         jsOrder.addEventListener("click", e -> {
-            getPage().addJavaScript("vaadin://test-files/js/set-global-var.js");
             getPage()
-                    .addJavaScript("vaadin://test-files/js/read-global-var.js");
+                    .addJavaScript("../VAADIN/test-files/js/set-global-var.js");
+            getPage().addJavaScript(
+                    "../VAADIN/test-files/js/read-global-var.js");
         });
         Element allBlue = new Element("button")
                 .setTextContent("Load 'everything blue' stylesheet")
                 .setAttribute("id", "loadBlue");
         allBlue.addEventListener("click", e -> {
             getPage().addStyleSheet(
-                    "vaadin://test-files/css/allblueimportant.css");
+                    "../VAADIN/test-files/css/allblueimportant.css");
 
         });
         getElement().appendChild(jsOrder, allBlue, new Element("hr"));

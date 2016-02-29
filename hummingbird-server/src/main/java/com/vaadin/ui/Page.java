@@ -49,6 +49,9 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
+     * Relative URLs are interpreted as relative to the context path of the
+     * application.
+     * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols such as "vaadin://" can be used.
      *
@@ -62,6 +65,9 @@ public class Page implements Serializable {
     /**
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
+     * <p>
+     * Relative URLs are interpreted as relative to the context path of the
+     * application.
      * <p>
      * The URL is passed through the translation mechanism before loading, so
      * custom protocols such as "vaadin://" can be used.

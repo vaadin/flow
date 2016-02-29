@@ -48,13 +48,22 @@ public class DependencyListNamespace extends JsonListNamespace {
 
     /**
      * Adds the given dependency to be loaded by the client side.
+     * <p>
+     * Relative URLs are interpreted as relative to the application context
+     * path.
      *
      * @param dependency
      *            the dependency to include on the page
      */
     public void add(Dependency dependency) {
         JsonObject jsonObject = Json.createObject();
-        jsonObject.put(KEY_URL, dependency.getUrl());
+        String url = dependency.getUrl();
+        if (!url.contains("://") && !url.startsWith("/")) {
+            // Relative URL without protocol ->
+            // interpret as relative to context root
+            url = "app://" + url;
+        }
+        jsonObject.put(KEY_URL, url);
         jsonObject.put(KEY_TYPE, getType(dependency));
 
         super.add(jsonObject);

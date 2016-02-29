@@ -27,7 +27,28 @@ import elemental.json.JsonObject;
 public class DependencyListNamspaceTest {
 
     @Test
-    public void testAddDependencies() {
+    public void addAbsoluteStyleSheetDependency() {
+        MockUI ui = new MockUI();
+        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+                .getRootNode().getNamespace(DependencyListNamespace.class);
+
+        Assert.assertEquals(0, namespace.size());
+
+        ui.getPage().addStyleSheet("/styleSheetUrl");
+
+        JsonObject expectedStyleSheetJson = Json.createObject();
+        expectedStyleSheetJson.put(DependencyListNamespace.KEY_TYPE,
+                DependencyListNamespace.TYPE_STYLESHEET);
+        expectedStyleSheetJson.put(DependencyListNamespace.KEY_URL,
+                "/styleSheetUrl");
+
+        Assert.assertEquals(1, namespace.size());
+        Assert.assertTrue(
+                JsonUtil.jsonEquals(expectedStyleSheetJson, namespace.get(0)));
+    }
+
+    @Test
+    public void addRelativeStyleSheetDependency() {
         MockUI ui = new MockUI();
         DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
@@ -40,23 +61,50 @@ public class DependencyListNamspaceTest {
         expectedStyleSheetJson.put(DependencyListNamespace.KEY_TYPE,
                 DependencyListNamespace.TYPE_STYLESHEET);
         expectedStyleSheetJson.put(DependencyListNamespace.KEY_URL,
-                "styleSheetUrl");
+                "app://styleSheetUrl");
 
         Assert.assertEquals(1, namespace.size());
         Assert.assertTrue(
                 JsonUtil.jsonEquals(expectedStyleSheetJson, namespace.get(0)));
+    }
 
+    @Test
+    public void addAbsoluteJavaScriptDependency() {
+        MockUI ui = new MockUI();
+        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+                .getRootNode().getNamespace(DependencyListNamespace.class);
+
+        Assert.assertEquals(0, namespace.size());
+        ui.getPage().addJavaScript("/jsUrl");
+
+        JsonObject expectedJsJson = Json.createObject();
+        expectedJsJson.put(DependencyListNamespace.KEY_TYPE,
+                DependencyListNamespace.TYPE_JAVASCRIPT);
+        expectedJsJson.put(DependencyListNamespace.KEY_URL, "/jsUrl");
+
+        Assert.assertEquals(1, namespace.size());
+        Assert.assertTrue(
+                JsonUtil.jsonEquals(expectedJsJson, namespace.get(0)));
+
+    }
+
+    @Test
+    public void addRelativeJavaScriptDependency() {
+        MockUI ui = new MockUI();
+        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+                .getRootNode().getNamespace(DependencyListNamespace.class);
+
+        Assert.assertEquals(0, namespace.size());
         ui.getPage().addJavaScript("jsUrl");
 
         JsonObject expectedJsJson = Json.createObject();
         expectedJsJson.put(DependencyListNamespace.KEY_TYPE,
                 DependencyListNamespace.TYPE_JAVASCRIPT);
-        expectedJsJson.put(DependencyListNamespace.KEY_URL, "jsUrl");
+        expectedJsJson.put(DependencyListNamespace.KEY_URL, "app://jsUrl");
 
-        Assert.assertEquals(2, namespace.size());
+        Assert.assertEquals(1, namespace.size());
         Assert.assertTrue(
-                JsonUtil.jsonEquals(expectedStyleSheetJson, namespace.get(0)));
-        Assert.assertTrue(
-                JsonUtil.jsonEquals(expectedJsJson, namespace.get(1)));
+                JsonUtil.jsonEquals(expectedJsJson, namespace.get(0)));
+
     }
 }
