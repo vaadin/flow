@@ -54,7 +54,7 @@ public class ApplicationConstants implements Serializable {
 
     /**
      * Configuration parameter giving the (in some cases relative) URL to the
-     * VAADIN folder from where themes and widgetsets are loaded.
+     * VAADIN folder from where static resources are loaded.
      * <p>
      */
     public static final String VAADIN_DIR_URL = "vaadinDir";

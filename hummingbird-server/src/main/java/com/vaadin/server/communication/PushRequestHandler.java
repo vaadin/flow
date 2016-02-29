@@ -250,7 +250,7 @@ public class PushRequestHandler
             }
         } else {
             throw new IllegalArgumentException(
-                    "Portlets not currently supported");
+                    "Only VaadinServletRequests are supported");
         }
 
         return true;

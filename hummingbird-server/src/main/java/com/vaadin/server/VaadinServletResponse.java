@@ -61,8 +61,8 @@ public class VaadinServletResponse extends HttpServletResponseWrapper
         doSetCacheTime(this, milliseconds);
     }
 
-    // Implementation shared with VaadinPortletResponse
-    static void doSetCacheTime(VaadinResponse response, long milliseconds) {
+    private static void doSetCacheTime(VaadinResponse response,
+            long milliseconds) {
         if (milliseconds <= 0) {
             response.setHeader("Cache-Control", "no-cache");
             response.setHeader("Pragma", "no-cache");

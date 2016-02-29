@@ -18,7 +18,7 @@ package com.vaadin.shared;
 import java.io.Serializable;
 
 /**
- * Utility for translating special Vaadin URIs like theme:// and app:// into
+ * Utility for translating special Vaadin URIs like vaadin:// and app:// into
  * URLs usable by the browser. This is an abstract class performing the main
  * logic in {@link #resolveVaadinUri(String)} and using abstract methods in the
  * class for accessing information specific to the current environment.
@@ -35,8 +35,6 @@ public abstract class VaadinUriResolver {
      * Translates a Vaadin URI to a URL that can be loaded by the browser. The
      * following URI schemes are supported:
      * <ul>
-     * <li><code>theme://</code> - resolves to the URL of the currently active
-     * theme.</li>
      * <li><code>app://</code> - resolves to a URL that will be routed to the
      * currently registered {@link com.vaadin.server.RequestHandler
      * RequestHandler} instances.</li>
