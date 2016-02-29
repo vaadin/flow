@@ -1,4 +1,4 @@
-package com.vaadin.hummingbird.uitest;
+package com.vaadin.hummingbird.testutil;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
