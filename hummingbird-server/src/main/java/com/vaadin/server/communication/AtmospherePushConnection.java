@@ -53,16 +53,6 @@ public class AtmospherePushConnection implements PushConnection {
     private transient FragmentedMessage incomingMessage;
     private transient Future<Object> outgoingMessage;
 
-    public static String getAtmosphereVersion() {
-        try {
-            String v = Version.getRawVersion();
-            assert v != null;
-            return v;
-        } catch (NoClassDefFoundError e) {
-            return null;
-        }
-    }
-
     /**
      * Represents a message that can arrive as multiple fragments.
      */
@@ -70,6 +60,18 @@ public class AtmospherePushConnection implements PushConnection {
         private final StringBuilder message = new StringBuilder();
         private final int messageLength;
 
+        /**
+         * Creates a message by reading from the given reader.
+         * <p>
+         * Immediately reads the length of the message (up until
+         * {@value PushConstants#MESSAGE_DELIMITER}) from the reader.
+         *
+         * @param reader
+         *            the reader to read the message from
+         * @throws IOException
+         *             if an exception occurred while reading from the reader or
+         *             if unexpected data was read
+         */
         public FragmentedMessage(Reader reader) throws IOException {
             // Messages are prefixed by the total message length plus a
             // delimiter
@@ -137,8 +139,30 @@ public class AtmospherePushConnection implements PushConnection {
         CONNECTED;
     }
 
+    /**
+     * Creates a instance connected to the given UI.
+     *
+     * @param ui
+     *            the UI to which this connection belongs
+     */
     public AtmospherePushConnection(UI ui) {
         this.ui = ui;
+    }
+
+    /**
+     * Gets the Atmosphere version in use, as reported by
+     * {@link Version#getRawVersion()}.
+     *
+     * @return the Atmosphere version in use or null if Atmosphere was not found
+     */
+    public static String getAtmosphereVersion() {
+        try {
+            String v = Version.getRawVersion();
+            assert v != null;
+            return v;
+        } catch (NoClassDefFoundError e) {
+            return null;
+        }
     }
 
     @Override
@@ -234,6 +258,8 @@ public class AtmospherePushConnection implements PushConnection {
      * If already connected, calls {@link #disconnect()} first. If there is a
      * deferred push, carries it out via the new connection.
      *
+     * @param resource
+     *            the resource to associate this connection with
      * @since 7.2
      */
     public void connect(AtmosphereResource resource) {

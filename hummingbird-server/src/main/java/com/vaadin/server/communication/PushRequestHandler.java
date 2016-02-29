@@ -17,7 +17,6 @@
 package com.vaadin.server.communication;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
@@ -64,6 +63,14 @@ public class PushRequestHandler
     private AtmosphereFramework atmosphere;
     private PushHandler pushHandler;
 
+    /**
+     * Creates a instance connected to the given service.
+     *
+     * @param service
+     *            the service this handler belongs to
+     * @throws ServiceException
+     *             if initialization of Atmosphere fails
+     */
     public PushRequestHandler(VaadinServletService service)
             throws ServiceException {
 
@@ -87,12 +94,11 @@ public class PushRequestHandler
             try {
                 atmosphere = initAtmosphere(vaadinServletConfig);
             } catch (Exception e) {
-                getLogger().log(Level.WARNING,
+                throw new ServiceException(
                         "Failed to initialize Atmosphere for "
                                 + service.getServlet().getServletName()
                                 + ". Push will not work.",
                         e);
-                return;
             }
         } else {
             getLogger().fine("Using pre-initialized Atmosphere for servlet "
@@ -256,17 +262,13 @@ public class PushRequestHandler
         return true;
     }
 
+    /**
+     * Frees any resources currently in use.
+     */
     public void destroy() {
         atmosphere.destroy();
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * com.vaadin.server.SessionExpiredHandler#handleSessionExpired(com.vaadin
-     * .server.VaadinRequest, com.vaadin.server.VaadinResponse)
-     */
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
