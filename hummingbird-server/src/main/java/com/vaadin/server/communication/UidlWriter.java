@@ -88,7 +88,9 @@ public class UidlWriter implements Serializable {
 
         JsonObject meta = new MetadataWriter().createMetadata(ui, false, async,
                 messages);
-        response.put("meta", meta);
+        if (meta.keys().length > 0) {
+            response.put("meta", meta);
+        }
 
         JsonArray changes = encodeChanges(ui);
         if (changes.length() != 0) {
