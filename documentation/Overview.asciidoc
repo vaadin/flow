@@ -220,10 +220,6 @@ As a practical example, this snippet will show the dimensions of the given eleme
 == Style and script dependencies
 
 External JavaScript or CSS dependencies can be added to the page using `Page.addJavaScript(String)` and `Page.addStyleSheet(String)` respectively.
-The URL can be a regular absolute URL or use one of the special protocols `app://` and `vaadin://`.
-The `app://` protocol resolves URLs relative to the root of the servlet mapping for the used `VaadinServlet` instance.
-The `vaadin://` protocol resolves URLs relative to the location of the `VAADIN` folder which is intended for static resources.
-
-Relative URLs might technically work, but their use is not recommended since they may point to unexpected locations depending on how the application is deployed and what URL is used to open the application.
+The URL can be a regular absolute URL or be a relative URL. Relative URLs are always interpreted as relative to the context path, i.e. the path where the war package is deployed.
 
 Added dependencies are loaded before applying DOM updates defined using `Element` and before running JavaScript defined using `Page.executeJavaScript`.
