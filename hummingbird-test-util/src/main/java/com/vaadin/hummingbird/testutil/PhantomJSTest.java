@@ -1,4 +1,4 @@
-package com.vaadin.hummingbird.uitest;
+package com.vaadin.hummingbird.testutil;
 
 import org.junit.Before;
 import org.junit.Rule;

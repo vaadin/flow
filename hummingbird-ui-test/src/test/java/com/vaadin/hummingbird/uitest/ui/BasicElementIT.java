@@ -7,9 +7,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.uitest.PhantomJSTest;
-
-public class BasicElementIT extends PhantomJSTest {
+public class BasicElementIT
+        extends com.vaadin.hummingbird.testutil.PhantomJSTest {
 
     @Test
     public void ensureDomUpdatesAndEventsDoSomething() {

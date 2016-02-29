@@ -31,8 +31,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
-			<artifactId>vaadin-testbench</artifactId>
-			<version>4.1.0.alpha1</version>
+			<artifactId>hummingbird-test-util</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
