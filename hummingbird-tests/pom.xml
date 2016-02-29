@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>hummingbird-project</artifactId>
+    <version>0.0.2-SNAPSHOT</version>
+  </parent>
+  <artifactId>hummingbird-tests</artifactId>
+  <name>Hummingbird tests</name>
+  <description>Test modules for Hummingbird</description>
+  <packaging>pom</packaging>
+
+	<modules>
+		<module>common-test</module>
+		<module>root-context-test</module>
+		<module>non-root-context-test</module>
+	</modules>
+
+	<properties>
+		<jetty.plugin.version>9.2.15.v20160210</jetty.plugin.version>
+		<!-- Don't care about coding style for tests -->
+		<sonar.skip>true</sonar.skip>
+	</properties>
+
+	<dependencies>
+		<!-- Project dependencies -->
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-server</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-client</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-test-util</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
