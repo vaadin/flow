@@ -16,7 +16,7 @@
 
 /target
 /*/target
-
+/*/error-screenshots
 # Mac
 *.DS_Store
 
