@@ -15,7 +15,7 @@
 		<module>hummingbird-push</module>
 		<module>hummingbird-client</module>
 		<module>hummingbird-test-util</module>
-		<module>hummingbird-ui-test</module>
+		<module>hummingbird-tests</module>
 	</modules>
 
 	<organization>

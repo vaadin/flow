@@ -4,66 +4,14 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.vaadin</groupId>
-		<artifactId>hummingbird-project</artifactId>
+		<artifactId>hummingbird-tests</artifactId>
 		<version>0.0.2-SNAPSHOT</version>
 	</parent>
-	<artifactId>hummingbird-ui-test</artifactId>
-	<name>Hummingbird UI tests</name>
+	<artifactId>root-context-test</artifactId>
+	<name>Hummingbird root context tests</name>
 	<packaging>war</packaging>
-
-	<properties>
-		<jetty.plugin.version>9.2.15.v20160210</jetty.plugin.version>
-		<!-- Don't care about coding style for tests -->
-		<sonar.skip>true</sonar.skip>
-	</properties>
-
-	<dependencies>
-		<!-- Project dependencies -->
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-server</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-client</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-test-util</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<failOnMissingWebXml>false</failOnMissingWebXml>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
 			<!-- The Jetty plugin allows us to easily test the development build by 
 				running jetty:run -->
 			<plugin>
@@ -121,9 +69,10 @@
 									artifacts" and this does not create any JARs. Jetty only scans JARs for META-INF/resources 
 									folders -->
 								<resourceBases>
-									<resourceBase>${project.basedir}/../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../hummingbird-client/target/classes/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../../hummingbird-client/target/classes/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../../hummingbird-test-util/src/main/resources/META-INF/resources</resourceBase>
 								</resourceBases>
 							</webAppConfig>
 						</configuration>
@@ -132,5 +81,4 @@
 			</build>
 		</profile>
 	</profiles>
-
 </project>
