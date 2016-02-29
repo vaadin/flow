@@ -20,9 +20,9 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.uitest.PhantomJSTest;
+import com.vaadin.hummingbird.testutil.PhantomJSVersionIT;
 
-public class DependencyIT extends PhantomJSTest {
+public class DependencyIT extends PhantomJSVersionIT {
 
     private static final String RED = "rgba(255, 0, 0, 1)";
     private static final String BLUE = "rgba(0, 0, 255, 1)";

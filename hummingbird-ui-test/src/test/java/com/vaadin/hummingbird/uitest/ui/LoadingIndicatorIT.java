@@ -20,9 +20,9 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.uitest.PhantomJSTest;
+import com.vaadin.hummingbird.testutil.PhantomJSVersionIT;
 
-public class LoadingIndicatorIT extends PhantomJSTest {
+public class LoadingIndicatorIT extends PhantomJSVersionIT {
 
     @Test
     public void ensureSecondStyleWorks() throws InterruptedException {
