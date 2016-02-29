@@ -1,4 +1,19 @@
-package com.vaadin.hummingbird.uitest;
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.hummingbird.testutil;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -7,7 +22,12 @@ import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.ui.UI;
 
+/**
+ * Abstract base class for hummingbird testbench tests.
+ */
 public class AbstractTestBenchTest extends TestBenchHelpers {
+
+    private static final String UI_NOT_FOUND_EXCEPTION_MESSAGE = "Could not determine UI class. Ensure the test is named UIClassIT and is in the same package as the UIClass";
 
     private String baseUrl = "http://localhost:8888";
 
@@ -37,6 +57,8 @@ public class AbstractTestBenchTest extends TestBenchHelpers {
     /**
      * Returns the URL to be used for the test for the provided UI class.
      *
+     * @param uiClass
+     *            the UI class to show
      * @return the URL for the test
      */
     protected String getTestURL(Class<?> uiClass) {
@@ -68,24 +90,28 @@ public class AbstractTestBenchTest extends TestBenchHelpers {
      * @return the UI class the current test is connected to
      */
     protected Class<?> getUIClass() {
+        final String exceptionMessage = UI_NOT_FOUND_EXCEPTION_MESSAGE;
         try {
             // Convention: SomeIT uses the SomeUI UI class
             String uiClassName = getClass().getName().replaceFirst("IT$", "UI");
             Class<?> cls = Class.forName(uiClassName);
             if (UI.class.isAssignableFrom(cls)) {
                 return cls;
+            } else {
+                throw new RuntimeException(exceptionMessage);
             }
         } catch (Exception e) {
+            throw new RuntimeException(exceptionMessage, e);
         }
-        throw new RuntimeException(
-                "Could not determine UI class. Ensure the test is named UIClassIT and is in the same package as the UIClass");
     }
 
     /**
-     * Executes the given Javascript
+     * Executes the given Javascript.
      *
      * @param script
      *            the script to execute
+     * @param args
+     *            optional arguments for the script
      * @return whatever
      *         {@link org.openqa.selenium.JavascriptExecutor#executeScript(String, Object...)}
      *         returns
