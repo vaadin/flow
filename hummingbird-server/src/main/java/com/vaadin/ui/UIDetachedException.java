@@ -23,18 +23,41 @@ package com.vaadin.ui;
  */
 public class UIDetachedException extends RuntimeException {
 
+    /**
+     * Creates an instance of the exception.
+     */
     public UIDetachedException() {
         super();
     }
 
+    /**
+     * Creates an instance of the exception using the given message and cause.
+     *
+     * @param message
+     *            the message to use
+     * @param cause
+     *            the cause of the exception
+     */
     public UIDetachedException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    /**
+     * Creates an instance of the exception using the given message.
+     *
+     * @param message
+     *            the message to use
+     */
     public UIDetachedException(String message) {
         super(message);
     }
 
+    /**
+     * Creates an instance of the exception using the given cause.
+     *
+     * @param cause
+     *            the cause of the exception
+     */
     public UIDetachedException(Throwable cause) {
         super(cause);
     }

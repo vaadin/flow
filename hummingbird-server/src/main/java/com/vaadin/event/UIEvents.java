@@ -59,6 +59,12 @@ public interface UIEvents {
      * @author Vaadin Ltd
      */
     public static class PollEvent extends EventObject {
+        /**
+         * Creates a poll event for the given UI.
+         *
+         * @param ui
+         *            the UI where the poll event occurred
+         */
         public PollEvent(UI ui) {
             super(ui);
         }

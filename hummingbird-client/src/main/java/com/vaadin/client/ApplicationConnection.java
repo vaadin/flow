@@ -114,7 +114,7 @@ public class ApplicationConnection {
                 || isExecutingDeferredCommands();
     }
 
-    private native void publishJavascriptMethods(String TTAppId)
+    private native void publishJavascriptMethods(String applicationId)
     /*-{
         var ap = this;
         var client = {};
@@ -141,7 +141,7 @@ public class ApplicationConnection {
     
         client.initializing = false;
     
-        $wnd.vaadin.clients[TTAppId] = client;
+        $wnd.vaadin.clients[applicationId] = client;
     }-*/;
 
     private JavaScriptObject getVersionInfo() {

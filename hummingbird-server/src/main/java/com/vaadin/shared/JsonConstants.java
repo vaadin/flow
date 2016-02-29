@@ -19,171 +19,137 @@ import java.io.Serializable;
 
 import com.vaadin.ui.Page;
 
+/**
+ * A utility class providing constants for JSON related features.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class JsonConstants implements Serializable {
-    public static final String VTYPE_CONNECTOR = "c";
-    public static final String VTYPE_BOOLEAN = "b";
-    public static final String VTYPE_DOUBLE = "d";
-    public static final String VTYPE_FLOAT = "f";
-    public static final String VTYPE_LONG = "l";
-    public static final String VTYPE_INTEGER = "i";
-    public static final String VTYPE_STRING = "s";
-    public static final String VTYPE_ARRAY = "a";
-    public static final String VTYPE_STRINGARRAY = "S";
-    public static final String VTYPE_MAP = "m";
-    public static final String VTYPE_LIST = "L";
-    public static final String VTYPE_SET = "q";
-    public static final String VTYPE_NULL = "n";
 
+    /**
+     * The content type for JSON requests/responses.
+     */
     public static final String JSON_CONTENT_TYPE = "application/json; charset=UTF-8";
 
     /**
      * Key holding id of the node affected by a change.
-     *
-     * @since
      */
     public static final String CHANGE_NODE = "node";
 
     /**
      * Key holding the type of a change.
-     *
-     * @since
      */
     public static final String CHANGE_TYPE = "type";
 
     /**
      * Change type for attaching nodes.
-     *
-     * @since
      */
     public static final String CHANGE_TYPE_ATTACH = "attach";
 
     /**
      * Change type for detaching nodes.
-     *
-     * @since
      */
     public static final String CHANGE_TYPE_DETACH = "detach";
 
     /**
      * Change type for list splice changes.
-     *
-     * @since
      */
     public static final String CHANGE_TYPE_SPLICE = "splice";
 
     /**
      * Change type for map put changes.
-     *
-     * @since
      */
     public static final String CHANGE_TYPE_PUT = "put";
 
     /**
      * Change type for map remove changes.
-     *
-     * @since
      */
     public static final String CHANGE_TYPE_REMOVE = "remove";
 
     /**
      * Key holding the namespace of a change.
-     *
-     * @since
      */
     public static final String CHANGE_NAMESPACE = "ns";
 
     /**
      * Key holding the map key of the change.
-     *
-     * @since
      */
     public static final String CHANGE_MAP_KEY = "key";
 
     /**
      * Key holding nodes to add for a splice.
-     *
-     * @since
      */
     public static final String CHANGE_SPLICE_ADD_NODES = "addNodes";
 
     /**
      * Key holding values to add for a splice.
-     *
-     * @since
      */
     public static final String CHANGE_SPLICE_ADD = "add";
 
     /**
      * Key holding the number of items to remove for a splice.
-     *
-     * @since
      */
     public static final String CHANGE_SPLICE_REMOVE = "remove";
 
     /**
      * Key holding the index of a splice.
-     *
-     * @since
      */
     public static final String CHANGE_SPLICE_INDEX = "index";
 
     /**
      * Key holding the value of a put change.
-     *
-     * @since
      */
     public static final String CHANGE_PUT_VALUE = "value";
 
     /**
      * Key holder the node value of a put change.
-     *
-     * @since
      */
     public static final String CHANGE_PUT_NODE_VALUE = "nodeValue";
 
     /**
      * Key holding the type in of messages sent from the client.
-     *
-     * @since
      */
     public static final String RPC_TYPE = "type";
 
     /**
      * Type value for events sent from the client.
-     *
-     * @since
      */
     public static final String RPC_TYPE_EVENT = "event";
 
     /**
      * Key holding the node in messages sent from the client.
-     *
-     * @since
      */
     public static final String RPC_NODE = "node";
 
     /**
      * Key holding the event type in event messages sent from the client.
-     *
-     * @since
      */
     public static final String RPC_EVENT_TYPE = "event";
 
+    /**
+     * Type value for property synchronizations sent from the client.
+     */
     public static final String RPC_TYPE_PROPERTY_SYNC = "pSync";
+
     /**
      * Key holding the event data in event messages sent from the client.
-     *
-     * @since
      */
     public static final String RPC_EVENT_DATA = "data";
 
     /**
      * Key used for data related to
      * {@link Page#executeJavaScript(String, Object...)} in UIDL messages.
-     *
-     * @since
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
+
+    /**
+     * Key used to hold the name of the synchronized property.
+     */
     public static final String RPC_PROPERTY = "property";
+
+    /**
+     * Key used to hold the value of the synchronized property.
+     */
     public static final String RPC_PROPERTY_VALUE = "value";
 }

@@ -17,6 +17,12 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
+/**
+ * Provides information about the current version of the framework.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class Version implements Serializable {
     /**
      * The version number of this release. For example "6.2.0". Always in the
@@ -63,22 +69,49 @@ public class Version implements Serializable {
         }
     }
 
+    /**
+     * Gets the full version, in format {@literal x.y.z} or
+     * {@literal x.y.z.qualifier}.
+     *
+     * @return the full version number
+     */
     public static String getFullVersion() {
         return VERSION;
     }
 
+    /**
+     * Gets the major version, {@literal x} in {@literal x.y.z.qualifier}.
+     *
+     * @return the major version number
+     */
     public static int getMajorVersion() {
         return VERSION_MAJOR;
     }
 
+    /**
+     * Gets the minor version, {@literal y} in {@literal x.y.z.qualifier}.
+     *
+     * @return the minor version number
+     */
     public static int getMinorVersion() {
         return VERSION_MINOR;
     }
 
+    /**
+     * Gets the revision, {@literal z} in {@literal x.y.z.qualifier}.
+     *
+     * @return the revision number
+     */
     public static int getRevision() {
         return VERSION_REVISION;
     }
 
+    /**
+     * Gets the version qualifier, {@literal qualifier} in
+     * {@literal x.y.z.qualifier}.
+     *
+     * @return the version qualifier
+     */
     public static String getBuildIdentifier() {
         return VERSION_BUILD;
     }

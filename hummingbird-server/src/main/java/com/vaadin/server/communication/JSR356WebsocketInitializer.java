@@ -69,6 +69,15 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
         private ServletRegistration servletRegistration;
         private ServletContext servletContext;
 
+        /**
+         * Creates an instance based on the given servlet registration and
+         * servlet context.
+         *
+         * @param servletRegistration
+         *            the registration to read from
+         * @param servletContext
+         *            the context to read from
+         */
         public FakeServletConfig(ServletRegistration servletRegistration,
                 ServletContext servletContext) {
             this.servletContext = servletContext;

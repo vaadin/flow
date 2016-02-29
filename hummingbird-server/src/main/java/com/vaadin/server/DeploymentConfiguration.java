@@ -143,6 +143,7 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Gets resources path configuration option value.
      *
+     * @return the configured resources path
      * @since 7.4
      */
     public String getResourcesPath();
@@ -150,6 +151,7 @@ public interface DeploymentConfiguration extends Serializable {
     /**
      * Gets class loader configuration option value.
      *
+     * @return the configured class loader name
      * @since 7.4
      */
     public String getClassLoaderName();

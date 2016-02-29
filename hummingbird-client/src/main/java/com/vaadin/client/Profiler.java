@@ -44,9 +44,9 @@ import com.google.gwt.core.client.JsArray;
  */
 public class Profiler {
 
-    private static RelativeTimeSupplier RELATIVE_TIME_SUPPLIER;
+    private static RelativeTimeSupplier relativeTimeSupplier;
 
-    private static final String evtGroup = "VaadinProfiler";
+    private static final String EVT_GROUP = "VaadinProfiler";
 
     private static ProfilerResultConsumer consumer;
 
@@ -327,7 +327,7 @@ public class Profiler {
 
         public final String getEventName() {
             String group = getEvtGroup();
-            if (evtGroup.equals(group)) {
+            if (EVT_GROUP.equals(group)) {
                 return getSubSystem();
             } else {
                 return group + "." + getSubSystem();
@@ -383,13 +383,13 @@ public class Profiler {
      * @since 7.6
      */
     public static double getRelativeTimeMillis() {
-        return RELATIVE_TIME_SUPPLIER.getRelativeTime();
+        return relativeTimeSupplier.getRelativeTime();
     }
 
     private static final native void logGwtEvent(String name, String type)
     /*-{
         $wnd.__gwtStatsEvent({
-            evtGroup: @com.vaadin.client.Profiler::evtGroup,
+            evtGroup: @com.vaadin.client.Profiler::EVT_GROUP,
             moduleName: @com.google.gwt.core.client.GWT::getModuleName()(),
             millis: (new Date).getTime(),
             sessionId: undefined,
@@ -431,9 +431,9 @@ public class Profiler {
      */
     public static void initialize() {
         if (hasHighPrecisionTime()) {
-            RELATIVE_TIME_SUPPLIER = new HighResolutionTimeSupplier();
+            relativeTimeSupplier = new HighResolutionTimeSupplier();
         } else {
-            RELATIVE_TIME_SUPPLIER = new DefaultRelativeTimeSupplier();
+            relativeTimeSupplier = new DefaultRelativeTimeSupplier();
         }
         if (isEnabled()) {
             ensureLogger();

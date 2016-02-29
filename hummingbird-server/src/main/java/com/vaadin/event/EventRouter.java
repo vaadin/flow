@@ -35,7 +35,6 @@ import com.vaadin.server.ErrorHandler;
  * @author Vaadin Ltd.
  * @since 3.0
  */
-@SuppressWarnings("serial")
 public class EventRouter implements MethodEventSource {
 
     /**
