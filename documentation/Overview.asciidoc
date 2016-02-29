@@ -80,7 +80,7 @@ To make the application interactive, we need to react to events from the user. W
 [source,java]
 ----
 Element helloButton = new Element("button").setTextContent("Say hello");
-helloButton.addEventListener("click", e->{
+helloButton.addEventListener("click", e -> {
     Element response = new Element("div").setTextContent("Hello!");
     getElement().appendChild(response);
 });
@@ -92,19 +92,12 @@ Clicking in the browser on the "Say hello" button will now send the event to the
 To make it a fully functional application we also need to be able to accept input from the user. We can add a text field to let the user enter her name as follows:
 [source,java]
 ----
-Element textInput =  new Element("input").setAttribute("placeholder","Please enter your name");
+Element textInput =  new Element("input").setAttribute("placeholder", "Please enter your name");
 
 getElement().appendChild(textInput);
 ----
-To get the value from the input to the server, we can either add a `change` event listener and request the element value as part of the event:
 
-[source,java]
-----
-textInput.addEventListener("change", e->{
-    String enteredName = e.getEventData().getString("element.value");
-}, "element.value");
-----
-or we can ask the client to update the server side input element every time the value changes in the browser:
+To get the value from the input to the server, we can ask the client to update the server side input element every time the value changes in the browser:
 
 [source,java]
 ----
