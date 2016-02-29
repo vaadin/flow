@@ -7,9 +7,16 @@
 		<artifactId>hummingbird-project</artifactId>
 		<version>0.0.2-SNAPSHOT</version>
 	</parent>
-	<artifactId>hummingbird-ui-test</artifactId>
-	<name>Hummingbird UI tests</name>
-	<packaging>war</packaging>
+	<artifactId>hummingbird-tests</artifactId>
+	<name>Hummingbird tests</name>
+	<description>Test modules for Hummingbird</description>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>test-resources</module>
+		<module>test-root-context</module>
+		<module>test-subcontext</module>
+	</modules>
 
 	<properties>
 		<jetty.plugin.version>9.2.15.v20160210</jetty.plugin.version>
@@ -21,19 +28,13 @@
 		<!-- Project dependencies -->
 		<dependency>
 			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-server</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-client</artifactId>
+			<artifactId>hummingbird</artifactId>
 			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-test-util</artifactId>
 			<version>0.0.2-SNAPSHOT</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -41,16 +42,8 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<configuration>
-					<failOnMissingWebXml>false</failOnMissingWebXml>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
@@ -63,34 +56,15 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- The Jetty plugin allows us to easily test the development build by 
-				running jetty:run -->
+			<!-- jetty plugin for those child modules that need it -->
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
 				<artifactId>jetty-maven-plugin</artifactId>
 				<version>${jetty.plugin.version}</version>
-				<executions>
-					<!-- start and stop jetty (running our app) when running integration 
-						tests -->
-					<execution>
-						<id>start-jetty</id>
-						<phase>pre-integration-test</phase>
-						<goals>
-							<goal>start</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>stop-jetty</id>
-						<phase>post-integration-test</phase>
-						<goals>
-							<goal>stop</goal>
-						</goals>
-					</execution>
-				</executions>
+				<!-- Jetty execution is mapped in those modules that actually use Jetty -->
 				<configuration>
 					<webAppConfig>
-						<webInfIncludeJarPattern>.*/hummingbird-.*.jar$</webInfIncludeJarPattern>
+						<webInfIncludeJarPattern>.*/hummingbird-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
 						<containerIncludeJarPattern>^$</containerIncludeJarPattern>
 					</webAppConfig>
 					<scanIntervalSeconds>-1</scanIntervalSeconds>
@@ -121,9 +95,12 @@
 									artifacts" and this does not create any JARs. Jetty only scans JARs for META-INF/resources 
 									folders -->
 								<resourceBases>
-									<resourceBase>${project.basedir}/../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../hummingbird-client/target/classes/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
+									<!-- these paths are relative to the project where the profile is 
+										triggered -->
+									<resourceBase>${project.basedir}/../../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../../hummingbird-client/target/classes/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>
 								</resourceBases>
 							</webAppConfig>
 						</configuration>

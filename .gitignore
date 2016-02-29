@@ -1,22 +1,17 @@
 
 # /
-/.classpath
-/.project
-/.settings
-/*/.classpath
-/*/.project
-/*/.settings
+.classpath
+*.project
+*.settings
 /.cvsignore
 /.tomcatplugin
-/.settings
 /work
 /.gwt-cache
 /.externalToolBuilders
 /extras
 
-/target
-/*/target
-
+**/target
+**/error-screenshots
 # Mac
 *.DS_Store
 
