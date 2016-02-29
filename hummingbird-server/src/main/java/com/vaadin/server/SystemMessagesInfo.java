@@ -18,11 +18,35 @@ package com.vaadin.server;
 import java.io.Serializable;
 import java.util.Locale;
 
+/**
+ * Provides information available for {@link SystemMessagesProvider} when
+ * defining what {@link SystemMessages} to use.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class SystemMessagesInfo implements Serializable {
 
     private Locale locale;
     private VaadinRequest request;
     private VaadinService service;
+
+    /**
+     * Creates an instance based on the given locale, request and service
+     *
+     * @param locale
+     *            the locale the desired locale for the system messages
+     * @param request
+     *            the request we are processing
+     * @param service
+     *            the service instance
+     */
+    public SystemMessagesInfo(Locale locale, VaadinRequest request,
+            VaadinService service) {
+        this.locale = locale;
+        this.request = request;
+        this.service = service;
+    }
 
     /**
      * The locale of the UI related to the {@link SystemMessages} request.
@@ -31,10 +55,6 @@ public class SystemMessagesInfo implements Serializable {
      */
     public Locale getLocale() {
         return locale;
-    }
-
-    public void setLocale(Locale locale) {
-        this.locale = locale;
     }
 
     /**
@@ -47,10 +67,6 @@ public class SystemMessagesInfo implements Serializable {
         return request;
     }
 
-    public void setRequest(VaadinRequest request) {
-        this.request = request;
-    }
-
     /**
      * Returns the service this SystemMessages request comes from.
      *
@@ -59,10 +75,6 @@ public class SystemMessagesInfo implements Serializable {
      */
     public VaadinService getService() {
         return service;
-    }
-
-    public void setService(VaadinService service) {
-        this.service = service;
     }
 
 }

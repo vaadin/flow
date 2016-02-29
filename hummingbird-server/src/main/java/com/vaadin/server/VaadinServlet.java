@@ -43,7 +43,20 @@ import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
-@SuppressWarnings("serial")
+/**
+ * The main servlet, which handles all incoming requests to the application.
+ * <p>
+ * This servlet is typically subclassed in all applications to provide servlet
+ * mappings and init parameters. Together with a {@literal web.xml} file, it is
+ * also possible to use this class directly.
+ * <p>
+ * Internally sets up a {@link VaadinService} through
+ * {@link #createServletService(DeploymentConfiguration)} and delegates handling
+ * of most requests to that.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class VaadinServlet extends HttpServlet implements Constants {
 
     private VaadinServletService servletService;
@@ -647,7 +660,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     private void streamContent(HttpServletResponse response, InputStream is)
             throws IOException {
         final OutputStream os = response.getOutputStream();
-        final byte buffer[] = new byte[DEFAULT_BUFFER_SIZE];
+        final byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
         int bytes;
         while ((bytes = is.read(buffer)) >= 0) {
             os.write(buffer, 0, bytes);

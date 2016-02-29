@@ -19,13 +19,15 @@ package com.vaadin.server;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * The default implementation of {@link ErrorHandler}.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class DefaultErrorHandler implements ErrorHandler {
     @Override
     public void error(ErrorEvent event) {
-        doDefault(event);
-    }
-
-    public static void doDefault(ErrorEvent event) {
         Throwable t = findRelevantThrowable(event.getThrowable());
 
         // print the error on console

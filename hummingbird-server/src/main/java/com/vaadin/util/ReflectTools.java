@@ -188,6 +188,11 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Converts the given primitive type to its boxed version.
+     *
+     * @param type
+     *            the primitive type to convert
+     * @return the corresponding boxed type
      * @since 7.4
      */
     public static Class<?> convertPrimitiveType(Class<?> type) {

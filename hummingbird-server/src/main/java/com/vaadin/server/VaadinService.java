@@ -61,11 +61,10 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 /**
- * Provide deployment specific settings that are required outside terminal
- * specific code.
+ * An abstraction of the underlying technology, e.g. servlets, for handling
+ * browser requests.
  *
  * @author Vaadin Ltd.
- *
  * @since 7.0
  */
 public abstract class VaadinService implements Serializable {
@@ -320,10 +319,8 @@ public abstract class VaadinService implements Serializable {
      */
     public SystemMessages getSystemMessages(Locale locale,
             VaadinRequest request) {
-        SystemMessagesInfo systemMessagesInfo = new SystemMessagesInfo();
-        systemMessagesInfo.setLocale(locale);
-        systemMessagesInfo.setService(this);
-        systemMessagesInfo.setRequest(request);
+        SystemMessagesInfo systemMessagesInfo = new SystemMessagesInfo(locale,
+                request, this);
         return getSystemMessagesProvider()
                 .getSystemMessages(systemMessagesInfo);
     }
