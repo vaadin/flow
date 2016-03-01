@@ -54,7 +54,6 @@ import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.util.CurrentInstance;
 
-@SuppressWarnings("serial")
 @WebServlet(asyncSupported = true, urlPatterns = { "/run/*", "/VAADIN/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {
 
@@ -278,7 +277,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-            throws ServiceException {
+                    throws ServiceException {
         VaadinServletService service = super.createServletService(
                 deploymentConfiguration);
         final SystemMessagesProvider provider = service

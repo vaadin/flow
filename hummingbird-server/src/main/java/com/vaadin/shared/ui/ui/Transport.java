@@ -52,6 +52,9 @@ public enum Transport {
      * Returns a Transport by its identifier. Returns null if no value is found
      * for the given identifier.
      *
+     * @param identifier
+     *            the transport identifier, as returned by
+     *            {@link #getIdentifier()}
      * @since 7.3.10
      */
     public static Transport getByIdentifier(String identifier) {

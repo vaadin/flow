@@ -52,6 +52,8 @@ public interface PushConnection extends Serializable {
 
     /**
      * Returns whether this connection is currently open.
+     *
+     * @return true if the connection is open, false otherwise
      */
     public boolean isConnected();
 

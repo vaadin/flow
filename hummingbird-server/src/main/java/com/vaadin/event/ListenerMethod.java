@@ -50,7 +50,6 @@ import java.util.logging.Logger;
  * @author Vaadin Ltd.
  * @since 3.0
  */
-@SuppressWarnings("serial")
 public class ListenerMethod implements EventListener, Serializable {
 
     /**

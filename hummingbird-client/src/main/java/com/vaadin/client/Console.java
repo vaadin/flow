@@ -27,6 +27,14 @@ import elemental.client.Browser;
  */
 public class Console {
 
+    /**
+     * Logs the given message to the browser console using the debug log level.
+     * <p>
+     * If used directly in a JVM, writes the message to standard output.
+     *
+     * @param message
+     *            the message to log
+     */
     public static void debug(Object message) {
         if (GWT.isScript()) {
             Browser.getWindow().getConsole().debug(message);
@@ -35,6 +43,14 @@ public class Console {
         }
     }
 
+    /**
+     * Logs the given message to the browser console using the info log level.
+     * <p>
+     * If used directly in a JVM, writes the message to standard output.
+     *
+     * @param message
+     *            the message to log
+     */
     public static void log(Object message) {
         if (GWT.isScript()) {
             Browser.getWindow().getConsole().log(message);
@@ -43,6 +59,15 @@ public class Console {
         }
     }
 
+    /**
+     * Logs the given message to the browser console using the warning log
+     * level.
+     * <p>
+     * If used directly in a JVM, writes the message to standard error.
+     *
+     * @param message
+     *            the message to log
+     */
     public static void warn(Object message) {
         if (GWT.isScript()) {
             Browser.getWindow().getConsole().warn(message);
@@ -51,6 +76,14 @@ public class Console {
         }
     }
 
+    /**
+     * Logs the given message to the browser console using the error log level.
+     * <p>
+     * If used directly in a JVM, writes the message to standard error.
+     *
+     * @param message
+     *            the message to log
+     */
     public static void error(Object message) {
         if (GWT.isScript()) {
             Browser.getWindow().getConsole().error(message);
