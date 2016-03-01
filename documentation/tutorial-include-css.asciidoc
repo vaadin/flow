@@ -1,0 +1,18 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Including Style Sheets
+
+For styling the application you typically need to include a style sheet. The framework is creating the initial HTML page so you need to tell it which style sheets you need. This can be done in your UI class using:
+
+[source,java]
+----
+@Override
+protected void init(VaadinRequest request) {
+  // Loaded from "styles.css" in our context root
+  getPage().addStyleSheet("styles.css");
+
+  // Loaded from "/root.css" regardless of how our application is deployed
+  getPage().addStyleSheet("/root.css");
+
+  // Loaded from "http://example.com/example.css" regardless of where our application is deployed
+  getPage().addStyleSheet("http://example.com/example.css");
+----

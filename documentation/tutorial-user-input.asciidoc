@@ -1,6 +1,6 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Retrieving User Input
-To make a fully functional application we need to be able to accept input from the user. We can add a text field to let the user enter her name as follows:
+To make a fully functional application, we need to be able to accept input from the user. We can add a text field to let the user enter her name as follows:
 
 [source,java]
 ----
