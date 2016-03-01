@@ -26,6 +26,8 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -548,6 +550,15 @@ public class Element implements Serializable {
         }
 
         return stateProvider.getChild(node, index);
+    }
+
+    /**
+     * Gets a stream of all children of this element.
+     * 
+     * @return a stream of children
+     */
+    public Stream<Element> getChildren() {
+        return IntStream.range(0, getChildCount()).mapToObj(this::getChild);
     }
 
     /**
