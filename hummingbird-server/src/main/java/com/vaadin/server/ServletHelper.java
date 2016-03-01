@@ -83,8 +83,8 @@ public class ServletHelper implements Serializable {
      *         <code>false</code> if not
      */
     public static boolean isHeartbeatRequest(VaadinRequest request) {
-        return hasPathPrefix(request,
-                '/' + ApplicationConstants.HEARTBEAT_PATH + '/');
+        return ApplicationConstants.REQUEST_TYPE_HEARTBEAT.equals(request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
     /**
