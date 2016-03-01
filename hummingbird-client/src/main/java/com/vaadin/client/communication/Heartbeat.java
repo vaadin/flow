@@ -54,9 +54,12 @@ public class Heartbeat {
         setInterval(
                 registry.getApplicationConfiguration().getHeartbeatInterval());
 
-        uri = SharedUtil.addGetParameters(registry.getURIResolver()
-                .resolveVaadinUri(ApplicationConstants.SERVICE_PROTOCOL_PREFIX
-                        + ApplicationConstants.HEARTBEAT_PATH + '/'),
+        uri = registry.getURIResolver()
+                .resolveVaadinUri(ApplicationConstants.SERVICE_PROTOCOL_PREFIX);
+        uri = SharedUtil.addGetParameters(uri,
+                ApplicationConstants.REQUEST_TYPE_PARAMETER + "="
+                        + ApplicationConstants.REQUEST_TYPE_HEARTBEAT);
+        uri = SharedUtil.addGetParameters(uri,
                 ApplicationConstants.UI_ID_PARAMETER + "="
                         + registry.getApplicationConfiguration().getUIId());
 

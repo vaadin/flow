@@ -35,11 +35,6 @@ public class ApplicationConstants implements Serializable {
     public static final String GENERATED_BODY_CLASSNAME = "v-generated-body";
 
     /**
-     * The path used for heartbeat requests.
-     */
-    public static final String HEARTBEAT_PATH = "HEARTBEAT";
-
-    /**
      * The path used for push requests.
      */
     public static final String PUSH_PATH = "PUSH";
@@ -164,5 +159,6 @@ public class ApplicationConstants implements Serializable {
 
     public static final String REQUEST_TYPE_PARAMETER = "v-r";
     public static final String REQUEST_TYPE_UIDL = "uidl";
+    public static final String REQUEST_TYPE_HEARTBEAT = "heartbeat";
 
 }
