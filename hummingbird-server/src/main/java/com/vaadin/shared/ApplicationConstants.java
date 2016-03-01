@@ -35,11 +35,6 @@ public class ApplicationConstants implements Serializable {
     public static final String GENERATED_BODY_CLASSNAME = "v-generated-body";
 
     /**
-     * The path used for APP requests.
-     */
-    public static final String APP_PATH = "APP";
-
-    /**
      * The path used for UIDL requests.
      */
     public static final String UIDL_PATH = "UIDL";
@@ -57,7 +52,7 @@ public class ApplicationConstants implements Serializable {
     /**
      * An internal protocol used for referencing the application context path.
      */
-    public static final String APP_PROTOCOL_PREFIX = "app://";
+    public static final String SERVICE_PROTOCOL_PREFIX = "service://";
     /**
      * An internal protocol used for referencing the {@literal VAADIN} folder
      * inside the application context path.
