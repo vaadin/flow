@@ -1422,4 +1422,20 @@ public class ElementTest {
         Element e = new Element("div");
         e.setSynchronizedProperties((String) null);
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void addAsOwnChild() {
+        Element element = new Element("div");
+        element.appendChild(element);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void addAsChildOfChild() {
+        Element parent = new Element("div");
+        Element child = new Element("div");
+        parent.appendChild(child);
+
+        child.appendChild(parent);
+    }
+
 }

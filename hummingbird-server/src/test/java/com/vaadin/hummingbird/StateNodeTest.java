@@ -141,6 +141,22 @@ public class StateNodeTest {
         Assert.assertNotEquals(-1, grandchild.getId());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setChildAsParent() {
+        StateNode parent = createParentNode("parent");
+        StateNode child = createParentNode("child");
+
+        setParent(child, parent);
+        setParent(parent, child);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testSetAsOwnParent() {
+        StateNode parent = createParentNode("parent");
+
+        setParent(parent, parent);
+    }
+
     public static StateNode createEmptyNode() {
         return createEmptyNode("Empty node");
     }
@@ -185,5 +201,4 @@ public class StateNodeTest {
             children.add(children.size(), child);
         }
     }
-
 }

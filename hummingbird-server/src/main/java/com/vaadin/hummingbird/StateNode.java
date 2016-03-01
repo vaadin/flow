@@ -102,6 +102,11 @@ public class StateNode implements Serializable {
                     + this.parent;
             assert parent.hasChildAssert(this);
 
+            if (isAncestorOf(parent)) {
+                throw new IllegalStateException(
+                        "Can't set own child as parent");
+            }
+
             attachedAfter = parent.isAttached();
 
             NodeOwner parentOwner = parent.getOwner();
@@ -117,6 +122,17 @@ public class StateNode implements Serializable {
         } else if (attachedBefore && !attachedAfter) {
             onDetach();
         }
+    }
+
+    private boolean isAncestorOf(StateNode node) {
+        while (node != null) {
+            if (node == this) {
+                return true;
+            }
+            node = node.getParent();
+        }
+
+        return false;
     }
 
     // Should only be used for debugging
