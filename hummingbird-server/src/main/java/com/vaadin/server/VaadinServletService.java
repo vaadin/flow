@@ -143,7 +143,6 @@ public class VaadinServletService extends VaadinService {
         // TODO This should be refactored in some way. It should not be
         // necessary to check all these types.
         return (!ServletHelper.isAppRequest(request)
-                && !ServletHelper.isFileUploadRequest(request)
                 && !ServletHelper.isHeartbeatRequest(request)
                 && !ServletHelper.isUIDLRequest(request)
                 && !ServletHelper.isPushRequest(request));
