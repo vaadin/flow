@@ -97,13 +97,4 @@ public abstract class VaadinUriResolver {
      */
     protected abstract String getServiceUrl();
 
-    /**
-     * Encodes a value for safe inclusion as a parameter in the query string.
-     *
-     * @param parameterValue
-     *            the value to encode
-     * @return the encoded value
-     */
-    protected abstract String encodeQueryStringParameterValue(
-            String parameterValue);
 }

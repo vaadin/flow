@@ -15,7 +15,6 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.http.client.URL;
 import com.vaadin.shared.VaadinUriResolver;
 
 /**
@@ -45,11 +44,6 @@ public class URIResolver extends VaadinUriResolver {
     @Override
     protected String getServiceUrl() {
         return registry.getApplicationConfiguration().getServiceUrl();
-    }
-
-    @Override
-    protected String encodeQueryStringParameterValue(String queryString) {
-        return URL.encodeQueryString(queryString);
     }
 
 }

@@ -55,12 +55,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- Grid, BootstrapHandler, ... uses -->
-		<dependency>
-			<groupId>com.vaadin.external.google</groupId>
-			<artifactId>guava</artifactId>
-			<version>16.0.1.vaadin1</version>
-		</dependency>
 		<!-- Jsoup for BootstrapHandler, Declarative, Template, ... -->
 		<dependency>
 			<groupId>org.jsoup</groupId>
