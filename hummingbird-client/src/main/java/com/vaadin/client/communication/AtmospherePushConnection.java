@@ -206,18 +206,17 @@ public class AtmospherePushConnection implements PushConnection {
 
     private void connect() {
         String pushUrl = registry.getURIResolver().resolveVaadinUri(url);
-        pushUrl = SharedUtil.addGetParameters(pushUrl,
-                ApplicationConstants.REQUEST_TYPE_PARAMETER + "="
-                        + ApplicationConstants.REQUEST_TYPE_PUSH);
-        pushUrl = SharedUtil.addGetParameters(pushUrl,
-                ApplicationConstants.UI_ID_PARAMETER + "="
-                        + registry.getApplicationConfiguration().getUIId());
+        pushUrl = SharedUtil.addGetParameter(pushUrl,
+                ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                ApplicationConstants.REQUEST_TYPE_PUSH);
+        pushUrl = SharedUtil.addGetParameter(pushUrl,
+                ApplicationConstants.UI_ID_PARAMETER,
+                registry.getApplicationConfiguration().getUIId());
 
         String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
-            pushUrl = SharedUtil.addGetParameters(pushUrl,
-                    ApplicationConstants.CSRF_TOKEN_PARAMETER + "="
-                            + csrfToken);
+            pushUrl = SharedUtil.addGetParameter(pushUrl,
+                    ApplicationConstants.CSRF_TOKEN_PARAMETER, csrfToken);
         }
 
         Console.log("Establishing push connection");

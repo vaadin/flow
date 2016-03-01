@@ -152,9 +152,24 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String CLIENT_ENGINE_FOLDER = "client";
 
+    /**
+     * Get parameter used in framework requests to identify the request type.
+     */
     public static final String REQUEST_TYPE_PARAMETER = "v-r";
+
+    /**
+     * Request type parameter value indicating a UIDL request.
+     */
     public static final String REQUEST_TYPE_UIDL = "uidl";
+
+    /**
+     * Request type parameter value indicating a heartbeat request.
+     */
     public static final String REQUEST_TYPE_HEARTBEAT = "heartbeat";
+
+    /**
+     * Request type parameter value indicating a push request.
+     */
     public static final String REQUEST_TYPE_PUSH = "push";
 
 }

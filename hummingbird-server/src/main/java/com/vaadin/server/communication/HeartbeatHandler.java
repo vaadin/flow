@@ -21,6 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.server.ServletHelper;
+import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.SessionExpiredHandler;
 import com.vaadin.server.SynchronizedRequestHandler;
 import com.vaadin.server.VaadinRequest;
@@ -46,7 +47,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletHelper.isHeartbeatRequest(request);
+        return ServletHelper.isRequestType(request, RequestType.HEARTBEAT);
     }
 
     /**
@@ -88,7 +89,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!ServletHelper.isHeartbeatRequest(request)) {
+        if (!ServletHelper.isRequestType(request, RequestType.HEARTBEAT)) {
             return false;
         }
 

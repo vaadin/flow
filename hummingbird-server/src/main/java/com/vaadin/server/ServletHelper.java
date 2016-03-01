@@ -34,45 +34,57 @@ public class ServletHelper implements Serializable {
      */
     static final SystemMessages DEFAULT_SYSTEM_MESSAGES = new SystemMessages();
 
+    /**
+     * Framework internal enum for tracking the type of a request.
+     */
+    public enum RequestType {
+
+        /**
+         * UIDL requests.
+         */
+        UIDL(ApplicationConstants.REQUEST_TYPE_UIDL),
+        /**
+         * Heartbeat requests.
+         */
+        HEARTBEAT(ApplicationConstants.REQUEST_TYPE_HEARTBEAT),
+        /**
+         * Push requests (any transport)
+         */
+        PUSH(ApplicationConstants.REQUEST_TYPE_PUSH);
+
+        private String identifier;
+
+        private RequestType(String identifier) {
+            this.identifier = identifier;
+        }
+
+        /**
+         * Returns the identifier for the request type.
+         *
+         * @return the identifier
+         */
+        public String getIdentifier() {
+            return identifier;
+        }
+    }
+
     private ServletHelper() {
+        // Only utility methods
     }
 
     /**
-     * Returns whether the given request is a UIDL request.
+     * Returns whether the given request is of the given type.
      *
      * @param request
      *            the request to check
-     * @return <code>true</code> if it is a UIDL request, <code>false</code> if
-     *         not
+     * @param requestType
+     *            the type to check for
+     * @return <code>true</code> if the request is of the given type,
+     *         <code>false</code> otherwise
      */
-    public static boolean isUIDLRequest(VaadinRequest request) {
-        return ApplicationConstants.REQUEST_TYPE_UIDL.equals(request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
-    }
-
-    /**
-     * Returns whether the given request is a heart beat request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a heart beat request,
-     *         <code>false</code> if not
-     */
-    public static boolean isHeartbeatRequest(VaadinRequest request) {
-        return ApplicationConstants.REQUEST_TYPE_HEARTBEAT.equals(request
-                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
-    }
-
-    /**
-     * Returns whether the given request is a push request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a push request, <code>false</code> if
-     *         not
-     */
-    public static boolean isPushRequest(VaadinRequest request) {
-        return ApplicationConstants.REQUEST_TYPE_PUSH.equals(request
+    public static boolean isRequestType(VaadinRequest request,
+            RequestType requestType) {
+        return requestType.getIdentifier().equals(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
@@ -138,4 +150,5 @@ public class ServletHelper implements Serializable {
         headerSetter.accept("Pragma", "no-cache");
         longHeaderSetter.accept("Expires", 0L);
     }
+
 }

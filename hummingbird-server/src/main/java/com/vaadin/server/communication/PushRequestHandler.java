@@ -39,6 +39,7 @@ import com.vaadin.server.ServiceDestroyEvent;
 import com.vaadin.server.ServiceDestroyListener;
 import com.vaadin.server.ServiceException;
 import com.vaadin.server.ServletHelper;
+import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.SessionExpiredHandler;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
@@ -235,7 +236,7 @@ public class PushRequestHandler
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
 
-        if (!ServletHelper.isPushRequest(request)) {
+        if (!ServletHelper.isRequestType(request, RequestType.PUSH)) {
             return false;
         }
 
