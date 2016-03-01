@@ -75,19 +75,6 @@ public class ServletHelper implements Serializable {
     }
 
     /**
-     * Returns whether the given request is a published file request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a published file request,
-     *         <code>false</code> if not
-     */
-    public static boolean isPublishedFileRequest(VaadinRequest request) {
-        return hasPathPrefix(request,
-                '/' + ApplicationConstants.PUBLISHED_FILE_PATH + '/');
-    }
-
-    /**
      * Returns whether the given request is a UIDL request.
      *
      * @param request

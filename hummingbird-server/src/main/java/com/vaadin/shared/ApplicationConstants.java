@@ -55,12 +55,6 @@ public class ApplicationConstants implements Serializable {
     public static final String PUSH_PATH = "PUSH";
 
     /**
-     * The path used for published files.
-     */
-    public static final String PUBLISHED_FILE_PATH = APP_PATH + '/'
-            + "PUBLISHED";
-
-    /**
      * An internal protocol used for referencing the application context path.
      */
     public static final String APP_PROTOCOL_PREFIX = "app://";
@@ -73,11 +67,6 @@ public class ApplicationConstants implements Serializable {
      * An internal protocol used for identifying a font icon resource.
      */
     public static final String FONTICON_PROTOCOL_PREFIX = "fonticon://";
-    /**
-     * An internal protocol used for referencing to user files published by the
-     * framework.
-     */
-    public static final String PUBLISHED_PROTOCOL_PREFIX = "published://";
     /**
      * The identifier used for the CSRF token.
      */
