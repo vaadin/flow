@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.vaadin.server.ServletHelper;
+import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.SessionExpiredHandler;
 import com.vaadin.server.SynchronizedRequestHandler;
 import com.vaadin.server.SystemMessages;
@@ -57,7 +58,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return ServletHelper.isUIDLRequest(request);
+        return ServletHelper.isRequestType(request, RequestType.UIDL);
     }
 
     @Override
@@ -126,7 +127,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!ServletHelper.isUIDLRequest(request)) {
+        if (!ServletHelper.isRequestType(request, RequestType.UIDL)) {
             return false;
         }
         VaadinService service = request.getService();

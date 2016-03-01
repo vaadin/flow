@@ -43,6 +43,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.event.EventRouter;
+import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.VaadinSession.FutureAccess;
 import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.AtmospherePushConnection;
@@ -1306,7 +1307,7 @@ public abstract class VaadinService implements Serializable {
                 vaadinSession.getErrorHandler().error(new ErrorEvent(t));
             }
             // if this was an UIDL request, send UIDL back to the client
-            if (ServletHelper.isUIDLRequest(request)) {
+            if (ServletHelper.isRequestType(request, RequestType.UIDL)) {
                 SystemMessages ci = getSystemMessages(
                         ServletHelper.findLocale(vaadinSession, request),
                         request);
