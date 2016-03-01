@@ -145,7 +145,6 @@ public class VaadinServletService extends VaadinService {
         return (!ServletHelper.isAppRequest(request)
                 && !ServletHelper.isFileUploadRequest(request)
                 && !ServletHelper.isHeartbeatRequest(request)
-                && !ServletHelper.isPublishedFileRequest(request)
                 && !ServletHelper.isUIDLRequest(request)
                 && !ServletHelper.isPushRequest(request));
     }

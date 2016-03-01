@@ -54,19 +54,6 @@ public abstract class VaadinUriResolver {
             return null;
         }
 
-        if (vaadinUri
-                .startsWith(ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX)) {
-            // getAppUri *should* always end with /
-            // substring *should* always start with / (published:///foo.bar
-            // without published://)
-            vaadinUri = ApplicationConstants.APP_PROTOCOL_PREFIX
-                    + ApplicationConstants.PUBLISHED_FILE_PATH
-                    + vaadinUri.substring(
-                            ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX
-                                    .length());
-            // Let translation of app:// urls take care of the rest
-        }
-
         if (vaadinUri.startsWith(ApplicationConstants.APP_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.APP_PROTOCOL_PREFIX.length());
