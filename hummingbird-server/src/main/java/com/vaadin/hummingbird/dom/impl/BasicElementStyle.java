@@ -15,8 +15,7 @@
  */
 package com.vaadin.hummingbird.dom.impl;
 
-import java.util.Collections;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.Style;
@@ -78,9 +77,8 @@ public class BasicElementStyle implements Style {
     }
 
     @Override
-    public Set<String> getNames() {
-        // Intentionally not making a copy for performance reasons
-        return Collections.unmodifiableSet(namespace.getPropertyNames());
+    public Stream<String> getNames() {
+        return namespace.getPropertyNames();
     }
 
     @Override

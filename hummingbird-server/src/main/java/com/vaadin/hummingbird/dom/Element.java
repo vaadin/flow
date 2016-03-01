@@ -17,15 +17,14 @@ package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -138,20 +137,19 @@ public class Element implements Serializable {
     private static class StyleAttributeHandler implements CustomAttribute {
         @Override
         public boolean hasAttribute(Element element) {
-            return !element.getStyle().getNames().isEmpty();
+            return element.getStyle().getNames().findAny().isPresent();
         }
 
         @Override
         public String getAttribute(Element element) {
-            Style style = element.getStyle();
-            Set<String> styleNames = style.getNames();
-            if (styleNames.isEmpty()) {
+            if (!hasAttribute(element)) {
                 return null;
-            } else {
-                return styleNames.stream().map(styleName -> {
-                    return styleName + ":" + style.get(styleName);
-                }).collect(Collectors.joining(";"));
             }
+            Style style = element.getStyle();
+
+            return style.getNames().map(styleName -> {
+                return styleName + ":" + style.get(styleName);
+            }).collect(Collectors.joining(";"));
         }
 
         @Override
@@ -394,37 +392,22 @@ public class Element implements Serializable {
      * <p>
      * Attribute names are considered case insensitive and all names will be
      * converted to lower case automatically.
-     * <p>
-     * The returned collection might be connected so that adding/removing
-     * attributes through {@link #setAttribute(String, String)} or
-     * {@link #removeAttribute(String)} affects the collection. If you want to
-     * store the attribute names for later usage, you should make a copy.
-     * <p>
-     * You cannot modify attributes through the returned set.
      *
-     * @return the defined attribute names
+     * @return a stream of defined attribute names
      */
-    public Set<String> getAttributeNames() {
-        Set<String> regularNames = stateProvider.getAttributeNames(node);
+    public Stream<String> getAttributeNames() {
+        assert stateProvider.getAttributeNames(node)
+                .filter(customAttributes::containsKey)
+                .filter(name -> customAttributes.get(name).hasAttribute(this))
+                .count() == 0 : "Overlap between stored attributes and existing custom attributes";
 
-        Set<String> attributeNames = null;
+        Stream<String> regularNames = stateProvider.getAttributeNames(node);
 
-        for (Entry<String, CustomAttribute> entry : customAttributes
-                .entrySet()) {
-            if (entry.getValue().hasAttribute(this)) {
-                if (attributeNames == null) {
-                    attributeNames = new HashSet<>(regularNames);
-                }
-                attributeNames.add(entry.getKey());
-            }
-        }
+        Stream<String> customNames = customAttributes.entrySet().stream()
+                .filter(e -> e.getValue().hasAttribute(this))
+                .map(Entry::getKey);
 
-        if (attributeNames != null) {
-            return attributeNames;
-        } else {
-            // Intentionally not making a copy for performance reasons
-            return Collections.unmodifiableSet(regularNames);
-        }
+        return Stream.concat(regularNames, customNames);
     }
 
     /**
@@ -977,20 +960,11 @@ public class Element implements Serializable {
 
     /**
      * Gets the defined property names.
-     * <p>
-     * The returned collection might be connected so that adding/removing
-     * properties through e.g. {@link #setProperty(String, String)} or
-     * {@link #removeProperty(String)} affects the collection. If you want to
-     * store the property names for later usage, you should make a copy.
-     * <p>
-     * You cannot modify properties through the returned set.
      *
-     * @return the defined property names
+     * @return a stream of defined property names
      */
-    public Set<String> getPropertyNames() {
-        // Intentionally not making a copy for performance reasons
-        return Collections
-                .unmodifiableSet(stateProvider.getPropertyNames(node));
+    public Stream<String> getPropertyNames() {
+        return stateProvider.getPropertyNames(node);
     }
 
     /**
