@@ -75,19 +75,6 @@ public class ServletHelper implements Serializable {
     }
 
     /**
-     * Returns whether the given request is a app request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a app request, <code>false</code> if
-     *         not
-     */
-    public static boolean isAppRequest(VaadinRequest request) {
-        return hasPathPrefix(request,
-                '/' + ApplicationConstants.APP_PATH + '/');
-    }
-
-    /**
      * Returns whether the given request is a heart beat request.
      *
      * @param request

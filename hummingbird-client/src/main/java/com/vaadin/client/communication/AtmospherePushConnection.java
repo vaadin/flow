@@ -190,7 +190,7 @@ public class AtmospherePushConnection implements PushConnection {
         if (getPushConfiguration().getPushUrl() != null) {
             url = getPushConfiguration().getPushUrl();
         } else {
-            url = ApplicationConstants.APP_PROTOCOL_PREFIX
+            url = ApplicationConstants.SERVICE_PROTOCOL_PREFIX
                     + ApplicationConstants.PUSH_PATH;
         }
         runWhenAtmosphereLoaded(

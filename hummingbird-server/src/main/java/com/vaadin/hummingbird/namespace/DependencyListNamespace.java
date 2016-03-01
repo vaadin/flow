@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Dependency.Type;
 
@@ -66,7 +67,7 @@ public class DependencyListNamespace extends JsonListNamespace {
             if (uri.getScheme() == null && !url.startsWith("/")) {
                 // Relative URL without protocol ->
                 // interpret as relative to context root
-                url = "app://" + url;
+                url = ApplicationConstants.SERVICE_PROTOCOL_PREFIX + url;
             }
             jsonObject.put(KEY_URL, url);
             jsonObject.put(KEY_TYPE, getType(dependency));

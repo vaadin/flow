@@ -185,7 +185,7 @@ public class XhrConnection {
      */
     protected String getUri() {
         String uri = registry.getURIResolver()
-                .resolveVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
+                .resolveVaadinUri(ApplicationConstants.SERVICE_PROTOCOL_PREFIX
                         + ApplicationConstants.UIDL_PATH + '/');
 
         uri = SharedUtil.addGetParameters(uri,

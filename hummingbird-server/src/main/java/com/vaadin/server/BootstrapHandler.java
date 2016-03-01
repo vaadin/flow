@@ -232,13 +232,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     @Override
-    protected boolean canHandleRequest(VaadinRequest request) {
-        // We do not want to handle /APP requests here, instead let it fall
-        // through and produce a 404
-        return !ServletHelper.isAppRequest(request);
-    }
-
-    @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         // Find UI class
