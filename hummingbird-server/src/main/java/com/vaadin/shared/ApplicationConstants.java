@@ -35,11 +35,6 @@ public class ApplicationConstants implements Serializable {
     public static final String GENERATED_BODY_CLASSNAME = "v-generated-body";
 
     /**
-     * The path used for push requests.
-     */
-    public static final String PUSH_PATH = "PUSH";
-
-    /**
      * An internal protocol used for referencing the application context path.
      */
     public static final String SERVICE_PROTOCOL_PREFIX = "service://";
@@ -160,5 +155,6 @@ public class ApplicationConstants implements Serializable {
     public static final String REQUEST_TYPE_PARAMETER = "v-r";
     public static final String REQUEST_TYPE_UIDL = "uidl";
     public static final String REQUEST_TYPE_HEARTBEAT = "heartbeat";
+    public static final String REQUEST_TYPE_PUSH = "push";
 
 }

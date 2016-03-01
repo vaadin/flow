@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.server.communication.PushRequestHandler;
 import com.vaadin.server.communication.ServletBootstrapHandler;
+import com.vaadin.shared.ApplicationConstants;
 
 /**
  * A service implementation connected to a {@link VaadinServlet}.
@@ -140,11 +141,8 @@ public class VaadinServletService extends VaadinService {
     }
 
     private boolean isOtherRequest(VaadinRequest request) {
-        // TODO This should be refactored in some way. It should not be
-        // necessary to check all these types.
-        return (!ServletHelper.isHeartbeatRequest(request)
-                && !ServletHelper.isUIDLRequest(request)
-                && !ServletHelper.isPushRequest(request));
+        return request.getParameter(
+                ApplicationConstants.REQUEST_TYPE_PARAMETER) == null;
     }
 
     public static HttpServletRequest getCurrentServletRequest() {
