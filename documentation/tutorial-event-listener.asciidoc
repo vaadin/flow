@@ -1,6 +1,6 @@
 = Using Event Listeners
 
-To make an application interactive, we need to react to events from the user. We listen to any browser event using `addEventListener` in `Element`:
+To make an application interactive, you want to react to events from the user. For this, you can listen to any browser event using `addEventListener` in `Element`:
 
 [source,java]
 ----
@@ -16,7 +16,7 @@ Clicking in the browser on the "Say hello" button will now send the event to the
 
 == Getting Event Data
 
-Sometimes we need more information about the element or the event which the user interacted with. We can get this by using the third, optional parameter for `addEventListener`:
+Sometimes you need more information about the element or the event which the user interacted with. You can get this by using the third, optional parameter for `addEventListener`:
 
 [source,java]
 ----
@@ -34,4 +34,4 @@ helloButton.addEventListener("click", e -> {
 }, "event.shiftKey", "element.offsetWidth");
 ----
 
-The event data is sent as a JSON object from the client and made available through `event.getEventData()` in the listener. You need to know what type of data to retrieve and use the proper getter based on the type and use the same keys you provide as parameters to `addEventListener`.
+The event data is sent as a JSON object from the client and made available through `event.getEventData()` in the listener. You must know what type of data to retrieve so you can use the proper getter. Also make sure you use the same keys that you provide as parameters to `addEventListener`.
