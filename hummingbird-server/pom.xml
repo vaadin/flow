@@ -68,15 +68,6 @@
 			<version>1.8.3</version>
 		</dependency>
 
-		<!-- Kernel deps -->
-
-		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy</artifactId>
-			<version>0.6.11</version>
-		</dependency>
-
-
 		<!-- TESTING DEPENDENCIES -->
 		<dependency>
 			<groupId>org.hsqldb</groupId>
