@@ -29,7 +29,6 @@ import com.vaadin.ui.UI;
  */
 public class ServletHelper implements Serializable {
 
-    public static final String UPLOAD_URL_PREFIX = "APP/UPLOAD/";
     /**
      * The default SystemMessages (read-only).
      */
@@ -60,18 +59,6 @@ public class ServletHelper implements Serializable {
         assert string.startsWith("/");
 
         return pathInfo.equals(string);
-    }
-
-    /**
-     * Returns whether the given request is a file upload request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a file upload request,
-     *         <code>false</code> if not
-     */
-    public static boolean isFileUploadRequest(VaadinRequest request) {
-        return hasPathPrefix(request, '/' + UPLOAD_URL_PREFIX);
     }
 
     /**
