@@ -1,0 +1,38 @@
+= Dynamic Styling
+
+Sometimes you want to change the looks of some part of your application based on user actions. While you can accomplish this in multiple ways, two standard ways are using dynamic class names or using inline styles.
+
+Using the `getClassList()` method in `Element`, we can dynamically modify the class names of any element:
+
+[source,css]
+----
+.blue {
+  background: blue;
+  color: white;
+}
+----
+
+[source,java]
+----
+button.setTextContent("Change to blue");
+button.addEventListener("click", e->{
+    button.getClassList().add("blue");
+});
+----
+
+In this case we are limited to the styles we have defined in advance. To get really dynamic styles, we can use the inline styling API `getStyle()`:
+
+[source,java]
+----
+button.setTextContent("Change to something");
+button.addEventListener("click", e -> {
+    Random random = new Random();
+    int r = random.nextInt(255);
+    int g = random.nextInt(255);
+    int b = random.nextInt(255);
+    button.getStyle().set("background",
+            String.format("rgb(%d,%d,%d)", r, g, b));
+});
+----
+
+Using `getStyle()` we can set any style property supported by the browser. Remember that the camelCase name of the style properties should be used, i.e. "fontSize", not "font-size".
