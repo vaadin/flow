@@ -59,7 +59,6 @@ import com.vaadin.util.CurrentInstance;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-@SuppressWarnings("serial")
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**

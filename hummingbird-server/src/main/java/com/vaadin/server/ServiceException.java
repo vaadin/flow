@@ -16,18 +16,45 @@
 
 package com.vaadin.server;
 
+/**
+ * Thrown for problems which occur in the {@link VaadinService} layer.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class ServiceException extends Exception {
 
-    public ServiceException(Throwable t) {
-        super(t);
+    /**
+     * Creates an exception which wraps the given throwable.
+     *
+     * @param throwable
+     *            the throwable to wrap
+     */
+    public ServiceException(Throwable throwable) {
+        super(throwable);
     }
 
+    /**
+     * Creates an exception which contains the given message.
+     *
+     * @param message
+     *            the message
+     */
     public ServiceException(String message) {
         super(message);
     }
 
-    public ServiceException(String message, Throwable t) {
-        super(message, t);
+    /**
+     * Creates an exception which wraps the given throwable and contains the
+     * given message.
+     *
+     * @param message
+     *            the message
+     * @param throwable
+     *            the throwable to wrap
+     */
+    public ServiceException(String message, Throwable throwable) {
+        super(message, throwable);
     }
 
 }

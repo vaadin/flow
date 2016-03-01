@@ -15,7 +15,12 @@
  */
 package com.vaadin.server;
 
-@SuppressWarnings("serial")
+/**
+ * Exception indicating that the session has expired.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class SessionExpiredException extends Exception {
 
 }

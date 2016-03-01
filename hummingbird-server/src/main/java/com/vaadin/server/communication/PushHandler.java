@@ -163,6 +163,12 @@ public class PushHandler {
 
     private VaadinServletService service;
 
+    /**
+     * Creates an instance connected to the given service.
+     *
+     * @param service
+     *            the service this handler belongs to
+     */
     public PushHandler(VaadinServletService service) {
         this.service = service;
     }

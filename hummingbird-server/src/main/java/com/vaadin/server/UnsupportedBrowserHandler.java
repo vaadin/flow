@@ -20,10 +20,8 @@ import java.io.Writer;
 
 /**
  * A {@link RequestHandler} that presents an informative page if the browser in
- * use is unsupported. Recognizes Chrome Frame and allow it to be used.
- *
+ * use is unsupported.
  */
-@SuppressWarnings("serial")
 public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
 
     /** Cookie used to ignore browser checks. */

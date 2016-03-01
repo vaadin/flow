@@ -67,6 +67,15 @@ public class ServerRpcHandler implements Serializable {
         private final int clientToServerMessageId;
         private String widgetsetVersion = null;
 
+        /**
+         * Creates an instance based on the given JSON received through the
+         * given request.
+         *
+         * @param jsonString
+         *            the JSON containing the RPC invocations
+         * @param request
+         *            the request through which the JSON was received
+         */
         public RpcRequest(String jsonString, VaadinRequest request) {
             json = JsonUtil.parse(jsonString);
 

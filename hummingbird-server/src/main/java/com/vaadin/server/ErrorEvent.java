@@ -23,10 +23,16 @@ import java.io.Serializable;
  */
 public class ErrorEvent implements Serializable {
 
-    private Throwable throwable;
+    private final Throwable throwable;
 
-    public ErrorEvent(Throwable t) {
-        setThrowable(t);
+    /**
+     * Creates an error event which wraps the given throwable.
+     *
+     * @param throwable
+     *            the throwable to wrap
+     */
+    public ErrorEvent(Throwable throwable) {
+        this.throwable = throwable;
     }
 
     /**
@@ -36,10 +42,6 @@ public class ErrorEvent implements Serializable {
      */
     public Throwable getThrowable() {
         return throwable;
-    }
-
-    public void setThrowable(Throwable throwable) {
-        this.throwable = throwable;
     }
 
     /**

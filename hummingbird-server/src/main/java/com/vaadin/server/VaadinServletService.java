@@ -27,12 +27,26 @@ import javax.servlet.http.HttpServletRequest;
 import com.vaadin.server.communication.PushRequestHandler;
 import com.vaadin.server.communication.ServletBootstrapHandler;
 
+/**
+ * A service implementation connected to a {@link VaadinServlet}.
+ *
+ * @author Vaadin
+ * @since
+ */
 public class VaadinServletService extends VaadinService {
     private final VaadinServlet servlet;
 
+    /**
+     * Creates an instance connected to the given servlet and using the given
+     * configuration.
+     *
+     * @param servlet
+     *            the servlet which receives requests
+     * @param deploymentConfiguration
+     *            the configuration to use
+     */
     public VaadinServletService(VaadinServlet servlet,
-            DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            DeploymentConfiguration deploymentConfiguration) {
         super(deploymentConfiguration);
         this.servlet = servlet;
     }
