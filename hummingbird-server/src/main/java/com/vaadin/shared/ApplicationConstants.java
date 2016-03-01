@@ -35,11 +35,6 @@ public class ApplicationConstants implements Serializable {
     public static final String GENERATED_BODY_CLASSNAME = "v-generated-body";
 
     /**
-     * The path used for UIDL requests.
-     */
-    public static final String UIDL_PATH = "UIDL";
-
-    /**
      * The path used for heartbeat requests.
      */
     public static final String HEARTBEAT_PATH = "HEARTBEAT";
@@ -166,4 +161,8 @@ public class ApplicationConstants implements Serializable {
      * folder.
      */
     public static final String CLIENT_ENGINE_FOLDER = "client";
+
+    public static final String REQUEST_TYPE_PARAMETER = "v-r";
+    public static final String REQUEST_TYPE_UIDL = "uidl";
+
 }

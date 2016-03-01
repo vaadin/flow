@@ -70,8 +70,8 @@ public class ServletHelper implements Serializable {
      *         not
      */
     public static boolean isUIDLRequest(VaadinRequest request) {
-        return hasPathPrefix(request,
-                '/' + ApplicationConstants.UIDL_PATH + '/');
+        return ApplicationConstants.REQUEST_TYPE_UIDL.equals(request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
     /**
