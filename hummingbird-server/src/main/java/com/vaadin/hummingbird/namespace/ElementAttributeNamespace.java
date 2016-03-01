@@ -16,7 +16,7 @@
 
 package com.vaadin.hummingbird.namespace;
 
-import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 
@@ -89,10 +89,10 @@ public class ElementAttributeNamespace extends MapNamespace {
     /**
      * Gets the attribute names.
      *
-     * @return a set containing all the attribute names which have been set
+     * @return a stream of all the attribute names which have been set
      */
-    public Set<String> attributes() {
-        return super.keySet();
+    public Stream<String> attributes() {
+        return super.keySet().stream();
     }
 
 }

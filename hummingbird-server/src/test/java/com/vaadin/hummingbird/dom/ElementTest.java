@@ -228,7 +228,7 @@ public class ElementTest {
     @Test
     public void attributesWhenNoneDefined() {
         Element e = new Element("div");
-        Assert.assertTrue(e.getAttributeNames().isEmpty());
+        Assert.assertEquals(0, e.getAttributeNames().count());
     }
 
     @Test
@@ -237,28 +237,6 @@ public class ElementTest {
         e.setAttribute("foo", "bar");
         Assert.assertArrayEquals(new String[] { "foo" },
                 e.getAttributeNames().toArray());
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void attributesNamesModificationsNotReflected() {
-        Element e = new Element("div");
-        e.setAttribute("foo", "bar");
-        e.getAttributeNames().remove("foo");
-        Assert.assertTrue(e.hasAttribute("foo"));
-    }
-
-    @Test
-    public void attributesNamesShouldNotBeDynamic() {
-        Element e = new Element("div");
-        e.setAttribute("foo", "bar");
-        Set<String> names = e.getAttributeNames();
-        Assert.assertEquals(1, names.size());
-        e.setAttribute("baz", "zoo");
-
-        // NOTE: This only tests the current implementation. This is not
-        // guaranteed behavior
-        Assert.assertEquals(2, names.size());
-        Assert.assertTrue(e.hasAttribute("baz"));
     }
 
     @Test
@@ -303,10 +281,12 @@ public class ElementTest {
         e.setAttribute("FOO", "bar");
         e.setAttribute("Baz", "bar");
 
-        Assert.assertTrue(e.getAttributeNames().contains("foo"));
-        Assert.assertFalse(e.getAttributeNames().contains("FOO"));
-        Assert.assertTrue(e.getAttributeNames().contains("baz"));
-        Assert.assertFalse(e.getAttributeNames().contains("Baz"));
+        Set<String> attributeNames = e.getAttributeNames()
+                .collect(Collectors.toSet());
+        Assert.assertTrue(attributeNames.contains("foo"));
+        Assert.assertFalse(attributeNames.contains("FOO"));
+        Assert.assertTrue(attributeNames.contains("baz"));
+        Assert.assertFalse(attributeNames.contains("Baz"));
     }
 
     @Test
@@ -887,21 +867,14 @@ public class ElementTest {
     public void propertyNames() {
         Element element = new Element("div");
 
-        Assert.assertEquals(Collections.emptySet(), element.getPropertyNames());
+        Assert.assertEquals(0, element.getPropertyNames().count());
 
         element.setProperty("foo", "bar");
         Assert.assertEquals(Collections.singleton("foo"),
-                element.getPropertyNames());
+                element.getPropertyNames().collect(Collectors.toSet()));
 
         element.removeProperty("foo");
-        Assert.assertEquals(Collections.emptySet(), element.getPropertyNames());
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void propertyNamesUnmodifiable() {
-        Element element = new Element("foo");
-
-        element.getPropertyNames().remove("bar");
+        Assert.assertEquals(0, element.getPropertyNames().count());
     }
 
     private static Element createPropertyAssertElement(Object value) {
@@ -1021,7 +994,7 @@ public class ElementTest {
         Assert.assertTrue(element.hasAttribute("class"));
 
         Assert.assertEquals(Collections.singleton("class"),
-                element.getAttributeNames());
+                element.getAttributeNames().collect(Collectors.toSet()));
         Assert.assertTrue(element.hasAttribute("class"));
         Assert.assertEquals("foo", element.getAttribute("class"));
 
@@ -1063,8 +1036,7 @@ public class ElementTest {
         Assert.assertNull(element.getAttribute("class"));
         Assert.assertFalse(element.hasAttribute("class"));
 
-        Assert.assertEquals(Collections.emptySet(),
-                element.getAttributeNames());
+        Assert.assertEquals(0, element.getAttributeNames().count());
     }
 
     @Test
@@ -1247,8 +1219,7 @@ public class ElementTest {
         Assert.assertNull(element.getAttribute("style"));
         Assert.assertFalse(element.hasAttribute("style"));
 
-        Assert.assertEquals(Collections.emptySet(),
-                element.getStyle().getNames());
+        Assert.assertEquals(0, element.getStyle().getNames().count());
     }
 
     @Test
@@ -1261,7 +1232,7 @@ public class ElementTest {
 
         element.removeAttribute("style");
 
-        Assert.assertEquals(Collections.emptySet(), style.getNames());
+        Assert.assertEquals(0, style.getNames().count());
     }
 
     @Test

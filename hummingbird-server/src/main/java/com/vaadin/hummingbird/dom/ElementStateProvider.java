@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 
@@ -101,7 +102,7 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the defined attribute names
      */
-    Set<String> getAttributeNames(StateNode node);
+    Stream<String> getAttributeNames(StateNode node);
 
     /**
      * Gets the parent element.
@@ -258,7 +259,7 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the defined property names
      */
-    Set<String> getPropertyNames(StateNode node);
+    Stream<String> getPropertyNames(StateNode node);
 
     /**
      * Checks if the state node represents a text node.
