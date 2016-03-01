@@ -798,7 +798,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     @Deprecated
     protected enum RequestType {
-        UIDL, OTHER, STATIC_FILE, APP, HEARTBEAT;
+        UIDL, OTHER, STATIC_FILE, HEARTBEAT;
     }
 
     /**
@@ -816,8 +816,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
             return RequestType.UIDL;
         } else if (isStaticResourceRequest(request)) {
             return RequestType.STATIC_FILE;
-        } else if (ServletHelper.isAppRequest(request)) {
-            return RequestType.APP;
         } else if (ServletHelper.isHeartbeatRequest(request)) {
             return RequestType.HEARTBEAT;
         }
