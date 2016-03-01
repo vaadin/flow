@@ -37,30 +37,6 @@ public class ServletHelper implements Serializable {
     private ServletHelper() {
     }
 
-    private static boolean hasPathPrefix(VaadinRequest request, String prefix) {
-        String pathInfo = request.getPathInfo(); // always starts with /
-
-        if (pathInfo == null) {
-            return false;
-        }
-
-        assert prefix.startsWith("/");
-
-        return pathInfo.startsWith(prefix);
-    }
-
-    private static boolean isPathInfo(VaadinRequest request, String string) {
-        String pathInfo = request.getPathInfo(); // always starts with /
-
-        if (pathInfo == null) {
-            return false;
-        }
-
-        assert string.startsWith("/");
-
-        return pathInfo.equals(string);
-    }
-
     /**
      * Returns whether the given request is a UIDL request.
      *
@@ -96,7 +72,8 @@ public class ServletHelper implements Serializable {
      *         not
      */
     public static boolean isPushRequest(VaadinRequest request) {
-        return isPathInfo(request, '/' + ApplicationConstants.PUSH_PATH);
+        return ApplicationConstants.REQUEST_TYPE_PUSH.equals(request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
     /**

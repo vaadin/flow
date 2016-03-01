@@ -190,8 +190,7 @@ public class AtmospherePushConnection implements PushConnection {
         if (getPushConfiguration().getPushUrl() != null) {
             url = getPushConfiguration().getPushUrl();
         } else {
-            url = ApplicationConstants.SERVICE_PROTOCOL_PREFIX
-                    + ApplicationConstants.PUSH_PATH;
+            url = ApplicationConstants.SERVICE_PROTOCOL_PREFIX;
         }
         runWhenAtmosphereLoaded(
                 () -> Scheduler.get().scheduleDeferred(this::connect));
@@ -206,21 +205,23 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     private void connect() {
-        String baseUrl = registry.getURIResolver().resolveVaadinUri(url);
-        String extraParams = ApplicationConstants.UI_ID_PARAMETER + "="
-                + registry.getApplicationConfiguration().getUIId();
+        String pushUrl = registry.getURIResolver().resolveVaadinUri(url);
+        pushUrl = SharedUtil.addGetParameters(pushUrl,
+                ApplicationConstants.REQUEST_TYPE_PARAMETER + "="
+                        + ApplicationConstants.REQUEST_TYPE_PUSH);
+        pushUrl = SharedUtil.addGetParameters(pushUrl,
+                ApplicationConstants.UI_ID_PARAMETER + "="
+                        + registry.getApplicationConfiguration().getUIId());
 
         String csrfToken = registry.getMessageHandler().getCsrfToken();
         if (!csrfToken.equals(ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE)) {
-            extraParams += "&" + ApplicationConstants.CSRF_TOKEN_PARAMETER + "="
-                    + csrfToken;
+            pushUrl = SharedUtil.addGetParameters(pushUrl,
+                    ApplicationConstants.CSRF_TOKEN_PARAMETER + "="
+                            + csrfToken);
         }
 
-        // uri is needed to identify the right connection when closing
-        uri = SharedUtil.addGetParameters(baseUrl, extraParams);
-
         Console.log("Establishing push connection");
-        socket = doConnect(uri, getConfig());
+        socket = doConnect(pushUrl, getConfig());
     }
 
     @Override
@@ -697,7 +698,7 @@ public class AtmospherePushConnection implements PushConnection {
                 config.onClientTimeout = $entry(function(request) {
                     self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
                 });
-            
+
                 return $wnd.jQueryVaadin.atmosphere.subscribe(config);
             }-*/;
 
