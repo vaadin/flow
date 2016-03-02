@@ -172,6 +172,38 @@ public class SharedUtil implements Serializable {
     }
 
     /**
+     * Adds the given get parameter to the URI and returns the new URI.
+     *
+     * @param uri
+     *            the URI to which the parameter should be added.
+     * @param parameter
+     *            the name of the parameter
+     * @param value
+     *            the value of the parameter
+     * @return The modified URI with the parameter added
+     */
+    public static String addGetParameter(String uri, String parameter,
+            String value) {
+        return addGetParameters(uri, parameter + "=" + value);
+    }
+
+    /**
+     * Adds the given get parameter to the URI and returns the new URI.
+     *
+     * @param uri
+     *            the URI to which the parameter should be added.
+     * @param parameter
+     *            the name of the parameter
+     * @param value
+     *            the value of the parameter
+     * @return The modified URI with the parameter added
+     */
+    public static String addGetParameter(String uri, String parameter,
+            int value) {
+        return addGetParameter(uri, parameter, Integer.toString(value));
+    }
+
+    /**
      * Adds the get parameters to the uri and returns the new uri that contains
      * the parameters.
      *

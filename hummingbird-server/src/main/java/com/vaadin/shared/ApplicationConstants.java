@@ -35,35 +35,9 @@ public class ApplicationConstants implements Serializable {
     public static final String GENERATED_BODY_CLASSNAME = "v-generated-body";
 
     /**
-     * The path used for APP requests.
-     */
-    public static final String APP_PATH = "APP";
-
-    /**
-     * The path used for UIDL requests.
-     */
-    public static final String UIDL_PATH = "UIDL";
-
-    /**
-     * The path used for heartbeat requests.
-     */
-    public static final String HEARTBEAT_PATH = "HEARTBEAT";
-
-    /**
-     * The path used for push requests.
-     */
-    public static final String PUSH_PATH = "PUSH";
-
-    /**
-     * The path used for published files.
-     */
-    public static final String PUBLISHED_FILE_PATH = APP_PATH + '/'
-            + "PUBLISHED";
-
-    /**
      * An internal protocol used for referencing the application context path.
      */
-    public static final String APP_PROTOCOL_PREFIX = "app://";
+    public static final String SERVICE_PROTOCOL_PREFIX = "service://";
     /**
      * An internal protocol used for referencing the {@literal VAADIN} folder
      * inside the application context path.
@@ -73,11 +47,6 @@ public class ApplicationConstants implements Serializable {
      * An internal protocol used for identifying a font icon resource.
      */
     public static final String FONTICON_PROTOCOL_PREFIX = "fonticon://";
-    /**
-     * An internal protocol used for referencing to user files published by the
-     * framework.
-     */
-    public static final String PUBLISHED_PROTOCOL_PREFIX = "published://";
     /**
      * The identifier used for the CSRF token.
      */
@@ -182,4 +151,25 @@ public class ApplicationConstants implements Serializable {
      * folder.
      */
     public static final String CLIENT_ENGINE_FOLDER = "client";
+
+    /**
+     * Get parameter used in framework requests to identify the request type.
+     */
+    public static final String REQUEST_TYPE_PARAMETER = "v-r";
+
+    /**
+     * Request type parameter value indicating a UIDL request.
+     */
+    public static final String REQUEST_TYPE_UIDL = "uidl";
+
+    /**
+     * Request type parameter value indicating a heartbeat request.
+     */
+    public static final String REQUEST_TYPE_HEARTBEAT = "heartbeat";
+
+    /**
+     * Request type parameter value indicating a push request.
+     */
+    public static final String REQUEST_TYPE_PUSH = "push";
+
 }

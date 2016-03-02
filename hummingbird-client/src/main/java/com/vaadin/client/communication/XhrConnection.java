@@ -185,12 +185,14 @@ public class XhrConnection {
      */
     protected String getUri() {
         String uri = registry.getURIResolver()
-                .resolveVaadinUri(ApplicationConstants.APP_PROTOCOL_PREFIX
-                        + ApplicationConstants.UIDL_PATH + '/');
+                .resolveVaadinUri(ApplicationConstants.SERVICE_PROTOCOL_PREFIX);
+        uri = SharedUtil.addGetParameter(uri,
+                ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                ApplicationConstants.REQUEST_TYPE_UIDL);
 
-        uri = SharedUtil.addGetParameters(uri,
-                ApplicationConstants.UI_ID_PARAMETER + "="
-                        + registry.getApplicationConfiguration().getUIId());
+        uri = SharedUtil.addGetParameter(uri,
+                ApplicationConstants.UI_ID_PARAMETER,
+                registry.getApplicationConfiguration().getUIId());
 
         return uri;
 

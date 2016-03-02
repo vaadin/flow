@@ -29,113 +29,63 @@ import com.vaadin.ui.UI;
  */
 public class ServletHelper implements Serializable {
 
-    public static final String UPLOAD_URL_PREFIX = "APP/UPLOAD/";
     /**
      * The default SystemMessages (read-only).
      */
     static final SystemMessages DEFAULT_SYSTEM_MESSAGES = new SystemMessages();
 
+    /**
+     * Framework internal enum for tracking the type of a request.
+     */
+    public enum RequestType {
+
+        /**
+         * UIDL requests.
+         */
+        UIDL(ApplicationConstants.REQUEST_TYPE_UIDL),
+        /**
+         * Heartbeat requests.
+         */
+        HEARTBEAT(ApplicationConstants.REQUEST_TYPE_HEARTBEAT),
+        /**
+         * Push requests (any transport).
+         */
+        PUSH(ApplicationConstants.REQUEST_TYPE_PUSH);
+
+        private String identifier;
+
+        private RequestType(String identifier) {
+            this.identifier = identifier;
+        }
+
+        /**
+         * Returns the identifier for the request type.
+         *
+         * @return the identifier
+         */
+        public String getIdentifier() {
+            return identifier;
+        }
+    }
+
     private ServletHelper() {
-    }
-
-    private static boolean hasPathPrefix(VaadinRequest request, String prefix) {
-        String pathInfo = request.getPathInfo(); // always starts with /
-
-        if (pathInfo == null) {
-            return false;
-        }
-
-        assert prefix.startsWith("/");
-
-        return pathInfo.startsWith(prefix);
-    }
-
-    private static boolean isPathInfo(VaadinRequest request, String string) {
-        String pathInfo = request.getPathInfo(); // always starts with /
-
-        if (pathInfo == null) {
-            return false;
-        }
-
-        assert string.startsWith("/");
-
-        return pathInfo.equals(string);
+        // Only utility methods
     }
 
     /**
-     * Returns whether the given request is a file upload request.
+     * Returns whether the given request is of the given type.
      *
      * @param request
      *            the request to check
-     * @return <code>true</code> if it is a file upload request,
-     *         <code>false</code> if not
+     * @param requestType
+     *            the type to check for
+     * @return <code>true</code> if the request is of the given type,
+     *         <code>false</code> otherwise
      */
-    public static boolean isFileUploadRequest(VaadinRequest request) {
-        return hasPathPrefix(request, '/' + UPLOAD_URL_PREFIX);
-    }
-
-    /**
-     * Returns whether the given request is a published file request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a published file request,
-     *         <code>false</code> if not
-     */
-    public static boolean isPublishedFileRequest(VaadinRequest request) {
-        return hasPathPrefix(request,
-                '/' + ApplicationConstants.PUBLISHED_FILE_PATH + '/');
-    }
-
-    /**
-     * Returns whether the given request is a UIDL request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a UIDL request, <code>false</code> if
-     *         not
-     */
-    public static boolean isUIDLRequest(VaadinRequest request) {
-        return hasPathPrefix(request,
-                '/' + ApplicationConstants.UIDL_PATH + '/');
-    }
-
-    /**
-     * Returns whether the given request is a app request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a app request, <code>false</code> if
-     *         not
-     */
-    public static boolean isAppRequest(VaadinRequest request) {
-        return hasPathPrefix(request,
-                '/' + ApplicationConstants.APP_PATH + '/');
-    }
-
-    /**
-     * Returns whether the given request is a heart beat request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a heart beat request,
-     *         <code>false</code> if not
-     */
-    public static boolean isHeartbeatRequest(VaadinRequest request) {
-        return hasPathPrefix(request,
-                '/' + ApplicationConstants.HEARTBEAT_PATH + '/');
-    }
-
-    /**
-     * Returns whether the given request is a push request.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if it is a push request, <code>false</code> if
-     *         not
-     */
-    public static boolean isPushRequest(VaadinRequest request) {
-        return isPathInfo(request, '/' + ApplicationConstants.PUSH_PATH);
+    public static boolean isRequestType(VaadinRequest request,
+            RequestType requestType) {
+        return requestType.getIdentifier().equals(request
+                .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
     }
 
     /**
@@ -200,4 +150,5 @@ public class ServletHelper implements Serializable {
         headerSetter.accept("Pragma", "no-cache");
         longHeaderSetter.accept("Expires", 0L);
     }
+
 }

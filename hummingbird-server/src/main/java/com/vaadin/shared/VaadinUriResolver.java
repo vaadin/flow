@@ -17,11 +17,13 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
+import com.vaadin.server.VaadinService;
+
 /**
- * Utility for translating special Vaadin URIs like vaadin:// and app:// into
- * URLs usable by the browser. This is an abstract class performing the main
- * logic in {@link #resolveVaadinUri(String)} and using abstract methods in the
- * class for accessing information specific to the current environment.
+ * Utility for translating special Vaadin URIs like vaadin:// and service://
+ * into URLs usable by the browser. This is an abstract class performing the
+ * main logic in {@link #resolveVaadinUri(String)} and using abstract methods in
+ * the class for accessing information specific to the current environment.
  * <p>
  * Concrete implementations of this class should implement {@link Serializable}
  * in case a reference to an object of this class is stored on the server side.
@@ -35,11 +37,12 @@ public abstract class VaadinUriResolver {
      * Translates a Vaadin URI to a URL that can be loaded by the browser. The
      * following URI schemes are supported:
      * <ul>
-     * <li><code>app://</code> - resolves to a URL that will be routed to the
-     * currently registered {@link com.vaadin.server.RequestHandler
-     * RequestHandler} instances.</li>
-     * <li><code>vaadin://</code> - resolves to the location of static resouces
-     * in the VAADIN directory</li>
+     * <li><code>{@value ApplicationConstants#SERVICE_PROTOCOL_PREFIX}</code> -
+     * resolves to a URL that will be routed to the current
+     * {@link VaadinService}.</li>
+     * <li><code>{@value ApplicationConstants#VAADIN_PROTOCOL_PREFIX}</code> -
+     * resolves to the location of the VAADIN directory, containing static
+     * resources</li>
      * </ul>
      * Any other URI protocols, such as <code>http://</code> or
      * <code>https://</code> are passed through this method unmodified.
@@ -55,21 +58,9 @@ public abstract class VaadinUriResolver {
         }
 
         if (vaadinUri
-                .startsWith(ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX)) {
-            // getAppUri *should* always end with /
-            // substring *should* always start with / (published:///foo.bar
-            // without published://)
-            vaadinUri = ApplicationConstants.APP_PROTOCOL_PREFIX
-                    + ApplicationConstants.PUBLISHED_FILE_PATH
-                    + vaadinUri.substring(
-                            ApplicationConstants.PUBLISHED_PROTOCOL_PREFIX
-                                    .length());
-            // Let translation of app:// urls take care of the rest
-        }
-
-        if (vaadinUri.startsWith(ApplicationConstants.APP_PROTOCOL_PREFIX)) {
+                .startsWith(ApplicationConstants.SERVICE_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
-                    ApplicationConstants.APP_PROTOCOL_PREFIX.length());
+                    ApplicationConstants.SERVICE_PROTOCOL_PREFIX.length());
             vaadinUri = getServiceUrl() + relativeUrl;
         }
         if (vaadinUri.startsWith(ApplicationConstants.VAADIN_PROTOCOL_PREFIX)) {

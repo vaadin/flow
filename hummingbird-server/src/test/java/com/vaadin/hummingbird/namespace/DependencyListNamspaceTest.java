@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Dependency.Type;
@@ -63,7 +64,7 @@ public class DependencyListNamspaceTest {
         expectedStyleSheetJson.put(DependencyListNamespace.KEY_TYPE,
                 DependencyListNamespace.TYPE_STYLESHEET);
         expectedStyleSheetJson.put(DependencyListNamespace.KEY_URL,
-                "app://styleSheetUrl");
+                ApplicationConstants.SERVICE_PROTOCOL_PREFIX + "styleSheetUrl");
 
         Assert.assertEquals(1, namespace.size());
         Assert.assertTrue(
@@ -102,7 +103,8 @@ public class DependencyListNamspaceTest {
         JsonObject expectedJsJson = Json.createObject();
         expectedJsJson.put(DependencyListNamespace.KEY_TYPE,
                 DependencyListNamespace.TYPE_JAVASCRIPT);
-        expectedJsJson.put(DependencyListNamespace.KEY_URL, "app://jsUrl");
+        expectedJsJson.put(DependencyListNamespace.KEY_URL,
+                ApplicationConstants.SERVICE_PROTOCOL_PREFIX + "jsUrl");
 
         Assert.assertEquals(1, namespace.size());
         Assert.assertTrue(
@@ -141,7 +143,8 @@ public class DependencyListNamspaceTest {
         DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
         namespace.add(new Dependency(Type.JAVASCRIPT, url));
-        Assert.assertEquals("app://" + url, ((JsonObject) namespace.get(0))
-                .getString(DependencyListNamespace.KEY_URL));
+        Assert.assertEquals(ApplicationConstants.SERVICE_PROTOCOL_PREFIX + url,
+                ((JsonObject) namespace.get(0))
+                        .getString(DependencyListNamespace.KEY_URL));
     }
 }

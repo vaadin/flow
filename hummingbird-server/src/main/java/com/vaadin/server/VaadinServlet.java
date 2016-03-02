@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
+import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
@@ -362,9 +363,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * Check that cookie support is enabled in the browser. Only checks UIDL
      * requests.
      *
-     * @param requestType
-     *            Type of the request as returned by
-     *            {@link #getRequestType(HttpServletRequest)}
      * @param request
      *            The request from the browser
      * @param response
@@ -374,7 +372,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     private boolean ensureCookiesEnabled(VaadinServletRequest request,
             VaadinServletResponse response) throws IOException {
-        if (ServletHelper.isUIDLRequest(request)) {
+        if (ServletHelper.isRequestType(request, RequestType.UIDL)) {
             // In all other but the first UIDL request a cookie should be
             // returned by the browser.
             // This can be removed if cookieless mode (#3228) is supported
@@ -784,49 +782,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
             // an up-to-date version in its cache.
         }
         return false;
-    }
-
-    /**
-     *
-     * @author Vaadin Ltd
-     * @since 7.0
-     *
-     * @deprecated As of 7.0. This is no longer used and only provided for
-     *             backwards compatibility. Each {@link RequestHandler} can
-     *             individually decide whether it wants to handle a request or
-     *             not.
-     */
-    @Deprecated
-    protected enum RequestType {
-        FILE_UPLOAD, UIDL, OTHER, STATIC_FILE, APP, PUBLISHED_FILE, HEARTBEAT;
-    }
-
-    /**
-     * @param request
-     * @return
-     *
-     * @deprecated As of 7.0. This is no longer used and only provided for
-     *             backwards compatibility. Each {@link RequestHandler} can
-     *             individually decide whether it wants to handle a request or
-     *             not.
-     */
-    @Deprecated
-    protected RequestType getRequestType(VaadinServletRequest request) {
-        if (ServletHelper.isFileUploadRequest(request)) {
-            return RequestType.FILE_UPLOAD;
-        } else if (ServletHelper.isPublishedFileRequest(request)) {
-            return RequestType.PUBLISHED_FILE;
-        } else if (ServletHelper.isUIDLRequest(request)) {
-            return RequestType.UIDL;
-        } else if (isStaticResourceRequest(request)) {
-            return RequestType.STATIC_FILE;
-        } else if (ServletHelper.isAppRequest(request)) {
-            return RequestType.APP;
-        } else if (ServletHelper.isHeartbeatRequest(request)) {
-            return RequestType.HEARTBEAT;
-        }
-        return RequestType.OTHER;
-
     }
 
     protected boolean isStaticResourceRequest(HttpServletRequest request) {
