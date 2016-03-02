@@ -93,8 +93,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             throw new ExceptionInInitializerError(e);
         }
         // read client engine file name
-        try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
-                "/VAADIN/" + ApplicationConstants.CLIENT_ENGINE_FOLDER
+        try (InputStream prop = BootstrapHandler.class
+                .getResourceAsStream("/META-INF/resources/VAADIN/"
+                        + ApplicationConstants.CLIENT_ENGINE_FOLDER
                         + "/compile.properties")) {
             // null when running SDM or tests
             if (prop != null) {
@@ -328,12 +329,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 + "padding: 1em;" //
                 + "}");
 
-        if (context.getSession().getBrowser().isPhantomJS()) {
+        if (true || context.getSession().getBrowser().isPhantomJS()) {
             // Collections polyfill needed only for PhantomJS
 
             head.appendElement("script").attr("type", "text/javascript")
-                    .attr("src", context.getUriResolver()
-                            .resolveVaadinUri("vaadin://es6-collections.js"));
+                    .attr("src", context.getUriResolver().resolveVaadinUri(
+                            "vaadin://server/es6-collections.js"));
         }
 
         if (context.getPushMode().isEnabled()) {
@@ -607,7 +608,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         final boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
         if (!productionMode && BootstrapHandler.class
-                .getResource("/VAADIN/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
+                .getResource("/META-INF/resources/VAADIN/"
+                        + CLIENT_ENGINE_NOCACHE_FILE) != null) {
             return context.getUriResolver()
                     .resolveVaadinUri("vaadin://" + CLIENT_ENGINE_NOCACHE_FILE);
         }

@@ -54,7 +54,7 @@ import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.util.CurrentInstance;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/run/*", "/VAADIN/*" })
+@WebServlet(asyncSupported = true, urlPatterns = { "/run/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {
 
     public static String CUSTOM_SYSTEM_MESSAGES_PROPERTY = "custom-"
