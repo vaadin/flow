@@ -21,6 +21,8 @@ Further functionality will be implemented in future versions.
 * <<tutorial-hello-world#,Hello World Using Element API>>
 * <<tutorial-event-listener#,Listening to User Events>>
 * <<tutorial-user-input#,Retrieving User Input>>
+* <<tutorial-include-css#,Including Style Sheets>>
+* <<tutorial-dynamic-styling#,Dynamic styling>>
 
 == Server-side DOM tree
 

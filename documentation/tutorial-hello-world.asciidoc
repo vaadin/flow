@@ -1,6 +1,6 @@
 = Building a Hello World Application
 
-The simplest possible Hello World application displays the text "Hello world" on the screen and does nothing else. To accomplish this we need two things:
+The simplest possible Hello World application displays the text "Hello world" on the screen and does nothing else. To accomplish this you need two things:
 
 * A UI class containing our UI elements
 * A servlet handling the rendering of the UI class
@@ -18,20 +18,20 @@ public class HelloWorldUI extends UI {
 }
 ----
 
-The main purpose of the init method is to populate the UI with elements. For the Hello world application we only need one element containing the "Hello world" text:
+The main purpose of the init method is to populate the UI with elements. For the Hello world application you only need one element containing the "Hello world" text:
 [source,java]
 ----
 Element div = new Element("div");
 div.setTextContent("Hello world");
 ----
 
-We also need to attach the element to our UI through the UI's element, which represents the `<body>` tag on the page:
+You also need to attach the element to our UI through the UI's element, which represents the `<body>` tag on the page:
 [source,java]
 ----
 getElement().appendChild(div);
 ----
 
-We thus end up with a `UI` class looking like
+You will thus end up with a `UI` class looking like
 
 [source,java]
 ----
@@ -46,7 +46,7 @@ public class HelloWorldUI extends UI {
 }
 ----
 
-To get this to show up in the browser, we need to add a servlet configured for the UI:
+To get this to show up in the browser, you need to add a servlet configured for the UI:
 
 [source,java]
 ----

@@ -1,6 +1,6 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Retrieving User Input
-To make a fully functional application we need to be able to accept input from the user. We can add a text field to let the user enter her name as follows:
+To make a fully functional application, you need to be able to accept input from the user. You can add a text input field to let the user enter her name as follows:
 
 [source,java]
 ----
@@ -8,7 +8,7 @@ Element textInput =  new Element("input");
 textInput.setAttribute("placeholder", "Please enter your name");
 ----
 
-To get the value from the input to the server, we could use the event data feature described in <<tutorial-event-listener#,the event listener tutorial>> but we we can also ask the client to update the server side input element every time the value changes in the browser:
+To get the value from the input to the server, you could use the event data feature described in <<tutorial-event-listener#,the event listener tutorial>> but you can also ask the client to update the server side input element every time the value changes in the browser:
 
 [source,java]
 ----
