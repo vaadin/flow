@@ -16,7 +16,7 @@
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * Provides inline styles for {@link Element}s.
@@ -88,8 +88,8 @@ public interface Style extends Serializable {
     /**
      * Gets the defined style property names.
      *
-     * @return the defined style property names
+     * @return a stream of defined style property names
      */
-    Set<String> getNames();
+    Stream<String> getNames();
 
 }

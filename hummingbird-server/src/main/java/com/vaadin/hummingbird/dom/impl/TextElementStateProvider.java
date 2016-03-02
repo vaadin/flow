@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEventListener;
@@ -97,7 +98,7 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Set<String> getAttributeNames(StateNode node) {
+    public Stream<String> getAttributeNames(StateNode node) {
         throw new UnsupportedOperationException();
     }
 
@@ -170,7 +171,7 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Set<String> getPropertyNames(StateNode node) {
+    public Stream<String> getPropertyNames(StateNode node) {
         throw new UnsupportedOperationException();
     }
 

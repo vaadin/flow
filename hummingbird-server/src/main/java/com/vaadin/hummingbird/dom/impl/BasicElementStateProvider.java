@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEventListener;
@@ -191,7 +192,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Set<String> getAttributeNames(StateNode node) {
+    public Stream<String> getAttributeNames(StateNode node) {
         return getAttributeNamespace(node).attributes();
     }
 
@@ -315,7 +316,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Set<String> getPropertyNames(StateNode node) {
+    public Stream<String> getPropertyNames(StateNode node) {
         assert node != null;
 
         return getPropertyNamespace(node).getPropertyNames();

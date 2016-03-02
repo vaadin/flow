@@ -318,7 +318,7 @@ public class MapNamespaceTest
         namespace.put("bar", 1);
         namespace.put("baz", 1);
         namespace.clear();
-        Assert.assertEquals(0, namespace.getPropertyNames().size());
+        Assert.assertEquals(0, namespace.getPropertyNames().count());
         Assert.assertFalse(namespace.hasProperty("foo"));
         Assert.assertFalse(namespace.hasProperty("bar"));
         Assert.assertFalse(namespace.hasProperty("baz"));

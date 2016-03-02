@@ -16,7 +16,7 @@
 package com.vaadin.hummingbird.namespace;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 
@@ -104,9 +104,9 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
     /**
      * Gets the property names.
      *
-     * @return a set containing all the property names that have been set
+     * @return a stream containing all the property names that have been set
      */
-    public Set<String> getPropertyNames() {
-        return keySet();
+    public Stream<String> getPropertyNames() {
+        return keySet().stream();
     }
 }
