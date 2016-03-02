@@ -17,22 +17,23 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-public class LoadingIndicatorIT extends PhantomJSTest {
+/**
+ * A testbench test for PhantomJS that verifies the used PhantomJS version.
+ */
+public class PhantomJSVersionIT extends PhantomJSTest {
 
+    /**
+     * Verifies that the system PhantomJS version matches the expected one.
+     */
     @Test
-    public void ensureSecondStyleWorks() throws InterruptedException {
-        open("first=100", "second=1000", "third=100000");
-        WebElement loadingIndicator = findElement(
-                By.className("v-loading-indicator"));
-        testBench().disableWaitForVaadin();
-        findElement(By.id("wait5000")).click();
-        Assert.assertFalse(hasCssClass(loadingIndicator, "second"));
-        Thread.sleep(2000);
-        Assert.assertTrue(hasCssClass(loadingIndicator, "second"));
+    public void checkPhantomJsVersion() {
+        String userAgent = (String) executeScript(
+                "return navigator.userAgent;");
+        // Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML,
+        // like Gecko) PhantomJS/2.1.1 Safari/538.1
+        Assert.assertTrue(userAgent.contains(" PhantomJS/2.1."));
     }
 }

@@ -20,7 +20,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.uitest.PhantomJSTest;
+import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
 public class DependencyIT extends PhantomJSTest {
 
