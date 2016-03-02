@@ -15,11 +15,7 @@
  */
 package com.vaadin.hummingbird.namespace;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Dependency.Type;
 
@@ -53,8 +49,7 @@ public class DependencyListNamespace extends JsonListNamespace {
     /**
      * Adds the given dependency to be loaded by the client side.
      * <p>
-     * Relative URLs are interpreted as relative to the application context
-     * path.
+     * Relative URLs are interpreted as relative to the used servlet mapping.
      *
      * @param dependency
      *            the dependency to include on the page
@@ -62,21 +57,10 @@ public class DependencyListNamespace extends JsonListNamespace {
     public void add(Dependency dependency) {
         JsonObject jsonObject = Json.createObject();
         String url = dependency.getUrl();
-        try {
-            URI uri = new URI(url);
-            if (uri.getScheme() == null && !url.startsWith("/")) {
-                // Relative URL without protocol ->
-                // interpret as relative to context root
-                url = ApplicationConstants.SERVICE_PROTOCOL_PREFIX + url;
-            }
-            jsonObject.put(KEY_URL, url);
-            jsonObject.put(KEY_TYPE, getType(dependency));
+        jsonObject.put(KEY_URL, url);
+        jsonObject.put(KEY_TYPE, getType(dependency));
 
-            super.add(jsonObject);
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Unable to parse the given URL",
-                    e);
-        }
+        super.add(jsonObject);
     }
 
     /**

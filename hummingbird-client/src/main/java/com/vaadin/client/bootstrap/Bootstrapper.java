@@ -131,19 +131,20 @@ public class Bootstrapper implements EntryPoint {
              */
             serviceUrl = Browser.getWindow().getLocation().getHref()
                     .replaceFirst("[?#].*", "");
-        } else {
-            /*
-             * Resolve potentially relative URLs to ensure they point to the
-             * desired locations even if the base URL of the page changes later
-             * (e.g. with pushState)
-             */
-            serviceUrl = WidgetUtil.getAbsoluteUrl(serviceUrl);
         }
 
         // Ensure there's an ending slash (to make appending e.g. UIDL work)
         if (!serviceUrl.endsWith("/")) {
             serviceUrl += Character.toString('/');
         }
+
+        /*
+         * Resolve potentially relative URLs to ensure they point to the desired
+         * locations even if the base URL of the page changes later (e.g. with
+         * pushState)
+         */
+        serviceUrl = WidgetUtil.getAbsoluteUrl(serviceUrl);
+
         conf.setServiceUrl(serviceUrl);
 
         conf.setVaadinDirUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration

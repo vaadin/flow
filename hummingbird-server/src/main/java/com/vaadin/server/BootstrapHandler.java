@@ -293,6 +293,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
                 .attr(CONTENT_ATTRIBUTE, "IE=11;chrome=1");
 
+        head.appendElement("base").attr("href",
+                context.getUriResolver().resolveVaadinUri(
+                        ApplicationConstants.SERVICE_PROTOCOL_PREFIX));
+
         Class<? extends UI> uiClass = context.getUI().getClass();
 
         String viewportContent = getViewportContent(uiClass,

@@ -64,7 +64,7 @@ public class DependencyListNamspaceTest {
         expectedStyleSheetJson.put(DependencyListNamespace.KEY_TYPE,
                 DependencyListNamespace.TYPE_STYLESHEET);
         expectedStyleSheetJson.put(DependencyListNamespace.KEY_URL,
-                ApplicationConstants.SERVICE_PROTOCOL_PREFIX + "styleSheetUrl");
+                "styleSheetUrl");
 
         Assert.assertEquals(1, namespace.size());
         Assert.assertTrue(
@@ -103,8 +103,7 @@ public class DependencyListNamspaceTest {
         JsonObject expectedJsJson = Json.createObject();
         expectedJsJson.put(DependencyListNamespace.KEY_TYPE,
                 DependencyListNamespace.TYPE_JAVASCRIPT);
-        expectedJsJson.put(DependencyListNamespace.KEY_URL,
-                ApplicationConstants.SERVICE_PROTOCOL_PREFIX + "jsUrl");
+        expectedJsJson.put(DependencyListNamespace.KEY_URL, "jsUrl");
 
         Assert.assertEquals(1, namespace.size());
         Assert.assertTrue(
@@ -123,10 +122,10 @@ public class DependencyListNamspaceTest {
         assertUrlUnchanged("ftp://some.host/some/where");
         assertUrlUnchanged("https://some.host/some/where");
         assertUrlUnchanged("//same.protocol.some.host/some/where");
-        assertUrlPrefixed("foo?bar");
-        assertUrlPrefixed("foo?bar=http://yah");
-        assertUrlPrefixed("foo/baz?bar=http://some.thing");
-        assertUrlPrefixed("foo/baz?bar=http://some.thing&ftp://bar");
+        assertUrlUnchanged("foo?bar");
+        assertUrlUnchanged("foo?bar=http://yah");
+        assertUrlUnchanged("foo/baz?bar=http://some.thing");
+        assertUrlUnchanged("foo/baz?bar=http://some.thing&ftp://bar");
     }
 
     private void assertUrlUnchanged(String url) {
@@ -136,15 +135,5 @@ public class DependencyListNamspaceTest {
         namespace.add(new Dependency(Type.JAVASCRIPT, url));
         Assert.assertEquals(url, ((JsonObject) namespace.get(0))
                 .getString(DependencyListNamespace.KEY_URL));
-    }
-
-    private void assertUrlPrefixed(String url) {
-        MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
-                .getRootNode().getNamespace(DependencyListNamespace.class);
-        namespace.add(new Dependency(Type.JAVASCRIPT, url));
-        Assert.assertEquals(ApplicationConstants.SERVICE_PROTOCOL_PREFIX + url,
-                ((JsonObject) namespace.get(0))
-                        .getString(DependencyListNamespace.KEY_URL));
     }
 }
