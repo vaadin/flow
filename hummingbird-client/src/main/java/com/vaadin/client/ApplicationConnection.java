@@ -53,6 +53,8 @@ public class ApplicationConnection {
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
         DependencyLoader.bind(registry.getDependencyLoader(), rootNode);
 
+        PopStateBinder.bind(registry.getServerRpcQueue());
+
         Element body = Browser.getDocument().getBody();
 
         BasicElementBinder.bind(rootNode, body);

@@ -34,6 +34,9 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
+import com.vaadin.ui.History;
+import com.vaadin.ui.History.PopStateEvent;
+import com.vaadin.ui.History.PopStateHandler;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -358,10 +361,28 @@ public class ServerRpcHandler implements Serializable {
             case JsonConstants.RPC_TYPE_PROPERTY_SYNC:
                 // Handled above
                 break;
+            case JsonConstants.RPC_TYPE_POPSTATE:
+                handlePopstate(ui, invocationJson);
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Unsupported event type: " + type);
             }
+        }
+    }
+
+    private static void handlePopstate(UI ui, JsonObject invocationJson) {
+        History history = ui.getPage().getHistory();
+
+        PopStateHandler popStateHandler = history.getPopStateHandler();
+        if (popStateHandler != null) {
+            JsonValue state = invocationJson
+                    .get(JsonConstants.RPC_POPSTATE_STATE);
+            String location = invocationJson
+                    .getString(JsonConstants.RPC_POPSTATE_LOCATION);
+
+            PopStateEvent event = new PopStateEvent(history, state, location);
+            popStateHandler.onPopState(event);
         }
     }
 
