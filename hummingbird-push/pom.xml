@@ -12,7 +12,6 @@
 	<packaging>jar</packaging>
 	<properties>
 		<atmosphere.runtime.version>2.2.7.vaadin1</atmosphere.runtime.version>
-		<atmosphere.js.version>2.2.6.vaadin4</atmosphere.js.version>
 	</properties>
 
 	<dependencies>
@@ -22,90 +21,10 @@
 			<artifactId>atmosphere-runtime</artifactId>
 			<version>${atmosphere.runtime.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.vaadin.external.atmosphere.client</groupId>
-			<artifactId>jquery</artifactId>
-			<version>${atmosphere.js.version}</version>
-			<type>war</type>
-			<scope>provided</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>
 		<plugins>
-			<plugin>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<id>default-cli</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<!-- <inherited>false</inherited> -->
-						<configuration>
-							<target>
-								<property name="jquery.unpack" location="${project.build.directory}/temp" />
-								<property name="vaadinPush.js"
-									location="${project.build.outputDirectory}/VAADIN/push/vaadinPush.js" />
-								<property name="templates.dir"
-									location="${project.build.sourceDirectory}/../templates" />
-
-								<!-- Unzip to temp dir -->
-								<unzip
-									src="${maven.dependency.com.vaadin.external.atmosphere.client.jquery.war.path}"
-									dest="${jquery.unpack}">
-									<patternset>
-										<include name="**/jquery.atmosphere.js" />
-									</patternset>
-									<mapper type="flatten" />
-								</unzip>
-								<loadfile srcfile="${templates.dir}/jquery-1.11.0.js"
-									property="jquery.js.contents" />
-								<loadfile srcfile="${jquery.unpack}/jquery.atmosphere.js"
-									property="jquery.atmosphere.js.contents" />
-
-								<loadfile srcfile="${templates.dir}/vaadinPush.js.tpl"
-									property="vaadinPush.js.contents">
-									<filterchain>
-										<replacetokens begintoken="@" endtoken="@">
-											<token key="jquery.js" value="${jquery.js.contents}" />
-											<token key="jquery.atmosphere.js" value="${jquery.atmosphere.js.contents}" />
-										</replacetokens>
-									</filterchain>
-								</loadfile>
-								<!-- Non-obfuscated version for debugging -->
-								<echo file="${vaadinPush.js}">${vaadinPush.js.contents}</echo>
-
-							</target>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>yuicompressor-maven-plugin</artifactId>
-				<version>1.5.1</version>
-				<executions>
-					<execution>
-						<id>minifyjs</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>compress</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<sourceDirectory>${project.build.outputDirectory}/VAADIN/push</sourceDirectory>
-					<includes>
-						<include>vaadinPush.js</include>
-					</includes>
-					<outputDirectory>${project.build.outputDirectory}/VAADIN/push</outputDirectory>
-				</configuration>
-			</plugin>
-
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.8</version>
