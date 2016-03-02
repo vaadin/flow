@@ -48,6 +48,7 @@
 		<sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
 		<sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<source.skip>true</source.skip>
 	</properties>
 
 	<repositories>
