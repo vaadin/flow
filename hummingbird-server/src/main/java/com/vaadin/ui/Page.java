@@ -33,7 +33,8 @@ import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
  */
 public class Page implements Serializable {
 
-    private UI ui;
+    private final UI ui;
+    private final History history;
 
     /**
      * Creates a page instance for the given UI.
@@ -43,6 +44,7 @@ public class Page implements Serializable {
      */
     public Page(UI ui) {
         this.ui = ui;
+        history = new History(ui);
     }
 
     /**
@@ -129,5 +131,14 @@ public class Page implements Serializable {
 
         ui.getFrameworkData().addJavaScriptInvocation(new JavaScriptInvocation(
                 expression, Arrays.asList(parameters)));
+    }
+
+    /**
+     * Gets a representation of <code>window.history</code> for this page.
+     *
+     * @return the history representation
+     */
+    public History getHistory() {
+        return history;
     }
 }
