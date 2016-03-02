@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -503,6 +504,28 @@ public class ElementTest {
         parent.removeAllChildren();
 
         assertChildren(parent);
+    }
+
+    @Test
+    public void testGetChildren() {
+        Element element = new Element("div");
+
+        Element child1 = new Element("div");
+        Element child2 = new Element("div");
+        Element child3 = new Element("div");
+
+        element.appendChild(child1, child2, child3);
+
+        List<Element> children = element.getChildren()
+                .collect(Collectors.toList());
+        Assert.assertEquals(Arrays.asList(child1, child2, child3), children);
+    }
+
+    @Test
+    public void testGetChildren_empty() {
+        Element element = new Element("div");
+
+        Assert.assertEquals(0, element.getChildren().count());
     }
 
     @Test
