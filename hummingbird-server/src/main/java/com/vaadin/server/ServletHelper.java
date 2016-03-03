@@ -151,4 +151,45 @@ public class ServletHelper implements Serializable {
         longHeaderSetter.accept("Expires", 0L);
     }
 
+    /**
+     * Gets a relative path that cancels the provided path. This essentially
+     * adds one .. for each part of the path to cancel.
+     *
+     * @param pathToCancel
+     *            the path that should be canceled
+     * @return a relative path that cancels out the provided path segment
+     */
+    public static String getCancelingRelativePath(String pathToCancel) {
+        StringBuilder sb = new StringBuilder(".");
+        // Start from i = 1 to ignore first slash
+        for (int i = 1; i < pathToCancel.length(); i++) {
+            if (pathToCancel.charAt(i) == '/') {
+                sb.append("/..");
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Gets a relative path you can use to refer to the context root from the
+     * request URI.
+     *
+     * @param request
+     *            the request for which the location should be determined
+     * @return A relative path to the context root. Never ends with a slash (/).
+     */
+    public static String getContextRootRelativePath(VaadinRequest request) {
+        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+        // Generate location from the request by finding how many "../" should
+        // be added to the requested path before we get to the context root
+
+        String requestedPath = servletRequest.getServletPath();
+        String pathInfo = servletRequest.getPathInfo();
+        if (pathInfo != null) {
+            requestedPath += pathInfo;
+        }
+
+        return ServletHelper.getCancelingRelativePath(requestedPath);
+    }
+
 }

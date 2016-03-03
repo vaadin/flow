@@ -7,26 +7,24 @@ import static org.easymock.EasyMock.replay;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
-import junit.framework.TestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-public class TestAbstractApplicationServletStaticFilesLocation
-        extends TestCase {
-
+public class ServletHelperTest {
     VaadinServlet servlet;
 
-    // private Method getStaticFilesLocationMethod;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
+    @Before
+    public void setup() throws ServletException {
         servlet = new VaadinServlet();
         servlet.init(new MockServletConfig());
     }
 
-    public void testWidgetSetLocation() throws Exception {
+    @Test
+    public void testContextRootRelativePath() throws Exception {
         String location;
 
         /* SERVLETS */
@@ -34,30 +32,30 @@ public class TestAbstractApplicationServletStaticFilesLocation
         // should return . (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host:8080", "/contextpath",
                 "/servlet", "");
-        assertEquals(".", location);
+        Assert.assertEquals(".", location);
 
         // http://dummy.host:8080/contextpath/servlet/
         // should return ./.. (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host:8080", "/contextpath",
                 "/servlet", "/");
-        assertEquals("./..", location);
+        Assert.assertEquals("./..", location);
 
         // http://dummy.host:8080/servlet
         // should return "."
         location = testLocation("http://dummy.host:8080", "", "/servlet", "");
-        assertEquals(".", location);
+        Assert.assertEquals(".", location);
 
         // http://dummy.host/contextpath/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /contextpath)
         location = testLocation("http://dummy.host", "/contextpath", "/servlet",
                 "/extra/stuff");
-        assertEquals("./../..", location);
+        Assert.assertEquals("./../..", location);
 
         // http://dummy.host/context/path/servlet/extra/stuff
         // should return ./../.. (relative url resolving to /context/path)
         location = testLocation("http://dummy.host", "/context/path",
                 "/servlet", "/extra/stuff");
-        assertEquals("./../..", location);
+        Assert.assertEquals("./../..", location);
 
     }
 
@@ -69,8 +67,8 @@ public class TestAbstractApplicationServletStaticFilesLocation
         // Set request into replay mode
         replay(request);
 
-        String location = servlet.getService()
-                .getStaticFileLocation(servlet.createVaadinRequest(request));
+        String location = ServletHelper.getContextRootRelativePath(
+                servlet.createVaadinRequest(request));
         return location;
     }
 
