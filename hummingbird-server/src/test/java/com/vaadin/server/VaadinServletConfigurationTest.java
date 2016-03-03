@@ -56,7 +56,6 @@ public class VaadinServletConfigurationTest {
         Assert.assertEquals(true, configuration.isProductionMode());
         Assert.assertEquals(true, configuration.isCloseIdleSessions());
         Assert.assertEquals(1234, configuration.getHeartbeatInterval());
-        Assert.assertEquals(4321, configuration.getResourceCacheTime());
 
         Class<? extends UI> uiClass = BootstrapHandler
                 .getUIClass(new VaadinServletRequest(
@@ -82,7 +81,6 @@ public class VaadinServletConfigurationTest {
 
         // Other params are as defined in the annotation
         Assert.assertEquals(true, configuration.isCloseIdleSessions());
-        Assert.assertEquals(4321, configuration.getResourceCacheTime());
 
         Class<? extends UI> uiClass = BootstrapHandler
                 .getUIClass(new VaadinServletRequest(
@@ -92,7 +90,7 @@ public class VaadinServletConfigurationTest {
     }
 }
 
-@VaadinServletConfiguration(productionMode = true, ui = MockUIContainingServlet.class, closeIdleSessions = true, heartbeatInterval = 1234, resourceCacheTime = 4321)
+@VaadinServletConfiguration(productionMode = true, ui = MockUIContainingServlet.class, closeIdleSessions = true, heartbeatInterval = 1234)
 class TestServlet extends VaadinServlet {
 
 }
