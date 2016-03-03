@@ -115,12 +115,12 @@
 						<version>${jetty.plugin.version}</version>
 						<configuration>
 							<webAppConfig>
+								<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
 								<!-- Configure all project META-INF/resources directories for Jetty 
 									as resource folders as Jetty inside Eclipse is run with "Resolve workspace 
 									artifacts" and this does not create any JARs. Jetty only scans JARs for META-INF/resources 
 									folders -->
 								<resourceBases>
-									<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
 									<resourceBase>${project.basedir}/../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
 									<resourceBase>${project.basedir}/../hummingbird-client/target/classes/META-INF/resources</resourceBase>
 									<resourceBase>${project.basedir}/../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
