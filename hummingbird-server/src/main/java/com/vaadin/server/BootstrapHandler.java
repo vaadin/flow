@@ -359,19 +359,41 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 "You have to enable javascript in your browser to use this web site.");
     }
 
+    /**
+     * Return the URL from where internal static files are served.
+     * <p>
+     * The returned folder is usually the same as the context path and
+     * independent of e.g. the servlet mapping.
+     *
+     * @param request
+     *            the request for which the location should be determined
+     *
+     * @return The location of static resources (should contain the VAADIN
+     *         directory). Never ends with a slash (/).
+     */
+    static String getRelativeContextRootURL(VaadinRequest request) {
+        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+        // Generate location from the request by finding how many "../" should
+        // be added to the requested path before we get to the context root
+
+        String requestedPath = servletRequest.getServletPath();
+        String pathInfo = servletRequest.getPathInfo();
+        if (pathInfo != null) {
+            requestedPath += pathInfo;
+        }
+
+        return ServletHelper.getCancelingRelativePath(requestedPath);
+    }
+
     private static Element getPushScript(BootstrapContext context) {
         VaadinRequest request = context.getRequest();
-
-        VaadinService vaadinService = request.getService();
-        String vaadinLocation = vaadinService.getStaticFileLocation(request)
-                + "/VAADIN/";
 
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
         // Load client-side dependencies for push support
-        String pushJS = vaadinLocation + "push/";
-        if (context.getRequest().getService().getDeploymentConfiguration()
+        String pushJS = getRelativeContextRootURL(request) + "/VAADIN/push/";
+        if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
             pushJS += ApplicationConstants.VAADIN_PUSH_JS;
         } else {
@@ -493,8 +515,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         // getStaticFileLocation documented to never end with a slash
         // vaadinDir should always end with a slash
-        String vaadinDir = vaadinService.getStaticFileLocation(request)
-                + "/VAADIN/";
+        String vaadinDir = getRelativeContextRootURL(request) + "/VAADIN/";
         appConfig.put(ApplicationConstants.VAADIN_DIR_URL, vaadinDir);
 
         if (!productionMode) {

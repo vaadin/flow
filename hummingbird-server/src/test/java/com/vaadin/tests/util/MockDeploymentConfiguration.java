@@ -13,7 +13,6 @@ public class MockDeploymentConfiguration
     private boolean productionMode = false;
     private boolean xsrfProtectionEnabled = true;
 
-    private int resourceCacheTime = 12;
     private int heartbeatInterval = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
@@ -47,15 +46,6 @@ public class MockDeploymentConfiguration
 
     public void setXsrfProtectionEnabled(boolean xsrfProtectionEnabled) {
         this.xsrfProtectionEnabled = xsrfProtectionEnabled;
-    }
-
-    @Override
-    public int getResourceCacheTime() {
-        return resourceCacheTime;
-    }
-
-    public void setResourceCacheTime(int resourceCacheTime) {
-        this.resourceCacheTime = resourceCacheTime;
     }
 
     @Override

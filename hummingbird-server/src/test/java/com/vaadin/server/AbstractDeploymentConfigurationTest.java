@@ -40,16 +40,6 @@ public class AbstractDeploymentConfigurationTest {
     }
 
     @Test
-    public void getResourcesPath_returnsResourcesPathPropertyValue() {
-        String resources = UUID.randomUUID().toString();
-        DeploymentConfiguration config = getConfig(
-                Constants.PARAMETER_VAADIN_RESOURCES, resources);
-        Assert.assertEquals(
-                "Unexpected resources path configuration option value",
-                resources, config.getResourcesPath());
-    }
-
-    @Test
     public void getClassLoader_returnsClassloaderPropertyValue() {
         String classLoader = UUID.randomUUID().toString();
         DeploymentConfiguration config = getConfig("ClassLoader", classLoader);
@@ -87,11 +77,6 @@ public class AbstractDeploymentConfigurationTest {
         @Override
         public boolean isSyncIdCheckEnabled() {
             return false;
-        }
-
-        @Override
-        public int getResourceCacheTime() {
-            return 0;
         }
 
         @Override
