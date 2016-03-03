@@ -56,13 +56,6 @@ public interface DeploymentConfiguration extends Serializable {
     public boolean isSyncIdCheckEnabled();
 
     /**
-     * Returns the time resources can be cached in the browsers, in seconds.
-     *
-     * @return The resource cache time.
-     */
-    public int getResourceCacheTime();
-
-    /**
      * Returns the number of seconds between heartbeat requests of a UI, or a
      * non-positive number if heartbeat is disabled.
      *
@@ -139,14 +132,6 @@ public interface DeploymentConfiguration extends Serializable {
      * @since 7.4
      */
     public String getUIClassName();
-
-    /**
-     * Gets resources path configuration option value.
-     *
-     * @return the configured resources path
-     * @since 7.4
-     */
-    public String getResourcesPath();
 
     /**
      * Gets class loader configuration option value.
