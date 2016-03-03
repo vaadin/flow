@@ -49,6 +49,10 @@
 				<artifactId>maven-war-plugin</artifactId>
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<!-- add the generated manifest to the war -->
+					<archive>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -100,6 +104,18 @@
 					<stopPort>8889</stopPort>
 					<stopKey>foo</stopKey>
 					<stopWait>5</stopWait>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<instructions>
+						<Web-ContextPath>/uitest</Web-ContextPath>
+						<Bundle-Classpath>WEB-INF/classes</Bundle-Classpath>
+						<!-- Must use require bundle so that META-INF/resources are deployed -->
+						<Require-Bundle>${project.groupId}.hummingbird-server;bundle-version=${project.osgi.version},${project.groupId}.hummingbird-push;bundle-version=${project.osgi.version},${project.groupId}.hummingbird-client;bundle-version=${project.osgi.version}</Require-Bundle>
+					</instructions>
 				</configuration>
 			</plugin>
 		</plugins>
