@@ -1,0 +1,56 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Element Properties and Attributes
+
+You can change property and attribute values for server-side Elements.
+
+[WARNING]
+Values updated in the browser are by default not sent back to the server.
+See the <<tutorial-user-input#,Retrieving User Input>> tutorial to learn how to get data back to the server.
+
+== Attributes
+Attributes are mainly used for initial configuration of an element.
+Attribute values are always stored as strings.
+
+[source,java]
+----
+Element nameField = new Element("input");
+nameField.setAttribute("id", "nameField");
+nameField.setAttribute("placeholder", "John Doe");
+nameField.setAttribute("autofocus", "");
+----
+The above example expressed as HTML would look like `<input id=nameField placeholder="John Doe" autofocus>`.
+
+You can also investigate an manipulate attributes that have already been set.
+[source,java]
+----
+// "John Doe"
+String placeholder = nameField.getAttribute("placeholder");
+
+// true
+nameField.hasAttribute("autofocus");
+
+nameField.removeAttribute("autofocus");
+
+// ["id", "placeholder"]
+nameField.getAttributeNames().toArray();
+----
+
+== Properties
+
+Properties are mainly used for dynamically changing the settings of an element after it has been initialized.
+In the browser, any JavaScript value can be used as a property value.
+You can use different variations of the `setProperty` method for setting a property value as `String`, `boolean`, `double` and `JsonValue`.
+Similarly, the value of a property can be fetched as any of those types using different `getProperty` method variations.
+The value will be converted according to JavaScript type coercion rules if it is fetched as some other type than how it was set.
+For instance, a property set as a non-empty string will result in `true` if fetched as a boolean.
+
+[source,java]
+----
+Element element = new Element("input");
+element.setProperty("value", "Hello")
+----
+
+[NOTE]
+There are many cases where you can use either an attribute or property with the same name for the same effect.
+In some cases only one of them works, in other cases the attribute is considered when the element is initialized, but after initialization only the property is effective.
+Please check documentation specific to the element you're using to find out whether a feature should be configured using a property or an attribute.
