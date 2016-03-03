@@ -82,17 +82,6 @@ public @interface VaadinServletConfiguration {
     public Class<? extends UI> ui();
 
     /**
-     * The time resources can be cached in the browser, in seconds. The default
-     * value is 3600 seconds, i.e. one hour.
-     *
-     * @return the resource cache time
-     *
-     * @see DeploymentConfiguration#getResourceCacheTime()
-     */
-    @InitParameterName(Constants.SERVLET_PARAMETER_RESOURCE_CACHE_TIME)
-    public int resourceCacheTime() default DefaultDeploymentConfiguration.DEFAULT_RESOURCE_CACHE_TIME;
-
-    /**
      * The number of seconds between heartbeat requests of a UI, or a
      * non-positive number if heartbeat is disabled. The default value is 300
      * seconds, i.e. 5 minutes.

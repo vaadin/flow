@@ -82,48 +82,6 @@ public class VaadinServletService extends VaadinService {
     }
 
     @Override
-    public String getStaticFileLocation(VaadinRequest request) {
-        VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-        String staticFileLocation;
-        // if property is defined in configurations, use that
-        staticFileLocation = getDeploymentConfiguration().getResourcesPath();
-        if (staticFileLocation != null) {
-            return staticFileLocation;
-        }
-
-        // the last (but most common) option is to generate default location
-        // from request by finding how many "../" should be added to the
-        // requested path before we get to the context root
-
-        String requestedPath = servletRequest.getServletPath();
-        String pathInfo = servletRequest.getPathInfo();
-        if (pathInfo != null) {
-            requestedPath += pathInfo;
-        }
-
-        return getCancelingRelativePath(requestedPath);
-    }
-
-    /**
-     * Gets a relative path that cancels the provided path. This essentially
-     * adds one .. for each part of the path to cancel.
-     *
-     * @param pathToCancel
-     *            the path that should be canceled
-     * @return a relative path that cancels out the provided path segment
-     */
-    public static String getCancelingRelativePath(String pathToCancel) {
-        StringBuilder sb = new StringBuilder(".");
-        // Start from i = 1 to ignore first slash
-        for (int i = 1; i < pathToCancel.length(); i++) {
-            if (pathToCancel.charAt(i) == '/') {
-                sb.append("/..");
-            }
-        }
-        return sb.toString();
-    }
-
-    @Override
     public String getMimeType(String resourceName) {
         return getServlet().getServletContext().getMimeType(resourceName);
     }
