@@ -202,20 +202,6 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Return the URL from where static files are served.
-     * <p>
-     * The returned folder is usually the same as the context path and
-     * independent of e.g. the servlet mapping.
-     *
-     * @param request
-     *            the request for which the location should be determined
-     *
-     * @return The location of static resources (should contain the VAADIN
-     *         directory). Never ends with a slash (/).
-     */
-    public abstract String getStaticFileLocation(VaadinRequest request);
-
-    /**
      * Gets the class loader to use for loading classes loaded by name, e.g.
      * custom UI classes. This is by default the class loader that was used to
      * load the Servlet class to which this service belongs.

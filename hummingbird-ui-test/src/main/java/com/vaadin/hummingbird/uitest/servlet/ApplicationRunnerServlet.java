@@ -54,7 +54,7 @@ import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.util.CurrentInstance;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/run/*" })
+@WebServlet(asyncSupported = true, urlPatterns = { "/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {
 
     public static String CUSTOM_SYSTEM_MESSAGES_PROPERTY = "custom-"
@@ -121,15 +121,10 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         URL url = super.getApplicationUrl(request);
 
         String path = url.toString();
-        path += getApplicationRunnerApplicationClassName(request);
+        path += getUIClassName(request);
         path += "/";
 
         return new URL(path);
-    }
-
-    private String getApplicationRunnerApplicationClassName(
-            HttpServletRequest request) {
-        return getApplicationRunnerURIs(request).applicationClassname;
     }
 
     private final static class ProxyDeploymentConfiguration
@@ -156,16 +151,6 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         }
     }
 
-    // TODO Don't need to use a data object now that there's only one field
-    private static class URIS {
-        // String staticFilesPath;
-        // String applicationURI;
-        // String context;
-        // String runner;
-        String applicationClassname;
-
-    }
-
     /**
      * Parses application runner URIs.
      *
@@ -181,47 +166,18 @@ public class ApplicationRunnerServlet extends VaadinServlet {
      * @return string array containing widgetset URI, application URI and
      *         context, runner, application classname
      */
-    private static URIS getApplicationRunnerURIs(HttpServletRequest request) {
-        final String[] urlParts = request.getRequestURI().toString()
-                .split("\\/");
-        // String runner = null;
-        URIS uris = new URIS();
-        String applicationClassname = null;
-        String contextPath = request.getContextPath();
-        if (urlParts[1].equals(contextPath.replaceAll("\\/", ""))) {
-            // class name comes after web context and runner application
-            // runner = urlParts[2];
-            if (urlParts.length == 3) {
-                throw new IllegalArgumentException("No application specified");
-            }
-            applicationClassname = urlParts[3];
-
-            // uris.applicationURI = "/" + context + "/" + runner + "/"
-            // + applicationClassname;
-            // uris.context = context;
-            // uris.runner = runner;
-            uris.applicationClassname = applicationClassname;
-        } else {
-            // no context
-            // runner = urlParts[1];
-            if (urlParts.length == 2) {
-                throw new IllegalArgumentException("No application specified");
-            }
-            applicationClassname = urlParts[2];
-
-            // uris.applicationURI = "/" + runner + "/" + applicationClassname;
-            // uris.context = context;
-            // uris.runner = runner;
-            uris.applicationClassname = applicationClassname;
+    private static String getUIClassName(HttpServletRequest request) {
+        String uiClass = request.getPathInfo();
+        if (uiClass != null && uiClass.startsWith("/")) {
+            uiClass = uiClass.substring(1);
         }
-        return uris;
+        return uiClass;
     }
 
     private Class<?> getClassToRun() throws ClassNotFoundException {
         Class<?> appClass = null;
 
-        String baseName = getApplicationRunnerApplicationClassName(
-                request.get());
+        String baseName = getUIClassName(request.get());
         try {
             appClass = getClass().getClassLoader().loadClass(baseName);
             return appClass;
@@ -262,7 +218,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 getClass(), initParameters) {
             @Override
             public String getUIClassName() {
-                return getApplicationRunnerApplicationClassName(request.get());
+                return ApplicationRunnerServlet.getUIClassName(request.get());
             }
         };
 
