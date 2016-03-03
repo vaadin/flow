@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.navigator.ViewDisplay;
@@ -306,6 +307,41 @@ public class SpringUIProvider extends UIProvider {
                     + " is not active");
             return null;
         }
+    }
+
+    @Override
+    public String getTheme(UICreateEvent event) {
+        String theme = super.getTheme(event);
+        if (theme != null) {
+            theme = resolvePropertyPlaceholders(theme);
+        }
+        return theme;
+    }
+
+    @Override
+    public String getPageTitle(UICreateEvent event) {
+        String pageTitle = super.getPageTitle(event);
+        if (pageTitle != null) {
+            pageTitle = resolvePropertyPlaceholders(pageTitle);
+        }
+        return pageTitle;
+    }
+
+    @Override
+    public String getWidgetset(UICreateEvent event) {
+        String widgetset = super.getWidgetset(event);
+        if (widgetset != null) {
+            widgetset = resolvePropertyPlaceholders(widgetset);
+        }
+        return widgetset;
+    }
+
+    private String resolvePropertyPlaceholders(String value) {
+        if (StringUtils.hasText(value)) {
+            return webApplicationContext.getEnvironment()
+                    .resolvePlaceholders(value);
+        }
+        return value;
     }
 
 }
