@@ -30,10 +30,6 @@ import com.vaadin.shared.communication.PushMode;
  */
 public class DefaultDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
-    /**
-     * Default value for {@link #getResourceCacheTime()} = {@value} .
-     */
-    public static final int DEFAULT_RESOURCE_CACHE_TIME = 3600;
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -57,7 +53,6 @@ public class DefaultDeploymentConfiguration
     private final Properties initParameters;
     private boolean productionMode;
     private boolean xsrfProtectionEnabled;
-    private int resourceCacheTime;
     private int heartbeatInterval;
     private boolean closeIdleSessions;
     private PushMode pushMode;
@@ -82,7 +77,6 @@ public class DefaultDeploymentConfiguration
 
         checkProductionMode();
         checkXsrfProtection();
-        checkResourceCacheTime();
         checkHeartbeatInterval();
         checkCloseIdleSessions();
         checkPushMode();
@@ -192,16 +186,6 @@ public class DefaultDeploymentConfiguration
     /**
      * {@inheritDoc}
      * <p>
-     * The default interval is 3600 seconds (1 hour).
-     */
-    @Override
-    public int getResourceCacheTime() {
-        return resourceCacheTime;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
      * The default interval is 300 seconds (5 minutes).
      */
     @Override
@@ -275,21 +259,6 @@ public class DefaultDeploymentConfiguration
                         .equals("true");
         if (!xsrfProtectionEnabled) {
             getLogger().warning(Constants.WARNING_XSRF_PROTECTION_DISABLED);
-        }
-    }
-
-    /**
-     * Log a warning if resource cache time is set but is not an integer.
-     */
-    private void checkResourceCacheTime() {
-        try {
-            resourceCacheTime = Integer.parseInt(getApplicationOrSystemProperty(
-                    Constants.SERVLET_PARAMETER_RESOURCE_CACHE_TIME,
-                    Integer.toString(DEFAULT_RESOURCE_CACHE_TIME)));
-        } catch (NumberFormatException e) {
-            getLogger().warning(
-                    Constants.WARNING_RESOURCE_CACHING_TIME_NOT_NUMERIC);
-            resourceCacheTime = DEFAULT_RESOURCE_CACHE_TIME;
         }
     }
 

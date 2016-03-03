@@ -114,11 +114,6 @@ public interface Constants {
     static final String SERVLET_PARAMETER_SENDURLSASPARAMETERS = "sendUrlsAsParameters";
     static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
 
-    // Configurable parameter names
-    static final String PARAMETER_VAADIN_RESOURCES = "Resources";
-
-    static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
-
     static final int MAX_BUFFER_SIZE = 64 * 1024;
 
     static final String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
