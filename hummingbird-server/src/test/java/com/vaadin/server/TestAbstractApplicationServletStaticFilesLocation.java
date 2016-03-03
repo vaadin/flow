@@ -69,7 +69,7 @@ public class TestAbstractApplicationServletStaticFilesLocation
         // Set request into replay mode
         replay(request);
 
-        String location = servlet.getService()
+        String location = BootstrapHandler
                 .getStaticFileLocation(servlet.createVaadinRequest(request));
         return location;
     }

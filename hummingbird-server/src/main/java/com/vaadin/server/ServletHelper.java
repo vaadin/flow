@@ -151,4 +151,23 @@ public class ServletHelper implements Serializable {
         longHeaderSetter.accept("Expires", 0L);
     }
 
+    /**
+     * Gets a relative path that cancels the provided path. This essentially
+     * adds one .. for each part of the path to cancel.
+     *
+     * @param pathToCancel
+     *            the path that should be canceled
+     * @return a relative path that cancels out the provided path segment
+     */
+    public static String getCancelingRelativePath(String pathToCancel) {
+        StringBuilder sb = new StringBuilder(".");
+        // Start from i = 1 to ignore first slash
+        for (int i = 1; i < pathToCancel.length(); i++) {
+            if (pathToCancel.charAt(i) == '/') {
+                sb.append("/..");
+            }
+        }
+        return sb.toString();
+    }
+
 }
