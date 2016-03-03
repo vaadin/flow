@@ -38,9 +38,9 @@
 						<configuration>
 							<target>
 								<property name="vaadinPush.js"
-									location="${project.build.outputDirectory}/VAADIN/push/vaadinPush.js" />
+									location="${project.build.outputDirectory}/META-INF/resources/VAADIN/push/vaadinPush.js" />
 								<property name="vaadinPush-min.js"
-									location="${project.build.outputDirectory}/VAADIN/push/vaadinPush-min.js" />
+									location="${project.build.outputDirectory}/META-INF/resources/VAADIN/push/vaadinPush-min.js" />
 
 								<!-- Gzipped versions -->
 								<gzip src="${vaadinPush.js}" destfile="${vaadinPush.js}.gz" />
