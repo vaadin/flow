@@ -85,9 +85,9 @@ public class WidgetUtil {
      */
     public static native <T extends JavaScriptObject> T crazyJsoCast(
             Object value)
-            /*-{
-                return value;
-            }-*/;
+    /*-{
+        return value;
+    }-*/;
 
     /**
      * Converts a JSON value to a formatted string.
@@ -133,9 +133,9 @@ public class WidgetUtil {
      */
     public static native void setJsProperty(Object object, String name,
             Object value)
-            /*-{
-                object[name] = value;
-            }-*/;
+    /*-{
+        object[name] = value;
+    }-*/;
 
     /**
      * Retrieves the value of a JavaScript property.
