@@ -50,7 +50,7 @@ public class Router implements Serializable {
             path = pathInfo.substring(1);
         }
 
-        ui.getPage().getHistory().setPopStateHandler(e -> {
+        ui.getPage().getHistory().setLocationChangeHandler(e -> {
             String newLocation = e.getLocation();
 
             // Should be changed when the event handler has been updated to give

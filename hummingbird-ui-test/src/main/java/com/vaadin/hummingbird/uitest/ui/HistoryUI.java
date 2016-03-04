@@ -47,7 +47,7 @@ public class HistoryUI extends UI {
 
         addRow(createActionButton("clear", this::clear));
 
-        history.setPopStateHandler(e -> {
+        history.setLocationChangeHandler(e -> {
             addStatus("New location: " + e.getLocation());
 
             e.getState().ifPresent(

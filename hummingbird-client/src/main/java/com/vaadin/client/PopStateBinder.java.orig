@@ -15,7 +15,11 @@
  */
 package com.vaadin.client;
 
+<<<<<<< 155fc478cd08007499aaf1fa705e4bd46a16c85d
 import com.vaadin.client.communication.ServerMessager;
+=======
+import com.vaadin.client.communication.ServerRpcQueue;
+>>>>>>> Intercept router link click events
 
 import elemental.client.Browser;
 
@@ -41,9 +45,15 @@ public class PopStateBinder {
     public static void bind(ServerMessager messager) {
         Browser.getWindow().setOnpopstate(e -> {
             Object stateObject = WidgetUtil.getJsProperty(e, "state");
+
+<<<<<<< 155fc478cd08007499aaf1fa705e4bd46a16c85d
+            messager.sendNavigationMessage(location, stateObject);
+=======
             String location = URIResolver.getCurrentLocationRelativeToBaseUri();
 
-            messager.sendNavigationMessage(location, stateObject);
+            ServerRpcQueue.sendNavigationMessage(rpcQueue, location,
+                    stateObject);
+>>>>>>> Intercept router link click events
         });
     }
 
