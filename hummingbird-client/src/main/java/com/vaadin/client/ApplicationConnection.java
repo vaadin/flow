@@ -22,6 +22,7 @@ import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.hummingbird.BasicElementBinder;
+import com.vaadin.client.hummingbird.RouterLinkHandler;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.shared.Version;
 
@@ -58,6 +59,7 @@ public class ApplicationConnection {
         Element body = Browser.getDocument().getBody();
 
         BasicElementBinder.bind(rootNode, body);
+        RouterLinkHandler.bind(registry.getServerRpcQueue(), body);
 
         Console.log("Starting application "
                 + applicationConfiguration.getApplicationId());

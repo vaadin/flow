@@ -19,9 +19,12 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.hummingbird.util.ClientJsonCodec;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -147,4 +150,29 @@ public class ServerRpcQueue {
         return pendingInvocations;
     }
 
+    /**
+     * Sends a navigation message to server using the given rpc queue.
+     *
+     * @param rpcQueue
+     *            the rpc queue to use
+     * @param location
+     *            the relative location of the navigation
+     * @param stateObject
+     *            the state object or <code>null</code> if none applicable
+     */
+    public static void sendNavigationMessage(final ServerRpcQueue rpcQueue,
+            final String location, final Object stateObject) {
+        JsonObject invocation = Json.createObject();
+        invocation.put(JsonConstants.RPC_TYPE,
+                JsonConstants.RPC_TYPE_NAVIGATION);
+        invocation.put(JsonConstants.RPC_NAVIGATION_LOCATION, location);
+        if (stateObject != null) {
+            JsonValue stateJson = ClientJsonCodec
+                    .encodeWithoutTypeInfo(stateObject);
+            invocation.put(JsonConstants.RPC_NAVIGATION_STATE, stateJson);
+        }
+
+        rpcQueue.add(invocation);
+        rpcQueue.flush();
+    }
 }

@@ -35,8 +35,8 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
 import com.vaadin.ui.History;
-import com.vaadin.ui.History.PopStateEvent;
-import com.vaadin.ui.History.PopStateHandler;
+import com.vaadin.ui.History.LocationChangeEvent;
+import com.vaadin.ui.History.LocationChangeHandler;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -361,8 +361,8 @@ public class ServerRpcHandler implements Serializable {
             case JsonConstants.RPC_TYPE_PROPERTY_SYNC:
                 // Handled above
                 break;
-            case JsonConstants.RPC_TYPE_POPSTATE:
-                handlePopstate(ui, invocationJson);
+            case JsonConstants.RPC_TYPE_NAVIGATION:
+                handleNavigation(ui, invocationJson);
                 break;
             default:
                 throw new IllegalArgumentException(
@@ -371,18 +371,19 @@ public class ServerRpcHandler implements Serializable {
         }
     }
 
-    private static void handlePopstate(UI ui, JsonObject invocationJson) {
+    private static void handleNavigation(UI ui, JsonObject invocationJson) {
         History history = ui.getPage().getHistory();
 
-        PopStateHandler popStateHandler = history.getPopStateHandler();
-        if (popStateHandler != null) {
+        LocationChangeHandler locationChangeHandler = history.getLocationChangeHandler();
+        if (locationChangeHandler != null) {
             JsonValue state = invocationJson
-                    .get(JsonConstants.RPC_POPSTATE_STATE);
+                    .get(JsonConstants.RPC_NAVIGATION_STATE);
             String location = invocationJson
-                    .getString(JsonConstants.RPC_POPSTATE_LOCATION);
+                    .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
 
-            PopStateEvent event = new PopStateEvent(history, state, location);
-            popStateHandler.onPopState(event);
+            LocationChangeEvent event = new LocationChangeEvent(history, state,
+                    location);
+            locationChangeHandler.onLocationChange(event);
         }
     }
 
