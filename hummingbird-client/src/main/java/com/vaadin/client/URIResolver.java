@@ -17,6 +17,8 @@ package com.vaadin.client;
 
 import com.vaadin.shared.VaadinUriResolver;
 
+import elemental.client.Browser;
+
 /**
  * Client side URL resolver for vaadin protocols.
  *
@@ -46,4 +48,32 @@ public class URIResolver extends VaadinUriResolver {
         return registry.getApplicationConfiguration().getServiceUrl();
     }
 
+    /**
+     * Returns the current document location as relative to the base uri of the
+     * document.
+     *
+     * @return the document current location as relative to the document base
+     *         uri
+     */
+    public static String getCurrentLocationRelativeToBaseUri() {
+        return getBaseRelativeUri(Browser.getDocument().getBaseURI(),
+                Browser.getDocument().getLocation().getHref());
+    }
+
+    /**
+     * Returns the given uri as relative to the given base uri.
+     *
+     * @param baseURI
+     *            the base uri of the document
+     * @param url
+     *            an absolute uri to transform
+     * @return the uri as relative to the document base uri, or the given uri
+     *         unmodified if it is for different context.
+     */
+    public static String getBaseRelativeUri(String baseURI, String uri) {
+        if (uri.startsWith(baseURI)) {
+            return uri.substring(baseURI.length());
+        }
+        return uri;
+    }
 }
