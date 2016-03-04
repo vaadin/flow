@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.vaadin</groupId>
+		<artifactId>hummingbird-project</artifactId>
+		<version>0.0.2-SNAPSHOT</version>
+	</parent>
+	<artifactId>hummingbird-context-test</artifactId>
+	<name>Hummingbird Context tests</name>
+	<packaging>war</packaging>
+
+	<properties>
+		<jetty.plugin.version>9.2.3.v20140905</jetty.plugin.version>
+		<!-- Don't care about coding style for tests -->
+		<sonar.skip>true</sonar.skip>
+	</properties>
+
+	<dependencies>
+		<!-- Project dependencies -->
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-server</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-client</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-test-util</artifactId>
+			<version>0.0.2-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- The Jetty plugin allows us to easily test the development build by 
+				running jetty:run -->
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jetty.plugin.version}</version>
+				<executions>
+					<!-- start and stop jetty (running our app) when running integration 
+						tests -->
+					<execution>
+						<id>start-jetty</id>
+						<phase>pre-integration-test</phase>
+						<goals>
+							<goal>start</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>stop-jetty</id>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>stop</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<webAppConfig>
+						<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
+						<containerIncludeJarPattern>^$</containerIncludeJarPattern>
+						<contextPath>/context</contextPath>
+					</webAppConfig>
+					<scanIntervalSeconds>-1</scanIntervalSeconds>
+					<httpConnector>
+						<port>8888</port>
+					</httpConnector>
+					<stopPort>8889</stopPort>
+					<stopKey>foo</stopKey>
+					<stopWait>5</stopWait>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
