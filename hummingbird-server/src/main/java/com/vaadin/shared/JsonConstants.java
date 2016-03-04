@@ -168,4 +168,9 @@ public class JsonConstants implements Serializable {
      */
     public static final String RPC_POPSTATE_STATE = "state";
 
+    /**
+     * Type value for routing events sent from client.
+     */
+    public static final String RPC_TYPE_ROUTING = "routing";
+
 }

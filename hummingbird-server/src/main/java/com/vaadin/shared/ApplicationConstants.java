@@ -172,4 +172,9 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String REQUEST_TYPE_PUSH = "push";
 
+    /**
+     * Attribute name for marking internal router link anchors.
+     */
+    public static final String ROUTER_LINK_ATTRIBUTE = "routerlink";
+
 }
