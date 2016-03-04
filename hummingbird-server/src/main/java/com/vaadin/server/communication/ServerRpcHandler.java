@@ -364,6 +364,9 @@ public class ServerRpcHandler implements Serializable {
             case JsonConstants.RPC_TYPE_POPSTATE:
                 handlePopstate(ui, invocationJson);
                 break;
+            case JsonConstants.RPC_TYPE_ROUTING:
+                handleRouting(ui, invocationJson);
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Unsupported event type: " + type);
@@ -381,7 +384,8 @@ public class ServerRpcHandler implements Serializable {
             String location = invocationJson
                     .getString(JsonConstants.RPC_POPSTATE_LOCATION);
 
-            PopStateEvent event = new PopStateEvent(history, state, location);
+            PopStateEvent event = new PopStateEvent(history, state, location,
+                    false);
             popStateHandler.onPopState(event);
         }
     }
@@ -448,6 +452,20 @@ public class ServerRpcHandler implements Serializable {
         DomEvent event = new DomEvent(Element.get(node), eventType, eventData);
 
         node.getNamespace(ElementListenersNamespace.class).fireEvent(event);
+    }
+
+    private void handleRouting(UI ui, JsonObject invocationJson) {
+        History history = ui.getPage().getHistory();
+
+        PopStateHandler popStateHandler = history.getPopStateHandler();
+        if (popStateHandler != null) {
+            String location = invocationJson
+                    .getString(JsonConstants.RPC_POPSTATE_LOCATION);
+
+            PopStateEvent event = new PopStateEvent(history, null, location,
+                    false);
+            popStateHandler.onPopState(event);
+        }
     }
 
     protected String getMessage(Reader reader) throws IOException {

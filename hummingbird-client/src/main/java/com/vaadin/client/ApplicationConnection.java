@@ -22,6 +22,7 @@ import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.hummingbird.BasicElementBinder;
+import com.vaadin.client.hummingbird.RouterLinkHandler;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.shared.Version;
 
@@ -54,6 +55,7 @@ public class ApplicationConnection {
         DependencyLoader.bind(registry.getDependencyLoader(), rootNode);
 
         PopStateBinder.bind(registry.getServerRpcQueue());
+        RouterLinkHandler.bind(registry.getServerRpcQueue());
 
         Element body = Browser.getDocument().getBody();
 
@@ -129,7 +131,7 @@ public class ApplicationConnection {
                 return vi;
             }
         }
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
             var pd = [
@@ -140,9 +142,9 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-    
+
         client.initializing = false;
-    
+
         $wnd.vaadin.clients[applicationId] = client;
     }-*/;
 

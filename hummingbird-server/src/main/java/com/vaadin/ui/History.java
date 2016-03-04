@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.vaadin.shared.ApplicationConstants;
+
 import elemental.json.JsonValue;
 
 /**
@@ -34,11 +36,14 @@ public class History implements Serializable {
 
     /**
      * Event fired when the a <code>PopStateEvent</code> is fired in the
-     * browser.
+     * browser, or when routing has been triggered by user clicking a link
+     * marked with attribute {@value ApplicationConstants#ROUTER_LINK_ATTRIBUTE}
+     * .
      */
     public static class PopStateEvent extends EventObject {
         private final String location;
         private final transient JsonValue state;
+        private final boolean routerLinkOriginated;
 
         /**
          * Creates a new event.
@@ -51,15 +56,20 @@ public class History implements Serializable {
          *            no state was provided
          * @param location
          *            the new browser location, not <code>null</code>
+         * @param routerLinkOriginated
+         *            <code>true</code> if this event was originated by user
+         *            clicking a router link, <code>false</code> if originated
+         *            by client side pop state event
          */
-        public PopStateEvent(History history, JsonValue state,
-                String location) {
+        public PopStateEvent(History history, JsonValue state, String location,
+                boolean routerLinkOriginated) {
             super(history);
 
             assert location != null;
 
             this.location = location;
             this.state = state;
+            this.routerLinkOriginated = routerLinkOriginated;
         }
 
         @Override
@@ -83,6 +93,18 @@ public class History implements Serializable {
          */
         public Optional<JsonValue> getState() {
             return Optional.ofNullable(state);
+        }
+
+        /**
+         * Returns whether this event was originated by user clicking a router
+         * link, or by browser firing a pop state event.
+         *
+         * @return <code>true</code> if this event was originated by user
+         *         clicking a router link, <code>false</code> if originated by
+         *         client side pop state event
+         */
+        public boolean isRouterLinkOriginated() {
+            return routerLinkOriginated;
         }
     }
 
