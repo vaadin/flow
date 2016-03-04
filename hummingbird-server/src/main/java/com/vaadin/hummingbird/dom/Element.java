@@ -32,6 +32,7 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.ui.HasElement;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -45,7 +46,7 @@ import elemental.json.JsonValue;
  * @author Vaadin
  * @since
  */
-public class Element implements Serializable {
+public class Element implements Serializable, HasElement {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
     /**
@@ -1144,4 +1145,8 @@ public class Element implements Serializable {
         return stateProvider.getSynchronizedPropertiesEvents(node);
     }
 
+    @Override
+    public Element getElement() {
+        return this;
+    }
 }
