@@ -1143,5 +1143,4 @@ public class Element implements Serializable {
     public Set<String> getSynchronizedPropertiesEvents() {
         return stateProvider.getSynchronizedPropertiesEvents(node);
     }
-
 }

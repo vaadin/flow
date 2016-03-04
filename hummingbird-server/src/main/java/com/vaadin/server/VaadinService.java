@@ -43,6 +43,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.event.EventRouter;
+import com.vaadin.hummingbird.router.Router;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.VaadinSession.FutureAccess;
 import com.vaadin.server.VaadinSession.State;
@@ -130,6 +131,8 @@ public abstract class VaadinService implements Serializable {
      * Set to true when {@link #init()} has been run.
      */
     private boolean initialized = false;
+
+    private final Router router = new Router();
 
     /**
      * Creates a new vaadin service based on a deployment configuration.
@@ -619,7 +622,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
-                    throws SessionExpiredException, ServiceException {
+            throws SessionExpiredException, ServiceException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -1298,7 +1301,7 @@ public abstract class VaadinService implements Serializable {
 
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
-                    throws ServiceException {
+            throws ServiceException {
         if (vaadinSession != null) {
             vaadinSession.lock();
         }
@@ -1874,4 +1877,12 @@ public abstract class VaadinService implements Serializable {
         return VaadinSession.class.getName() + "." + getServiceName();
     }
 
+    /**
+     * Gets the router used for UIs served by this service.
+     *
+     * @return the router, not <code>null</code>
+     */
+    public Router getRouter() {
+        return router;
+    }
 }
