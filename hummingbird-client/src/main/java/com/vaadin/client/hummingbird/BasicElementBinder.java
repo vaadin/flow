@@ -92,7 +92,7 @@ public class BasicElementBinder {
     private final StateNode node;
 
     private BasicElementBinder(StateNode node, Element element) {
-        assert node.getElement() == null;
+        assert node.getDomNode() == null;
 
         this.node = node;
         this.element = element;
@@ -118,7 +118,7 @@ public class BasicElementBinder {
 
         listeners.push(bindClassList());
 
-        node.setElement(element);
+        node.setDomNode(element);
     }
 
     private void bindSynchronizedProperties() {
@@ -410,7 +410,7 @@ public class BasicElementBinder {
         JsArray<?> remove = event.getRemove();
         for (int i = 0; i < remove.length(); i++) {
             StateNode childNode = (StateNode) remove.get(i);
-            Element child = childNode.getElement();
+            Node child = childNode.getDomNode();
 
             assert child != null : "Can't find element to remove";
 

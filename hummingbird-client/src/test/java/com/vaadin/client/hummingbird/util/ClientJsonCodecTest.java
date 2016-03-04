@@ -89,7 +89,7 @@ public class ClientJsonCodecTest {
         JsElement element = new JsElement() {
 
         };
-        node.setElement(element);
+        node.setDomNode(element);
 
         JsonArray json = JsonUtil.createArray(
                 Json.create(JsonCodec.ELEMENT_TYPE), Json.create(node.getId()));
