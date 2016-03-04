@@ -35,6 +35,7 @@ public class HistoryIT extends PhantomJSTest {
         open();
 
         URI baseUrl = getCurrentUrl();
+        String base = baseUrl.toString();
 
         WebElement stateField = findElement(By.id("state"));
         WebElement locationField = findElement(By.id("location"));
@@ -54,7 +55,9 @@ public class HistoryIT extends PhantomJSTest {
         backButton.click();
 
         Assert.assertEquals(baseUrl, getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: " + getCurrentUrl()),
+        Assert.assertEquals(
+                Arrays.asList(
+                        "New location: com.vaadin.hummingbird.uitest.ui.HistoryUI"),
                 getStatusMessages());
         clearButton.click();
 
@@ -68,7 +71,7 @@ public class HistoryIT extends PhantomJSTest {
         // Forward to originally pushed state
         forwardButton.click();
         Assert.assertEquals(baseUrl.resolve("asdf"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: " + getCurrentUrl(),
+        Assert.assertEquals(Arrays.asList("New location: asdf",
                 "New state: {\"foo\":true}"), getStatusMessages());
         clearButton.click();
 
@@ -76,7 +79,7 @@ public class HistoryIT extends PhantomJSTest {
         backButton.click();
 
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
-        Assert.assertEquals(Arrays.asList("New location: " + getCurrentUrl()),
+        Assert.assertEquals(Arrays.asList("New location: qwerty"),
                 getStatusMessages());
     }
 
