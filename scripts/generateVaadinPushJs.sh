@@ -19,13 +19,13 @@ echo "if (window.console) {"
 echo "	window.console.log(\"Vaadin push loaded\");"
 echo "}"
 echo "})();"
-) > $DIR/../hummingbird-push/src/main/resources/VAADIN/push/vaadinPush.js
+) > $DIR/../hummingbird-push/src/main/resources/META-INF/resources/VAADIN/push/vaadinPush.js
 
 # Minify
 
 
 curl -s http://central.maven.org/maven2/com/yahoo/platform/yui/yuicompressor/2.4.8/yuicompressor-2.4.8.jar > $DIR/vaadinPush/yuicompressor-2.4.8.jar
-java -jar $DIR/vaadinPush/yuicompressor-2.4.8.jar  $DIR/../hummingbird-push/src/main/resources/VAADIN/push/vaadinPush.js  > $DIR/../hummingbird-push/src/main/resources/VAADIN/push/vaadinPush-min.js 
+java -jar $DIR/vaadinPush/yuicompressor-2.4.8.jar  $DIR/../hummingbird-push/src/main/resources/META-INF/resources/VAADIN/push/vaadinPush.js  > $DIR/../hummingbird-push/src/main/resources/META-INF/resources/VAADIN/push/vaadinPush-min.js
 
 
 rm -f $DIR/vaadinPush/yuicompressor-2.4.8.jar
