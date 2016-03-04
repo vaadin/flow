@@ -46,16 +46,19 @@ public class PopStateBinder {
     public static void bind(ServerRpcQueue rpcQueue) {
         Browser.getWindow().setOnpopstate(e -> {
             Object stateObject = WidgetUtil.getJsProperty(e, "state");
-            String location = Browser.getWindow().getLocation().getHref();
+
+            String href = Browser.getWindow().getLocation().getHref();
+            String baseURI = Browser.getWindow().getDocument().getBaseURI();
+            String location = href.replace(baseURI, "");
 
             JsonObject invocation = Json.createObject();
             invocation.put(JsonConstants.RPC_TYPE,
-                    JsonConstants.RPC_TYPE_POPSTATE);
-            invocation.put(JsonConstants.RPC_POPSTATE_LOCATION, location);
+                    JsonConstants.RPC_TYPE_NAVIGATION);
+            invocation.put(JsonConstants.RPC_NAVIGATION_LOCATION, location);
             if (stateObject != null) {
                 JsonValue stateJson = ClientJsonCodec
                         .encodeWithoutTypeInfo(stateObject);
-                invocation.put(JsonConstants.RPC_POPSTATE_STATE, stateJson);
+                invocation.put(JsonConstants.RPC_NAVIGATION_STATE, stateJson);
             }
 
             rpcQueue.add(invocation);
