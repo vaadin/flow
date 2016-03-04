@@ -118,9 +118,9 @@ public class JsonConstants implements Serializable {
     public static final String RPC_TYPE_EVENT = "event";
 
     /**
-     * Type value for popstate events from the client.
+     * Type value for navigation events from the client.
      */
-    public static final String RPC_TYPE_POPSTATE = "popstate";
+    public static final String RPC_TYPE_NAVIGATION = "navigation";
 
     /**
      * Key holding the node in messages sent from the client.
@@ -159,13 +159,13 @@ public class JsonConstants implements Serializable {
     public static final String RPC_PROPERTY_VALUE = "value";
 
     /**
-     * Key used to hold the location in a popstate message.
+     * Key used to hold the location in a navigation message.
      */
-    public static final String RPC_POPSTATE_LOCATION = "location";
+    public static final String RPC_NAVIGATION_LOCATION = "location";
 
     /**
-     * Key used to hold the state in a popstate message.
+     * Key used to hold the state in a navigation message.
      */
-    public static final String RPC_POPSTATE_STATE = "state";
+    public static final String RPC_NAVIGATION_STATE = "state";
 
 }

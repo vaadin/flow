@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.vaadin.shared.ApplicationConstants;
+
 import elemental.json.JsonValue;
 
 /**
@@ -33,10 +35,13 @@ import elemental.json.JsonValue;
 public class History implements Serializable {
 
     /**
-     * Event fired when the a <code>PopStateEvent</code> is fired in the
-     * browser.
+     * Event fired when the location has changed.
+     * <p>
+     * This happens when <code>PopStateEvent</code> is fired in the browser, or
+     * when routing has been triggered by user clicking a link marked with
+     * attribute {@value ApplicationConstants#ROUTER_LINK_ATTRIBUTE} .
      */
-    public static class PopStateEvent extends EventObject {
+    public static class LocationChangeEvent extends EventObject {
         private final String location;
         private final transient JsonValue state;
 
@@ -52,7 +57,7 @@ public class History implements Serializable {
          * @param location
          *            the new browser location, not <code>null</code>
          */
-        public PopStateEvent(History history, JsonValue state,
+        public LocationChangeEvent(History history, JsonValue state,
                 String location) {
             super(history);
 
@@ -68,7 +73,7 @@ public class History implements Serializable {
         }
 
         /**
-         * Gets the location from the browser.
+         * Gets the location that was opened. This is relative to the base url.
          *
          * @return the location, not null
          */
@@ -84,24 +89,27 @@ public class History implements Serializable {
         public Optional<JsonValue> getState() {
             return Optional.ofNullable(state);
         }
+
     }
 
     /**
-     * Handles <code>popstate</code> events from the browser.
+     * Handles location change events.
+     *
+     * @see History.LocationChangeEvent
      */
     @FunctionalInterface
-    public interface PopStateHandler extends Serializable {
+    public interface LocationChangeHandler extends Serializable {
         /**
          * Invoked when a <code>popstate</code> event is fired.
          *
          * @param event
          *            the event
          */
-        void onPopState(PopStateEvent event);
+        void onLocationChange(LocationChangeEvent event);
     }
 
     private final UI ui;
-    private PopStateHandler popStateHandler;
+    private LocationChangeHandler locationChangeHandler;
 
     /**
      * Creates a history API endpoint for the given UI.
@@ -160,31 +168,36 @@ public class History implements Serializable {
     }
 
     /**
-     * Sets a handler that will be notified when a <code>popstate</code> event
-     * is fired in the browser. There can only be one handler at a time.
+     * Sets a handler that will be notified when the location has changed.
+     * <p>
+     * Location changes are triggered by <code>popstate</code> event is fired in
+     * the browser or when the user has navigated using a router link. There can
+     * only be one handler at a time.
      *
-     * @param popStateHandler
+     * @param locationChangeHandler
      *            the handler to set, or <code>null</code> to remove the current
      *            handler
+     * @see History.LocationChangeEvent
      */
-    public void setPopStateHandler(PopStateHandler popStateHandler) {
-        this.popStateHandler = popStateHandler;
+    public void setLocationChangeHandler(
+            LocationChangeHandler locationChangeHandler) {
+        this.locationChangeHandler = locationChangeHandler;
     }
 
     /**
-     * Gets the handler that is notified when a <code>popstate</code> event is
-     * fired in the browser.
+     * Gets the handler that is notified location has changed.
      *
-     * @return the popstate handler, or <code>null</code> if no handler is set
+     * @return the location handler, or <code>null</code> if no handler is set
+     * @see History.LocationChangeEvent
      */
-    public PopStateHandler getPopStateHandler() {
-        return popStateHandler;
+    public LocationChangeHandler getLocationChangeHandler() {
+        return locationChangeHandler;
     }
 
     /**
      * Navigates back. This has the same effect as if the user would press the
-     * back button in the browser. This causes a {@link PopStateEvent} to be
-     * fired asynchronously if the conditions described in the <a href=
+     * back button in the browser. This causes a {@link LocationChangeEvent} to
+     * be fired asynchronously if the conditions described in the <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate">
      * onpopstate documentation</a> are met.
      */
@@ -194,8 +207,9 @@ public class History implements Serializable {
 
     /**
      * Navigates forward. This has the same effect as if the user would press
-     * the forward button in the browser. This causes a {@link PopStateEvent} to
-     * be fired asynchronously if the conditions described in the <a href=
+     * the forward button in the browser. This causes a
+     * {@link LocationChangeEvent} to be fired asynchronously if the conditions
+     * described in the <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate">
      * onpopstate documentation</a> are met.
      */
@@ -206,8 +220,8 @@ public class History implements Serializable {
     /**
      * Navigates a number of steps forward or backward in the history. This has
      * the same effect as if the user would press the forward button in the
-     * browser.This causes a {@link PopStateEvent} to be fired asynchronously if
-     * the conditions described in the <a href=
+     * browser.This causes a {@link LocationChangeEvent} to be fired
+     * asynchronously if the conditions described in the <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate">
      * onpopstate documentation</a> are met.
      *

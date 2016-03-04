@@ -41,7 +41,7 @@ public class PopStateBinder {
     public static void bind(ServerMessager messager) {
         Browser.getWindow().setOnpopstate(e -> {
             Object stateObject = WidgetUtil.getJsProperty(e, "state");
-            String location = Browser.getWindow().getLocation().getHref();
+            String location = URIResolver.getCurrentLocationRelativeToBaseUri();
 
             messager.sendNavigationMessage(location, stateObject);
         });
