@@ -458,6 +458,25 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertEquals("bar", element.getTextContent());
     }
 
+    public void testRemoveTextNode() {
+        BasicElementBinder.bind(node, element);
+
+        StateNode textNode = new StateNode(nextId++, node.getTree());
+        textNode.getMapNamespace(Namespaces.TEXT_NODE)
+                .getProperty(Namespaces.TEXT).setValue("foo");
+
+        node.getListNamespace(Namespaces.ELEMENT_CHILDREN).add(0, textNode);
+        Reactive.flush();
+
+        assertEquals(1, element.getChildNodes().getLength());
+
+        node.getListNamespace(Namespaces.ELEMENT_CHILDREN).splice(0, 1);
+
+        Reactive.flush();
+
+        assertEquals(0, element.getChildNodes().getLength());
+    }
+
     public void testAddClassesBeforeBind() {
         node.getListNamespace(Namespaces.CLASS_LIST).add(0, "foo");
 

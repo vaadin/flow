@@ -55,7 +55,7 @@ public class ClientJsonCodec {
             switch (typeId) {
             case JsonCodec.ELEMENT_TYPE: {
                 int nodeId = (int) array.getNumber(1);
-                return tree.getNode(nodeId).getElement();
+                return tree.getNode(nodeId).getDomNode();
             }
             case JsonCodec.ARRAY_TYPE:
                 return jsonArrayAsJsArray(array.getArray(1));
