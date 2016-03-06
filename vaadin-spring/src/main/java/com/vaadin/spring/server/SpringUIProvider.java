@@ -338,7 +338,7 @@ public class SpringUIProvider extends UIProvider {
 
     private String resolvePropertyPlaceholders(String value) {
         if (StringUtils.hasText(value)) {
-            return webApplicationContext.getEnvironment()
+            return getWebApplicationContext().getEnvironment()
                     .resolvePlaceholders(value);
         }
         return value;
