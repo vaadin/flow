@@ -23,6 +23,7 @@ Further functionality will be implemented in future versions.
 * <<tutorial-user-input#,Retrieving User Input>>
 * <<tutorial-include-css#,Including Style Sheets>>
 * <<tutorial-dynamic-styling#,Dynamic styling>>
+* <<tutorial-properties-attributes#,Element Properties and Attributes>>
 
 == Server-side DOM tree
 
