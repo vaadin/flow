@@ -15,14 +15,9 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.client.communication.ServerRpcQueue;
-import com.vaadin.client.hummingbird.util.ClientJsonCodec;
-import com.vaadin.shared.JsonConstants;
+import com.vaadin.client.communication.ServerMessager;
 
 import elemental.client.Browser;
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Helper for binding <code>popstate</code> events to the server.
@@ -40,26 +35,15 @@ public class PopStateBinder {
      * Sets up a <code>popstate</code> listener for delivering events to the
      * server.
      *
-     * @param rpcQueue
-     *            the RPC queue used for sending the events
+     * @param messager
+     *            the messager sending the update to server
      */
-    public static void bind(ServerRpcQueue rpcQueue) {
+    public static void bind(ServerMessager messager) {
         Browser.getWindow().setOnpopstate(e -> {
             Object stateObject = WidgetUtil.getJsProperty(e, "state");
             String location = Browser.getWindow().getLocation().getHref();
 
-            JsonObject invocation = Json.createObject();
-            invocation.put(JsonConstants.RPC_TYPE,
-                    JsonConstants.RPC_TYPE_POPSTATE);
-            invocation.put(JsonConstants.RPC_POPSTATE_LOCATION, location);
-            if (stateObject != null) {
-                JsonValue stateJson = ClientJsonCodec
-                        .encodeWithoutTypeInfo(stateObject);
-                invocation.put(JsonConstants.RPC_POPSTATE_STATE, stateJson);
-            }
-
-            rpcQueue.add(invocation);
-            rpcQueue.flush();
+            messager.sendNavigationMessage(location, stateObject);
         });
     }
 

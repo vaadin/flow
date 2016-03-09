@@ -16,14 +16,10 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.Registry;
-import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
-import com.vaadin.client.hummingbird.util.ClientJsonCodec;
 import com.vaadin.hummingbird.shared.Namespaces;
-import com.vaadin.shared.JsonConstants;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
@@ -143,22 +139,12 @@ public class StateTree {
     public void sendEventToServer(StateNode node, String eventType,
             JsonObject eventData) {
         assert assertValidNode(node);
-        JsonObject message = Json.createObject();
-        message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
-        message.put(JsonConstants.RPC_NODE, node.getId());
-        message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
-
-        if (eventData != null) {
-            message.put(JsonConstants.RPC_EVENT_DATA, eventData);
-        }
-
-        ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
-        rpcQueue.add(message);
-        rpcQueue.flush();
+        registry.getServerMessager().sendEventMessage(node, eventType,
+                eventData);
     }
 
     /**
-     * Sends an property sync to the server.
+     * Sends a property sync to the server.
      *
      * @param node
      *            the node containing the property
@@ -170,17 +156,8 @@ public class StateTree {
     public void sendPropertySyncToServer(StateNode node, String property,
             Object value) {
         assert assertValidNode(node);
-        JsonObject message = Json.createObject();
-        message.put(JsonConstants.RPC_TYPE,
-                JsonConstants.RPC_TYPE_PROPERTY_SYNC);
-        message.put(JsonConstants.RPC_NODE, node.getId());
-        message.put(JsonConstants.RPC_PROPERTY, property);
-        message.put(JsonConstants.RPC_PROPERTY_VALUE,
-                ClientJsonCodec.encodeWithoutTypeInfo(value));
-
-        ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
-        rpcQueue.add(message);
-        rpcQueue.flush();
+        registry.getServerMessager().sendPropertySyncMessage(node, property,
+                value);
     }
 
     /**
