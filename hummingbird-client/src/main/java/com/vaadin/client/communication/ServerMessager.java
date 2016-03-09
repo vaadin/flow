@@ -52,12 +52,12 @@ public class ServerMessager {
      */
     public void sendNavigationMessage(String location, Object stateObject) {
         JsonObject message = Json.createObject();
-        message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_POPSTATE);
-        message.put(JsonConstants.RPC_POPSTATE_LOCATION, location);
+        message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_NAVIGATION);
+        message.put(JsonConstants.RPC_NAVIGATION_LOCATION, location);
         if (stateObject != null) {
             JsonValue stateJson = ClientJsonCodec
                     .encodeWithoutTypeInfo(stateObject);
-            message.put(JsonConstants.RPC_POPSTATE_STATE, stateJson);
+            message.put(JsonConstants.RPC_NAVIGATION_STATE, stateJson);
         }
 
         sendMessage(message);
