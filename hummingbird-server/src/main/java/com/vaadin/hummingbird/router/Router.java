@@ -53,11 +53,7 @@ public class Router implements Serializable {
         ui.getPage().getHistory().setLocationChangeHandler(e -> {
             String newLocation = e.getLocation();
 
-            // Should be changed when the event handler has been updated to give
-            // relative urls (separate PR)
-            throw new UnsupportedOperationException(
-                    "Needs relative location support instead of "
-                            + newLocation);
+            navigate(ui, new Location(newLocation));
         });
 
         Location location = new Location(path);
