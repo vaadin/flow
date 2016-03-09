@@ -15,22 +15,24 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.History.LocationChangeEvent;
 
 public class RouterTest {
 
-    @Test
-    public void testResolve() {
-        RouterUI ui = new RouterUI();
+    private final class TestResolver implements Resolver {
+        private final AtomicReference<Location> resolvedLocation = new AtomicReference<>();
+        private final AtomicReference<NavigationEvent> handledEvent = new AtomicReference<>();
 
-        AtomicReference<Location> resolvedLocation = new AtomicReference<>();
-        AtomicReference<NavigationEvent> handledEvent = new AtomicReference();
-
-        Router router = new Router();
-        router.setResolver(eventToResolve -> {
+        @Override
+        public NavigationHandler resolve(NavigationEvent eventToResolve) {
             Assert.assertNull(resolvedLocation.get());
             resolvedLocation.set(eventToResolve.getLocation());
             return new NavigationHandler() {
@@ -40,18 +42,55 @@ public class RouterTest {
                     handledEvent.set(eventToHandle);
                 }
             };
-        });
+        }
+    }
 
-        Assert.assertNull(resolvedLocation.get());
-        Assert.assertNull(handledEvent.get());
+    @Test
+    public void testResolve() {
+        RouterUI ui = new RouterUI();
+
+        Router router = new Router();
+        TestResolver resolver = new TestResolver();
+        router.setResolver(resolver);
+
+        Assert.assertNull(resolver.resolvedLocation.get());
+        Assert.assertNull(resolver.handledEvent.get());
 
         Location testLocation = new Location("");
 
         router.navigate(ui, testLocation);
 
-        Assert.assertSame(testLocation, resolvedLocation.get());
-        Assert.assertSame(testLocation, handledEvent.get().getLocation());
-        Assert.assertSame(ui, handledEvent.get().getUI());
+        Assert.assertSame(testLocation, resolver.resolvedLocation.get());
+        Assert.assertSame(testLocation,
+                resolver.handledEvent.get().getLocation());
+        Assert.assertSame(ui, resolver.handledEvent.get().getUI());
+    }
+
+    @Test
+    public void testChangeLocation() {
+        RouterUI ui = new RouterUI();
+
+        Router router = new Router();
+        TestResolver resolver = new TestResolver();
+        router.setResolver(resolver);
+
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn(null);
+
+        router.initializeUI(ui, request);
+
+        Assert.assertEquals(Arrays.asList(""),
+                resolver.resolvedLocation.get().getSegments());
+
+        resolver.resolvedLocation.set(null);
+        resolver.handledEvent.set(null);
+
+        ui.getPage().getHistory().getLocationChangeHandler().onLocationChange(
+                new LocationChangeEvent(ui.getPage().getHistory(), null,
+                        "foo"));
+
+        Assert.assertEquals(Arrays.asList("foo"),
+                resolver.resolvedLocation.get().getSegments());
     }
 
     @Test
