@@ -63,8 +63,14 @@ public class StaticFileServer implements Serializable {
     public boolean isStaticResourceRequest(HttpServletRequest request) {
         URL resource;
         try {
-            resource = request.getServletContext()
-                    .getResource(getRequestFilename(request));
+            String requestFilename = getRequestFilename(request);
+            if (requestFilename.endsWith("/")) {
+                // Directories are not static resources although
+                // servletContext.getResource will return a URL for them, at
+                // least with Jetty
+                return false;
+            }
+            resource = request.getServletContext().getResource(requestFilename);
         } catch (MalformedURLException e) {
             return false;
         }
