@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
@@ -51,7 +52,7 @@ public class RouterTest {
 
         Router router = new Router();
         TestResolver resolver = new TestResolver();
-        router.setResolver(resolver);
+        router.reconfigure(c -> c.setResolver(resolver));
 
         Assert.assertNull(resolver.resolvedLocation.get());
         Assert.assertNull(resolver.handledEvent.get());
@@ -72,7 +73,7 @@ public class RouterTest {
 
         Router router = new Router();
         TestResolver resolver = new TestResolver();
-        router.setResolver(resolver);
+        router.reconfigure(c -> c.setResolver(resolver));
 
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
@@ -98,10 +99,66 @@ public class RouterTest {
         RouterUI ui = new RouterUI();
 
         Router router = new Router();
-        router.setResolver(event -> null);
+        router.reconfigure(c -> c.setResolver(event -> null));
 
         router.navigate(ui, new Location(""));
 
         Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+    }
+
+    @Test
+    public void testReconfigureThreadSafety() throws InterruptedException {
+        Router router = new Router();
+        Resolver newResolver = e -> null;
+
+        CountDownLatch configUpdated = new CountDownLatch(1);
+        CountDownLatch configVerified = new CountDownLatch(1);
+
+        // Used to leak the configurated instance outside the config method
+        AtomicReference<RouterConfiguration> configLeak = new AtomicReference<>();
+
+        Thread updaterThread = new Thread() {
+            @Override
+            public void run() {
+                router.reconfigure(config -> {
+                    config.setResolver(newResolver);
+
+                    configLeak.set(config);
+
+                    // Signal that config has been updated
+                    configUpdated.countDown();
+
+                    // Wait until main thread has verified that the
+                    // configuration is not yet in effect
+                    try {
+                        configVerified.await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        };
+        updaterThread.start();
+
+        // Wait until updater thread has updated the config
+        configUpdated.await();
+
+        Assert.assertNotSame("Update should not yet be visible", newResolver,
+                router.getConfigurationCopy().getResolver());
+
+        // Allow the update thread to exit the configure method
+        configVerified.countDown();
+
+        // Wait for updater thread to finish
+        updaterThread.join();
+
+        Assert.assertSame("Update should now be visible", newResolver,
+                router.getConfigurationCopy().getResolver());
+
+        // Update the leaked config instance, should not affect the used cofig
+        configLeak.get().setResolver(e -> null);
+
+        Assert.assertSame("Config should not have changed", newResolver,
+                router.getConfigurationCopy().getResolver());
     }
 }
