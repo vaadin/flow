@@ -262,6 +262,26 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
+    public void isNotResourceRequestWithContextPath() throws Exception {
+        setupRequestURI("/context", "", "/");
+        Mockito.when(servletContext.getResource("/"))
+                .thenReturn(new URL("file", "", -1,
+                        "hummingbird/hummingbird-tests/non-root-context-test/src/main/webapp/",
+                        new URLStreamHandler() {
+
+                            @Override
+                            protected URLConnection openConnection(URL u)
+                                    throws IOException {
+                                URLConnection mock = Mockito
+                                        .mock(URLConnection.class);
+                                return mock;
+                            }
+                        }));
+
+        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+    }
+
+    @Test
     public void contentType() {
         AtomicReference<String> contentType = new AtomicReference<String>(null);
         Mockito.doAnswer(invocation -> {
