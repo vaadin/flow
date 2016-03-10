@@ -15,7 +15,7 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.client.communication.ServerMessager;
+import com.vaadin.client.communication.ServerConnector;
 
 import elemental.client.Browser;
 
@@ -35,15 +35,15 @@ public class PopStateBinder {
      * Sets up a <code>popstate</code> listener for delivering events to the
      * server.
      *
-     * @param messager
-     *            the messager sending the update to server
+     * @param connector
+     *            the connector sending the update to server
      */
-    public static void bind(ServerMessager messager) {
+    public static void bind(ServerConnector connector) {
         Browser.getWindow().setOnpopstate(e -> {
             Object stateObject = WidgetUtil.getJsProperty(e, "state");
             String location = URIResolver.getCurrentLocationRelativeToBaseUri();
 
-            messager.sendNavigationMessage(location, stateObject);
+            connector.sendNavigationMessage(location, stateObject);
         });
     }
 
