@@ -221,14 +221,8 @@ public class PushHandler {
                         "Could not get session. This should never happen", e);
                 return;
             } catch (SessionExpiredException e) {
-                SystemMessages msg = service.getSystemMessages(
-                        ServletHelper.findLocale(null, vaadinRequest),
-                        vaadinRequest);
                 sendNotificationAndDisconnect(resource,
-                        VaadinService.createCriticalNotificationJSON(
-                                msg.getSessionExpiredCaption(),
-                                msg.getSessionExpiredMessage(), null,
-                                msg.getSessionExpiredURL()));
+                        VaadinService.createSessionExpiredJSON());
                 return;
             }
 
@@ -239,8 +233,8 @@ public class PushHandler {
                 assert UI.getCurrent() == ui;
 
                 if (ui == null) {
-                    sendNotificationAndDisconnect(resource, UidlRequestHandler
-                            .getUINotFoundErrorJSON(service, vaadinRequest));
+                    sendNotificationAndDisconnect(resource,
+                            VaadinService.createUINotFoundJSON());
                 } else {
                     callback.run(resource, ui);
                 }

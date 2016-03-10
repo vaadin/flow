@@ -32,7 +32,7 @@ public class ViewRendererTest {
         private List<Location> locations = new ArrayList<>();
 
         @Override
-        public Element getElement() {
+        public final Element getElement() {
             return element;
         }
 
