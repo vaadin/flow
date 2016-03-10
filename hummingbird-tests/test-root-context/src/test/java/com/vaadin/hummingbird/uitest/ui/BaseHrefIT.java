@@ -28,7 +28,7 @@ public class BaseHrefIT extends PhantomJSTest {
 
     @Test
     public void testBaseHref() throws URISyntaxException {
-        URI baseUri = new URI(getTestURL(getUIClass()));
+        URI baseUri = new URI(getTestURL());
         String uiUrl = baseUri.toString();
         String expectedUrl = baseUri.resolve("./link").toString();
 
