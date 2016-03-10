@@ -5,7 +5,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
-public class RoutingLinkUI extends UI {
+public class RouterLinkUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {

@@ -8,7 +8,7 @@ import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-public class RoutingLinkIT extends PhantomJSTest {
+public class RouterLinkIT extends PhantomJSTest {
 
     @Test
     public void testRoutingLinks_insideServletMapping_updateLocation() {
