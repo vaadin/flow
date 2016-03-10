@@ -35,4 +35,10 @@ public abstract class AbstractDeploymentConfiguration
     public String getClassLoaderName() {
         return getApplicationOrSystemProperty("ClassLoader", null);
     }
+
+    @Override
+    public String getRouterConfiguratorClassName() {
+        return getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_ROUTER_CONFIGURATOR, null);
+    }
 }
