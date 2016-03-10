@@ -1,14 +1,13 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 public class RoutingLinkUI extends UI {
 
-    @Override
-    protected void init(VaadinRequest request) {
+    protected void init(com.vaadin.server.VaadinRequest request) {
+        // getSession().getSession().setMaxInactiveInterval(5);
         Element bodyElement = getElement();
         bodyElement.getStyle().set("margin", "1em");
 
@@ -38,8 +37,8 @@ public class RoutingLinkUI extends UI {
                 new Element("div").setTextContent("external"),
                 createRoutingLink("http://google.com"));
 
-        getPage().getHistory().setLocationChangeHandler(
-                e -> location.setTextContent(e.getLocation()));
+        // getPage().getHistory().setLocationChangeHandler(
+        // e -> location.setTextContent(e.getLocation()));
     }
 
     private Element createRoutingLink(String target) {
