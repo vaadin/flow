@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
@@ -51,7 +52,7 @@ public class RouterTest {
 
         Router router = new Router();
         TestResolver resolver = new TestResolver();
-        router.setResolver(resolver);
+        router.reconfigure(c -> c.setResolver(resolver));
 
         Assert.assertNull(resolver.resolvedLocation.get());
         Assert.assertNull(resolver.handledEvent.get());
@@ -72,7 +73,7 @@ public class RouterTest {
 
         Router router = new Router();
         TestResolver resolver = new TestResolver();
-        router.setResolver(resolver);
+        router.reconfigure(c -> c.setResolver(resolver));
 
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
@@ -98,10 +99,79 @@ public class RouterTest {
         RouterUI ui = new RouterUI();
 
         Router router = new Router();
-        router.setResolver(event -> null);
+        router.reconfigure(c -> c.setResolver(event -> null));
 
         router.navigate(ui, new Location(""));
 
         Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+    }
+
+    @Test
+    public void testReconfigureThreadSafety() throws InterruptedException {
+        Router router = new Router();
+        Resolver newResolver = e -> null;
+
+        CountDownLatch configUpdated = new CountDownLatch(1);
+        CountDownLatch configVerified = new CountDownLatch(1);
+
+        Thread updaterThread = new Thread() {
+            @Override
+            public void run() {
+                router.reconfigure(config -> {
+                    config.setResolver(newResolver);
+
+                    // Signal that config has been updated
+                    configUpdated.countDown();
+
+                    // Wait until main thread has verified that the
+                    // configuration is not yet in effect
+                    try {
+                        configVerified.await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        };
+        updaterThread.start();
+
+        // Wait until updater thread has updated the config
+        configUpdated.await();
+
+        Assert.assertNotSame("Update should not yet be visible", newResolver,
+                router.getConfiguration().getResolver());
+
+        // Allow the update thread to exit the configure method
+        configVerified.countDown();
+
+        // Wait for updater thread to finish
+        updaterThread.join();
+
+        Assert.assertSame("Update should now be visible", newResolver,
+                router.getConfiguration().getResolver());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testConfigurationImmutable() {
+        Router router = new Router();
+
+        RouterConfiguration configuration = router.getConfiguration();
+
+        ((ModifiableRouterConfiguration) configuration).setResolver(e -> null);
+    }
+
+    @Test
+    public void testLeakedConfigurationImmutable() {
+        Router router = new Router();
+
+        AtomicReference<ModifiableRouterConfiguration> configurationLeak = new AtomicReference<>();
+
+        router.reconfigure(configurationLeak::set);
+
+        Resolver newResolver = e -> null;
+        configurationLeak.get().setResolver(newResolver);
+
+        Assert.assertNotSame(newResolver,
+                router.getConfiguration().getResolver());
     }
 }
