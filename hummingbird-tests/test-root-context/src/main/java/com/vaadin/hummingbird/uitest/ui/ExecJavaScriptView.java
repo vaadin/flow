@@ -17,14 +17,13 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.util.JsonUtil;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 
-public class ExecJavaScriptUI extends UI {
+public class ExecJavaScriptView extends TestView {
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onShow() {
         Element root = getElement();
 
         Element alertButton = createJsButton("Alert", "alertButton",
@@ -44,8 +43,8 @@ public class ExecJavaScriptUI extends UI {
         createElementButton.addEventListener("click", e -> {
             Element newElement = new Element("input").setAttribute("class",
                     "newInput");
-            getPage().executeJavaScript("$0.value = $1", newElement,
-                    "Value from js");
+            UI.getCurrent().getPage().executeJavaScript("$0.value = $1",
+                    newElement, "Value from js");
             root.appendChild(newElement);
         });
 
@@ -58,8 +57,8 @@ public class ExecJavaScriptUI extends UI {
         Element element = new Element("button").setTextContent(text)
                 .setAttribute("id", id);
 
-        element.addEventListener("click",
-                e -> getPage().executeJavaScript(script, arguments));
+        element.addEventListener("click", e -> UI.getCurrent().getPage()
+                .executeJavaScript(script, arguments));
 
         return element;
     }

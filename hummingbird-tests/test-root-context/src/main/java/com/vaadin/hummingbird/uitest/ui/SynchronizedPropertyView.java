@@ -16,13 +16,11 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
 
-public class SynchronizedPropertyUI extends UI {
+public class SynchronizedPropertyView extends TestView {
 
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onShow() {
         getElement().appendChild(new Element("span")
                 .setTextContent("Synchronized on 'change' event"));
         Element input = new Element("input").setAttribute("placeholder",

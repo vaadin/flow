@@ -19,8 +19,8 @@ public abstract class AbstractContextIT extends PhantomJSTest {
     protected abstract void verifyCorrectUI();
 
     @Override
-    protected void open() {
-        getDriver().get(getBaseUrl() + JETTY_CONTEXT + getAppContext());
+    protected String getTestPath() {
+        return JETTY_CONTEXT + getAppContext();
     }
 
     @Test
