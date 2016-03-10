@@ -113,6 +113,7 @@ public interface Constants {
     static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
     static final String SERVLET_PARAMETER_SENDURLSASPARAMETERS = "sendUrlsAsParameters";
     static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
+    static final String SERVLET_PARAMETER_ROUTER_CONFIGURATOR = "routerConfigurator";
 
     static final int MAX_BUFFER_SIZE = 64 * 1024;
 
