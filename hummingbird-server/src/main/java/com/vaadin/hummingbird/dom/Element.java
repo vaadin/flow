@@ -609,6 +609,10 @@ public class Element implements Serializable {
                     CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set",
                     index, getChildCount()));
         } else if (index < childCount) {
+            if (getChild(index).equals(child)) {
+                // Already there
+                return this;
+            }
             removeChild(index);
             insertChild(index, child);
         } else {
