@@ -25,7 +25,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Handles creating and sending messages to server using the
+ * Handles creating and sending messages to the server using
  * {@link ServerRpcQueue}.
  */
 public class ServerConnector {
@@ -59,7 +59,6 @@ public class ServerConnector {
                     .encodeWithoutTypeInfo(stateObject);
             message.put(JsonConstants.RPC_NAVIGATION_STATE, stateJson);
         }
-
         sendMessage(message);
     }
 
