@@ -5,6 +5,7 @@ import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
+import com.vaadin.client.communication.MessageHandler;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
@@ -46,6 +47,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
             {
                 set(UILifecycle.class, lifecycle);
                 set(ServerConnector.class, connector);
+                set(MessageHandler.class, new MessageHandler(this));
             }
         };
         boundElement = Browser.getDocument().createDivElement();

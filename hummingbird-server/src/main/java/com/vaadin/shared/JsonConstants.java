@@ -168,4 +168,8 @@ public class JsonConstants implements Serializable {
      */
     public static final String RPC_NAVIGATION_STATE = "state";
 
+    /**
+     * Key used when informing the client side that the session has expired.
+     */
+    public static final String META_SESSION_EXPIRED = "sessionExpired";
 }

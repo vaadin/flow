@@ -27,7 +27,6 @@ import com.vaadin.server.ServletHelper;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.SessionExpiredHandler;
 import com.vaadin.server.SynchronizedRequestHandler;
-import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
@@ -68,8 +67,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (uI == null) {
             // This should not happen but it will if the UI has been closed. We
             // really don't want to see it in the server logs though
-            commitJsonResponse(response,
-                    getUINotFoundErrorJSON(session.getService(), request));
+            commitJsonResponse(response, VaadinService.createUINotFoundJSON());
             return true;
         }
 
@@ -131,40 +129,10 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
             return false;
         }
         VaadinService service = request.getService();
-        SystemMessages systemMessages = service.getSystemMessages(
-                ServletHelper.findLocale(null, request), request);
-
         service.writeStringResponse(response, JsonConstants.JSON_CONTENT_TYPE,
-                VaadinService.createCriticalNotificationJSON(
-                        systemMessages.getSessionExpiredCaption(),
-                        systemMessages.getSessionExpiredMessage(), null,
-                        systemMessages.getSessionExpiredURL()));
+                VaadinService.createSessionExpiredJSON());
 
         return true;
-    }
-
-    /**
-     * Returns the JSON which should be returned to the client when a request
-     * for a non-existent UI arrives.
-     *
-     * @param service
-     *            The VaadinService
-     * @param vaadinRequest
-     *            The request which triggered this, or null if not available
-     * @since 7.1
-     * @return A JSON string
-     */
-    static String getUINotFoundErrorJSON(VaadinService service,
-            VaadinRequest vaadinRequest) {
-        SystemMessages ci = service.getSystemMessages(vaadinRequest.getLocale(),
-                vaadinRequest);
-        // Session Expired is not really the correct message as the
-        // session exists but the requested UI does not.
-        // Using Communication Error for now.
-        return VaadinService.createCriticalNotificationJSON(
-                ci.getCommunicationErrorCaption(),
-                ci.getCommunicationErrorMessage(), null,
-                ci.getCommunicationErrorURL());
     }
 
     /**
