@@ -28,7 +28,7 @@ import elemental.json.JsonValue;
  * Handles creating and sending messages to server using the
  * {@link ServerRpcQueue}.
  */
-public class ServerMessager {
+public class ServerConnector {
 
     private final Registry registry;
 
@@ -38,7 +38,7 @@ public class ServerMessager {
      * @param registry
      *            the global registry
      */
-    public ServerMessager(Registry registry) {
+    public ServerConnector(Registry registry) {
         this.registry = registry;
     }
 
