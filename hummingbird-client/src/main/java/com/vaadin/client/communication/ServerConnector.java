@@ -16,6 +16,7 @@
 package com.vaadin.client.communication;
 
 import com.vaadin.client.Registry;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.util.ClientJsonCodec;
 import com.vaadin.shared.JsonConstants;
@@ -25,7 +26,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Handles creating and sending messages to server using the
+ * Handles creating and sending messages to the server using
  * {@link ServerRpcQueue}.
  */
 public class ServerConnector {
@@ -60,6 +61,10 @@ public class ServerConnector {
             message.put(JsonConstants.RPC_NAVIGATION_STATE, stateJson);
         }
 
+        // If it so happens that the session has expired, we want to do real
+        // navigation instead
+        registry.getMessageHandler().setNextResponseSessionExpiredHandler(
+                () -> WidgetUtil.redirect(null));
         sendMessage(message);
     }
 
