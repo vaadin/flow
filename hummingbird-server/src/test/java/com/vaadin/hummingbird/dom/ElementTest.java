@@ -19,6 +19,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
+import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
@@ -645,6 +646,27 @@ public class ElementTest {
         parent.setChild(0, child2);
         Assert.assertNull(child1.getParent());
         Assert.assertEquals(parent, child2.getParent());
+    }
+
+    @Test
+    public void replaceChildWithItself() {
+        Element parent = new Element("div");
+        Element child1 = new Element("child1");
+        parent.appendChild(child1);
+
+        parent.getNode().getNamespace(ElementChildrenNamespace.class)
+                .collectChanges(e -> {
+                    // Remove the "append" change
+                });
+
+        parent.setChild(0, child1);
+
+        AtomicInteger changesCausedBySetChild = new AtomicInteger(0);
+        parent.getNode().getNamespace(ElementChildrenNamespace.class)
+                .collectChanges(change -> {
+                    changesCausedBySetChild.incrementAndGet();
+                });
+        Assert.assertEquals(0, changesCausedBySetChild.get());
     }
 
     @Test(expected = IllegalArgumentException.class)
