@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.URIResolver;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.client.Browser;
@@ -81,8 +82,7 @@ public class RouterLinkHandler {
             clickEvent.preventDefault();
 
             String location = URIResolver.getBaseRelativeUri(baseURI, href);
-
-            registry.getServerConnector().sendNavigationMessage(location, null);
+            sendServerNavigationEvent(registry, location, null);
         }
     }
 
@@ -129,4 +129,36 @@ public class RouterLinkHandler {
                 || event.isShiftKey();
     }
 
+    /**
+     * Tells the server navigation to the given location has taken place.
+     * <p>
+     * Primarily uses an event but falls back to a page reload if there is a
+     * problem which will be resolved using reload, e.g. session expiration or
+     * if client side engine is stopped.
+     *
+     * @param registry
+     *            the registry
+     * @param location
+     *            the location to navigate to, relative to the base URI
+     * @param stateObject
+     *            the state object or <code>null</code> if none applicable
+     */
+    public static void sendServerNavigationEvent(Registry registry,
+            String location, Object stateObject) {
+        assert registry != null;
+        assert location != null;
+
+        if (!registry.getUILifecycle().isRunning()) {
+            WidgetUtil.redirect(null);
+            return;
+        }
+
+        // If the server tells us the session has expired, we refresh (using the
+        // new location) instead.
+        registry.getMessageHandler().setNextResponseSessionExpiredHandler(
+                () -> WidgetUtil.redirect(null));
+        registry.getServerConnector().sendNavigationMessage(location,
+                stateObject);
+
+    }
 }

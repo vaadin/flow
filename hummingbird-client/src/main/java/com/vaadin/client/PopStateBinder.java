@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import com.vaadin.client.hummingbird.RouterLinkHandler;
+
 import elemental.client.Browser;
 
 /**
@@ -44,12 +46,8 @@ public class PopStateBinder {
             Object stateObject = WidgetUtil.getJsProperty(e, "state");
             String location = URIResolver.getCurrentLocationRelativeToBaseUri();
 
-            if (registry.getUILifecycle().isRunning()) {
-                registry.getServerConnector().sendNavigationMessage(location,
-                        stateObject);
-            } else {
-                WidgetUtil.redirect(null);
-            }
+            RouterLinkHandler.sendServerNavigationEvent(registry, location,
+                    stateObject);
         });
     }
 
