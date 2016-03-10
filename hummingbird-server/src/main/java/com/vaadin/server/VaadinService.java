@@ -44,6 +44,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.event.EventRouter;
 import com.vaadin.hummingbird.router.Router;
+import com.vaadin.hummingbird.router.RouterConfigurator;
+import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.VaadinSession.FutureAccess;
 import com.vaadin.server.VaadinSession.State;
@@ -179,7 +181,48 @@ public abstract class VaadinService implements Serializable {
         Collections.reverse(handlers);
         requestHandlers = Collections.unmodifiableCollection(handlers);
 
+        DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
+
+        String routerConfiguratorClassName = deploymentConf
+                .getRouterConfiguratorClassName();
+        if (routerConfiguratorClassName != null && !RouterConfigurator.class
+                .getName().equals(routerConfiguratorClassName)) {
+            // Configure router if we have a non-default configurator type
+
+            if (!RouterUI.class.getName()
+                    .equals(deploymentConf.getUIClassName())) {
+                throw new ServiceException("The UI class must be set to "
+                        + RouterUI.class.getName()
+                        + " if a router configurator is provided. The configured UI class is now "
+                        + getDeploymentConfiguration().getUIClassName());
+            }
+
+            configureRouter(routerConfiguratorClassName);
+        }
+
         initialized = true;
+    }
+
+    private void configureRouter(String configuratorClassName)
+            throws ServiceException {
+        try {
+            Class<?> configuratorClass = Class.forName(configuratorClassName,
+                    true, getClassLoader());
+            if (!RouterConfigurator.class.isAssignableFrom(configuratorClass)) {
+                throw new IllegalStateException(
+                        "The defined router configurator class "
+                                + configuratorClassName + " does not implement "
+                                + RouterConfigurator.class.getName());
+            }
+
+            RouterConfigurator configurator = (RouterConfigurator) configuratorClass
+                    .newInstance();
+
+            getRouter().reconfigure(configurator);
+        } catch (ClassNotFoundException | InstantiationException
+                | IllegalAccessException e) {
+            throw new ServiceException("Could not configure router", e);
+        }
     }
 
     /**
