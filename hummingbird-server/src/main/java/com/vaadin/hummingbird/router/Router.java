@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
 
@@ -27,7 +28,26 @@ import com.vaadin.server.VaadinRequest;
  * @author Vaadin Ltd
  */
 public class Router implements Serializable {
-    private Resolver resolver;
+    /**
+     * The live configuration instance. All changes to the configuration are
+     * done on a copy, which is then swapped into use so that nobody outside
+     * this class ever can have a reference to the actively used instance.
+     */
+    private volatile ModifyableRouterConfiguration configuration = new ModifyableRouterConfiguration();
+
+    /**
+     * Lock used to ensure there's only one update going on at once.
+     * <p>
+     * The lock is configured to always guarantee a fair ordering.
+     */
+    private final ReentrantLock configUpdateLock = new ReentrantLock(true);
+
+    /**
+     * Creates a new router.
+     */
+    public Router() {
+        configuration.seal();
+    }
 
     /**
      * Enables navigation for a new UI instance. This initializes the UI content
@@ -69,15 +89,11 @@ public class Router implements Serializable {
      *            the location to navigate to
      */
     public void navigate(RouterUI ui, Location location) {
-        if (resolver == null) {
-            throw new IllegalStateException(
-                    "Resolver has not yet been initialized");
-        }
-
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
                 ui);
 
-        NavigationHandler handler = resolver.resolve(navigationEvent);
+        NavigationHandler handler = configuration.getResolver()
+                .resolve(navigationEvent);
 
         if (handler == null) {
             handler = new ErrorNavigationHandler(404);
@@ -87,13 +103,49 @@ public class Router implements Serializable {
     }
 
     /**
-     * Sets the resolver to use for resolving what to show for a given
-     * navigation event.
+     * Updates the configuration of this router in a thread-safe way.
      *
-     * @param resolver
-     *            the resolver
+     * @param configurator
+     *            the configurator that will update the configuration
      */
-    public void setResolver(Resolver resolver) {
-        this.resolver = resolver;
+    public void reconfigure(RouterConfigurator configurator) {
+        /*
+         * This is expected to be run so rarely (during service init and OSGi
+         * style dynamic reconfiguration) that blocking and copying values is
+         * not a problem.
+         */
+        configUpdateLock.lock();
+        try {
+            /*
+             * Create a copy so that we don't pass the live reference to the
+             * configurator.
+             */
+            ModifyableRouterConfiguration copy = new ModifyableRouterConfiguration(
+                    configuration);
+
+            configurator.configure(copy);
+
+            /*
+             * Prevent changing the configuration that will be in live use.
+             */
+            copy.seal();
+
+            configuration = copy;
+        } finally {
+            configUpdateLock.unlock();
+        }
+    }
+
+    /**
+     * Gets the active router configuration. The returned instance cannot be
+     * directly modified. Use {@link #reconfigure(RouterConfigurator)} to update
+     * the configuration.
+     *
+     * @return the currently used router configuration
+     */
+    public RouterConfiguration getConfiguration() {
+        assert configuration.isSealed();
+
+        return configuration;
     }
 }
