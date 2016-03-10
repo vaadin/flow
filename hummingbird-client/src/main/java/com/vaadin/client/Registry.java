@@ -22,7 +22,7 @@ import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.PushConfiguration;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
-import com.vaadin.client.communication.ServerMessager;
+import com.vaadin.client.communication.ServerMessenger;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
 import com.vaadin.client.hummingbird.ExecuteJavaScriptProcessor;
@@ -244,12 +244,12 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link ServerMessager} singleton.
+     * Gets the {@link ServerMessenger} singleton.
      *
-     * @return the {@link ServerMessager} singleton
+     * @return the {@link ServerMessenger} singleton
      *
      */
-    public ServerMessager getServerMessager() {
-        return get(ServerMessager.class);
+    public ServerMessenger getServerMessenger() {
+        return get(ServerMessenger.class);
     }
 }

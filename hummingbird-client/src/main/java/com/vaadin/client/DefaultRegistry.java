@@ -15,7 +15,7 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.client.communication.ServerMessager;
+import com.vaadin.client.communication.ServerMessenger;
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
@@ -66,7 +66,7 @@ public class DefaultRegistry extends Registry {
         set(MessageHandler.class, new MessageHandler(this));
         set(MessageSender.class, new MessageSender(this));
         set(ServerRpcQueue.class, new ServerRpcQueue(this));
-        set(ServerMessager.class, new ServerMessager(this));
+        set(ServerMessenger.class, new ServerMessenger(this));
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
 

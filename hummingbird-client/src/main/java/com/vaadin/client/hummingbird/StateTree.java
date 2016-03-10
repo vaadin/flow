@@ -139,7 +139,7 @@ public class StateTree {
     public void sendEventToServer(StateNode node, String eventType,
             JsonObject eventData) {
         assert assertValidNode(node);
-        registry.getServerMessager().sendEventMessage(node, eventType,
+        registry.getServerMessenger().sendEventMessage(node, eventType,
                 eventData);
     }
 
@@ -156,7 +156,7 @@ public class StateTree {
     public void sendPropertySyncToServer(StateNode node, String property,
             Object value) {
         assert assertValidNode(node);
-        registry.getServerMessager().sendPropertySyncMessage(node, property,
+        registry.getServerMessenger().sendPropertySyncMessage(node, property,
                 value);
     }
 

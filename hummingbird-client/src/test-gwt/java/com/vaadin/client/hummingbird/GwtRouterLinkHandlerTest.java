@@ -2,7 +2,7 @@ package com.vaadin.client.hummingbird;
 
 import com.google.gwt.core.client.JavaScriptException;
 import com.vaadin.client.ClientEngineTestBase;
-import com.vaadin.client.communication.ServerMessager;
+import com.vaadin.client.communication.ServerMessenger;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.shared.ApplicationConstants;
@@ -18,7 +18,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
 
     private MouseEvent currentEvent;
 
-    private ServerMessager messager;
+    private ServerMessenger messenger;
 
     @Override
     protected void gwtSetUp() throws Exception {
@@ -26,7 +26,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
 
         invocations = JsCollections.array();
 
-        messager = new ServerMessager(null) {
+        messenger = new ServerMessenger(null) {
             @Override
             public void sendNavigationMessage(String location,
                     Object stateObject) {
@@ -34,7 +34,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
             };
         };
 
-        RouterLinkHandler.bind(messager, Browser.getDocument().getBody());
+        RouterLinkHandler.bind(messenger, Browser.getDocument().getBody());
     }
 
     public void testRouterLink_anchorWithRouterLink_eventIntercepted() {
