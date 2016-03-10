@@ -17,8 +17,8 @@
 package com.vaadin.server.communication;
 
 import com.vaadin.server.BootstrapHandler;
+import com.vaadin.server.ServletHelper;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletService;
 
 /**
  * Request handler for {@link VaadinServlet} which handles the bootstrapping of
@@ -37,7 +37,7 @@ public class ServletBootstrapHandler extends BootstrapHandler {
              * path segment in pathInfo (i.e. the part of the requested path
              * that comes after the servlet mapping)
              */
-            return VaadinServletService.getCancelingRelativePath(pathInfo);
+            return ServletHelper.getCancelingRelativePath(pathInfo);
         }
     }
 
