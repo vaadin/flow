@@ -16,8 +16,8 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.Console;
+import com.vaadin.client.Registry;
 import com.vaadin.client.URIResolver;
-import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.client.Browser;
@@ -45,19 +45,19 @@ public class RouterLinkHandler {
      * Adds a click event listener for the given element for intercepting
      * application navigation related click events and sending them to server.
      *
-     * @param connector
-     *            the connector sending the update to server
+     * @param registry
+     *            the registry
      * @param element
      *            the element to listen to click events in
      */
-    public static void bind(ServerConnector connector, Element element) {
-        element.addEventListener("click",
-                event -> handleClick(connector, event), false);
+    public static void bind(Registry registry, Element element) {
+        element.addEventListener("click", event -> handleClick(registry, event),
+                false);
     }
 
-    private static void handleClick(ServerConnector messager,
-            Event clickEvent) {
-        if (isRouterLinkClick(clickEvent) && !hasModifierKeys(clickEvent)) {
+    private static void handleClick(Registry registry, Event clickEvent) {
+        if (isRouterLinkClick(clickEvent) && !hasModifierKeys(clickEvent)
+                && registry.getUILifecycle().isRunning()) {
             AnchorElement target = (AnchorElement) clickEvent.getTarget();
 
             String href = target.getHref();
@@ -78,7 +78,7 @@ public class RouterLinkHandler {
 
             String location = URIResolver.getBaseRelativeUri(baseURI, href);
 
-            messager.sendNavigationMessage(location, null);
+            registry.getServerConnector().sendNavigationMessage(location, null);
         }
     }
 
