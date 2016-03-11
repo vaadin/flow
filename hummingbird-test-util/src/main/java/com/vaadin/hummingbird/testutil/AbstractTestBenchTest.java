@@ -28,8 +28,17 @@ import com.vaadin.ui.UI;
 public class AbstractTestBenchTest extends TestBenchHelpers {
 
     private static final String UI_NOT_FOUND_EXCEPTION_MESSAGE = "Could not determine UI class. Ensure the test is named UIClassIT and is in the same package as the UIClass";
+    /**
+     * Default port for test server, possibly overridden with system property
+     */
+    private static final String DEFAULT_SERVER_PORT = "8888";
 
-    private String baseUrl = "http://localhost:8888";
+    /** System property key for the test server port */
+    public static final String SERVER_PORT_PROPERTY_KEY = "serverPort";
+    public static final String SERVER_PORT = System
+            .getProperty(SERVER_PORT_PROPERTY_KEY, DEFAULT_SERVER_PORT);
+
+    private String baseUrl = "http://localhost:" + SERVER_PORT;
 
     protected void open() {
         open(getUIClass());
