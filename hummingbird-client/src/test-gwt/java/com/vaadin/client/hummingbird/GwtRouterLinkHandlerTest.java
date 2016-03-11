@@ -2,6 +2,9 @@ package com.vaadin.client.hummingbird;
 
 import com.google.gwt.core.client.JavaScriptException;
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle;
+import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
@@ -11,6 +14,7 @@ import elemental.client.Browser;
 import elemental.dom.Document.Events;
 import elemental.dom.Element;
 import elemental.events.MouseEvent;
+import elemental.html.DivElement;
 
 public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
 
@@ -18,7 +22,9 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
 
     private MouseEvent currentEvent;
 
-    private ServerConnector connector;
+    private Registry registry;
+
+    private DivElement boundElement;
 
     @Override
     protected void gwtSetUp() throws Exception {
@@ -26,7 +32,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
 
         invocations = JsCollections.array();
 
-        connector = new ServerConnector(null) {
+        ServerConnector connector = new ServerConnector(null) {
             @Override
             public void sendNavigationMessage(String location,
                     Object stateObject) {
@@ -34,7 +40,17 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
             };
         };
 
-        RouterLinkHandler.bind(connector, Browser.getDocument().getBody());
+        UILifecycle lifecycle = new UILifecycle();
+        lifecycle.setState(UIState.RUNNING);
+        registry = new Registry() {
+            {
+                set(UILifecycle.class, lifecycle);
+                set(ServerConnector.class, connector);
+            }
+        };
+        boundElement = Browser.getDocument().createDivElement();
+        Browser.getDocument().getBody().appendChild(boundElement);
+        RouterLinkHandler.bind(registry, boundElement);
     }
 
     public void testRouterLink_anchorWithRouterLink_eventIntercepted() {
@@ -42,7 +58,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertInvocations(0);
 
         Element target = createTarget("a", "foobar", true);
-        Browser.getDocument().getBody().appendChild(target);
+        boundElement.appendChild(target);
         fireClickEvent(target);
 
         assertInvocations(1);
@@ -54,7 +70,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertInvocations(0);
 
         Element target = createTarget("div", "foobar", true);
-        Browser.getDocument().getBody().appendChild(target);
+        boundElement.appendChild(target);
         fireClickEvent(target);
 
         assertInvocations(0);
@@ -66,7 +82,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertInvocations(0);
 
         Element target = createTarget("a", "foobar", false);
-        Browser.getDocument().getBody().appendChild(target);
+        boundElement.appendChild(target);
         fireClickEvent(target);
 
         assertInvocations(0);
@@ -78,7 +94,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertInvocations(0);
 
         Element target = createTarget("a", "foobar", true);
-        Browser.getDocument().getBody().appendChild(target);
+        boundElement.appendChild(target);
         fireClickEvent(target, true, false, false, false);
 
         assertInvocations(0);
@@ -90,7 +106,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertInvocations(0);
 
         Element target = createTarget("a", "foobar", true);
-        Browser.getDocument().getBody().appendChild(target);
+        boundElement.appendChild(target);
         fireClickEvent(target, false, true, false, false);
 
         assertInvocations(0);
@@ -102,7 +118,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertInvocations(0);
 
         Element target = createTarget("a", "foobar", true);
-        Browser.getDocument().getBody().appendChild(target);
+        boundElement.appendChild(target);
         fireClickEvent(target, false, false, true, false);
 
         assertInvocations(0);
@@ -114,7 +130,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertInvocations(0);
 
         Element target = createTarget("a", "foobar", true);
-        Browser.getDocument().getBody().appendChild(target);
+        boundElement.appendChild(target);
         fireClickEvent(target, false, false, false, true);
 
         assertInvocations(0);
@@ -126,7 +142,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertInvocations(0);
 
         Element target = createTarget("a", "http://localhost:120/bar", true);
-        Browser.getDocument().getBody().appendChild(target);
+        boundElement.appendChild(target);
         try {
             fireClickEvent(target);
         } catch (JavaScriptException e) {
@@ -174,4 +190,18 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
                 0, 0, 0, 0, ctrl, alt, shift, meta, 0, target);
         target.dispatchEvent(currentEvent);
     }
+
+    public void testRouterLink_anchorWithRouterLink_ui_stopped() {
+        currentEvent = null;
+        assertInvocations(0);
+        registry.getUILifecycle().setState(UIState.TERMINATED);
+
+        Element target = createTarget("a", "foobar", true);
+        boundElement.appendChild(target);
+        fireClickEvent(target);
+
+        assertInvocations(0);
+        assertEventDefaultNotPrevented();
+    }
+
 }
