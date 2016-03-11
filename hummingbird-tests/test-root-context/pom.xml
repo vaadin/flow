@@ -10,6 +10,9 @@
 	<artifactId>test-root-context</artifactId>
 	<name>Hummingbird root context tests</name>
 	<packaging>war</packaging>
+
+	<!-- uses default ports 8888 and 8889 -->
+
 	<dependencies>
 		<dependency>
 			<groupId>com.vaadin</groupId>
