@@ -1,6 +1,5 @@
 package com.vaadin.client;
 
-import com.google.gwt.core.shared.GWT;
 import com.google.gwt.junit.client.GWTTestCase;
 
 /**
@@ -9,10 +8,10 @@ import com.google.gwt.junit.client.GWTTestCase;
  * from being run as a regular JVM unit test.
  */
 public abstract class ClientEngineTestBase extends GWTTestCase {
-    static {
-        if (GWT.isClient()) {
-            installCollectionsPolyfill();
-        }
+    @Override
+    protected void gwtSetUp() throws Exception {
+        installCollectionsPolyfill();
+        super.gwtSetUp();
     }
 
     @Override
