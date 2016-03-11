@@ -44,6 +44,7 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.ui.Page.LocationChangeEvent;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -237,6 +238,21 @@ public abstract class UI implements Serializable, PollNotifier {
             throw new IllegalStateException(message);
         }
         this.uiId = uiId;
+
+        String pathInfo = request.getPathInfo();
+
+        // Update Page.location if the default value is not used
+        if (pathInfo != null && !"/".equals(pathInfo)) {
+            assert pathInfo.startsWith("/");
+            String relativeLocation = pathInfo.substring(1);
+
+            /*
+             * Firing an event to get the location updated, even though there
+             * should not yet be any listeners registered.
+             */
+            getPage().fireLocationChange(
+                    new LocationChangeEvent(getPage(), null, relativeLocation));
+        }
 
         // Call the init overridden by the application developer
         init(request);

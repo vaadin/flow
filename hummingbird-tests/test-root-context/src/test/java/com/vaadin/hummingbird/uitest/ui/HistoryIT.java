@@ -37,13 +37,19 @@ public class HistoryIT extends PhantomJSTest {
         URI baseUrl = getCurrentUrl();
         String base = baseUrl.toString();
 
+        WebElement initialHolder = findElement(By.id("initial"));
         WebElement stateField = findElement(By.id("state"));
         WebElement locationField = findElement(By.id("location"));
         WebElement pushButton = findElement(By.id("pushState"));
         WebElement replaceButton = findElement(By.id("replaceState"));
+        WebElement setLocationButton = findElement(By.id("setLocation"));
         WebElement backButton = findElement(By.id("back"));
         WebElement forwardButton = findElement(By.id("forward"));
         WebElement clearButton = findElement(By.id("clear"));
+
+        Assert.assertEquals(
+                "Initial location: com.vaadin.hummingbird.uitest.ui.HistoryUI",
+                initialHolder.getText());
 
         stateField.sendKeys("{'foo':true}");
         locationField.sendKeys("asdf");
@@ -76,6 +82,24 @@ public class HistoryIT extends PhantomJSTest {
         clearButton.click();
 
         // Back to the replaced state
+        backButton.click();
+
+        Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
+        Assert.assertEquals(Arrays.asList("New location: qwerty"),
+                getStatusMessages());
+        clearButton.click();
+
+        // Set location from server
+        locationField.clear();
+        locationField.sendKeys("zxcvb");
+        setLocationButton.click();
+
+        Assert.assertEquals(baseUrl.resolve("zxcvb"), getCurrentUrl());
+        Assert.assertEquals(Arrays.asList("New location: zxcvb"),
+                getStatusMessages());
+        clearButton.click();
+
+        // And back again
         backButton.click();
 
         Assert.assertEquals(baseUrl.resolve("qwerty"), getCurrentUrl());
