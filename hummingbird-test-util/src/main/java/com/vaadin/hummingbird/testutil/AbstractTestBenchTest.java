@@ -16,31 +16,29 @@
 package com.vaadin.hummingbird.testutil;
 
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.openqa.selenium.JavascriptExecutor;
 
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.UI;
 
 /**
- * Abstract base class for hummingbird testbench tests.
+ * Abstract base class for hummingbird TestBench tests, which are based on a
+ * {@link View} class.
  */
-public class AbstractTestBenchTest extends TestBenchHelpers {
+public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
-    private static final String UI_NOT_FOUND_EXCEPTION_MESSAGE = "Could not determine UI class. Ensure the test is named UIClassIT and is in the same package as the UIClass";
-
-    private String baseUrl = "http://localhost:8888";
+    private String hostnameAndPort = "http://localhost:8888";
 
     protected void open() {
-        open(getUIClass());
+        open((String[]) null);
     }
 
     protected void open(String... parameters) {
-        open(getUIClass(), parameters);
-    }
-
-    protected void open(Class<?> uiClass, String... parameters) {
-        String url = getTestURL(uiClass);
+        String url = getTestURL();
         if (parameters != null && parameters.length != 0) {
             if (!url.contains("?")) {
                 url += "?";
@@ -55,54 +53,103 @@ public class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Returns the URL to be used for the test for the provided UI class.
+     * Returns the URL to be used for the test.
      *
-     * @param uiClass
-     *            the UI class to show
      * @return the URL for the test
      */
-    protected String getTestURL(Class<?> uiClass) {
-        String url = getBaseUrl();
+    protected String getTestURL() {
+        String url = getRootURL();
         while (url.endsWith("/")) {
             url = url.substring(0, url.length() - 1);
         }
-        return url + getDeploymentPath(uiClass);
-    }
-
-    protected String getDeploymentPath(Class<?> uiClass) {
-        return "/run/" + uiClass.getName();
-    }
-
-    protected String getBaseUrl() {
-        return baseUrl;
+        return url + getTestPath();
     }
 
     /**
-     * Returns the UI class the current test is connected to. Uses the enclosing
-     * class if the test class is a static inner class to a UI class.
+     * Returns the URL to the root of the server, e.g. "http://localhost:8888"
      *
-     * Test which are not enclosed by a UI class must implement this method and
-     * return the UI class they want to test.
-     *
-     * Note that this method will update the test name to the enclosing class to
-     * be compatible with TB2 screenshot naming
-     *
-     * @return the UI class the current test is connected to
+     * @return the URL to the root
      */
-    protected Class<?> getUIClass() {
-        final String exceptionMessage = UI_NOT_FOUND_EXCEPTION_MESSAGE;
+    protected String getRootURL() {
+        return hostnameAndPort;
+    }
+
+    /**
+     * Gets the absolute path to the test (UI, View or servlet), starting with a
+     * "/".
+     *
+     * @return the path to the test, appended to {@link #getRootURL()} for the
+     *         full test URL.
+     */
+    protected String getTestPath() {
+        Class<? extends UI> uiClass = getUIClass();
+        if (uiClass != null) {
+            return "/run/" + uiClass.getName();
+        }
+
+        Class<? extends View> viewClass = getViewClass();
+        if (viewClass != null) {
+            return "/view/" + viewClass.getName();
+        }
+
+        throw new RuntimeException(
+                "Could not find a View or UI class for the test. Ensure "
+                        + getClass().getName().replaceFirst("IT$", "")
+                        + "View/UI exists "
+                        + " or override either getTestPath() or getViewClass()/getUIClass() in your test");
+
+    }
+
+    /**
+     * Returns the UI class the current test is connected to.
+     * <p>
+     * Uses name matching and replaces "IT" with "UI"
+     *
+     * @return the UI class the current test is connected to or null if no UI
+     *         class was found
+     */
+    @SuppressWarnings("unchecked")
+    protected Class<? extends UI> getUIClass() {
+        String uiClassName = getClass().getName().replaceFirst("IT$", "UI");
         try {
-            // Convention: SomeIT uses the SomeUI UI class
-            String uiClassName = getClass().getName().replaceFirst("IT$", "UI");
             Class<?> cls = Class.forName(uiClassName);
             if (UI.class.isAssignableFrom(cls)) {
-                return cls;
-            } else {
-                throw new RuntimeException(exceptionMessage);
+                return (Class<? extends UI>) cls;
             }
         } catch (Exception e) {
-            throw new RuntimeException(exceptionMessage, e);
+            // Here only to please Sonar...
+            getLogger().log(Level.FINE,
+                    "UI for " + getClass().getName() + " not found", e);
         }
+        return null;
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(AbstractTestBenchTest.class.getName());
+    }
+
+    /**
+     * Returns the View class the current test is connected to.
+     * <p>
+     * Uses name matching and replaces "IT" with "View"
+     *
+     * @return the View class the current test is connected to or null if no
+     *         View class was found
+     */
+    @SuppressWarnings("unchecked")
+    protected Class<? extends View> getViewClass() {
+        String viewClassName = getClass().getName().replaceFirst("IT$", "View");
+        try {
+            Class<?> cls = Class.forName(viewClassName);
+            if (View.class.isAssignableFrom(cls)) {
+                return (Class<? extends View>) cls;
+            }
+        } catch (Exception e) {
+            // Here only to please Sonar...
+            getLogger().log(Level.FINE,
+                    "View for " + getClass().getName() + " not found", e);
+        }
+        return null;
     }
 
     /**

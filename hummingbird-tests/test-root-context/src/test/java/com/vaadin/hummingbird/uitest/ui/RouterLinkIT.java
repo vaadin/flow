@@ -3,8 +3,6 @@ package com.vaadin.hummingbird.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
@@ -68,7 +66,7 @@ public class RouterLinkIT extends PhantomJSTest {
 
     private void verifyInsideServletLocation(String pathAfterServletMapping) {
         Assert.assertEquals("Invalid URL",
-                getBaseUrl() + "/run/" + pathAfterServletMapping,
+                getRootURL() + "/run/" + pathAfterServletMapping,
                 getDriver().getCurrentUrl());
     }
 
