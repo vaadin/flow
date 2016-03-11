@@ -22,6 +22,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.server.Command;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -34,20 +35,26 @@ public class HistoryUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        History history = getPage().getHistory();
+        Page page = getPage();
+        History history = page.getHistory();
+
+        addRow(Element.createText("Initial location: " + page.getLocation()))
+                .setProperty("id", "initial");
 
         addRow(Element.createText("State to set (JSON) "), stateJsonInput);
         addRow(Element.createText("Location to set "), locationInput);
 
         addRow(createStateButton("pushState", history::pushState),
-                createStateButton("replaceState", history::replaceState));
+                createStateButton("replaceState", history::replaceState),
+                createStateButton("setLocation", (state, location) -> page
+                        .setLocation(location, state)));
 
         addRow(createActionButton("back", history::back),
                 createActionButton("forward", history::forward));
 
         addRow(createActionButton("clear", this::clear));
 
-        history.setLocationChangeHandler(e -> {
+        page.addLocationChangeListener(e -> {
             addStatus("New location: " + e.getLocation());
 
             e.getState().ifPresent(

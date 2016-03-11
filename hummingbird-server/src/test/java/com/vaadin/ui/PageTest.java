@@ -15,9 +15,13 @@
  */
 package com.vaadin.ui;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.tests.util.MockUI;
+import com.vaadin.ui.Page.LocationChangeListener;
 
 public class PageTest {
     private Page page = new MockUI().getPage();
@@ -30,5 +34,34 @@ public class PageTest {
     @Test(expected = IllegalArgumentException.class)
     public void testAddNullJavaScript() {
         page.addJavaScript(null);
+    }
+
+    @Test
+    public void testLocationInternalOrExternal() {
+        Assert.assertTrue(isInternalLocation(""));
+        Assert.assertTrue(isInternalLocation("foo"));
+        Assert.assertTrue(isInternalLocation("foo/bar"));
+
+        Assert.assertFalse(isInternalLocation("http://google.com"));
+        Assert.assertFalse(isInternalLocation("//google.com"));
+        Assert.assertFalse(isInternalLocation("/foo"));
+        Assert.assertFalse(isInternalLocation("../foo"));
+        // This URL would actually resolve to inside the location, but it's
+        // still implemented as an external location to keep the documentation
+        // simpler.
+        Assert.assertFalse(isInternalLocation("foo/../bar"));
+    }
+
+    private boolean isInternalLocation(String location) {
+        AtomicBoolean eventFired = new AtomicBoolean(false);
+
+        LocationChangeListener listener = e -> eventFired.set(true);
+        page.addLocationChangeListener(listener);
+
+        page.setLocation(location);
+
+        page.removeLocationChangeListener(listener);
+
+        return eventFired.get();
     }
 }

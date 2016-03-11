@@ -40,23 +40,13 @@ public class Router implements Serializable {
      *            the Vaadin request that bootstraps the provided UI
      */
     public void initializeUI(RouterUI ui, VaadinRequest initRequest) {
-        String pathInfo = initRequest.getPathInfo();
-
-        String path;
-        if (pathInfo == null) {
-            path = "";
-        } else {
-            assert pathInfo.startsWith("/");
-            path = pathInfo.substring(1);
-        }
-
-        ui.getPage().getHistory().setLocationChangeHandler(e -> {
+        ui.getPage().addLocationChangeListener(e -> {
             String newLocation = e.getLocation();
 
             navigate(ui, new Location(newLocation));
         });
 
-        Location location = new Location(path);
+        Location location = new Location(ui.getPage().getLocation());
         navigate(ui, location);
     }
 
