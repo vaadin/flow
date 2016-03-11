@@ -22,6 +22,10 @@
 		<jetty.plugin.version>9.2.15.v20160210</jetty.plugin.version>
 		<!-- Don't care about coding style for tests -->
 		<sonar.skip>true</sonar.skip>
+		<!-- Used in the tests, should be overridden for each module to support 
+			concurrent running of test modules. -->
+		<server.port>8888</server.port>
+		<server.stop.port>8889</server.stop.port>
 	</properties>
 
 	<dependencies>
@@ -55,6 +59,12 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<!-- export test server port to integration tests -->
+					<systemPropertyVariables>
+						<serverPort>${server.port}</serverPort>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 			<!-- jetty plugin for those child modules that need it -->
 			<plugin>
@@ -69,9 +79,9 @@
 					</webAppConfig>
 					<scanIntervalSeconds>-1</scanIntervalSeconds>
 					<httpConnector>
-						<port>8888</port>
+						<port>${server.port}</port>
 					</httpConnector>
-					<stopPort>8889</stopPort>
+					<stopPort>${server.stop.port}</stopPort>
 					<stopKey>foo</stopKey>
 					<stopWait>5</stopWait>
 				</configuration>
@@ -103,6 +113,11 @@
 									<resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>
 								</resourceBases>
 							</webAppConfig>
+							<!-- force default ports so that running IT tests from IDE work -->
+							<httpConnector>
+								<port>8888</port>
+							</httpConnector>
+							<stopPort>8889</stopPort>
 						</configuration>
 					</plugin>
 				</plugins>

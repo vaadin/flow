@@ -31,7 +31,22 @@ import com.vaadin.ui.UI;
  */
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
-    private String hostnameAndPort = "http://localhost:8888";
+    /**
+     * Default port for test server, possibly overridden with system property.
+     */
+    private static final String DEFAULT_SERVER_PORT = "8888";
+
+    /** System property key for the test server port. */
+    public static final String SERVER_PORT_PROPERTY_KEY = "serverPort";
+    /**
+     * Server port resolved by system property
+     * {@value #SERVER_PORT_PROPERTY_KEY} or the default
+     * {@value #DEFAULT_SERVER_PORT}.
+     */
+    public static final String SERVER_PORT = System
+            .getProperty(SERVER_PORT_PROPERTY_KEY, DEFAULT_SERVER_PORT);
+
+    private String hostnameAndPort = "http://localhost:" + SERVER_PORT;
 
     protected void open() {
         open((String[]) null);
