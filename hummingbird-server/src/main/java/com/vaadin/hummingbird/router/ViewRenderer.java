@@ -34,7 +34,7 @@ public class ViewRenderer implements NavigationHandler {
 
     private final Class<? extends View> viewType;
     // Starts with the view's immediate parent
-    private final Class<? extends HasSubView>[] parentViewTypes;
+    private final Class<? extends HasChildView>[] parentViewTypes;
 
     /**
      * Creates a renderer for the given view type and optional parent view
@@ -49,7 +49,7 @@ public class ViewRenderer implements NavigationHandler {
      */
     @SafeVarargs
     public ViewRenderer(Class<? extends View> viewType,
-            Class<? extends HasSubView>... parentViewTypes) {
+            Class<? extends HasChildView>... parentViewTypes) {
         Set<Class<?>> duplicateCheck = new HashSet<>();
         duplicateCheck.add(viewType);
         for (Class<?> parentType : parentViewTypes) {
@@ -73,8 +73,8 @@ public class ViewRenderer implements NavigationHandler {
                     .getViewChain().stream()
                     .collect(Collectors.toMap(i -> i.getClass(), i -> i));
 
-            List<HasSubView> parentViews = new ArrayList<>();
-            for (Class<? extends HasSubView> parentType : parentViewTypes) {
+            List<HasChildView> parentViews = new ArrayList<>();
+            for (Class<? extends HasChildView> parentType : parentViewTypes) {
                 parentViews.add(reuseOrCreate(parentType, availableInstances));
             }
 
