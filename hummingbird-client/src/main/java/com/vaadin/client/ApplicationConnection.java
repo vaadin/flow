@@ -54,12 +54,12 @@ public class ApplicationConnection {
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
         DependencyLoader.bind(registry.getDependencyLoader(), rootNode);
 
-        PopStateBinder.bind(registry.getServerConnector());
+        PopStateBinder.bind(registry);
 
         Element body = Browser.getDocument().getBody();
 
         BasicElementBinder.bind(rootNode, body);
-        RouterLinkHandler.bind(registry.getServerConnector(), body);
+        RouterLinkHandler.bind(registry, body);
 
         Console.log("Starting application "
                 + applicationConfiguration.getApplicationId());
