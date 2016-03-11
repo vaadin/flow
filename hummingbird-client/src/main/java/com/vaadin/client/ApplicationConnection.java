@@ -59,7 +59,7 @@ public class ApplicationConnection {
         Element body = Browser.getDocument().getBody();
 
         BasicElementBinder.bind(rootNode, body);
-        RouterLinkHandler.bind(registry.getServerConnector(), body);
+        RouterLinkHandler.bind(registry, body);
 
         Console.log("Starting application "
                 + applicationConfiguration.getApplicationId());
