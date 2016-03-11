@@ -19,15 +19,13 @@ import java.util.Set;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
 
-public class BasicElementUI extends UI {
+public class BasicElementView extends TestView {
 
     @Override
-    protected void init(VaadinRequest request) {
-        Element bodyElement = getElement();
-        bodyElement.getStyle().set("margin", "1em");
+    protected void onShow() {
+        Element mainElement = getElement();
+        mainElement.getStyle().set("margin", "1em");
 
         Element button = new Element("button");
         button.setTextContent("Click me");
@@ -48,7 +46,7 @@ public class BasicElementUI extends UI {
             greeting.addEventListener("click",
                     e2 -> greeting.removeFromParent());
 
-            bodyElement.appendChild(greeting);
+            mainElement.appendChild(greeting);
         } , "element.textContent");
 
         Element helloWorldElement = new Element("div");
@@ -66,7 +64,7 @@ public class BasicElementUI extends UI {
         s.set("color", "red");
         s.set("fontWeight", "bold");
 
-        bodyElement.appendChild(helloWorldElement, button, input);
+        mainElement.appendChild(helloWorldElement, button, input);
     }
 
 }
