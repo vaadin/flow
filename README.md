@@ -13,6 +13,8 @@ Instructions on how to set up a working environment for developing the Hummingbi
 Quick Setup
 ======
 1. <code>git clone https://github.com/vaadin/hummingbird.git</code>
+1. install phantomjs (make sure it's in the PATH)
+1. make sure you have TestBench license (get it otherwise on https://vaadin.com/pro/licenses) 
 1. <code>mvn install</code>
 
 For more details, see below
