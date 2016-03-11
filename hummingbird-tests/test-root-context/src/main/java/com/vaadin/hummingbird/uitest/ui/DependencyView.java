@@ -16,13 +16,11 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
 
-public class DependencyUI extends UI {
+public class DependencyView extends TestView {
 
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onShow() {
         getElement().appendChild(new Element("div").setTextContent(
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
         getElement().appendChild(new Element("hr"));
