@@ -16,10 +16,8 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.util.EventObject;
-import java.util.Optional;
 
-import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.ui.Page.LocationChangeEvent;
 
 import elemental.json.JsonValue;
 
@@ -34,82 +32,7 @@ import elemental.json.JsonValue;
  */
 public class History implements Serializable {
 
-    /**
-     * Event fired when the location has changed.
-     * <p>
-     * This happens when <code>PopStateEvent</code> is fired in the browser, or
-     * when routing has been triggered by user clicking a link marked with
-     * attribute {@value ApplicationConstants#ROUTER_LINK_ATTRIBUTE} .
-     */
-    public static class LocationChangeEvent extends EventObject {
-        private final String location;
-        private final transient JsonValue state;
-
-        /**
-         * Creates a new event.
-         *
-         * @param history
-         *            the history instance that fired the event, not
-         *            <code>null</code>
-         * @param state
-         *            the history state from the browser, <code>null</code> if
-         *            no state was provided
-         * @param location
-         *            the new browser location, not <code>null</code>
-         */
-        public LocationChangeEvent(History history, JsonValue state,
-                String location) {
-            super(history);
-
-            assert location != null;
-
-            this.location = location;
-            this.state = state;
-        }
-
-        @Override
-        public History getSource() {
-            return (History) super.getSource();
-        }
-
-        /**
-         * Gets the location that was opened. This is relative to the base url.
-         *
-         * @return the location, not null
-         */
-        public String getLocation() {
-            return location;
-        }
-
-        /**
-         * Gets the history state value as JSON.
-         *
-         * @return an optional JSON state value
-         */
-        public Optional<JsonValue> getState() {
-            return Optional.ofNullable(state);
-        }
-
-    }
-
-    /**
-     * Handles location change events.
-     *
-     * @see History.LocationChangeEvent
-     */
-    @FunctionalInterface
-    public interface LocationChangeHandler extends Serializable {
-        /**
-         * Invoked when a <code>popstate</code> event is fired.
-         *
-         * @param event
-         *            the event
-         */
-        void onLocationChange(LocationChangeEvent event);
-    }
-
     private final UI ui;
-    private LocationChangeHandler locationChangeHandler;
 
     /**
      * Creates a history API endpoint for the given UI.
@@ -165,33 +88,6 @@ public class History implements Serializable {
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJavaScript("history.replaceState($0, '', $1)",
                 state, location);
-    }
-
-    /**
-     * Sets a handler that will be notified when the location has changed.
-     * <p>
-     * Location changes are triggered by <code>popstate</code> event is fired in
-     * the browser or when the user has navigated using a router link. There can
-     * only be one handler at a time.
-     *
-     * @param locationChangeHandler
-     *            the handler to set, or <code>null</code> to remove the current
-     *            handler
-     * @see History.LocationChangeEvent
-     */
-    public void setLocationChangeHandler(
-            LocationChangeHandler locationChangeHandler) {
-        this.locationChangeHandler = locationChangeHandler;
-    }
-
-    /**
-     * Gets the handler that is notified location has changed.
-     *
-     * @return the location handler, or <code>null</code> if no handler is set
-     * @see History.LocationChangeEvent
-     */
-    public LocationChangeHandler getLocationChangeHandler() {
-        return locationChangeHandler;
     }
 
     /**

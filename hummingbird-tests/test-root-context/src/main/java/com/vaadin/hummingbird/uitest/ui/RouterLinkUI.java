@@ -38,7 +38,7 @@ public class RouterLinkUI extends UI {
                 new Element("div").setTextContent("external"),
                 createRoutingLink("http://google.com"));
 
-        getPage().getHistory().setLocationChangeHandler(
+        getPage().addLocationChangeListener(
                 e -> location.setTextContent(e.getLocation()));
     }
 
