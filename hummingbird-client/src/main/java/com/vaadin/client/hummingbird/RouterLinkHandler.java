@@ -23,6 +23,7 @@ import com.vaadin.shared.ApplicationConstants;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
+import elemental.events.EventTarget;
 import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
 
@@ -56,12 +57,15 @@ public class RouterLinkHandler {
     }
 
     private static void handleClick(Registry registry, Event clickEvent) {
-        if (isRouterLinkClick(clickEvent) && !hasModifierKeys(clickEvent)
-                && registry.getUILifecycle().isRunning()) {
-            AnchorElement target = (AnchorElement) clickEvent.getTarget();
+        if (hasModifierKeys(clickEvent)
+                || !registry.getUILifecycle().isRunning()) {
+            return;
+        }
 
-            String href = target.getHref();
-            String baseURI = target.getOwnerDocument().getBaseURI();
+        String href = getRouterLinkHref(clickEvent);
+        if (href != null) {
+            String baseURI = ((Element) clickEvent.getCurrentTarget())
+                    .getOwnerDocument().getBaseURI();
 
             // verify that the link is actually for this application
             if (!href.startsWith(baseURI)) {
@@ -82,19 +86,39 @@ public class RouterLinkHandler {
         }
     }
 
-    private static boolean isRouterLinkClick(Event clickEvent) {
+    /**
+     * Gets the target of a router link, if a router link was found between the
+     * click target and the event listener.
+     *
+     * @param clickEvent
+     *            the click event
+     * @return the target (href) of the link if a link was found, null otherwise
+     */
+    private static String getRouterLinkHref(Event clickEvent) {
         assert "click".equals(clickEvent.getType());
 
         Element target = (Element) clickEvent.getTarget();
-        if (!"A".equalsIgnoreCase(target.getTagName())) {
-            return false;
+        EventTarget eventListenerElement = clickEvent.getCurrentTarget();
+        while (target != eventListenerElement) {
+            if (isRouterLinkAnchorElement(target)) {
+                return ((AnchorElement) target).getHref();
+            }
+            target = target.getParentElement();
         }
 
-        if (!target.hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE)) {
-            return false;
-        }
+        return null;
+    }
 
-        return true;
+    /**
+     * Checks if the given element is {@code <a routerlink>}
+     *
+     * @param target
+     *            the element to check
+     * @return true if the element is a routerlink, false otherwise
+     */
+    private static boolean isRouterLinkAnchorElement(Element target) {
+        return "a".equalsIgnoreCase(target.getTagName()) && target
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE);
     }
 
     private static boolean hasModifierKeys(Event clickEvent) {
