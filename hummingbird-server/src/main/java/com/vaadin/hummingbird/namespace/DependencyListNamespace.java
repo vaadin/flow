@@ -49,8 +49,10 @@ public class DependencyListNamespace extends JsonListNamespace {
     /**
      * Adds the given dependency to be loaded by the client side.
      * <p>
-     * Relative URLs are interpreted as relative to the application context
-     * path.
+     * Relative URLs are interpreted as relative to the service (servlet) path.
+     * You can prefix the URL with {@literal context://} to make it relative to
+     * the context path or use an absolute URL to refer to files outside the
+     * service (servlet) path.
      *
      * @param dependency
      *            the dependency to include on the page

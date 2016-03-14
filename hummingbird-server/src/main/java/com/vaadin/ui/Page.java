@@ -51,11 +51,10 @@ public class Page implements Serializable {
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the context path of the
-     * application.
-     * <p>
-     * The URL is passed through the translation mechanism before loading, so
-     * custom protocols such as "vaadin://" can be used.
+     * Relative URLs are interpreted as relative to the service (servlet) path.
+     * You can prefix the URL with {@literal context://} to make it relative to
+     * the context path or use an absolute URL to refer to files outside the
+     * service (servlet) path.
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
@@ -68,11 +67,10 @@ public class Page implements Serializable {
      * Adds the given JavaScript to the page and ensures that it is loaded
      * successfully.
      * <p>
-     * Relative URLs are interpreted as relative to the context path of the
-     * application.
-     * <p>
-     * The URL is passed through the translation mechanism before loading, so
-     * custom protocols such as "vaadin://" can be used.
+     * Relative URLs are interpreted as relative to the service (servlet) path.
+     * You can prefix the URL with {@literal context://} to make it relative to
+     * the context path or use an absolute URL to refer to files outside the
+     * service (servlet) path.
      *
      * @param url
      *            the URL to load the JavaScript from, not <code>null</code>
@@ -84,6 +82,11 @@ public class Page implements Serializable {
     /**
      * Adds the given dependency to the page and ensures that it is loaded
      * successfully.
+     *
+     * Relative URLs are interpreted as relative to the service (servlet) path.
+     * You can prefix the URL with {@literal context://} to make it relative to
+     * the context path or use an absolute URL to refer to files outside the
+     * service (servlet) path.
      *
      * @param dependency
      *            the dependency to load

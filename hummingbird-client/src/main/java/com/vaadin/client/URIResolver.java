@@ -39,8 +39,11 @@ public class URIResolver extends VaadinUriResolver {
     }
 
     @Override
-    protected String getVaadinDirUrl() {
-        return registry.getApplicationConfiguration().getVaadinDirUrl();
+    protected String getContextRootUrl() {
+        String root = registry.getApplicationConfiguration()
+                .getContextRootUrl();
+        assert root.endsWith("/");
+        return root;
     }
 
     @Override
