@@ -303,6 +303,12 @@ public class Element implements Serializable {
      * Note: An empty attribute value ({@literal ""}) will be rendered as
      * {@literal <div something>} and not {@literal <div something="">}.
      * <p>
+     * Note that setting the attribute <code>class</code> will override anything
+     * that has been set previously via {@link #getClassList()}.
+     * <p>
+     * Note that you cannot set the attribute <code>style</code> using this
+     * method. Instead you should use {@link #getStyle()} object.
+     * <p>
      * Note that attribute changes made on the server are sent to the client but
      * attribute changes made on the client side are not reflected back to the
      * server.
@@ -346,6 +352,13 @@ public class Element implements Serializable {
      * converted to lower case automatically.
      * <p>
      * An attribute always has a String key and a String value.
+     * <p>
+     * Note that for attribute <code>class</code> the contents of the
+     * {@link #getClassList()} collection are returned as a single concatenated
+     * string.
+     * <p>
+     * Note that for attribute <code>style</code> the contents of the
+     * {@link #getStyle()} object are returned as a single concatenated string.
      * <p>
      * Note that attribute changes made on the server are sent to the client but
      * attribute changes made on the client side are not reflected back to the
@@ -720,6 +733,29 @@ public class Element implements Serializable {
 
     /**
      * Sets the given property to the given string value.
+     * <p>
+     * Note in order to update the following properties, you need to use the
+     * specific API for that:
+     * <p>
+     * <table>
+     * <caption>Properties with different API</caption>
+     * <tr>
+     * <th>Property</th>
+     * <th>Method</th>
+     * </tr>
+     * <tr>
+     * <td>classList / className</td>
+     * <td>{@link Element#getClassList()}</td>
+     * </tr>
+     * <tr>
+     * <td>style</td>
+     * <td>{@link Element#getStyle()}</td>
+     * </tr>
+     * <tr>
+     * <td>textContent</td>
+     * <td>{@link Element#setTextContent(String)}</td>
+     * </tr>
+     * </table>
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
