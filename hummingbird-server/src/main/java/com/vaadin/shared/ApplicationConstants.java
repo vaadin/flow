@@ -35,14 +35,13 @@ public class ApplicationConstants implements Serializable {
     public static final String GENERATED_BODY_CLASSNAME = "v-generated-body";
 
     /**
-     * An internal protocol used for referencing the application context path.
+     * An internal protocol used for referencing the service (servlet) path.
      */
     public static final String SERVICE_PROTOCOL_PREFIX = "service://";
     /**
-     * An internal protocol used for referencing the {@literal VAADIN} folder
-     * inside the application context path.
+     * An internal protocol used for referencing the application context path.
      */
-    public static final String VAADIN_PROTOCOL_PREFIX = "vaadin://";
+    public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
     /**
      * An internal protocol used for identifying a font icon resource.
      */
@@ -68,9 +67,9 @@ public class ApplicationConstants implements Serializable {
 
     /**
      * Configuration parameter giving the (in some cases relative) URL to the
-     * VAADIN folder from where static resources are loaded.
+     * web application context root.
      */
-    public static final String VAADIN_DIR_URL = "vaadinDir";
+    public static final String CONTEXT_ROOT_URL = "contextRootUrl";
 
     /**
      * The name of the javascript containing push support. The file is located
