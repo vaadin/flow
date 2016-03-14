@@ -70,7 +70,7 @@ public class ViewRenderer implements NavigationHandler {
         try {
             // Instances currently in use that we want to reuse if possible
             Map<Class<? extends View>, View> availableInstances = ui
-                    .getViewChain().stream()
+                    .getActiveViewChain().stream()
                     .collect(Collectors.toMap(i -> i.getClass(), i -> i));
 
             List<HasChildView> parentViews = new ArrayList<>();
@@ -86,7 +86,8 @@ public class ViewRenderer implements NavigationHandler {
                             view -> view.onLocationChange(event.getLocation()));
 
             // Show the new view and parent views
-            ui.showView(viewInstance, parentViews);
+            ui.showView(event.getLocation().getPath(), viewInstance,
+                    parentViews);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Cannot instantiate view", e);
         }
