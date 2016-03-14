@@ -16,13 +16,23 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.EventObject;
+import java.util.Optional;
 
+import com.vaadin.event.EventRouter;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
+import com.vaadin.server.VaadinServlet;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
+import com.vaadin.util.ReflectTools;
+
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
@@ -33,8 +43,98 @@ import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
  */
 public class Page implements Serializable {
 
+    /**
+     * Event fired when the location has changed.
+     * <p>
+     * Situations when this might happen include:
+     * <ul>
+     * <li>{@link Page#setLocation(String)} is called.
+     * <li>A <code>PopStateEvent</code> is fired in the browser e.g. because the
+     * user used the browsers back or forward button.
+     * <li>Navigation has been triggered by the user clicking a link marked with
+     * attribute {@value ApplicationConstants#ROUTER_LINK_ATTRIBUTE}.
+     * </ul>
+     */
+    public static class LocationChangeEvent extends EventObject {
+        private final String location;
+        private final transient JsonValue state;
+
+        /**
+         * Creates a new event.
+         *
+         * @param page
+         *            the page instance that fired the event, not
+         *            <code>null</code>
+         * @param state
+         *            the history state from the browser, <code>null</code> if
+         *            no state was provided
+         * @param location
+         *            the new browser location, not <code>null</code>
+         */
+        public LocationChangeEvent(Page page, JsonValue state,
+                String location) {
+            super(page);
+
+            assert location != null;
+
+            this.location = location;
+            this.state = state;
+        }
+
+        @Override
+        public Page getSource() {
+            return (Page) super.getSource();
+        }
+
+        /**
+         * Gets the location that was opened. The location is relative to the
+         * URL to which the used {@link VaadinServlet} is mapped.
+         *
+         * @return the location, not null
+         */
+        public String getLocation() {
+            return location;
+        }
+
+        /**
+         * Gets the history state value as JSON.
+         *
+         * @return an optional JSON state value
+         */
+        public Optional<JsonValue> getState() {
+            return Optional.ofNullable(state);
+        }
+
+    }
+
+    /**
+     * Handles location change events.
+     *
+     * @see LocationChangeEvent
+     */
+    @FunctionalInterface
+    public interface LocationChangeListener extends Serializable {
+        /**
+         * Invoked when the location changes.
+         *
+         * @see LocationChangeEvent
+         *
+         * @param event
+         *            the event
+         */
+        void onLocationChange(LocationChangeEvent event);
+    }
+
+    private static final Method locationChangeMethod = ReflectTools.findMethod(
+            LocationChangeListener.class, "onLocationChange",
+            LocationChangeEvent.class);
+
     private final UI ui;
     private final History history;
+
+    private String location = "";
+
+    private EventRouter eventRouter = new EventRouter();
 
     /**
      * Creates a page instance for the given UI.
@@ -140,5 +240,113 @@ public class Page implements Serializable {
      */
     public History getHistory() {
         return history;
+    }
+
+    /**
+     * Gets the current location, relative to the URL to which the used
+     * {@link VaadinServlet} is mapped.
+     *
+     * @return the current location, not <code>null</code>.
+     */
+    public String getLocation() {
+        return location;
+    }
+
+    /**
+     * Navigates the user's browser to a new location, relative to the URL to
+     * which the used {@link VaadinServlet} is mapped.
+     * <p>
+     * Simple relative URLs (i.e. without a protocol, not starting with
+     * <code>/</code> and not containing <code>..</code>) will immediately
+     * trigger a {@link LocationChangeEvent} to be fired and the URL displayed
+     * in the browser will be updated without reloading the page. Other
+     * locations causes the provided URL to be loaded in the user's browser
+     * without firing any {@link LocationChangeEvent}, thus typically making the
+     * user leave the application.
+     *
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     */
+    public void setLocation(String location) {
+        setLocation(location, null);
+    }
+
+    /**
+     * Navigates the user's browser to a new location, optionally setting a
+     * history state value that will be available if the user returns to the
+     * same location. The location is relative to the URL to which the used
+     * {@link VaadinServlet} is mapped.
+     * <p>
+     * Simple relative URLs (i.e. without a protocol, not starting with
+     * <code>/</code> and not containing <code>..</code>) will immediately
+     * trigger a {@link LocationChangeEvent} to be fired and the URL displayed
+     * in the browser will be updated without reloading the page. Other
+     * locations causes the provided URL to be loaded in the user's browser
+     * without firing any {@link LocationChangeEvent}, thus typically making the
+     * user leave the application.
+     *
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     * @param state
+     *            the history state to set, must be <code>null</code> if
+     *            navigating to an external location
+     */
+    public void setLocation(String location, JsonObject state) {
+        assert location != null;
+
+        boolean isExternal = location.contains("//") || location.contains("..")
+                || location.startsWith("/");
+
+        if (isExternal) {
+            if (state != null) {
+                throw new IllegalArgumentException(
+                        "state must be null for external locations");
+            }
+            executeJavaScript("window.location=$0", location);
+        } else {
+            getHistory().pushState(state, location);
+            updateLocation(new Page.LocationChangeEvent(this, state, location));
+        }
+    }
+
+    /**
+     * Internally updates the current location and fires the event.
+     *
+     * @param event
+     *            the event with the new location
+     */
+    public void updateLocation(Page.LocationChangeEvent event) {
+        assert event != null;
+        assert event.getSource() == this;
+
+        location = event.getLocation();
+
+        eventRouter.fireEvent(event);
+    }
+
+    /**
+     * Adds a listener that will be notified when the location changes.
+     *
+     * @see LocationChangeEvent
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     */
+    public void addLocationChangeListener(LocationChangeListener listener) {
+        assert listener != null;
+        eventRouter.addListener(LocationChangeEvent.class, listener,
+                locationChangeMethod);
+    }
+
+    /**
+     * Removes a previously added location change listener.
+     *
+     * @param listener
+     *            the listener to remove, not <code>null</code>
+     */
+    public void removeLocationChangeListener(LocationChangeListener listener) {
+        assert listener != null;
+        eventRouter.removeListener(LocationChangeEvent.class, listener,
+                locationChangeMethod);
     }
 }
