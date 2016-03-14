@@ -23,13 +23,12 @@ public class DependencyUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        // TODO fix urls to use some protocol that will automatically resolve
-        // into server context
         getElement().appendChild(new Element("div").setTextContent(
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
         getElement().appendChild(new Element("hr"));
-        getPage().addStyleSheet("test-files/css/allred.css");
-        getPage().addJavaScript("test-files/js/body-click-listener.js");
+        getPage().addStyleSheet("context://test-files/css/allred.css");
+        getPage().addJavaScript(
+                "context://test-files/js/body-click-listener.js");
         getElement()
                 .appendChild(new Element("div")
                         .setTextContent("Hello, click the body please"))
@@ -38,16 +37,21 @@ public class DependencyUI extends UI {
         Element jsOrder = new Element("button").setTextContent("Load js")
                 .setAttribute("id", "loadJs");
         jsOrder.addEventListener("click", e -> {
-            getPage().addJavaScript("test-files/js/element-appender.js");
+            getPage().addJavaScript(
+                    "context://test-files/js/element-appender.js");
         });
         Element allBlue = new Element("button")
                 .setTextContent("Load 'everything blue' stylesheet")
                 .setAttribute("id", "loadBlue");
         allBlue.addEventListener("click", e -> {
-            getPage().addStyleSheet("test-files/css/allblueimportant.css");
+            getPage().addStyleSheet(
+                    "context://test-files/css/allblueimportant.css");
 
         });
         getElement().appendChild(jsOrder, allBlue, new Element("hr"));
     }
 
+    protected String makeRelativeToContext(String url) {
+        return url;
+    }
 }
