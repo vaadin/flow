@@ -204,4 +204,18 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertEventDefaultNotPrevented();
     }
 
+    public void testRouterLink_clickOnImage_handled() {
+        currentEvent = null;
+        assertInvocations(0);
+
+        Element routerLinkElement = createTarget("a", "foobar", true);
+        boundElement.appendChild(routerLinkElement);
+        Element image = Browser.getDocument().createImageElement();
+        routerLinkElement.appendChild(image);
+        fireClickEvent(image);
+
+        assertInvocations(1);
+        assertEventDefaultPrevented();
+    }
+
 }
