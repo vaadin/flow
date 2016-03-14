@@ -14,7 +14,7 @@ Quick Setup
 ======
 1. <code>git clone https://github.com/vaadin/hummingbird.git</code>
 1. install phantomjs (version 2.1 or newer is required, make sure it's in the PATH)
-1. make sure you have a TestBench license (get it otherwise on https://vaadin.com/pro/licenses) 
+1. make sure you have a TestBench license (get it otherwise on https://vaadin.com/pro/licenses)
 1. <code>mvn install</code>
 
 For more details, see below
