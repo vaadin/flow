@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.UI;
 
@@ -60,11 +61,12 @@ public class ViewTestLayout implements HasChildView {
             optionGroup.appendChild(option);
         }
 
-        // TODO This should be doable without a page reload and alternatively
-        // using Java
-        UI.getCurrent().getPage().executeJavaScript(
-                "$0.addEventListener('change', function() {window.location.pathname='/view/'+$0.value;});",
-                viewSelect);
+        viewSelect.setSynchronizedProperties("value");
+        viewSelect.setSynchronizedPropertiesEvents("change");
+        viewSelect.addEventListener("change", e -> {
+            RouterUI ui = (RouterUI) UI.getCurrent();
+            ui.navigateTo(viewSelect.getProperty("value"));
+        });
 
         element.appendChild(viewSelect, new Element("hr"), viewContainer);
         viewContainer.appendChild(new Element("div"));
