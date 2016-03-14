@@ -56,11 +56,26 @@ public class DependencyListNamespace extends JsonListNamespace {
      *            the dependency to include on the page
      */
     public void add(Dependency dependency) {
+        if (containsUrl(dependency.getUrl())) {
+            // Assuming we don't load different types of resources from the same
+            // URL...
+            return;
+        }
+
         JsonObject jsonObject = Json.createObject();
         jsonObject.put(KEY_URL, dependency.getUrl());
         jsonObject.put(KEY_TYPE, getType(dependency));
 
         super.add(jsonObject);
+    }
+
+    private boolean containsUrl(String url) {
+        for (int i = 0; i < size(); i++) {
+            if (url.equals(((JsonObject) get(i)).getString(KEY_URL))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
