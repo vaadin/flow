@@ -1,6 +1,6 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Element Properties and Attributes
-
+:toc:
 You can change property and attribute values for server-side Elements.
 
 [WARNING]
@@ -54,3 +54,46 @@ element.setProperty("value", "Hello")
 There are many cases where you can use either an attribute or property with the same name for the same effect.
 In some cases only one of them works, in other cases the attribute is considered when the element is initialized, but after initialization only the property is effective.
 Please check documentation specific to the element you're using to find out whether a feature should be configured using a property or an attribute.
+
+== Class / ClassList / ClassName
+
+Class names for elements can be added, removed and inspected using the collection returned by the `getClassList` method.
+You cannot modify the _classList_ or _className_ properties directly using `setProperty`.
+Using `element.getProperty("className")` you can get all of the set classes as a concatenated string.
+
+[source,java]
+----
+element.getClassList().add("error");
+element.getClassList().add("critical");
+element.getClassList().remove("primary");
+
+element.getProperty("className"); // will return "error critical".
+----
+
+[NOTE]
+You can set the element's _class_ attribute using `element.setAttribute("class", "foo bar");`,
+which will clear any previously set _classList_ property. You can get the element's
+class attribute using `element.getAttribute('class')` which will return the contents of the
+_classList_ as a single concatenated string.
+
+== Style object
+
+Element inline styles can be set using the `Style` object returned by `element.getStyle()`.
+Style property names should always be in the camelCase format, e.g. `backgroundColor`
+instead of `background-color`.
+
+[source,java]
+----
+element.getStyle().set("color", "red");
+// Note the camelCase, not dash - separated
+element.getStyle().set("fontWeight", "bold");
+
+// Note the camelCase, not dash - separated
+element.getStyle().remove("backgroundColor");
+
+element.getStyle().has("cursor");
+----
+
+[NOTE]
+You cannot set the element's _style_ attribute using the `element.setAttribute` method.
+However you can use the `element.getAttribute('style')` which returns all the style rules in a single concatenated string.
