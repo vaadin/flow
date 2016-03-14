@@ -302,6 +302,10 @@ public class Element implements Serializable {
      * <p>
      * Note: An empty attribute value ({@literal ""}) will be rendered as
      * {@literal <div something>} and not {@literal <div something="">}.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @param attribute
      *            the name of the attribute
@@ -342,6 +346,10 @@ public class Element implements Serializable {
      * converted to lower case automatically.
      * <p>
      * An attribute always has a String key and a String value.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @param attribute
      *            the name of the attribute
@@ -368,6 +376,10 @@ public class Element implements Serializable {
      * <p>
      * Attribute names are considered case insensitive and all names will be
      * converted to lower case automatically.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @param attribute
      *            the name of the attribute
@@ -393,6 +405,10 @@ public class Element implements Serializable {
      * <p>
      * Attribute names are considered case insensitive and all names will be
      * converted to lower case automatically.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @return a stream of defined attribute names
      */
@@ -418,6 +434,10 @@ public class Element implements Serializable {
      * converted to lower case automatically.
      * <p>
      * If the attribute has not been set, does nothing.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @param attribute
      *            the name of the attribute
@@ -700,6 +720,11 @@ public class Element implements Serializable {
 
     /**
      * Sets the given property to the given string value.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -713,6 +738,11 @@ public class Element implements Serializable {
 
     /**
      * Sets the given property to the given boolean value.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -726,6 +756,11 @@ public class Element implements Serializable {
 
     /**
      * Sets the given property to the given numeric value.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -738,9 +773,16 @@ public class Element implements Serializable {
     }
 
     /**
-     * Sets the given property to the given JSON value. Please note that this
-     * method does not accept <code>null</code> as a value, since
-     * {@link Json#createNull()} should be used instead for JSON values.
+     * Sets the given property to the given JSON value.
+     * <p>
+     * Please note that this method does not accept <code>null</code> as a
+     * value, since {@link Json#createNull()} should be used instead for JSON
+     * values.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -950,6 +992,11 @@ public class Element implements Serializable {
 
     /**
      * Removes the given property.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -962,6 +1009,11 @@ public class Element implements Serializable {
 
     /**
      * Checks whether this element has a property with the given name.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -974,6 +1026,11 @@ public class Element implements Serializable {
 
     /**
      * Gets the defined property names.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @return a stream of defined property names
      */
