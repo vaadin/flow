@@ -1,6 +1,6 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Hummingbird
-
+:toc:
 == Product overview
 
 Hummingbird is a Java framework for building interactive web sites.

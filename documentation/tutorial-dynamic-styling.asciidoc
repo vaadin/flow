@@ -29,4 +29,4 @@ button.addEventListener("click", e -> {
 });
 ----
 
-Using `getStyle()` you can set any style property supported by the browser. Remember that the camelCase name of the style properties should be used, i.e. "fontSize", not "font-size".
+Using `getStyle()` you can set any style property supported by the browser. Remember that the camelCase format of the style properties should be used, i.e. `fontSize` not `font-size`.
