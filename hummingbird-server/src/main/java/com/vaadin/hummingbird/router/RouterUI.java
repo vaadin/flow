@@ -17,7 +17,9 @@ package com.vaadin.hummingbird.router;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.server.VaadinRequest;
@@ -48,10 +50,20 @@ public class RouterUI extends UI {
      *            the parent view immediately wrapping the main view, or
      *            <code>null</code> to not use any parent views
      */
-    public void showView(View view, List<HasSubView> parentViews) {
+    public void showView(View view, List<HasChildView> parentViews) {
         assert view != null;
 
         Element uiElement = getElement();
+
+        // Assemble previous parent-child relationships to enable detecting
+        // changes
+        Map<HasChildView, View> oldChildren = new HashMap<>();
+        for (int i = 0; i < viewChain.size() - 1; i++) {
+            View child = viewChain.get(i);
+            HasChildView parent = (HasChildView) viewChain.get(i + 1);
+
+            oldChildren.put(parent, child);
+        }
 
         viewChain = new ArrayList<>();
         viewChain.add(view);
@@ -67,8 +79,16 @@ public class RouterUI extends UI {
             View root = null;
             for (View part : viewChain) {
                 if (root != null) {
-                    assert part instanceof HasSubView : "All parts of the chain except the first must implement HasSubView";
-                    ((HasSubView) part).setSubView(root);
+                    assert part instanceof HasChildView : "All parts of the chain except the first must implement "
+                            + HasChildView.class.getSimpleName();
+                    HasChildView parent = (HasChildView) part;
+                    if (oldChildren.get(parent) != root) {
+                        parent.setChildView(root);
+                    }
+                } else if (part instanceof HasChildView
+                        && oldChildren.containsKey(part)) {
+                    // Remove old child view from leaf view if it had one
+                    ((HasChildView) part).setChildView(null);
                 }
                 root = part;
             }
