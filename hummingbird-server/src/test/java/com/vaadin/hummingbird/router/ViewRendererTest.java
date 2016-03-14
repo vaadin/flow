@@ -46,12 +46,19 @@ public class ViewRendererTest {
 
     }
 
-    public static class ParentView extends TestView implements HasSubView {
+    public static class ParentView extends TestView implements HasChildView {
         @Override
-        public void setSubView(View subView) {
+        public void setChildView(View childView) {
+            if (childView != null) {
+                Assert.assertNotEquals(
+                        "setChildView should not be called if the child has not changed",
+                        getElement(), childView.getElement().getParent());
+            }
+
             getElement().removeAllChildren();
-            if (subView != null) {
-                Element element = subView.getElement();
+            if (childView != null) {
+                Element element = childView.getElement();
+
                 element.removeFromParent();
                 getElement().appendChild(element);
             }
@@ -161,6 +168,29 @@ public class ViewRendererTest {
 
         Assert.assertEquals(Arrays.asList(firstChain.get(0), firstChain.get(2),
                 firstChain.get(1)), secondChain);
+    }
+
+    @Test
+    public void testReuseAllViews() {
+        new ViewRenderer(TestView.class, ParentView.class,
+                AnotherParentView.class).handle(dummyEvent);
+
+        // setChildView throws if it's invoked
+        new ViewRenderer(TestView.class, ParentView.class,
+                AnotherParentView.class).handle(dummyEvent);
+    }
+
+    @Test
+    public void testRemoveChildView() {
+        new ViewRenderer(TestView.class, ParentView.class,
+                AnotherParentView.class).handle(dummyEvent);
+
+        ParentView parentView = (ParentView) ui.getViewChain().get(1);
+
+        new ViewRenderer(ParentView.class, AnotherParentView.class)
+                .handle(dummyEvent);
+
+        Assert.assertEquals(0, parentView.getElement().getChildCount());
     }
 
     @Test(expected = IllegalArgumentException.class)

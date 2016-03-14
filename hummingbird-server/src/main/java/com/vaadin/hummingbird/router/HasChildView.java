@@ -16,20 +16,21 @@
 package com.vaadin.hummingbird.router;
 
 /**
- * A {@link View} that has a slot for a sub view.
+ * A {@link View} that has a slot for a child view.
  *
  * @since
  * @author Vaadin Ltd
  */
-public interface HasSubView extends View {
+public interface HasChildView extends View {
     /**
-     * Sets the sub view to show. This method is invoked for each parent view
+     * Sets the child view to show. This method is invoked for each parent view
      * after {@link #onLocationChange(Location)} has been called for all used
-     * views. If this view is also used as a sub view, the method will be
+     * views, if the child view has changed since the last time this method was
+     * called. If this view is also used as a child view, the method will be
      * invoked for this view before it's invoked for the parent view.
      *
-     * @param subView
-     *            the sub view to set
+     * @param childView
+     *            the child view to set
      */
-    void setSubView(View subView);
+    void setChildView(View childView);
 }

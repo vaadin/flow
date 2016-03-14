@@ -21,11 +21,11 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.router.HasSubView;
+import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.UI;
 
-public class ViewTestLayout implements HasSubView {
+public class ViewTestLayout implements HasChildView {
 
     private Element element = new Element("div");
     private Element viewContainer = new Element("div");
@@ -76,7 +76,7 @@ public class ViewTestLayout implements HasSubView {
     }
 
     @Override
-    public void setSubView(View subView) {
+    public void setChildView(View subView) {
         viewContainer.setChild(0, subView.getElement());
 
     }
