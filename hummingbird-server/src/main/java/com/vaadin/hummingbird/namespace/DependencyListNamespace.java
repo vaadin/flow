@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.namespace;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Dependency.Type;
@@ -35,6 +38,11 @@ public class DependencyListNamespace extends JsonListNamespace {
     public static final String KEY_TYPE = "type";
     public static final String TYPE_STYLESHEET = "css";
     public static final String TYPE_JAVASCRIPT = "js";
+    /**
+     * Contains all added URLs to be able to do fast enough duplication
+     * detection.
+     */
+    private Set<String> urlCache = new HashSet<>();
 
     /**
      * Creates a new namespace for the given node.
@@ -58,11 +66,21 @@ public class DependencyListNamespace extends JsonListNamespace {
      *            the dependency to include on the page
      */
     public void add(Dependency dependency) {
+        if (containsUrl(dependency.getUrl())) {
+            // We don't load different types of resources from the same URL
+            return;
+        }
+
         JsonObject jsonObject = Json.createObject();
         jsonObject.put(KEY_URL, dependency.getUrl());
         jsonObject.put(KEY_TYPE, getType(dependency));
 
         super.add(jsonObject);
+        urlCache.add(dependency.getUrl());
+    }
+
+    private boolean containsUrl(String url) {
+        return urlCache.contains(url);
     }
 
     /**
