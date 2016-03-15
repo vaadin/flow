@@ -38,19 +38,22 @@ public class ViewTestServlet extends VaadinServlet {
         super.init(servletConfig);
         viewLocator = new ViewClassLocator(getService().getClassLoader());
 
-        getService().getRouter().setResolver(new Resolver() {
-            @Override
-            public NavigationHandler resolve(NavigationEvent navigationEvent) {
-                try {
-                    return new ViewRenderer(
-                            viewLocator.findViewClass(navigationEvent
-                                    .getLocation().getFirstSegment()),
-                            ViewTestLayout.class);
-                } catch (ClassNotFoundException e) {
-                    return new ViewRenderer(ErrorView.class,
-                            ViewTestLayout.class);
+        getService().getRouter().reconfigure(configuration -> {
+            configuration.setResolver(new Resolver() {
+                @Override
+                public NavigationHandler resolve(
+                        NavigationEvent navigationEvent) {
+                    try {
+                        return new ViewRenderer(
+                                viewLocator.findViewClass(navigationEvent
+                                        .getLocation().getFirstSegment()),
+                                ViewTestLayout.class);
+                    } catch (ClassNotFoundException e) {
+                        return new ViewRenderer(ErrorView.class,
+                                ViewTestLayout.class);
+                    }
                 }
-            }
+            });
         });
     }
 

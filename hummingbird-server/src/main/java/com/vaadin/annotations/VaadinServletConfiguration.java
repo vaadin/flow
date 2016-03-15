@@ -22,6 +22,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.vaadin.hummingbird.router.Router;
+import com.vaadin.hummingbird.router.RouterConfigurator;
+import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.server.Constants;
 import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.DeploymentConfiguration;
@@ -80,6 +83,16 @@ public @interface VaadinServletConfiguration {
      */
     @InitParameterName(VaadinSession.UI_PARAMETER)
     public Class<? extends UI> ui();
+
+    /**
+     * Gets the {@link RouterConfigurator} class to use for configuring the
+     * {@link Router}. When this option is set, {@link #ui()} must be set to
+     * {@link RouterUI}.
+     *
+     * @return the router configurator class
+     */
+    @InitParameterName(Constants.SERVLET_PARAMETER_ROUTER_CONFIGURATOR)
+    public Class<? extends RouterConfigurator> routerConfigurator() default RouterConfigurator.class;
 
     /**
      * The number of seconds between heartbeat requests of a UI, or a
