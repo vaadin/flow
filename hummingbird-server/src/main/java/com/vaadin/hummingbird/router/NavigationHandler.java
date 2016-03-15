@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.io.Serializable;
+
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 
@@ -27,12 +29,12 @@ import com.vaadin.ui.UI;
  * from multiple threads. Data provided in the navigation event should be safe
  * to use without synchronization since the associated {@link VaadinSession} and
  * everything related to it will be locked.
- * 
+ *
  * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface NavigationHandler {
+public interface NavigationHandler extends Serializable {
     /**
      * Handles the navigation event.
      *
