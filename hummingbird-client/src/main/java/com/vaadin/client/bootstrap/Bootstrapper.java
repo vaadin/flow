@@ -147,8 +147,8 @@ public class Bootstrapper implements EntryPoint {
 
         conf.setServiceUrl(serviceUrl);
 
-        conf.setVaadinDirUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
-                .getConfigString(ApplicationConstants.VAADIN_DIR_URL)));
+        conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
+                .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
         conf.setUIId(jsoConfiguration
                 .getConfigInteger(ApplicationConstants.UI_ID_PARAMETER)
                 .intValue());

@@ -204,9 +204,11 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         @Override
-        protected String getVaadinDirUrl() {
-            return context.getApplicationParameters()
-                    .getString(ApplicationConstants.VAADIN_DIR_URL);
+        protected String getContextRootUrl() {
+            String root = context.getApplicationParameters()
+                    .getString(ApplicationConstants.CONTEXT_ROOT_URL);
+            assert root.endsWith("/");
+            return root;
         }
 
         @Override
@@ -338,7 +340,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
             head.appendElement("script").attr("type", "text/javascript")
                     .attr("src", context.getUriResolver().resolveVaadinUri(
-                            "vaadin://server/es6-collections.js"));
+                            "context://VAADIN/server/es6-collections.js"));
         }
 
         if (context.getPushMode().isEnabled()) {
@@ -488,11 +490,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             appConfig.put("sessExpMsg", sessExpMsg);
         }
 
-        // getStaticFileLocation documented to never end with a slash
-        // vaadinDir should always end with a slash
-        String vaadinDir = ServletHelper.getContextRootRelativePath(request)
-                + "/VAADIN/";
-        appConfig.put(ApplicationConstants.VAADIN_DIR_URL, vaadinDir);
+        String contextRoot = ServletHelper.getContextRootRelativePath(request)
+                + "/";
+        appConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, contextRoot);
 
         if (!productionMode) {
             appConfig.put("debug", true);
@@ -611,8 +611,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         if (!productionMode && BootstrapHandler.class
                 .getResource("/META-INF/resources/VAADIN/"
                         + CLIENT_ENGINE_NOCACHE_FILE) != null) {
-            return context.getUriResolver()
-                    .resolveVaadinUri("vaadin://" + CLIENT_ENGINE_NOCACHE_FILE);
+            return context.getUriResolver().resolveVaadinUri(
+                    "context://VAADIN/" + CLIENT_ENGINE_NOCACHE_FILE);
         }
 
         if (clientEngineFile == null) {
@@ -620,7 +620,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     "Client engine file name has not been resolved during initialization");
         }
         return context.getUriResolver()
-                .resolveVaadinUri("vaadin://" + clientEngineFile);
+                .resolveVaadinUri("context://VAADIN/" + clientEngineFile);
     }
 
     private static UI createInstance(Class<? extends UI> uiClass) {
