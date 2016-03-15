@@ -47,6 +47,8 @@ The element hierarchy can be navigated upwards using `element.getParent()` and d
 
 === Properties and attributes
 
+Tutorial: <<tutorial-properties-attributes#,Element Properties and Attributes>>
+
 The two main ways of configuring elements in the browser are through attributes and properties.
 Attributes are the `name="value"` pairs inside HTML tags, whereas a property is what you use through expressions like `myElement.value` in JavaScript.
 The value of an attribute is a string, although some attribute values are interpreted as e.g. booleans (true regardless of the value as long as the attribute is present) or integers.
@@ -68,6 +70,8 @@ In the same was as with attributes, properties set on the server are automatical
 
 ==== Text content
 
+Tutorial: <<tutorial-properties-attributes#textContent,Text Content>>
+
 DOM nodes in the browser has a special property named `textContent`.
 Reading the value of this property gives a string containing all the text inside that nodes and all its descendants.
 Setting the property replaces all the contents of that node with the provided text.
@@ -76,6 +80,8 @@ The same functionality can be accessed from the server using `element.getTextCon
 
 ==== CSS classes
 
+Tutorial: <<tutorial-properties-attributes#classList,Class / ClassList / ClassName>>
+
 In the browser, the CSS classes of an element are available as a space-separated string in the `class` attribute and the `className` property and as a list of tokens in the `classList` property.
 
 With Hummingbird, the `class` attribute works in the same way as in the browser, but you cannot directly use the `className` and `classList` parameters.
@@ -83,12 +89,17 @@ You can instead use `element.getClassList()` for retrieving a `Set<String>` that
 
 ==== Inline styles
 
+Tutorial: <<tutorial-properties-attributes#style,Style object>>
+
 In the browser, the inline styles of an element are available as a string containing CSS statements in the `style` attribute and as properties in a special JavaScript object in the `style` property.
 
 With hummingbird, neither the attribute nor the property can be accessed directly.
 You should instead use `element.getStyle()` to get a `Style` instance that can be used for querying and modifying inline styles of an element.
 
 === Events
+
+Tutorial: <<tutorial-event-listener#,Using Event Listeners>>
+
 You can use the `element.addEventListener` method for adding a server-side listener that gets invoked asynchronously when a DOM event is fired for the corresponding event in the browser.
 You must always define the name of the event, e.g. `"click"`, `"change"` or `"keyup"` when adding a listener.
 
@@ -103,6 +114,8 @@ As an example, you could add an event handler to an `<input>` element in this wa
 When an event is fired on the server, you can get the value of the input field using `String value = event.getEventData().getString("element.value")`.
 
 ==== Synchronizing property changes to the server
+
+Tutorial <<tutorial-user-input#,Retrieving User Input>>
 
 In addition to fetching data from the client using JavaScript expressions and `event.getEventData()`, it is also possible to configure properties of an element to be automatically updated when an event is fired for that element.
 This requires setting the names of the properties to synchronize using `element.setSynchronizedProperties(String...)` and defining which events of the element should trigger a synchronization using `element.setSynchronizedPropertiesEvents(String...)`.
@@ -127,6 +140,8 @@ The provided parameter values will be available to the script as variables named
 As a practical example, this snippet will show the dimensions of the given element in the browser console: `ui.getPage().executeJavaScript("console.log($1, $0.offsetWidth, $0.offsetHeight)", element, "Element dimensions:")`.
 
 == Style and script dependencies
+
+Tutorial: <<tutorial-include-css#,Including Style Sheets>>
 
 External JavaScript or CSS dependencies can be added to the page using `ui.getPage().addJavaScript(String)` and `ui.getPage().addStyleSheet(String)` respectively.
 The URL can be a regular absolute URL or be a relative URL. Relative URLs are always interpreted as relative to the context path, i.e. the path where the war package is deployed.
