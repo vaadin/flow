@@ -8,7 +8,7 @@ public class SubContextIT extends AbstractContextIT {
 
     @Override
     protected String getAppContext() {
-        return "/SubContext";
+        return "/SubContext/";
     }
 
     @Override

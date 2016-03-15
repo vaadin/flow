@@ -19,6 +19,7 @@ package com.vaadin.server;
 import java.io.Serializable;
 import java.util.Properties;
 
+import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.shared.communication.PushMode;
 
 /**
@@ -132,6 +133,15 @@ public interface DeploymentConfiguration extends Serializable {
      * @since 7.4
      */
     public String getUIClassName();
+
+    /**
+     * Gets the {@link RouterConfigurator} class configuration option value.
+     * 
+     * @return the router configurator class name
+     *
+     * @since
+     */
+    public String getRouterConfiguratorClassName();
 
     /**
      * Gets class loader configuration option value.
