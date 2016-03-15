@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -38,7 +39,7 @@ public class Location implements Serializable {
      *            the relative path, not <code>null</code>
      */
     public Location(String path) {
-        this(Arrays.asList(path.split("/")));
+        this(parsePath(path));
 
         assert !path.startsWith("/") : "path should be relative";
         assert !path.contains("?") : "query string not yet supported";
@@ -100,6 +101,19 @@ public class Location implements Serializable {
             throw new IllegalStateException("Location has no path segments");
         } else {
             return new Location(segments.subList(1, segments.size()));
+        }
+    }
+
+    private static List<String> parsePath(String path) {
+        List<String> splitList = Arrays.asList(path.split("/"));
+        if (path.endsWith("/")) {
+            // Explicitly add "" to the end even though it's ignored by
+            // String.split
+            ArrayList<String> result = new ArrayList<>(splitList);
+            result.add("");
+            return result;
+        } else {
+            return splitList;
         }
     }
 }
