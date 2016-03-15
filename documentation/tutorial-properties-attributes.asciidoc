@@ -55,6 +55,7 @@ There are many cases where you can use either an attribute or property with the 
 In some cases only one of them works, in other cases the attribute is considered when the element is initialized, but after initialization only the property is effective.
 Please check documentation specific to the element you're using to find out whether a feature should be configured using a property or an attribute.
 
+[[classList]]
 == Class / ClassList / ClassName
 
 Class names for elements can be added, removed and inspected using the collection returned by the `getClassList` method.
@@ -76,6 +77,7 @@ which will clear any previously set _classList_ property. You can get the elemen
 class attribute using `element.getAttribute('class')` which will return the contents of the
 _classList_ property as a single concatenated string.
 
+[[style]]
 == Style object
 
 Element inline styles can be set using the `Style` object returned by `element.getStyle()`.
@@ -97,3 +99,33 @@ element.getStyle().has("cursor");
 [NOTE]
 You cannot set the element's _style_ attribute using the `element.setAttribute` method.
 However you can use the `element.getAttribute('style')` which returns all the style rules in a single concatenated string.
+[[textContent]]
+== TextContent
+
+The element's _textContent_ property can be set using the `setTextContent` method.
+Note that this removes all of element's children and replaces them with a single
+text node with the given value.
+
+[source,java]
+----
+Element element = new Element("div");
+element.setTextContent("Hello world");  // <div>Hello world</div>
+
+element.appendChild(new Element("span")); // <div>Hello world<span></span></div>
+
+element.setTextContent("Replacement text"); // <div>Replacement text</div>
+----
+
+You can fetch the element's _textContent_ with the `getTextContent` method,
+but note that it returns a concatenation of the _textContent_
+property values of the element and all its child nodes. The child nodes are iterated recursively.
+
+[source,java]
+----
+element.setTextContent("Welcome back ");
+
+Element nameSpan = new Element("b").setTextContent("Rudolph Reindeer")
+element.appendChild(nameSpan);
+
+element.getTextContent(); // will return "Welcome back Rudolph Reindeer"
+----
