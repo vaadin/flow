@@ -144,4 +144,37 @@ public class DependencyListNamspaceTest {
         Assert.assertEquals(url, ((JsonObject) namespace.get(0))
                 .getString(DependencyListNamespace.KEY_URL));
     }
+
+    @Test
+    public void urlAddedOnlyOnce() {
+        MockUI ui = new MockUI();
+        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+                .getRootNode().getNamespace(DependencyListNamespace.class);
+        namespace.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
+        namespace.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
+        Assert.assertEquals(1, namespace.size());
+        namespace.collectChanges(c -> {
+        });
+
+        namespace.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
+        Assert.assertEquals(1, namespace.size());
+    }
+
+    @Test
+    public void addDependencyPerformance() {
+        long start = System.currentTimeMillis();
+        MockUI ui = new MockUI();
+        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+                .getRootNode().getNamespace(DependencyListNamespace.class);
+        for (int i = 0; i < 10000; i++) {
+            namespace.add(
+                    new Dependency(Type.JAVASCRIPT, "foo" + i + "/bar.js"));
+        }
+        long time = System.currentTimeMillis() - start;
+
+        Assert.assertTrue(
+                "Adding 10K dependencies should take about 50ms. Took " + time
+                        + "ms",
+                time < 500);
+    }
 }
