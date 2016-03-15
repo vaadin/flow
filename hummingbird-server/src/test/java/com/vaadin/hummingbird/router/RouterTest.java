@@ -174,4 +174,44 @@ public class RouterTest {
         Assert.assertNotSame(newResolver,
                 router.getConfiguration().getResolver());
     }
+
+    @Test
+    public void testResolverBeforeSetRoute() {
+        Router router = new Router();
+
+        AtomicReference<String> usedHandler = new AtomicReference<>();
+
+        router.reconfigure(configuration -> {
+            configuration.setResolver(resolveEvent -> handlerEvent -> {
+                usedHandler.set("resolver");
+            });
+
+            configuration.setRoute("*", e -> {
+                usedHandler.set("route");
+            });
+        });
+
+        router.navigate(new RouterUI(), new Location(""));
+
+        Assert.assertEquals("resolver", usedHandler.get());
+    }
+
+    @Test
+    public void testSetRouteIfNoResolverHandler() {
+        Router router = new Router();
+
+        AtomicReference<String> usedHandler = new AtomicReference<>();
+
+        router.reconfigure(configuration -> {
+            configuration.setResolver(resolveEvent -> null);
+
+            configuration.setRoute("*", e -> {
+                usedHandler.set("route");
+            });
+        });
+
+        router.navigate(new RouterUI(), new Location(""));
+
+        Assert.assertEquals("route", usedHandler.get());
+    }
 }
