@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class ViewRenderer implements NavigationHandler {
 
     private final Class<? extends View> viewType;
     // Starts with the view's immediate parent
-    private final Class<? extends HasChildView>[] parentViewTypes;
+    private final List<Class<? extends HasChildView>> parentViewTypes;
 
     /**
      * Creates a renderer for the given view type and optional parent view
@@ -50,6 +51,22 @@ public class ViewRenderer implements NavigationHandler {
     @SafeVarargs
     public ViewRenderer(Class<? extends View> viewType,
             Class<? extends HasChildView>... parentViewTypes) {
+        this(viewType, Arrays.asList(parentViewTypes));
+    }
+
+    /**
+     * Creates a renderer for the given view type and optional an optional list
+     * of parent view types. The same type may not be used in multiple positions
+     * in the same view renderer.
+     *
+     * @param viewType
+     *            the view type to show
+     * @param parentViewTypes
+     *            a list of parent view types to show, starting from the parent
+     *            view immediately wrapping the view type
+     */
+    public ViewRenderer(Class<? extends View> viewType,
+            List<Class<? extends HasChildView>> parentViewTypes) {
         Set<Class<?>> duplicateCheck = new HashSet<>();
         duplicateCheck.add(viewType);
         for (Class<?> parentType : parentViewTypes) {

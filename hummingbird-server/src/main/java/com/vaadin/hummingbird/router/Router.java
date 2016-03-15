@@ -92,8 +92,15 @@ public class Router implements Serializable {
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
                 ui);
 
-        NavigationHandler handler = configuration.getResolver()
+        // Read volatile field only once per navigation
+        ModifiableRouterConfiguration currentConfig = configuration;
+
+        NavigationHandler handler = currentConfig.getResolver()
                 .resolve(navigationEvent);
+
+        if (handler == null) {
+            handler = currentConfig.resolveRoute(navigationEvent);
+        }
 
         if (handler == null) {
             handler = new ErrorNavigationHandler(404);
