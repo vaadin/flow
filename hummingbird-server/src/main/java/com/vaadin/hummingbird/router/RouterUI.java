@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,16 +35,20 @@ import com.vaadin.ui.UI;
  */
 public class RouterUI extends UI {
 
+    private Location viewLocation = new Location("");
     private ArrayList<View> viewChain = new ArrayList<>();
 
     @Override
     protected void init(VaadinRequest request) {
-        request.getService().getRouter().initializeUI(this, request);
+        getRouter().initializeUI(this, request);
     }
 
     /**
      * Shows a view in a chain of layouts in this UI.
      *
+     * @param viewLocation
+     *            the location of the view relative to the servlet serving the
+     *            UI, not <code>null</code>
      * @param view
      *            the view to show, not <code>null</code>
      * @param parentViews
@@ -50,8 +56,12 @@ public class RouterUI extends UI {
      *            the parent view immediately wrapping the main view, or
      *            <code>null</code> to not use any parent views
      */
-    public void showView(View view, List<HasChildView> parentViews) {
+    public void showView(@SuppressWarnings("hiding") Location viewLocation,
+            View view, List<HasChildView> parentViews) {
         assert view != null;
+        assert viewLocation != null;
+
+        this.viewLocation = viewLocation;
 
         Element uiElement = getElement();
 
@@ -114,8 +124,59 @@ public class RouterUI extends UI {
      * @return a list of view and parent view instances, starting from the
      *         innermost part
      */
-    public List<View> getViewChain() {
+    public List<View> getActiveViewChain() {
         return Collections.unmodifiableList(viewChain);
     }
 
+    /**
+     * Gets the location of the currently shown view. The location is relative
+     * the the servlet mapping used for serving this UI.
+     *
+     * @return the view location, not <code>null</code>
+     */
+    public Location getActiveViewLocation() {
+        return viewLocation;
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given location. The
+     * location must be a relative URL without any ".." segments.
+     *
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     */
+    public void navigateTo(String location) {
+        if (location == null) {
+            throw new IllegalArgumentException("Location may not be null");
+        }
+
+        try {
+            URI uri = new URI(location);
+            if (uri.isAbsolute()) {
+                throw new IllegalArgumentException(
+                        "Location cannot be absolute");
+            } else if (uri.getPath().startsWith("/")) {
+                throw new IllegalArgumentException("Location must be relative");
+            } else if (uri.getRawPath().contains("..")) {
+                throw new IllegalArgumentException(
+                        "Relative location may not contain .. segments");
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Cannot parse location", e);
+        }
+
+        // Enable navigating back
+        getPage().getHistory().pushState(null, location);
+
+        getRouter().navigate(this, new Location(location));
+    }
+
+    /**
+     * Gets the router used for navigating in this UI.
+     *
+     * @return the router, not <code>null</code>
+     */
+    protected Router getRouter() {
+        return getSession().getService().getRouter();
+    }
 }

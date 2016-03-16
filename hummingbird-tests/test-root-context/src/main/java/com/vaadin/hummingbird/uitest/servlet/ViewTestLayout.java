@@ -22,6 +22,8 @@ import java.util.List;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.Location;
+import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.UI;
 
@@ -29,9 +31,9 @@ public class ViewTestLayout implements HasChildView {
 
     private Element element = new Element("div");
     private Element viewContainer = new Element("div");
+    private Element viewSelect = new Element("select");
 
     public ViewTestLayout() {
-        Element viewSelect = new Element("select");
         List<Class<? extends View>> classes = new ArrayList<>(
                 ViewTestServlet.getViewLocator().getAllViewClasses());
         Collections.sort(classes, Comparator.comparing(Class::getName));
@@ -51,20 +53,15 @@ public class ViewTestLayout implements HasChildView {
                     c.getName());
             option.setTextContent(c.getSimpleName());
 
-            // TODO Should have location available here and just set the value
-            // from the server
-            UI.getCurrent().getPage().executeJavaScript(
-                    "$0.value = window.location.pathname.replace('/view/','');",
-                    viewSelect);
-
             optionGroup.appendChild(option);
         }
 
-        // TODO This should be doable without a page reload and alternatively
-        // using Java
-        UI.getCurrent().getPage().executeJavaScript(
-                "$0.addEventListener('change', function() {window.location.pathname='/view/'+$0.value;});",
-                viewSelect);
+        viewSelect.setSynchronizedProperties("value");
+        viewSelect.setSynchronizedPropertiesEvents("change");
+        viewSelect.addEventListener("change", e -> {
+            RouterUI ui = (RouterUI) UI.getCurrent();
+            ui.navigateTo(viewSelect.getProperty("value"));
+        });
 
         element.appendChild(viewSelect, new Element("hr"), viewContainer);
         viewContainer.appendChild(new Element("div"));
@@ -79,6 +76,14 @@ public class ViewTestLayout implements HasChildView {
     public void setChildView(View subView) {
         viewContainer.setChild(0, subView.getElement());
 
+    }
+
+    @Override
+    public void onLocationChange(Location location) {
+        // Defer value setting until all option elements have been attached
+        UI.getCurrent().getPage().executeJavaScript(
+                "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
+                location.getPath());
     }
 
 }

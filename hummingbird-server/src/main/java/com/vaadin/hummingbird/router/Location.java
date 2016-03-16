@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a relative URL made up of path segments, but lacking e.g. the
@@ -103,6 +104,15 @@ public class Location implements Serializable {
         } else {
             return new Location(segments.subList(1, segments.size()));
         }
+    }
+
+    /**
+     * Gets the path of this location as a string.
+     *
+     * @return the location string, not <code>null</code>
+     */
+    public String getPath() {
+        return segments.stream().collect(Collectors.joining("/"));
     }
 
     private static List<String> parsePath(String path) {

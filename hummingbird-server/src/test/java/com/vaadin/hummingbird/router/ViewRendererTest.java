@@ -77,7 +77,7 @@ public class ViewRendererTest {
     public void showSimpleView() {
         new ViewRenderer(TestView.class).handle(dummyEvent);
 
-        List<View> viewChain = ui.getViewChain();
+        List<View> viewChain = ui.getActiveViewChain();
         Assert.assertEquals(1, viewChain.size());
 
         View viewInstance = viewChain.get(0);
@@ -96,7 +96,7 @@ public class ViewRendererTest {
         new ViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        List<View> viewChain = ui.getViewChain();
+        List<View> viewChain = ui.getActiveViewChain();
         Assert.assertEquals(3, viewChain.size());
         Assert.assertEquals(
                 Arrays.asList(TestView.class, ParentView.class,
@@ -123,7 +123,7 @@ public class ViewRendererTest {
     public void reuseSingleView() {
         new ViewRenderer(TestView.class).handle(dummyEvent);
 
-        List<View> firstChain = ui.getViewChain();
+        List<View> firstChain = ui.getActiveViewChain();
         TestView view = (TestView) firstChain.get(0);
 
         Assert.assertEquals(1, view.locations.size());
@@ -132,7 +132,7 @@ public class ViewRendererTest {
 
         Assert.assertEquals(2, view.locations.size());
 
-        List<View> secondChain = ui.getViewChain();
+        List<View> secondChain = ui.getActiveViewChain();
 
         Assert.assertNotSame(firstChain, secondChain);
         Assert.assertSame(view, secondChain.get(0));
@@ -143,12 +143,12 @@ public class ViewRendererTest {
         new ViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        List<View> firstChain = ui.getViewChain();
+        List<View> firstChain = ui.getActiveViewChain();
 
         new ViewRenderer(AnotherTestView.class, AnotherParentView.class)
                 .handle(dummyEvent);
 
-        List<View> secondChain = ui.getViewChain();
+        List<View> secondChain = ui.getActiveViewChain();
 
         // Last item in each chain should be reused
         Assert.assertSame(firstChain.get(2), secondChain.get(1));
@@ -159,12 +159,12 @@ public class ViewRendererTest {
         new ViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        List<View> firstChain = ui.getViewChain();
+        List<View> firstChain = ui.getActiveViewChain();
 
         new ViewRenderer(TestView.class, AnotherParentView.class,
                 ParentView.class).handle(dummyEvent);
 
-        List<View> secondChain = ui.getViewChain();
+        List<View> secondChain = ui.getActiveViewChain();
 
         Assert.assertEquals(Arrays.asList(firstChain.get(0), firstChain.get(2),
                 firstChain.get(1)), secondChain);
@@ -185,7 +185,7 @@ public class ViewRendererTest {
         new ViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        ParentView parentView = (ParentView) ui.getViewChain().get(1);
+        ParentView parentView = (ParentView) ui.getActiveViewChain().get(1);
 
         new ViewRenderer(ParentView.class, AnotherParentView.class)
                 .handle(dummyEvent);

@@ -28,6 +28,7 @@ public class LocationTest {
 
         Assert.assertEquals(Arrays.asList("foo", "bar", "baz"),
                 location.getSegments());
+        Assert.assertEquals("foo/bar/baz", location.getPath());
     }
 
     @Test
@@ -53,6 +54,7 @@ public class LocationTest {
         Location location = new Location(Arrays.asList("one", "two"));
         Assert.assertEquals(Arrays.asList("one", "two"),
                 location.getSegments());
+        Assert.assertEquals("one/two", location.getPath());
     }
 
     @Test
@@ -64,6 +66,8 @@ public class LocationTest {
         Location subLocation = location.getSubLocation();
         Assert.assertEquals(Arrays.asList("two", "three"),
                 subLocation.getSegments());
+        Assert.assertEquals("two/three", subLocation.getPath());
+
     }
 
     @Test
@@ -71,6 +75,7 @@ public class LocationTest {
         Location location = new Location(Collections.emptyList());
 
         Assert.assertNull(location.getFirstSegment());
+        Assert.assertEquals("", location.getPath());
     }
 
     @Test(expected = IllegalStateException.class)
