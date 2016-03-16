@@ -30,6 +30,14 @@ public class LocationTest {
                 location.getSegments());
     }
 
+    @Test
+    public void parseLocationWithEndingSlash() {
+        Location location = new Location("foo/bar/");
+
+        Assert.assertEquals(Arrays.asList("foo", "bar", ""),
+                location.getSegments());
+    }
+
     @Test(expected = AssertionError.class)
     public void parseLocationStartingWithSlash() {
         new Location("/foo/bar");
