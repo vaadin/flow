@@ -124,7 +124,7 @@ property values of the element and all its child nodes. The child nodes are iter
 ----
 element.setTextContent("Welcome back ");
 
-Element nameSpan = new Element("b").setTextContent("Rudolph Reindeer")
+Element nameSpan = new Element("b").setTextContent("Rudolph Reindeer");
 element.appendChild(nameSpan);
 
 element.getTextContent(); // will return "Welcome back Rudolph Reindeer"
