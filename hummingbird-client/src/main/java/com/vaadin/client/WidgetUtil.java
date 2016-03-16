@@ -30,6 +30,13 @@ import elemental.json.JsonValue;
 public class WidgetUtil {
 
     /**
+     * Refreshes the browser.
+     */
+    public static void refresh() {
+        redirect(null);
+    }
+
+    /**
      * Redirects the browser to the given url or refreshes the page if url is
      * null
      *
