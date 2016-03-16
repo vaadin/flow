@@ -657,7 +657,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
-            throws SessionExpiredException, ServiceException {
+                    throws SessionExpiredException, ServiceException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -1336,7 +1336,7 @@ public abstract class VaadinService implements Serializable {
 
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
-            throws ServiceException {
+                    throws ServiceException {
         if (vaadinSession != null) {
             vaadinSession.lock();
         }
@@ -1473,7 +1473,6 @@ public abstract class VaadinService implements Serializable {
      */
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url) {
-        String returnString = "";
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);
@@ -1490,13 +1489,45 @@ public abstract class VaadinService implements Serializable {
             json.put("locales", Json.createObject());
             json.put("meta", meta);
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
-            returnString = JsonUtil.stringify(json);
+            return wrapJsonForClient(json);
         } catch (JsonException e) {
             getLogger().log(Level.WARNING,
                     "Error creating critical notification JSON message", e);
+            return wrapJsonForClient(Json.createObject());
         }
 
-        return "for(;;);[" + returnString + "]";
+    }
+
+    private static String wrapJsonForClient(JsonObject json) {
+        return "for(;;);[" + JsonUtil.stringify(json) + "]";
+    }
+
+    /**
+     * Creates the JSON to send to the client when the session has expired.
+     *
+     * @return the JSON used to inform the client about a session expiration, as
+     *         a string
+     */
+    public static String createSessionExpiredJSON() {
+        JsonObject json = Json.createObject();
+        JsonObject meta = Json.createObject();
+        json.put("meta", meta);
+
+        meta.put(JsonConstants.META_SESSION_EXPIRED, true);
+        return wrapJsonForClient(json);
+    }
+
+    /**
+     * Creates the JSON to send to the client when the UI cannot be found.
+     *
+     * @return the JSON used to inform the client that the UI cannot be found,
+     *         as a string
+     */
+    public static String createUINotFoundJSON() {
+        // Session Expired is technically not really the correct thing as
+        // the session exists but the requested UI does not. Still we want
+        // to handle it the same way on the client side.
+        return createSessionExpiredJSON();
     }
 
     private static void putValueOrJsonNull(JsonObject json, String key,

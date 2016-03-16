@@ -135,6 +135,7 @@ public class MessageHandler {
             forceMessageHandling();
         }
     };
+    private Command nextResponseSessionExpiredHandler = null;
 
     /**
      * Data structure holding information about pending UIDL messages.
@@ -338,7 +339,16 @@ public class MessageHandler {
 
                 if (meta != null) {
                     Profiler.enter("Error handling");
-                    if (meta.containsKey("appError")) {
+                    if (meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
+                        if (nextResponseSessionExpiredHandler != null) {
+                            nextResponseSessionExpiredHandler.execute();
+                        } else {
+                            registry.getSystemErrorHandler()
+                                    .showSessionExpiredError(null);
+                            registry.getUILifecycle()
+                                    .setState(UIState.TERMINATED);
+                        }
+                    } else if (meta.containsKey("appError")) {
                         ValueMap error = meta.getValueMap("appError");
 
                         registry.getSystemErrorHandler().showError(
@@ -351,7 +361,7 @@ public class MessageHandler {
                     }
                     Profiler.leave("Error handling");
                 }
-
+                nextResponseSessionExpiredHandler = null;
                 Reactive.flush();
 
                 // TODO build profiling for widget impl loading time
@@ -670,5 +680,17 @@ public class MessageHandler {
             return 0;
         }
     }-*/;
+
+    /**
+     * Sets a temporary handler for session expiration. This handler will be
+     * triggered iff the next server message tells that the session has expired.
+     *
+     * @param nextResponseSessionExpiredHandler
+     *            the handler to use or null to remove a previously set handler
+     */
+    public void setNextResponseSessionExpiredHandler(
+            Command nextResponseSessionExpiredHandler) {
+        this.nextResponseSessionExpiredHandler = nextResponseSessionExpiredHandler;
+    }
 
 }
