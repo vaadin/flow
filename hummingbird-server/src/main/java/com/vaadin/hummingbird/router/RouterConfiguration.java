@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
 /**
  * Configuration for a {@link Router}. Use
  * {@link Router#reconfigure(RouterConfigurator)} to update the configuration
@@ -60,5 +63,35 @@ public interface RouterConfiguration {
      *         been set
      */
     Class<? extends HasChildView> getParentView(Class<? extends View> viewType);
+
+    /**
+     * Gets the configured routes for the given view type.
+     * <p>
+     * Only returns the routes for explicitly mapped views. Any routes mapped to
+     * a custom {@link NavigationHandler} will not be returned.
+     *
+     * @param viewType
+     *            the view type for which to find routes, not <code>null</code>
+     * @return the routes configured for the given view type
+     */
+    Stream<String> getRoutes(Class<? extends View> viewType);
+
+    /**
+     * Gets the configured route for the given view type.
+     * <p>
+     * Only returns the route for explicitly mapped views. Any route mapped to a
+     * custom {@link NavigationHandler} will not be returned.
+     * <p>
+     * Throws an exception if there are multiple routes configured for the given
+     * view type.
+     *
+     * @param viewType
+     *            the view type for which to find a route, not <code>null</code>
+     * @return the configured route for the given view type
+     * @throws IllegalArgumentException
+     *             if multiple routes have been defined for the given view type
+     */
+    Optional<String> getRoute(Class<? extends View> viewType)
+            throws IllegalArgumentException;
 
 }

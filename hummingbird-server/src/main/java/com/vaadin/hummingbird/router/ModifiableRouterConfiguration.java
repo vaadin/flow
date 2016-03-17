@@ -17,8 +17,12 @@ package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A {@link Router} configuration object that may be in a modifiable state.
@@ -47,6 +51,8 @@ public class ModifiableRouterConfiguration
 
     private Resolver resolver;
 
+    private HashMap<Class<? extends View>, List<String>> viewToRoute;
+
     /**
      * Creates a new empty immutable configuration.
      */
@@ -54,6 +60,7 @@ public class ModifiableRouterConfiguration
         resolver = e -> null;
         routeTreeRoot = new RouteTreeNode();
         parentViewTypes = new HashMap<>();
+        viewToRoute = new HashMap<>();
         modifiable = false;
     }
 
@@ -76,6 +83,11 @@ public class ModifiableRouterConfiguration
         routeTreeRoot = new RouteTreeNode(original.routeTreeRoot);
 
         parentViewTypes = new HashMap<>(original.parentViewTypes);
+
+        viewToRoute = new HashMap<>();
+        original.viewToRoute.forEach((viewType, routes) -> {
+            viewToRoute.put(viewType, new ArrayList<>(routes));
+        });
 
         this.modifiable = modifiable;
     }
@@ -191,6 +203,14 @@ public class ModifiableRouterConfiguration
         setRoute(path, viewType);
     }
 
+    private void mapViewToRoute(Class<? extends View> viewType, String path) {
+        viewToRoute.computeIfAbsent(viewType, t -> new ArrayList<>()).add(path);
+    }
+
+    private void removeViewToRouteMapping(String route) {
+        viewToRoute.values().forEach(routes -> routes.remove(route));
+    }
+
     /**
      * Set the view type to use for the given path. The view type may be
      * rendered inside a parent view type based on configuration set using
@@ -209,6 +229,7 @@ public class ModifiableRouterConfiguration
         assert path != null;
         assert viewType != null;
 
+        mapViewToRoute(viewType, path);
         setRoute(path, event -> {
             List<Class<? extends HasChildView>> parentViews = findParentViews(
                     viewType);
@@ -389,6 +410,7 @@ public class ModifiableRouterConfiguration
     public void removeRoute(String path) {
         assert path != null;
 
+        removeViewToRouteMapping(path);
         // Start the recursion
         removeRoute(new Location(path), routeTreeRoot);
     }
@@ -418,5 +440,26 @@ public class ModifiableRouterConfiguration
                 node.removeChild(segment);
             }
         }
+    }
+
+    @Override
+    public Stream<String> getRoutes(Class<? extends View> viewType) {
+        return viewToRoute.getOrDefault(viewType, Collections.emptyList())
+                .stream();
+    }
+
+    @Override
+    public Optional<String> getRoute(Class<? extends View> viewType)
+            throws IllegalArgumentException {
+        Stream<String> routes = getRoutes(viewType);
+        List<String> l = routes.collect(Collectors.toList());
+        if (l.size() > 1) {
+            throw new IllegalArgumentException(
+                    "Multiple routes are defined for the given view type "
+                            + viewType.getName());
+        } else {
+            return l.stream().findFirst();
+        }
+
     }
 }

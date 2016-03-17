@@ -15,14 +15,18 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.router.ViewRendererTest.AnotherParentView;
+import com.vaadin.hummingbird.router.ViewRendererTest.AnotherTestView;
 import com.vaadin.hummingbird.router.ViewRendererTest.ParentView;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 
@@ -95,7 +99,7 @@ public class ModifiableRouterConfigurationTest {
     }
 
     @Test
-    public void testRoutesCopied() {
+    public void testRoutesCopied() throws Exception {
         ModifiableRouterConfiguration original = createConfiguration();
         original.setRoute("foo/bar", createNoopHandler());
 
@@ -106,6 +110,59 @@ public class ModifiableRouterConfigurationTest {
 
         Assert.assertNotNull("Updating the original should not affect the copy",
                 copy.resolveRoute(createEvent("foo/bar")));
+    }
+
+    @Test
+    public void testEverythingIsCopied() throws Exception {
+        ModifiableRouterConfiguration original = createConfiguration();
+        original.setRoute("foo/bar", TestView.class);
+
+        ModifiableRouterConfiguration copy = new ModifiableRouterConfiguration(
+                original, false);
+
+        validateNoSameInstances(original, copy);
+    }
+
+    private void validateNoSameInstances(Object original, Object copy)
+            throws Exception {
+        Assert.assertNotNull(original);
+        Assert.assertNotSame(original, copy);
+        for (Field f : original.getClass().getDeclaredFields()) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                continue;
+            }
+
+            f.setAccessible(true);
+            Object originalValue = f.get(original);
+            Object copyValue = f.get(copy);
+            if (Map.class.isAssignableFrom(f.getType())) {
+                validateNoSameInstances((Map) originalValue, (Map) copyValue);
+            } else if (f.getType().isPrimitive()
+                    || f.getType() == String.class) {
+                // ok
+            } else {
+                if (!isIgnoredType(f.getType())) {
+                    validateNoSameInstances(originalValue, copyValue);
+                }
+            }
+        }
+    }
+
+    private boolean isIgnoredType(Class<?> c) {
+        return NavigationHandler.class.isAssignableFrom(c)
+                || Resolver.class.isAssignableFrom(c);
+    }
+
+    private void validateNoSameInstances(Map original, Map copy)
+            throws Exception {
+        for (Object key : original.keySet()) {
+            Object originalValue = original.get(key);
+            Object copyValue = copy.get(key);
+            if (originalValue != null
+                    && !isIgnoredType(originalValue.getClass())) {
+                validateNoSameInstances(originalValue, copyValue);
+            }
+        }
     }
 
     @Test
@@ -293,6 +350,90 @@ public class ModifiableRouterConfigurationTest {
 
         return new NavigationEvent(new Router(), new Location(location),
                 new RouterUI());
+    }
+
+    @Test
+    public void getRoute() {
+        Router router = new Router();
+
+        router.reconfigure(conf -> {
+            conf.setRoute("route1", TestView.class, ParentView.class);
+            conf.setRoute("route2", AnotherTestView.class);
+        });
+
+        assertRoute(router, TestView.class, "route1");
+        assertRoute(router, AnotherTestView.class, "route2");
+        assertRoute(router, ParentView.class, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getRouteMultipleMappings() {
+        Router router = new Router();
+
+        router.reconfigure(conf -> {
+            conf.setRoute("route1", TestView.class);
+            conf.setRoute("route2", TestView.class);
+        });
+
+        assertRoute(router, TestView.class, "Should throw exception");
+    }
+
+    @Test
+    public void getRoutesSingleMapping() {
+        Router router = new Router();
+
+        router.reconfigure(conf -> {
+            conf.setRoute("route1", TestView.class);
+        });
+
+        assertRoutes(router, TestView.class, "route1");
+    }
+
+    @Test
+    public void getRoutesMultipleMappings() {
+        Router router = new Router();
+
+        router.reconfigure(conf -> {
+            conf.setRoute("route2", TestView.class);
+            conf.setRoute("route1", TestView.class);
+        });
+
+        assertRoutes(router, TestView.class, "route2", "route1");
+    }
+
+    @Test
+    public void getRoutesNoMapping() {
+        Router router = new Router();
+
+        assertRoutes(router, TestView.class);
+    }
+
+    @Test
+    public void getRoutesAfterRemoved() {
+        Router router = new Router();
+
+        router.reconfigure(conf -> {
+            conf.setRoute("route1", TestView.class);
+            conf.setRoute("route2", AnotherTestView.class);
+        });
+        router.reconfigure(conf -> {
+            conf.removeRoute("route1");
+        });
+        assertRoutes(router, TestView.class);
+        assertRoutes(router, AnotherTestView.class, "route2");
+    }
+
+    private void assertRoutes(Router router, Class<? extends View> viewType,
+            String... expected) {
+        List<String> routes = router.getConfiguration().getRoutes(viewType)
+                .collect(Collectors.toList());
+        Assert.assertArrayEquals(expected, routes.toArray());
+    }
+
+    private void assertRoute(Router router, Class<? extends View> class1,
+            String expected) {
+        Assert.assertEquals(expected,
+                router.getConfiguration().getRoute(class1).orElse(null));
     }
 
 }
