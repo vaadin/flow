@@ -77,4 +77,26 @@ public class RouteLocation extends Location {
         }
         return isWildcard;
     }
+
+    /**
+     * Gets the name of the placeholder in the first segment of this location.
+     * The placeholder name is the part of the segment that is enclosed in
+     * <code>{</code> and <code>}</code>. This method should only be used if
+     * {@link #startsWithPlaceholder()} returns <code>true</code>.
+     *
+     * @return the name of the placeholder, not null
+     */
+    public String getPlaceholderName() {
+        if (!startsWithPlaceholder()) {
+            throw new IllegalStateException(
+                    "Can only get a placeholder name if for a location that starts with a placeholder segment.");
+        }
+
+        String segment = getFirstSegment();
+
+        // Catch problems if/when startsWitPlaceholder is changed to also accept
+        // e.g. "prefix{name}"
+        assert segment.startsWith("{") && segment.endsWith("}");
+        return segment.substring(1, segment.length() - 1);
+    }
 }
