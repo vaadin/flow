@@ -436,4 +436,52 @@ public class ModifiableRouterConfigurationTest {
                 router.getConfiguration().getRoute(class1).orElse(null));
     }
 
+    @Test
+    public void getParentViewsWithoutParent() {
+        Router router = new Router();
+
+        router.reconfigure(conf -> {
+            conf.setRoute("route", TestView.class);
+        });
+
+        assertParentViews(router, TestView.class);
+    }
+
+    @SafeVarargs
+    private final void assertParentViews(Router router,
+            Class<TestView> viewType,
+            Class<? extends HasChildView>... expected) {
+        Assert.assertArrayEquals(expected,
+                router.getConfiguration().getParentViews(viewType)
+                        .collect(Collectors.toList()).toArray());
+
+    }
+
+    @Test
+    public void getParentViewsOneLevel() {
+
+        Router router = new Router();
+
+        router.reconfigure(conf -> {
+            conf.setRoute("route", TestView.class);
+            conf.setParentView(TestView.class, ParentView.class);
+        });
+
+        assertParentViews(router, TestView.class, ParentView.class);
+    }
+
+    @Test
+    public void getParentViewsManyLevels() {
+        Router router = new Router();
+
+        router.reconfigure(conf -> {
+            conf.setRoute("route", TestView.class);
+            conf.setParentView(TestView.class, ParentView.class);
+            conf.setParentView(ParentView.class, AnotherParentView.class);
+        });
+
+        assertParentViews(router, TestView.class, ParentView.class,
+                AnotherParentView.class);
+    }
+
 }

@@ -65,6 +65,21 @@ public interface RouterConfiguration {
     Class<? extends HasChildView> getParentView(Class<? extends View> viewType);
 
     /**
+     * Gets the parent types configured for the given view type.
+     * <p>
+     * The returned list includes the parent view as returned by
+     * {@link #getParentView(Class)} and recursively up until a view which does
+     * not have a parent view.
+     *
+     * @param viewType
+     *            the view type for which to find the parent views, not
+     *            <code>null</code>
+     * @return a stream of parent view types
+     */
+    Stream<Class<? extends HasChildView>> getParentViews(
+            Class<? extends View> viewType);
+
+    /**
      * Gets the configured routes for the given view type.
      * <p>
      * Only returns the routes for explicitly mapped views. Any routes mapped to
