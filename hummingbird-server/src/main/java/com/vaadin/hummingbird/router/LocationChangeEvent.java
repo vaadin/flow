@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.router;
 import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Event passed to {@link View#onLocationChange(LocationChangeEvent)} when the
@@ -28,9 +29,10 @@ import java.util.List;
  */
 public class LocationChangeEvent extends EventObject {
 
-    private Location location;
-    private List<View> viewChain;
-    private RouterUI ui;
+    private final Location location;
+    private final List<View> viewChain;
+    private final RouterUI ui;
+    private final Map<String, String> routePlaceholders;
 
     /**
      * Creates a new location change event.
@@ -43,18 +45,23 @@ public class LocationChangeEvent extends EventObject {
      *            the new location, not <code>null</code>
      * @param viewChain
      *            the view chain that will be used, not <code>null</code>
+     * @param routePlaceholders
+     *            a map containing actual path segment values used for
+     *            placeholders in the used route mapping, not <code>null</code>
      */
     public LocationChangeEvent(Router router, RouterUI ui, Location location,
-            List<View> viewChain) {
+            List<View> viewChain, Map<String, String> routePlaceholders) {
         super(router);
 
         assert ui != null;
         assert location != null;
         assert viewChain != null;
+        assert routePlaceholders != null;
 
         this.ui = ui;
         this.location = location;
         this.viewChain = Collections.unmodifiableList(viewChain);
+        this.routePlaceholders = Collections.unmodifiableMap(routePlaceholders);
     }
 
     /**
@@ -83,6 +90,33 @@ public class LocationChangeEvent extends EventObject {
      */
     public RouterUI getUI() {
         return ui;
+    }
+
+    /**
+     * Gets the part of the location that matched the <code>*</code> part of the
+     * route.
+     *
+     * @return the wildcard part of the path, or <code>null</code> if not using
+     *         a wildcard route
+     */
+    public String getRouteWildcard() {
+        return getRoutePlaceholderValue("*");
+    }
+
+    /**
+     * Gets the part of the location that matched <code>{placeholderName}</code>
+     * of the route.
+     *
+     * @param placeholderName
+     *            the name of the placeholder, not <code>null</code>
+     * @return the placeholder value, or <code>null</code> if the placeholder
+     *         name was not present in the route
+     */
+    public String getRoutePlaceholderValue(String placeholderName) {
+        assert placeholderName != null;
+        assert !placeholderName.contains("{") && !placeholderName.contains("}");
+
+        return routePlaceholders.get(placeholderName);
     }
 
     @Override
