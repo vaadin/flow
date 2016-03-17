@@ -70,7 +70,7 @@ public class Router implements Serializable {
             path = pathInfo.substring(1);
         }
 
-        ui.getPage().getHistory().setLocationChangeHandler(e -> {
+        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
             String newLocation = e.getLocation();
 
             navigate(ui, new Location(newLocation));

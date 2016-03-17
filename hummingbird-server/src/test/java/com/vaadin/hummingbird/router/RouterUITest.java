@@ -21,7 +21,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History;
-import com.vaadin.ui.History.LocationChangeEvent;
+import com.vaadin.ui.History.HistoryStateChangeEvent;
 
 public class RouterUITest {
     private static class TestUI extends RouterUI {
@@ -70,8 +70,8 @@ public class RouterUITest {
 
         History history = ui.getPage().getHistory();
 
-        history.getLocationChangeHandler().onLocationChange(
-                new LocationChangeEvent(history, null, "foo/bar"));
+        history.getHistoryStateChangeHandler().onHistoryStateChange(
+                new HistoryStateChangeEvent(history, null, "foo/bar"));
 
         Assert.assertEquals("foo/bar", ui.getActiveViewLocation().getPath());
     }

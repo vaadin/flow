@@ -35,13 +35,13 @@ import elemental.json.JsonValue;
 public class History implements Serializable {
 
     /**
-     * Event fired when the location has changed.
+     * Event fired when the history state has changed.
      * <p>
      * This happens when <code>PopStateEvent</code> is fired in the browser, or
      * when routing has been triggered by user clicking a link marked with
      * attribute {@value ApplicationConstants#ROUTER_LINK_ATTRIBUTE} .
      */
-    public static class LocationChangeEvent extends EventObject {
+    public static class HistoryStateChangeEvent extends EventObject {
         private final String location;
         private final transient JsonValue state;
 
@@ -57,7 +57,7 @@ public class History implements Serializable {
          * @param location
          *            the new browser location, not <code>null</code>
          */
-        public LocationChangeEvent(History history, JsonValue state,
+        public HistoryStateChangeEvent(History history, JsonValue state,
                 String location) {
             super(history);
 
@@ -95,21 +95,21 @@ public class History implements Serializable {
     /**
      * Handles location change events.
      *
-     * @see History.LocationChangeEvent
+     * @see History.HistoryStateChangeEvent
      */
     @FunctionalInterface
-    public interface LocationChangeHandler extends Serializable {
+    public interface HistoryStateChangeHandler extends Serializable {
         /**
-         * Invoked when a <code>popstate</code> event is fired.
+         * Invoked when a history state change event is fired.
          *
          * @param event
          *            the event
          */
-        void onLocationChange(LocationChangeEvent event);
+        void onHistoryStateChange(HistoryStateChangeEvent event);
     }
 
     private final UI ui;
-    private LocationChangeHandler locationChangeHandler;
+    private HistoryStateChangeHandler historyStateChangeHandler;
 
     /**
      * Creates a history API endpoint for the given UI.
@@ -168,36 +168,37 @@ public class History implements Serializable {
     }
 
     /**
-     * Sets a handler that will be notified when the location has changed.
+     * Sets a handler that will be notified when the history state has changed.
      * <p>
-     * Location changes are triggered by <code>popstate</code> event is fired in
-     * the browser or when the user has navigated using a router link. There can
-     * only be one handler at a time.
+     * History state changes are triggered when a <code>popstate</code> event is
+     * fired in the browser or when the user has navigated using a router link.
+     * There can only be one handler at a time.
      *
-     * @param locationChangeHandler
+     * @param historyStateChangeHandler
      *            the handler to set, or <code>null</code> to remove the current
      *            handler
-     * @see History.LocationChangeEvent
+     * @see History.HistoryStateChangeEvent
      */
-    public void setLocationChangeHandler(
-            LocationChangeHandler locationChangeHandler) {
-        this.locationChangeHandler = locationChangeHandler;
+    public void setHistoryStateChangeHandler(
+            HistoryStateChangeHandler historyStateChangeHandler) {
+        this.historyStateChangeHandler = historyStateChangeHandler;
     }
 
     /**
-     * Gets the handler that is notified location has changed.
+     * Gets the handler that is notified history state has changed.
      *
-     * @return the location handler, or <code>null</code> if no handler is set
-     * @see History.LocationChangeEvent
+     * @return the history state handler, or <code>null</code> if no handler is
+     *         set
+     * @see History.HistoryStateChangeEvent
      */
-    public LocationChangeHandler getLocationChangeHandler() {
-        return locationChangeHandler;
+    public HistoryStateChangeHandler getHistoryStateChangeHandler() {
+        return historyStateChangeHandler;
     }
 
     /**
      * Navigates back. This has the same effect as if the user would press the
-     * back button in the browser. This causes a {@link LocationChangeEvent} to
-     * be fired asynchronously if the conditions described in the <a href=
+     * back button in the browser. This causes a {@link HistoryStateChangeEvent}
+     * to be fired asynchronously if the conditions described in the <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate">
      * onpopstate documentation</a> are met.
      */
@@ -208,8 +209,8 @@ public class History implements Serializable {
     /**
      * Navigates forward. This has the same effect as if the user would press
      * the forward button in the browser. This causes a
-     * {@link LocationChangeEvent} to be fired asynchronously if the conditions
-     * described in the <a href=
+     * {@link HistoryStateChangeEvent} to be fired asynchronously if the
+     * conditions described in the <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate">
      * onpopstate documentation</a> are met.
      */
@@ -220,7 +221,7 @@ public class History implements Serializable {
     /**
      * Navigates a number of steps forward or backward in the history. This has
      * the same effect as if the user would press the forward button in the
-     * browser.This causes a {@link LocationChangeEvent} to be fired
+     * browser. This causes a {@link HistoryStateChangeEvent} to be fired
      * asynchronously if the conditions described in the <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate">
      * onpopstate documentation</a> are met.
