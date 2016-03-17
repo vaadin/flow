@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Handles navigation events by rendering a view of a specific type in the
@@ -90,17 +89,25 @@ public class ViewRenderer implements NavigationHandler {
                     .getActiveViewChain().stream()
                     .collect(Collectors.toMap(i -> i.getClass(), i -> i));
 
-            List<HasChildView> parentViews = new ArrayList<>();
-            for (Class<? extends HasChildView> parentType : parentViewTypes) {
-                parentViews.add(reuseOrCreate(parentType, availableInstances));
-            }
-
             View viewInstance = reuseOrCreate(viewType, availableInstances);
 
+            List<View> viewChain = new ArrayList<>();
+            viewChain.add(viewInstance);
+
+            for (Class<? extends HasChildView> parentType : parentViewTypes) {
+                viewChain.add(reuseOrCreate(parentType, availableInstances));
+            }
+
+            LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
+                    event.getSource(), ui, event.getLocation(), viewChain);
+
             // Notify view and parent views about the new location
-            Stream.concat(Stream.of(viewInstance), parentViews.stream())
-                    .forEach(
-                            view -> view.onLocationChange(event.getLocation()));
+            viewChain.forEach(
+                    view -> view.onLocationChange(locationChangeEvent));
+
+            @SuppressWarnings("unchecked")
+            List<HasChildView> parentViews = (List<HasChildView>) (List<?>) viewChain
+                    .subList(1, viewChain.size());
 
             // Show the new view and parent views
             ui.showView(event.getLocation(), viewInstance, parentViews);

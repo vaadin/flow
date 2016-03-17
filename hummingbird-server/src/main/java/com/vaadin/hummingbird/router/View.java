@@ -49,10 +49,10 @@ public interface View {
      * <p>
      * This method does nothing by default.
      *
-     * @param location
-     *            the new location, not <code>null</code>
+     * @param locationChangeEvent
+     *            event object with information about the new location
      */
-    default void onLocationChange(Location location) {
+    default void onLocationChange(LocationChangeEvent locationChangeEvent) {
         // Does nothing by default
     }
 }

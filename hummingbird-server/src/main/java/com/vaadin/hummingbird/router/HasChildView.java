@@ -24,10 +24,11 @@ package com.vaadin.hummingbird.router;
 public interface HasChildView extends View {
     /**
      * Sets the child view to show. This method is invoked for each parent view
-     * after {@link #onLocationChange(Location)} has been called for all used
-     * views, if the child view has changed since the last time this method was
-     * called. If this view is also used as a child view, the method will be
-     * invoked for this view before it's invoked for the parent view.
+     * after {@link #onLocationChange(ViewLocationChangeEvent)} has been called
+     * for all used views, if the child view has changed since the last time
+     * this method was called. If this view is also used as a child view, the
+     * method will be invoked for this view before it's invoked for the parent
+     * view.
      *
      * @param childView
      *            the child view to set
