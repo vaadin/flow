@@ -16,7 +16,9 @@
 package com.vaadin.hummingbird.router;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,58 +32,45 @@ import java.util.stream.Collectors;
  * @since
  * @author Vaadin Ltd
  */
-public class ViewRenderer implements NavigationHandler {
-
-    private final Class<? extends View> viewType;
-    // Starts with the view's immediate parent
-    private final List<Class<? extends HasChildView>> parentViewTypes;
+public abstract class ViewRenderer implements NavigationHandler {
 
     /**
-     * Creates a renderer for the given view type and optional parent view
-     * types. The same type may not be used in multiple positions in the same
-     * view renderer.
+     * Gets the view type show.
      *
-     * @param viewType
-     *            the view type to show
-     * @param parentViewTypes
-     *            an array of parent view types to show, starting from the
-     *            parent view immediately wrapping the view type
+     * @return the view type, not <code>null</code>
      */
-    @SafeVarargs
-    public ViewRenderer(Class<? extends View> viewType,
-            Class<? extends HasChildView>... parentViewTypes) {
-        this(viewType, Arrays.asList(parentViewTypes));
-    }
+    public abstract Class<? extends View> getViewType();
 
     /**
-     * Creates a renderer for the given view type and optional an optional list
-     * of parent view types. The same type may not be used in multiple positions
-     * in the same view renderer.
+     * Gets the parent view types to show, starting from the parent view
+     * immediately wrapping the view type.
      *
-     * @param viewType
-     *            the view type to show
-     * @param parentViewTypes
-     *            a list of parent view types to show, starting from the parent
-     *            view immediately wrapping the view type
+     * @return a list of parent view types, not <code>null</code>
      */
-    public ViewRenderer(Class<? extends View> viewType,
-            List<Class<? extends HasChildView>> parentViewTypes) {
-        Set<Class<?>> duplicateCheck = new HashSet<>();
-        duplicateCheck.add(viewType);
-        for (Class<?> parentType : parentViewTypes) {
-            if (!duplicateCheck.add(parentType)) {
-                throw new IllegalArgumentException(
-                        parentType + " is used in multiple locations");
-            }
-        }
+    public abstract List<Class<? extends HasChildView>> getParentViewTypes();
 
-        this.viewType = viewType;
-        this.parentViewTypes = parentViewTypes;
+    /**
+     * Gets the route for which the view types were mapped. Returns
+     * <code>null</code> if no route definition is available.
+     *
+     * @return the route definition, or <code>null</code> if no route is
+     *         available
+     */
+    protected String getRoute() {
+        return null;
     }
 
     @Override
     public void handle(NavigationEvent event) {
         RouterUI ui = event.getUI();
+
+        Class<? extends View> viewType = getViewType();
+        List<Class<? extends HasChildView>> parentViewTypes = getParentViewTypes();
+
+        assert viewType != null;
+        assert parentViewTypes != null;
+
+        checkDuplicates(viewType, parentViewTypes);
 
         try {
             // Instances currently in use that we want to reuse if possible
@@ -98,8 +87,8 @@ public class ViewRenderer implements NavigationHandler {
                 viewChain.add(reuseOrCreate(parentType, availableInstances));
             }
 
-            LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
-                    event.getSource(), ui, event.getLocation(), viewChain);
+            LocationChangeEvent locationChangeEvent = createEvent(event,
+                    viewChain);
 
             // Notify view and parent views about the new location
             viewChain.forEach(
@@ -116,9 +105,78 @@ public class ViewRenderer implements NavigationHandler {
         }
     }
 
+    private LocationChangeEvent createEvent(NavigationEvent event,
+            List<View> viewChain) {
+
+        String route = getRoute();
+        Map<String, String> routePlaceholders;
+        if (route != null) {
+            routePlaceholders = extractRoutePlaceholders(event.getLocation(),
+                    new Location(route));
+        } else {
+            routePlaceholders = Collections.emptyMap();
+        }
+
+        return new LocationChangeEvent(event.getSource(), event.getUI(),
+                event.getLocation(), viewChain, routePlaceholders);
+    }
+
+    /**
+     * Checks that the same view type is not used in multiple parts of a view
+     * chain.
+     *
+     * @param viewType
+     *            the actual view in the view chain
+     * @param parentViewTypes
+     *            the parent types in the view chain
+     */
+    protected static void checkDuplicates(Class<? extends View> viewType,
+            Collection<Class<? extends HasChildView>> parentViewTypes) {
+        Set<Class<?>> duplicateCheck = new HashSet<>();
+        duplicateCheck.add(viewType);
+        for (Class<?> parentType : parentViewTypes) {
+            if (!duplicateCheck.add(parentType)) {
+                throw new IllegalArgumentException(
+                        parentType + " is used in multiple locations");
+            }
+        }
+    }
+
+    private static Map<String, String> extractRoutePlaceholders(
+            Location destination, Location routeDefinition) {
+        assert destination != null;
+        assert routeDefinition != null;
+
+        Map<String, String> routePlaceholders = new HashMap<>();
+
+        Location currentDestination = destination;
+        Location currentRouteDefinition = routeDefinition;
+
+        while (currentRouteDefinition.hasSegments()) {
+            String segment = currentRouteDefinition.getFirstSegment();
+
+            if (segment.startsWith("{") && segment.endsWith("}")) {
+                String placeholderName = segment.substring(1,
+                        segment.length() - 1);
+                String placeholderValue = currentDestination.getFirstSegment();
+
+                assert !routePlaceholders.containsKey(placeholderName);
+                routePlaceholders.put(placeholderName, placeholderValue);
+            } else if ("*".equals(segment)) {
+                assert !routePlaceholders.containsKey("*");
+                routePlaceholders.put("*", currentDestination.getPath());
+            }
+
+            currentDestination = currentDestination.getSubLocation();
+            currentRouteDefinition = currentRouteDefinition.getSubLocation();
+        }
+
+        return routePlaceholders;
+    }
+
     private static <T extends View> T reuseOrCreate(Class<T> type,
             Map<Class<? extends View>, View> availableInstances)
-                    throws InstantiationException, IllegalAccessException {
+            throws InstantiationException, IllegalAccessException {
         T instance = type.cast(availableInstances.remove(type));
         if (instance == null) {
             instance = type.newInstance();
