@@ -230,10 +230,21 @@ public class ModifiableRouterConfiguration
         assert viewType != null;
 
         mapViewToRoute(viewType, path);
-        setRoute(path, event -> {
-            List<Class<? extends HasChildView>> parentViews = getParentViewsAsList(
-                    viewType);
-            new ViewRenderer(viewType, parentViews).handle(event);
+        setRoute(path, new ViewRenderer() {
+            @Override
+            public Class<? extends View> getViewType() {
+                return viewType;
+            }
+
+            @Override
+            public List<Class<? extends HasChildView>> getParentViewTypes() {
+                return getParentViewsAsList(viewType);
+            }
+
+            @Override
+            protected String getRoute() {
+                return path;
+            }
         });
     }
 
