@@ -108,12 +108,7 @@ public class ModifiableRouterConfiguration
         return resolver;
     }
 
-    /**
-     * Checks whether this configuration can be modified.
-     *
-     * @return <code>true</code> if it is modifiable, <code>false</code> if it
-     *         immutable
-     */
+    @Override
     public boolean isModifiable() {
         return modifiable;
     }
@@ -127,6 +122,7 @@ public class ModifiableRouterConfiguration
      * @return a navigation handler or handling the route, or <code>null</code>
      *         if no configured route matched the location
      */
+    @Override
     public NavigationHandler resolveRoute(NavigationEvent event) {
         assert event != null;
 
@@ -266,16 +262,7 @@ public class ModifiableRouterConfiguration
         }
     }
 
-    /**
-     * Gets the parent type configured for the given view type using
-     * {@link #setParentView(Class, Class)}.
-     *
-     * @param viewType
-     *            the view type for which to find a parent, not
-     *            <code>null</code>
-     * @return the parent view type, or <code>null</code> if no parent view has
-     *         been set
-     */
+    @Override
     public Class<? extends HasChildView> getParentView(
             Class<? extends View> viewType) {
         assert viewType != null;

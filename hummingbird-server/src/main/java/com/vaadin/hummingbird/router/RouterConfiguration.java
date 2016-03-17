@@ -31,4 +31,34 @@ public interface RouterConfiguration {
      * @return the resolver, not <code>null</code>
      */
     Resolver getResolver();
+
+    /**
+     * Checks whether this configuration can be modified.
+     *
+     * @return <code>true</code> if it is modifiable, <code>false</code> if it
+     *         immutable
+     */
+    boolean isModifiable();
+
+    /**
+     * Resolves a route.
+     *
+     * @param event
+     *            the event for which to resolve a route
+     * @return a navigation handler or handling the route, or <code>null</code>
+     *         if no configured route matched the location
+     */
+    NavigationHandler resolveRoute(NavigationEvent event);
+
+    /**
+     * Gets the parent type configured for the given view type.
+     *
+     * @param viewType
+     *            the view type for which to find a parent, not
+     *            <code>null</code>
+     * @return the parent view type, or <code>null</code> if no parent view has
+     *         been set
+     */
+    Class<? extends HasChildView> getParentView(Class<? extends View> viewType);
+
 }
