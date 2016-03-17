@@ -93,7 +93,7 @@ public class Router implements Serializable {
                 ui);
 
         // Read volatile field only once per navigation
-        ModifiableRouterConfiguration currentConfig = configuration;
+        RouterConfiguration currentConfig = configuration;
 
         NavigationHandler handler = currentConfig.getResolver()
                 .resolve(navigationEvent);
@@ -151,7 +151,7 @@ public class Router implements Serializable {
      * @return the currently used router configuration
      */
     public RouterConfiguration getConfiguration() {
-        ModifiableRouterConfiguration currentConfig = configuration;
+        RouterConfiguration currentConfig = configuration;
 
         assert !currentConfig.isModifiable();
         return currentConfig;
