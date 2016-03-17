@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.History.LocationChangeEvent;
+import com.vaadin.ui.History.HistoryStateChangeEvent;
 
 public class RouterTest {
 
@@ -86,9 +86,9 @@ public class RouterTest {
         resolver.resolvedLocation.set(null);
         resolver.handledEvent.set(null);
 
-        ui.getPage().getHistory().getLocationChangeHandler().onLocationChange(
-                new LocationChangeEvent(ui.getPage().getHistory(), null,
-                        "foo"));
+        ui.getPage().getHistory().getHistoryStateChangeHandler()
+                .onHistoryStateChange(new HistoryStateChangeEvent(
+                        ui.getPage().getHistory(), null, "foo"));
 
         Assert.assertEquals(Arrays.asList("foo"),
                 resolver.resolvedLocation.get().getSegments());
