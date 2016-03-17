@@ -37,8 +37,8 @@ public class ViewRendererTest {
         }
 
         @Override
-        public void onLocationChange(Location location) {
-            locations.add(location);
+        public void onLocationChange(ViewLocationChangeEvent event) {
+            locations.add(event.getLocation());
         }
     }
 

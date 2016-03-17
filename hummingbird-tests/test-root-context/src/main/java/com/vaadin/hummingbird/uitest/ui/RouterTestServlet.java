@@ -25,7 +25,6 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.router.ErrorNavigationHandler;
 import com.vaadin.hummingbird.router.HasChildView;
-import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
@@ -33,6 +32,7 @@ import com.vaadin.hummingbird.router.Resolver;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.router.ViewLocationChangeEvent;
 import com.vaadin.hummingbird.router.ViewRenderer;
 import com.vaadin.hummingbird.uitest.ui.RouterTestServlet.MyRouterConfigurator;
 import com.vaadin.server.VaadinServlet;
@@ -64,14 +64,14 @@ public class RouterTestServlet extends VaadinServlet {
                             .findAny();
                     return res.map(
                             new Function<Class<? extends View>, NavigationHandler>() {
-                        @Override
-                        public NavigationHandler apply(
-                                Class<? extends View> c) {
-                            return new ViewRenderer(c, Layout.class);
-                        }
-                    }).orElseGet(() -> {
-                        return new ErrorNavigationHandler(404);
-                    });
+                                @Override
+                                public NavigationHandler apply(
+                                        Class<? extends View> c) {
+                                    return new ViewRenderer(c, Layout.class);
+                                }
+                            }).orElseGet(() -> {
+                                return new ErrorNavigationHandler(404);
+                            });
                 }
             });
 
@@ -103,7 +103,7 @@ public class RouterTestServlet extends VaadinServlet {
         }
 
         @Override
-        public void onLocationChange(Location location) {
+        public void onLocationChange(ViewLocationChangeEvent event) {
             WrappedSession session = VaadinSession.getCurrent().getSession();
             if (session == null) {
                 sessionId.setTextContent("No session");
@@ -167,7 +167,7 @@ public class RouterTestServlet extends VaadinServlet {
         }
 
         @Override
-        public void onLocationChange(Location location) {
+        public void onLocationChange(ViewLocationChangeEvent event) {
             throw new RuntimeException(
                     "Intentionally caused by " + getClass().getSimpleName());
         }
@@ -179,7 +179,7 @@ public class RouterTestServlet extends VaadinServlet {
         }
 
         @Override
-        public void onLocationChange(Location location) {
+        public void onLocationChange(ViewLocationChangeEvent event) {
             VaadinSession.getCurrent().getSession().invalidate();
         }
     }
