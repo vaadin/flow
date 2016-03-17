@@ -30,6 +30,8 @@ public class ViewRendererTest {
     public static class TestView implements View {
         private Element element = new Element("div");
         private List<Location> locations = new ArrayList<>();
+        private String namePlaceholderValue;
+        private String wildcardValue;
 
         @Override
         public final Element getElement() {
@@ -39,6 +41,8 @@ public class ViewRendererTest {
         @Override
         public void onLocationChange(LocationChangeEvent event) {
             locations.add(event.getLocation());
+            namePlaceholderValue = event.getRoutePlaceholderValue("name");
+            wildcardValue = event.getRouteWildcard();
         }
     }
 
@@ -75,7 +79,7 @@ public class ViewRendererTest {
 
     @Test
     public void showSimpleView() {
-        new ViewRenderer(TestView.class).handle(dummyEvent);
+        new StaticViewRenderer(TestView.class).handle(dummyEvent);
 
         List<View> viewChain = ui.getActiveViewChain();
         Assert.assertEquals(1, viewChain.size());
@@ -93,7 +97,7 @@ public class ViewRendererTest {
 
     @Test
     public void showNestedView() {
-        new ViewRenderer(TestView.class, ParentView.class,
+        new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         List<View> viewChain = ui.getActiveViewChain();
@@ -121,14 +125,14 @@ public class ViewRendererTest {
 
     @Test
     public void reuseSingleView() {
-        new ViewRenderer(TestView.class).handle(dummyEvent);
+        new StaticViewRenderer(TestView.class).handle(dummyEvent);
 
         List<View> firstChain = ui.getActiveViewChain();
         TestView view = (TestView) firstChain.get(0);
 
         Assert.assertEquals(1, view.locations.size());
 
-        new ViewRenderer(TestView.class).handle(dummyEvent);
+        new StaticViewRenderer(TestView.class).handle(dummyEvent);
 
         Assert.assertEquals(2, view.locations.size());
 
@@ -140,12 +144,12 @@ public class ViewRendererTest {
 
     @Test
     public void reuseFirstParentView() {
-        new ViewRenderer(TestView.class, ParentView.class,
+        new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         List<View> firstChain = ui.getActiveViewChain();
 
-        new ViewRenderer(AnotherTestView.class, AnotherParentView.class)
+        new StaticViewRenderer(AnotherTestView.class, AnotherParentView.class)
                 .handle(dummyEvent);
 
         List<View> secondChain = ui.getActiveViewChain();
@@ -156,12 +160,12 @@ public class ViewRendererTest {
 
     @Test
     public void testReuse_orderChanged() {
-        new ViewRenderer(TestView.class, ParentView.class,
+        new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         List<View> firstChain = ui.getActiveViewChain();
 
-        new ViewRenderer(TestView.class, AnotherParentView.class,
+        new StaticViewRenderer(TestView.class, AnotherParentView.class,
                 ParentView.class).handle(dummyEvent);
 
         List<View> secondChain = ui.getActiveViewChain();
@@ -172,22 +176,22 @@ public class ViewRendererTest {
 
     @Test
     public void testReuseAllViews() {
-        new ViewRenderer(TestView.class, ParentView.class,
+        new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         // setChildView throws if it's invoked
-        new ViewRenderer(TestView.class, ParentView.class,
+        new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
     }
 
     @Test
     public void testRemoveChildView() {
-        new ViewRenderer(TestView.class, ParentView.class,
+        new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         ParentView parentView = (ParentView) ui.getActiveViewChain().get(1);
 
-        new ViewRenderer(ParentView.class, AnotherParentView.class)
+        new StaticViewRenderer(ParentView.class, AnotherParentView.class)
                 .handle(dummyEvent);
 
         Assert.assertEquals(0, parentView.getElement().getChildCount());
@@ -195,12 +199,22 @@ public class ViewRendererTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void sameTypeTwice_constructorThrows() {
-        new ViewRenderer(ParentView.class, ParentView.class);
+        new StaticViewRenderer(ParentView.class, ParentView.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void sameParentTypeTwice_constructorThrows() {
-        new ViewRenderer(TestView.class, ParentView.class, ParentView.class);
+        new StaticViewRenderer(TestView.class, ParentView.class,
+                ParentView.class);
     }
 
+    @Test
+    public void routeParamtersInEvent() {
+        router.reconfigure(c -> c.setRoute("foo/{name}/*", TestView.class));
+        router.navigate(ui, new Location("foo/bar/baz/"));
+        TestView testView = (TestView) ui.getActiveViewChain().get(0);
+
+        Assert.assertEquals("bar", testView.namePlaceholderValue);
+        Assert.assertEquals("baz/", testView.wildcardValue);
+    }
 }
