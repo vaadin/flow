@@ -187,12 +187,8 @@ public class ModifiableRouterConfiguration
         assert viewType != null;
         assert parentViewType != null;
 
-        setRoute(path, event -> {
-            List<Class<? extends HasChildView>> parentViews = findParentViews(
-                    parentViewType);
-            parentViews.add(0, parentViewType);
-            new ViewRenderer(viewType, parentViews).handle(event);
-        });
+        setParentView(viewType, parentViewType);
+        setRoute(path, viewType);
     }
 
     /**

@@ -168,6 +168,11 @@ public class ModifiableRouterConfigurationTest {
 
         router.navigate(ui, new Location("route"));
 
+        Assert.assertEquals(ParentView.class,
+                router.getConfiguration().getParentView(TestView.class));
+        Assert.assertEquals(AnotherParentView.class,
+                router.getConfiguration().getParentView(ParentView.class));
+
         Assert.assertEquals(Arrays.asList(TestView.class, ParentView.class,
                 AnotherParentView.class), getViewChainTypes(ui));
     }
@@ -184,7 +189,10 @@ public class ModifiableRouterConfigurationTest {
         });
 
         router.navigate(ui, new Location("route"));
-
+        Assert.assertEquals(ParentView.class,
+                router.getConfiguration().getParentView(TestView.class));
+        Assert.assertEquals(AnotherParentView.class,
+                router.getConfiguration().getParentView(ParentView.class));
         Assert.assertEquals(Arrays.asList(TestView.class, ParentView.class,
                 AnotherParentView.class), getViewChainTypes(ui));
     }
