@@ -147,3 +147,15 @@ External JavaScript or CSS dependencies can be added to the page using `ui.getPa
 The URL can be a regular absolute URL or be a relative URL. Relative URLs are always interpreted as relative to the context path, i.e. the path where the war package is deployed.
 
 Added dependencies are loaded before applying DOM updates defined using `Element` and before running JavaScript defined using `ui.getPage().executeJavaScript`.
+
+== History API
+
+Tutorial: <<tutorial-history-api#,The History API>>
+
+The _History API_ allows you to access the browser navigation history. As the history is
+always _UI_ specific, you can access it through `ui.getPage().getHistory()`.
+The API allows you to:
+
+* programmatically traverse the history
+* modify the history by adding a new entry or replacing the current entry
+* listen for user originated history traversal from browser
