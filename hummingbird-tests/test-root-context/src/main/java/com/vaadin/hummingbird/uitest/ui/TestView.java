@@ -16,8 +16,8 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
@@ -32,7 +32,7 @@ public abstract class TestView implements View {
     protected abstract void onShow();
 
     @Override
-    public void onLocationChange(Location location) {
+    public void onLocationChange(LocationChangeEvent event) {
         onShow();
     }
 
