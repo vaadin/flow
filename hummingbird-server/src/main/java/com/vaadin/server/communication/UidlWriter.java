@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
@@ -142,10 +143,16 @@ public class UidlWriter implements Serializable {
 
         StateTree stateTree = ui.getFrameworkData().getStateTree();
 
-        stateTree.collectChanges(
-                change -> changes.set(changes.length(), change.toJson()));
+        stateTree.collectChanges(change -> collectChange(ui, change, changes));
 
         return changes;
+    }
+
+    private void collectChange(UI ui, NodeChange change, JsonArray changes) {
+        JsonObject json = change.toJson();
+        if (json != null) {
+            changes.set(changes.length(), change.toJson());
+        }
     }
 
     /**

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.StreamResource;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
@@ -224,6 +225,17 @@ public class TextElementStateProvider implements ElementStateProvider {
 
     @Override
     public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public StreamResource getResourceProperty(StateNode node, String property) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setResourceProperty(StateNode node, String property,
+            StreamResource resource) {
         throw new UnsupportedOperationException();
     }
 }
