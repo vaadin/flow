@@ -71,6 +71,9 @@ public class ModifiableRouterConfigurationTest {
         assertNotMatches("foo/bar/baz", "foo/asdf/{name}");
 
         assertMatches("foo/bar/baz", "{name1}/{name2}/{name3}");
+
+        assertMatches("foo/", "foo/{name}");
+        assertMatches("foo//bar", "foo/{name}/bar");
     }
 
     @Test
@@ -96,6 +99,8 @@ public class ModifiableRouterConfigurationTest {
                 "{name}/{name2}");
 
         assertRoutePriorityOrder("foo/bar", "foo/*", "*");
+
+        assertRoutePriorityOrder("foo/", "foo/{name}", "foo/*");
     }
 
     @Test
