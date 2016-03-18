@@ -346,8 +346,20 @@ public class FrameworkData implements Serializable {
         }
 
         List<JavaScriptInvocation> currentList = pendingJsInvocations;
+
         pendingJsInvocations = new ArrayList<>();
+
         return currentList;
     }
 
+    /**
+     * Gets the pending javascript invocations added with
+     * {@link #addJavaScriptInvocation(JavaScriptInvocation)} after last
+     * {@link #dumpPendingJavaScriptInvocations()}.
+     *
+     * @return the pending javascript invocations, never <code>null</code>
+     */
+    protected List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
+        return pendingJsInvocations;
+    }
 }

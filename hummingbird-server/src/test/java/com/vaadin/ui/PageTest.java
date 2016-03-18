@@ -15,12 +15,15 @@
  */
 package com.vaadin.ui;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.tests.util.MockUI;
+import com.vaadin.ui.Page.ExecutionCanceler;
 
 public class PageTest {
-    private Page page = new MockUI().getPage();
+    private MockUI ui = new MockUI();
+    private Page page = ui.getPage();
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddNullStyleSheet() {
@@ -31,4 +34,47 @@ public class PageTest {
     public void testAddNullJavaScript() {
         page.addJavaScript(null);
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetPageTitleNull() {
+        page.updateTitle(null);
+    }
+
+    @Test
+    public void testJavasScriptExecutionCancel() {
+        Assert.assertEquals(0,
+                ui.getFrameworkData().getPendingJavaScriptInvocations().size());
+
+        ExecutionCanceler executeJavaScript = page
+                .executeJavaScript("window.alert('$0');", "foobar");
+
+        Assert.assertEquals(1,
+                ui.getFrameworkData().getPendingJavaScriptInvocations().size());
+
+        Assert.assertTrue(executeJavaScript.cancelExecution());
+
+        Assert.assertEquals(0,
+                ui.getFrameworkData().getPendingJavaScriptInvocations().size());
+    }
+
+    @Test
+    public void testJavaScriptExecutionTooLateCancel() {
+        Assert.assertEquals(0,
+                ui.getFrameworkData().getPendingJavaScriptInvocations().size());
+
+        ExecutionCanceler executeJavaScript = page
+                .executeJavaScript("window.alert('$0');", "foobar");
+
+        Assert.assertEquals(1,
+                ui.getFrameworkData().getPendingJavaScriptInvocations().size());
+
+        Assert.assertEquals(1, ui.getFrameworkData()
+                .dumpPendingJavaScriptInvocations().size());
+
+        Assert.assertEquals(0,
+                ui.getFrameworkData().getPendingJavaScriptInvocations().size());
+
+        Assert.assertFalse(executeJavaScript.cancelExecution());
+    }
+
 }
