@@ -157,7 +157,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
     @Override
     protected EmittedArtifact emitSelectionScript(TreeLogger logger,
             LinkerContext context, ArtifactSet artifacts)
-            throws UnableToCompleteException {
+                    throws UnableToCompleteException {
 
         // Find the single Script result
         Script result = getScript(logger, artifacts);
@@ -237,8 +237,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
 
         replaceAll(selectionScript, "__PROCESS_METAS__", processMetas);
 
-        ResourceInjectionUtil.injectResources(selectionScript,
-                artifacts);
+        ResourceInjectionUtil.injectResources(selectionScript, artifacts);
         permutationsUtil.addPermutationsJs(selectionScript, logger, context);
 
         replaceAll(selectionScript, "__MODULE_FUNC__",
@@ -298,7 +297,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
     @Override
     public ArtifactSet link(TreeLogger logger, LinkerContext context,
             ArtifactSet artifacts, boolean onePermutation)
-            throws UnableToCompleteException {
+                    throws UnableToCompleteException {
         ArtifactSet result = super.link(logger, context, artifacts,
                 onePermutation);
         if (!onePermutation) {
@@ -312,7 +311,7 @@ public class ClientEngineLinker extends SingleScriptLinker {
      */
     private Artifact<?> emitStrongNamePropertyFile(TreeLogger logger,
             LinkerContext context, ArtifactSet artifacts)
-            throws UnableToCompleteException {
+                    throws UnableToCompleteException {
         Script result = getScript(logger, artifacts);
 
         String contents = "jsFile=" + getJsFilename(context, result);

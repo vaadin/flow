@@ -36,6 +36,5 @@ public interface ReactiveValue {
      *            the listener to add
      * @return an event remover that can be used for removing the added listener
      */
-    public EventRemover addReactiveChangeListener(
-            ReactiveChangeListener listener);
+    EventRemover addReactiveChangeListener(ReactiveChangeListener listener);
 }

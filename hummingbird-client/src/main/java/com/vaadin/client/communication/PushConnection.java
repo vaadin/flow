@@ -50,7 +50,7 @@ public interface PushConnection {
      *
      * @see #isActive()
      */
-    public void push(JsonObject payload);
+    void push(JsonObject payload);
 
     /**
      * Checks whether this push connection is in a state where it can push
@@ -61,7 +61,7 @@ public interface PushConnection {
      *         <code>false</code> if this connection is disconnected or
      *         disconnecting.
      */
-    public boolean isActive();
+    boolean isActive();
 
     /**
      * Closes the push connection. To ensure correct message delivery order, new
@@ -80,7 +80,7 @@ public interface PushConnection {
      * @throws IllegalStateException
      *             if this connection is not active
      */
-    public void disconnect(Command command);
+    void disconnect(Command command);
 
     /**
      * Returns a human readable string representation of the transport type used
@@ -89,7 +89,7 @@ public interface PushConnection {
      * @since 7.1
      * @return A human readable string representation of the transport type
      */
-    public String getTransportType();
+    String getTransportType();
 
     /**
      * Checks whether this push connection should be used for communication in
@@ -104,6 +104,6 @@ public interface PushConnection {
      *         directions, false if it should only be used for server to client
      *         messages
      */
-    public boolean isBidirectional();
+    boolean isBidirectional();
 
 }

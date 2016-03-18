@@ -39,8 +39,8 @@ public interface UIEvents {
      * @author Vaadin Ltd
      */
     public interface PollListener extends Serializable {
-        public static final Method POLL_METHOD = ReflectTools
-                .findMethod(PollListener.class, "poll", PollEvent.class);
+        Method POLL_METHOD = ReflectTools.findMethod(PollListener.class, "poll",
+                PollEvent.class);
 
         /**
          * A poll request has been received by the server.
@@ -48,7 +48,7 @@ public interface UIEvents {
          * @param event
          *            poll event
          */
-        public void poll(PollEvent event);
+        void poll(PollEvent event);
     }
 
     /**
@@ -75,7 +75,7 @@ public interface UIEvents {
          * @return the {@link UI} that received the poll request. Never
          *         <code>null</code>.
          */
-        public UI getUI() {
+        UI getUI() {
             /*
              * This cast is safe to make, since this class' constructor
              * constrains the source to be a UI instance.
@@ -107,7 +107,7 @@ public interface UIEvents {
          * @param listener
          *            the {@link PollListener} to add
          */
-        public void addPollListener(PollListener listener);
+        void addPollListener(PollListener listener);
 
         /**
          * Remove a poll listener.
@@ -116,7 +116,7 @@ public interface UIEvents {
          * @param listener
          *            the listener to be removed
          */
-        public void removePollListener(PollListener listener);
+        void removePollListener(PollListener listener);
     }
 
 }

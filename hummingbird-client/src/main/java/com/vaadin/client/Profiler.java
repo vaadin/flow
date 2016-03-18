@@ -73,9 +73,9 @@ public class Profiler {
      * @author Vaadin Ltd
      */
     public interface ProfilerResultConsumer {
-        public void addProfilerData(Node rootNode, List<Node> totals);
+        void addProfilerData(Node rootNode, List<Node> totals);
 
-        public void addBootstrapData(LinkedHashMap<String, Double> timings);
+        void addBootstrapData(LinkedHashMap<String, Double> timings);
     }
 
     /**
@@ -325,7 +325,7 @@ public class Profiler {
             return 'relativeMillis' in this;
         }-*/;
 
-        public final String getEventName() {
+        public String getEventName() {
             String group = getEvtGroup();
             if (EVT_GROUP.equals(group)) {
                 return getSubSystem();

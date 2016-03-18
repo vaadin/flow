@@ -36,7 +36,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      *
      * @return the text to show in the reconnect dialog
      */
-    public String getDialogText();
+    String getDialogText();
 
     /**
      * Sets the text to show in the reconnect dialog when trying to re-establish
@@ -45,7 +45,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * @param dialogText
      *            the text to show in the reconnect dialog
      */
-    public void setDialogText(String dialogText);
+    void setDialogText(String dialogText);
 
     /**
      * Gets the text to show in the reconnect dialog after giving up trying to
@@ -56,7 +56,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      *
      * @return the text to show in the reconnect dialog after giving up
      */
-    public String getDialogTextGaveUp();
+    String getDialogTextGaveUp();
 
     /**
      * Sets the text to show in the reconnect dialog after giving up trying to
@@ -65,7 +65,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * @param dialogTextGaveUp
      *            the text to show in the reconnect dialog after giving up
      */
-    public void setDialogTextGaveUp(String dialogTextGaveUp);
+    void setDialogTextGaveUp(String dialogTextGaveUp);
 
     /**
      * Gets the number of times to try to reconnect to the server before giving
@@ -76,7 +76,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      *
      * @return the number of times to try to reconnect
      */
-    public int getReconnectAttempts();
+    int getReconnectAttempts();
 
     /**
      * Sets the number of times to try to reconnect to the server before giving
@@ -85,7 +85,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * @param reconnectAttempts
      *            the number of times to try to reconnect
      */
-    public void setReconnectAttempts(int reconnectAttempts);
+    void setReconnectAttempts(int reconnectAttempts);
 
     /**
      * Gets the interval (in milliseconds) between reconnect attempts.
@@ -95,7 +95,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      *
      * @return the interval (in ms) between reconnect attempts
      */
-    public int getReconnectInterval();
+    int getReconnectInterval();
 
     /**
      * Sets the interval (in milliseconds) between reconnect attempts.
@@ -103,7 +103,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * @param reconnectInterval
      *            the interval (in ms) between reconnect attempts
      */
-    public void setReconnectInterval(int reconnectInterval);
+    void setReconnectInterval(int reconnectInterval);
 
     /**
      * Gets the timeout (in milliseconds) between noticing a loss of connection
@@ -114,7 +114,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      *
      * @return the time to wait before showing a dialog
      */
-    public int getDialogGracePeriod();
+    int getDialogGracePeriod();
 
     /**
      * Sets the timeout (in milliseconds) between noticing a loss of connection
@@ -123,7 +123,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * @param dialogGracePeriod
      *            the time to wait before showing a dialog
      */
-    public void setDialogGracePeriod(int dialogGracePeriod);
+    void setDialogGracePeriod(int dialogGracePeriod);
 
     /**
      * Sets the modality of the dialog.
@@ -136,7 +136,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * @param dialogModal
      *            true to make the dialog modal, false otherwise
      */
-    public void setDialogModal(boolean dialogModal);
+    void setDialogModal(boolean dialogModal);
 
     /**
      * Checks the modality of the dialog.
@@ -147,5 +147,5 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * @see #setDialogModal(boolean)
      * @return true if the dialog is modal, false otherwise
      */
-    public boolean isDialogModal();
+    boolean isDialogModal();
 }

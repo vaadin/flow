@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.util.Optional;
+import java.util.stream.Stream;
+
 /**
  * Configuration for a {@link Router}. Use
  * {@link Router#reconfigure(RouterConfigurator)} to update the configuration
@@ -31,4 +34,79 @@ public interface RouterConfiguration {
      * @return the resolver, not <code>null</code>
      */
     Resolver getResolver();
+
+    /**
+     * Checks whether this configuration can be modified.
+     *
+     * @return <code>true</code> if it is modifiable, <code>false</code> if it
+     *         immutable
+     */
+    boolean isModifiable();
+
+    /**
+     * Resolves a route.
+     *
+     * @param event
+     *            the event for which to resolve a route
+     * @return a navigation handler or handling the route, or <code>null</code>
+     *         if no configured route matched the location
+     */
+    NavigationHandler resolveRoute(NavigationEvent event);
+
+    /**
+     * Gets the parent type configured for the given view type.
+     *
+     * @param viewType
+     *            the view type for which to find a parent, not
+     *            <code>null</code>
+     * @return the parent view type, or <code>null</code> if no parent view has
+     *         been set
+     */
+    Class<? extends HasChildView> getParentView(Class<? extends View> viewType);
+
+    /**
+     * Gets the parent types configured for the given view type.
+     * <p>
+     * The returned list includes the parent view as returned by
+     * {@link #getParentView(Class)} and recursively up until a view which does
+     * not have a parent view.
+     *
+     * @param viewType
+     *            the view type for which to find the parent views, not
+     *            <code>null</code>
+     * @return a stream of parent view types
+     */
+    Stream<Class<? extends HasChildView>> getParentViews(
+            Class<? extends View> viewType);
+
+    /**
+     * Gets the configured routes for the given view type.
+     * <p>
+     * Only returns the routes for explicitly mapped views. Any routes mapped to
+     * a custom {@link NavigationHandler} will not be returned.
+     *
+     * @param viewType
+     *            the view type for which to find routes, not <code>null</code>
+     * @return the routes configured for the given view type
+     */
+    Stream<String> getRoutes(Class<? extends View> viewType);
+
+    /**
+     * Gets the configured route for the given view type.
+     * <p>
+     * Only returns the route for explicitly mapped views. Any route mapped to a
+     * custom {@link NavigationHandler} will not be returned.
+     * <p>
+     * Throws an exception if there are multiple routes configured for the given
+     * view type.
+     *
+     * @param viewType
+     *            the view type for which to find a route, not <code>null</code>
+     * @return the configured route for the given view type
+     * @throws IllegalArgumentException
+     *             if multiple routes have been defined for the given view type
+     */
+    Optional<String> getRoute(Class<? extends View> viewType)
+            throws IllegalArgumentException;
+
 }

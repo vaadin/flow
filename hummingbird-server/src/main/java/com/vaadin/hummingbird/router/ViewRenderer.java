@@ -16,12 +16,12 @@
 package com.vaadin.hummingbird.router;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Handles navigation events by rendering a view of a specific type in the
@@ -34,7 +34,7 @@ public class ViewRenderer implements NavigationHandler {
 
     private final Class<? extends View> viewType;
     // Starts with the view's immediate parent
-    private final Class<? extends HasChildView>[] parentViewTypes;
+    private final List<Class<? extends HasChildView>> parentViewTypes;
 
     /**
      * Creates a renderer for the given view type and optional parent view
@@ -50,6 +50,22 @@ public class ViewRenderer implements NavigationHandler {
     @SafeVarargs
     public ViewRenderer(Class<? extends View> viewType,
             Class<? extends HasChildView>... parentViewTypes) {
+        this(viewType, Arrays.asList(parentViewTypes));
+    }
+
+    /**
+     * Creates a renderer for the given view type and optional an optional list
+     * of parent view types. The same type may not be used in multiple positions
+     * in the same view renderer.
+     *
+     * @param viewType
+     *            the view type to show
+     * @param parentViewTypes
+     *            a list of parent view types to show, starting from the parent
+     *            view immediately wrapping the view type
+     */
+    public ViewRenderer(Class<? extends View> viewType,
+            List<Class<? extends HasChildView>> parentViewTypes) {
         Set<Class<?>> duplicateCheck = new HashSet<>();
         duplicateCheck.add(viewType);
         for (Class<?> parentType : parentViewTypes) {
@@ -73,17 +89,25 @@ public class ViewRenderer implements NavigationHandler {
                     .getActiveViewChain().stream()
                     .collect(Collectors.toMap(i -> i.getClass(), i -> i));
 
-            List<HasChildView> parentViews = new ArrayList<>();
-            for (Class<? extends HasChildView> parentType : parentViewTypes) {
-                parentViews.add(reuseOrCreate(parentType, availableInstances));
-            }
-
             View viewInstance = reuseOrCreate(viewType, availableInstances);
 
+            List<View> viewChain = new ArrayList<>();
+            viewChain.add(viewInstance);
+
+            for (Class<? extends HasChildView> parentType : parentViewTypes) {
+                viewChain.add(reuseOrCreate(parentType, availableInstances));
+            }
+
+            LocationChangeEvent locationChangeEvent = new LocationChangeEvent(
+                    event.getSource(), ui, event.getLocation(), viewChain);
+
             // Notify view and parent views about the new location
-            Stream.concat(Stream.of(viewInstance), parentViews.stream())
-                    .forEach(
-                            view -> view.onLocationChange(event.getLocation()));
+            viewChain.forEach(
+                    view -> view.onLocationChange(locationChangeEvent));
+
+            @SuppressWarnings("unchecked")
+            List<HasChildView> parentViews = (List<HasChildView>) (List<?>) viewChain
+                    .subList(1, viewChain.size());
 
             // Show the new view and parent views
             ui.showView(event.getLocation(), viewInstance, parentViews);
@@ -94,7 +118,7 @@ public class ViewRenderer implements NavigationHandler {
 
     private static <T extends View> T reuseOrCreate(Class<T> type,
             Map<Class<? extends View>, View> availableInstances)
-            throws InstantiationException, IllegalAccessException {
+                    throws InstantiationException, IllegalAccessException {
         T instance = type.cast(availableInstances.remove(type));
         if (instance == null) {
             instance = type.newInstance();

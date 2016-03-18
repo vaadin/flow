@@ -34,5 +34,5 @@ public interface ViewportGenerator extends Serializable {
      *            the request for which to generate a viewport tag
      * @return the viewport tag content
      */
-    public String getViewport(VaadinRequest request);
+    String getViewport(VaadinRequest request);
 }

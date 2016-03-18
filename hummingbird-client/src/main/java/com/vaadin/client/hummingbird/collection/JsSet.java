@@ -39,7 +39,7 @@ public interface JsSet<V> {
      *            the value to add
      * @return this set, for chaining.
      */
-    public JsSet<V> add(V value);
+    JsSet<V> add(V value);
 
     /**
      * Checks whether this set contains the given value.
@@ -49,7 +49,7 @@ public interface JsSet<V> {
      * @return <code>true</code> if the value is in the set; <code>false</code>
      *         otherwise
      */
-    public boolean has(V value);
+    boolean has(V value);
 
     /**
      * Removes the given value from the set.
@@ -59,12 +59,12 @@ public interface JsSet<V> {
      * @return <code>true</code> if the map contained the value prior to calling
      *         this method; <code>false</code> otherwise
      */
-    public boolean delete(V value);
+    boolean delete(V value);
 
     /**
      * Removes all vaues from this set.
      */
-    public void clear();
+    void clear();
 
     /**
      * Invokes the provided callback for each value in this set.
@@ -72,7 +72,7 @@ public interface JsSet<V> {
      * @param callback
      *            the callback to invoke for each value
      */
-    public void forEach(ForEachCallback<V> callback);
+    void forEach(ForEachCallback<V> callback);
 
     /**
      * Gets the number of values in this set.
@@ -80,6 +80,6 @@ public interface JsSet<V> {
      * @return the value count
      */
     @JsProperty(name = "size")
-    public int size();
+    int size();
 
 }

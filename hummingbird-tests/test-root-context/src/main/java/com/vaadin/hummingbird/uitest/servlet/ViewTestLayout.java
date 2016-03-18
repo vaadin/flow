@@ -22,9 +22,9 @@ import java.util.List;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.router.HasChildView;
-import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.ui.UI;
 
 public class ViewTestLayout implements HasChildView {
@@ -79,11 +79,11 @@ public class ViewTestLayout implements HasChildView {
     }
 
     @Override
-    public void onLocationChange(Location location) {
+    public void onLocationChange(LocationChangeEvent event) {
         // Defer value setting until all option elements have been attached
         UI.getCurrent().getPage().executeJavaScript(
                 "setTimeout(function() {$0.value = $1}, 0)", viewSelect,
-                location.getPath());
+                event.getLocation().getPath());
     }
 
 }

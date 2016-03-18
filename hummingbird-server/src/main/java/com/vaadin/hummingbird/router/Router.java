@@ -70,7 +70,7 @@ public class Router implements Serializable {
             path = pathInfo.substring(1);
         }
 
-        ui.getPage().getHistory().setLocationChangeHandler(e -> {
+        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
             String newLocation = e.getLocation();
 
             navigate(ui, new Location(newLocation));
@@ -92,8 +92,15 @@ public class Router implements Serializable {
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
                 ui);
 
-        NavigationHandler handler = configuration.getResolver()
+        // Read volatile field only once per navigation
+        RouterConfiguration currentConfig = configuration;
+
+        NavigationHandler handler = currentConfig.getResolver()
                 .resolve(navigationEvent);
+
+        if (handler == null) {
+            handler = currentConfig.resolveRoute(navigationEvent);
+        }
 
         if (handler == null) {
             handler = new ErrorNavigationHandler(404);
@@ -144,7 +151,7 @@ public class Router implements Serializable {
      * @return the currently used router configuration
      */
     public RouterConfiguration getConfiguration() {
-        ModifiableRouterConfiguration currentConfig = configuration;
+        RouterConfiguration currentConfig = configuration;
 
         assert !currentConfig.isModifiable();
         return currentConfig;
