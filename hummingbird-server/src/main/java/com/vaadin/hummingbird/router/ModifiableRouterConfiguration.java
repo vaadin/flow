@@ -231,7 +231,7 @@ public class ModifiableRouterConfiguration
 
         mapViewToRoute(viewType, path);
         setRoute(path, event -> {
-            List<Class<? extends HasChildView>> parentViews = findParentViews(
+            List<Class<? extends HasChildView>> parentViews = getParentViewsAsList(
                     viewType);
             new ViewRenderer(viewType, parentViews).handle(event);
         });
@@ -263,9 +263,7 @@ public class ModifiableRouterConfiguration
         if (parentView == null) {
             parentViewTypes.remove(viewType);
         } else if (!parentViewTypes.containsKey(viewType)) {
-            List<Class<? extends HasChildView>> parentViews = findParentViews(
-                    parentView);
-            if (parentViews.contains(viewType)) {
+            if (getParentViewsAsList(parentView).contains(viewType)) {
                 throw new IllegalStateException(
                         "Setting " + parentView + " as a parent of " + viewType
                                 + " would create a loop");
@@ -287,7 +285,13 @@ public class ModifiableRouterConfiguration
         return parentViewTypes.get(viewType);
     }
 
-    private List<Class<? extends HasChildView>> findParentViews(
+    @Override
+    public Stream<Class<? extends HasChildView>> getParentViews(
+            Class<? extends View> viewType) {
+        return getParentViewsAsList(viewType).stream();
+    }
+
+    private ArrayList<Class<? extends HasChildView>> getParentViewsAsList(
             Class<? extends View> viewType) {
         ArrayList<Class<? extends HasChildView>> parentViews = new ArrayList<>();
         Class<? extends View> currentType = viewType;
