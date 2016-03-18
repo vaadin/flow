@@ -71,6 +71,9 @@ public class ModifiableRouterConfigurationTest {
         assertNotMatches("foo/bar/baz", "foo/asdf/{name}");
 
         assertMatches("foo/bar/baz", "{name1}/{name2}/{name3}");
+
+        assertMatches("foo/", "foo/{name}");
+        assertMatches("foo//bar", "foo/{name}/bar");
     }
 
     @Test
@@ -96,6 +99,8 @@ public class ModifiableRouterConfigurationTest {
                 "{name}/{name2}");
 
         assertRoutePriorityOrder("foo/bar", "foo/*", "*");
+
+        assertRoutePriorityOrder("foo/", "foo/{name}", "foo/*");
     }
 
     @Test
@@ -128,22 +133,22 @@ public class ModifiableRouterConfigurationTest {
         Assert.assertNotNull(original);
         Assert.assertNotSame(original, copy);
         for (Field f : original.getClass().getDeclaredFields()) {
+            Class<?> fieldType = f.getType();
             if (Modifier.isStatic(f.getModifiers())) {
+                continue;
+            } else if (fieldType.isPrimitive() || fieldType == String.class) {
+                continue;
+            } else if (isIgnoredType(fieldType)) {
                 continue;
             }
 
             f.setAccessible(true);
             Object originalValue = f.get(original);
             Object copyValue = f.get(copy);
-            if (Map.class.isAssignableFrom(f.getType())) {
+            if (Map.class.isAssignableFrom(fieldType)) {
                 validateNoSameInstances((Map) originalValue, (Map) copyValue);
-            } else if (f.getType().isPrimitive()
-                    || f.getType() == String.class) {
-                // ok
             } else {
-                if (!isIgnoredType(f.getType())) {
-                    validateNoSameInstances(originalValue, copyValue);
-                }
+                validateNoSameInstances(originalValue, copyValue);
             }
         }
     }
