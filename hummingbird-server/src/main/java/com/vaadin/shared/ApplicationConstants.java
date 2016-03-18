@@ -17,7 +17,6 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.server.VaadinService;
 import com.vaadin.ui.FrameworkData;
 
 /**
@@ -35,10 +34,6 @@ public class ApplicationConstants implements Serializable {
     public static final String GENERATED_BODY_CLASSNAME = "v-generated-body";
 
     /**
-     * An internal protocol used for referencing the service (servlet) path.
-     */
-    public static final String SERVICE_PROTOCOL_PREFIX = "service://";
-    /**
      * An internal protocol used for referencing the application context path.
      */
     public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
@@ -50,13 +45,6 @@ public class ApplicationConstants implements Serializable {
      * The identifier used for the CSRF token.
      */
     public static final String UIDL_SECURITY_TOKEN_ID = "Vaadin-Security-Key";
-
-    /**
-     * Configuration parameter giving the (in some cases relative) URL to the
-     * {@link VaadinService}.
-     * <p>
-     */
-    public static final String SERVICE_URL = "serviceUrl";
 
     /**
      * URL parameter used in UIDL requests to indicate that the full server-side

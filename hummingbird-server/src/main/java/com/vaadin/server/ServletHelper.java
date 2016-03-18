@@ -171,8 +171,7 @@ public class ServletHelper implements Serializable {
     }
 
     /**
-     * Gets a relative path you can use to refer to the context root from the
-     * request URI.
+     * Gets a relative path you can use to refer to the context root.
      *
      * @param request
      *            the request for which the location should be determined
@@ -181,15 +180,17 @@ public class ServletHelper implements Serializable {
     public static String getContextRootRelativePath(VaadinRequest request) {
         VaadinServletRequest servletRequest = (VaadinServletRequest) request;
         // Generate location from the request by finding how many "../" should
-        // be added to the requested path before we get to the context root
+        // be added to the servlet path before we get to the context root
 
-        String requestedPath = servletRequest.getServletPath();
-        String pathInfo = servletRequest.getPathInfo();
-        if (pathInfo != null) {
-            requestedPath += pathInfo;
+        // Should not take pathinfo into account because the base URI refers to
+        // the servlet path
+
+        String servletPath = servletRequest.getServletPath();
+        assert servletPath != null;
+        if (!servletPath.endsWith("/")) {
+            servletPath += "/";
         }
-
-        return ServletHelper.getCancelingRelativePath(requestedPath);
+        return ServletHelper.getCancelingRelativePath(servletPath);
     }
 
 }
