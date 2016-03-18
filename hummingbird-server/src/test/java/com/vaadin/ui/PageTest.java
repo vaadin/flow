@@ -31,4 +31,9 @@ public class PageTest {
     public void testAddNullJavaScript() {
         page.addJavaScript(null);
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetPageTitleNull() {
+        page.setTitle(null);
+    }
 }

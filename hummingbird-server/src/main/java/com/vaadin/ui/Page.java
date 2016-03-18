@@ -48,6 +48,24 @@ public class Page implements Serializable {
     }
 
     /**
+     * Sets the title for the page. The title is displayed by the browser e.g.
+     * as the title of the browser window or tab.
+     * <p>
+     * To clear the page title, use an empty string. <code>null</code> value is
+     * not supported.
+     *
+     * @param title
+     *            the page title to set, not <code>null</code>
+     */
+    public void setTitle(String title) {
+        if (title == null) {
+            throw new IllegalArgumentException("Cannot set a null page title");
+        }
+
+        ui.getFrameworkData().setPendingPageTitle(title);
+    }
+
+    /**
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
