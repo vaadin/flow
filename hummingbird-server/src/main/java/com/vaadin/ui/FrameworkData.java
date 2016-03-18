@@ -22,7 +22,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -134,7 +136,7 @@ public class FrameworkData implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
-    private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+    private Set<JavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
     private final UI ui;
 
@@ -345,9 +347,21 @@ public class FrameworkData implements Serializable {
             return Collections.emptyList();
         }
 
-        List<JavaScriptInvocation> currentList = pendingJsInvocations;
-        pendingJsInvocations = new ArrayList<>();
+        List<JavaScriptInvocation> currentList = new ArrayList<>(
+                pendingJsInvocations);
+
+        pendingJsInvocations.clear();
         return currentList;
     }
 
+    /**
+     * Gets the pending javascript invocations added with
+     * {@link #addJavaScriptInvocation(JavaScriptInvocation)} after last
+     * {@link #dumpPendingJavaScriptInvocations()}.
+     *
+     * @return the pending javascript invocations, never <code>null</code>
+     */
+    protected Set<JavaScriptInvocation> getPendingJavaScriptInvocations() {
+        return pendingJsInvocations;
+    }
 }

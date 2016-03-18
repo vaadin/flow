@@ -33,8 +33,26 @@ import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
  */
 public class Page implements Serializable {
 
+    /**
+     * Callback method for canceling executable javascript set with
+     * {@link Page#executeJavaScript(String, Object...)}.
+     */
+    @FunctionalInterface
+    public interface ExecutionCanceler extends Serializable {
+        /**
+         * Cancel the javascript execution, if it was not yet sent to the
+         * browser for execution.
+         *
+         * @return <code>true</code> if the execution was be canceled,
+         *         <code>false</code>if not
+         */
+        boolean cancelExecution();
+    }
+
     private final UI ui;
     private final History history;
+
+    private ExecutionCanceler pendingTitleUpdate;
 
     /**
      * Creates a page instance for the given UI.
@@ -45,6 +63,28 @@ public class Page implements Serializable {
     public Page(UI ui) {
         this.ui = ui;
         history = new History(ui);
+    }
+
+    /**
+     * Updates the page title. The title is displayed by the browser e.g. as the
+     * title of the browser window or tab.
+     * <p>
+     * To clear the page title, use an empty string. <code>null</code> is not
+     * supported.
+     *
+     * @param title
+     *            the page title to set, not <code>null</code>
+     */
+    public void updateTitle(String title) {
+        if (title == null) {
+            throw new IllegalArgumentException("Cannot set a null page title");
+        }
+
+        if (pendingTitleUpdate != null) {
+            pendingTitleUpdate.cancelExecution();
+        }
+
+        pendingTitleUpdate = executeJavaScript("document.title = $0", title);
     }
 
     /**
@@ -119,8 +159,10 @@ public class Page implements Serializable {
      *            the JavaScript expression to invoke
      * @param parameters
      *            parameters to pass to the expression
+     * @return a callback for canceling the execution if not yet sent to browser
      */
-    public void executeJavaScript(String expression, Object... parameters) {
+    public ExecutionCanceler executeJavaScript(String expression,
+            Object... parameters) {
         /*
          * To ensure attached elements are actually attached, the parameters
          * won't be serialized until the phase the UIDL message is created. To
@@ -132,8 +174,12 @@ public class Page implements Serializable {
             JsonCodec.encodeWithTypeInfo(argument);
         }
 
-        ui.getFrameworkData().addJavaScriptInvocation(new JavaScriptInvocation(
-                expression, Arrays.asList(parameters)));
+        JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
+                Arrays.asList(parameters));
+        ui.getFrameworkData().addJavaScriptInvocation(invocation);
+
+        return () -> ui.getFrameworkData().getPendingJavaScriptInvocations()
+                .remove(invocation);
     }
 
     /**
