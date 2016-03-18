@@ -55,7 +55,7 @@ import jsinterop.annotations.JsFunction;
 public class BasicElementBinder {
     @FunctionalInterface
     private interface PropertyUser {
-        public void use(MapProperty property);
+        void use(MapProperty property);
     }
 
     /**

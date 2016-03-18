@@ -118,7 +118,7 @@ public class ViewRenderer implements NavigationHandler {
 
     private static <T extends View> T reuseOrCreate(Class<T> type,
             Map<Class<? extends View>, View> availableInstances)
-            throws InstantiationException, IllegalAccessException {
+                    throws InstantiationException, IllegalAccessException {
         T instance = type.cast(availableInstances.remove(type));
         if (instance == null) {
             instance = type.newInstance();

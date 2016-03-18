@@ -39,7 +39,7 @@ public interface JsWeakMap<K, V> {
      *            the value to set
      * @return this map, for chaining.
      */
-    public JsWeakMap<K, V> set(K key, V value);
+    JsWeakMap<K, V> set(K key, V value);
 
     /**
      * Gets the value mapped for the given key. Returns <code>null</code> if
@@ -51,7 +51,7 @@ public interface JsWeakMap<K, V> {
      * @return the value corresponding to the given key; or <code>null</code>
      *         there is no mapping.
      */
-    public V get(K key);
+    V get(K key);
 
     /**
      * Checks whether this map contains a mapping for the given key.
@@ -61,7 +61,7 @@ public interface JsWeakMap<K, V> {
      * @return <code>true</code> if there is a mapping for the key;
      *         <code>false</code> if there is no mapping
      */
-    public boolean has(K key);
+    boolean has(K key);
 
     /**
      * Removes the mapping for a given key.
@@ -72,5 +72,5 @@ public interface JsWeakMap<K, V> {
      *         key prior to calling this method; <code>false</code> if no
      *         mapping was present
      */
-    public boolean delete(K key);
+    boolean delete(K key);
 }

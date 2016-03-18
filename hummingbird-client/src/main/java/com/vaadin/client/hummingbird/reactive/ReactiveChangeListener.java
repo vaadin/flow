@@ -31,5 +31,5 @@ public interface ReactiveChangeListener {
      * @param event
      *            the change event
      */
-    public void onChange(ReactiveChangeEvent event);
+    void onChange(ReactiveChangeEvent event);
 }

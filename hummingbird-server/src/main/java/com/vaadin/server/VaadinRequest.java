@@ -49,7 +49,7 @@ public interface VaadinRequest {
      * @return The paramter value, or <code>null</code> if no parameter with the
      *         given name is present
      */
-    public String getParameter(String parameter);
+    String getParameter(String parameter);
 
     /**
      * Gets all the parameters of the request.
@@ -60,7 +60,7 @@ public interface VaadinRequest {
      *
      * @return A mapping of parameter names to arrays of parameter values
      */
-    public Map<String, String[]> getParameterMap();
+    Map<String, String[]> getParameterMap();
 
     /**
      * Returns the length of the request content that can be read from the input
@@ -70,7 +70,7 @@ public interface VaadinRequest {
      *
      * @return content length in bytes
      */
-    public int getContentLength();
+    int getContentLength();
 
     /**
      * Returns an input stream from which the request content can be read. The
@@ -84,7 +84,7 @@ public interface VaadinRequest {
      * @throws IOException
      *             if the input stream can not be opened
      */
-    public InputStream getInputStream() throws IOException;
+    InputStream getInputStream() throws IOException;
 
     /**
      * Gets a request attribute.
@@ -96,7 +96,7 @@ public interface VaadinRequest {
      *
      * @see javax.servlet.ServletRequest#getAttribute(String)
      */
-    public Object getAttribute(String name);
+    Object getAttribute(String name);
 
     /**
      * Defines a request attribute.
@@ -108,7 +108,7 @@ public interface VaadinRequest {
      *
      * @see javax.servlet.ServletRequest#setAttribute(String, Object)
      */
-    public void setAttribute(String name, Object value);
+    void setAttribute(String name, Object value);
 
     /**
      * Gets the path of the requested resource relative to the application. The
@@ -119,7 +119,7 @@ public interface VaadinRequest {
      *
      * @see javax.servlet.http.HttpServletRequest#getPathInfo()
      */
-    public String getPathInfo();
+    String getPathInfo();
 
     /**
      * Returns the portion of the request URI that indicates the context of the
@@ -130,7 +130,7 @@ public interface VaadinRequest {
      * @return a String specifying the portion of the request URI that indicates
      *         the context of the request
      */
-    public String getContextPath();
+    String getContextPath();
 
     /**
      * Gets the session associated with this request, creating a new if there is
@@ -141,7 +141,7 @@ public interface VaadinRequest {
      *
      * @return the wrapped session for this request
      */
-    public WrappedSession getWrappedSession();
+    WrappedSession getWrappedSession();
 
     /**
      * Gets the session associated with this request, optionally creating a new
@@ -157,7 +157,7 @@ public interface VaadinRequest {
      *
      * @return the wrapped session for this request
      */
-    public WrappedSession getWrappedSession(boolean allowSessionCreation);
+    WrappedSession getWrappedSession(boolean allowSessionCreation);
 
     /**
      * Returns the MIME type of the body of the request, or null if the type is
@@ -169,7 +169,7 @@ public interface VaadinRequest {
      * @see javax.servlet.ServletRequest#getContentType()
      *
      */
-    public String getContentType();
+    String getContentType();
 
     /**
      * Gets locale information from the query, e.g. using the Accept-Language
@@ -179,7 +179,7 @@ public interface VaadinRequest {
      *
      * @see ServletRequest#getLocale()
      */
-    public Locale getLocale();
+    Locale getLocale();
 
     /**
      * Returns the IP address from which the request came. This might also be
@@ -190,7 +190,7 @@ public interface VaadinRequest {
      *
      * @see ServletRequest#getRemoteAddr()
      */
-    public String getRemoteAddr();
+    String getRemoteAddr();
 
     /**
      * Checks whether the request was made using a secure channel, e.g. using
@@ -200,7 +200,7 @@ public interface VaadinRequest {
      *
      * @see ServletRequest#isSecure()
      */
-    public boolean isSecure();
+    boolean isSecure();
 
     /**
      * Gets the value of a request header, e.g. a http header for a
@@ -213,7 +213,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#getHeader(String)
      */
-    public String getHeader(String headerName);
+    String getHeader(String headerName);
 
     /**
      * Gets the vaadin service for the context of this request.
@@ -222,7 +222,7 @@ public interface VaadinRequest {
      *
      * @see VaadinService
      */
-    public VaadinService getService();
+    VaadinService getService();
 
     /**
      * Returns an array containing all of the <code>Cookie</code> objects the
@@ -234,7 +234,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#getCookies()
      */
-    public Cookie[] getCookies();
+    Cookie[] getCookies();
 
     /**
      * Returns the name of the authentication scheme used for the connection
@@ -247,7 +247,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#getAuthType()
      */
-    public String getAuthType();
+    String getAuthType();
 
     /**
      * Returns the login of the user making this request, if the user has been
@@ -260,7 +260,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#getRemoteUser()
      */
-    public String getRemoteUser();
+    String getRemoteUser();
 
     /**
      * Returns a <code>java.security.Principal</code> object containing the name
@@ -273,7 +273,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#getUserPrincipal()
      */
-    public Principal getUserPrincipal();
+    Principal getUserPrincipal();
 
     /**
      * Returns a boolean indicating whether the authenticated user is included
@@ -289,7 +289,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#isUserInRole(String)
      */
-    public boolean isUserInRole(String role);
+    boolean isUserInRole(String role);
 
     /**
      * Removes an attribute from this request. This method is not generally
@@ -301,7 +301,7 @@ public interface VaadinRequest {
      *
      * @see ServletRequest#removeAttribute(String)
      */
-    public void removeAttribute(String name);
+    void removeAttribute(String name);
 
     /**
      * Returns an Enumeration containing the names of the attributes available
@@ -313,7 +313,7 @@ public interface VaadinRequest {
      *
      * @see ServletRequest#getAttributeNames()
      */
-    public Enumeration<String> getAttributeNames();
+    Enumeration<String> getAttributeNames();
 
     /**
      * Returns an Enumeration of Locale objects indicating, in decreasing order
@@ -326,7 +326,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#getLocales()
      */
-    public Enumeration<Locale> getLocales();
+    Enumeration<Locale> getLocales();
 
     /**
      * Returns the fully qualified name of the client or the last proxy that
@@ -339,7 +339,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#getRemoteHost()
      */
-    public String getRemoteHost();
+    String getRemoteHost();
 
     /**
      * Returns the Internet Protocol (IP) source port of the client or last
@@ -350,7 +350,7 @@ public interface VaadinRequest {
      *
      * @see ServletRequest#getRemotePort()
      */
-    public int getRemotePort();
+    int getRemotePort();
 
     /**
      * Returns the name of the character encoding used in the body of this
@@ -362,7 +362,7 @@ public interface VaadinRequest {
      *
      * @see ServletRequest#getCharacterEncoding()
      */
-    public String getCharacterEncoding();
+    String getCharacterEncoding();
 
     /**
      * Retrieves the body of the request as character data using a
@@ -383,7 +383,7 @@ public interface VaadinRequest {
      *
      * @see ServletRequest#getReader()
      */
-    public BufferedReader getReader() throws IOException;
+    BufferedReader getReader() throws IOException;
 
     /**
      * Returns the name of the HTTP method with which this request was made, for
@@ -394,7 +394,7 @@ public interface VaadinRequest {
      *
      * @see HttpServletRequest#getMethod()
      */
-    public String getMethod();
+    String getMethod();
 
     /**
      * Returns the value of the specified request header as a long value that
@@ -417,7 +417,7 @@ public interface VaadinRequest {
      *             If the header value can't be converted to a date
      * @see HttpServletRequest#getDateHeader(String)
      */
-    public long getDateHeader(String name);
+    long getDateHeader(String name);
 
     /**
      * Returns an enumeration of all the header names this request contains. If
@@ -431,7 +431,7 @@ public interface VaadinRequest {
      *         implementation does not allow this method, <code>null</code>
      * @see HttpServletRequest#getHeaderNames()
      */
-    public Enumeration<String> getHeaderNames();
+    Enumeration<String> getHeaderNames();
 
     /**
      * Returns all the values of the specified request header as an Enumeration
@@ -457,6 +457,6 @@ public interface VaadinRequest {
      *         return <code>null</code>
      * @see HttpServletRequest#getHeaders(String)
      */
-    public Enumeration<String> getHeaders(String name);
+    Enumeration<String> getHeaders(String name);
 
 }

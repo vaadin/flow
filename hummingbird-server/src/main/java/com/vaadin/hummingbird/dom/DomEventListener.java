@@ -31,5 +31,5 @@ public interface DomEventListener extends Serializable {
      * @param event
      *            the fired event
      */
-    public void handleEvent(DomEvent event);
+    void handleEvent(DomEvent event);
 }

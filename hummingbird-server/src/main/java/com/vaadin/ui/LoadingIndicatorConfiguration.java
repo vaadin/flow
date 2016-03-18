@@ -31,14 +31,14 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      * @param firstDelay
      *            The first delay (in ms)
      */
-    public void setFirstDelay(int firstDelay);
+    void setFirstDelay(int firstDelay);
 
     /**
      * Returns the delay before the loading indicator is shown.
      *
      * @return The first delay (in ms)
      */
-    public int getFirstDelay();
+    int getFirstDelay();
 
     /**
      * Sets the delay before the loading indicator goes into the "second" state.
@@ -48,7 +48,7 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      * @param secondDelay
      *            The delay before going into the "second" state (in ms)
      */
-    public void setSecondDelay(int secondDelay);
+    void setSecondDelay(int secondDelay);
 
     /**
      * Returns the delay before the loading indicator goes into the "second"
@@ -57,7 +57,7 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      *
      * @return The delay before going into the "second" state (in ms)
      */
-    public int getSecondDelay();
+    int getSecondDelay();
 
     /**
      * Sets the delay before the loading indicator goes into the "third" state.
@@ -67,7 +67,7 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      * @param thirdDelay
      *            The delay before going into the "third" state (in ms)
      */
-    public void setThirdDelay(int thirdDelay);
+    void setThirdDelay(int thirdDelay);
 
     /**
      * Returns the delay before the loading indicator goes into the "third"
@@ -76,5 +76,5 @@ public interface LoadingIndicatorConfiguration extends Serializable {
      *
      * @return The delay before going into the "third" state (in ms)
      */
-    public int getThirdDelay();
+    int getThirdDelay();
 }

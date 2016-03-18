@@ -117,7 +117,7 @@ public class ResourceLoader {
          *            a resource load event with information about the loaded
          *            resource
          */
-        public void onLoad(ResourceLoadEvent event);
+        void onLoad(ResourceLoadEvent event);
 
         /**
          * Notifies this ResourceLoadListener that a resource could not be
@@ -132,7 +132,7 @@ public class ResourceLoader {
          *            a resource load event with information about the resource
          *            that could not be loaded.
          */
-        public void onError(ResourceLoadEvent event);
+        void onError(ResourceLoadEvent event);
     }
 
     private static final ResourceLoader INSTANCE = GWT
@@ -507,12 +507,12 @@ public class ResourceLoader {
                     if (rules === undefined) {
                         rules = sheet.rules;
                     }
-    
+
                     if (rules === null) {
                         // Style sheet loaded, but can't access length because of XSS -> assume there's something there
                         return 1;
                     }
-    
+
                     // Return length so we can distinguish 0 (probably 404 error) from normal case.
                     return rules.length;
                 } catch (err) {

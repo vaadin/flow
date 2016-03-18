@@ -50,7 +50,7 @@ public interface WrappedSession extends Serializable {
      *
      * @see javax.servlet.http.HttpSession#getAttribute(String)
      */
-    public Object getAttribute(String name);
+    Object getAttribute(String name);
 
     /**
      * Saves an attribute value in this session.
@@ -62,7 +62,7 @@ public interface WrappedSession extends Serializable {
      *
      * @see javax.servlet.http.HttpSession#setAttribute(String, Object)
      */
-    public void setAttribute(String name, Object value);
+    void setAttribute(String name, Object value);
 
     /**
      * Gets the current set of attribute names stored in this session.
@@ -71,14 +71,14 @@ public interface WrappedSession extends Serializable {
      *
      * @see HttpSession#getAttributeNames()
      */
-    public Set<String> getAttributeNames();
+    Set<String> getAttributeNames();
 
     /**
      * Invalidates this session then unbinds any objects bound to it.
      *
      * @see HttpSession#invalidate()
      */
-    public void invalidate();
+    void invalidate();
 
     /**
      * Gets a string with a unique identifier for the session.
@@ -87,7 +87,7 @@ public interface WrappedSession extends Serializable {
      *
      * @see HttpSession#getId()
      */
-    public String getId();
+    String getId();
 
     /**
      * Returns the time when this session was created, measured in milliseconds
@@ -100,7 +100,7 @@ public interface WrappedSession extends Serializable {
      *             if this method is called on an invalidated session
      * @see HttpSession#getCreationTime()
      */
-    public long getCreationTime();
+    long getCreationTime();
 
     /**
      * Returns the last time the client sent a request associated with this
@@ -119,7 +119,7 @@ public interface WrappedSession extends Serializable {
      *
      * @see HttpSession#getLastAccessedTime()
      */
-    public long getLastAccessedTime();
+    long getLastAccessedTime();
 
     /**
      * Returns true if the client does not yet know about the session or if the
@@ -133,7 +133,7 @@ public interface WrappedSession extends Serializable {
      *             if this method is called on an invalidated session
      * @see HttpSession#isNew()
      */
-    public boolean isNew();
+    boolean isNew();
 
     /**
      * Removes the object bound with the specified name from this session. If
@@ -146,7 +146,7 @@ public interface WrappedSession extends Serializable {
      *             if this method is called on an invalidated session
      * @see HttpSession#removeAttribute(String)
      */
-    public void removeAttribute(String name);
+    void removeAttribute(String name);
 
     /**
      * Specifies the time, in seconds, between client requests before the
@@ -157,6 +157,6 @@ public interface WrappedSession extends Serializable {
      *            An integer specifying the number of seconds
      * @see HttpSession#setMaxInactiveInterval(int)
      */
-    public void setMaxInactiveInterval(int interval);
+    void setMaxInactiveInterval(int interval);
 
 }

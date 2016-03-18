@@ -29,5 +29,5 @@ public interface MapPropertyAddListener {
      * @param event
      *            the property add event
      */
-    public void onPropertyAdd(MapPropertyAddEvent event);
+    void onPropertyAdd(MapPropertyAddEvent event);
 }

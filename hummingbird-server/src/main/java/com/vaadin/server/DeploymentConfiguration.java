@@ -36,14 +36,14 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return true if in production mode, false otherwise.
      */
-    public boolean isProductionMode();
+    boolean isProductionMode();
 
     /**
      * Returns whether cross-site request forgery protection is enabled.
      *
      * @return true if XSRF protection is enabled, false otherwise.
      */
-    public boolean isXsrfProtectionEnabled();
+    boolean isXsrfProtectionEnabled();
 
     /**
      * Returns whether sync id checking is enabled. The sync id is used to
@@ -54,7 +54,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return <code>true</code> if sync id checking is enabled;
      *         <code>false</code> otherwise
      */
-    public boolean isSyncIdCheckEnabled();
+    boolean isSyncIdCheckEnabled();
 
     /**
      * Returns the number of seconds between heartbeat requests of a UI, or a
@@ -62,7 +62,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return The time between heartbeats.
      */
-    public int getHeartbeatInterval();
+    int getHeartbeatInterval();
 
     /**
      * Returns whether the sending of URL's as GET and POST parameters in
@@ -71,7 +71,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return <code>false</code> if set to false or <code>true</code> otherwise
      */
-    public boolean isSendUrlsAsParameters();
+    boolean isSendUrlsAsParameters();
 
     /**
      * Returns whether a session should be closed when all its open UIs have
@@ -91,7 +91,7 @@ public interface DeploymentConfiguration extends Serializable {
      *         eventually closed; false if heartbeat requests extend UI and
      *         session lifetime indefinitely.
      */
-    public boolean isCloseIdleSessions();
+    boolean isCloseIdleSessions();
 
     /**
      * Returns the mode of bidirectional ("push") client-server communication
@@ -99,7 +99,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return The push mode in use.
      */
-    public PushMode getPushMode();
+    PushMode getPushMode();
 
     /**
      * Gets the properties configured for the deployment, e.g. as init
@@ -107,7 +107,7 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return properties for the application.
      */
-    public Properties getInitParameters();
+    Properties getInitParameters();
 
     /**
      * Gets a configured property. The properties are typically read from e.g.
@@ -122,7 +122,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the property value, or the passed default value if no property
      *         value is found
      */
-    public String getApplicationOrSystemProperty(String propertyName,
+    String getApplicationOrSystemProperty(String propertyName,
             String defaultValue);
 
     /**
@@ -132,16 +132,16 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @since 7.4
      */
-    public String getUIClassName();
+    String getUIClassName();
 
     /**
      * Gets the {@link RouterConfigurator} class configuration option value.
-     * 
+     *
      * @return the router configurator class name
      *
      * @since
      */
-    public String getRouterConfiguratorClassName();
+    String getRouterConfiguratorClassName();
 
     /**
      * Gets class loader configuration option value.
@@ -149,6 +149,6 @@ public interface DeploymentConfiguration extends Serializable {
      * @return the configured class loader name
      * @since 7.4
      */
-    public String getClassLoaderName();
+    String getClassLoaderName();
 
 }

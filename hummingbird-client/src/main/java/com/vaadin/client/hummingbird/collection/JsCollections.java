@@ -50,7 +50,7 @@ public class JsCollections {
          * @param value
          *            the value
          */
-        public void accept(V value);
+        void accept(V value);
     }
 
     private JsCollections() {
