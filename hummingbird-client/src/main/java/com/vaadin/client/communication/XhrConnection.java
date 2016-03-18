@@ -184,8 +184,7 @@ public class XhrConnection {
      * @return The URI to use for server messages.
      */
     protected String getUri() {
-        String uri = registry.getURIResolver()
-                .resolveVaadinUri(ApplicationConstants.SERVICE_PROTOCOL_PREFIX);
+        String uri = registry.getApplicationConfiguration().getServiceUrl();
         uri = SharedUtil.addGetParameter(uri,
                 ApplicationConstants.REQUEST_TYPE_PARAMETER,
                 ApplicationConstants.REQUEST_TYPE_UIDL);
