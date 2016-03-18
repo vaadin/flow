@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -136,6 +137,11 @@ public class FrameworkData implements Serializable {
 
     private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
+    /**
+     * The new page title to set on next response.
+     */
+    private String pendingPageTitle;
+
     private final UI ui;
 
     /**
@@ -244,6 +250,26 @@ public class FrameworkData implements Serializable {
         lastHeartbeatTimestamp = lastHeartbeat;
     }
 
+    /**
+     * Sets the pending page title, which will be updated when next response is
+     * written.
+     *
+     * @param pendingPageTitle
+     *            the page title to set
+     */
+    public void setPendingPageTitle(String pendingPageTitle) {
+        this.pendingPageTitle = pendingPageTitle;
+    }
+
+    /**
+     * Gets the pending page title or <code>null</code> if no update.
+     *
+     * @return the pending page title or <code>null</code> if no update to title
+     */
+    public String getPendingPageTitle() {
+        return pendingPageTitle;
+    }
+
     @SuppressWarnings("unchecked")
     private static Class<? extends Namespace>[] getRootNodeNamespaces() {
         // Start with all element namespaces
@@ -341,11 +367,20 @@ public class FrameworkData implements Serializable {
      * @return a list of pending JavaScript invocations
      */
     public List<JavaScriptInvocation> dumpPendingJavaScriptInvocations() {
-        if (pendingJsInvocations.isEmpty()) {
+        if (pendingJsInvocations.isEmpty() && pendingPageTitle == null) {
             return Collections.emptyList();
         }
 
         List<JavaScriptInvocation> currentList = pendingJsInvocations;
+
+        // first insert possible page title update
+        if (pendingPageTitle != null) {
+            currentList.add(0, new JavaScriptInvocation("document.title = $0",
+                    Arrays.asList(pendingPageTitle)));
+
+            pendingPageTitle = null;
+        }
+
         pendingJsInvocations = new ArrayList<>();
         return currentList;
     }
