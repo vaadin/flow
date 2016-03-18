@@ -121,6 +121,10 @@ public class Element implements Serializable {
             Set<String> classList = element.getClassList();
             classList.clear();
 
+            if ("".equals(value)) {
+                return;
+            }
+
             String[] parts = value.split("\\s+");
             classList.addAll(Arrays.asList(parts));
         }
