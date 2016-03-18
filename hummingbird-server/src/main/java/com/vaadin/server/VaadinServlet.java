@@ -222,7 +222,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     protected void service(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         // Handle context root request without trailing slash, see #9921
-        if (handleContextRootWithoutSlash(request, response)) {
+        if (handleContextOrServletRootWithoutSlash(request, response)) {
             return;
         }
 
@@ -262,8 +262,9 @@ public class VaadinServlet extends HttpServlet implements Constants {
      * @throws IOException
      *             If an input or output exception occurs
      */
-    protected boolean handleContextRootWithoutSlash(HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+    protected boolean handleContextOrServletRootWithoutSlash(
+            HttpServletRequest request, HttpServletResponse response)
+                    throws IOException {
         // Query parameters like "?a=b" are handled by the servlet container but
         // path parameter (e.g. ;jsessionid=) needs to be handled here
         String location = request.getRequestURI();
@@ -273,7 +274,6 @@ public class VaadinServlet extends HttpServlet implements Constants {
                 location.length() - lastPathParameter.length());
 
         if ((request.getPathInfo() == null || "/".equals(request.getPathInfo()))
-                && "".equals(request.getServletPath())
                 && !location.endsWith("/")) {
             /*
              * Path info is for the root but request URI doesn't end with a
