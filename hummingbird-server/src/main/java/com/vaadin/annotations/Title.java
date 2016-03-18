@@ -34,5 +34,5 @@ public @interface Title {
      *
      * @return a page title string
      */
-    public String value();
+    String value();
 }

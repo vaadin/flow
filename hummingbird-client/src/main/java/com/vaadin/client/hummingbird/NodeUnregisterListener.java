@@ -29,5 +29,5 @@ public interface NodeUnregisterListener {
      * @param event
      *            the node unregister event
      */
-    public void onUnregister(NodeUnregisterEvent event);
+    void onUnregister(NodeUnregisterEvent event);
 }

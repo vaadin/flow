@@ -29,5 +29,5 @@ public interface ListSpliceListener {
      * @param event
      *            the list splice event
      */
-    public void onSplice(ListSpliceEvent event);
+    void onSplice(ListSpliceEvent event);
 }

@@ -29,5 +29,5 @@ public interface InvalidateListener {
      * @param event
      *            the invalidate event
      */
-    public void onInvalidate(InvalidateEvent event);
+    void onInvalidate(InvalidateEvent event);
 }

@@ -26,11 +26,11 @@ public @interface CustomDeploymentConfiguration {
 
     @Target(value = ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
-    public @interface Conf {
-        public String name();
+    @interface Conf {
+        String name();
 
-        public String value();
+        String value();
     }
 
-    public CustomDeploymentConfiguration.Conf[] value();
+    CustomDeploymentConfiguration.Conf[] value();
 }

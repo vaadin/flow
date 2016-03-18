@@ -43,5 +43,5 @@ public @interface Viewport {
      *
      * @return the viewport tag content
      */
-    public String value();
+    String value();
 }

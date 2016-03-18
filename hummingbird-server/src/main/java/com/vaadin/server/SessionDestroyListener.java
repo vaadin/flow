@@ -34,5 +34,5 @@ public interface SessionDestroyListener extends Serializable {
      * @param event
      *            the event with details about the destroyed session
      */
-    public void sessionDestroy(SessionDestroyEvent event);
+    void sessionDestroy(SessionDestroyEvent event);
 }

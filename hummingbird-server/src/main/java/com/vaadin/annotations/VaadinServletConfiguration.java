@@ -57,13 +57,13 @@ public @interface VaadinServletConfiguration {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     @Documented
-    public @interface InitParameterName {
+    @interface InitParameterName {
         /**
          * The name of the init parameter that the annotated method controls.
          *
          * @return the parameter name
          */
-        public String value();
+        String value();
     }
 
     /**
@@ -74,7 +74,7 @@ public @interface VaadinServletConfiguration {
      * @see DeploymentConfiguration#isProductionMode()
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_PRODUCTION_MODE)
-    public boolean productionMode();
+    boolean productionMode();
 
     /**
      * Gets the default UI class to use for the servlet.
@@ -82,7 +82,7 @@ public @interface VaadinServletConfiguration {
      * @return the default UI class
      */
     @InitParameterName(VaadinSession.UI_PARAMETER)
-    public Class<? extends UI> ui();
+    Class<? extends UI> ui();
 
     /**
      * Gets the {@link RouterConfigurator} class to use for configuring the
@@ -92,7 +92,7 @@ public @interface VaadinServletConfiguration {
      * @return the router configurator class
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_ROUTER_CONFIGURATOR)
-    public Class<? extends RouterConfigurator> routerConfigurator() default RouterConfigurator.class;
+    Class<? extends RouterConfigurator> routerConfigurator() default RouterConfigurator.class;
 
     /**
      * The number of seconds between heartbeat requests of a UI, or a
@@ -118,5 +118,5 @@ public @interface VaadinServletConfiguration {
      * @see DeploymentConfiguration#isCloseIdleSessions()
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS)
-    public boolean closeIdleSessions() default DefaultDeploymentConfiguration.DEFAULT_CLOSE_IDLE_SESSIONS;
+    boolean closeIdleSessions() default DefaultDeploymentConfiguration.DEFAULT_CLOSE_IDLE_SESSIONS;
 }

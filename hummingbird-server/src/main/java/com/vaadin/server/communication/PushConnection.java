@@ -42,19 +42,19 @@ public interface PushConnection extends Serializable {
      * <p>
      * This is internal API; please use {@link UI#push()} instead.
      */
-    public void push();
+    void push();
 
     /**
      * Closes the connection. Cannot be called if {@link #isConnected()} is
      * false.
      */
-    public void disconnect();
+    void disconnect();
 
     /**
      * Returns whether this connection is currently open.
      *
      * @return true if the connection is open, false otherwise
      */
-    public boolean isConnected();
+    boolean isConnected();
 
 }

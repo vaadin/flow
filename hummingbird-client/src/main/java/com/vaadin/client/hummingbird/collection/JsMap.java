@@ -51,7 +51,7 @@ public interface JsMap<K, V> {
          * @param key
          *            the key
          */
-        public void accept(V value, K key);
+        void accept(V value, K key);
     }
 
     /**
@@ -63,7 +63,7 @@ public interface JsMap<K, V> {
      *            the value to set
      * @return this map, for chaining.
      */
-    public JsMap<K, V> set(K key, V value);
+    JsMap<K, V> set(K key, V value);
 
     /**
      * Gets the value mapped for the given key. Returns <code>null</code> if
@@ -75,7 +75,7 @@ public interface JsMap<K, V> {
      * @return the value corresponding to the given key; or <code>null</code>
      *         there is no mapping.
      */
-    public V get(K key);
+    V get(K key);
 
     /**
      * Checks whether this map contains a mapping for the given key.
@@ -85,7 +85,7 @@ public interface JsMap<K, V> {
      * @return <code>true</code> if there is a mapping for the key;
      *         <code>false</code> if there is no mapping
      */
-    public boolean has(K key);
+    boolean has(K key);
 
     /**
      * Removes the mapping for a given key.
@@ -96,12 +96,12 @@ public interface JsMap<K, V> {
      *         key prior to calling this method; <code>false</code> if no
      *         mapping was present
      */
-    public boolean delete(K key);
+    boolean delete(K key);
 
     /**
      * Removes all mappings from this map.
      */
-    public void clear();
+    void clear();
 
     /**
      * Invokes the provided callback for each mapping in this map.
@@ -111,7 +111,7 @@ public interface JsMap<K, V> {
      * @param callback
      *            the callback to invoke for each mapping
      */
-    public void forEach(ForEachCallback<K, V> callback);
+    void forEach(ForEachCallback<K, V> callback);
 
     /**
      * Gets the number of entries in this map.
@@ -119,6 +119,6 @@ public interface JsMap<K, V> {
      * @return the entry count
      */
     @JsProperty(name = "size")
-    public int size();
+    int size();
 
 }
