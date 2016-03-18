@@ -190,7 +190,7 @@ public class AtmospherePushConnection implements PushConnection {
         if (getPushConfiguration().getPushUrl() != null) {
             url = getPushConfiguration().getPushUrl();
         } else {
-            url = ApplicationConstants.SERVICE_PROTOCOL_PREFIX;
+            url = registry.getApplicationConfiguration().getServiceUrl();
         }
         runWhenAtmosphereLoaded(
                 () -> Scheduler.get().scheduleDeferred(this::connect));

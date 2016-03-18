@@ -59,7 +59,7 @@ import elemental.json.impl.JsonUtil;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public abstract class BootstrapHandler extends SynchronizedRequestHandler {
+public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "vaadin.gwtStatsEvents = [];"
@@ -211,27 +211,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             return root;
         }
 
-        @Override
-        protected String getServiceUrl() {
-            String serviceUrl = getConfigOrNull(
-                    ApplicationConstants.SERVICE_URL);
-            if (serviceUrl == null) {
-                return "./";
-            } else if (!serviceUrl.endsWith("/")) {
-                serviceUrl += "/";
-            }
-            return serviceUrl;
-        }
-
-        private String getConfigOrNull(String name) {
-            JsonObject parameters = context.getApplicationParameters();
-            if (parameters.hasKey(name)) {
-                return parameters.getString(name);
-            } else {
-                return null;
-            }
-        }
-
     }
 
     @Override
@@ -296,9 +275,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
                 .attr(CONTENT_ATTRIBUTE, "IE=11;chrome=1");
 
-        head.appendElement("base").attr("href",
-                context.getUriResolver().resolveVaadinUri(
-                        ApplicationConstants.SERVICE_PROTOCOL_PREFIX));
+        head.appendElement("base").attr("href", getServiceUrl(context));
 
         Class<? extends UI> uiClass = context.getUI().getClass();
 
@@ -501,11 +478,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         appConfig.put("heartbeatInterval", vaadinService
                 .getDeploymentConfiguration().getHeartbeatInterval());
 
-        String serviceUrl = getServiceUrl(context);
-        if (serviceUrl != null) {
-            appConfig.put(ApplicationConstants.SERVICE_URL, serviceUrl);
-        }
-
         boolean sendUrlsAsParameters = vaadinService
                 .getDeploymentConfiguration().isSendUrlsAsParameters();
         if (!sendUrlsAsParameters) {
@@ -515,7 +487,26 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return appConfig;
     }
 
-    protected abstract String getServiceUrl(BootstrapContext context);
+    /**
+     * Gets the service URL as a URL relative to the request URI
+     *
+     * @param context
+     *            the bootstrap context
+     * @return the relative service URL
+     */
+    protected static String getServiceUrl(BootstrapContext context) {
+        String pathInfo = context.getRequest().getPathInfo();
+        if (pathInfo == null) {
+            return ".";
+        } else {
+            /*
+             * Make a relative URL to the servlet by adding one ../ for each
+             * path segment in pathInfo (i.e. the part of the requested path
+             * that comes after the servlet mapping)
+             */
+            return ServletHelper.getCancelingRelativePath(pathInfo);
+        }
+    }
 
     protected UI createAndInitUI(Class<? extends UI> uiClass,
             VaadinRequest request, VaadinSession session) {
