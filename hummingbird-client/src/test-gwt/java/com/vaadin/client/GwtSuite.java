@@ -1,8 +1,9 @@
 package com.vaadin.client;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
-import com.vaadin.client.hummingbird.GwtTreeChangeProcessorTest;
+import com.vaadin.client.communication.GwtDefaultReconnectDialogTest;
 import com.vaadin.client.hummingbird.GwtRouterLinkHandlerTest;
+import com.vaadin.client.hummingbird.GwtTreeChangeProcessorTest;
 import com.vaadin.client.hummingbird.collection.GwtBasicElementBinderTest;
 import com.vaadin.client.hummingbird.collection.GwtJsArrayTest;
 import com.vaadin.client.hummingbird.collection.GwtJsMapTest;
@@ -29,6 +30,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtTreeChangeProcessorTest.class);
         suite.addTestSuite(GwtNativeFunctionTest.class);
         suite.addTestSuite(GwtRouterLinkHandlerTest.class);
+        suite.addTestSuite(GwtDefaultReconnectDialogTest.class);
         return suite;
     }
 }
