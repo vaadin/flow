@@ -17,8 +17,6 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.server.VaadinService;
-
 /**
  * Utility for translating special Vaadin URIs into URLs usable by the browser.
  * This is an abstract class performing the main logic in
@@ -37,9 +35,6 @@ public abstract class VaadinUriResolver {
      * Translates a Vaadin URI to a URL that can be loaded by the browser. The
      * following URI schemes are supported:
      * <ul>
-     * <li><code>{@value ApplicationConstants#SERVICE_PROTOCOL_PREFIX}</code> -
-     * resolves to a URL that will be routed to the current
-     * {@link VaadinService}.</li>
      * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
      * resolves to the application context root</li>
      * </ul>
@@ -57,12 +52,6 @@ public abstract class VaadinUriResolver {
         }
 
         if (vaadinUri
-                .startsWith(ApplicationConstants.SERVICE_PROTOCOL_PREFIX)) {
-            String relativeUrl = vaadinUri.substring(
-                    ApplicationConstants.SERVICE_PROTOCOL_PREFIX.length());
-            vaadinUri = getServiceUrl() + relativeUrl;
-        }
-        if (vaadinUri
                 .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
@@ -78,13 +67,5 @@ public abstract class VaadinUriResolver {
      * @return the context root URL
      */
     protected abstract String getContextRootUrl();
-
-    /**
-     * Gets the URL handled by {@link com.vaadin.server.VaadinService
-     * VaadinService} to handle application requests.
-     *
-     * @return the service URL
-     */
-    protected abstract String getServiceUrl();
 
 }

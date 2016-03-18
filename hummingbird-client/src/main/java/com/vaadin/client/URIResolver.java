@@ -46,11 +46,6 @@ public class URIResolver extends VaadinUriResolver {
         return root;
     }
 
-    @Override
-    protected String getServiceUrl() {
-        return registry.getApplicationConfiguration().getServiceUrl();
-    }
-
     /**
      * Returns the current document location as relative to the base uri of the
      * document.
