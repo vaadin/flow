@@ -26,6 +26,8 @@ target=$(cat PR_DATA|jq .base.ref|cut -d\" -f 2)
 head=$(cat PR_DATA|jq .head.sha|cut -d\" -f 2)
 
 BRANCH=pr-$PR
+# Move somewhere just to ensure we are not on $BRANCH
+git checkout origin/master
 git branch -D $BRANCH
 git fetch && git checkout origin/$target && git checkout -b $BRANCH
 if [ "$?" != "0" ]
@@ -37,6 +39,8 @@ fi
 commits=$(git log origin/$target..$head --reverse --oneline|cut -d' ' -f 1)
 prtitle=$(cat PR_DATA|jq .title|sed "s/^.//"|sed "s/.$//")
 
+# Generate commit message using author from first commit and by combining all non-merge commits
+# This generates a somewhat cleaner message than what merge --squash automatically creates
 echo "$prtitle" > COMMIT_MSG
 echo >> COMMIT_MSG
 AUTHOR=
@@ -48,26 +52,22 @@ do
 	fi
 	git show --summary $commit|grep "^Merge: " > /dev/null
 	merge=$?
+	# skip merge commit messages
 	if [ "$merge" == 1 ]
 	then
-		# skip merges
-		echo "Picking $(git show -s --oneline $commit)"
-		echo "* $(git show -s $commit --pretty='%B')" >> COMMIT_MSG
-
-		git cherry-pick -n $commit
-		if [ "$?" != "0" ]
+		# Skip if the message matches the PR title
+		commitMsg=$(git show -s $commit --pretty='%B')
+		if [ "$prtitle" != "$commitMsg" ]
 		then
-			echo "Cherry-pick of $commit failed, aborting"
-			exit 4
+			echo "* $commitMsg" >> COMMIT_MSG
 		fi
-	else
-		echo "Skipping merge commit $(git show -s --oneline $commit)"
 	fi
 done
 
 echo >> COMMIT_MSG
 echo "Closes #$PR" >> COMMIT_MSG
 
+git merge --squash $head
 git commit --author "$AUTHOR"  -F COMMIT_MSG  --edit
 
 echo
