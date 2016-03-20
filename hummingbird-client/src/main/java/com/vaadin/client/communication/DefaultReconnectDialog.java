@@ -131,8 +131,9 @@ public class DefaultReconnectDialog implements ReconnectDialog {
 
     @Override
     public void hide() {
-        root.getParentElement().removeChild(root);
-
+        if (isVisible()) {
+            root.getParentElement().removeChild(root);
+        }
     }
 
     @Override
