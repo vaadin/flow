@@ -23,8 +23,10 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.ErrorNavigationHandler;
 import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
@@ -32,7 +34,6 @@ import com.vaadin.hummingbird.router.Resolver;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.ViewRenderer;
 import com.vaadin.hummingbird.uitest.ui.RouterTestServlet.MyRouterConfigurator;
 import com.vaadin.server.VaadinServlet;
@@ -64,14 +65,14 @@ public class RouterTestServlet extends VaadinServlet {
                             .findAny();
                     return res.map(
                             new Function<Class<? extends View>, NavigationHandler>() {
-                                @Override
-                                public NavigationHandler apply(
-                                        Class<? extends View> c) {
-                                    return new ViewRenderer(c, Layout.class);
-                                }
-                            }).orElseGet(() -> {
-                                return new ErrorNavigationHandler(404);
-                            });
+                        @Override
+                        public NavigationHandler apply(
+                                Class<? extends View> c) {
+                            return new ViewRenderer(c, Layout.class);
+                        }
+                    }).orElseGet(() -> {
+                        return new ErrorNavigationHandler(404);
+                    });
                 }
             });
 
@@ -85,11 +86,12 @@ public class RouterTestServlet extends VaadinServlet {
         private Element sessionId;
 
         public Layout() {
-            element = new Element("div");
-            sessionId = new Element("div").setAttribute("id", "sessionId");
+            element = ElementFactory.createDiv();
+            sessionId = ElementFactory.createDiv().setAttribute("id",
+                    "sessionId");
             element.appendChild(sessionId);
-            element.appendChild(new Element("div"));
-            element.appendChild(new Element("hr"));
+            element.appendChild(ElementFactory.createDiv());
+            element.appendChild(ElementFactory.createHr());
         }
 
         @Override
@@ -125,20 +127,18 @@ public class RouterTestServlet extends VaadinServlet {
         private Element element;
 
         protected MyAbstractView() {
-            element = new Element("div");
+            element = ElementFactory.createDiv();
             getViewClasses().forEach(c -> {
                 String viewName = c.getSimpleName();
-                Element div = new Element("div");
+                Element div = ElementFactory.createDiv();
                 element.appendChild(div);
                 if (getClass() == c) {
-                    div.appendChild(new Element("b").setTextContent(viewName));
+                    div.appendChild(ElementFactory.createStrong(viewName));
                 } else {
-                    div.appendChild(
-                            new Element("a").setAttribute("href", viewName)
-                                    .setAttribute("routerlink", "")
-                                    .setTextContent(viewName));
+                    div.appendChild(ElementFactory.createRouterLink(viewName,
+                            viewName));
                 }
-                div.appendChild(new Element("hr"));
+                div.appendChild(ElementFactory.createHr());
             });
         }
 

@@ -24,11 +24,12 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 
 public class ViewRendererTest {
 
     public static class TestView implements View {
-        private Element element = new Element("div");
+        private Element element = ElementFactory.createDiv();
         private List<Location> locations = new ArrayList<>();
 
         @Override

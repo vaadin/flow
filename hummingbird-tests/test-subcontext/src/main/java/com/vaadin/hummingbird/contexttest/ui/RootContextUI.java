@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.contexttest.ui;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 
@@ -34,8 +34,8 @@ public class RootContextUI extends DependencyUI {
 
     @Override
     protected void init(VaadinRequest request) {
-        getElement().appendChild(new Element("div").setAttribute("id", "root")
-                .setTextContent("Root Context UI"));
+        getElement().appendChild(ElementFactory.createDiv("Root Context UI")
+                .setAttribute("id", "root"));
         super.init(request);
     }
 

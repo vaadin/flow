@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.uitest.ui.push;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 
 public class BasicPollUI extends ClientServerCounterUI {
@@ -23,8 +24,8 @@ public class BasicPollUI extends ClientServerCounterUI {
     public static final String STOP_POLLING_BUTTON = "stopPolling";
     public static final String START_POLLING_BUTTON = "startPolling";
 
-    Element pollInterval = new Element("div");
-    Element pollCounter = new Element("div");
+    Element pollInterval = ElementFactory.createDiv();
+    Element pollCounter = ElementFactory.createDiv("Polls received: 0");
     int pollCount = 0;
 
     @Override
@@ -37,26 +38,23 @@ public class BasicPollUI extends ClientServerCounterUI {
         addPollListener(e -> {
             pollCounter.setTextContent("Polls received: " + (++pollCount));
         });
-        pollCounter.setTextContent("Polls received: 0");
 
-        Element stopPolling = new Element("button").setAttribute("id",
-                STOP_POLLING_BUTTON);
-        stopPolling.setTextContent("Stop polling");
+        Element stopPolling = ElementFactory.createButton("Stop polling")
+                .setAttribute("id", STOP_POLLING_BUTTON);
         stopPolling.addEventListener("click", e -> {
             setPollInterval(-1);
             updatePollIntervalText();
         });
-        Element startPolling = new Element("button").setAttribute("id",
-                START_POLLING_BUTTON);
-        startPolling.setTextContent("Start polling");
+        Element startPolling = ElementFactory.createButton("Start polling")
+                .setAttribute("id", START_POLLING_BUTTON);
         startPolling.addEventListener("click", e -> {
             setPollInterval(500);
             updatePollIntervalText();
         });
 
         spacer();
-        getElement().appendChild(
-                new Element("div").appendChild(startPolling, stopPolling));
+        getElement().appendChild(ElementFactory.createDiv()
+                .appendChild(startPolling, stopPolling));
 
         updatePollIntervalText();
     }
