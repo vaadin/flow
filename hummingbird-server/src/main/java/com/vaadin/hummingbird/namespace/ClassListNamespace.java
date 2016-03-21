@@ -18,9 +18,9 @@ package com.vaadin.hummingbird.namespace;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.ClassList;
 
 /**
  * Namespace for CSS class names for an element.
@@ -34,7 +34,7 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
      * Provides access to the namespace contents as a set of strings.
      */
     private static class ClassListSetView extends AbstractSet<String>
-            implements Serializable {
+            implements ClassList, Serializable {
 
         private ClassListNamespace namespace;
 
@@ -69,6 +69,15 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
             verifyClassName(o);
             // Uses iterator() which supports proper remove()
             return super.remove(o);
+        }
+
+        @Override
+        public boolean set(String className, boolean set) {
+            if (set) {
+                return add(className);
+            } else {
+                return remove(className);
+            }
         }
 
         @Override
@@ -119,7 +128,7 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
      *
      * @return a set view
      */
-    public Set<String> getAsSet() {
+    public ClassList getClassList() {
         return new ClassListSetView(this);
     }
 }
