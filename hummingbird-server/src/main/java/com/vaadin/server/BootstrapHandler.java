@@ -115,7 +115,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    protected class BootstrapContext {
+    protected static class BootstrapContext {
 
         private final VaadinRequest request;
         private final VaadinResponse response;
@@ -182,7 +182,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         public JsonObject getApplicationParameters() {
             if (applicationParameters == null) {
-                applicationParameters = BootstrapHandler.this
+                applicationParameters = BootstrapHandler
                         .getApplicationParameters(this);
             }
 
@@ -287,10 +287,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement(META_TAG).attr("name", "viewport")
                     .attr(CONTENT_ATTRIBUTE, viewportContent);
         }
-        String title = AnnotationReader.getPageTitle(uiClass);
-        if (title != null) {
-            head.appendElement("title").appendText(title);
+
+        Optional<String> title = resolvePageTitle(context);
+        if (title.isPresent()) {
+            head.appendElement("title").appendText(title.get());
         }
+
         Element styles = head.appendElement("style").attr("type", "text/css");
         styles.appendText("html, body {height:100%;margin:0;}");
         // Basic reconnect dialog style just to make it visible and outside of
@@ -411,7 +413,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .attr("src", getClientEngineUrl(context));
     }
 
-    protected JsonObject getApplicationParameters(BootstrapContext context) {
+    protected static JsonObject getApplicationParameters(
+            BootstrapContext context) {
         VaadinRequest request = context.getRequest();
         VaadinSession session = context.getSession();
         VaadinService vaadinService = request.getService();
@@ -510,6 +513,31 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
              */
             return ServletHelper.getCancelingRelativePath(pathInfo);
         }
+    }
+
+    /**
+     * Resolves the initial page title for the given bootstrap context and
+     * cancels any pending JS execution for it.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return the optional initial page title
+     */
+    protected static Optional<String> resolvePageTitle(
+            BootstrapContext context) {
+        // check for explicitly set page title, eg. by PageTitleGenerator or
+        // View level title
+        String title = context.getUI().getFrameworkData().getTitle();
+        if (title == null) {
+            // check for Title annotation in UI
+            title = AnnotationReader.getPageTitle(context.getUI().getClass());
+            if (title != null) {
+                context.getUI().getFrameworkData().setTitle(title);
+            }
+        }
+        // cancel the unnecessary execute javascript
+        context.getUI().getFrameworkData().cancelPendingTitleUpdate();
+        return Optional.ofNullable(title);
     }
 
     protected UI createAndInitUI(Class<? extends UI> uiClass,
