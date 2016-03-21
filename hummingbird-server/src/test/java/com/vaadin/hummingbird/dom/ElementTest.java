@@ -1146,6 +1146,25 @@ public class ElementTest {
         new Element("div").getClassList().contains("foo bar");
     }
 
+    @Test
+    public void classListSetAdd() {
+        Element e = new Element("div");
+        Assert.assertTrue(e.getClassList().set("foo", true));
+        Assert.assertEquals("foo", e.getAttribute("class"));
+        Assert.assertFalse(e.getClassList().set("foo", true));
+        Assert.assertEquals("foo", e.getAttribute("class"));
+    }
+
+    @Test
+    public void classListSetRemove() {
+        Element e = new Element("div");
+        e.setAttribute("class", "foo bar");
+        Assert.assertTrue(e.getClassList().set("foo", false));
+        Assert.assertEquals("bar", e.getAttribute("class"));
+        Assert.assertFalse(e.getClassList().set("foo", false));
+        Assert.assertEquals("bar", e.getAttribute("class"));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testClassListProperty_throws() {
         new Element("div").setProperty("classList", "foo");

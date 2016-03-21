@@ -299,7 +299,7 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the class list
      */
-    Set<String> getClassList(StateNode node);
+    ClassList getClassList(StateNode node);
 
     /**
      * Returns a style instance for managing element inline styles.

@@ -1157,7 +1157,7 @@ public class Element implements Serializable {
      *
      * @return a list of class names
      */
-    public Set<String> getClassList() {
+    public ClassList getClassList() {
         return stateProvider.getClassList(node);
     }
 

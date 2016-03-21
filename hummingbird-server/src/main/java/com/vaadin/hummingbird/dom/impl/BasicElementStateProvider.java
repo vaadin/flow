@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.ClassList;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
@@ -338,8 +339,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Set<String> getClassList(StateNode node) {
-        return node.getNamespace(ClassListNamespace.class).getAsSet();
+    public ClassList getClassList(StateNode node) {
+        return node.getNamespace(ClassListNamespace.class).getClassList();
     }
 
     @Override
