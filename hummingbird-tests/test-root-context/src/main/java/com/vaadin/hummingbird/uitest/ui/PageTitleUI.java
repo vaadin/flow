@@ -18,15 +18,15 @@ public class PageTitleUI extends UI {
         updateButton.setAttribute("id", "button");
         updateButton.setTextContent("Update page title");
         updateButton.addEventListener("click", e -> {
-            getPage().updateTitle(input.getProperty("value"));
+            getPage().setTitle(input.getProperty("value"));
         });
 
         Element overrideButton = new Element("div");
         overrideButton.setAttribute("id", "override");
         overrideButton.setTextContent("Triggers two updates");
         overrideButton.addEventListener("click", e -> {
-            getPage().updateTitle(input.getProperty("value"));
-            getPage().updateTitle("OVERRIDDEN");
+            getPage().setTitle(input.getProperty("value"));
+            getPage().setTitle("OVERRIDDEN");
         });
 
         getElement().appendChild(input, updateButton, overrideButton);
