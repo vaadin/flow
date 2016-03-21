@@ -306,4 +306,5 @@ public class StateNode implements Serializable {
             namespaces.values().forEach(n -> n.collectChanges(collector));
         }
     }
+
 }

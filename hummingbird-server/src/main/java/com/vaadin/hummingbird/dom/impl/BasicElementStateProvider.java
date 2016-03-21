@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.StreamResource;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.ClassList;
 import com.vaadin.hummingbird.dom.DomEventListener;
@@ -39,6 +40,7 @@ import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.namespace.StreamResourceNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 
 import elemental.json.JsonValue;
@@ -66,7 +68,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementChildrenNamespace.class, ElementPropertyNamespace.class,
             ElementListenersNamespace.class, ClassListNamespace.class,
             ElementStylePropertyNamespace.class,
-            SynchronizedPropertiesNamespace.class };
+            SynchronizedPropertiesNamespace.class,
+            StreamResourceNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -384,4 +387,16 @@ public class BasicElementStateProvider implements ElementStateProvider {
                 .getSynchronizedPropertiesEvents();
     }
 
+    @Override
+    public StreamResource getResourceProperty(StateNode node, String property) {
+        return node.getNamespace(StreamResourceNamespace.class)
+                .getResource(property);
+    }
+
+    @Override
+    public void setResourceProperty(StateNode node, String property,
+            StreamResource resource) {
+        node.getNamespace(StreamResourceNamespace.class).setResource(property,
+                resource);
+    }
 }

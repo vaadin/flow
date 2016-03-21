@@ -17,9 +17,12 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.EventObject;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +46,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
+import com.vaadin.server.communication.StreamResourceWrapper;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.util.CurrentInstance;
 
@@ -104,6 +108,8 @@ public abstract class UI implements Serializable, PollNotifier {
     private final FrameworkData frameworkData = new FrameworkData(this);
 
     private final Page page = new Page(this);
+
+    private final WeakHashMap<StreamResourceWrapper, Void> resources = new WeakHashMap<>();
 
     /**
      * Creates a new empty UI.
@@ -728,5 +734,36 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     public Page getPage() {
         return page;
+    }
+
+    public void addStreamResources(
+            Collection<StreamResourceWrapper> collection) {
+        collection.stream().forEach(resource -> resources.put(resource, null));
+    }
+
+    public void removeStreamResource(
+            Collection<StreamResourceWrapper> collection) {
+        resources.keySet().removeAll(collection);
+    }
+
+    public Collection<StreamResourceWrapper> getResources() {
+        for (Iterator<StreamResourceWrapper> iterator = resources.keySet()
+                .iterator(); iterator.hasNext();) {
+            StreamResourceWrapper wrapper = iterator.next();
+            if (wrapper == null) {
+                iterator.remove();
+                continue;
+            }
+            StateNode node = wrapper.getNode().get();
+            if (node == null) {
+                iterator.remove();
+                continue;
+            }
+            if (!node.isAttached()) {
+                iterator.remove();
+                continue;
+            }
+        }
+        return resources.keySet();
     }
 }
