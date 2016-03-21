@@ -22,8 +22,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.vaadin.annotations.Title;
 
 /**
  * Handles navigation events by rendering a view of a specific type in the
@@ -100,8 +103,41 @@ public abstract class ViewRenderer implements NavigationHandler {
 
             // Show the new view and parent views
             ui.showView(event.getLocation(), viewInstance, parentViews);
+
+            updatePageTitle(event, locationChangeEvent);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Cannot instantiate view", e);
+        }
+    }
+
+    /**
+     * Updates the page title according to the currently opened views.
+     * <p>
+     * Uses the {@link RouterConfiguration#getPageTitleGenerator()} if one has
+     * been set, or either the {@link View}'s {@link Title#value()} or
+     * {@link View#getTitle(LocationChangeEvent)}.
+     *
+     * @param navigationEvent
+     *            the event object about the navigation
+     * @param locationChangeEvent
+     *            event object with information on the new location
+     */
+    public void updatePageTitle(NavigationEvent navigationEvent,
+            LocationChangeEvent locationChangeEvent) {
+        // if router uses ViewTitleGenerator is used, give the location
+        // change event for it
+        Optional<PageTitleGenerator> pageTitleGenerator = navigationEvent
+                .getSource().getConfiguration().getPageTitleGenerator();
+        String title;
+        if (pageTitleGenerator.isPresent()) {
+            title = pageTitleGenerator.get().getPageTitle(navigationEvent,
+                    this);
+        } else {
+            title = locationChangeEvent.getViewChain().get(0)
+                    .getTitle(locationChangeEvent);
+        }
+        if (title != null) {
+            navigationEvent.getUI().getPage().setTitle(title);
         }
     }
 

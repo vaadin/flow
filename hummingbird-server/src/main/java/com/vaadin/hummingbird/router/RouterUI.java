@@ -119,6 +119,21 @@ public class RouterUI extends UI {
     }
 
     /**
+     * Updates the page title according to the currently selected view.
+     * <p>
+     * <code>null</code> will keep the title as it is.
+     *
+     * @param title
+     *            the page title to set
+     */
+    public void updatePageTitle(String title) {
+        // null will keep title as is
+        if (title != null) {
+            getPage().setTitle(title);
+        }
+    }
+
+    /**
      * Gets the currently active view and parent views.
      *
      * @return a list of view and parent view instances, starting from the
@@ -179,4 +194,5 @@ public class RouterUI extends UI {
     protected Router getRouter() {
         return getSession().getService().getRouter();
     }
+
 }

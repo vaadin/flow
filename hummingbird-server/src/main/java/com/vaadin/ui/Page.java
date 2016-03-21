@@ -18,9 +18,12 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.util.Arrays;
 
+import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
+import com.vaadin.hummingbird.router.PageTitleGenerator;
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
 
@@ -53,6 +56,7 @@ public class Page implements Serializable {
     private final History history;
 
     private ExecutionCanceler pendingTitleUpdate;
+    private String title;
 
     /**
      * Creates a page instance for the given UI.
@@ -66,7 +70,7 @@ public class Page implements Serializable {
     }
 
     /**
-     * Updates the page title. The title is displayed by the browser e.g. as the
+     * Sets the page title. The title is displayed by the browser e.g. as the
      * title of the browser window or tab.
      * <p>
      * To clear the page title, use an empty string. <code>null</code> is not
@@ -75,7 +79,7 @@ public class Page implements Serializable {
      * @param title
      *            the page title to set, not <code>null</code>
      */
-    public void updateTitle(String title) {
+    public void setTitle(String title) {
         if (title == null) {
             throw new IllegalArgumentException("Cannot set a null page title");
         }
@@ -85,6 +89,25 @@ public class Page implements Serializable {
         }
 
         pendingTitleUpdate = executeJavaScript("document.title = $0", title);
+        this.title = title;
+    }
+
+    /**
+     * Gets the latest page title value that has been set by using:
+     * <ul>
+     * <li>{@link Page#setTitle(String)}</li>
+     * <li>{@link PageTitleGenerator}</li>
+     * <li>{@link View#getTitle()}</li>
+     * <li>{@link Title} annotation in a {@link View}</li>
+     * </ul>
+     * Returns <code>null</code> if none has been set.
+     * <p>
+     * <b>NOTE</b>: this is not updated from the browser.
+     *
+     * @return the latest page title set, or <code>null</code> if none set
+     */
+    public String getTitle() {
+        return title;
     }
 
     /**

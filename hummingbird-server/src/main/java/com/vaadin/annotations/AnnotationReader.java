@@ -34,15 +34,15 @@ public class AnnotationReader {
     }
 
     /**
-     * Returns the title for the given UI class, specified with {@link Title}
+     * Returns the title for the given class, specified with {@link Title}
      * annotation.
      *
-     * @param uiClass
-     *            the UI class with the title
+     * @param classWithTitle
+     *            the View class with the title
      * @return the title or <code>null</code> if no title specified
      */
-    public static String getPageTitle(Class<? extends UI> uiClass) {
-        return getAnnotationFor(uiClass, Title.class).map(Title::value)
+    public static String getPageTitle(Class<?> classWithTitle) {
+        return getAnnotationFor(classWithTitle, Title.class).map(Title::value)
                 .orElse(null);
     }
 
