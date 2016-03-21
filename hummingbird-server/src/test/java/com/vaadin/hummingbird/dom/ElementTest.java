@@ -34,7 +34,7 @@ public class ElementTest {
 
     @Test
     public void createElementWithTag() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertEquals("div", e.getTag());
         Assert.assertFalse(e.hasAttribute("is"));
         Assert.assertFalse(e.isTextNode());
@@ -139,45 +139,45 @@ public class ElementTest {
 
     @Test
     public void stringAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         Assert.assertEquals("bar", e.getAttribute("foo"));
     }
 
     @Test
     public void setEmptyAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "");
         Assert.assertEquals("", e.getAttribute("foo"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setNullAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("foo", null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void getNullAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.getAttribute(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void hasNullAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.hasAttribute(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void removeNullAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.removeAttribute(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setInvalidAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("\"foo\"", "bar");
     }
 
@@ -200,20 +200,20 @@ public class ElementTest {
 
     @Test
     public void hasDefinedAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         Assert.assertTrue(e.hasAttribute("foo"));
     }
 
     @Test
     public void doesNotHaveUndefinedAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertFalse(e.hasAttribute("foo"));
     }
 
     @Test
     public void doesNotHaveRemovedAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         e.removeAttribute("foo");
         Assert.assertFalse(e.hasAttribute("foo"));
@@ -221,7 +221,7 @@ public class ElementTest {
 
     @Test
     public void removeNonExistingAttributeIsNoOp() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertFalse(e.hasAttribute("foo"));
         e.removeAttribute("foo");
         Assert.assertFalse(e.hasAttribute("foo"));
@@ -229,13 +229,13 @@ public class ElementTest {
 
     @Test
     public void attributesWhenNoneDefined() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertEquals(0, e.getAttributeNames().count());
     }
 
     @Test
     public void attributesNames() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         Assert.assertArrayEquals(new String[] { "foo" },
                 e.getAttributeNames().toArray());
@@ -243,7 +243,7 @@ public class ElementTest {
 
     @Test
     public void attributesNamesAfterRemoved() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("foo", "bar");
         e.setAttribute("bar", "baz");
         e.removeAttribute("foo");
@@ -293,7 +293,7 @@ public class ElementTest {
 
     @Test
     public void appendChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child = new Element("child");
         parent.appendChild(child);
 
@@ -302,19 +302,19 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void appendNullChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         parent.appendChild((Element[]) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void insertNullChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         parent.insertChild(0, (Element[]) null);
     }
 
     @Test
     public void appendChildren() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         parent.appendChild(child1, child2);
@@ -333,7 +333,7 @@ public class ElementTest {
 
     @Test
     public void insertChildFirst() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         parent.appendChild(child1);
@@ -344,7 +344,7 @@ public class ElementTest {
 
     @Test
     public void insertChildMiddle() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -356,7 +356,7 @@ public class ElementTest {
 
     @Test
     public void insertChildAsLast() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -368,7 +368,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void insertChildAfterLast() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -378,7 +378,7 @@ public class ElementTest {
 
     @Test
     public void removeChildFirst() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -390,7 +390,7 @@ public class ElementTest {
 
     @Test
     public void removeChildFirstIndex() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -402,7 +402,7 @@ public class ElementTest {
 
     @Test
     public void removeChildrenFirst() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -414,7 +414,7 @@ public class ElementTest {
 
     @Test
     public void removeChildMiddle() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -426,7 +426,7 @@ public class ElementTest {
 
     @Test
     public void removeChildMiddleIndex() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -438,7 +438,7 @@ public class ElementTest {
 
     @Test
     public void removeChildrenMiddle() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -451,7 +451,7 @@ public class ElementTest {
 
     @Test
     public void removeChildLast() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -463,7 +463,7 @@ public class ElementTest {
 
     @Test
     public void removeChildLastIndex() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -475,7 +475,7 @@ public class ElementTest {
 
     @Test
     public void removeChildrenLast() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -488,7 +488,7 @@ public class ElementTest {
 
     @Test
     public void removeAllChildren() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -501,7 +501,7 @@ public class ElementTest {
 
     @Test
     public void removeAllChildrenEmpty() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         parent.removeAllChildren();
 
         assertChildren(parent);
@@ -509,11 +509,11 @@ public class ElementTest {
 
     @Test
     public void testGetChildren() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
-        Element child1 = new Element("div");
-        Element child2 = new Element("div");
-        Element child3 = new Element("div");
+        Element child1 = ElementFactory.createDiv();
+        Element child2 = ElementFactory.createDiv();
+        Element child3 = ElementFactory.createDiv();
 
         element.appendChild(child1, child2, child3);
 
@@ -524,14 +524,14 @@ public class ElementTest {
 
     @Test
     public void testGetChildren_empty() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         Assert.assertEquals(0, element.getChildren().count());
     }
 
     @Test
     public void removeFromParent() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element otherElement = new Element("other");
         parent.appendChild(otherElement);
         Assert.assertEquals(parent, otherElement.getParent());
@@ -549,14 +549,14 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void removeNonChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element otherElement = new Element("other");
         parent.removeChild(otherElement);
     }
 
     @Test
     public void getChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
@@ -570,7 +570,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void getNegativeChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         parent.appendChild(child1, child2);
@@ -579,7 +579,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void getAfterLastChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         parent.appendChild(child1, child2);
@@ -594,20 +594,20 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addNullEventListener() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.addEventListener("foo", null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void addEventListenerForNullType() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.addEventListener(null, ignore -> {
         });
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void replaceNullChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         parent.appendChild(child1);
         parent.setChild(0, null);
@@ -615,13 +615,13 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void removeNullChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         parent.removeChild((Element[]) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void replaceBeforeFirstChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         parent.appendChild(child1);
@@ -630,7 +630,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void replaceAfterLastChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         parent.appendChild(child1);
@@ -639,7 +639,7 @@ public class ElementTest {
 
     @Test
     public void replaceFirstChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         parent.appendChild(child1);
@@ -650,7 +650,7 @@ public class ElementTest {
 
     @Test
     public void replaceChildWithItself() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         parent.appendChild(child1);
 
@@ -671,7 +671,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void removeChildBeforeFirst() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         parent.appendChild(child1);
         parent.removeChild(-1);
@@ -679,7 +679,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void removeChildAfterLast() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         parent.appendChild(child1);
         parent.removeChild(1);
@@ -687,25 +687,25 @@ public class ElementTest {
 
     @Test
     public void equalsSelf() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertTrue(e.equals(e));
     }
 
     @Test
     public void notEqualsNull() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertFalse(e.equals(null));
     }
 
     @Test
     public void notEqualsString() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertFalse(e.equals("div"));
     }
 
     @Test
     public void listenerReceivesEvents() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         AtomicInteger listenerCalls = new AtomicInteger(0);
         DomEventListener myListener = event -> listenerCalls.incrementAndGet();
 
@@ -718,7 +718,7 @@ public class ElementTest {
 
     @Test
     public void getPropertyDefaults() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         element.setProperty("null", null);
         element.setProperty("empty", "");
@@ -875,7 +875,7 @@ public class ElementTest {
 
     @Test
     public void propertyRawValues() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         element.setProperty("p", "v");
         Assert.assertEquals("v", element.getPropertyRaw("p"));
@@ -893,7 +893,7 @@ public class ElementTest {
 
     @Test
     public void addAndRemoveProperty() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         Assert.assertFalse(element.hasProperty("foo"));
         element.removeProperty("foo");
@@ -910,7 +910,7 @@ public class ElementTest {
 
     @Test
     public void propertyNames() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         Assert.assertEquals(0, element.getPropertyNames().count());
 
@@ -923,7 +923,7 @@ public class ElementTest {
     }
 
     private static Element createPropertyAssertElement(Object value) {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         if (value instanceof Number && !(value instanceof Double)) {
             throw new IllegalArgumentException(
@@ -950,7 +950,7 @@ public class ElementTest {
         Element child = new Element("child");
         child.appendChild(Element.createText("bar"));
 
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         element.appendChild(Element.createText("foo"));
         element.appendChild(child);
@@ -960,7 +960,7 @@ public class ElementTest {
 
     @Test
     public void testSetTextContent() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         element.setTextContent("foo");
 
         Assert.assertEquals("foo", element.getTextContent());
@@ -971,7 +971,7 @@ public class ElementTest {
     @Test
     public void testSetTextContentRemovesOldContent() {
         Element child = new Element("child");
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         element.appendChild(child);
 
         element.setTextContent("foo");
@@ -982,7 +982,7 @@ public class ElementTest {
 
     @Test
     public void testSetTextReplacesOldTextNode() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         Element text = Element.createText("foo");
         element.appendChild(text);
 
@@ -1000,7 +1000,7 @@ public class ElementTest {
 
     @Test
     public void testGetTextContentProperty() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         element.setTextContent("foo");
 
         Assert.assertFalse(element.hasProperty("textContent"));
@@ -1010,7 +1010,7 @@ public class ElementTest {
     @Test
     // Because that's how it works in browsers
     public void clearTextContentRemovesChild() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         element.setTextContent("foo");
 
         Assert.assertEquals(1, element.getChildCount());
@@ -1022,7 +1022,7 @@ public class ElementTest {
 
     @Test
     public void newElementClasses() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         Assert.assertFalse(element.hasAttribute("class"));
         Assert.assertEquals(Collections.emptySet(), element.getClassList());
@@ -1030,7 +1030,7 @@ public class ElementTest {
 
     @Test
     public void addElementClasses() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         element.getClassList().add("foo");
 
@@ -1050,7 +1050,7 @@ public class ElementTest {
 
     @Test
     public void testSetClassAttribute() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         // Get instance right away to see that changes are live
         Set<String> classList = element.getClassList();
@@ -1090,7 +1090,7 @@ public class ElementTest {
 
     @Test
     public void testRemoveClassName() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         element.setAttribute("class", "foo bar");
 
@@ -1108,7 +1108,7 @@ public class ElementTest {
 
     @Test
     public void testRemoveClassAttribute() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         Set<String> classList = element.getClassList();
 
@@ -1121,7 +1121,7 @@ public class ElementTest {
 
     @Test
     public void addExistingClass_noop() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         element.setAttribute("class", "foo");
 
@@ -1133,17 +1133,17 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddClassWithSpaces_throws() {
-        new Element("div").getClassList().add("foo bar");
+        ElementFactory.createDiv().getClassList().add("foo bar");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testRemoveClassWithSpaces_throws() {
-        new Element("div").getClassList().remove("foo bar");
+        ElementFactory.createDiv().getClassList().remove("foo bar");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testContainsClassWithSpaces_throws() {
-        new Element("div").getClassList().contains("foo bar");
+        ElementFactory.createDiv().getClassList().contains("foo bar");
     }
 
     @Test
@@ -1167,16 +1167,16 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testClassListProperty_throws() {
-        new Element("div").setProperty("classList", "foo");
+        ElementFactory.createDiv().setProperty("classList", "foo");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testClassNameProperty_throws() {
-        new Element("div").setProperty("className", "foo");
+        ElementFactory.createDiv().setProperty("className", "foo");
     }
 
     public void setStyle() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
         Assert.assertEquals("bar", s.get("foo"));
@@ -1184,21 +1184,21 @@ public class ElementTest {
 
     @Test
     public void getUnsetStyle() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         Assert.assertNull(s.get("foo"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void getNullStyle() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.get(null);
     }
 
     @Test
     public void replaceStyle() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
         s.set("foo", "baz");
@@ -1207,7 +1207,7 @@ public class ElementTest {
 
     @Test
     public void removeSingleStyle() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
         s.remove("foo");
@@ -1216,21 +1216,21 @@ public class ElementTest {
 
     @Test
     public void emptyStyleAsAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertFalse(e.hasAttribute("style"));
         Assert.assertNull(e.getAttribute("style"));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void semicolonInStyle() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("border", "1 px solid black;");
     }
 
     @Test
     public void singleStyleAsAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("border", "1px solid black");
         Assert.assertTrue(e.hasAttribute("style"));
@@ -1239,7 +1239,7 @@ public class ElementTest {
 
     @Test
     public void multipleStylesAsAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("border", "1px solid black");
         s.set("margin", "1em");
@@ -1265,19 +1265,19 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void setEmptyStyleName() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.getStyle().set("", "foo");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setStyleNameExtraWhitespace() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.getStyle().set("   color", "red");
     }
 
     @Test
     public void setStyleValueExtraWhitespace() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.getStyle().set("color", "red   ");
         Assert.assertEquals("color:red", e.getAttribute("style"));
         Assert.assertEquals("red", e.getStyle().get("color"));
@@ -1285,13 +1285,13 @@ public class ElementTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void setStyleAttribute() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setAttribute("style", "foo: bar;");
     }
 
     @Test
     public void removeStyles() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         element.getStyle().set("zIndex", "12");
         element.getStyle().set("background", "blue");
@@ -1310,7 +1310,7 @@ public class ElementTest {
 
     @Test
     public void removeStyleAttribute() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
 
@@ -1323,7 +1323,7 @@ public class ElementTest {
 
     @Test
     public void validStyleWithSemicolon() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         String validStyle = "background: url('foo;bar')";
         Style style = element.getStyle();
         style.set("background", validStyle);
@@ -1332,7 +1332,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void warnAboutDashSeparated() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
         style.set("border-color", "blue");
@@ -1340,7 +1340,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void nullStyleValue() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         Style style = element.getStyle();
         style.set("borderColor", null);
@@ -1348,7 +1348,7 @@ public class ElementTest {
 
     @Test
     public void listenersFiredInRegisteredOrder() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         ArrayList<Integer> eventOrder = new ArrayList<>();
 
         for (int i = 0; i < 10; i++) {
@@ -1376,7 +1376,7 @@ public class ElementTest {
         DomEventListener listener = e -> {
             invocations.incrementAndGet();
         };
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         element.addEventListener("click", listener);
         element.addEventListener("click", listener);
 
@@ -1387,7 +1387,7 @@ public class ElementTest {
 
     @Test
     public void getSetSynchronizedProperty() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setSynchronizedProperties("foo", "bar");
         String[] expected = new String[] { "bar", "foo" };
 
@@ -1398,7 +1398,7 @@ public class ElementTest {
 
     @Test
     public void setSameSynchronizedPropertyManyTimes() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setSynchronizedProperties("foo", "foo");
         String[] expected = new String[] { "foo" };
 
@@ -1417,7 +1417,7 @@ public class ElementTest {
 
     @Test
     public void setSameSynchronizedEventManyTimes() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setSynchronizedPropertiesEvents("foo", "foo");
         String[] expected = new String[] { "foo" };
 
@@ -1436,19 +1436,19 @@ public class ElementTest {
 
     @Test
     public void getDefaultSynchronizedProperties() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertEquals(0, e.getSynchronizedProperties().size());
     }
 
     @Test
     public void getDefaultSynchronizedPropertiesEvent() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         Assert.assertEquals(0, e.getSynchronizedPropertiesEvents().size());
     }
 
     @Test
     public void getSetSynchronizedEvent() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setSynchronizedPropertiesEvents("foo", "bar");
         String[] expected = new String[] { "bar", "foo" };
 
@@ -1458,38 +1458,38 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void setNullSynchronizedEvent() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setSynchronizedPropertiesEvents((String[]) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setNullSynchronizedEventType() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setSynchronizedPropertiesEvents((String) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setNullSynchronizedProperty() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setSynchronizedProperties((String[]) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setNullSynchronizedPropertyType() {
-        Element e = new Element("div");
+        Element e = ElementFactory.createDiv();
         e.setSynchronizedProperties((String) null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void addAsOwnChild() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
         element.appendChild(element);
     }
 
     @Test(expected = IllegalStateException.class)
     public void addAsChildOfChild() {
-        Element parent = new Element("div");
-        Element child = new Element("div");
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
         parent.appendChild(child);
 
         child.appendChild(parent);

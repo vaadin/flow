@@ -1,8 +1,8 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 public class RouterLinkUI extends UI {
@@ -12,40 +12,35 @@ public class RouterLinkUI extends UI {
         Element bodyElement = getElement();
         bodyElement.getStyle().set("margin", "1em");
 
-        Element location = new Element("div").setAttribute("id", "location")
-                .setTextContent("no location");
+        Element location = ElementFactory.createDiv("no location")
+                .setAttribute("id", "location");
 
         bodyElement.appendChild(location, new Element("p"));
         bodyElement.appendChild(
                 // inside servlet mapping
-                new Element("div").setTextContent("inside this servlet"),
-                new Element("a").setAttribute("href", "")
-                        .setAttribute(
-                                ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "")
-                        .setTextContent("empty"),
-                new Element("p"), createRoutingLink("foo"), new Element("p"),
-                createRoutingLink("foo/bar"), new Element("p"),
-                createRoutingLink("./foobar"), new Element("p"),
-                createRoutingLink("./foobar?what=not"), new Element("p"),
-                createRoutingLink("./foobar?what=not#fragment"),
-                new Element("p"), createRoutingLink("/run/baz"),
+                ElementFactory.createDiv("inside this servlet"),
+                ElementFactory.createRouterLink("", "empty"), new Element("p"),
+                createRouterLink("foo"), new Element("p"),
+                createRouterLink("foo/bar"), new Element("p"),
+                createRouterLink("./foobar"), new Element("p"),
+                createRouterLink("./foobar?what=not"), new Element("p"),
+                createRouterLink("./foobar?what=not#fragment"),
+                new Element("p"), createRouterLink("/run/baz"),
                 new Element("p"),
                 // outside
-                new Element("div").setTextContent("outside this servlet"),
-                createRoutingLink("/run"), new Element("p"),
-                createRoutingLink("/foo/bar"), new Element("p"),
+                ElementFactory.createDiv("outside this servlet"),
+                createRouterLink("/run"), new Element("p"),
+                createRouterLink("/foo/bar"), new Element("p"),
                 // external
-                new Element("div").setTextContent("external"),
-                createRoutingLink("http://google.com"));
+                ElementFactory.createDiv("external"),
+                createRouterLink("http://google.com"));
 
         getPage().getHistory().setHistoryStateChangeHandler(
                 e -> location.setTextContent(e.getLocation()));
     }
 
-    private Element createRoutingLink(String target) {
-        return new Element("a")
-                .setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "")
-                .setTextContent(target).setAttribute("href", target);
+    private Element createRouterLink(String target) {
+        return ElementFactory.createRouterLink(target, target);
     }
 
 }

@@ -16,6 +16,7 @@
 package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 
 /**
  * Tutorial code related to tutorial-properties-attributes.asciidoc.
@@ -23,7 +24,7 @@ import com.vaadin.hummingbird.dom.Element;
 public class PropertiesAttributes {
 
     void tutorialCode() {
-        Element nameField = new Element("input");
+        Element nameField = ElementFactory.createInput();
         nameField.setAttribute("id", "nameField");
         nameField.setAttribute("placeholder", "John Doe");
         nameField.setAttribute("autofocus", "");
@@ -39,7 +40,7 @@ public class PropertiesAttributes {
         // ["id", "placeholder"]
         nameField.getAttributeNames().toArray();
 
-        Element element = new Element("input");
+        Element element = ElementFactory.createInput();
         element.setProperty("value", "Hello");
 
         element.getClassList().add("error");
@@ -57,17 +58,19 @@ public class PropertiesAttributes {
 
         element.getStyle().has("cursor");
 
-        element = new Element("div");
-        element.setTextContent("Hello world");  // <div>Hello world</div>
+        element = ElementFactory.createDiv("Hello world"); // <div>Hello
+                                                           // world</div>
 
-        element.appendChild(new Element("span")); // <div>Hello world<span></span></div>
+        element.appendChild(ElementFactory.createSpan()); // <div>Hello
+        // world<span></span></div>
 
-        element.setTextContent("Replacement text"); // <div>Replacement text</div>
+        element.setTextContent("Replacement text"); // <div>Replacement
+                                                    // text</div>
 
         element.setTextContent("Welcome back ");
 
-        Element nameSpan = new Element("b").setTextContent("Rudolph Reindeer");
-        element.appendChild(nameSpan);
+        Element name = ElementFactory.createStrong("Rudolph Reindeer");
+        element.appendChild(name);
 
         element.getTextContent(); // will return "Welcome back Rudolph Reindeer"
     }
