@@ -25,15 +25,15 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.router.ErrorNavigationHandler;
 import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.RouterUI;
+import com.vaadin.hummingbird.router.StaticViewRenderer;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.router.LocationChangeEvent;
-import com.vaadin.hummingbird.router.ViewRenderer;
 import com.vaadin.hummingbird.uitest.ui.RouterTestServlet.MyRouterConfigurator;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
@@ -54,7 +54,7 @@ public class RouterTestServlet extends VaadinServlet {
                         NavigationEvent navigationEvent) {
                     if (navigationEvent.getLocation().getFirstSegment()
                             .equals("")) {
-                        return new ViewRenderer(NormalView.class);
+                        return new StaticViewRenderer(NormalView.class);
                     }
 
                     Optional<Class<? extends View>> res = getViewClasses()
@@ -67,7 +67,8 @@ public class RouterTestServlet extends VaadinServlet {
                                 @Override
                                 public NavigationHandler apply(
                                         Class<? extends View> c) {
-                                    return new ViewRenderer(c, Layout.class);
+                                    return new StaticViewRenderer(c,
+                                            Layout.class);
                                 }
                             }).orElseGet(() -> {
                                 return new ErrorNavigationHandler(404);
