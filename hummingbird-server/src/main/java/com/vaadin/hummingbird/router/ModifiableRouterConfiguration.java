@@ -325,17 +325,17 @@ public class ModifiableRouterConfiguration
         assert !path.contains("://");
 
         // Start the recursion
-        setRoute(new Location(path), routeTreeRoot, navigationHandler);
+        setRoute(new RouteLocation(new Location(path)), routeTreeRoot,
+                navigationHandler);
     }
 
-    private void setRoute(Location location, RouteTreeNode node,
+    private void setRoute(RouteLocation location, RouteTreeNode node,
             NavigationHandler navigationHandler) {
         throwIfImmutable();
 
-        String segment = location.getFirstSegment();
-        Location subLocation = location.getSubLocation();
+        RouteLocation subLocation = location.getSubLocation();
 
-        if (isWildcardSegment(segment)) {
+        if (location.startsWithWildcard()) {
             if (subLocation.hasSegments()) {
                 throw new IllegalArgumentException(
                         "Wildcard should be last segment");
@@ -344,11 +344,7 @@ public class ModifiableRouterConfiguration
             return;
         }
 
-        if (isPlaceholderSegment(segment)) {
-            // A future patch that makes the placeholder values available in the
-            // event should record the used name here.
-            segment = RouteTreeNode.PLACEHOLDER_SEGMENT;
-        }
+        String segment = getFirstSegmentOrPlaceholderToken(location);
 
         if (subLocation.hasSegments()) {
             // Configure the rest of the location in a child node
@@ -359,48 +355,6 @@ public class ModifiableRouterConfiguration
             // Record the navigation handler for this final part of the location
             node.setRoute(segment, navigationHandler);
         }
-    }
-
-    /**
-     * Helper for checking whether a segment is a wildcard segment. Also checks
-     * for illegal use of the wildcard segment identifier if the segment is not
-     * a wildcard.
-     *
-     * @param segment
-     *            the segment to check, not <code>null</code>
-     * @return <code>true</code> if the segment is a wildcard segment,
-     *         <code>false</code> otherwise.
-     */
-    private static boolean isWildcardSegment(String segment) {
-        assert segment != null;
-
-        boolean isWildcard = "*".equals(segment);
-        if (!isWildcard && segment.contains("*")) {
-            throw new IllegalArgumentException("* is only valid as \"/*\"");
-
-        }
-        return isWildcard;
-    }
-
-    /**
-     * Helper for checking whether a segment is a placeholder segment. Also
-     * checks for illegal use of the placeholder segment identifiers if the
-     * segment is not a placeholder.
-     *
-     * @param segment
-     *            the segment to check, not <code>null</code>
-     * @return <code>true</code> if the segment is a placeholder segment,
-     *         <code>false</code> otherwise.
-     */
-    private static boolean isPlaceholderSegment(String segment) {
-        boolean isPlaceholder = segment.startsWith("{")
-                && segment.endsWith("}");
-        if (!isPlaceholder
-                && (segment.contains("{") || segment.contains("}"))) {
-            throw new IllegalArgumentException(
-                    "{ and } are only allowed in the start and end of a segment");
-        }
-        return isPlaceholder;
     }
 
     /**
@@ -416,23 +370,20 @@ public class ModifiableRouterConfiguration
 
         removeViewToRouteMapping(path);
         // Start the recursion
-        removeRoute(new Location(path), routeTreeRoot);
+        removeRoute(new RouteLocation(new Location(path)), routeTreeRoot);
     }
 
-    private void removeRoute(Location location, RouteTreeNode node) {
+    private void removeRoute(RouteLocation location, RouteTreeNode node) {
         throwIfImmutable();
 
-        String segment = location.getFirstSegment();
-        Location subLocation = location.getSubLocation();
-
-        if (isWildcardSegment(segment)) {
+        if (location.startsWithWildcard()) {
             node.setWildcardHandler(null);
             return;
         }
 
-        if (isPlaceholderSegment(segment)) {
-            segment = RouteTreeNode.PLACEHOLDER_SEGMENT;
-        }
+        String segment = getFirstSegmentOrPlaceholderToken(location);
+
+        RouteLocation subLocation = location.getSubLocation();
 
         if (!subLocation.hasSegments()) {
             node.setRoute(segment, null);
@@ -443,6 +394,15 @@ public class ModifiableRouterConfiguration
             if (childNode.isEmpty()) {
                 node.removeChild(segment);
             }
+        }
+    }
+
+    private static String getFirstSegmentOrPlaceholderToken(
+            RouteLocation location) {
+        if (location.startsWithPlaceholder()) {
+            return RouteTreeNode.PLACEHOLDER_SEGMENT;
+        } else {
+            return location.getFirstSegment();
         }
     }
 
