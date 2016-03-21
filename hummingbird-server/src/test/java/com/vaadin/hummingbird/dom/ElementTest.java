@@ -1067,6 +1067,28 @@ public class ElementTest {
     }
 
     @Test
+    public void testSetEmptyClassAttribute() {
+        Element element = new Element("div");
+
+        // Get instance right away to see that changes are live
+        Set<String> classList = element.getClassList();
+
+        element.setAttribute("class", "");
+
+        Assert.assertEquals(0, classList.size());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testAddEmptyClassname() {
+        Element element = new Element("div");
+
+        // Get instance right away to see that changes are live
+        Set<String> classList = element.getClassList();
+
+        classList.add("");
+    }
+
+    @Test
     public void testRemoveClassName() {
         Element element = new Element("div");
 

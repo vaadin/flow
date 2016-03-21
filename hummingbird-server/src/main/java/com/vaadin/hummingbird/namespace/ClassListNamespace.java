@@ -88,6 +88,10 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
                         "Class name must be a string");
             }
 
+            if ("".equals(className)) {
+                throw new IllegalArgumentException(
+                        "Class name cannot be empty");
+            }
             if (((String) className).indexOf(' ') != -1) {
                 throw new IllegalArgumentException(
                         "Class name cannot contain spaces");
