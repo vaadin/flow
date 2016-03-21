@@ -19,6 +19,7 @@ package com.vaadin.annotations;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
 import com.vaadin.ui.UI;
@@ -34,15 +35,15 @@ public class AnnotationReader {
     }
 
     /**
-     * Returns the title for the given UI class, specified with {@link Title}
+     * Returns the title for the given View class, specified with {@link Title}
      * annotation.
      *
-     * @param uiClass
-     *            the UI class with the title
+     * @param viewClass
+     *            the View class with the title
      * @return the title or <code>null</code> if no title specified
      */
-    public static String getPageTitle(Class<? extends UI> uiClass) {
-        return getAnnotationFor(uiClass, Title.class).map(Title::value)
+    public static String getPageTitle(Class<? extends View> viewClass) {
+        return getAnnotationFor(viewClass, Title.class).map(Title::value)
                 .orElse(null);
     }
 

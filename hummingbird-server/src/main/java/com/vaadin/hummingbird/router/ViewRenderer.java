@@ -100,6 +100,8 @@ public abstract class ViewRenderer implements NavigationHandler {
 
             // Show the new view and parent views
             ui.showView(event.getLocation(), viewInstance, parentViews);
+
+            ui.updatePageTitle(locationChangeEvent);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Cannot instantiate view", e);
         }

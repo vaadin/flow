@@ -285,10 +285,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement(META_TAG).attr("name", "viewport")
                     .attr(CONTENT_ATTRIBUTE, viewportContent);
         }
-        String title = AnnotationReader.getPageTitle(uiClass);
-        if (title != null) {
-            head.appendElement("title").appendText(title);
-        }
+
         Element styles = head.appendElement("style").attr("type", "text/css");
         styles.appendText("html, body {height:100%;margin:0;}");
         // Basic reconnect dialog style just to make it visible and outside of

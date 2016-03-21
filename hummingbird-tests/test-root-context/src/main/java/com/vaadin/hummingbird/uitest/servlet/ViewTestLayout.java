@@ -22,9 +22,9 @@ import java.util.List;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.ui.UI;
 
 public class ViewTestLayout implements HasChildView {
@@ -52,6 +52,7 @@ public class ViewTestLayout implements HasChildView {
             Element option = new Element("option").setAttribute("value",
                     c.getName());
             option.setTextContent(c.getSimpleName());
+            option.setAttribute("id", c.getSimpleName());
 
             optionGroup.appendChild(option);
         }

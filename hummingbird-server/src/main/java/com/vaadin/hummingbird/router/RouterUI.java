@@ -119,6 +119,20 @@ public class RouterUI extends UI {
     }
 
     /**
+     * Updates the page title according to the currently selected view.
+     *
+     * @param event
+     *            object containing information about the new location
+     */
+    public void updatePageTitle(LocationChangeEvent event) {
+        String newTitle = event.getViewChain().get(0).getTitle(event);
+        // null will keep title as is
+        if (newTitle != null) {
+            getPage().updateTitle(newTitle);
+        }
+    }
+
+    /**
      * Gets the currently active view and parent views.
      *
      * @return a list of view and parent view instances, starting from the
@@ -179,4 +193,5 @@ public class RouterUI extends UI {
     protected Router getRouter() {
         return getSession().getService().getRouter();
     }
+
 }

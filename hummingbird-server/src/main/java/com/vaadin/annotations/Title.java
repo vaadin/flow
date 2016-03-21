@@ -21,16 +21,23 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.UI;
+import com.vaadin.hummingbird.router.View;
 
 /**
- * Defines the HTML page title for a {@link UI}.
+ * Defines the HTML page title for a {@link View}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Title {
+
     /**
-     * Gets the HTML title that should be used if the UI is used on it's own.
+     * Gets the HTML title that should be used for the view.
+     * <p>
+     * Empty string will clear any previous page title. In that case the browser
+     * will decide what to show as the title, most likely the url.
+     * <p>
+     * You may dynamically update the title for a view by overriding the
+     * {@link View#getTitle(com.vaadin.hummingbird.router.LocationChangeEvent)}.
      *
      * @return a page title string
      */
