@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.ui.UI;
 
@@ -37,12 +38,12 @@ public class ExecJavaScriptView extends TestView {
                 "console.log($0)", JsonUtil.createArray(
                         Json.create("Hello world"), Json.create(true)));
 
-        Element createElementButton = new Element("button")
-                .setAttribute("id", "createButton")
-                .setTextContent("Create and update element");
+        Element createElementButton = ElementFactory
+                .createButton("Create and update element")
+                .setAttribute("id", "createButton");
         createElementButton.addEventListener("click", e -> {
-            Element newElement = new Element("input").setAttribute("class",
-                    "newInput");
+            Element newElement = ElementFactory.createInput()
+                    .setAttribute("class", "newInput");
             UI.getCurrent().getPage().executeJavaScript("$0.value = $1",
                     newElement, "Value from js");
             root.appendChild(newElement);
@@ -54,8 +55,8 @@ public class ExecJavaScriptView extends TestView {
 
     private Element createJsButton(String text, String id, String script,
             Object... arguments) {
-        Element element = new Element("button").setTextContent(text)
-                .setAttribute("id", id);
+        Element element = ElementFactory.createButton(text).setAttribute("id",
+                id);
 
         element.addEventListener("click", e -> UI.getCurrent().getPage()
                 .executeJavaScript(script, arguments));
