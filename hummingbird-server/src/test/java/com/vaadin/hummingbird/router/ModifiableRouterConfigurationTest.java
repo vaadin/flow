@@ -156,7 +156,8 @@ public class ModifiableRouterConfigurationTest {
 
     private boolean isIgnoredType(Class<?> c) {
         return NavigationHandler.class.isAssignableFrom(c)
-                || Resolver.class.isAssignableFrom(c);
+                || Resolver.class.isAssignableFrom(c)
+                || PageTitleGenerator.class.isAssignableFrom(c);
     }
 
     @SuppressWarnings("rawtypes")
