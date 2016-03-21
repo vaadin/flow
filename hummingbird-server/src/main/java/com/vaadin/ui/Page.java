@@ -17,10 +17,14 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Optional;
 
+import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
+import com.vaadin.hummingbird.router.PageTitleGenerator;
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
 
@@ -66,25 +70,51 @@ public class Page implements Serializable {
     }
 
     /**
-     * Updates the page title. The title is displayed by the browser e.g. as the
+     * Sets the page title. The title is displayed by the browser e.g. as the
      * title of the browser window or tab.
      * <p>
-     * To clear the page title, use an empty string. <code>null</code> is not
-     * supported.
+     * To clear the page title, use an empty string.
+     * <p>
+     * <code>null</code> will cancel any pending title update not yet sent to
+     * browser.
      *
      * @param title
-     *            the page title to set, not <code>null</code>
+     *            the page title to set
      */
-    public void updateTitle(String title) {
-        if (title == null) {
-            throw new IllegalArgumentException("Cannot set a null page title");
-        }
-
+    public void setTitle(String title) {
         if (pendingTitleUpdate != null) {
             pendingTitleUpdate.cancelExecution();
         }
 
-        pendingTitleUpdate = executeJavaScript("document.title = $0", title);
+        if (title != null) {
+            pendingTitleUpdate = executeJavaScript("document.title = $0",
+                    title);
+
+            ui.getFrameworkData().setTitle(title);
+        } else {
+            pendingTitleUpdate = null;
+        }
+    }
+
+    /**
+     * Gets the optional page title that has been set using:
+     * <ul>
+     * <li>{@link Page#setTitle(String)}</li>
+     * <li>{@link PageTitleGenerator}</li>
+     * <li>
+     * {@link View#getTitle(com.vaadin.hummingbird.router.LocationChangeEvent)
+     * View.getTitle(LocationChangeEvent)}</li>
+     * <li>{@link Title @Title} annotation in a {@link View}</li>
+     * <li>{@link Title @Title} annotation in a {@link UI}</li>
+     * </ul>
+     * <b>NOTE</b>: The value returned by this method is the title set on the
+     * server side. Changes made directly in the browser are not taken into
+     * account.
+     *
+     * @return optional page title
+     */
+    public Optional<String> getTitle() {
+        return Optional.ofNullable(ui.getFrameworkData().getTitle());
     }
 
     /**

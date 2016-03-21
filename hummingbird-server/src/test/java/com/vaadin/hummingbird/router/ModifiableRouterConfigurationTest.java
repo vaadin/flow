@@ -156,7 +156,8 @@ public class ModifiableRouterConfigurationTest {
 
     private boolean isIgnoredType(Class<?> c) {
         return NavigationHandler.class.isAssignableFrom(c)
-                || Resolver.class.isAssignableFrom(c);
+                || Resolver.class.isAssignableFrom(c)
+                || PageTitleGenerator.class.isAssignableFrom(c);
     }
 
     @SuppressWarnings("rawtypes")
@@ -479,6 +480,23 @@ public class ModifiableRouterConfigurationTest {
 
         assertParentViews(router, TestView.class, ParentView.class,
                 AnotherParentView.class);
+    }
+
+    @Test
+    public void testDefaultPageGeneratorUsed() {
+        Router router = new Router();
+        PageTitleGenerator pageTitleGenerator = router.getConfiguration()
+                .getPageTitleGenerator();
+        Assert.assertSame(DefaultPageTitleGenerator.getInstance(),
+                pageTitleGenerator);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetNullPageTitleGenerator() {
+        Router router = new Router();
+        router.reconfigure(conf -> {
+            conf.setPageTitleGenerator(null);
+        });
     }
 
 }
