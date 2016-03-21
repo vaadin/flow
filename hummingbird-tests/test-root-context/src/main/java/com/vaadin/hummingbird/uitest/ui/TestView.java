@@ -16,8 +16,9 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
@@ -26,7 +27,7 @@ public abstract class TestView implements View {
     private Element element;
 
     public TestView() {
-        element = new Element("div");
+        element = ElementFactory.createDiv();
     }
 
     protected abstract void onShow();
