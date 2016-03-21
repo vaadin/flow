@@ -23,10 +23,15 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
 
 public class ViewRendererTest {
+
+    private final static String ANOTHER_VIEW_TITLE = "test";
+    private final static String DYNAMIC_VIEW_TITLE = "dynamic";
 
     public static class TestView implements View {
         private Element element = ElementFactory.createDiv();
@@ -47,10 +52,29 @@ public class ViewRendererTest {
         }
     }
 
+    @Title(ANOTHER_VIEW_TITLE)
     public static class AnotherTestView extends TestView {
 
     }
 
+    @Title("not used")
+    public static class DynamicTitleView extends TestView {
+
+        @Override
+        public String getTitle(LocationChangeEvent event) {
+            return DYNAMIC_VIEW_TITLE;
+        }
+    }
+
+    public static class NullTitleView extends TestView {
+
+        @Override
+        public String getTitle(LocationChangeEvent event) {
+            return null;
+        }
+    }
+
+    @Title("foobar")
     public static class ParentView extends TestView implements HasChildView {
         @Override
         public void setChildView(View childView) {
@@ -217,5 +241,97 @@ public class ViewRendererTest {
 
         Assert.assertEquals("bar", testView.namePlaceholderValue);
         Assert.assertEquals("baz/", testView.wildcardValue);
+    }
+
+    @Test
+    public void testViewTitle_titleAnnotation_titleUpdated() {
+        new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
+
+        verifyViewTitleUpdate(ANOTHER_VIEW_TITLE);
+    }
+
+    @Test
+    public void testViewTitle_titleSetPreviouslyButNotDefinedForNextView_emptyTitleSet() {
+        new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
+
+        verifyViewTitleUpdate(ANOTHER_VIEW_TITLE);
+
+        new StaticViewRenderer(TestView.class).handle(dummyEvent);
+
+        verifyViewTitleUpdate("");
+    }
+
+    @Test
+    public void testViewTitle_nullTitleReturned_noTitleSet() {
+        new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
+
+        verifyViewTitleUpdate(ANOTHER_VIEW_TITLE);
+
+        new StaticViewRenderer(NullTitleView.class).handle(dummyEvent);
+
+        verifyNoTitleUpdate();
+    }
+
+    @Test
+    public void testViewDynamicTitle() {
+        new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+
+        verifyViewTitleUpdate(DYNAMIC_VIEW_TITLE);
+    }
+
+    @Test
+    public void testViewTitle_onlyParentHasTitle_defaultTitleUsed() {
+        new StaticViewRenderer(TestView.class, ParentView.class)
+                .handle(dummyEvent);
+
+        verifyViewTitleUpdate("");
+    }
+
+    @Test
+    public void testViewTitle_customPageTitle_generator_isAlwaysUsed() {
+        setPageTitleGenerator(lce -> "foobar");
+
+        new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+
+        verifyViewTitleUpdate("foobar");
+
+        setPageTitleGenerator(lce -> "akbar");
+
+        new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
+
+        verifyViewTitleUpdate("akbar");
+
+        setPageTitleGenerator(new DefaultPageTitleGenerator());
+
+        new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+
+        verifyViewTitleUpdate(DYNAMIC_VIEW_TITLE);
+    }
+
+    @Test
+    public void testViewTitle_nullPageTitleGenerated_noTitleUpdate() {
+        setPageTitleGenerator(lce -> null);
+
+        new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+
+        verifyNoTitleUpdate();
+    }
+
+    private void setPageTitleGenerator(PageTitleGenerator generator) {
+        dummyEvent.getSource()
+                .reconfigure(conf -> conf.setPageTitleGenerator(generator));
+    }
+
+    private void verifyViewTitleUpdate(String pageTitle) {
+        List<JavaScriptInvocation> jsInvocations = ui.getFrameworkData()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertEquals("Page.setTitle should use title from annotation",
+                pageTitle, jsInvocations.get(0).getParameters().get(0));
+    }
+
+    private void verifyNoTitleUpdate() {
+        Assert.assertEquals("Page.setTitle should not have been triggered", 0,
+                ui.getFrameworkData().dumpPendingJavaScriptInvocations()
+                        .size());
     }
 }

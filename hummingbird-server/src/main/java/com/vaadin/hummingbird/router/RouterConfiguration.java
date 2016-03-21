@@ -18,6 +18,8 @@ package com.vaadin.hummingbird.router;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.ui.Page;
+
 /**
  * Configuration for a {@link Router}. Use
  * {@link Router#reconfigure(RouterConfigurator)} to update the configuration
@@ -109,4 +111,13 @@ public interface RouterConfiguration {
     Optional<String> getRoute(Class<? extends View> viewType)
             throws IllegalArgumentException;
 
+    /**
+     * Gets the {@link PageTitleGenerator} to use for creating a new
+     * {@link Page#setTitle(String) page title} according to the navigation.
+     * <p>
+     * The default is the {@link DefaultPageTitleGenerator}.
+     *
+     * @return the page title generator, never <code>null</code>
+     */
+    PageTitleGenerator getPageTitleGenerator();
 }
