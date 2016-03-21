@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
@@ -107,6 +108,13 @@ public class Router implements Serializable {
         }
 
         handler.handle(navigationEvent);
+
+        Optional<PageTitleGenerator> pageTitleGenerator = currentConfig
+                .getPageTitleGenerator();
+        if (pageTitleGenerator.isPresent()) {
+            ui.updatePageTitle(pageTitleGenerator.get()
+                    .getPageTitle(navigationEvent, handler));
+        }
     }
 
     /**

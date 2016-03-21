@@ -37,7 +37,7 @@ public class PageTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testSetPageTitleNull() {
-        page.updateTitle(null);
+        page.setTitle(null);
     }
 
     @Test
