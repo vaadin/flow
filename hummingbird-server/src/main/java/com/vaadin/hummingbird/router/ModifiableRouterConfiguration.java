@@ -24,6 +24,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.annotations.Title;
+import com.vaadin.ui.Page;
+
 /**
  * A {@link Router} configuration object that may be in a modifiable state.
  * Since a configuration is used concurrently when handling requests, the
@@ -53,6 +56,8 @@ public class ModifiableRouterConfiguration
 
     private HashMap<Class<? extends View>, List<String>> viewToRoute;
 
+    private PageTitleGenerator pageTitleGenerator;
+
     /**
      * Creates a new empty immutable configuration.
      */
@@ -62,6 +67,7 @@ public class ModifiableRouterConfiguration
         parentViewTypes = new HashMap<>();
         viewToRoute = new HashMap<>();
         modifiable = false;
+        pageTitleGenerator = new DefaultPageTitleGenerator();
     }
 
     /**
@@ -79,6 +85,8 @@ public class ModifiableRouterConfiguration
         assert original != null;
 
         resolver = original.resolver;
+
+        pageTitleGenerator = original.pageTitleGenerator;
 
         routeTreeRoot = new RouteTreeNode(original.routeTreeRoot);
 
@@ -436,5 +444,32 @@ public class ModifiableRouterConfiguration
             return l.stream().findFirst();
         }
 
+    }
+
+    @Override
+    public Optional<PageTitleGenerator> getPageTitleGenerator() {
+        return Optional.ofNullable(pageTitleGenerator);
+    }
+
+    /**
+     * Sets the {@link PageTitleGenerator} to use for generating the
+     * {@link Page#setTitle(String) page title} according to the navigation.
+     * <p>
+     * Overrides the default page title generation with
+     * {@link View#getTitle(LocationChangeEvent)} or {@link Title @Title}.
+     * <p>
+     * By default this is <code>null</code>.
+     * <p>
+     * NOTE: it is the responsibility of the {@link NavigationHandler}s to
+     * handle the updating of the title according to the navigation.
+     *
+     * @param pageTitleGenerator
+     *            the page title generator to use
+     * @see ViewRenderer#updatePageTitle(NavigationEvent, LocationChangeEvent)
+     */
+    public void setPageTitleGenerator(PageTitleGenerator pageTitleGenerator) {
+        throwIfImmutable();
+
+        this.pageTitleGenerator = pageTitleGenerator;
     }
 }
