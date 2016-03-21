@@ -28,9 +28,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.change.ChangeVisitor;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.MapRemoveChange;
-import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.util.SerializableJson;
 import com.vaadin.shared.util.UniqueSerializable;
 
@@ -273,18 +273,18 @@ public abstract class MapNamespace extends Namespace {
     }
 
     @Override
-    public void collectChanges(Consumer<NodeChange> collector) {
+    public void accept(ChangeVisitor visitor) {
         changes.forEach((key, earlierValue) -> {
             boolean containsNow = values.containsKey(key);
             boolean containedEarlier = earlierValue != REMOVED_MARKER;
             if (containedEarlier && !containsNow) {
-                collector.accept(new MapRemoveChange(this, key));
+                visitor.visit(new MapRemoveChange(this, key));
             } else if (containsNow) {
                 Object currentValue = values.get(key);
                 if (!containedEarlier
                         || !Objects.equals(earlierValue, currentValue)) {
                     // New or changed value
-                    collector.accept(new MapPutChange(this, key, currentValue));
+                    visitor.visit(new MapPutChange(this, key, currentValue));
                 }
             }
         });

@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import com.vaadin.hummingbird.change.ChangeVisitor;
 import com.vaadin.hummingbird.change.NodeAttachChange;
-import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.NamespaceRegistry;
@@ -37,7 +37,7 @@ import com.vaadin.hummingbird.namespace.NamespaceRegistry;
  * @since
  * @author Vaadin Ltd
  */
-public class StateNode implements Serializable {
+public class StateNode implements Consumer<ChangeVisitor>, Serializable {
     private final Map<Class<? extends Namespace>, Namespace> namespaces = new HashMap<>();
 
     private NodeOwner owner = NullOwner.get();
@@ -280,31 +280,31 @@ public class StateNode implements Serializable {
 
     /**
      * Collects all changes made to this node since the last time
-     * {@link #collectChanges(Consumer)} has been called. If the node is
-     * recently attached, then the reported changes will be relative to a newly
-     * created node.
+     * {@link #accept(ChangeVisitor)} has been called. If the node is recently
+     * attached, then the reported changes will be relative to a newly created
+     * node.
      *
      * @param collector
      *            a consumer accepting node changes
      */
-    public void collectChanges(Consumer<NodeChange> collector) {
+    @Override
+    public void accept(ChangeVisitor visitor) {
         boolean isAttached = isAttached();
         if (isAttached != wasAttached) {
             if (isAttached) {
-                collector.accept(new NodeAttachChange(this));
+                visitor.visit(new NodeAttachChange(this));
 
                 // Make all changes show up as if the node was recently attached
-                namespaces.values().forEach(Namespace::resetChanges);
+                namespaces.values().forEach(Namespace::nodeAttached);
             } else {
-                collector.accept(new NodeDetachChange(this));
+                visitor.visit(new NodeDetachChange(this));
             }
 
             wasAttached = isAttached;
         }
 
         if (isAttached) {
-            namespaces.values().forEach(n -> n.collectChanges(collector));
+            namespaces.values().forEach(namespace -> namespace.accept(visitor));
         }
     }
-
 }

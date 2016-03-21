@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.hummingbird.StreamResource;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.StreamResource;
 
 import elemental.json.JsonValue;
 
@@ -363,5 +363,10 @@ public interface ElementStateProvider extends Serializable {
             StreamResource resource);
 
     StreamResource getResourceProperty(StateNode node, String property);
+
+    void setResourceAttribute(StateNode node, String attribute,
+            StreamResource resource);
+
+    StreamResource getResourceAttribute(StateNode node, String attribute);
 
 }

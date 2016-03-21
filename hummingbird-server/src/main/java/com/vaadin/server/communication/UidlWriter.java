@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
-import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.change.StreamResourceChange;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
@@ -33,6 +33,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.FrameworkData;
 import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
+import com.vaadin.ui.StreamResourceManager;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -49,6 +50,35 @@ import elemental.json.JsonValue;
  * @since 7.1
  */
 public class UidlWriter implements Serializable {
+
+    public static abstract class StreamResourceManagerFactory {
+
+        private static StreamResourceManagerFactory INSTANCE;
+
+        static {
+            try {
+                Class.forName(FrameworkData.STREAM_RESOURCE_FACTORY_CLASS);
+            } catch (ClassNotFoundException e) {
+                getLogger().log(Level.SEVERE,
+                        "Unable to instantiate Stream resource manager", e);
+            }
+        }
+
+        protected static void setInstance(
+                StreamResourceManagerFactory manager) {
+            if (INSTANCE != null) {
+                throw new IllegalStateException(
+                        "Factory instance is already initialized");
+            }
+            INSTANCE = manager;
+        }
+
+        private static StreamResourceManagerFactory getInstance() {
+            return INSTANCE;
+        }
+
+        public abstract StreamResourceManager createManager(FrameworkData data);
+    }
 
     /**
      * Creates a JSON object containing all pending changes to the given UI.
@@ -139,20 +169,23 @@ public class UidlWriter implements Serializable {
      * @return a JSON array of changes
      */
     private JsonArray encodeChanges(UI ui) {
-        JsonArray changes = Json.createArray();
-
         StateTree stateTree = ui.getFrameworkData().getStateTree();
 
-        stateTree.collectChanges(change -> collectChange(ui, change, changes));
+        UidlChangeVisitor visitor = new UidlChangeVisitor();
+        stateTree.accept(visitor);
 
-        return changes;
+        visitor.getAddedResources().stream()
+                .forEach(change -> handleStreamResourceChange(ui, change));
+
+        return visitor.getJsonChanges();
     }
 
-    private void collectChange(UI ui, NodeChange change, JsonArray changes) {
-        JsonObject json = change.toJson();
-        if (json != null) {
-            changes.set(changes.length(), change.toJson());
-        }
+    private void handleStreamResourceChange(UI ui,
+            StreamResourceChange change) {
+        StreamResourceManager manager = StreamResourceManagerFactory
+                .getInstance().createManager(ui.getFrameworkData());
+        manager.register(change.getRegisteredResources());
+        manager.unregister(change.getUnregisteredResources());
     }
 
     /**
@@ -169,4 +202,5 @@ public class UidlWriter implements Serializable {
     private static final Logger getLogger() {
         return Logger.getLogger(UidlWriter.class.getName());
     }
+
 }

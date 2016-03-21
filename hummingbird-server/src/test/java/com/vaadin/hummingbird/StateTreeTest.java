@@ -28,11 +28,13 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.change.ChangeVisitor;
+import com.vaadin.hummingbird.change.JsonNodeChange;
 import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.NodeAttachChange;
-import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.change.StreamResourceChange;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
@@ -42,6 +44,37 @@ import com.vaadin.tests.util.TestUtil;
 
 public class StateTreeTest {
     private StateTree tree = new StateTree(ElementChildrenNamespace.class);
+
+    private static class TestChangeVisitor implements ChangeVisitor {
+
+        private final List<JsonNodeChange> jsonChanges = new ArrayList<>();
+        private final List<StreamResourceChange> resourceChanges = new ArrayList<>();
+
+        @Override
+        public void visit(JsonNodeChange change) {
+            if (change instanceof ListSpliceChange
+                    && ((ListSpliceChange) change)
+                            .getNamespace() == ElementChildrenNamespace.class) {
+                return;
+            } else {
+                jsonChanges.add(change);
+            }
+        }
+
+        @Override
+        public void visit(StreamResourceChange change) {
+            resourceChanges.add(change);
+        }
+
+        List<JsonNodeChange> getJsonChanges() {
+            return jsonChanges;
+        }
+
+        List<StreamResourceChange> getAddedResources() {
+            return resourceChanges;
+        }
+
+    }
 
     @Test
     public void testRootNodeState() {
@@ -97,7 +130,7 @@ public class StateTreeTest {
 
     @Test
     public void testNoRootAttachChange() {
-        List<NodeChange> changes = collectChangesExceptChildrenAdd();
+        List<JsonNodeChange> changes = collectChangesExceptChildrenAdd();
 
         Assert.assertEquals(Collections.emptyList(), changes);
     }
@@ -107,7 +140,7 @@ public class StateTreeTest {
         StateNode node2 = StateNodeTest.createEmptyNode();
         StateNodeTest.setParent(node2, tree.getRootNode());
 
-        List<NodeChange> changes = collectChangesExceptChildrenAdd();
+        List<JsonNodeChange> changes = collectChangesExceptChildrenAdd();
 
         Assert.assertEquals(1, changes.size());
         NodeAttachChange nodeChange = (NodeAttachChange) changes.get(0);
@@ -152,7 +185,7 @@ public class StateTreeTest {
 
         StateNodeTest.setParent(node2, null);
 
-        List<NodeChange> changes = collectChangesExceptChildrenAdd();
+        List<JsonNodeChange> changes = collectChangesExceptChildrenAdd();
 
         Assert.assertEquals("Should be one change.", 1, changes.size());
         Assert.assertTrue("Should have a detach change",
@@ -172,7 +205,7 @@ public class StateTreeTest {
         collectChangesExceptChildrenAdd();
 
         StateNodeTest.setParent(node2, node1);
-        List<NodeChange> changes = collectChangesExceptChildrenAdd();
+        List<JsonNodeChange> changes = collectChangesExceptChildrenAdd();
 
         Assert.assertEquals("Should be two changes.", 2, changes.size());
         Assert.assertTrue("First change should re-attach the node.",
@@ -187,18 +220,10 @@ public class StateTreeTest {
         Assert.assertEquals("foo", nodeChange.getValue());
     }
 
-    private List<NodeChange> collectChangesExceptChildrenAdd() {
-        ArrayList<NodeChange> changes = new ArrayList<>();
-        tree.collectChanges(change -> {
-            if (change instanceof ListSpliceChange
-                    && ((ListSpliceChange) change)
-                            .getNamespace() == ElementChildrenNamespace.class) {
-                return;
-            } else {
-                changes.add(change);
-            }
-        });
-        return changes;
+    private List<JsonNodeChange> collectChangesExceptChildrenAdd() {
+        TestChangeVisitor visitor = new TestChangeVisitor();
+        tree.accept(visitor);
+        return visitor.getJsonChanges();
     }
 
     @Test
@@ -282,9 +307,7 @@ public class StateTreeTest {
 
         children.remove(0);
 
-        tree.collectChanges(c -> {
-            // nop
-        });
+        tree.accept(new NoOpChangeVisitor());
 
         Assert.assertTrue(TestUtil.isGarbageCollected(childRef));
         Assert.assertTrue(TestUtil.isGarbageCollected(grandChildRef));

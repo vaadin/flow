@@ -20,10 +20,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.vaadin.hummingbird.StateNode;
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
@@ -37,38 +37,48 @@ import com.vaadin.ui.UI;
  */
 public class StreamResourceRequestHandler implements RequestHandler {
 
-    private static final int BUFFER_SIZE = 8192;
+    private static final int BUFFER_SIZE = 1024;
 
     private static final class RequestContext
-            implements Predicate<StreamResourceWrapper> {
+            implements Predicate<StreamResourceReference> {
 
-        private final VaadinSession session;
+        private final String pathInfo;
 
-        private final VaadinRequest request;
+        private final String queryUri;
 
-        private final String requestFileName;
+        private final UI ui;
 
-        private RequestContext(VaadinSession session, VaadinRequest request) {
-            this.session = session;
-            this.request = request;
-
-            // XXX: has to be rewritten
-            requestFileName = getRequestFilename(
-                    ((VaadinServletRequest) request).getHttpServletRequest());
+        private RequestContext(UI ui, VaadinSession session,
+                VaadinRequest request) {
+            this.ui = ui;
+            VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+            StringBuilder pInfo = new StringBuilder(request.getPathInfo())
+                    .append('?').append(servletRequest.getQueryString());
+            if (pInfo.charAt(0) == '/') {
+                pInfo.delete(0, 1);
+            }
+            pathInfo = pInfo.toString();
+            queryUri = new StringBuilder(servletRequest.getRequestURI())
+                    .append('?').append(servletRequest.getQueryString())
+                    .toString();
         }
 
         @Override
-        public boolean test(StreamResourceWrapper resource) {
-            // XXX : has to be rewritten
-            return resource.getResource().getUri().equals(requestFileName);
-        }
-
-        VaadinSession getSession() {
-            return session;
-        }
-
-        VaadinRequest getRequest() {
-            return request;
+        public boolean test(StreamResourceReference resource) {
+            String uri = resource.getApplicationResourceUri();
+            StateNode node = ui.getFrameworkData().getStateTree()
+                    .getNodeById(resource.getNodeId());
+            if (node == null) {
+                return false;
+            }
+            if (node.getOwner() != ui.getFrameworkData().getStateTree()) {
+                return false;
+            }
+            if (uri.startsWith("/")) {
+                return uri.equals(queryUri);
+            } else {
+                return uri.equals(pathInfo);
+            }
         }
 
     }
@@ -78,33 +88,43 @@ public class StreamResourceRequestHandler implements RequestHandler {
             VaadinResponse response) throws IOException {
         InputStream stream = null;
 
-        RequestContext context = new RequestContext(session, request);
+        boolean requiresLock;
         session.lock();
         try {
             UI ui = session.getService().findUI(request);
             if (ui == null) {
                 return false;
             }
-            List<StreamResourceWrapper> resources = ui.getResources().stream()
-                    .filter(context).collect(Collectors.toList());
-            StreamResourceWrapper wrapper = null;
+            RequestContext context = new RequestContext(ui, session, request);
+            List<StreamResourceReference> resources = ui.getFrameworkData()
+                    .getResources().stream().filter(context)
+                    .collect(Collectors.toList());
+            StreamResourceReference ref = null;
             if (resources.size() > 1) {
-                // TODO : warn
-                wrapper = resources.get(0);
+                ref = resources.get(0);
+                StringBuilder msg = new StringBuilder();
+                msg.append(resources.size());
+                msg.append(
+                        " stream resource instances are found for the same URI='");
+                msg.append(ref.getResource().getUri()).append("'");
+                Logger.getLogger(StreamResourceRequestHandler.class.getName())
+                        .warning(msg.toString());
             } else if (!resources.isEmpty()) {
-                wrapper = resources.get(0);
+                ref = resources.get(0);
             } else {
                 return false;
             }
-            response.setContentType(wrapper.getResource().getContentType());
-            stream = wrapper.getResource().get();
+            response.setContentType(ref.getResource().getContentType());
+            stream = ref.getResource().createInputStream();
+
+            requiresLock = ref.getResource().requiresLock();
         } finally {
             session.unlock();
         }
         if (stream != null) {
             OutputStream out = response.getOutputStream();
             try {
-                copy(session, stream, out);
+                copy(requiresLock, session, stream, out);
             } finally {
                 closeStreams(stream, out);
             }
@@ -121,48 +141,29 @@ public class StreamResourceRequestHandler implements RequestHandler {
         }
     }
 
-    private long copy(VaadinSession session, InputStream source,
-            OutputStream out) throws IOException {
+    private long copy(boolean requiresLock, VaadinSession session,
+            InputStream source, OutputStream out) throws IOException {
         long nread = 0L;
         byte[] buf = new byte[BUFFER_SIZE];
         int n;
-        while ((n = read(session, source, buf)) > 0) {
+        while ((n = read(requiresLock, session, source, buf)) > 0) {
             out.write(buf, 0, n);
             nread += n;
         }
         return nread;
     }
 
-    private int read(VaadinSession session, InputStream source, byte[] buffer)
-            throws IOException {
-        session.lock();
-        try {
+    private int read(boolean useLock, VaadinSession session, InputStream source,
+            byte[] buffer) throws IOException {
+        if (useLock) {
+            session.lock();
+            try {
+                return source.read(buffer);
+            } finally {
+                session.unlock();
+            }
+        } else {
             return source.read(buffer);
-        } finally {
-            session.unlock();
-        }
-    }
-
-    // XXX : this is copy from com.vaadin.server.StaticFileServer. Has to be
-    // rewritten
-    private static String getRequestFilename(HttpServletRequest request) {
-        // http://localhost:8888/context/servlet/folder/file.js
-        // ->
-        // /servlet/folder/file.js
-
-        String servletPath; // Starts with "/"
-        if ("".equals(request.getServletPath())) {
-            // /* mapped servlet
-            servletPath = "";
-        } else {
-            // /something or /something/* mapped servlet
-            servletPath = request.getServletPath();
-        }
-
-        if (request.getPathInfo() == null) {
-            return servletPath;
-        } else {
-            return servletPath + request.getPathInfo();
         }
     }
 

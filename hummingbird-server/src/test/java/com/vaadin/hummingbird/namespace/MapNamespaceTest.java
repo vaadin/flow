@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.MapRemoveChange;
-import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.change.JsonNodeChange;
 import com.vaadin.server.Command;
 
 import elemental.json.Json;
@@ -56,11 +56,11 @@ public class MapNamespaceTest
 
     @Test
     public void testCollectChange() {
-        List<NodeChange> initialChanges = collectChanges(namespace);
+        List<JsonNodeChange> initialChanges = collectChanges(namespace);
         Assert.assertEquals(0, initialChanges.size());
 
         namespace.put("key", "value");
-        List<NodeChange> putChanges = collectChanges(namespace);
+        List<JsonNodeChange> putChanges = collectChanges(namespace);
         Assert.assertEquals(1, putChanges.size());
 
         MapPutChange putChange = (MapPutChange) putChanges.get(0);
@@ -68,7 +68,7 @@ public class MapNamespaceTest
         Assert.assertEquals("value", putChange.getValue());
 
         namespace.put("key", null);
-        List<NodeChange> putNullChanges = collectChanges(namespace);
+        List<JsonNodeChange> putNullChanges = collectChanges(namespace);
         Assert.assertEquals(1, putNullChanges.size());
 
         MapPutChange putNullChange = (MapPutChange) putNullChanges.get(0);
@@ -77,7 +77,7 @@ public class MapNamespaceTest
 
         namespace.remove("key");
 
-        List<NodeChange> removeChanges = collectChanges(namespace);
+        List<JsonNodeChange> removeChanges = collectChanges(namespace);
         Assert.assertEquals(1, removeChanges.size());
 
         MapRemoveChange removeChange = (MapRemoveChange) removeChanges.get(0);
@@ -87,7 +87,7 @@ public class MapNamespaceTest
     @Test
     public void testNoChangeEvent() {
         namespace.put("key", "value", false);
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(0, changes.size());
         namespace.put("key", "value", true);
         changes = collectChanges(namespace);
@@ -101,7 +101,7 @@ public class MapNamespaceTest
     public void testNoChangeOverwritesOldChanges() {
         namespace.put("key", "value", true);
         namespace.put("key", "foobar", false);
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(0, changes.size());
 
         namespace.put("key", "urk");
@@ -116,7 +116,7 @@ public class MapNamespaceTest
         namespace.put("key", "value");
         namespace.remove("key");
 
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(0, changes.size());
     }
 
@@ -125,7 +125,7 @@ public class MapNamespaceTest
         namespace.put("key", "value1");
         namespace.put("key", "value2");
 
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(1, changes.size());
         Assert.assertEquals("value2",
                 ((MapPutChange) changes.get(0)).getValue());
@@ -138,7 +138,7 @@ public class MapNamespaceTest
 
         namespace.put("key", "otherValue");
         namespace.put("key", "value");
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(0, changes.size());
     }
 
@@ -150,7 +150,7 @@ public class MapNamespaceTest
         namespace.remove("key");
         namespace.put("key", "value");
 
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(0, changes.size());
     }
 
@@ -161,7 +161,7 @@ public class MapNamespaceTest
 
         namespace.resetChanges();
 
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(1, changes.size());
         Assert.assertEquals("value",
                 ((MapPutChange) changes.get(0)).getValue());
@@ -175,7 +175,7 @@ public class MapNamespaceTest
         namespace.resetChanges();
         namespace.remove("key");
 
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(0, changes.size());
     }
 

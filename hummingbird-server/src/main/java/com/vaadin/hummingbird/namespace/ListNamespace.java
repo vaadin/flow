@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.change.ChangeVisitor;
 import com.vaadin.hummingbird.change.ListSpliceChange;
-import com.vaadin.hummingbird.change.NodeChange;
 
 /**
  * A state node namespace that structures data as a list.
@@ -133,8 +133,8 @@ public abstract class ListNamespace<T> extends Namespace {
     }
 
     @Override
-    public void collectChanges(Consumer<NodeChange> collector) {
-        changes.forEach(collector);
+    public void accept(ChangeVisitor visitor) {
+        changes.forEach(visitor::visit);
         changes.clear();
     }
 

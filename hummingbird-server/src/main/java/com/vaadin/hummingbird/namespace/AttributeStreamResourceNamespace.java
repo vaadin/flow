@@ -13,34 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package com.vaadin.hummingbird.change;
+package com.vaadin.hummingbird.namespace;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.shared.JsonConstants;
-
-import elemental.json.JsonObject;
+import com.vaadin.hummingbird.dom.Element;
 
 /**
- * Change describing that a node has been attached.
- *
- * @since
  * @author Vaadin Ltd
+ *
  */
-public class NodeAttachChange extends JsonNodeChange {
+public class AttributeStreamResourceNamespace
+        extends AbstractStreamResourceNamespace {
 
-    /**
-     * Creates a new attach change.
-     *
-     * @param node
-     *            the attached node
-     */
-    public NodeAttachChange(StateNode node) {
+    protected AttributeStreamResourceNamespace(StateNode node) {
         super(node);
     }
 
     @Override
-    protected void populateJson(JsonObject json) {
-        json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_ATTACH);
+    protected void setApplicationUri(Element element, String key, String url) {
+        element.setAttribute(key, url);
     }
+
 }

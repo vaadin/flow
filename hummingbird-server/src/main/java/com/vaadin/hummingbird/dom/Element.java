@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.vaadin.hummingbird.StreamResource;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.StreamResource;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
@@ -709,13 +709,24 @@ public class Element implements Serializable {
         return this;
     }
 
-    public Element setResourceProperty(String property, StreamResource resource) {
+    public Element setResourceProperty(String property,
+            StreamResource resource) {
         stateProvider.setResourceProperty(node, property, resource);
         return this;
     }
 
     public StreamResource getResourceProperty(String property) {
         return stateProvider.getResourceProperty(node, property);
+    }
+
+    public Element setResourceAttribute(String attribure,
+            StreamResource resource) {
+        stateProvider.setResourceAttribute(node, attribure, resource);
+        return this;
+    }
+
+    public StreamResource getResourceAttribute(String attribure) {
+        return stateProvider.getResourceAttribute(node, attribure);
     }
 
     @Override

@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.change.ChangeVisitor;
 
 /**
  * A namespace represents a group of related values in a state node.
@@ -28,7 +28,8 @@ import com.vaadin.hummingbird.change.NodeChange;
  * @since
  * @author Vaadin Ltd
  */
-public abstract class Namespace implements Serializable {
+public abstract class Namespace
+        implements Serializable, Consumer<ChangeVisitor> {
     private final StateNode node;
 
     /**
@@ -52,18 +53,26 @@ public abstract class Namespace implements Serializable {
 
     /**
      * Collects all changes made to this namespace since the last time
-     * {@link #collectChanges(Consumer)} or {@link #resetChanges()} has been
+     * {@link #accept(ChangeVisitor)} or {@link #resetChanges()} has been
      * called.
      *
-     * @param collector
-     *            a consumer accepting node changes
+     * @param visitor
+     *            a visitor visiting node changes
      */
-    public abstract void collectChanges(Consumer<NodeChange> collector);
+    @Override
+    public abstract void accept(ChangeVisitor visitor);
+
+    /**
+     * Callback method is called when the underlying node becomes attached.
+     */
+    public void nodeAttached() {
+        resetChanges();
+    }
 
     /**
      * Resets the collected changes of this namespace so that the next
-     * invocation of {@link #collectChanges(Consumer)} will report changes
-     * relative to a newly created namespace.
+     * invocation of {@link #accept(ChangeVisitor)} will report changes relative
+     * to a newly created namespace.
      */
     public abstract void resetChanges();
 

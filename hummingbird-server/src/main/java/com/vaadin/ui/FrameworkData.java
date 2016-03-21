@@ -20,10 +20,14 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.WeakHashMap;
 
+import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
@@ -37,6 +41,8 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
+import com.vaadin.server.communication.StreamResourceReference;
+import com.vaadin.server.communication.UidlWriter.StreamResourceManagerFactory;
 
 /**
  * Holds UI-specific data that is mainly intended for internal use by the
@@ -47,6 +53,51 @@ import com.vaadin.server.communication.PushConnection;
  * @since
  */
 public class FrameworkData implements Serializable {
+
+    public static final String STREAM_RESOURCE_FACTORY_CLASS = StreamResourceManagerFactoryImpl.class
+            .getName();
+
+    /*
+     * Cannot make it final unfortunately since it's transient.
+     */
+    private transient WeakHashMap<StreamResourceReference, Void> resources = new WeakHashMap<>();
+
+    private static final class StreamResourceManagerFactoryImpl
+            extends StreamResourceManagerFactory {
+        static {
+            setInstance(new StreamResourceManagerFactoryImpl());
+        }
+
+        private StreamResourceManagerFactoryImpl() {
+        }
+
+        @Override
+        public StreamResourceManager createManager(FrameworkData data) {
+            return new StreamResourceManagerImpl(data);
+        }
+
+    }
+
+    private static final class StreamResourceManagerImpl
+            implements StreamResourceManager {
+
+        private final FrameworkData data;
+
+        private StreamResourceManagerImpl(FrameworkData data) {
+            this.data = data;
+        }
+
+        @Override
+        public void register(Collection<StreamResourceReference> resources) {
+            data.addStreamResources(resources);
+        }
+
+        @Override
+        public void unregister(Collection<StreamResourceReference> resources) {
+            data.removeStreamResource(resources);
+        }
+
+    }
 
     /**
      * A {@link Page#executeJavaScript(String, Object...)} invocation that has
@@ -350,4 +401,52 @@ public class FrameworkData implements Serializable {
         return currentList;
     }
 
+    public Collection<StreamResourceReference> getResources() {
+        for (Iterator<StreamResourceReference> iterator = resources.keySet()
+                .iterator(); iterator.hasNext();) {
+            StreamResourceReference ref = iterator.next();
+            if (ref == null) {
+                iterator.remove();
+                continue;
+            }
+            StateNode node = getStateTree().getNodeById(ref.getNodeId());
+            if (node == null) {
+                iterator.remove();
+                continue;
+            }
+            if (!node.isAttached()) {
+                iterator.remove();
+                continue;
+            }
+        }
+        return resources.keySet();
+    }
+
+    private void addStreamResources(
+            Collection<StreamResourceReference> collection) {
+        collection.stream().forEach(resource -> resources.put(resource, null));
+    }
+
+    private void removeStreamResource(
+            Collection<StreamResourceReference> collection) {
+        resources.keySet().removeAll(collection);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void readObject(ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+        stream.defaultReadObject();
+
+        HashSet<StreamResourceReference> set = (HashSet<StreamResourceReference>) stream
+                .readObject();
+        set.stream().forEach(ref -> resources.put(ref, null));
+    }
+
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+        stream.defaultWriteObject();
+        HashSet<StreamResourceReference> set = new HashSet<>(
+                resources.keySet());
+        set.remove(null);
+        stream.writeObject(set);
+    }
 }

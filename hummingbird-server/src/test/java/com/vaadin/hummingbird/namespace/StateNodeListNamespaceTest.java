@@ -27,7 +27,7 @@ import org.junit.Test;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
 import com.vaadin.hummingbird.change.ListSpliceChange;
-import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.change.JsonNodeChange;
 
 public class StateNodeListNamespaceTest
         extends AbstractNamespaceTest<ElementChildrenNamespace> {
@@ -43,7 +43,7 @@ public class StateNodeListNamespaceTest
         Assert.assertEquals(1, namespace.size());
         Assert.assertSame(value1, namespace.get(0));
 
-        List<NodeChange> firstAddChanges = collectChanges(namespace);
+        List<JsonNodeChange> firstAddChanges = collectChanges(namespace);
         Assert.assertEquals(1, firstAddChanges.size());
         ListSpliceChange firstAddChange = (ListSpliceChange) firstAddChanges
                 .get(0);
@@ -57,7 +57,7 @@ public class StateNodeListNamespaceTest
         Assert.assertSame(value2, namespace.get(0));
         Assert.assertSame(value1, namespace.get(1));
 
-        List<NodeChange> secondAddChanges = collectChanges(namespace);
+        List<JsonNodeChange> secondAddChanges = collectChanges(namespace);
         Assert.assertEquals(1, secondAddChanges.size());
         ListSpliceChange secondAddChange = (ListSpliceChange) secondAddChanges
                 .get(0);
@@ -72,7 +72,7 @@ public class StateNodeListNamespaceTest
         Assert.assertSame(value1, namespace.get(0));
         Assert.assertSame(value2, removedItem);
 
-        List<NodeChange> removeChanges = collectChanges(namespace);
+        List<JsonNodeChange> removeChanges = collectChanges(namespace);
         Assert.assertEquals(1, removeChanges.size());
         ListSpliceChange removeChange = (ListSpliceChange) removeChanges.get(0);
         Assert.assertEquals(0, removeChange.getIndex());
@@ -90,7 +90,7 @@ public class StateNodeListNamespaceTest
 
         namespace.resetChanges();
 
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
 
         Assert.assertEquals(1, changes.size());
         ListSpliceChange change = (ListSpliceChange) changes.get(0);

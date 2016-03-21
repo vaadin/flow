@@ -18,20 +18,47 @@ package com.vaadin.hummingbird;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.change.ChangeVisitor;
+import com.vaadin.hummingbird.change.JsonNodeChange;
 import com.vaadin.hummingbird.change.NodeAttachChange;
-import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.change.StreamResourceChange;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 
 public class StateNodeTest {
+
+    private static class TestChangeVisitor implements ChangeVisitor {
+
+        private final List<JsonNodeChange> jsonChanges = new ArrayList<>();
+        private final List<StreamResourceChange> resourceChanges = new ArrayList<>();
+
+        @Override
+        public void visit(JsonNodeChange change) {
+            jsonChanges.add(change);
+        }
+
+        @Override
+        public void visit(StreamResourceChange change) {
+            resourceChanges.add(change);
+        }
+
+        List<JsonNodeChange> getJsonChanges() {
+            return jsonChanges;
+        }
+
+        List<StreamResourceChange> getAddedResources() {
+            return resourceChanges;
+        }
+
+    }
+
     @Test
     public void newNodeState() {
         StateNode node = createEmptyNode();
@@ -74,35 +101,37 @@ public class StateNodeTest {
     public void testAttachDetachChangeCollection() {
         StateNode node = createEmptyNode();
 
-        List<NodeChange> changes = new ArrayList<>();
-        Consumer<NodeChange> collector = changes::add;
+        TestChangeVisitor visitor = new TestChangeVisitor();
+        node.accept(visitor);
 
-        node.collectChanges(collector);
-
-        Assert.assertTrue("Node should have no changes", changes.isEmpty());
+        Assert.assertTrue("Node should have no changes",
+                visitor.getJsonChanges().isEmpty());
 
         // Attach node
         setParent(node,
                 new StateTree(ElementChildrenNamespace.class).getRootNode());
 
-        node.collectChanges(collector);
+        node.accept(visitor);
 
-        Assert.assertEquals("Should have 1 change", 1, changes.size());
+        Assert.assertEquals("Should have 1 change", 1,
+                visitor.getJsonChanges().size());
         Assert.assertTrue("Should have attach change",
-                changes.get(0) instanceof NodeAttachChange);
-        changes.clear();
+                visitor.getJsonChanges().get(0) instanceof NodeAttachChange);
+        visitor.getJsonChanges().clear();
 
-        node.collectChanges(collector);
-        Assert.assertTrue("Node should have no changes", changes.isEmpty());
+        node.accept(visitor);
+        Assert.assertTrue("Node should have no changes",
+                visitor.getJsonChanges().isEmpty());
 
         // Detach node
         setParent(node, null);
 
-        node.collectChanges(collector);
-        Assert.assertEquals("Should have 1 change", 1, changes.size());
+        node.accept(visitor);
+        Assert.assertEquals("Should have 1 change", 1,
+                visitor.getJsonChanges().size());
         Assert.assertTrue("Should have detach change",
-                changes.get(0) instanceof NodeDetachChange);
-        changes.clear();
+                visitor.getJsonChanges().get(0) instanceof NodeDetachChange);
+        visitor.getJsonChanges().clear();
     }
 
     @Test

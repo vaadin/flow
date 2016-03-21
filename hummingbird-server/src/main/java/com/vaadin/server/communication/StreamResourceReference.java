@@ -15,40 +15,43 @@
  */
 package com.vaadin.server.communication;
 
-import java.lang.ref.WeakReference;
+import java.io.Serializable;
 
-import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StreamResource;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class StreamResourceWrapper {
+public class StreamResourceReference implements Serializable {
 
-    private final WeakReference<StateNode> node;
+    private final int nodeId;
 
     private final StreamResource resource;
 
-    private final String url;
+    private final String uri;
 
-    public StreamResourceWrapper(String url, StateNode node,
-            StreamResource resource) {
-        this.node = new WeakReference<>(node);
-        this.resource = resource;
-        this.url = url;
+    public StreamResourceReference(String uri, StreamResource resource) {
+        this(uri, -1, resource);
     }
 
-    public WeakReference<StateNode> getNode() {
-        return node;
+    public StreamResourceReference(String uri, int nodeId,
+            StreamResource resource) {
+        this.nodeId = nodeId;
+        this.resource = resource;
+        this.uri = uri;
+    }
+
+    public int getNodeId() {
+        return nodeId;
     }
 
     public StreamResource getResource() {
         return resource;
     }
 
-    public String getUrl() {
-        return url;
+    public String getApplicationResourceUri() {
+        return uri;
     }
 
 }

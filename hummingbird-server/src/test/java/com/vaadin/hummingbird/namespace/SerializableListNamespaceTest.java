@@ -25,7 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.change.ListSpliceChange;
-import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.change.JsonNodeChange;
 
 public class SerializableListNamespaceTest
         extends AbstractNamespaceTest<ClassListNamespace> {
@@ -72,7 +72,7 @@ public class SerializableListNamespaceTest
         Iterator<String> i = namespace.iterator();
         i.next();
         i.remove();
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(1, changes.size());
         Assert.assertEquals(0, ((ListSpliceChange) changes.get(0)).getIndex());
         Assert.assertEquals(1,
@@ -108,7 +108,7 @@ public class SerializableListNamespaceTest
         i.next();
         i.remove();
 
-        List<NodeChange> changes = collectChanges(namespace);
+        List<JsonNodeChange> changes = collectChanges(namespace);
         Assert.assertEquals(2, changes.size());
         Assert.assertEquals(0, ((ListSpliceChange) changes.get(0)).getIndex());
         Assert.assertEquals(0, ((ListSpliceChange) changes.get(1)).getIndex());

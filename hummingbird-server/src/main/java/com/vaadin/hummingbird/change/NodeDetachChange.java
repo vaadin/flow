@@ -27,7 +27,7 @@ import elemental.json.JsonObject;
  * @since
  * @author Vaadin Ltd
  */
-public class NodeDetachChange extends NodeChange {
+public class NodeDetachChange extends JsonNodeChange {
     /**
      * Creates a new detach change.
      *

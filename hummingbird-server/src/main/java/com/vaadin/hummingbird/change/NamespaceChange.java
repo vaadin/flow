@@ -29,7 +29,7 @@ import elemental.json.JsonObject;
  * @since
  * @author Vaadin Ltd
  */
-public abstract class NamespaceChange extends NodeChange {
+public abstract class NamespaceChange extends JsonNodeChange {
 
     private final Class<? extends Namespace> namespace;
 

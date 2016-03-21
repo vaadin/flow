@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.namespace;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.NoOpChangeVisitor;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Dependency;
@@ -153,8 +154,7 @@ public class DependencyListNamspaceTest {
         namespace.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
         namespace.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
         Assert.assertEquals(1, namespace.size());
-        namespace.collectChanges(c -> {
-        });
+        namespace.accept(new NoOpChangeVisitor());
 
         namespace.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
         Assert.assertEquals(1, namespace.size());

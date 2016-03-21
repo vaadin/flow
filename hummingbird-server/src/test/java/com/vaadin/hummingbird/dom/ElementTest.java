@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.JsonChangeVisitor;
+import com.vaadin.hummingbird.NoOpChangeVisitor;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -655,17 +657,15 @@ public class ElementTest {
         parent.appendChild(child1);
 
         parent.getNode().getNamespace(ElementChildrenNamespace.class)
-                .collectChanges(e -> {
-                    // Remove the "append" change
-                });
+                .accept(new NoOpChangeVisitor());
 
         parent.setChild(0, child1);
 
         AtomicInteger changesCausedBySetChild = new AtomicInteger(0);
         parent.getNode().getNamespace(ElementChildrenNamespace.class)
-                .collectChanges(change -> {
+                .accept(new JsonChangeVisitor(change -> {
                     changesCausedBySetChild.incrementAndGet();
-                });
+                }));
         Assert.assertEquals(0, changesCausedBySetChild.get());
     }
 
@@ -1366,11 +1366,11 @@ public class ElementTest {
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getNamespace(SynchronizedPropertiesNamespace.class)
-                .collectChanges(change -> {
+                .accept(new JsonChangeVisitor(change -> {
                     JsonUtil.stream(
                             (JsonArray) ((MapPutChange) change).getValue())
                             .forEach(item -> i.incrementAndGet());
-                });
+                }));
         Assert.assertEquals(1, i.get());
     }
 
@@ -1385,11 +1385,11 @@ public class ElementTest {
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getNamespace(SynchronizedPropertiesNamespace.class)
-                .collectChanges(change -> {
+                .accept(new JsonChangeVisitor(change -> {
                     JsonUtil.stream(
                             (JsonArray) ((MapPutChange) change).getValue())
                             .forEach(item -> i.incrementAndGet());
-                });
+                }));
         Assert.assertEquals(1, i.get());
     }
 

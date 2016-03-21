@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.shared;
 
 import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
+import com.vaadin.hummingbird.namespace.AttributeStreamResourceNamespace;
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
@@ -25,6 +26,7 @@ import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
+import com.vaadin.hummingbird.namespace.PropertyStreamResourceNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
@@ -102,6 +104,14 @@ public class Namespaces {
      * Id for {@link SynchronizedPropertiesNamespace}.
      */
     public static final int SYNCHRONIZED_PROPERTIES = 14;
+    /**
+     * Id for {@link PropertyStreamResourceNamespace}.
+     */
+    public static final int STREAM_RESOURCE_PROPERTIES = 15;
+    /**
+     * Id for {@link AttributeStreamResourceNamespace}.
+     */
+    public static final int STREAM_RESOURCE_ATTRIBUTES = 16;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.

@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.change.ChangeVisitor;
 import com.vaadin.hummingbird.namespace.Namespace;
 
 /**
@@ -31,7 +31,7 @@ import com.vaadin.hummingbird.namespace.Namespace;
  * @since
  * @author Vaadin Ltd
  */
-public class StateTree implements NodeOwner {
+public class StateTree implements NodeOwner, Consumer<ChangeVisitor> {
 
     private final class RootNode extends StateNode {
         private RootNode(Class<? extends Namespace>[] namespaces) {
@@ -142,15 +142,14 @@ public class StateTree implements NodeOwner {
 
     /**
      * Collects all changes made to this tree since the last time
-     * {@link #collectChanges(Consumer)} has been called.
+     * {@link #accept(ChangeVisitor)} has been called.
      *
-     * @param collector
-     *            a consumer accepting node changes
+     * @param visitor
+     *            a visitor accepting node changes
      */
-    public void collectChanges(Consumer<NodeChange> collector) {
-        // TODO fire preCollect events
-
-        collectDirtyNodes().forEach(n -> n.collectChanges(collector));
+    @Override
+    public void accept(ChangeVisitor visitor) {
+        collectDirtyNodes().forEach(node -> node.accept(visitor));
     }
 
     @Override

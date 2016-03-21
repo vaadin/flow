@@ -22,8 +22,9 @@ import java.util.List;
 
 import org.junit.Assert;
 
+import com.vaadin.hummingbird.JsonChangeVisitor;
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.change.JsonNodeChange;
 
 public abstract class AbstractNamespaceTest<T extends Namespace> {
 
@@ -54,10 +55,10 @@ public abstract class AbstractNamespaceTest<T extends Namespace> {
         return (Class<T>) namespaceType;
     }
 
-    public List<NodeChange> collectChanges(Namespace namespace) {
-        List<NodeChange> changes = new ArrayList<>();
+    public List<JsonNodeChange> collectChanges(Namespace namespace) {
+        List<JsonNodeChange> changes = new ArrayList<>();
 
-        namespace.collectChanges(changes::add);
+        namespace.accept(new JsonChangeVisitor(changes::add));
 
         return changes;
     }

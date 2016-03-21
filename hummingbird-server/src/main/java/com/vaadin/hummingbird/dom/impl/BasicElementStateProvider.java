@@ -23,14 +23,15 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.vaadin.hummingbird.StreamResource;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.StreamResource;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.namespace.AttributeStreamResourceNamespace;
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
@@ -39,7 +40,7 @@ import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
-import com.vaadin.hummingbird.namespace.StreamResourceNamespace;
+import com.vaadin.hummingbird.namespace.PropertyStreamResourceNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 
 import elemental.json.JsonValue;
@@ -68,7 +69,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementListenersNamespace.class, ClassListNamespace.class,
             ElementStylePropertyNamespace.class,
             SynchronizedPropertiesNamespace.class,
-            StreamResourceNamespace.class };
+            PropertyStreamResourceNamespace.class,
+            AttributeStreamResourceNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -388,14 +390,28 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public StreamResource getResourceProperty(StateNode node, String property) {
-        return node.getNamespace(StreamResourceNamespace.class)
+        return node.getNamespace(PropertyStreamResourceNamespace.class)
                 .getResource(property);
     }
 
     @Override
     public void setResourceProperty(StateNode node, String property,
             StreamResource resource) {
-        node.getNamespace(StreamResourceNamespace.class).setResource(property,
-                resource);
+        node.getNamespace(PropertyStreamResourceNamespace.class)
+                .setResource(property, resource);
+    }
+
+    @Override
+    public StreamResource getResourceAttribute(StateNode node,
+            String attribute) {
+        return node.getNamespace(AttributeStreamResourceNamespace.class)
+                .getResource(attribute);
+    }
+
+    @Override
+    public void setResourceAttribute(StateNode node, String attribute,
+            StreamResource resource) {
+        node.getNamespace(PropertyStreamResourceNamespace.class)
+                .setResource(attribute, resource);
     }
 }
