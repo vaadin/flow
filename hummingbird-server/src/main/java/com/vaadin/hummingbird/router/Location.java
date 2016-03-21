@@ -128,4 +128,10 @@ public class Location implements Serializable {
             return splitList;
         }
     }
+
+    @Override
+    public String toString() {
+        return "Location [segments=" + segments + "]";
+    }
+
 }

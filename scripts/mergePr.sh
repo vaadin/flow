@@ -55,8 +55,8 @@ do
 	# skip merge commit messages
 	if [ "$merge" == 1 ]
 	then
-		# Skip if the message matches the PR title
 		commitMsg=$(git show -s $commit --pretty='%B')
+		# Skip if the message matches the PR title
 		if [ "$prtitle" != "$commitMsg" ]
 		then
 			echo "* $commitMsg" >> COMMIT_MSG
