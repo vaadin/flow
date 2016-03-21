@@ -19,6 +19,7 @@ import java.util.function.BiConsumer;
 
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.Command;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History;
@@ -92,7 +93,7 @@ public class HistoryUI extends UI {
     }
 
     private Element addRow(Element... elements) {
-        Element row = new Element("div").appendChild(elements);
+        Element row = ElementFactory.createDiv().appendChild(elements);
         getElement().appendChild(row);
         return row;
     }
@@ -103,15 +104,14 @@ public class HistoryUI extends UI {
     }
 
     private static Element createButton(String id, DomEventListener listener) {
-        Element button = new Element("button").setTextContent(id)
-                .setAttribute("id", id);
+        Element button = ElementFactory.createButton(id).setAttribute("id", id);
         button.addEventListener("click", listener);
 
         return button;
     }
 
     private static Element createSynchronizedInput(String id) {
-        return new Element("input").setAttribute("id", id)
+        return ElementFactory.createInput().setAttribute("id", id)
                 .setSynchronizedProperties("value")
                 .setSynchronizedPropertiesEvents("change");
     }

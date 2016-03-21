@@ -16,6 +16,7 @@
 package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.UI;
 
 /**
@@ -24,13 +25,13 @@ import com.vaadin.ui.UI;
 public abstract class UserInput extends UI {
 
     void tutorialCode() {
-        Element textInput = new Element("input");
+        Element textInput = ElementFactory.createInput();
         textInput.setAttribute("placeholder", "Please enter your name");
 
-        Element button = new Element("div");
+        Element button = ElementFactory.createDiv();
         button.addEventListener("click", e -> {
             String responseText = "Hello " + textInput.getProperty("value");
-            Element response = new Element("div").setTextContent(responseText);
+            Element response = ElementFactory.createDiv(responseText);
             getElement().appendChild(response);
         });
     }

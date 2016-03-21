@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -32,20 +33,17 @@ public class LoadingIndicatorUI extends UI {
         setIfPresent(request, "third",
                 getLoadingIndicatorConfiguration()::setThirdDelay);
 
-        getElement()
-                .appendChild(new Element("div").setTextContent("First delay: "
-                        + getLoadingIndicatorConfiguration().getFirstDelay()));
-        getElement()
-                .appendChild(new Element("div").setTextContent("Second delay: "
-                        + getLoadingIndicatorConfiguration().getSecondDelay()));
-        getElement()
-                .appendChild(new Element("div").setTextContent("Third delay: "
-                        + getLoadingIndicatorConfiguration().getThirdDelay()));
+        getElement().appendChild(ElementFactory.createDiv("First delay: "
+                + getLoadingIndicatorConfiguration().getFirstDelay()));
+        getElement().appendChild(ElementFactory.createDiv("Second delay: "
+                + getLoadingIndicatorConfiguration().getSecondDelay()));
+        getElement().appendChild(ElementFactory.createDiv("Third delay: "
+                + getLoadingIndicatorConfiguration().getThirdDelay()));
 
         int[] delays = new int[] { 100, 200, 500, 1000, 2000, 5000, 10000 };
         for (int delay : delays) {
-            Element button = new Element("button").setTextContent(
-                    "Trigger event which takes " + delay + "ms");
+            Element button = ElementFactory
+                    .createButton("Trigger event which takes " + delay + "ms");
             button.setAttribute("id", "wait" + delay);
             button.addEventListener("click", e -> delay(delay));
             getElement().appendChild(button);

@@ -4,9 +4,9 @@ To make an application interactive, you want to react to events from the user. F
 
 [source,java]
 ----
-Element helloButton = new Element("button").setTextContent("Say hello");
+Element helloButton = ElementFactory.createButton("Say hello");
 helloButton.addEventListener("click", e -> {
-  Element response = new Element("div").setTextContent("Hello!");
+  Element response = ElementFactory.createDiv("Hello!");
   getElement().appendChild(response);
 });
 getElement().appendChild(helloButton);
@@ -28,8 +28,7 @@ helloButton.addEventListener("click", e -> {
   String text = "Shift "+(shiftKey ? "down": "up");
   text += " on button whose width is "+width+"px";
 
-  Element response = new Element("div");
-  response.setTextContent(text);
+  Element response = ElementFactory.createDiv(text);
   getElement().appendChild(response);
 }, "event.shiftKey", "element.offsetWidth");
 ----

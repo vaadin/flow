@@ -16,35 +16,36 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 
 public class DependencyView extends TestView {
 
     @Override
     protected void onShow() {
-        getElement().appendChild(new Element("div").setTextContent(
+        getElement().appendChild(ElementFactory.createDiv(
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
-        getElement().appendChild(new Element("hr"));
+        getElement().appendChild(ElementFactory.createHorizontalRule());
         getPage().addStyleSheet("/test-files/css/allred.css");
         getPage().addJavaScript("/test-files/js/body-click-listener.js");
         getElement()
-                .appendChild(new Element("div")
-                        .setTextContent("Hello, click the body please"))
+                .appendChild(ElementFactory
+                        .createDiv("Hello, click the body please"))
                 .setAttribute("id", "hello");
 
-        Element jsOrder = new Element("button").setTextContent("Test JS order")
+        Element jsOrder = ElementFactory.createButton("Test JS order")
                 .setAttribute("id", "loadJs");
         jsOrder.addEventListener("click", e -> {
             getPage().addJavaScript("/test-files/js/set-global-var.js");
             getPage().addJavaScript("/test-files/js/read-global-var.js");
         });
-        Element allBlue = new Element("button")
-                .setTextContent("Load 'everything blue' stylesheet")
+        Element allBlue = ElementFactory
+                .createButton("Load 'everything blue' stylesheet")
                 .setAttribute("id", "loadBlue");
         allBlue.addEventListener("click", e -> {
             getPage().addStyleSheet("/test-files/css/allblueimportant.css");
 
         });
-        getElement().appendChild(jsOrder, allBlue, new Element("hr"));
+        getElement().appendChild(jsOrder, allBlue, ElementFactory.createHorizontalRule());
     }
 
 }

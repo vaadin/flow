@@ -19,6 +19,7 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.UI;
@@ -46,8 +47,7 @@ public class HelloWorld {
 
         @Override
         protected void init(VaadinRequest request) {
-            Element div = new Element("div");
-            div.setTextContent("Hello world");
+            Element div = ElementFactory.createDiv("Hello world");
             getElement().appendChild(div);
         }
     }

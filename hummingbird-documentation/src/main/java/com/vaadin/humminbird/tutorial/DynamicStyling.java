@@ -16,13 +16,14 @@
 package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 
 /**
  * Tutorial code related to tutorial-dynamic-styling.asciidoc.
  */
 public class DynamicStyling {
 
-    Element button = new Element("div");
+    Element button = ElementFactory.createDiv();
 
     void tutorialCode() {
 
@@ -30,7 +31,7 @@ public class DynamicStyling {
         button.addEventListener("click",
                 e -> button.getClassList().add("blue"));
 
-        Element input = new Element("input");
+        Element input = ElementFactory.createInput();
         button.setTextContent("Change to the entered value");
         button.addEventListener("click", e -> button.getStyle()
                 .set("background", input.getProperty("value")));
