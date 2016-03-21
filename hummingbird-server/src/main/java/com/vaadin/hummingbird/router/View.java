@@ -15,6 +15,10 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.util.Optional;
+
+import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.ui.UI;
 
@@ -54,5 +58,32 @@ public interface View {
      */
     default void onLocationChange(LocationChangeEvent locationChangeEvent) {
         // Does nothing by default
+    }
+
+    /**
+     * Get the page title to show for this view.
+     * <p>
+     * By default returns the value specified with the {@link Title @Title}
+     * annotation, or an empty string if the annotation is not present. The
+     * empty string will clear any previously set title. In that case the
+     * browser will decide what to show as the title.
+     * <p>
+     * Note that returning <code>null</code> will always keep the previously
+     * used page title.
+     * <p>
+     * This method is triggered after the
+     * {@link #onLocationChange(LocationChangeEvent)} callback and after the
+     * view has been attached to the UI.
+     *
+     * @param locationChangeEvent
+     *            event object with information about the new location
+     * @return the page title to set, or <code>null</code> to keep the previous
+     *         title
+     */
+    default String getTitle(LocationChangeEvent locationChangeEvent) {
+        // by default use whatever was defined with the title-annotation or if
+        // it is not available, "" to clear any previous title
+        return Optional.ofNullable(AnnotationReader.getPageTitle(getClass()))
+                .orElse("");
     }
 }
