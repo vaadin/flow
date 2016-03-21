@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.ClassList;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
@@ -196,7 +197,7 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Set<String> getClassList(StateNode node) {
+    public ClassList getClassList(StateNode node) {
         throw new UnsupportedOperationException();
     }
 
