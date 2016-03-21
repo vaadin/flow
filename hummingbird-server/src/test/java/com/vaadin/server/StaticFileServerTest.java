@@ -136,7 +136,7 @@ public class StaticFileServerTest implements Serializable {
     private AtomicLong responseContentLength;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         servletContext = Mockito.mock(ServletContext.class);
         fileServer = new OverrideableStaticFileServer();
         request = Mockito.mock(HttpServletRequest.class);
@@ -165,6 +165,10 @@ public class StaticFileServerTest implements Serializable {
             responseCode.set((int) invocation.getArguments()[0]);
             return null;
         }).when(response).setStatus(Mockito.anyInt());
+        Mockito.doAnswer(invocation -> {
+            responseCode.set((int) invocation.getArguments()[0]);
+            return null;
+        }).when(response).sendError(Mockito.anyInt());
         Mockito.doAnswer(invocation -> {
             responseContentLength.set((long) invocation.getArguments()[0]);
             return null;
@@ -535,7 +539,9 @@ public class StaticFileServerTest implements Serializable {
     public void serveNonExistingStaticResource() throws IOException {
         setupRequestURI("", "", "/nonexisting/file.js");
 
-        Assert.assertFalse(fileServer.serveStaticResource(request, response));
+        fileServer.serveStaticResource(request, response);
+        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
+                responseCode.get());
     }
 
     @Test
