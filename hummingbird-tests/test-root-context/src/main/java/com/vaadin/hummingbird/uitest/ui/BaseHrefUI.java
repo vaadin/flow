@@ -16,15 +16,14 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
 public class BaseHrefUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
-        Element link = new Element("a");
-        link.setAttribute("href", "link");
-        link.setTextContent("My link");
+        Element link = ElementFactory.createAnchor("link", "My link");
 
         getElement().appendChild(link);
     }

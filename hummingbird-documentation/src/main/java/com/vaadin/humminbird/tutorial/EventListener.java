@@ -16,6 +16,7 @@
 package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
@@ -26,9 +27,9 @@ import elemental.json.JsonObject;
 public abstract class EventListener extends UI {
 
     void tutorialCode() {
-        Element helloButton = new Element("button").setTextContent("Say hello");
+        Element helloButton = ElementFactory.createButton("Say hello");
         helloButton.addEventListener("click", e -> {
-            Element response = new Element("div").setTextContent("Hello!");
+            Element response = ElementFactory.createDiv("Hello!");
             getElement().appendChild(response);
         });
         getElement().appendChild(helloButton);
@@ -41,9 +42,9 @@ public abstract class EventListener extends UI {
             String text = "Shift " + (shiftKey ? "down" : "up");
             text += " on button whose width is " + width + "px";
 
-            Element response = new Element("div");
+            Element response = ElementFactory.createDiv();
             response.setTextContent(text);
             getElement().appendChild(response);
-        }, "event.shiftKey", "element.offsetWidth");
+        } , "event.shiftKey", "element.offsetWidth");
     }
 }

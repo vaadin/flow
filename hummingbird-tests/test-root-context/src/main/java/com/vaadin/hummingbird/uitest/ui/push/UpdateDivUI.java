@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.vaadin.annotations.Push;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -29,7 +30,7 @@ public class UpdateDivUI extends UI {
 
     private int msgId = 1;
     private String ip;
-    private Element div = new Element("div");
+    private Element div = ElementFactory.createDiv();
 
     @Override
     protected void init(VaadinRequest request) {

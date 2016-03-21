@@ -16,32 +16,33 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 
 public class SynchronizedPropertyView extends TestView {
 
     @Override
     protected void onShow() {
-        getElement().appendChild(new Element("span")
-                .setTextContent("Synchronized on 'change' event"));
-        Element input = new Element("input").setAttribute("placeholder",
+        getElement().appendChild(
+                ElementFactory.createSpan("Synchronized on 'change' event"));
+        Element input = ElementFactory.createInput().setAttribute("placeholder",
                 "Enter text here");
         input.setSynchronizedProperties("value")
                 .setSynchronizedPropertiesEvents("change");
-        Element label = new Element("div");
-        label.setTextContent("Server value: " + input.getProperty("value"));
+        Element label = ElementFactory
+                .createDiv("Server value: " + input.getProperty("value"));
         input.addEventListener("change", e -> {
             label.setTextContent("Server value: " + input.getProperty("value"));
         });
         getElement().appendChild(input, label);
 
-        getElement().appendChild(new Element("span")
-                .setTextContent("Synchronized on 'input' event"));
-        Element input2 = new Element("input").setAttribute("placeholder",
-                "Enter text here");
+        getElement().appendChild(
+                ElementFactory.createSpan("Synchronized on 'input' event"));
+        Element input2 = ElementFactory.createInput()
+                .setAttribute("placeholder", "Enter text here");
         input2.setSynchronizedProperties("value")
                 .setSynchronizedPropertiesEvents("input");
-        Element label2 = new Element("div");
-        label2.setTextContent("Server value: " + input2.getProperty("value"));
+        Element label2 = ElementFactory
+                .createDiv("Server value: " + input2.getProperty("value"));
         input2.addEventListener("input", e -> {
             label2.setTextContent(
                     "Server value: " + input2.getProperty("value"));

@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
 
@@ -31,7 +32,7 @@ import elemental.json.JsonArray;
 public class UidlWriterTest {
     @Test
     public void testEncodeExecuteJavaScript() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         List<JavaScriptInvocation> executeJavaScriptList = Arrays.asList(
                 new JavaScriptInvocation("$0.focus()", Arrays.asList(element)),
