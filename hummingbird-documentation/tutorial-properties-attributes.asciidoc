@@ -13,7 +13,7 @@ Attribute values are always stored as strings.
 
 [source,java]
 ----
-Element nameField = new Element("input");
+Element nameField = ElementFactory.createInput();
 nameField.setAttribute("id", "nameField");
 nameField.setAttribute("placeholder", "John Doe");
 nameField.setAttribute("autofocus", "");
@@ -46,7 +46,7 @@ For instance, a property set as a non-empty string will result in `true` if fetc
 
 [source,java]
 ----
-Element element = new Element("input");
+Element element = ElementFactory.createInput();
 element.setProperty("value", "Hello")
 ----
 
@@ -108,10 +108,9 @@ text node with the given value.
 
 [source,java]
 ----
-Element element = new Element("div");
-element.setTextContent("Hello world");  // <div>Hello world</div>
+Element element = ElementFactory.createDiv("Hello world");  // <div>Hello world</div>
 
-element.appendChild(new Element("span")); // <div>Hello world<span></span></div>
+element.appendChild(ElementFactory.createSpan()); // <div>Hello world<span></span></div>
 
 element.setTextContent("Replacement text"); // <div>Replacement text</div>
 ----
@@ -124,8 +123,8 @@ property values of the element and all its child nodes. The child nodes are iter
 ----
 element.setTextContent("Welcome back ");
 
-Element nameSpan = new Element("b").setTextContent("Rudolph Reindeer");
-element.appendChild(nameSpan);
+Element name = ElementFactory.createStrong("Rudolph Reindeer");
+element.appendChild(name);
 
 element.getTextContent(); // will return "Welcome back Rudolph Reindeer"
 ----

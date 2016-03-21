@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.contexttest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -23,32 +24,32 @@ public class DependencyUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        getElement().appendChild(new Element("div").setTextContent(
+        getElement().appendChild(ElementFactory.createDiv(
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
-        getElement().appendChild(new Element("hr"));
+        getElement().appendChild(ElementFactory.createHr());
         getPage().addStyleSheet("context://test-files/css/allred.css");
         getPage().addJavaScript(getServletToContextPath(
                 "test-files/js/body-click-listener.js"));
         getElement()
-                .appendChild(new Element("div")
-                        .setTextContent("Hello, click the body please"))
+                .appendChild(ElementFactory
+                        .createDiv("Hello, click the body please"))
                 .setAttribute("id", "hello");
 
-        Element jsOrder = new Element("button").setTextContent("Load js")
+        Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
         jsOrder.addEventListener("click", e -> {
             getPage().addJavaScript(
                     "context://test-files/js/element-appender.js");
         });
-        Element allBlue = new Element("button")
-                .setTextContent("Load 'everything blue' stylesheet")
+        Element allBlue = ElementFactory
+                .createButton("Load 'everything blue' stylesheet")
                 .setAttribute("id", "loadBlue");
         allBlue.addEventListener("click", e -> {
             getPage().addStyleSheet(
                     "context://test-files/css/allblueimportant.css");
 
         });
-        getElement().appendChild(jsOrder, allBlue, new Element("hr"));
+        getElement().appendChild(jsOrder, allBlue, ElementFactory.createHr());
     }
 
     protected String getServletToContextPath(String url) {

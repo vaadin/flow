@@ -21,9 +21,10 @@ public class HelloWorldUI extends UI {
 The main purpose of the init method is to populate the UI with elements. For the Hello world application you only need one element containing the "Hello world" text:
 [source,java]
 ----
-Element div = new Element("div");
-div.setTextContent("Hello world");
+Element div = ElementFactory.createDiv("Hello world");
 ----
+
+The ElementFactory contains helper method for creating elements. You can also use `new Element(tagName)` to create any element.
 
 You also need to attach the element to our UI through the UI's element, which represents the `<body>` tag on the page:
 [source,java]

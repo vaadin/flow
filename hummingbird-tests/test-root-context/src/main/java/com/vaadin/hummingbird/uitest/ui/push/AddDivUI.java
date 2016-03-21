@@ -20,6 +20,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -49,9 +50,8 @@ public class AddDivUI extends UI {
 
     private void addDiv() {
         Element bodyElement = getElement();
-        Element div = new Element("div");
-        div.setTextContent("Hello world at " + System.currentTimeMillis() + " ("
-                + msgId++ + ")");
+        Element div = ElementFactory.createDiv("Hello world at "
+                + System.currentTimeMillis() + " (" + msgId++ + ")");
         bodyElement.insertChild(0, div);
         if (msgId % 100 == 0) {
             System.out.println("Pushed id " + msgId + " to " + ip);

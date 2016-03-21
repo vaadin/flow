@@ -33,7 +33,7 @@ All changes are automatically synchronized to the real DOM tree in the browser.
 The DOM tree is built up from `Element` instances, each one representing a DOM element in the browser.
 The root of the server-side DOM tree is the `Element` of the `UI` instance, accessible using `ui.getElement()`.
 This element represents the `<body>` tag.
-You can create your own elements with any tag name (i.e. not restricted to the built-in HTML tag names) from Java using the `Element(String)` constructor, e.g. `Element e = new Element("div");`.
+You can create your own elements with any tag name (i.e. not restricted to the built-in HTML tag names) from Java using the `Element(String)` constructor, e.g. `Element e = new Element("div");`. Utility methods for creating certain elements are provided through the `ElementFactory` class.
 
 Elements on the server are implemented as flyweight instances.
 This means that you can usually not use `==` and `!=` checking element identity.
