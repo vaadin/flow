@@ -101,8 +101,34 @@ public abstract class ViewRenderer implements NavigationHandler {
 
             // Show the new view and parent views
             ui.showView(event.getLocation(), viewInstance, parentViews);
+
+            updatePageTitle(event, locationChangeEvent);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Cannot instantiate view", e);
+        }
+    }
+
+    /**
+     * Updates the page title according to the currently opened views.
+     * <p>
+     * Uses the {@link RouterConfiguration#getPageTitleGenerator()} to resolve
+     * the title.
+     *
+     * @param navigationEvent
+     *            the event object about the navigation
+     * @param locationChangeEvent
+     *            event object with information on the new location
+     */
+    protected void updatePageTitle(NavigationEvent navigationEvent,
+            LocationChangeEvent locationChangeEvent) {
+        PageTitleGenerator pageTitleGenerator = navigationEvent.getSource()
+                .getConfiguration().getPageTitleGenerator();
+
+        Optional<String> title = Optional.ofNullable(
+                pageTitleGenerator.getPageTitle(locationChangeEvent));
+
+        if (title.isPresent()) {
+            navigationEvent.getUI().getPage().setTitle(title.get());
         }
     }
 
