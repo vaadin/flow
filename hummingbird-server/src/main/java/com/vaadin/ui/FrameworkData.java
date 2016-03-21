@@ -138,6 +138,8 @@ public class FrameworkData implements Serializable {
 
     private final UI ui;
 
+    private String title;
+
     /**
      * Creates a new framework data instance for the given UI.
      *
@@ -361,5 +363,26 @@ public class FrameworkData implements Serializable {
      */
     protected List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
         return pendingJsInvocations;
+    }
+
+    /**
+     * Records the page title set with {@link Page#setTitle(String)}.
+     * <p>
+     * You cannot set the page title for the browser with this method, use
+     * {@link Page#setTitle(String)} instead.
+     *
+     * @param title
+     */
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    /**
+     * Gets the page title recorded with {@link Page#setTitle(String)}.
+     *
+     * @return the page title
+     */
+    public String getTitle() {
+        return title;
     }
 }

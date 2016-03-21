@@ -66,25 +66,30 @@ public class Page implements Serializable {
     }
 
     /**
-     * Updates the page title. The title is displayed by the browser e.g. as the
+     * Sets the page title. The title is displayed by the browser e.g. as the
      * title of the browser window or tab.
      * <p>
-     * To clear the page title, use an empty string. <code>null</code> is not
-     * supported.
+     * To clear the page title, use an empty string.
+     * <p>
+     * <code>null</code> will cancel any pending title update not yet sent to
+     * browser.
      *
      * @param title
-     *            the page title to set, not <code>null</code>
+     *            the page title to set
      */
-    public void updateTitle(String title) {
-        if (title == null) {
-            throw new IllegalArgumentException("Cannot set a null page title");
-        }
-
+    public void setTitle(String title) {
         if (pendingTitleUpdate != null) {
             pendingTitleUpdate.cancelExecution();
         }
 
-        pendingTitleUpdate = executeJavaScript("document.title = $0", title);
+        if (title != null) {
+            pendingTitleUpdate = executeJavaScript("document.title = $0",
+                    title);
+
+            ui.getFrameworkData().setTitle(title);
+        } else {
+            pendingTitleUpdate = null;
+        }
     }
 
     /**

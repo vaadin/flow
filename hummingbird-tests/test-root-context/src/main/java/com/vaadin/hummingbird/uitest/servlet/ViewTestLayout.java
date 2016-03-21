@@ -52,6 +52,7 @@ public class ViewTestLayout implements HasChildView {
             }
             Element option = ElementFactory.createOption(c.getSimpleName())
                     .setAttribute("value", c.getName());
+            option.setAttribute("id", c.getSimpleName());
 
             optionGroup.appendChild(option);
         }
