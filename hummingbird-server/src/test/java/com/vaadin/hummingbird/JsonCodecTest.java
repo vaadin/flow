@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.util.JsonUtil;
 
@@ -62,7 +63,7 @@ public class JsonCodecTest {
     public void encodeWithoutTypeInfo_unsupportedTypes() {
         List<Object> unsupported = new ArrayList<>(
                 withTypeInfoUnsupportedValues);
-        unsupported.add(new Element("div"));
+        unsupported.add(ElementFactory.createDiv());
 
         for (Object value : unsupported) {
             try {
@@ -96,7 +97,7 @@ public class JsonCodecTest {
 
     @Test
     public void encodeWithTypeInfo_attachedElement() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         StateTree tree = new StateTree(ElementChildrenNamespace.class);
         tree.getRootNode().getNamespace(ElementChildrenNamespace.class).add(0,
@@ -112,7 +113,7 @@ public class JsonCodecTest {
 
     @Test
     public void encodeWithTypeInfo_detachedElement() {
-        Element element = new Element("div");
+        Element element = ElementFactory.createDiv();
 
         JsonValue json = JsonCodec.encodeWithTypeInfo(element);
 

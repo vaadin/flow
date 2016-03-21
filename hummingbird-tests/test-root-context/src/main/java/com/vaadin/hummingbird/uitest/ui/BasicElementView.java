@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.util.Set;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.Style;
 
 public class BasicElementView extends TestView {
@@ -27,10 +28,9 @@ public class BasicElementView extends TestView {
         Element mainElement = getElement();
         mainElement.getStyle().set("margin", "1em");
 
-        Element button = new Element("button");
-        button.setTextContent("Click me");
+        Element button = ElementFactory.createButton("Click me");
 
-        Element input = new Element("input")
+        Element input = ElementFactory.createInput()
                 .setAttribute("placeholder", "Synchronized on change event")
                 .setSynchronizedProperties("value")
                 .setSynchronizedPropertiesEvents("change");
@@ -39,22 +39,22 @@ public class BasicElementView extends TestView {
             String buttonText = e.getEventData()
                     .getString("element.textContent");
 
-            Element greeting = new Element("div");
+            Element greeting = ElementFactory
+                    .createDiv("Thank you for clicking at \"" + buttonText
+                            + "\"! The field value is "
+                            + input.getProperty("value"));
             greeting.setAttribute("class", "thankYou");
-            greeting.setTextContent("Thank you for clicking at \"" + buttonText
-                    + "\"! The field value is " + input.getProperty("value"));
             greeting.addEventListener("click",
                     e2 -> greeting.removeFromParent());
 
             mainElement.appendChild(greeting);
         } , "element.textContent");
 
-        Element helloWorldElement = new Element("div");
+        Element helloWorldElement = ElementFactory.createDiv("Hello world");
 
         Set<String> spanClasses = helloWorldElement.getClassList();
 
         helloWorldElement.setProperty("id", "hello-world");
-        helloWorldElement.setTextContent("Hello world");
         spanClasses.add("hello");
         helloWorldElement.addEventListener("click", e -> {
             helloWorldElement.setTextContent("Stop touching me!");

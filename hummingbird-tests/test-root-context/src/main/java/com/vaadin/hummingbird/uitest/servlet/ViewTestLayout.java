@@ -21,17 +21,18 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.ui.UI;
 
 public class ViewTestLayout implements HasChildView {
 
-    private Element element = new Element("div");
-    private Element viewContainer = new Element("div");
-    private Element viewSelect = new Element("select");
+    private Element element = ElementFactory.createDiv();
+    private Element viewContainer = ElementFactory.createDiv();
+    private Element viewSelect = ElementFactory.createSelect();
 
     public ViewTestLayout() {
         List<Class<? extends View>> classes = new ArrayList<>(
@@ -39,7 +40,7 @@ public class ViewTestLayout implements HasChildView {
         Collections.sort(classes, Comparator.comparing(Class::getName));
 
         String lastPackage = "";
-        viewSelect.appendChild(new Element("option"));
+        viewSelect.appendChild(ElementFactory.createOption());
         Element optionGroup = null;
         for (Class<? extends View> c : classes) {
             if (!c.getPackage().getName().equals(lastPackage)) {
@@ -49,9 +50,8 @@ public class ViewTestLayout implements HasChildView {
                         c.getPackage().getName().replaceAll("^.*\\.", ""));
                 viewSelect.appendChild(optionGroup);
             }
-            Element option = new Element("option").setAttribute("value",
-                    c.getName());
-            option.setTextContent(c.getSimpleName());
+            Element option = ElementFactory.createOption(c.getSimpleName())
+                    .setAttribute("value", c.getName());
 
             optionGroup.appendChild(option);
         }
@@ -63,8 +63,9 @@ public class ViewTestLayout implements HasChildView {
             ui.navigateTo(viewSelect.getProperty("value"));
         });
 
-        element.appendChild(viewSelect, new Element("hr"), viewContainer);
-        viewContainer.appendChild(new Element("div"));
+        element.appendChild(viewSelect, ElementFactory.createHr(),
+                viewContainer);
+        viewContainer.appendChild(ElementFactory.createDiv());
     }
 
     @Override
