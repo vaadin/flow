@@ -12,6 +12,12 @@
 	<description>Module containing tutorials' code</description>
 	<packaging>jar</packaging>
 
+	<properties>
+		<!-- Coding style checks do not make sense for out-of-context chunks of 
+			tutorial code -->
+		<sonar.skip>true</sonar.skip>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.vaadin</groupId>

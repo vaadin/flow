@@ -15,15 +15,14 @@
  */
 package com.vaadin.humminbird.tutorial;
 
+import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
 
-/**
- * Tutorial code related to tutorial-event-listener.asciidoc.
- */
+@CodeFor("tutorial-event-listener.asciidoc")
 public abstract class EventListener extends UI {
 
     void tutorialCode() {
@@ -42,9 +41,8 @@ public abstract class EventListener extends UI {
             String text = "Shift " + (shiftKey ? "down" : "up");
             text += " on button whose width is " + width + "px";
 
-            Element response = ElementFactory.createDiv();
-            response.setTextContent(text);
+            Element response = ElementFactory.createDiv(text);
             getElement().appendChild(response);
-        } , "event.shiftKey", "element.offsetWidth");
+        }, "event.shiftKey", "element.offsetWidth");
     }
 }

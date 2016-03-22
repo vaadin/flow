@@ -15,12 +15,11 @@
  */
 package com.vaadin.humminbird.tutorial;
 
+import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 
-/**
- * Tutorial code related to tutorial-properties-attributes.asciidoc.
- */
+@CodeFor("tutorial-properties-attributes.asciidoc")
 public class PropertiesAttributes {
 
     void tutorialCode() {
@@ -30,7 +29,7 @@ public class PropertiesAttributes {
         nameField.setAttribute("autofocus", "");
 
         // "John Doe"
-        nameField.getAttribute("placeholder");
+        String placeholder = nameField.getAttribute("placeholder");
 
         // true
         nameField.hasAttribute("autofocus");
@@ -57,15 +56,17 @@ public class PropertiesAttributes {
         element.getStyle().remove("backgroundColor");
 
         element.getStyle().has("cursor");
+    }
 
-        element = ElementFactory.createDiv("Hello world"); // <div>Hello
-                                                           // world</div>
+    public void moreTutorialCode() {
+        //@formatter:off - custom line wrapping
 
-        element.appendChild(ElementFactory.createSpan()); // <div>Hello
-        // world<span></span></div>
+        Element element =ElementFactory.createDiv("Hello world"); // <div>Hello world</div>
+        element.setTextContent("Hello world");
 
-        element.setTextContent("Replacement text"); // <div>Replacement
-                                                    // text</div>
+        element.appendChild(ElementFactory.createSpan()); // <div>Hello world<span></span></div>
+
+        element.setTextContent("Replacement text"); // <div>Replacement text</div>
 
         element.setTextContent("Welcome back ");
 
@@ -73,5 +74,7 @@ public class PropertiesAttributes {
         element.appendChild(name);
 
         element.getTextContent(); // will return "Welcome back Rudolph Reindeer"
+
+        //@formatter:on
     }
 }
