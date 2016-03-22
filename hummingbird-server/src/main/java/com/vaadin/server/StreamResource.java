@@ -192,7 +192,7 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Set cache time;
+     * Set cache time.
      * 
      * @param time
      *            resource cache time
