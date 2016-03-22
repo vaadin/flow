@@ -15,6 +15,7 @@
  */
 package com.vaadin.server;
 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -125,6 +126,85 @@ public class StreamResourceRegistryTest {
                 StandardCharsets.UTF_8.name());
         Assert.assertTrue("Resource url is not encoded",
                 url.toString().endsWith(suffix));
+=======
+import static org.junit.Assert.assertNotNull;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+/**
+ * @author Vaadin Ltd
+ *
+ */
+public class StreamResourceRegistryTest {
+
+    @Test
+    public void registerResource_registrationResultContainsExpectedUri() {
+        StreamResourceRegistry registry = new StreamResourceRegistry();
+
+        StreamResource resource = new StreamResource("name",
+                () -> makeEmptyStream());
+        StreamResourceRegistration registration = registry
+                .registerResource(resource);
+        Assert.assertNotNull(registration);
+
+        String uri = registration.getResourceUri();
+        Assert.assertTrue("Unexpected URI prefix",
+                uri.startsWith(VaadinSession.DYN_RES_PREFIX));
+
+        StreamResource stored = registry.getResource(uri);
+        Assert.assertSame(
+                "Unexpected stored resource is returned for registered URI",
+                stored, resource);
+    }
+
+    @Test
+    public void unregisterResource_resourceIsRemoved() {
+        StreamResourceRegistry registry = new StreamResourceRegistry();
+
+        StreamResource resource = new StreamResource("name",
+                () -> makeEmptyStream());
+        StreamResourceRegistration registration = registry
+                .registerResource(resource);
+        Assert.assertNotNull(registration);
+
+        String uri = registration.getResourceUri();
+
+        registration.unregister();
+
+        StreamResource stored = registry.getResource(uri);
+        Assert.assertNull(
+                "Unexpected stored resource is found after unregister()",
+                stored);
+    }
+
+    @Test
+    public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
+        StreamResourceRegistry registry = new StreamResourceRegistry();
+
+        StreamResource resource1 = new StreamResource("name",
+                () -> makeEmptyStream());
+        StreamResourceRegistration registration1 = registry
+                .registerResource(resource1);
+
+        StreamResource resource2 = new StreamResource("name",
+                () -> makeEmptyStream());
+        StreamResourceRegistration registration2 = registry
+                .registerResource(resource2);
+
+        Assert.assertNotEquals(
+                "Two different resource are registered to the same URI",
+                registration1.getResourceUri(), registration2.getResourceUri());
+
+        registration1.unregister();
+
+        assertNotNull(
+                "Second resource is not found after first resource has been unregistered",
+                registry.getResource(registration2.getResourceUri()));
+>>>>>>> ce3f239 Corrections and tests for resource registry.
     }
 
     private InputStream makeEmptyStream() {
