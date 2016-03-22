@@ -40,7 +40,7 @@ public class StreamResource implements Serializable {
      *
      */
     @FunctionalInterface
-    public interface InputStreamFactory {
+    public interface InputStreamFactory extends Serializable {
         /**
          * Produce {@link InputStream} instance to resource read data from.
          * <p>
