@@ -212,26 +212,74 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 /**
+ * Instance of this class represents dynamically generated data.
+ * <p>
+ * The instance should be registered via
+ * {@link VaadinSession#register(StreamResource)}. This method generates unique
+ * URI which may be used to request the resource.
+ * 
  * @author Vaadin Ltd
  *
  */
-public interface StreamResource extends Serializable {
+public class StreamResource implements Serializable {
 
     /**
-     * Get resource filename.
+     * Input stream factory.
+     * <p>
+     * The instance of this class should generate {@link InputStream} for the
+     * resource.
      * 
-     * @return resource filename
+     * @author Vaadin Ltd
+     *
      */
-    String getFilename();
+    @FunctionalInterface
+    public interface InputStreamFactory {
+        /**
+         * Produce {@link InputStream} instance to resource read data from.
+         * <p>
+         * Return value may not be null.
+         * 
+         * @return data input stream. May not be null.
+         */
+        InputStream createInputStream();
+    }
+
+    private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+
+    private String fileName;
+
+    private String contentType = DEFAULT_CONTENT_TYPE;
+
+    private long cacheTime = 1000L * 60 * 60 * 24;
+
+    private InputStreamFactory streamFactory;
+
+    private boolean requiresLock = true;
 
     /**
-     * Returns content type of the resource. Default is
-     * "application/octet-stream".
+     * Creates {@link StreamResource} instance using mandatory parameters
+     * {@code name} as a resource file name and input stream {@code factory} as
+     * a factory for data.
+     * 
+     * @param name
+     *            resource file name. May not be null.
+     * @param factory
+     *            data input stream factory. May not be null.
+     */
+    public StreamResource(String name, InputStreamFactory factory) {
+        assert name != null;
+        assert factory != null;
+        fileName = name;
+        streamFactory = factory;
+    }
+
+    /**
+     * Returns content type of the resource.
      * 
      * @return resource content type
      */
-    default String getContentType() {
-        return "application/octet-stream";
+    public String getContentType() {
+        return contentType;
     }
 
     /**
@@ -239,16 +287,18 @@ public interface StreamResource extends Serializable {
      * 
      * @return resource input stream to generate data
      */
-    InputStream createInputStream();
+    public InputStream createInputStream() {
+        return streamFactory.createInputStream();
+    }
 
     /**
      * Gets the length of cache expiration time. This gives the possibility
      * cache resource.
      * 
-     * @return Cache time in milliseconds.
+     * @return cache time in milliseconds.
      */
-    default long getCacheTime() {
-        return 1000 * 60 * 60 * 24;
+    public long getCacheTime() {
+        return cacheTime;
     }
 
     /**
@@ -268,9 +318,86 @@ public interface StreamResource extends Serializable {
      * 
      * @return
      */
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     default boolean requiresLock() {
         return true;
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+    public boolean requiresLock() {
+        return requiresLock;
+    }
+
+    /**
+     * Get resource file name.
+     * 
+     * @return
+     */
+    public String getFileName() {
+        return fileName;
+    }
+
+    /**
+     * Set resource file name.
+     * <p>
+     * {@code name} may not be null.
+     * 
+     * @param name
+     *            resource file name. May not be null.
+     */
+    public void setFileName(String name) {
+        assert name != null;
+        fileName = name;
+    }
+
+    /**
+     * Return input stream factory.
+     * 
+     * @return input stream factory
+     */
+    public InputStreamFactory getStreamFactory() {
+        return streamFactory;
+    }
+
+    /**
+     * Set input stream factory.
+     * 
+     * @param factory
+     *            input stream factory
+     */
+    public void setStreamFactory(InputStreamFactory factory) {
+        streamFactory = factory;
+    }
+
+    /**
+     * Set 'requiresLock' property. See {@link #requiresLock()} method for
+     * details.
+     * 
+     * @param requires
+     *            'requiresLock' value
+     */
+    public void setRequiresLock(boolean requires) {
+        requiresLock = requires;
+    }
+
+    /**
+     * Set content type for the resource.
+     * 
+     * @param contentType
+     *            resource content type
+     */
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    /**
+     * Set cache time;
+     * 
+     * @param time
+     *            resource cache time
+     */
+    public void setCacheTime(long time) {
+        cacheTime = time;
+>>>>>>> b91f0ec Javadocs for stream resource and setters/getters.
     }
 
 }
