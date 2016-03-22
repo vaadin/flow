@@ -81,6 +81,7 @@ class StreamResourceRegistry implements Serializable {
      */
     StreamResourceRegistration registerResource(StreamResource resource) {
         int id = nextResourceId;
+        nextResourceId++;
         resources.put(id, resource);
         return new Registration(this, id, resource.getFileName());
     }
