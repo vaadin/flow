@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.uitest.servlet;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.View;
 
 public class ErrorView implements View {
@@ -23,8 +24,7 @@ public class ErrorView implements View {
     private Element element;
 
     public ErrorView() {
-        element = new Element("div");
-        element.setTextContent("Not found");
+        element = ElementFactory.createDiv("Not found");
     }
 
     @Override

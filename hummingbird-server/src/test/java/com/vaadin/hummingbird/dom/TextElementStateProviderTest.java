@@ -96,7 +96,7 @@ public class TextElementStateProviderTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void addChildThrows() {
-        element.appendChild(new Element("div"));
+        element.appendChild(ElementFactory.createDiv());
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -106,7 +106,7 @@ public class TextElementStateProviderTest {
 
     @Test
     public void testTextChild() {
-        Element parent = new Element("div");
+        Element parent = ElementFactory.createDiv();
         parent.appendChild(element);
 
         Assert.assertEquals(parent, element.getParent());
