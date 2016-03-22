@@ -40,7 +40,7 @@ public class HelloWorldUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        Element div = new Element("div");
+        Element div = ElementFactory.createDiv("Hello world");
         div.setTextContent("Hello world");
         getElement().appendChild(div);
     }
