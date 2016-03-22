@@ -21,7 +21,7 @@ In this case you are limited to the styles you have defined in advance. To get r
 
 [source,java]
 ----
-Element input = ...;
+Element input = ElementFactory.createInput();
 button.setTextContent("Change to the entered value");
 button.addEventListener("click",
     e -> button.getStyle().set("background",input.getProperty("value")));

@@ -18,25 +18,16 @@ package com.vaadin.humminbird.tutorial;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-dynamic-styling.asciidoc")
-public class DynamicStyling {
+@CodeFor("tutorial-hello-world.asciidoc")
+public class HelloWorldUI extends UI {
 
-    Element button = ElementFactory.createDiv();
-
-    void tutorialCode() {
-
-        button.setTextContent("Change to blue");
-        button.addEventListener("click",
-                e -> button.getClassList().add("blue"));
-
-        //@formatter:off - custom line wrapping
-
-        Element input = ElementFactory.createInput();
-        button.setTextContent("Change to the entered value");
-        button.addEventListener("click",
-                e -> button.getStyle().set("background", input.getProperty("value")));
-
-        //@formatter:on
+    @Override
+    protected void init(VaadinRequest request) {
+        // Called whenever a user opens the page
+        Element div = ElementFactory.createDiv("Hello world");
+        getElement().appendChild(div);
     }
 }
