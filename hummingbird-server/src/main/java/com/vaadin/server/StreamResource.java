@@ -17,6 +17,7 @@ package com.vaadin.server;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Instance of this class represents dynamically generated data.
@@ -199,6 +200,31 @@ public class StreamResource implements Serializable {
      */
     public void setCacheTime(long time) {
         cacheTime = time;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (this == obj) {
+            return true;
+        } else if (getClass().equals(obj.getClass())) {
+            StreamResource that = (StreamResource) obj;
+            return Objects.equals(getCacheTime(), that.getCacheTime())
+                    && Objects.equals(getContentType(), that.getContentType())
+                    && Objects.equals(getFileName(), that.getFileName())
+                    && Objects.equals(getStreamFactory(),
+                            that.getStreamFactory())
+                    && Objects.equals(requiresLock(), that.requiresLock());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCacheTime(), getContentType(), getFileName(),
+                getStreamFactory(), requiresLock());
     }
 
 }
