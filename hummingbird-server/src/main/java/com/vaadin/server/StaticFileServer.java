@@ -70,6 +70,11 @@ public class StaticFileServer implements Serializable {
                 // least with Jetty
                 return false;
             }
+            if (requestFilename.startsWith("/VAADIN/")) {
+                // VAADIN is reserved for internal static resources only
+                // We rather serve 404 than let it fall through
+                return true;
+            }
             resource = request.getServletContext().getResource(requestFilename);
         } catch (MalformedURLException e) {
             return false;
@@ -99,7 +104,8 @@ public class StaticFileServer implements Serializable {
 
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR
-            return false;
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return true;
         }
 
         // There is a resource!
