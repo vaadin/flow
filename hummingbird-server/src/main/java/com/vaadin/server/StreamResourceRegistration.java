@@ -25,15 +25,19 @@ import java.net.URI;
  * Use {@link #getResourceUri()} to get URI after {@link StreamResource} is
  * registered. It also allows to unregister the resource.
  * 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 =======
 
 /**
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+>>>>>>> ae80070 Some javadocs.
  * @author Vaadin Ltd
  *
  */
 public interface StreamResourceRegistration extends Serializable {
 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
     /**
      * Get resource URI for registered {@link StreamResource} instance.
@@ -55,8 +59,21 @@ public interface StreamResourceRegistration extends Serializable {
      * until the session expires.
      */
 =======
+=======
+    /**
+     * Get resource URI for registered {@link StreamResource} instance.
+     * 
+     * @return
+     */
+>>>>>>> ae80070 Some javadocs.
     String getResourceUri();
 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+    /**
+     * Unregister {@link StreamResource}.
+     */
+>>>>>>> ae80070 Some javadocs.
     void unregister();
 }

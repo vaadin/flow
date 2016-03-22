@@ -51,7 +51,12 @@ import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 
 /**
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+ * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
+ * 
+>>>>>>> ae80070 Some javadocs.
  * @author Vaadin Ltd
  *
  */
