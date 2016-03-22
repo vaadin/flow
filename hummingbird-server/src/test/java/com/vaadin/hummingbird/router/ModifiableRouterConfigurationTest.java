@@ -128,6 +128,7 @@ public class ModifiableRouterConfigurationTest {
         validateNoSameInstances(original, copy);
     }
 
+    @SuppressWarnings("rawtypes")
     private void validateNoSameInstances(Object original, Object copy)
             throws Exception {
         Assert.assertNotNull(original);
@@ -158,6 +159,7 @@ public class ModifiableRouterConfigurationTest {
                 || Resolver.class.isAssignableFrom(c);
     }
 
+    @SuppressWarnings("rawtypes")
     private void validateNoSameInstances(Map original, Map copy)
             throws Exception {
         for (Object key : original.keySet()) {
