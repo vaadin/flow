@@ -56,6 +56,7 @@ public class StreamResourceRequestHandler implements RequestHandler {
             }
 
             response.setContentType(resource.getContentType());
+            response.setCacheTime(resource.getCacheTime());
             stream = resource.createInputStream();
 
             requiresLock = resource.requiresLock();
