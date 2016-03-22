@@ -47,7 +47,7 @@ For instance, a property set as a non-empty string will result in `true` if fetc
 [source,java]
 ----
 Element element = ElementFactory.createInput();
-element.setProperty("value", "Hello")
+element.setProperty("value", "Hello");
 ----
 
 [NOTE]
