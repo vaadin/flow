@@ -64,7 +64,7 @@ public class RouterSessionExpirationIT extends PhantomJSTest {
     private void navigateTo(String linkText) {
         findElement(By.linkText(linkText)).click();
         Assert.assertNotNull(
-                findElement(By.xpath("//b[text()='" + linkText + "']")));
+                findElement(By.xpath("//strong[text()='" + linkText + "']")));
 
     }
 }

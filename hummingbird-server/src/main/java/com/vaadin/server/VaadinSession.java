@@ -190,7 +190,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Dynamic resource URI prefix.
      */
-    public static final String DYN_RES_PREFIX = "vaadin/dynamic/generated-resources/";
+    public static final String DYN_RES_PREFIX = "vaadin-dynamic/generated-resources/";
 
     /**
      * Configuration for the session.
