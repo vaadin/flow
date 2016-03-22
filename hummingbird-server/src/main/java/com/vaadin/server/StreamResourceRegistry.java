@@ -16,6 +16,7 @@
 package com.vaadin.server;
 
 import java.io.Serializable;
+<<<<<<< HEAD
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -26,10 +27,19 @@ import com.vaadin.server.communication.StreamResourceRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.
+=======
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * This class is not thread safe. One should care about thread safety in the
+ * code which uses this class explicitly.
+>>>>>>> 80ab6ba... Stream resource registration on the session level.
  * 
  * @author Vaadin Ltd
  *
  */
+<<<<<<< HEAD
 public class StreamResourceRegistry implements Serializable {
 
     private final Map<URI, StreamResource> resources = new HashMap<>();
@@ -37,17 +47,31 @@ public class StreamResourceRegistry implements Serializable {
     private final VaadinSession session;
 
     private int nextResourceId;
+=======
+class StreamResourceRegistry implements Serializable {
+
+    private static final char PATH_SEPARATOR = '/';
+
+    private final Map<Integer, StreamResource> resources = new HashMap<>();
+>>>>>>> 80ab6ba... Stream resource registration on the session level.
 
     private static final class Registration
             implements StreamResourceRegistration {
 
         private final StreamResourceRegistry registry;
 
+<<<<<<< HEAD
         private final URI uri;
+=======
+        private final int resourceId;
+
+        private final String name;
+>>>>>>> 80ab6ba... Stream resource registration on the session level.
 
         private Registration(StreamResourceRegistry registry, int id,
                 String fileName) {
             this.registry = registry;
+<<<<<<< HEAD
             try {
                 uri = new URI(
                         StreamResourceRequestHandler.generateURI(id, fileName));
@@ -60,15 +84,39 @@ public class StreamResourceRegistry implements Serializable {
         @Override
         public URI getResourceUri() {
             return uri;
+=======
+            resourceId = id;
+            StringBuilder resourceName = new StringBuilder(fileName);
+            while (resourceName.length() > 0
+                    && resourceName.charAt(0) == PATH_SEPARATOR) {
+                resourceName.delete(0, 1);
+            }
+            resourceName.insert(0, PATH_SEPARATOR);
+            name = resourceName.toString();
+        }
+
+        @Override
+        public String getResourceUri() {
+            // TODO : prefix should be configurable
+            StringBuilder builder = new StringBuilder(
+                    VaadinSession.DYN_RES_PREFIX);
+            builder.append(resourceId).append(name);
+            return builder.toString();
+>>>>>>> 80ab6ba... Stream resource registration on the session level.
         }
 
         @Override
         public void unregister() {
+<<<<<<< HEAD
             registry.resources.remove(getResourceUri());
+=======
+            registry.resources.remove(resourceId);
+>>>>>>> 80ab6ba... Stream resource registration on the session level.
         }
 
     }
 
+<<<<<<< HEAD
     /**
      * Creates stream resource registry for provided {@code session}.
      * 
@@ -115,6 +163,46 @@ public class StreamResourceRegistry implements Serializable {
     public Optional<StreamResource> getResource(URI uri) {
         assert session.hasLock();
         return Optional.ofNullable(resources.get(uri));
+=======
+    private int nextResourceId;
+
+    /**
+     * Register the {@code resource}.
+     * 
+     * @param resource
+     *            resource to register
+     * @return registration handler
+     */
+    StreamResourceRegistration registerResource(StreamResource resource) {
+        int id = nextResourceId;
+        resources.put(id, resource);
+        return new Registration(this, id, resource.getFilename());
+    }
+
+    /**
+     * Get registered resource by its {@code uri}.
+     * 
+     * @param uri
+     *            resource uri
+     * @return registered resource if any
+     */
+    StreamResource getResource(String uri) {
+        if (uri.startsWith(VaadinSession.DYN_RES_PREFIX)) {
+            String postfix = uri
+                    .substring(VaadinSession.DYN_RES_PREFIX.length());
+            int index = postfix.indexOf(PATH_SEPARATOR);
+            if (index >= 0) {
+                String id = postfix.substring(0, index);
+                try {
+                    int resId = Integer.parseInt(id);
+                    return resources.get(resId);
+                } catch (NumberFormatException ignore) {
+                    // ignore the exception. URI is not dyn resource URI
+                }
+            }
+        }
+        return null;
+>>>>>>> 80ab6ba... Stream resource registration on the session level.
     }
 
 }
