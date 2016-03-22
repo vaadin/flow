@@ -52,6 +52,7 @@ import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
+import com.vaadin.server.communication.StreamResourceRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
@@ -249,6 +250,7 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
+        handlers.add(new StreamResourceRequestHandler());
 
         return handlers;
     }

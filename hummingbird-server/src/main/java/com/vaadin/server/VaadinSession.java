@@ -188,6 +188,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public static final String UI_PARAMETER = "UI";
 
     /**
+     * Dynamic resource URI prefix.
+     */
+    public static final String DYN_RES_PREFIX = "vaadin/dynamic/generated-resources/";
+
+    /**
      * Configuration for the session.
      */
     private DeploymentConfiguration configuration;
@@ -233,6 +238,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<FutureAccess>();
 
     private final String csrfToken = UUID.randomUUID().toString();
+
+    private final StreamResourceRegistry resourceRegistry = new StreamResourceRegistry();
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -1103,4 +1110,33 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         refreshLock();
     }
 
+    /**
+     * Register stream resource in the session and returns registration handler.
+     * <p>
+     * One is able to get resource URI to use it in the application (f.e. set an
+     * attribute value or property value) via registration handler. The handler
+     * should be used to unregister resource when it's not needed anymore. Note
+     * that this is developer responsibility to unregister resources. Otherwise
+     * resources stays referenced from the session
+     * 
+     * @param resource
+     *            stream resource to register
+     * @return registration handler.
+     */
+    public StreamResourceRegistration register(StreamResource resource) {
+        assert hasLock();
+        return resourceRegistry.registerResource(resource);
+    }
+
+    /**
+     * Get registered resource by given {@code uri}.
+     * 
+     * @param uri
+     *            resource uri
+     * @return registered resource if any
+     */
+    public StreamResource getResource(String uri) {
+        assert hasLock();
+        return resourceRegistry.getResource(uri);
+    }
 }
