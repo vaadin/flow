@@ -27,6 +27,8 @@ import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 
 /**
+ * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
+ * 
  * @author Vaadin Ltd
  *
  */

@@ -18,12 +18,25 @@ package com.vaadin.server;
 import java.io.Serializable;
 
 /**
+ * Stream resource registration result.
+ * <p>
+ * Use {@link #getResourceUri()} to get URI after {@link StreamResource} is
+ * registered. It also allows to unregister the resource.
+ * 
  * @author Vaadin Ltd
  *
  */
 public interface StreamResourceRegistration extends Serializable {
 
+    /**
+     * Get resource URI for registered {@link StreamResource} instance.
+     * 
+     * @return
+     */
     String getResourceUri();
 
+    /**
+     * Unregister {@link StreamResource}.
+     */
     void unregister();
 }
