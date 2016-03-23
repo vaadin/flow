@@ -46,12 +46,12 @@ public interface RouterConfiguration {
     /**
      * Resolves a route.
      *
-     * @param event
-     *            the event for which to resolve a route
+     * @param location
+     *            the location to resolve, not <code>null</code>
      * @return a navigation handler or handling the route, or <code>null</code>
      *         if no configured route matched the location
      */
-    NavigationHandler resolveRoute(NavigationEvent event);
+    NavigationHandler resolveRoute(Location location);
 
     /**
      * Gets the parent type configured for the given view type.

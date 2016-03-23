@@ -129,21 +129,21 @@ public class ModifiableRouterConfiguration
      * Resolves a route based on what has been configured using the various
      * <code>setRoute</code> methods.
      *
-     * @param event
-     *            the event for which to resolve a route
+     * @param location
+     *            the location to resolve, not <code>null</code>
      * @return a navigation handler or handling the route, or <code>null</code>
      *         if no configured route matched the location
      */
     @Override
-    public NavigationHandler resolveRoute(NavigationEvent event) {
-        assert event != null;
+    public NavigationHandler resolveRoute(Location location) {
+        assert location != null;
 
         // Start the recursion
-        return resolveRoute(routeTreeRoot, event.getLocation(), event);
+        return resolveRoute(routeTreeRoot, location);
     }
 
     private static NavigationHandler resolveRoute(RouteTreeNode node,
-            Location location, NavigationEvent event) {
+            Location location) {
         String segment = location.getFirstSegment();
         Location subLocation = location.getSubLocation();
 
@@ -154,7 +154,7 @@ public class ModifiableRouterConfiguration
             RouteTreeNode childNode = node.resolveChild(segment);
 
             if (childNode != null) {
-                handler = resolveRoute(childNode, subLocation, event);
+                handler = resolveRoute(childNode, subLocation);
             }
         } else {
             // Find an actual handler if this is the last path segment

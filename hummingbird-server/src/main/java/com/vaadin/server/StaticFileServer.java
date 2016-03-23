@@ -28,6 +28,8 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.shared.ApplicationConstants;
+
 /**
  * Handles sending of resources from the WAR root (web content) or
  * META-INF/resources in the case that {@link VaadinServlet} is mapped using
@@ -70,8 +72,9 @@ public class StaticFileServer implements Serializable {
                 // least with Jetty
                 return false;
             }
-            if (requestFilename.startsWith("/VAADIN/")) {
-                // VAADIN is reserved for internal static resources only
+            if (requestFilename.startsWith(
+                    "/" + ApplicationConstants.VAADIN_STATIC_FILES_PATH)) {
+                // The path is reserved for internal static resources only
                 // We rather serve 404 than let it fall through
                 return true;
             }
