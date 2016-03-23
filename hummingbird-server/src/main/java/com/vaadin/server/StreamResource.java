@@ -23,8 +23,8 @@ import java.util.Objects;
  * Represents dynamically generated data.
  * <p>
  * The instance should be registered via
- * {@link VaadinSession#register(StreamResource)}. This method returns an object
- * which may be used to get resource URI.
+ * {@link VaadinSession#registerResource(StreamResource)}. This method returns an object
+ * which may be used to get resource URL.
  * 
  * @author Vaadin Ltd
  *
@@ -70,7 +70,7 @@ public class StreamResource implements Serializable {
      * {@code name} as a resource file name and input stream {@code factory} as
      * a factory for data.
      * <p>
-     * {@code name} parameter value will be used in URI (generated when resource
+     * {@code name} parameter value will be used in URL (generated when resource
      * is registered) in a way that the {@name} is the last segment of the path.
      * So this is synthetic file name (not real one).
      * 
@@ -142,7 +142,7 @@ public class StreamResource implements Serializable {
     /**
      * Get the resource file name.
      * <p>
-     * The value will be used in URI (generated when resource is registered) in
+     * The value will be used in URL (generated when resource is registered) in
      * a way that the {@name} is the last segment of the path. So this is
      * synthetic file name (not real one).
      * 

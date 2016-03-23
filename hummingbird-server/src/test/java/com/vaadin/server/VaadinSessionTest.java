@@ -343,12 +343,10 @@ public class VaadinSessionTest {
     public void registerResource_registrationResultContainsExpectedUri() {
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration = session.register(resource);
+        StreamResourceRegistration registration = session.registerResource(resource);
         Assert.assertNotNull(registration);
 
-        String uri = registration.getResourceUri();
-        Assert.assertTrue("Unexpected URI prefix",
-                uri.startsWith(VaadinSession.DYN_RES_PREFIX));
+        String uri = registration.getResourceUrl();
 
         StreamResource stored = session.getResource(uri);
         Assert.assertSame(
@@ -360,10 +358,10 @@ public class VaadinSessionTest {
     public void unregisterResource_resourceIsRemoved() {
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration = session.register(resource);
+        StreamResourceRegistration registration = session.registerResource(resource);
         Assert.assertNotNull(registration);
 
-        String uri = registration.getResourceUri();
+        String uri = registration.getResourceUrl();
 
         registration.unregister();
 
@@ -377,21 +375,21 @@ public class VaadinSessionTest {
     public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
         StreamResource resource1 = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration1 = session.register(resource1);
+        StreamResourceRegistration registration1 = session.registerResource(resource1);
 
         StreamResource resource2 = new StreamResource("name",
                 () -> makeEmptyStream());
-        StreamResourceRegistration registration2 = session.register(resource2);
+        StreamResourceRegistration registration2 = session.registerResource(resource2);
 
         Assert.assertNotEquals(
                 "Two different resource are registered to the same URI",
-                registration1.getResourceUri(), registration2.getResourceUri());
+                registration1.getResourceUrl(), registration2.getResourceUrl());
 
         registration1.unregister();
 
         assertNotNull(
                 "Second resource is not found after first resource has been unregistered",
-                session.getResource(registration2.getResourceUri()));
+                session.getResource(registration2.getResourceUrl()));
     }
 
     private InputStream makeEmptyStream() {

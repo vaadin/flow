@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Registry for {@link StreamResource} instances.
+ * <p>
  * This class is not thread safe. One should care about thread safety in the
  * code which uses this class explicitly.
  * 
@@ -30,50 +32,54 @@ class StreamResourceRegistry implements Serializable {
 
     private static final char PATH_SEPARATOR = '/';
 
-    private final Map<Integer, StreamResource> resources = new HashMap<>();
+    private final Map<String, StreamResource> resources = new HashMap<>();
+
+    /**
+     * Dynamic resource URI prefix.
+     */
+    static final String DYN_RES_PREFIX = "vaadin-dynamic/generated-resources/";
 
     private static final class Registration
             implements StreamResourceRegistration {
 
         private final StreamResourceRegistry registry;
 
-        private final int resourceId;
-
-        private final String name;
+        private final String url;
 
         private Registration(StreamResourceRegistry registry, int id,
                 String fileName) {
             this.registry = registry;
-            resourceId = id;
             StringBuilder resourceName = new StringBuilder(fileName);
             while (resourceName.length() > 0
                     && resourceName.charAt(0) == PATH_SEPARATOR) {
                 resourceName.delete(0, 1);
             }
-            resourceName.insert(0, PATH_SEPARATOR);
-            name = resourceName.toString();
+            String name = resourceName.toString();
+            url = generateUrl(id, name);
         }
 
         @Override
-        public String getResourceUri() {
-            // TODO : prefix should be configurable
-            StringBuilder builder = new StringBuilder(
-                    VaadinSession.DYN_RES_PREFIX);
-            builder.append(resourceId).append(name);
-            return builder.toString();
+        public String getResourceUrl() {
+            return url;
         }
 
         @Override
         public void unregister() {
-            registry.resources.remove(resourceId);
+            registry.resources.remove(getResourceUrl());
         }
 
+        private String generateUrl(int id, String name) {
+            // TODO : prefix should be configurable
+            StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
+            builder.append(id).append(PATH_SEPARATOR).append(name);
+            return builder.toString();
+        }
     }
 
     private int nextResourceId;
 
     /**
-     * Register the {@code resource}.
+     * Registers the {@code resource}.
      * 
      * @param resource
      *            resource to register
@@ -82,33 +88,21 @@ class StreamResourceRegistry implements Serializable {
     StreamResourceRegistration registerResource(StreamResource resource) {
         int id = nextResourceId;
         nextResourceId++;
-        resources.put(id, resource);
-        return new Registration(this, id, resource.getFileName());
+        Registration registration = new Registration(this, id,
+                resource.getFileName());
+        resources.put(registration.getResourceUrl(), resource);
+        return registration;
     }
 
     /**
-     * Get registered resource by its {@code uri}.
+     * Get registered resource by its {@code url}.
      * 
      * @param uri
-     *            resource uri
+     *            resource url
      * @return registered resource if any
      */
-    StreamResource getResource(String uri) {
-        if (uri.startsWith(VaadinSession.DYN_RES_PREFIX)) {
-            String postfix = uri
-                    .substring(VaadinSession.DYN_RES_PREFIX.length());
-            int index = postfix.indexOf(PATH_SEPARATOR);
-            if (index >= 0) {
-                String id = postfix.substring(0, index);
-                try {
-                    int resId = Integer.parseInt(id);
-                    return resources.get(resId);
-                } catch (NumberFormatException ignore) {
-                    // ignore the exception. URI is not dyn resource URI
-                }
-            }
-        }
-        return null;
+    StreamResource getResource(String url) {
+        return resources.get(url);
     }
 
 }
