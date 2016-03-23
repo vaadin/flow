@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 /**
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
  * Creates input stream instances that provides the actual data of a
  * {@link StreamResource}.
  * <p>
@@ -70,6 +71,10 @@ public interface InputStreamFactory extends Serializable {
 }
 =======
  * Creates input stream instances that provides the actual data of the resource.
+=======
+ * Creates input stream instances that provides the actual data of the
+ * {@link StreamResource}.
+>>>>>>> 42f4cf7 Corrections.
  * <p>
  * The instance of this class should generate {@link InputStream} for the
  * resource.
@@ -80,16 +85,13 @@ public interface InputStreamFactory extends Serializable {
 @FunctionalInterface
 public interface InputStreamFactory extends Serializable {
     /**
-     * Produce {@link InputStream} instance to read resource data from using
-     * Vaadin {@code session} as a context.
+     * Produce {@link InputStream} instance to read resource data.
      * <p>
      * Return value may not be null.
      * 
-     * @param session
-     *            vaadin session as a context
      * @return data input stream. May not be null.
      */
-    InputStream createInputStream(VaadinSession session);
+    InputStream createInputStream();
 
     /**
      * If this method returns {@code true} (by default) then reading data from

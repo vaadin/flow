@@ -251,28 +251,18 @@ public class StreamResource implements Serializable {
         @Override
         public void accept(OutputStream stream, VaadinSession session)
                 throws IOException {
-            InputStream input = factory.createInputStream(session);
-            try {
+            try (InputStream input = factory.createInputStream()) {
                 copy(session, input, stream);
-            } finally {
-                try {
-                    input.close();
-                } finally {
-                    stream.close();
-                }
             }
         }
 
-        private long copy(VaadinSession session, InputStream source,
+        private void copy(VaadinSession session, InputStream source,
                 OutputStream out) throws IOException {
-            long nread = 0L;
             byte[] buf = new byte[BUFFER_SIZE];
             int n;
             while ((n = read(session, source, buf)) > 0) {
                 out.write(buf, 0, n);
-                nread += n;
             }
-            return nread;
         }
 
         private int read(VaadinSession session, InputStream source,
@@ -293,8 +283,8 @@ public class StreamResource implements Serializable {
     /**
      * Creates {@link StreamResource} instance using mandatory parameters
      * {@code name} as a resource file name and output stream {@code writer} as
-     * a data consumer. Consumer should write data in the output stream provided
-     * as an argument to its
+     * a data producer. {@code writer} should write data in the output stream
+     * provided as an argument to its
      * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
      * <p>
      * {@code name} parameter value will be used in URI (generated when resource
@@ -338,7 +328,7 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Returns content type of the resource.
+     * Returns the content type of the resource.
      * 
      * @return resource content type
      */
@@ -457,7 +447,10 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Returns stream resource writer.
+     * Returns the stream resource writer.
+     * <p>
+     * Writer writes data in the output stream provided as an argument to its
+     * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
      * 
      * @return stream resource writer
      */

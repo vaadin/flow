@@ -165,6 +165,7 @@ public class StreamResourceRequestHandler implements RequestHandler {
         }
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
         if (stream != null) {
             OutputStream out = response.getOutputStream();
             try {
@@ -179,7 +180,11 @@ public class StreamResourceRequestHandler implements RequestHandler {
         OutputStream outputStream = response.getOutputStream();
 >>>>>>> fe3818a Corrections.
         try {
+=======
+        try (OutputStream outputStream = response.getOutputStream()) {
+>>>>>>> 42f4cf7 Corrections.
             writer.accept(outputStream, session);
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
         } finally {
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
             closeStreams(stream, out);
@@ -187,6 +192,8 @@ public class StreamResourceRequestHandler implements RequestHandler {
 =======
             outputStream.close();
 >>>>>>> fe3818a Corrections.
+=======
+>>>>>>> 42f4cf7 Corrections.
         }
         return true;
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
