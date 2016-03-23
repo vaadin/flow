@@ -213,11 +213,11 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
- * Instance of this class represents dynamically generated data.
+ * Represents dynamically generated data.
  * <p>
  * The instance should be registered via
- * {@link VaadinSession#register(StreamResource)}. This method generates unique
- * URI which may be used to request the resource.
+ * {@link VaadinSession#register(StreamResource)}. This method returns an object
+ * which may be used to get resource URI.
  * 
  * @author Vaadin Ltd
  *
@@ -225,7 +225,8 @@ import java.util.Objects;
 public class StreamResource implements Serializable {
 
     /**
-     * Input stream factory.
+     * Creates input stream instances that provides the actual data of the
+     * resource.
      * <p>
      * The instance of this class should generate {@link InputStream} for the
      * resource.
@@ -236,7 +237,7 @@ public class StreamResource implements Serializable {
     @FunctionalInterface
     public interface InputStreamFactory extends Serializable {
         /**
-         * Produce {@link InputStream} instance to resource read data from.
+         * Produce {@link InputStream} instance to read resource data from.
          * <p>
          * Return value may not be null.
          * 
@@ -247,13 +248,13 @@ public class StreamResource implements Serializable {
 
     private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
-    private String fileName;
+    private final String fileName;
 
     private String contentType = DEFAULT_CONTENT_TYPE;
 
-    private long cacheTime = 1000L * 60 * 60 * 24;
+    private long cacheTime = 0L;
 
-    private InputStreamFactory streamFactory;
+    private final InputStreamFactory streamFactory;
 
     private boolean requiresLock = true;
 
@@ -261,6 +262,10 @@ public class StreamResource implements Serializable {
      * Creates {@link StreamResource} instance using mandatory parameters
      * {@code name} as a resource file name and input stream {@code factory} as
      * a factory for data.
+     * <p>
+     * {@code name} parameter value will be used in URI (generated when resource
+     * is registered) in a way that the {@name} is the last segment of the path.
+     * So this is synthetic file name (not real one).
      * 
      * @param name
      *            resource file name. May not be null.
@@ -284,7 +289,8 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Binary input stream which will be used to generate resource content.
+     * Creates binary input stream which will be used to generate resource
+     * content.
      * 
      * @return resource input stream to generate data
      */
@@ -293,8 +299,11 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Gets the length of cache expiration time. This gives the possibility
-     * cache resource.
+     * Gets the length of cache expiration time. This gives the possibility to
+     * cache the resource. "Cache-Control" HTTP header will be set based on this
+     * value.
+     * <p>
+     * Default value is {@code 0}. So caching is disabled.
      * 
      * @return cache time in milliseconds.
      */
@@ -309,15 +318,15 @@ public class StreamResource implements Serializable {
      * read methods. Otherwise session lock won't be acquired. In the latter
      * case one must not try to access application data.
      * <p>
-     * Method {@link #createInputStream()} is called under the session lock.
-     * Normally it should be enough to get all required data from the
-     * application at this point and use it to produce the data via
-     * {@link InputStream}. In this case one should override
-     * {@link #requiresLock()} method to return {@code false}. F.e. if
-     * {@link InputStream} instance is remote URL input stream then you don't
-     * want to lock session on reading data from it.
+     * {@link #createInputStream()} is called under the session lock. Normally
+     * it should be enough to get all required data from the application at this
+     * point and use it to produce the data via {@link InputStream}. In this
+     * case one should override {@link #requiresLock()} method to return
+     * {@code false}. E.g. if {@link InputStream} instance is remote URL input
+     * stream then you don't want to lock session on reading data from it.
      * 
-     * @return
+     * @return {@code true} if data from the input stream should be read under
+     *         the session lock, {@code false} otherwise
      */
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     default boolean requiresLock() {
@@ -329,44 +338,25 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Get resource file name.
+     * Get the resource file name.
+     * <p>
+     * The value will be used in URI (generated when resource is registered) in
+     * a way that the {@name} is the last segment of the path. So this is
+     * synthetic file name (not real one).
      * 
-     * @return
+     * @return resource file name
      */
     public String getFileName() {
         return fileName;
     }
 
     /**
-     * Set resource file name.
-     * <p>
-     * {@code name} may not be null.
-     * 
-     * @param name
-     *            resource file name. May not be null.
-     */
-    public void setFileName(String name) {
-        assert name != null;
-        fileName = name;
-    }
-
-    /**
-     * Return input stream factory.
+     * Return the input stream factory.
      * 
      * @return input stream factory
      */
     public InputStreamFactory getStreamFactory() {
         return streamFactory;
-    }
-
-    /**
-     * Set input stream factory.
-     * 
-     * @param factory
-     *            input stream factory
-     */
-    public void setStreamFactory(InputStreamFactory factory) {
-        streamFactory = factory;
     }
 
     /**
@@ -391,10 +381,11 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Set cache time.
+     * Set cache time in millis. Zero or negative value disables the caching of
+     * this stream.
      * 
-     * @param time
-     *            resource cache time
+     * @param resource
+     *            cache time
      */
     public void setCacheTime(long time) {
         cacheTime = time;
