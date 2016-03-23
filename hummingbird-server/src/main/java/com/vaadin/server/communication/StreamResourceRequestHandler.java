@@ -116,15 +116,21 @@ public class StreamResourceRequestHandler implements RequestHandler {
 =======
         InputStream stream = null;
 
-        StringBuilder pathInfo = new StringBuilder(request.getPathInfo());
-        if (pathInfo.charAt(0) == '/') {
-            pathInfo.delete(0, 1);
+        if (request.getPathInfo() == null) {
+            return false;
         }
+        StringBuilder pathInfo = new StringBuilder(request.getPathInfo());
+        // remove leading '/'
+        pathInfo.delete(0, 1);
+
         boolean requiresLock;
         session.lock();
         try {
             VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-            pathInfo.append('?').append(servletRequest.getQueryString());
+            String queryString = servletRequest.getQueryString();
+            if (queryString != null && !queryString.isEmpty()) {
+                pathInfo.append('?').append(servletRequest.getQueryString());
+            }
             StreamResource resource = session.getResource(pathInfo.toString());
             if (resource == null) {
                 return false;
