@@ -16,6 +16,8 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,7 +37,7 @@ public class Location implements Serializable {
     private List<String> segments;
 
     /**
-     * Creates a new location for the given path.
+     * Creates a new location for the given relative path.
      *
      * @param path
      *            the relative path, not <code>null</code>
@@ -116,6 +118,8 @@ public class Location implements Serializable {
     }
 
     private static List<String> parsePath(String path) {
+        verifyRelativePath(path);
+
         List<String> splitList = Arrays.asList(path.split(PATH_SEPARATOR));
         if (path.endsWith(PATH_SEPARATOR)) {
             // Explicitly add "" to the end even though it's ignored by
@@ -127,5 +131,46 @@ public class Location implements Serializable {
         } else {
             return splitList;
         }
+    }
+
+    /**
+     * Throws {@link IllegalArgumentException} if the provided path is not
+     * relative. A relative path should be parseable as a URI without a scheme
+     * or host, it should not contain any <code>..</code> segments and it
+     * shouldn't start with <code>/</code>.
+     *
+     * @param path
+     *            the path to check, not null
+     */
+    public static void verifyRelativePath(String path) {
+        String reason = getRelativePathReason(path);
+        if (reason != null) {
+            throw new IllegalArgumentException(reason);
+        }
+    }
+
+    private static String getRelativePathReason(String path) {
+        assert path != null;
+
+        try {
+            // Ignore forbidden chars supported in route definitions
+            String strippedPath = path.replaceAll("[{}*]", "");
+
+            URI uri = new URI(strippedPath);
+            if (uri.isAbsolute()) {
+                // "A URI is absolute if, and only if, it has a scheme
+                // component"
+                return "Relative path cannot contain an URI scheme";
+            } else if (uri.getPath().startsWith("/")) {
+                return "Relative path cannot start with /";
+            } else if (uri.getRawPath().contains("..")) {
+                return "Relative path cannot contain .. segments";
+            }
+        } catch (URISyntaxException e) {
+            return "Cannot parse path: " + e.getMessage();
+        }
+
+        // Is actually relative
+        return null;
     }
 }
