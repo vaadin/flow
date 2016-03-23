@@ -114,7 +114,7 @@ public class ModifiableRouterConfigurationTest {
         original.removeRoute("foo/bar");
 
         Assert.assertNotNull("Updating the original should not affect the copy",
-                copy.resolveRoute(createEvent("foo/bar")));
+                copy.resolveRoute(new Location("foo/bar")));
     }
 
     @Test
@@ -183,13 +183,13 @@ public class ModifiableRouterConfigurationTest {
         configuration.setRoute("*", navigationHandler);
 
         configuration.removeRoute("foo");
-        Assert.assertNotNull(configuration.resolveRoute(createEvent("foo")));
+        Assert.assertNotNull(configuration.resolveRoute(new Location("foo")));
         configuration.removeRoute("{otherName}");
-        Assert.assertNotNull(configuration.resolveRoute(createEvent("foo")));
+        Assert.assertNotNull(configuration.resolveRoute(new Location("foo")));
         configuration.removeRoute("*");
 
         // Should resolve to null only after removing all the routes
-        Assert.assertNull(configuration.resolveRoute(createEvent("foo")));
+        Assert.assertNull(configuration.resolveRoute(new Location("foo")));
     }
 
     private static NavigationHandler createNoopHandler() {
@@ -308,7 +308,7 @@ public class ModifiableRouterConfigurationTest {
         configuration.setRoute(weakerRoute, weakerHandler);
 
         NavigationHandler handler = configuration
-                .resolveRoute(createEvent(location));
+                .resolveRoute(new Location(location));
         Assert.assertSame(handler, strongerHandler);
 
         // Do the same again with setRoute run in the opposite order
@@ -317,7 +317,7 @@ public class ModifiableRouterConfigurationTest {
         configuration.setRoute(weakerRoute, weakerHandler);
         configuration.setRoute(strongerRoute, strongerHandler);
 
-        handler = configuration.resolveRoute(createEvent(location));
+        handler = configuration.resolveRoute(new Location(location));
         Assert.assertSame(handler, strongerHandler);
     }
 
@@ -338,7 +338,7 @@ public class ModifiableRouterConfigurationTest {
         configuration.setRoute(route, createNoopHandler());
 
         NavigationHandler resolveRoute = configuration
-                .resolveRoute(createEvent(location));
+                .resolveRoute(new Location(location));
         boolean condition = resolveRoute != null;
         return condition;
     }
@@ -347,16 +347,6 @@ public class ModifiableRouterConfigurationTest {
         // Create a modifiable copy of a an empty configuration
         return new ModifiableRouterConfiguration(
                 new ModifiableRouterConfiguration(), true);
-    }
-
-    private static NavigationEvent createEvent(String location) {
-        Assert.assertFalse(location.contains(".."));
-        Assert.assertFalse(location.contains("*"));
-        Assert.assertFalse(location.contains("{"));
-        Assert.assertFalse(location.contains("}"));
-
-        return new NavigationEvent(new Router(), new Location(location),
-                new RouterUI());
     }
 
     @Test
