@@ -51,7 +51,7 @@ public class StreamResourceRegistryTest {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
+                session -> makeEmptyStream());
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
         Assert.assertNotNull(registration);
@@ -71,7 +71,7 @@ public class StreamResourceRegistryTest {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
+                session -> makeEmptyStream());
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
         Assert.assertNotNull(registration);
@@ -91,12 +91,12 @@ public class StreamResourceRegistryTest {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource1 = new StreamResource("name",
-                () -> makeEmptyStream());
+                session -> makeEmptyStream());
         StreamResourceRegistration registration1 = registry
                 .registerResource(resource1);
 
         StreamResource resource2 = new StreamResource("name",
-                () -> makeEmptyStream());
+                session -> makeEmptyStream());
         StreamResourceRegistration registration2 = registry
                 .registerResource(resource2);
 
@@ -116,7 +116,7 @@ public class StreamResourceRegistryTest {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource = new StreamResource("a?b=c d&e",
-                () -> makeEmptyStream());
+                session -> makeEmptyStream());
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
 
@@ -135,7 +135,7 @@ public class StreamResourceRegistryTest {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource = new StreamResource("a?b=c d&e",
-                () -> makeEmptyStream());
+                session -> makeEmptyStream());
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
 
