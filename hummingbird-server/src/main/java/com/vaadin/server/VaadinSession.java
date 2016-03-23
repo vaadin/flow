@@ -1137,7 +1137,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 >>>>>>> 542ad4a Review based fixes.
      * <p>
      * You can get resource URL to use it in the application (e.g. set an
-     * attribute value or property value) via registration handler. The
+     * attribute value or property value) via the registration handler. The
      * registration handler should be used to unregister resource when it's not
      * needed anymore. Note that it is developer responsibility to unregister
      * resources. Otherwise resources won't be garbage collected until session
