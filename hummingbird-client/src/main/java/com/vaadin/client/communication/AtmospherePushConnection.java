@@ -760,7 +760,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
         // Parameter appended to bypass caches after version upgrade.
         pushJs += "?v=" + Version.getFullVersion();
-        return "VAADIN/push/" + pushJs;
+        return pushJs;
     }
 
     @Override

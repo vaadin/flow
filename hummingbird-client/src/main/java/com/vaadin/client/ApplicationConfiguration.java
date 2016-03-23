@@ -97,7 +97,7 @@ public class ApplicationConfiguration {
      * Sets the URL of the context root on the server.
      *
      * @param contextRootUrl
-     *            the URL of the VAADIN directory, ending with a "/"
+     *            the URL of the context root, ending with a "/"
      */
     public void setContextRootUrl(String contextRootUrl) {
         assert contextRootUrl.endsWith("/");
