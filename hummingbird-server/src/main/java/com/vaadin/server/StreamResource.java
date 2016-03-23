@@ -23,8 +23,8 @@ import java.util.Objects;
  * Represents dynamically generated data.
  * <p>
  * The instance should be registered via
- * {@link VaadinSession#registerResource(StreamResource)}. This method returns an object
- * which may be used to get resource URL.
+ * {@link VaadinSession#registerResource(StreamResource)}. This method returns
+ * an object which may be used to get resource URL.
  * 
  * @author Vaadin Ltd
  *
@@ -186,11 +186,11 @@ public class StreamResource implements Serializable {
      * Set cache time in millis. Zero or negative value disables the caching of
      * this stream.
      * 
-     * @param resource
+     * @param cacheTime
      *            cache time
      */
-    public void setCacheTime(long time) {
-        cacheTime = time;
+    public void setCacheTime(long cacheTime) {
+        this.cacheTime = cacheTime;
     }
 
     @Override
