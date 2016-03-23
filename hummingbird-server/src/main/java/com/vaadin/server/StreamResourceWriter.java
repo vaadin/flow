@@ -32,6 +32,10 @@ public interface StreamResourceWriter {
     /**
      * Handles {@code stream} (writes data to it) using {@code session} as a
      * context.
+     * <p>
+     * The method is not called under the session lock, so it's the developer's
+     * responsibility to lock provided {@code session} in the method
+     * implementation on application data access.
      * 
      * @param stream
      *            data output stream

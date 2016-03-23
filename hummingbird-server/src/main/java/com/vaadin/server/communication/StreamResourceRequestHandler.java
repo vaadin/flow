@@ -75,11 +75,8 @@ public class StreamResourceRequestHandler implements RequestHandler {
         } finally {
             session.unlock();
         }
-        OutputStream outputStream = response.getOutputStream();
-        try {
+        try (OutputStream outputStream = response.getOutputStream()) {
             writer.accept(outputStream, session);
-        } finally {
-            outputStream.close();
         }
         return true;
     }
