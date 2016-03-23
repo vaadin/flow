@@ -15,7 +15,9 @@
  */
 package com.vaadin.server;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
 
 /**
@@ -30,28 +32,6 @@ import java.io.Serializable;
  */
 public class StreamResource implements Serializable {
 
-    /**
-     * Creates input stream instances that provides the actual data of the
-     * resource.
-     * <p>
-     * The instance of this class should generate {@link InputStream} for the
-     * resource.
-     * 
-     * @author Vaadin Ltd
-     *
-     */
-    @FunctionalInterface
-    public interface InputStreamFactory extends Serializable {
-        /**
-         * Produce {@link InputStream} instance to read resource data from.
-         * <p>
-         * Return value may not be null.
-         * 
-         * @return data input stream. May not be null.
-         */
-        InputStream createInputStream();
-    }
-
     private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
     private final String fileName;
@@ -60,9 +40,87 @@ public class StreamResource implements Serializable {
 
     private long cacheTime = 0L;
 
-    private final InputStreamFactory streamFactory;
+    private final StreamResourceWriter writer;
 
-    private boolean requiresLock = true;
+    private static class Pipe implements StreamResourceWriter {
+
+        private static final int BUFFER_SIZE = 1024;
+
+        private InputStreamFactory factory;
+
+        private Pipe(InputStreamFactory factory) {
+            this.factory = factory;
+        }
+
+        @Override
+        public void accept(OutputStream stream, VaadinSession session)
+                throws IOException {
+            InputStream input = factory.createInputStream(session);
+            try {
+                copy(session, input, stream);
+            } finally {
+                try {
+                    input.close();
+                } finally {
+                    stream.close();
+                }
+            }
+        }
+
+        private long copy(VaadinSession session, InputStream source,
+                OutputStream out) throws IOException {
+            long nread = 0L;
+            byte[] buf = new byte[BUFFER_SIZE];
+            int n;
+            while ((n = read(session, source, buf)) > 0) {
+                out.write(buf, 0, n);
+                nread += n;
+            }
+            return nread;
+        }
+
+        private int read(VaadinSession session, InputStream source,
+                byte[] buffer) throws IOException {
+            if (factory.requiresLock()) {
+                session.lock();
+                try {
+                    return source.read(buffer);
+                } finally {
+                    session.unlock();
+                }
+            } else {
+                return source.read(buffer);
+            }
+        }
+    }
+
+    /**
+     * Creates {@link StreamResource} instance using mandatory parameters
+     * {@code name} as a resource file name and output stream {@code writer} as
+     * a data consumer. Consumer should write data in the output stream provided
+     * as an argument to its
+     * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
+     * <p>
+     * {@code name} parameter value will be used in URL (generated when resource
+     * is registered) in a way that the {@name} is the last segment of the path.
+     * So this is synthetic file name (not real one).
+     * 
+     * @param name
+     *            resource file name. May not be null.
+     * @param writer
+     *            data output stream consumer
+     */
+    public StreamResource(String name, StreamResourceWriter writer) {
+        assert name != null;
+        assert writer != null;
+
+        if (name.indexOf('/') != -1) {
+            throw new IllegalArgumentException(
+                    "Resource file name parameter contains '/'");
+        }
+        fileName = name;
+        this.writer = writer;
+    }
 
     /**
      * Creates {@link StreamResource} instance using mandatory parameters
@@ -79,15 +137,8 @@ public class StreamResource implements Serializable {
      *            data input stream factory. May not be null.
      */
     public StreamResource(String name, InputStreamFactory factory) {
+        this(name, new Pipe(factory));
         assert name != null;
-        assert factory != null;
-
-        if (name.indexOf('/') != -1) {
-            throw new IllegalArgumentException(
-                    "Resource file name parameter contains '/'");
-        }
-        fileName = name;
-        streamFactory = factory;
     }
 
     /**
@@ -97,16 +148,6 @@ public class StreamResource implements Serializable {
      */
     public String getContentType() {
         return contentType;
-    }
-
-    /**
-     * Creates a binary input stream which will be used to generate resource
-     * content.
-     * 
-     * @return resource input stream to generate data
-     */
-    public InputStream createInputStream() {
-        return streamFactory.createInputStream();
     }
 
     /**
@@ -123,27 +164,6 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * If this method returns {@code true} (by default) then reading data from
-     * input stream (via {@link #createInputStream()} will be done under session
-     * lock and it's safe to access application data within {@link InputStream}
-     * read methods. Otherwise session lock won't be acquired. In the latter
-     * case one must not try to access application data.
-     * <p>
-     * {@link #createInputStream()} is called under the session lock. Normally
-     * it should be enough to get all required data from the application at this
-     * point and use it to produce the data via {@link InputStream}. In this
-     * case one should override {@link #requiresLock()} method to return
-     * {@code false}. E.g. if {@link InputStream} instance is remote URL input
-     * stream then you don't want to lock session on reading data from it.
-     * 
-     * @return {@code true} if data from the input stream should be read under
-     *         the session lock, {@code false} otherwise
-     */
-    public boolean requiresLock() {
-        return requiresLock;
-    }
-
-    /**
      * Get the resource file name.
      * <p>
      * The value will be used in URL (generated when resource is registered) in
@@ -154,26 +174,6 @@ public class StreamResource implements Serializable {
      */
     public String getFileName() {
         return fileName;
-    }
-
-    /**
-     * Return the input stream factory.
-     * 
-     * @return input stream factory
-     */
-    public InputStreamFactory getStreamFactory() {
-        return streamFactory;
-    }
-
-    /**
-     * Set 'requiresLock' property. See {@link #requiresLock()} method for
-     * details.
-     * 
-     * @param requires
-     *            'requiresLock' value
-     */
-    public void setRequiresLock(boolean requires) {
-        requiresLock = requires;
     }
 
     /**
@@ -195,6 +195,15 @@ public class StreamResource implements Serializable {
      */
     public void setCacheTime(long cacheTime) {
         this.cacheTime = cacheTime;
+    }
+
+    /**
+     * Returns stream resource writer.
+     * 
+     * @return stream resource writer
+     */
+    public StreamResourceWriter getWriter() {
+        return writer;
     }
 
 }

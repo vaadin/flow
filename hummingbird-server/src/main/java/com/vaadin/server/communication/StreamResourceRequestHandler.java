@@ -16,12 +16,12 @@
 package com.vaadin.server.communication;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
 
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResourceWriter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
@@ -34,12 +34,10 @@ import com.vaadin.server.VaadinSession;
  */
 public class StreamResourceRequestHandler implements RequestHandler {
 
-    private static final int BUFFER_SIZE = 1024;
-
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        InputStream stream = null;
+        StreamResourceWriter writer = null;
 
         if (request.getPathInfo() == null) {
             return false;
@@ -48,7 +46,6 @@ public class StreamResourceRequestHandler implements RequestHandler {
         // remove leading '/'
         pathInfo = pathInfo.substring(1);
 
-        boolean requiresLock;
         session.lock();
         try {
             int index = pathInfo.lastIndexOf('/');
@@ -64,58 +61,21 @@ public class StreamResourceRequestHandler implements RequestHandler {
 
             response.setContentType(resource.get().getContentType());
             response.setCacheTime(resource.get().getCacheTime());
-            stream = resource.get().createInputStream();
-            if (stream == null) {
+            writer = resource.get().getWriter();
+            if (writer == null) {
                 throw new IOException(
                         "Stream resource produces null input stream");
             }
-
-            requiresLock = resource.get().requiresLock();
         } finally {
             session.unlock();
         }
-        OutputStream out = response.getOutputStream();
+        OutputStream outputStream = response.getOutputStream();
         try {
-            copy(requiresLock, session, stream, out);
+            writer.accept(outputStream, session);
         } finally {
-            closeStreams(stream, out);
+            outputStream.close();
         }
         return true;
-    }
-
-    private void closeStreams(InputStream stream, OutputStream out)
-            throws IOException {
-        try {
-            stream.close();
-        } finally {
-            out.close();
-        }
-    }
-
-    private long copy(boolean requiresLock, VaadinSession session,
-            InputStream source, OutputStream out) throws IOException {
-        long nread = 0L;
-        byte[] buf = new byte[BUFFER_SIZE];
-        int n;
-        while ((n = read(requiresLock, session, source, buf)) > 0) {
-            out.write(buf, 0, n);
-            nread += n;
-        }
-        return nread;
-    }
-
-    private int read(boolean useLock, VaadinSession session, InputStream source,
-            byte[] buffer) throws IOException {
-        if (useLock) {
-            session.lock();
-            try {
-                return source.read(buffer);
-            } finally {
-                session.unlock();
-            }
-        } else {
-            return source.read(buffer);
-        }
     }
 
 }
