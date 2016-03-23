@@ -274,6 +274,26 @@ public interface ElementFactory {
     }
 
     /**
+     * Creates an {@code &lt;li>} element.
+     *
+     * @return an {@code &lt;li>} element.
+     */
+    static Element createListItem() {
+        return new Element("li");
+    }
+
+    /**
+     * Creates an {@code &lt;li>} element with the given text content.
+     *
+     * @param textContent
+     *            the text content of the element
+     * @return an {@code &lt;li>} element.
+     */
+    static Element createListItem(String textContent) {
+        return createListItem().setTextContent(textContent);
+    }
+
+    /**
      * Creates an {@code &lt;option>} element.
      *
      * @return an {@code &lt;option>} element.
@@ -372,6 +392,15 @@ public interface ElementFactory {
     }
 
     /**
+     * Creates a {@code &lt;ul>} element.
+     *
+     * @return a {@code &lt;ul>} element.
+     */
+    static Element createUnsortedList() {
+        return new Element("ul");
+    }
+
+    /**
      * Creates a {@code &lt;strong>} element.
      *
      * @return a {@code &lt;strong>} element.
@@ -405,7 +434,7 @@ public interface ElementFactory {
      *
      * @param textContent
      *            the text content of the element
-     * @return a {@code &lt;em>} element.
+     * @return an {@code &lt;em>} element.
      */
     static Element createEmphasis(String textContent) {
         return createEmphasis().setTextContent(textContent);
