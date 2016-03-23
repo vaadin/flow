@@ -83,9 +83,9 @@ public interface StreamResourceRegistration extends Serializable {
      * The resource will be removed from the session and its URL won't be served
      * by the application anymore so that the resource becomes available for GC.
      * <p>
-     * It's developer's responsibility to call this method at the appropriate
-     * time. Otherwise the resource instance will stay in memory until session
-     * is alive.
+     * It's the developer's responsibility to call this method at the
+     * appropriate time. Otherwise the resource instance will stay in memory
+     * until the session expires.
      */
 >>>>>>> ae80070 Some javadocs.
     void unregister();

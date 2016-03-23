@@ -87,6 +87,7 @@ class StreamResourceRegistry implements Serializable {
                 String fileName) {
             this.registry = registry;
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
             try {
                 uri = new URI(
@@ -111,6 +112,9 @@ class StreamResourceRegistry implements Serializable {
             }
             String name = resourceName.toString();
             url = generateUrl(id, name);
+=======
+            url = generateUrl(id, fileName);
+>>>>>>> df234a2 Review based fixes.
         }
 
         @Override
@@ -142,7 +146,6 @@ class StreamResourceRegistry implements Serializable {
         }
 
         private String generateUrl(int id, String name) {
-            // TODO : prefix should be configurable
             StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
             builder.append(id).append(PATH_SEPARATOR).append(name);
             return builder.toString();

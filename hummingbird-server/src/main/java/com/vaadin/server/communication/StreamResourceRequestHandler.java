@@ -139,6 +139,10 @@ public class StreamResourceRequestHandler implements RequestHandler {
             response.setContentType(resource.getContentType());
             response.setCacheTime(resource.getCacheTime());
             stream = resource.createInputStream();
+            if (stream == null) {
+                throw new IOException(
+                        "Stream resource produces null input stream");
+            }
 
             requiresLock = resource.requiresLock();
         } finally {
