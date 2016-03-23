@@ -17,7 +17,6 @@ package com.vaadin.server;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  * Represents dynamically generated data.
@@ -82,6 +81,11 @@ public class StreamResource implements Serializable {
     public StreamResource(String name, InputStreamFactory factory) {
         assert name != null;
         assert factory != null;
+
+        if (name.indexOf('/') != -1) {
+            throw new IllegalArgumentException(
+                    "Resource file name parameter contains '/'");
+        }
         fileName = name;
         streamFactory = factory;
     }
@@ -96,7 +100,7 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Creates binary input stream which will be used to generate resource
+     * Creates a binary input stream which will be used to generate resource
      * content.
      * 
      * @return resource input stream to generate data
@@ -191,31 +195,6 @@ public class StreamResource implements Serializable {
      */
     public void setCacheTime(long cacheTime) {
         this.cacheTime = cacheTime;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (this == obj) {
-            return true;
-        } else if (getClass().equals(obj.getClass())) {
-            StreamResource that = (StreamResource) obj;
-            return Objects.equals(getCacheTime(), that.getCacheTime())
-                    && Objects.equals(getContentType(), that.getContentType())
-                    && Objects.equals(getFileName(), that.getFileName())
-                    && Objects.equals(getStreamFactory(),
-                            that.getStreamFactory())
-                    && Objects.equals(requiresLock(), that.requiresLock());
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getCacheTime(), getContentType(), getFileName(),
-                getStreamFactory(), requiresLock());
     }
 
 }

@@ -49,13 +49,7 @@ class StreamResourceRegistry implements Serializable {
         private Registration(StreamResourceRegistry registry, int id,
                 String fileName) {
             this.registry = registry;
-            StringBuilder resourceName = new StringBuilder(fileName);
-            while (resourceName.length() > 0
-                    && resourceName.charAt(0) == PATH_SEPARATOR) {
-                resourceName.delete(0, 1);
-            }
-            String name = resourceName.toString();
-            url = generateUrl(id, name);
+            url = generateUrl(id, fileName);
         }
 
         @Override
@@ -69,7 +63,6 @@ class StreamResourceRegistry implements Serializable {
         }
 
         private String generateUrl(int id, String name) {
-            // TODO : prefix should be configurable
             StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
             builder.append(id).append(PATH_SEPARATOR).append(name);
             return builder.toString();
