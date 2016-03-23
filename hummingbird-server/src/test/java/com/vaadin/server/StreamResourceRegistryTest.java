@@ -132,6 +132,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -168,9 +169,9 @@ public class StreamResourceRegistryTest {
                 .registerResource(resource);
         Assert.assertNotNull(registration);
 
-        String uri = registration.getResourceUrl();
-        Assert.assertTrue("Unexpected URI prefix",
-                uri.startsWith(StreamResourceRegistry.DYN_RES_PREFIX));
+        URI uri = registration.getResourceUri();
+        Assert.assertTrue("Unexpected URI prefix", uri.toString()
+                .startsWith(StreamResourceRegistry.DYN_RES_PREFIX));
 
         Optional<StreamResource> stored = registry.getResource(uri);
         Assert.assertSame(
@@ -188,7 +189,7 @@ public class StreamResourceRegistryTest {
                 .registerResource(resource);
         Assert.assertNotNull(registration);
 
-        String uri = registration.getResourceUrl();
+        URI uri = registration.getResourceUri();
 
         registration.unregister();
 
@@ -214,18 +215,22 @@ public class StreamResourceRegistryTest {
 
         Assert.assertNotEquals(
                 "Two different resource are registered to the same URI",
-                registration1.getResourceUrl(), registration2.getResourceUrl());
+                registration1.getResourceUri(), registration2.getResourceUri());
 
         registration1.unregister();
 
         assertNotNull(
                 "Second resource is not found after first resource has been unregistered",
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
                 registry.getResource(registration2.getResourceUri()));
 >>>>>>> ce3f239 Corrections and tests for resource registry.
 =======
                 registry.getResource(registration2.getResourceUrl()));
 >>>>>>> 542ad4a Review based fixes.
+=======
+                registry.getResource(registration2.getResourceUri()));
+>>>>>>> f4adc2d Corrections.
     }
 
     @Test
@@ -237,8 +242,9 @@ public class StreamResourceRegistryTest {
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
 
-        String url = registration.getResourceUrl();
-        String path = url.substring(0, url.lastIndexOf('/') + 1);
+        URI url = registration.getResourceUri();
+        String path = url.toString().substring(0,
+                url.toString().lastIndexOf('/') + 1);
         Optional<StreamResource> stored = registry.getResource(path,
                 resource.getFileName());
         Assert.assertTrue("Resource is not found by prefix and name",
@@ -256,10 +262,11 @@ public class StreamResourceRegistryTest {
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
 
-        String url = registration.getResourceUrl();
+        URI url = registration.getResourceUri();
         String suffix = URLEncoder.encode(resource.getFileName(),
                 StandardCharsets.UTF_8.name());
-        Assert.assertTrue("Resource url is not encoded", url.endsWith(suffix));
+        Assert.assertTrue("Resource url is not encoded",
+                url.toString().endsWith(suffix));
     }
 
     private InputStream makeEmptyStream() {
