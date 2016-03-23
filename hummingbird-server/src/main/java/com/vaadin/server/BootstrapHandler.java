@@ -70,7 +70,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String META_TAG = "meta";
 
-    private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_FOLDER
+    /**
+     * Location of client nocache file, relative to the context root.
+     */
+    private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_PATH
             + "/client.nocache.js";
 
     private static String bootstrapJS;
@@ -93,16 +96,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             throw new ExceptionInInitializerError(e);
         }
         // read client engine file name
-        try (InputStream prop = BootstrapHandler.class
-                .getResourceAsStream("/META-INF/resources/VAADIN/"
-                        + ApplicationConstants.CLIENT_ENGINE_FOLDER
+        try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
                         + "/compile.properties")) {
             // null when running SDM or tests
             if (prop != null) {
                 Properties p = new Properties();
                 p.load(prop);
-                clientEngineFile = ApplicationConstants.CLIENT_ENGINE_FOLDER
-                        + "/" + p.getProperty("jsFile");
+                clientEngineFile = ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                        + p.getProperty("jsFile");
             } else {
                 getLogger().warning(
                         "No compile.properties available on initialization, "
@@ -315,9 +317,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (context.getSession().getBrowser().isPhantomJS()) {
             // Collections polyfill needed only for PhantomJS
 
-            head.appendElement("script").attr("type", "text/javascript")
-                    .attr("src", context.getUriResolver().resolveVaadinUri(
-                            "context://VAADIN/server/es6-collections.js"));
+            head.appendElement("script").attr("type", "text/javascript").attr(
+                    "src",
+                    context.getUriResolver()
+                            .resolveVaadinUri("context://"
+                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                    + "server/es6-collections.js"));
         }
 
         if (context.getPushMode().isEnabled()) {
@@ -345,8 +350,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
         // Load client-side dependencies for push support
-        String pushJS = ServletHelper.getContextRootRelativePath(request)
-                + "/VAADIN/push/";
+        String pushJS = ServletHelper.getContextRootRelativePath(request) + "/";
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
             pushJS += ApplicationConstants.VAADIN_PUSH_JS;
@@ -599,11 +603,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // has been compiled by SDM or eclipse
         final boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
-        if (!productionMode && BootstrapHandler.class
-                .getResource("/META-INF/resources/VAADIN/"
-                        + CLIENT_ENGINE_NOCACHE_FILE) != null) {
+        if (!productionMode && BootstrapHandler.class.getResource(
+                "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
             return context.getUriResolver().resolveVaadinUri(
-                    "context://VAADIN/" + CLIENT_ENGINE_NOCACHE_FILE);
+                    "context://" + CLIENT_ENGINE_NOCACHE_FILE);
         }
 
         if (clientEngineFile == null) {
@@ -611,7 +614,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     "Client engine file name has not been resolved during initialization");
         }
         return context.getUriResolver()
-                .resolveVaadinUri("context://VAADIN/" + clientEngineFile);
+                .resolveVaadinUri("context://" + clientEngineFile);
     }
 
     private static UI createInstance(Class<? extends UI> uiClass) {
