@@ -5,12 +5,15 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.vaadin.shared.ApplicationConstants;
+
 public class ClientEngineSizeIT {
 
     @Test
     public void testClientEngineSize() throws Exception {
         File compiledModuleFolder = new File(
-                "target/classes/META-INF/resources/VAADIN/client");
+                "target/classes/META-INF/resources/"
+                        + ApplicationConstants.CLIENT_ENGINE_PATH);
         if (!compiledModuleFolder.exists()) {
             throw new IOException(
                     "Folder with compiled client engine does not exist: "

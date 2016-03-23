@@ -56,8 +56,8 @@ public class RouterUI extends UI {
      *            the parent view immediately wrapping the main view, or
      *            <code>null</code> to not use any parent views
      */
-    public void showView(@SuppressWarnings("hiding") Location viewLocation,
-            View view, List<HasChildView> parentViews) {
+    public void showView(Location viewLocation, View view,
+            List<HasChildView> parentViews) {
         assert view != null;
         assert viewLocation != null;
 
