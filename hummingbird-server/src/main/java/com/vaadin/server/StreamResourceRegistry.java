@@ -17,6 +17,8 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -38,7 +40,7 @@ public class StreamResourceRegistry implements Serializable {
      */
     static final String DYN_RES_PREFIX = "VAADIN/dynamic/generated-resources/";
 
-    private final Map<String, StreamResource> resources = new HashMap<>();
+    private final Map<URI, StreamResource> resources = new HashMap<>();
 
     private final VaadinSession session;
 
@@ -49,25 +51,30 @@ public class StreamResourceRegistry implements Serializable {
 
         private final StreamResourceRegistry registry;
 
-        private final String url;
+        private final URI uri;
 
         private Registration(StreamResourceRegistry registry, int id,
                 String fileName) {
             this.registry = registry;
-            url = generateUrl(id, fileName);
+            try {
+                uri = new URI(generateURI(id, fileName));
+            } catch (URISyntaxException e) {
+                // this may not happen if implementation is correct
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
-        public String getResourceUrl() {
-            return url;
+        public URI getResourceUri() {
+            return uri;
         }
 
         @Override
         public void unregister() {
-            registry.resources.remove(getResourceUrl());
+            registry.resources.remove(getResourceUri());
         }
 
-        private String generateUrl(int id, String name) {
+        private String generateURI(int id, String name) {
             StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
             try {
                 builder.append(id).append(PATH_SEPARATOR).append(
@@ -94,7 +101,7 @@ public class StreamResourceRegistry implements Serializable {
      * Registers a stream resource in the session and returns registration
      * handler.
      * <p>
-     * You can get resource URL to use it in the application (e.g. set an
+     * You can get resource URI to use it in the application (e.g. set an
      * attribute value or property value) via the registration handler. The
      * registration handler should be used to unregister resource when it's not
      * needed anymore. Note that it is the developer's responsibility to
@@ -112,20 +119,20 @@ public class StreamResourceRegistry implements Serializable {
         nextResourceId++;
         Registration registration = new Registration(this, id,
                 resource.getFileName());
-        resources.put(registration.getResourceUrl(), resource);
+        resources.put(registration.getResourceUri(), resource);
         return registration;
     }
 
     /**
-     * Get registered resource by its {@code url}.
+     * Get registered resource by its {@code URI}.
      * 
-     * @param url
-     *            resource url
+     * @param uri
+     *            resource URI
      * @return registered resource if any
      */
-    public Optional<StreamResource> getResource(String url) {
+    public Optional<StreamResource> getResource(URI uri) {
         assert session.hasLock();
-        return Optional.ofNullable(resources.get(url));
+        return Optional.ofNullable(resources.get(uri));
     }
 
     /**
@@ -141,9 +148,10 @@ public class StreamResourceRegistry implements Serializable {
                     && prefix.charAt(prefix.length() - 1) != PATH_SEPARATOR) {
                 return Optional.empty();
             }
-            return Optional.ofNullable(resources.get(prefix
-                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name())));
-        } catch (UnsupportedEncodingException e) {
+            URI uri = new URI(prefix
+                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+            return Optional.ofNullable(resources.get(uri));
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
             // UTF8 has to be supported
             throw new RuntimeException(e);
         }

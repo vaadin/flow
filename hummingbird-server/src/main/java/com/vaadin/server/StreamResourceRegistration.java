@@ -16,11 +16,12 @@
 package com.vaadin.server;
 
 import java.io.Serializable;
+import java.net.URI;
 
 /**
  * Stream resource registration result.
  * <p>
- * Use {@link #getResourceUrl()} to get URL after {@link StreamResource} is
+ * Use {@link #getResourceUri()} to get URI after {@link StreamResource} is
  * registered. It also allows to unregister the resource.
  * 
  * @author Vaadin Ltd
@@ -29,18 +30,18 @@ import java.io.Serializable;
 public interface StreamResourceRegistration extends Serializable {
 
     /**
-     * Get resource URL for registered {@link StreamResource} instance.
+     * Get resource URI for registered {@link StreamResource} instance.
      * <p>
-     * The URL is relative to the application base URL.
+     * The URI is relative to the application base URI.
      * 
-     * @return resource URL
+     * @return resource URI
      */
-    String getResourceUrl();
+    URI getResourceUri();
 
     /**
      * Unregister {@link StreamResource}.
      * <p>
-     * The resource will be removed from the session and its URL won't be served
+     * The resource will be removed from the session and its URI won't be served
      * by the application anymore so that the resource becomes available for GC.
      * <p>
      * It's the developer's responsibility to call this method at the

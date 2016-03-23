@@ -25,7 +25,7 @@ import java.io.Serializable;
  * <p>
  * The instance should be registered via
  * {@link VaadinSession#registerResource(StreamResource)}. This method returns
- * an object which may be used to get resource URL.
+ * an object which may be used to get resource URI.
  * 
  * @author Vaadin Ltd
  *
@@ -101,7 +101,7 @@ public class StreamResource implements Serializable {
      * as an argument to its
      * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
      * <p>
-     * {@code name} parameter value will be used in URL (generated when resource
+     * {@code name} parameter value will be used in URI (generated when resource
      * is registered) in a way that the {@name} is the last segment of the path.
      * So this is synthetic file name (not real one).
      * 
@@ -127,7 +127,7 @@ public class StreamResource implements Serializable {
      * {@code name} as a resource file name and input stream {@code factory} as
      * a factory for data.
      * <p>
-     * {@code name} parameter value will be used in URL (generated when resource
+     * {@code name} parameter value will be used in URI (generated when resource
      * is registered) in a way that the {@name} is the last segment of the path.
      * So this is synthetic file name (not real one).
      * 
@@ -166,7 +166,7 @@ public class StreamResource implements Serializable {
     /**
      * Get the resource file name.
      * <p>
-     * The value will be used in URL (generated when resource is registered) in
+     * The value will be used in URI (generated when resource is registered) in
      * a way that the {@name} is the last segment of the path. So this is
      * synthetic file name (not real one).
      * 
