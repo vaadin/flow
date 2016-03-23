@@ -15,12 +15,9 @@
  */
 package com.vaadin.server;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.EventObject;
@@ -339,60 +336,4 @@ public class VaadinSessionTest {
         deserializedSession.unlock();
     }
 
-    @Test
-    public void registerResource_registrationResultContainsExpectedUri() {
-        StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
-        StreamResourceRegistration registration = session.registerResource(resource);
-        Assert.assertNotNull(registration);
-
-        String uri = registration.getResourceUrl();
-
-        StreamResource stored = session.getResource(uri);
-        Assert.assertSame(
-                "Unexpected stored resource is returned for registered URI",
-                stored, resource);
-    }
-
-    @Test
-    public void unregisterResource_resourceIsRemoved() {
-        StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
-        StreamResourceRegistration registration = session.registerResource(resource);
-        Assert.assertNotNull(registration);
-
-        String uri = registration.getResourceUrl();
-
-        registration.unregister();
-
-        StreamResource stored = session.getResource(uri);
-        Assert.assertNull(
-                "Unexpected stored resource is found after unregister()",
-                stored);
-    }
-
-    @Test
-    public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
-        StreamResource resource1 = new StreamResource("name",
-                () -> makeEmptyStream());
-        StreamResourceRegistration registration1 = session.registerResource(resource1);
-
-        StreamResource resource2 = new StreamResource("name",
-                () -> makeEmptyStream());
-        StreamResourceRegistration registration2 = session.registerResource(resource2);
-
-        Assert.assertNotEquals(
-                "Two different resource are registered to the same URI",
-                registration1.getResourceUrl(), registration2.getResourceUrl());
-
-        registration1.unregister();
-
-        assertNotNull(
-                "Second resource is not found after first resource has been unregistered",
-                session.getResource(registration2.getResourceUrl()));
-    }
-
-    private InputStream makeEmptyStream() {
-        return new ByteArrayInputStream(new byte[0]);
-    }
 }

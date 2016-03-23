@@ -234,7 +234,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final String csrfToken = UUID.randomUUID().toString();
 
-    private final StreamResourceRegistry resourceRegistry = new StreamResourceRegistry();
+    private final StreamResourceRegistry resourceRegistry;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -244,6 +244,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public VaadinSession(VaadinService service) {
         this.service = service;
+        resourceRegistry = new StreamResourceRegistry(this);
     }
 
     /**
@@ -1106,35 +1107,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Registers a stream resource in the session and returns registration
-     * handler.
+     * Get resource registry instance.
      * <p>
-     * You can get resource URL to use it in the application (e.g. set an
-     * attribute value or property value) via the registration handler. The
-     * registration handler should be used to unregister resource when it's not
-     * needed anymore. Note that it is the developer responsibility to
-     * unregister resources. Otherwise resources won't be garbage collected
-     * until session expires which causes memory leak.
+     * Use this instance to manage {@link StreamResource}s.
      * 
-     * @param resource
-     *            stream resource to register
-     * @return registration handler.
+     * @return resource registry
      */
-    public StreamResourceRegistration registerResource(
-            StreamResource resource) {
-        assert hasLock();
-        return resourceRegistry.registerResource(resource);
-    }
-
-    /**
-     * Gets a registered resource by given {@code uri}.
-     * 
-     * @param uri
-     *            resource uri
-     * @return registered resource if any
-     */
-    public StreamResource getResource(String uri) {
-        assert hasLock();
-        return resourceRegistry.getResource(uri);
+    public StreamResourceRegistry getResourceRegistry() {
+        return resourceRegistry;
     }
 }
