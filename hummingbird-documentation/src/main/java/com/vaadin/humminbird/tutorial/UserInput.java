@@ -15,18 +15,20 @@
  */
 package com.vaadin.humminbird.tutorial;
 
+import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.UI;
 
-/**
- * Tutorial code related to tutorial-user-input.asciidoc.
- */
+@CodeFor("tutorial-user-input.asciidoc")
 public abstract class UserInput extends UI {
 
     void tutorialCode() {
         Element textInput = ElementFactory.createInput();
         textInput.setAttribute("placeholder", "Please enter your name");
+
+        textInput.setSynchronizedProperties("value");
+        textInput.setSynchronizedPropertiesEvents("change");
 
         Element button = ElementFactory.createDiv();
         button.addEventListener("click", e -> {
