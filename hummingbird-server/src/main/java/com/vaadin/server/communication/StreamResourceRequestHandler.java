@@ -16,6 +16,7 @@
 package com.vaadin.server.communication;
 
 import java.io.IOException;
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -41,11 +42,14 @@ import com.vaadin.server.VaadinSession;
  * 
 =======
 import java.io.InputStream;
+=======
+>>>>>>> fe3818a Corrections.
 import java.io.OutputStream;
 import java.util.Optional;
 
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResourceWriter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
@@ -62,6 +66,7 @@ import com.vaadin.server.VaadinSession;
  */
 public class StreamResourceRequestHandler implements RequestHandler {
 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
     private static final char PATH_SEPARATOR = '/';
 
@@ -73,9 +78,12 @@ public class StreamResourceRequestHandler implements RequestHandler {
     private static final int BUFFER_SIZE = 1024;
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
 
+=======
+>>>>>>> fe3818a Corrections.
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
         StreamResourceWriter writer = null;
 
@@ -115,6 +123,9 @@ public class StreamResourceRequestHandler implements RequestHandler {
             writer.accept(outputStream, session);
 =======
         InputStream stream = null;
+=======
+        StreamResourceWriter writer = null;
+>>>>>>> fe3818a Corrections.
 
         if (request.getPathInfo() == null) {
             return false;
@@ -123,7 +134,6 @@ public class StreamResourceRequestHandler implements RequestHandler {
         // remove leading '/'
         pathInfo = pathInfo.substring(1);
 
-        boolean requiresLock;
         session.lock();
         try {
             int index = pathInfo.lastIndexOf('/');
@@ -139,16 +149,15 @@ public class StreamResourceRequestHandler implements RequestHandler {
 
             response.setContentType(resource.get().getContentType());
             response.setCacheTime(resource.get().getCacheTime());
-            stream = resource.get().createInputStream();
-            if (stream == null) {
+            writer = resource.get().getWriter();
+            if (writer == null) {
                 throw new IOException(
                         "Stream resource produces null input stream");
             }
-
-            requiresLock = resource.get().requiresLock();
         } finally {
             session.unlock();
         }
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
         if (stream != null) {
             OutputStream out = response.getOutputStream();
@@ -160,13 +169,21 @@ public class StreamResourceRequestHandler implements RequestHandler {
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
 =======
         OutputStream out = response.getOutputStream();
+=======
+        OutputStream outputStream = response.getOutputStream();
+>>>>>>> fe3818a Corrections.
         try {
-            copy(requiresLock, session, stream, out);
+            writer.accept(outputStream, session);
         } finally {
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
             closeStreams(stream, out);
 >>>>>>> 025249e Review based fixes.
+=======
+            outputStream.close();
+>>>>>>> fe3818a Corrections.
         }
         return true;
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     }
 
 <<<<<<< HEAD
@@ -254,6 +271,8 @@ public class StreamResourceRequestHandler implements RequestHandler {
             return source.read(buffer);
         }
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+>>>>>>> fe3818a Corrections.
     }
 
 }

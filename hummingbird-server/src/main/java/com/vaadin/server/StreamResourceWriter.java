@@ -17,6 +17,7 @@ package com.vaadin.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 import java.io.Serializable;
 
 /**
@@ -37,6 +38,23 @@ public interface StreamResourceWriter extends Serializable {
      * Note that the method is not called under the session lock. It means that
      * if implementation requires access to the application/session data then
      * the session has to be locked explicitly.
+=======
+
+/**
+ * Output stream consumer. Implementation of this interface should write data
+ * into {@link OutputStream} instance provided as an argument to its
+ * {@link #accept(OutputStream, VaadinSession)} method.
+ * 
+ * @author Vaadin Ltd
+ *
+ */
+@FunctionalInterface
+public interface StreamResourceWriter {
+
+    /**
+     * Handles {@code stream} (writes data to it) using {@code session} as a
+     * context.
+>>>>>>> fe3818a Corrections.
      * 
      * @param stream
      *            data output stream
