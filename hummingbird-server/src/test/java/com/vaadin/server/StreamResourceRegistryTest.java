@@ -124,8 +124,8 @@ public class StreamResourceRegistryTest {
         URI url = registration.getResourceUri();
         String path = url.toString().substring(0,
                 url.toString().lastIndexOf('/') + 1);
-        Optional<StreamResource> stored = registry.getResource(path,
-                resource.getFileName());
+        Optional<StreamResource> stored = registry
+                .getResource(path + resource.getFileName());
         Assert.assertTrue("Resource is not found by prefix and name",
                 stored.isPresent());
         Assert.assertEquals("Unexpected resource is found by prefix and name",
