@@ -35,6 +35,8 @@ public class ElementFactoryTest {
         methodToTag.put("preformatted", "pre");
         methodToTag.put("paragraph", "p");
         methodToTag.put("emphasis", "em");
+        methodToTag.put("listitem", "li");
+        methodToTag.put("unsortedlist", "ul");
         for (int i = 1; i <= 6; i++) {
             methodToTag.put("heading" + i, "h" + i);
         }
