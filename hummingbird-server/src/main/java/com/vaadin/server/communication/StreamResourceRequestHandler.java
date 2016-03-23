@@ -133,22 +133,11 @@ public class StreamResourceRequestHandler implements RequestHandler {
         String pathInfo = request.getPathInfo();
         // remove leading '/'
         pathInfo = pathInfo.substring(1);
-        int index = pathInfo.lastIndexOf('/');
-        boolean hasPrefix = index >= 0;
-        String path;
-        if (hasPrefix) {
-            path = pathInfo.substring(0, index + 1);
-        } else {
-            path = "";
-        }
-        String name = pathInfo.substring(path.length());
-        // path info returns decoded name but space ' ' remains encoded '+'
-        name = name.replace('+', ' ');
 
         session.lock();
         try {
             Optional<StreamResource> resource = session.getResourceRegistry()
-                    .getResource(path, name);
+                    .getResource(pathInfo);
             if (!resource.isPresent()) {
                 return false;
             }
