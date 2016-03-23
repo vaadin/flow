@@ -16,6 +16,7 @@
 package com.vaadin.server;
 
 import java.io.Serializable;
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,19 +29,29 @@ import com.vaadin.server.communication.StreamResourceRequestHandler;
 /**
  * Registry for {@link StreamResource} instances.
 =======
+=======
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+>>>>>>> 025249e Review based fixes.
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Registry for {@link StreamResource} instances.
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
  * <p>
  * This class is not thread safe. One should care about thread safety in the
  * code which uses this class explicitly.
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+>>>>>>> 025249e Review based fixes.
  * 
  * @author Vaadin Ltd
  *
  */
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
 public class StreamResourceRegistry implements Serializable {
 
@@ -51,20 +62,36 @@ public class StreamResourceRegistry implements Serializable {
     private int nextResourceId;
 =======
 class StreamResourceRegistry implements Serializable {
+=======
+public class StreamResourceRegistry implements Serializable {
+>>>>>>> 025249e Review based fixes.
 
     private static final char PATH_SEPARATOR = '/';
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     private final Map<Integer, StreamResource> resources = new HashMap<>();
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
 =======
     private final Map<String, StreamResource> resources = new HashMap<>();
+=======
+>>>>>>> 025249e Review based fixes.
 
     /**
      * Dynamic resource URI prefix.
      */
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     static final String DYN_RES_PREFIX = "vaadin-dynamic/generated-resources/";
 >>>>>>> 542ad4a Review based fixes.
+=======
+    static final String DYN_RES_PREFIX = "VAADIN/dynamic/generated-resources/";
+
+    private final Map<String, StreamResource> resources = new HashMap<>();
+
+    private final VaadinSession session;
+
+    private int nextResourceId;
+>>>>>>> 025249e Review based fixes.
 
     private static final class Registration
             implements StreamResourceRegistration {
@@ -147,11 +174,18 @@ class StreamResourceRegistry implements Serializable {
 
         private String generateUrl(int id, String name) {
             StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
-            builder.append(id).append(PATH_SEPARATOR).append(name);
+            try {
+                builder.append(id).append(PATH_SEPARATOR).append(
+                        URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+            } catch (UnsupportedEncodingException e) {
+                // UTF8 has to be supported
+                throw new RuntimeException(e);
+            }
             return builder.toString();
         }
     }
 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
     /**
      * Creates stream resource registry for provided {@code session}.
@@ -201,15 +235,36 @@ class StreamResourceRegistry implements Serializable {
         return Optional.ofNullable(resources.get(uri));
 =======
     private int nextResourceId;
+=======
+    /**
+     * Creates stream resource registry for provided {@code session}.
+     * 
+     * @param session
+     *            vaadin session
+     */
+    public StreamResourceRegistry(VaadinSession session) {
+        this.session = session;
+    }
+>>>>>>> 025249e Review based fixes.
 
     /**
-     * Registers the {@code resource}.
+     * Registers a stream resource in the session and returns registration
+     * handler.
+     * <p>
+     * You can get resource URL to use it in the application (e.g. set an
+     * attribute value or property value) via the registration handler. The
+     * registration handler should be used to unregister resource when it's not
+     * needed anymore. Note that it is the developer's responsibility to
+     * unregister resources. Otherwise resources won't be garbage collected
+     * until the session expires which causes memory leak.
      * 
      * @param resource
-     *            resource to register
-     * @return registration handler
+     *            stream resource to register
+     * @return registration handler.
      */
-    StreamResourceRegistration registerResource(StreamResource resource) {
+    public StreamResourceRegistration registerResource(
+            StreamResource resource) {
+        assert session.hasLock();
         int id = nextResourceId;
         nextResourceId++;
         Registration registration = new Registration(this, id,
@@ -221,10 +276,11 @@ class StreamResourceRegistry implements Serializable {
     /**
      * Get registered resource by its {@code url}.
      * 
-     * @param uri
+     * @param url
      *            resource url
      * @return registered resource if any
      */
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     StreamResource getResource(String uri) {
         if (uri.startsWith(VaadinSession.DYN_RES_PREFIX)) {
@@ -247,6 +303,32 @@ class StreamResourceRegistry implements Serializable {
     StreamResource getResource(String url) {
         return resources.get(url);
 >>>>>>> 542ad4a Review based fixes.
+=======
+    public Optional<StreamResource> getResource(String url) {
+        assert session.hasLock();
+        return Optional.ofNullable(resources.get(url));
+    }
+
+    /**
+     * Get registered resource by its {@code prefix} (which has been generated
+     * by framework) and file {@code name}.
+     * 
+     * @return registered resource if any
+     */
+    public Optional<StreamResource> getResource(String prefix, String name) {
+        assert session.hasLock();
+        try {
+            if (!prefix.isEmpty()
+                    && prefix.charAt(prefix.length() - 1) != PATH_SEPARATOR) {
+                return Optional.empty();
+            }
+            return Optional.ofNullable(resources.get(prefix
+                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name())));
+        } catch (UnsupportedEncodingException e) {
+            // UTF8 has to be supported
+            throw new RuntimeException(e);
+        }
+>>>>>>> 025249e Review based fixes.
     }
 
 }

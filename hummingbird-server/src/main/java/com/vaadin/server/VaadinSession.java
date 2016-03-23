@@ -242,11 +242,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final String csrfToken = UUID.randomUUID().toString();
 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
     private final StreamResourceRegistry resourceRegistry;
 =======
     private final StreamResourceRegistry resourceRegistry = new StreamResourceRegistry();
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+    private final StreamResourceRegistry resourceRegistry;
+>>>>>>> 025249e Review based fixes.
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -1120,6 +1124,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
      * Get resource registry instance.
      * <p>
@@ -1135,18 +1140,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Registers a stream resource in the session and returns registration
      * handler.
 >>>>>>> 542ad4a Review based fixes.
+=======
+     * Get resource registry instance.
+>>>>>>> 025249e Review based fixes.
      * <p>
-     * You can get resource URL to use it in the application (e.g. set an
-     * attribute value or property value) via the registration handler. The
-     * registration handler should be used to unregister resource when it's not
-     * needed anymore. Note that it is the developer responsibility to
-     * unregister resources. Otherwise resources won't be garbage collected
-     * until session expires which causes memory leak.
+     * Use this instance to manage {@link StreamResource}s.
      * 
-     * @param resource
-     *            stream resource to register
-     * @return registration handler.
+     * @return resource registry
      */
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     public StreamResourceRegistration registerResource(
             StreamResource resource) {
         assert hasLock();
@@ -1164,5 +1166,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert hasLock();
         return resourceRegistry.getResource(uri);
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+    public StreamResourceRegistry getResourceRegistry() {
+        return resourceRegistry;
+>>>>>>> 025249e Review based fixes.
     }
 }

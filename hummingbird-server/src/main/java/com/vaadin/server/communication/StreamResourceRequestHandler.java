@@ -42,12 +42,12 @@ import com.vaadin.server.VaadinSession;
 =======
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Optional;
 
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
-import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 
 /**
@@ -119,35 +119,37 @@ public class StreamResourceRequestHandler implements RequestHandler {
         if (request.getPathInfo() == null) {
             return false;
         }
-        StringBuilder pathInfo = new StringBuilder(request.getPathInfo());
+        String pathInfo = request.getPathInfo();
         // remove leading '/'
-        pathInfo.delete(0, 1);
+        pathInfo = pathInfo.substring(1);
 
         boolean requiresLock;
         session.lock();
         try {
-            VaadinServletRequest servletRequest = (VaadinServletRequest) request;
-            String queryString = servletRequest.getQueryString();
-            if (queryString != null && !queryString.isEmpty()) {
-                pathInfo.append('?').append(servletRequest.getQueryString());
-            }
-            StreamResource resource = session.getResource(pathInfo.toString());
-            if (resource == null) {
+            int index = pathInfo.lastIndexOf('/');
+            String path = index >= 0 ? pathInfo.substring(0, index + 1) : "";
+            String name = pathInfo.substring(path.length());
+            // path info returns decoded name but space ' ' remains encoded '+'
+            name = name.replace('+', ' ');
+            Optional<StreamResource> resource = session.getResourceRegistry()
+                    .getResource(path, name);
+            if (!resource.isPresent()) {
                 return false;
             }
 
-            response.setContentType(resource.getContentType());
-            response.setCacheTime(resource.getCacheTime());
-            stream = resource.createInputStream();
+            response.setContentType(resource.get().getContentType());
+            response.setCacheTime(resource.get().getCacheTime());
+            stream = resource.get().createInputStream();
             if (stream == null) {
                 throw new IOException(
                         "Stream resource produces null input stream");
             }
 
-            requiresLock = resource.requiresLock();
+            requiresLock = resource.get().requiresLock();
         } finally {
             session.unlock();
         }
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
         if (stream != null) {
             OutputStream out = response.getOutputStream();
             try {
@@ -156,6 +158,13 @@ public class StreamResourceRequestHandler implements RequestHandler {
                 closeStreams(stream, out);
             }
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+        OutputStream out = response.getOutputStream();
+        try {
+            copy(requiresLock, session, stream, out);
+        } finally {
+            closeStreams(stream, out);
+>>>>>>> 025249e Review based fixes.
         }
         return true;
     }

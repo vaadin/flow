@@ -131,8 +131,15 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Optional;
+
+import javax.servlet.ServletException;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -141,9 +148,19 @@ import org.junit.Test;
  */
 public class StreamResourceRegistryTest {
 
+    private VaadinServlet servlet = new VaadinServlet();
+    private VaadinServletService service;
+    private VaadinSession session;
+
+    @Before
+    public void setUp() throws ServletException {
+        service = servlet.getService();
+        session = new VaadinSession(service);
+    }
+
     @Test
     public void registerResource_registrationResultContainsExpectedUri() {
-        StreamResourceRegistry registry = new StreamResourceRegistry();
+        StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
@@ -155,15 +172,15 @@ public class StreamResourceRegistryTest {
         Assert.assertTrue("Unexpected URI prefix",
                 uri.startsWith(StreamResourceRegistry.DYN_RES_PREFIX));
 
-        StreamResource stored = registry.getResource(uri);
+        Optional<StreamResource> stored = registry.getResource(uri);
         Assert.assertSame(
                 "Unexpected stored resource is returned for registered URI",
-                stored, resource);
+                stored.get(), resource);
     }
 
     @Test
     public void unregisterResource_resourceIsRemoved() {
-        StreamResourceRegistry registry = new StreamResourceRegistry();
+        StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource = new StreamResource("name",
                 () -> makeEmptyStream());
@@ -175,15 +192,15 @@ public class StreamResourceRegistryTest {
 
         registration.unregister();
 
-        StreamResource stored = registry.getResource(uri);
-        Assert.assertNull(
+        Optional<StreamResource> stored = registry.getResource(uri);
+        Assert.assertFalse(
                 "Unexpected stored resource is found after unregister()",
-                stored);
+                stored.isPresent());
     }
 
     @Test
     public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
-        StreamResourceRegistry registry = new StreamResourceRegistry();
+        StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource1 = new StreamResource("name",
                 () -> makeEmptyStream());
@@ -209,6 +226,40 @@ public class StreamResourceRegistryTest {
 =======
                 registry.getResource(registration2.getResourceUrl()));
 >>>>>>> 542ad4a Review based fixes.
+    }
+
+    @Test
+    public void getResourceByPrefixAndName() {
+        StreamResourceRegistry registry = session.getResourceRegistry();
+
+        StreamResource resource = new StreamResource("a?b=c d&e",
+                () -> makeEmptyStream());
+        StreamResourceRegistration registration = registry
+                .registerResource(resource);
+
+        String url = registration.getResourceUrl();
+        String path = url.substring(0, url.lastIndexOf('/') + 1);
+        Optional<StreamResource> stored = registry.getResource(path,
+                resource.getFileName());
+        Assert.assertTrue("Resource is not found by prefix and name",
+                stored.isPresent());
+        Assert.assertEquals("Unexpected resource is found by prefix and name",
+                resource, stored.get());
+    }
+
+    @Test
+    public void getResourceUrlIsEncoded() throws UnsupportedEncodingException {
+        StreamResourceRegistry registry = session.getResourceRegistry();
+
+        StreamResource resource = new StreamResource("a?b=c d&e",
+                () -> makeEmptyStream());
+        StreamResourceRegistration registration = registry
+                .registerResource(resource);
+
+        String url = registration.getResourceUrl();
+        String suffix = URLEncoder.encode(resource.getFileName(),
+                StandardCharsets.UTF_8.name());
+        Assert.assertTrue("Resource url is not encoded", url.endsWith(suffix));
     }
 
     private InputStream makeEmptyStream() {
