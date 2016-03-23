@@ -188,11 +188,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public static final String UI_PARAMETER = "UI";
 
     /**
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
      * Dynamic resource URI prefix.
      */
     public static final String DYN_RES_PREFIX = "vaadin/dynamic/generated-resources/";
 
     /**
+=======
+>>>>>>> 542ad4a Review based fixes.
      * Configuration for the session.
      */
     private DeploymentConfiguration configuration;
@@ -1116,6 +1119,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
      * Get resource registry instance.
      * <p>
@@ -1127,24 +1131,30 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return resourceRegistry;
 =======
      * Register stream resource in the session and returns registration handler.
+=======
+     * Registers a stream resource in the session and returns registration
+     * handler.
+>>>>>>> 542ad4a Review based fixes.
      * <p>
-     * One is able to get resource URI to use it in the application (f.e. set an
-     * attribute value or property value) via registration handler. The handler
-     * should be used to unregister resource when it's not needed anymore. Note
-     * that this is developer responsibility to unregister resources. Otherwise
-     * resources stays referenced from the session
+     * You can get resource URL to use it in the application (e.g. set an
+     * attribute value or property value) via registration handler. The
+     * registration handler should be used to unregister resource when it's not
+     * needed anymore. Note that it is developer responsibility to unregister
+     * resources. Otherwise resources won't be garbage collected until session
+     * is alive which causes memory leak.
      * 
      * @param resource
      *            stream resource to register
      * @return registration handler.
      */
-    public StreamResourceRegistration register(StreamResource resource) {
+    public StreamResourceRegistration registerResource(
+            StreamResource resource) {
         assert hasLock();
         return resourceRegistry.registerResource(resource);
     }
 
     /**
-     * Get registered resource by given {@code uri}.
+     * Gets a registered resource by given {@code uri}.
      * 
      * @param uri
      *            resource uri

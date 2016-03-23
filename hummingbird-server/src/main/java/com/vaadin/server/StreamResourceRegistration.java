@@ -22,7 +22,7 @@ import java.net.URI;
 /**
  * Stream resource registration result.
  * <p>
- * Use {@link #getResourceUri()} to get URI after {@link StreamResource} is
+ * Use {@link #getResourceUrl()} to get URL after {@link StreamResource} is
  * registered. It also allows to unregister the resource.
  * 
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
@@ -61,18 +61,31 @@ public interface StreamResourceRegistration extends Serializable {
 =======
 =======
     /**
-     * Get resource URI for registered {@link StreamResource} instance.
+     * Get resource URL for registered {@link StreamResource} instance.
+     * <p>
+     * The URL is relative to the application base URL.
      * 
-     * @return
+     * @return resource URL
      */
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 >>>>>>> ae80070 Some javadocs.
     String getResourceUri();
+=======
+    String getResourceUrl();
+>>>>>>> 542ad4a Review based fixes.
 
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
 =======
     /**
      * Unregister {@link StreamResource}.
+     * <p>
+     * The resource will be removed from the session and its URL won't be served
+     * by the application anymore so that the resource becomes available for GC.
+     * <p>
+     * It's developer's responsibility to call this method at the appropriate
+     * time. Otherwise the resource instance will stay in memory until session
+     * is alive.
      */
 >>>>>>> ae80070 Some javadocs.
     void unregister();

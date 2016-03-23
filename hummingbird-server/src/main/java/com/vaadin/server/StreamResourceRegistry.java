@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Registry for {@link StreamResource} instances.
+ * <p>
  * This class is not thread safe. One should care about thread safety in the
  * code which uses this class explicitly.
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
@@ -52,14 +54,24 @@ class StreamResourceRegistry implements Serializable {
 
     private static final char PATH_SEPARATOR = '/';
 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     private final Map<Integer, StreamResource> resources = new HashMap<>();
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+    private final Map<String, StreamResource> resources = new HashMap<>();
+
+    /**
+     * Dynamic resource URI prefix.
+     */
+    static final String DYN_RES_PREFIX = "vaadin-dynamic/generated-resources/";
+>>>>>>> 542ad4a Review based fixes.
 
     private static final class Registration
             implements StreamResourceRegistration {
 
         private final StreamResourceRegistry registry;
 
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
         private final URI uri;
 =======
@@ -67,10 +79,14 @@ class StreamResourceRegistry implements Serializable {
 
         private final String name;
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+        private final String url;
+>>>>>>> 542ad4a Review based fixes.
 
         private Registration(StreamResourceRegistry registry, int id,
                 String fileName) {
             this.registry = registry;
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
             try {
                 uri = new URI(
@@ -86,16 +102,19 @@ class StreamResourceRegistry implements Serializable {
             return uri;
 =======
             resourceId = id;
+=======
+>>>>>>> 542ad4a Review based fixes.
             StringBuilder resourceName = new StringBuilder(fileName);
             while (resourceName.length() > 0
                     && resourceName.charAt(0) == PATH_SEPARATOR) {
                 resourceName.delete(0, 1);
             }
-            resourceName.insert(0, PATH_SEPARATOR);
-            name = resourceName.toString();
+            String name = resourceName.toString();
+            url = generateUrl(id, name);
         }
 
         @Override
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
         public String getResourceUri() {
             // TODO : prefix should be configurable
             StringBuilder builder = new StringBuilder(
@@ -103,17 +122,31 @@ class StreamResourceRegistry implements Serializable {
             builder.append(resourceId).append(name);
             return builder.toString();
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+        public String getResourceUrl() {
+            return url;
+>>>>>>> 542ad4a Review based fixes.
         }
 
         @Override
         public void unregister() {
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
             registry.resources.remove(getResourceUri());
 =======
             registry.resources.remove(resourceId);
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+            registry.resources.remove(getResourceUrl());
+>>>>>>> 542ad4a Review based fixes.
         }
 
+        private String generateUrl(int id, String name) {
+            // TODO : prefix should be configurable
+            StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
+            builder.append(id).append(PATH_SEPARATOR).append(name);
+            return builder.toString();
+        }
     }
 
 <<<<<<< HEAD
@@ -167,7 +200,7 @@ class StreamResourceRegistry implements Serializable {
     private int nextResourceId;
 
     /**
-     * Register the {@code resource}.
+     * Registers the {@code resource}.
      * 
      * @param resource
      *            resource to register
@@ -176,17 +209,20 @@ class StreamResourceRegistry implements Serializable {
     StreamResourceRegistration registerResource(StreamResource resource) {
         int id = nextResourceId;
         nextResourceId++;
-        resources.put(id, resource);
-        return new Registration(this, id, resource.getFileName());
+        Registration registration = new Registration(this, id,
+                resource.getFileName());
+        resources.put(registration.getResourceUrl(), resource);
+        return registration;
     }
 
     /**
-     * Get registered resource by its {@code uri}.
+     * Get registered resource by its {@code url}.
      * 
      * @param uri
-     *            resource uri
+     *            resource url
      * @return registered resource if any
      */
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
     StreamResource getResource(String uri) {
         if (uri.startsWith(VaadinSession.DYN_RES_PREFIX)) {
             String postfix = uri
@@ -204,6 +240,10 @@ class StreamResourceRegistry implements Serializable {
         }
         return null;
 >>>>>>> 80ab6ba... Stream resource registration on the session level.
+=======
+    StreamResource getResource(String url) {
+        return resources.get(url);
+>>>>>>> 542ad4a Review based fixes.
     }
 
 }

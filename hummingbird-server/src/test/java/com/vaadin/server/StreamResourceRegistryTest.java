@@ -151,9 +151,9 @@ public class StreamResourceRegistryTest {
                 .registerResource(resource);
         Assert.assertNotNull(registration);
 
-        String uri = registration.getResourceUri();
+        String uri = registration.getResourceUrl();
         Assert.assertTrue("Unexpected URI prefix",
-                uri.startsWith(VaadinSession.DYN_RES_PREFIX));
+                uri.startsWith(StreamResourceRegistry.DYN_RES_PREFIX));
 
         StreamResource stored = registry.getResource(uri);
         Assert.assertSame(
@@ -171,7 +171,7 @@ public class StreamResourceRegistryTest {
                 .registerResource(resource);
         Assert.assertNotNull(registration);
 
-        String uri = registration.getResourceUri();
+        String uri = registration.getResourceUrl();
 
         registration.unregister();
 
@@ -197,14 +197,18 @@ public class StreamResourceRegistryTest {
 
         Assert.assertNotEquals(
                 "Two different resource are registered to the same URI",
-                registration1.getResourceUri(), registration2.getResourceUri());
+                registration1.getResourceUrl(), registration2.getResourceUrl());
 
         registration1.unregister();
 
         assertNotNull(
                 "Second resource is not found after first resource has been unregistered",
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
                 registry.getResource(registration2.getResourceUri()));
 >>>>>>> ce3f239 Corrections and tests for resource registry.
+=======
+                registry.getResource(registration2.getResourceUrl()));
+>>>>>>> 542ad4a Review based fixes.
     }
 
     private InputStream makeEmptyStream() {
