@@ -1250,10 +1250,14 @@ public class Element implements Serializable {
      * -1 if this list does not contain the {@code child}.
      * 
      * @param child
-     *            the child node
+     *            the child element
      * @return index of the {@code child} or -1 if it's not a child
      */
     public int indexOfChild(Element child) {
+        if (child == null) {
+            throw new IllegalArgumentException(
+                    "Child parameter cannot be null");
+        }
         if (!equals(child.getParent())) {
             return -1;
         }

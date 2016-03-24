@@ -227,5 +227,4 @@ public class TextElementStateProvider implements ElementStateProvider {
     public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
         throw new UnsupportedOperationException();
     }
-
 }
