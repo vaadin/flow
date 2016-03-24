@@ -44,7 +44,13 @@ public class StreamResourceRegistryTest {
     @Before
     public void setUp() throws ServletException {
         service = servlet.getService();
-        session = new VaadinSession(service);
+        session = new VaadinSession(service) {
+
+            @Override
+            public boolean hasLock() {
+                return true;
+            }
+        };
     }
 
     @Test
