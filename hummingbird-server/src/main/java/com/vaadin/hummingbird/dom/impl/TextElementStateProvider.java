@@ -228,8 +228,4 @@ public class TextElementStateProvider implements ElementStateProvider {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public int indexOfChild(StateNode parent, StateNode child) {
-        throw new UnsupportedOperationException();
-    }
 }

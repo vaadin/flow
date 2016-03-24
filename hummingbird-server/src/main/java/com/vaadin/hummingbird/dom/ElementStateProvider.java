@@ -358,13 +358,4 @@ public interface ElementStateProvider extends Serializable {
      */
     Set<String> getSynchronizedPropertiesEvents(StateNode node);
 
-    /**
-     * Returns the index of the specified {@code child} in the {@code parent}'s
-     * children list, or -1 if this list does not contain the {@code child}.
-     * 
-     * @param child
-     * @return
-     */
-    int indexOfChild(StateNode parent, StateNode child);
-
 }

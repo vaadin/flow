@@ -1250,10 +1250,20 @@ public class Element implements Serializable {
      * -1 if this list does not contain the {@code child}.
      * 
      * @param child
-     * @return
+     *            the child node
+     * @return index of the {@code child}
      */
     public int indexOfChild(Element child) {
-        return stateProvider.indexOfChild(getNode(), child.getNode());
+        if (!equals(child.getParent())) {
+            return -1;
+        }
+        for (int i = 0; i < getChildCount(); i++) {
+            Element element = getChild(i);
+            if (element.equals(child)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 }
