@@ -354,7 +354,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 try {
                     session.lock();
                     configuration = (DeploymentConfiguration) session
-                            .getAttribute(name);
+                            .getAttributes().getAttribute(name);
 
                     if (configuration == null) {
                         ApplicationRunnerServlet servlet = (ApplicationRunnerServlet) VaadinServlet
@@ -390,7 +390,8 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                             configuration = originalConfiguration;
                         }
 
-                        session.setAttribute(name, configuration);
+                        session.getAttributes().setAttribute(name,
+                                configuration);
                     }
                 } finally {
                     session.unlock();
