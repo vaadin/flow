@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -149,10 +150,14 @@ public abstract class ViewRenderer implements NavigationHandler {
 
         Map<String, String> routePlaceholders = new HashMap<>();
 
-        Location currentDestination = destination;
-        RouteLocation currentRouteDefinition = routeDefinition;
+        Optional<Location> maybeCurrentDestination = Optional.of(destination);
+        Optional<RouteLocation> maybeCurrentRouteDefinition = Optional
+                .of(routeDefinition);
 
-        while (currentRouteDefinition.hasSegments()) {
+        while (maybeCurrentRouteDefinition.isPresent()) {
+            RouteLocation currentRouteDefinition = maybeCurrentRouteDefinition
+                    .get();
+            Location currentDestination = maybeCurrentDestination.get();
 
             if (currentRouteDefinition.startsWithPlaceholder()) {
                 String placeholderName = currentRouteDefinition
@@ -168,8 +173,9 @@ public abstract class ViewRenderer implements NavigationHandler {
                 routePlaceholders.put("*", currentDestination.getPath());
             }
 
-            currentDestination = currentDestination.getSubLocation();
-            currentRouteDefinition = currentRouteDefinition.getSubLocation();
+            maybeCurrentDestination = currentDestination.getSubLocation();
+            maybeCurrentRouteDefinition = currentRouteDefinition
+                    .getRouteSubLocation();
         }
 
         return routePlaceholders;
