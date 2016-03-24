@@ -619,7 +619,7 @@ public class Element implements Serializable {
         }
 
         for (int i = 0; i < children.length; i++) {
-            detachElement(children[i]);
+            children[i].removeFromParent();
             stateProvider.insertChild(node, index + i, children[i]);
             assert Objects.equals(this, children[i]
                     .getParent()) : "Child should have this element as parent after being inserted";
@@ -652,7 +652,6 @@ public class Element implements Serializable {
                 return this;
             }
             removeChild(index);
-            detachElement(child);
             insertChild(index, child);
         } else {
             throw new IllegalArgumentException(String.format(
@@ -1247,10 +1246,4 @@ public class Element implements Serializable {
         return stateProvider.getSynchronizedPropertiesEvents(node);
     }
 
-    private void detachElement(Element element) {
-        Element parent = element.getParent();
-        if (parent != null) {
-            parent.removeChild(element);
-        }
-    }
 }
