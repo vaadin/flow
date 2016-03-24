@@ -313,7 +313,8 @@ public class StateTreeTest {
         tree.addNodeListener(listener);
 
         StateNode node = new StateNode(ElementChildrenNamespace.class);
-        node.setParent(tree.getRootNode());
+        tree.getRootNode().getNamespace(ElementChildrenNamespace.class).add(0,
+                node);
 
         Assert.assertTrue(listener.added.size() == 1);
         Assert.assertTrue(listener.removed.size() == 0);
@@ -323,10 +324,12 @@ public class StateTreeTest {
     @Test
     public void nodeIsDetached_lifecycleListenerIsNotified() {
         LifecycleListener listener = new LifecycleListener();
+        StateTree tree = new StateTree(ElementChildrenNamespace.class);
         tree.addNodeListener(listener);
 
         StateNode node = new StateNode(ElementChildrenNamespace.class);
-        node.setParent(tree.getRootNode());
+        tree.getRootNode().getNamespace(ElementChildrenNamespace.class).add(0,
+                node);
 
         listener.added.clear();
 
@@ -340,12 +343,14 @@ public class StateTreeTest {
     @Test
     public void listenerIsRemoved_listenerIsNotifiedAnymore() {
         LifecycleListener listener = new LifecycleListener();
+        StateTree tree = new StateTree(ElementChildrenNamespace.class);
         StateNodeListenerRemover remover = tree.addNodeListener(listener);
 
         remover.remove();
 
         StateNode node = new StateNode(ElementChildrenNamespace.class);
-        node.setParent(tree.getRootNode());
+        tree.getRootNode().getNamespace(ElementChildrenNamespace.class).add(0,
+                node);
 
         Assert.assertTrue(listener.added.size() == 0);
         Assert.assertTrue(listener.removed.size() == 0);
