@@ -1,0 +1,70 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+== View Hierarchy and Nested Views
+
+For a basic routing tutorial, see <<tutorial-routing#,Defining View Routes and Navigating>>.
+
+When defining routes using `setRoute(String, Class)`, the view will be rendered inside the `<body>` tag on the page (the element returned by `View.getElement()` is attached to the `<body>`). You can define a parent view using `setRoute(String, Class<? extends View>, Class<? extends HasChildView>)`. To render `CompanyView` inside a view you would call `MainLayout` you would do:
+
+[source,java]
+----
+@Override
+public void configure(ModifiableRouterConfiguration configuration) {
+  configuration.setRoute("company", CompanyView.class, MainLayout.class);
+}
+----
+
+All parent views must implement the `HasChildView` interface and override the method `setChildView(View childView)`. The purpose of this method is to attach the child view element to the parent view at an appropriate place in the DOM. Your MainLayout could e.g. look like:
+
+[source,java]
+----
+public class MainLayout implements HasChildView {
+
+  private Element childContainer;
+  private Element root;
+
+  public MainLayout() {
+    // Initialize the main layout DOM
+    root = ElementFactory.createDiv();
+    Element header = ElementFactory.createDiv("This header will always be shown");
+    childContainer = ElementFactory.createDiv();
+    root.appendChild(header, childContainer);
+
+    // Just so we can use setChild later
+    childContainer.appendChild(ElementFactory.createDiv("Child placeholder"));
+
+  }
+
+  @Override
+  public Element getElement() {
+    return root; // The element for this view
+  }
+
+  @Override
+  public void setChildView(View childView) {
+    childContainer.setChild(0, childView.getElement());
+  }
+}
+----
+
+`CompanyView` will now always be attached inside the `childContainer` in the `MainLayout` view. If there are multiple views using the same parent view, then the parent view instances will remain the same when the user navigates between the child views.
+
+[NOTE]
+A parent view (`HasChildView`) is always a `View` itself.
+
+To define multiple view levels, you can use the method `setParentView(Class<? extends View>, Class<? extends HasChildView>)` in the configuration class, e.g.
+
+[source,java]
+----
+@Override
+public void configure(ModifiableRouterConfiguration configuration) {
+  configuration.setRoute("company", CompanyView.class, CompanySideBarView.class);
+  configuration.setParentView(CompanySideBarView.class, MainLayout.class);
+}
+----
+
+This will render `CompanyView` nested inside `CompanySideBarView`, which in turn is nested inside `MainLayout`.
+
+See also:
+
+* <<tutorial-routing-view-parameters#,Using View Parameters>>
