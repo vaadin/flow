@@ -396,7 +396,7 @@ public interface ElementFactory {
      *
      * @return a {@code &lt;ul>} element.
      */
-    static Element createUnsortedList() {
+    static Element createUnorderedList() {
         return new Element("ul");
     }
 
