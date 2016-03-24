@@ -17,7 +17,14 @@ package com.vaadin.server.communication;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.StreamResource;
@@ -34,6 +41,13 @@ import com.vaadin.server.VaadinSession;
  */
 public class StreamResourceRequestHandler implements RequestHandler {
 
+    private static final char PATH_SEPARATOR = '/';
+
+    /**
+     * Dynamic resource URI prefix.
+     */
+    static final String DYN_RES_PREFIX = "VAADIN/dynamic/generated-resources/";
+
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
@@ -45,13 +59,16 @@ public class StreamResourceRequestHandler implements RequestHandler {
         String pathInfo = request.getPathInfo();
         // remove leading '/'
         pathInfo = pathInfo.substring(1);
+        if (!pathInfo.startsWith(DYN_RES_PREFIX)) {
+            return false;
+        }
 
         session.lock();
         try {
-            Optional<StreamResource> resource = session.getResourceRegistry()
-                    .getResource(pathInfo);
+            Optional<StreamResource> resource = getResource(session, response,
+                    pathInfo);
             if (!resource.isPresent()) {
-                return false;
+                return true;
             }
 
             response.setContentType(resource.get().getContentType());
@@ -68,6 +85,47 @@ public class StreamResourceRequestHandler implements RequestHandler {
             writer.accept(outputStream, session);
         }
         return true;
+    }
+
+    public static String generateURI(int id, String name) {
+        StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
+        try {
+            builder.append(id).append(PATH_SEPARATOR).append(
+                    URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+        } catch (UnsupportedEncodingException e) {
+            // UTF8 has to be supported
+            throw new RuntimeException(e);
+        }
+        return builder.toString();
+    }
+
+    private Optional<StreamResource> getResource(VaadinSession session,
+            VaadinResponse response, String path) throws IOException {
+        try {
+            int index = path.lastIndexOf('/');
+            boolean hasPrefix = index >= 0;
+            if (!hasPrefix) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                        "Unsuppored path stracture");
+            }
+            String prefix = path.substring(0, index + 1);
+            String name = path.substring(prefix.length());
+            // path info returns decoded name but space ' ' remains encoded '+'
+            name = name.replace('+', ' ');
+
+            URI uri = new URI(prefix
+                    + URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
+            Optional<StreamResource> resource = session.getResourceRegistry()
+                    .getResource(uri);
+            if (!resource.isPresent()) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                        "Resource is not found for path=" + path);
+            }
+            return resource;
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
+            // UTF8 has to be supported
+            throw new RuntimeException(e);
+        }
     }
 
 }
