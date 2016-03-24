@@ -160,7 +160,7 @@ public class StreamResourceRegistryTest {
     }
 
     @Test
-    public void registerResource_registrationResultContainsExpectedUri() {
+    public void registerResource_registrationResultCanBeFound() {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
         StreamResource resource = new StreamResource("name",
@@ -170,10 +170,8 @@ public class StreamResourceRegistryTest {
         Assert.assertNotNull(registration);
 
         URI uri = registration.getResourceUri();
-        Assert.assertTrue("Unexpected URI prefix", uri.toString()
-                .startsWith(StreamResourceRegistry.DYN_RES_PREFIX));
 
-        Optional<StreamResource> stored = registry.getResource(uri.toString());
+        Optional<StreamResource> stored = registry.getResource(uri);
         Assert.assertSame(
                 "Unexpected stored resource is returned for registered URI",
                 stored.get(), resource);
@@ -193,7 +191,7 @@ public class StreamResourceRegistryTest {
 
         registration.unregister();
 
-        Optional<StreamResource> stored = registry.getResource(uri.toString());
+        Optional<StreamResource> stored = registry.getResource(uri);
         Assert.assertFalse(
                 "Unexpected stored resource is found after unregister()",
                 stored.isPresent());
@@ -221,6 +219,7 @@ public class StreamResourceRegistryTest {
 
         assertNotNull(
                 "Second resource is not found after first resource has been unregistered",
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
@@ -256,6 +255,9 @@ public class StreamResourceRegistryTest {
                 stored.isPresent());
         Assert.assertEquals("Unexpected resource is found by prefix and name",
                 resource, stored.get());
+=======
+                registry.getResource(registration2.getResourceUri()));
+>>>>>>> 1b96933 Corrections.
     }
 
     @Test

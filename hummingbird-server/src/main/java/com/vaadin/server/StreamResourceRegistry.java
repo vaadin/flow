@@ -17,6 +17,7 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -31,14 +32,21 @@ import com.vaadin.server.communication.StreamResourceRequestHandler;
 =======
 =======
 import java.io.UnsupportedEncodingException;
+=======
+>>>>>>> 1b96933 Corrections.
 import java.net.URI;
 import java.net.URISyntaxException;
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 >>>>>>> 025249e Review based fixes.
+=======
+>>>>>>> 1b96933 Corrections.
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import com.vaadin.server.communication.StreamResourceRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.
@@ -56,6 +64,7 @@ import java.util.Optional;
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< HEAD
 public class StreamResourceRegistry implements Serializable {
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 
     private final Map<URI, StreamResource> resources = new HashMap<>();
 
@@ -87,6 +96,8 @@ public class StreamResourceRegistry implements Serializable {
 >>>>>>> 542ad4a Review based fixes.
 =======
     static final String DYN_RES_PREFIX = "VAADIN/dynamic/generated-resources/";
+=======
+>>>>>>> 1b96933 Corrections.
 
     private final Map<URI, StreamResource> resources = new HashMap<>();
 
@@ -128,8 +139,13 @@ public class StreamResourceRegistry implements Serializable {
                         StreamResourceRequestHandler.generateURI(id, fileName));
 =======
             try {
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
                 uri = new URI(generateURI(id, fileName));
 >>>>>>> f4adc2d Corrections.
+=======
+                uri = new URI(
+                        StreamResourceRequestHandler.generateURI(id, fileName));
+>>>>>>> 1b96933 Corrections.
             } catch (URISyntaxException e) {
                 // this may not happen if implementation is correct
                 throw new RuntimeException(e);
@@ -190,17 +206,6 @@ public class StreamResourceRegistry implements Serializable {
 >>>>>>> f4adc2d Corrections.
         }
 
-        private String generateURI(int id, String name) {
-            StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
-            try {
-                builder.append(id).append(PATH_SEPARATOR).append(
-                        URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
-            } catch (UnsupportedEncodingException e) {
-                // UTF8 has to be supported
-                throw new RuntimeException(e);
-            }
-            return builder.toString();
-        }
     }
 
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
@@ -242,6 +247,7 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
      * Get registered resource by its {@code URI}.
      * 
@@ -366,13 +372,15 @@ public class StreamResourceRegistry implements Serializable {
     }
 
     /**
+=======
+>>>>>>> 1b96933 Corrections.
      * Get registered resource by its {@code URI}.
      * 
      * @param uri
      *            resource URI
      * @return registered resource if any
      */
-    private Optional<StreamResource> getResource(URI uri) {
+    public Optional<StreamResource> getResource(URI uri) {
         assert session.hasLock();
         return Optional.ofNullable(resources.get(uri));
     }
