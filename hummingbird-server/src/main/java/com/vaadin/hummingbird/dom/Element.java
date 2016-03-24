@@ -1245,4 +1245,15 @@ public class Element implements Serializable {
         return stateProvider.getSynchronizedPropertiesEvents(node);
     }
 
+    /**
+     * Returns the index of the specified {@code child} in the children list, or
+     * -1 if this list does not contain the {@code child}.
+     * 
+     * @param child
+     * @return
+     */
+    public int indexOfChild(Element child) {
+        return stateProvider.indexOfChild(getNode(), child.getNode());
+    }
+
 }

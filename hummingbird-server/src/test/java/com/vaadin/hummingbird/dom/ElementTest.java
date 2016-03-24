@@ -1495,4 +1495,24 @@ public class ElementTest {
         child.appendChild(parent);
     }
 
+    @Test
+    public void indexOfChild_firstChild() {
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+
+        Assert.assertEquals(0, parent.indexOfChild(child));
+    }
+
+    @Test
+    public void indexOfChild_childInTheMiddle() {
+        Element parent = ElementFactory.createDiv();
+        Element child1 = ElementFactory.createDiv();
+        Element child2 = ElementFactory.createAnchor();
+        Element child3 = ElementFactory.createButton();
+        parent.appendChild(child1, child2, child3);
+
+        Assert.assertEquals(1, parent.indexOfChild(child2));
+    }
+
 }

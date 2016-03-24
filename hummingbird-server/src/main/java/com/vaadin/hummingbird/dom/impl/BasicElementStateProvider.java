@@ -384,4 +384,9 @@ public class BasicElementStateProvider implements ElementStateProvider {
                 .getSynchronizedPropertiesEvents();
     }
 
+    @Override
+    public int indexOfChild(StateNode parent, StateNode child) {
+        return getChildrenNamespace(parent).indexOf(child);
+    }
+
 }
