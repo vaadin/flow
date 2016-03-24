@@ -106,7 +106,8 @@ public class StreamResourceRequestHandler implements RequestHandler {
             boolean hasPrefix = index >= 0;
             if (!hasPrefix) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                        "Unsuppored path stracture");
+                        "Unsuppored path structure");
+                return Optional.empty();
             }
             String prefix = path.substring(0, index + 1);
             String name = path.substring(prefix.length());
@@ -122,9 +123,13 @@ public class StreamResourceRequestHandler implements RequestHandler {
                         "Resource is not found for path=" + path);
             }
             return resource;
-        } catch (UnsupportedEncodingException | URISyntaxException e) {
+        } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported
             throw new RuntimeException(e);
+        } catch (URISyntaxException e) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                    "Unsuppored path");
+            return Optional.empty();
         }
     }
 

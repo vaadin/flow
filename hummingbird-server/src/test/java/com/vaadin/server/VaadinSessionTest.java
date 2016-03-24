@@ -335,5 +335,4 @@ public class VaadinSessionTest {
                 deserializedSession, deserializedPc.session);
         deserializedSession.unlock();
     }
-
 }

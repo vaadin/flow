@@ -15,8 +15,6 @@
  */
 package com.vaadin.server;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -31,10 +29,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * @author Vaadin Ltd
- *
- */
 public class StreamResourceRegistryTest {
 
     private VaadinServlet servlet = new VaadinServlet();
@@ -111,9 +105,10 @@ public class StreamResourceRegistryTest {
 
         registration1.unregister();
 
-        assertNotNull(
+        Assert.assertTrue(
                 "Second resource is not found after first resource has been unregistered",
-                registry.getResource(registration2.getResourceUri()));
+                registry.getResource(registration2.getResourceUri())
+                        .isPresent());
     }
 
     @Test
