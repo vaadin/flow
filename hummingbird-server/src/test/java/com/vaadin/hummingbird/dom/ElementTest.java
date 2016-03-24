@@ -86,6 +86,9 @@ public class ElementTest {
         // Returns EventRegistrationHandle
         ignore.add("addEventListener");
 
+        // Returns index of child element
+        ignore.add("indexOfChild");
+
         for (Method m : Element.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
                 continue;
@@ -1515,4 +1518,11 @@ public class ElementTest {
         Assert.assertEquals(1, parent.indexOfChild(child2));
     }
 
+    @Test
+    public void indexOfChild_notAChild() {
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+
+        Assert.assertEquals(-1, parent.indexOfChild(child));
+    }
 }
