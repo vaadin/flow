@@ -1,7 +1,7 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
 == Defining View Routes
-The _Routing API_ allows you to define a mapping between _URLs_ and _Views_ and handles navigation between _Views_ without page reloads. Routes are specified on a service (servlet) level, i.e. the configuration is shared between all users. You can define your own `RouterConfigurator` class which provides the configuration using the `@VaadinServletCOnfiguration` annotation.
+The _Routing API_ allows you to define a mapping between _URLs_ and _Views_ and handles navigation between _Views_ without page reloads. Routes are specified on a service (servlet) level, i.e. the configuration is shared between all users. You can define your own `RouterConfigurator` class which provides the configuration using the `@VaadinServletConfiguration` annotation.
 
 [source,java]
 ----
