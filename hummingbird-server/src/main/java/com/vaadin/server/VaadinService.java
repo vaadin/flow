@@ -47,8 +47,6 @@ import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.server.ServletHelper.RequestType;
-import com.vaadin.server.VaadinSession.FutureAccess;
-import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
@@ -427,10 +425,10 @@ public abstract class VaadinService implements Serializable {
         session.access(new Command() {
             @Override
             public void execute() {
-                if (session.getState() == State.CLOSED) {
+                if (session.getState() == VaadinSessionState.CLOSED) {
                     return;
                 }
-                if (session.getState() == State.OPEN) {
+                if (session.getState() == VaadinSessionState.OPEN) {
                     closeSession(session);
                 }
                 ArrayList<UI> uis = new ArrayList<UI>(session.getUIs());
@@ -458,7 +456,7 @@ public abstract class VaadinService implements Serializable {
                         new SessionDestroyEvent(VaadinService.this, session),
                         session.getErrorHandler());
 
-                session.setState(State.CLOSED);
+                session.setState(VaadinSessionState.CLOSED);
             }
         });
     }
@@ -978,8 +976,8 @@ public abstract class VaadinService implements Serializable {
             if (value instanceof VaadinSession) {
                 // set flag to avoid cleanup
                 VaadinSession serviceSession = (VaadinSession) value;
-                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
-                        Boolean.TRUE);
+                serviceSession.getAttributes().setAttribute(
+                        PRESERVE_UNBOUND_SESSION_ATTRIBUTE, Boolean.TRUE);
             }
             attrs.put(name, value);
         }
@@ -1005,8 +1003,8 @@ public abstract class VaadinService implements Serializable {
                         serviceSession.getLockInstance());
 
                 service.storeSession(serviceSession, newSession);
-                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
-                        null);
+                serviceSession.getAttributes()
+                        .setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE, null);
             }
         }
 
@@ -1056,7 +1054,7 @@ public abstract class VaadinService implements Serializable {
             closeInactiveUIs(session);
             removeClosedUIs(session);
         } else {
-            if (session.getState() == State.OPEN) {
+            if (session.getState() == VaadinSessionState.OPEN) {
                 closeSession(session);
                 if (session.getSession() != null) {
                     getLogger().log(Level.FINE, "Closing inactive session {0}",
@@ -1209,7 +1207,8 @@ public abstract class VaadinService implements Serializable {
      * @return true if the session is active, false if it could be closed.
      */
     private boolean isSessionActive(VaadinSession session) {
-        if (session.getState() != State.OPEN || session.getSession() == null) {
+        if (session.getState() != VaadinSessionState.OPEN
+                || session.getSession() == null) {
             return false;
         } else {
             long now = System.currentTimeMillis();
