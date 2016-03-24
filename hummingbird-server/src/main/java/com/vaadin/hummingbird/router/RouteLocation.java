@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.util.Optional;
+
 /**
  * Location with support for the syntax used in route definitions used with e.g.
  * {@link ModifiableRouterConfiguration#setRoute(String, Class, Class)}.
@@ -34,9 +36,15 @@ public class RouteLocation extends Location {
         super(location.getSegments());
     }
 
-    @Override
-    public RouteLocation getSubLocation() {
-        return new RouteLocation(super.getSubLocation());
+    /**
+     * Gets the sub location as a {@link RouteLocation}.
+     *
+     * @see #getSubLocation()
+     *
+     * @return an optional new route location
+     */
+    public Optional<RouteLocation> getRouteSubLocation() {
+        return getSubLocation().map(RouteLocation::new);
     }
 
     /**
