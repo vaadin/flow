@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -53,10 +54,11 @@ public class Location implements Serializable {
      * Creates a new location based on a list of path segments.
      *
      * @param segments
-     *            a list of path segments, not <code>null</code>
+     *            a non-empty list of path segments, not <code>null</code>
      */
     public Location(List<String> segments) {
         assert segments != null;
+        assert !segments.isEmpty();
 
         this.segments = segments;
     }
@@ -73,38 +75,24 @@ public class Location implements Serializable {
     /**
      * Gets the first segment of this path.
      *
-     * @return the first path segment, or <code>null</code> if this path has no
-     *         segments
+     * @return the first path segment, not <code>null</code>
      */
     public String getFirstSegment() {
-        if (!hasSegments()) {
-            return null;
-        } else {
-            return segments.get(0);
-        }
+        return segments.get(0);
     }
 
     /**
-     * Checks whether this location has any segments.
+     * Creates a new location without the first path segment. The result is
+     * empty if this location only consists of one segment.
      *
-     * @return <code>true</code> if at least one path segment is available,
-     *         <code>false</code> if there are no path segments
+     * @return an optional new location
      */
-    public boolean hasSegments() {
-        return !segments.isEmpty();
-    }
-
-    /**
-     * Creates a new location without the first path segment. Throws
-     * {@link IllegalStateException} if this location has no path segments.
-     *
-     * @return a new location, not <code>null</code>
-     */
-    public Location getSubLocation() {
-        if (segments.isEmpty()) {
-            throw new IllegalStateException("Location has no path segments");
+    public Optional<Location> getSubLocation() {
+        List<String> subSegments = segments.subList(1, segments.size());
+        if (subSegments.isEmpty()) {
+            return Optional.empty();
         } else {
-            return new Location(segments.subList(1, segments.size()));
+            return Optional.of(new Location(subSegments));
         }
     }
 
