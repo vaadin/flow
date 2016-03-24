@@ -15,25 +15,27 @@
  */
 package com.vaadin.humminbird.tutorial;
 
+import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-/**
- * Tutorial code related to tutorial-include-css.asciidoc.
- */
+@CodeFor("tutorial-include-css.asciidoc")
 public class IncludeCss extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
+        //@formatter:off - custom line wrapping
+
         // Loaded from "styles.css" in our context root
         getPage().addStyleSheet("styles.css");
 
         // Loaded from "/root.css" regardless of how our application is deployed
         getPage().addStyleSheet("/root.css");
 
-        // Loaded from "http://example.com/example.css" regardless of where our
-        // application is deployed
+        // Loaded from "http://example.com/example.css" regardless of where our application is deployed
         getPage().addStyleSheet("http://example.com/example.css");
+
+        //@formatter:on
     }
 
 }
