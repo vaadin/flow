@@ -15,8 +15,6 @@
  */
 package com.vaadin.hummingbird.router;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -150,20 +148,7 @@ public class RouterUI extends UI {
             throw new IllegalArgumentException("Location may not be null");
         }
 
-        try {
-            URI uri = new URI(location);
-            if (uri.isAbsolute()) {
-                throw new IllegalArgumentException(
-                        "Location cannot be absolute");
-            } else if (uri.getPath().startsWith("/")) {
-                throw new IllegalArgumentException("Location must be relative");
-            } else if (uri.getRawPath().contains("..")) {
-                throw new IllegalArgumentException(
-                        "Relative location may not contain .. segments");
-            }
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Cannot parse location", e);
-        }
+        Location.verifyRelativePath(location);
 
         // Enable navigating back
         getPage().getHistory().pushState(null, location);

@@ -17,3 +17,13 @@ protected void init(VaadinRequest request) {
   getPage().addStyleSheet("http://example.com/example.css");
 }
 ----
+
+You can place style sheets and static resources in any folder inside your WAR file except for `/VAADIN` which is reserved for framework internal use. If you have mapped `/*` to your servlet, then `VaadinServlet` will ensure static resource requests are handled properly. Otherwise, the servlet container will take care of static resource requests.
+
+By using relative URLs you are not dependent on whether the application is deployed in the root context `http://mysite.com/` or in a sub context `http://mysite.com/myapp/`. Relative URLs are resolved using the page base URI, which is always set to refer to the servlet URL.
+
+[NOTE]
+If you are using a servlet path for the servlet, e.g. `http://mysite.com/myapp/myservlet/` then you will need to take the servlet path into account when including resources as the base URI is `http://mysite.com/myapp/myservlet/` but resources are found in `http://mysite.com/myapp/`. You can use the special protocol `context://` to ensure a URL relative to the context path but this is only supported when adding dependencies.
+
+[NOTE]
+When you configure an element, e.g set the `src` attribute for an `<img>`, you cannot use the `context://` protocol. You must either cancel out the servlet path, e.g. `../images/logo.png` or use an absolute URL, e.g. `/myapp/images/logo.png`. 

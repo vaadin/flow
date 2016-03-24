@@ -129,32 +129,32 @@ public class ModifiableRouterConfiguration
      * Resolves a route based on what has been configured using the various
      * <code>setRoute</code> methods.
      *
-     * @param event
-     *            the event for which to resolve a route
+     * @param location
+     *            the location to resolve, not <code>null</code>
      * @return a navigation handler or handling the route, or <code>null</code>
      *         if no configured route matched the location
      */
     @Override
-    public NavigationHandler resolveRoute(NavigationEvent event) {
-        assert event != null;
+    public NavigationHandler resolveRoute(Location location) {
+        assert location != null;
 
         // Start the recursion
-        return resolveRoute(routeTreeRoot, event.getLocation(), event);
+        return resolveRoute(routeTreeRoot, location);
     }
 
     private static NavigationHandler resolveRoute(RouteTreeNode node,
-            Location location, NavigationEvent event) {
+            Location location) {
         String segment = location.getFirstSegment();
-        Location subLocation = location.getSubLocation();
+        Optional<Location> maybeSubLocation = location.getSubLocation();
 
         NavigationHandler handler = null;
 
-        if (subLocation.hasSegments()) {
+        if (maybeSubLocation.isPresent()) {
             // Try to use a child node if there are more path segments
             RouteTreeNode childNode = node.resolveChild(segment);
 
             if (childNode != null) {
-                handler = resolveRoute(childNode, subLocation, event);
+                handler = resolveRoute(childNode, maybeSubLocation.get());
             }
         } else {
             // Find an actual handler if this is the last path segment
@@ -344,10 +344,11 @@ public class ModifiableRouterConfiguration
             NavigationHandler navigationHandler) {
         throwIfImmutable();
 
-        RouteLocation subLocation = location.getSubLocation();
+        Optional<RouteLocation> maybeSubLocation = location
+                .getRouteSubLocation();
 
         if (location.startsWithWildcard()) {
-            if (subLocation.hasSegments()) {
+            if (maybeSubLocation.isPresent()) {
                 throw new IllegalArgumentException(
                         "Wildcard should be last segment");
             }
@@ -357,11 +358,11 @@ public class ModifiableRouterConfiguration
 
         String segment = getFirstSegmentOrPlaceholderToken(location);
 
-        if (subLocation.hasSegments()) {
+        if (maybeSubLocation.isPresent()) {
             // Configure the rest of the location in a child node
             RouteTreeNode childNode = node.getOrCreateChild(segment);
 
-            setRoute(subLocation, childNode, navigationHandler);
+            setRoute(maybeSubLocation.get(), childNode, navigationHandler);
         } else {
             // Record the navigation handler for this final part of the location
             node.setRoute(segment, navigationHandler);
@@ -394,14 +395,15 @@ public class ModifiableRouterConfiguration
 
         String segment = getFirstSegmentOrPlaceholderToken(location);
 
-        RouteLocation subLocation = location.getSubLocation();
+        Optional<RouteLocation> maybeSubLocation = location
+                .getRouteSubLocation();
 
-        if (!subLocation.hasSegments()) {
+        if (!maybeSubLocation.isPresent()) {
             node.setRoute(segment, null);
         } else if (node.hasChild(segment)) {
             RouteTreeNode childNode = node.getOrCreateChild(segment);
 
-            removeRoute(subLocation, childNode);
+            removeRoute(maybeSubLocation.get(), childNode);
             if (childNode.isEmpty()) {
                 node.removeChild(segment);
             }

@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.router;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -63,25 +64,23 @@ public class LocationTest {
 
         Assert.assertEquals("one", location.getFirstSegment());
 
-        Location subLocation = location.getSubLocation();
+        Optional<Location> subLocation = location.getSubLocation();
         Assert.assertEquals(Arrays.asList("two", "three"),
-                subLocation.getSegments());
-        Assert.assertEquals("two/three", subLocation.getPath());
+                subLocation.get().getSegments());
+        Assert.assertEquals("two/three", subLocation.get().getPath());
 
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void emptyLocation() {
         Location location = new Location(Collections.emptyList());
-
-        Assert.assertNull(location.getFirstSegment());
-        Assert.assertEquals("", location.getPath());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void emptyLocation_subLocation_throws() {
-        Location location = new Location(Collections.emptyList());
-        location.getSubLocation();
+    public void noSubLocation_emptyOptional() {
+        Location location = new Location("foo");
+        Optional<Location> maybeSubLocation = location.getSubLocation();
+
+        Assert.assertFalse(maybeSubLocation.isPresent());
     }
 
 }

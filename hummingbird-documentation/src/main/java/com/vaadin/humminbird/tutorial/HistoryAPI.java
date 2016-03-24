@@ -15,6 +15,7 @@
  */
 package com.vaadin.humminbird.tutorial;
 
+import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.UI;
@@ -22,20 +23,18 @@ import com.vaadin.ui.UI;
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
-/**
- * Tutorial code related to tutorial-history-api.asciidoc.
- */
+@CodeFor("tutorial-history-api.asciidoc")
 public class HistoryAPI {
 
     void tutorialCode() {
         History history = UI.getCurrent().getPage().getHistory();
 
-        history.back(); // navigates back to previous page
+        history.back(); // navigates back to the previous entry
 
-        history.forward(); // navigates forward to the next page
+        history.forward(); // navigates forward to the next entry
 
-        history.go(-2); // navigates back two pages
-        history.go(1); // equal to forward()
+        history.go(-2); // navigates back two entries
+        history.go(1); // equal to history.forward();
         history.go(0); // will reload the current page
 
         history.setHistoryStateChangeHandler(this::onHistoryStateChange);
@@ -43,12 +42,12 @@ public class HistoryAPI {
         // adds a new history entry for location "home", no state
         history.pushState(null, "home");
 
-        // replaces the current entry with location "document" and a state object
+        // replaces the current entry with location "about" and a state object
         JsonValue state = Json.create("preview-mode");
-        history.replaceState(state, "document");
+        history.replaceState(state, "about");
     }
 
-    void onHistoryStateChange(HistoryStateChangeEvent event) {
+    private void onHistoryStateChange(HistoryStateChangeEvent event) {
         // site base url is www.abc.com/
         // user navigates back from abc.com/dashboard to abc.com/home
         event.getLocation(); // returns "home"

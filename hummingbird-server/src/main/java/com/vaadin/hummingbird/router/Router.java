@@ -16,6 +16,8 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
@@ -99,7 +101,18 @@ public class Router implements Serializable {
                 .resolve(navigationEvent);
 
         if (handler == null) {
-            handler = currentConfig.resolveRoute(navigationEvent);
+            handler = currentConfig.resolveRoute(location);
+        }
+
+        // Redirect foo/bar <-> foo/bar if there is no mapping for the given
+        // location but there is a mapping for the other
+        if (handler == null && !"".equals(location.getPath())) {
+            Location toggledLocation = toggleEndingSlash(location);
+            NavigationHandler toggledHandler = currentConfig
+                    .resolveRoute(toggledLocation);
+            if (toggledHandler != null) {
+                handler = new InternalRedirectHandler(toggledLocation);
+            }
         }
 
         if (handler == null) {
@@ -107,6 +120,31 @@ public class Router implements Serializable {
         }
 
         handler.handle(navigationEvent);
+    }
+
+    // Non-private to enable testing
+    static Location toggleEndingSlash(Location location) {
+        List<String> segments = location.getSegments();
+
+        // Even Location for "" still contains one (empty) segment
+        assert !segments.isEmpty();
+
+        String lastSegment = segments.get(segments.size() - 1);
+
+        if (segments.size() == 1 && "".equals(lastSegment)) {
+            throw new IllegalArgumentException(
+                    "Can't toggle ending slash for the \"\" location");
+        }
+
+        if (lastSegment.isEmpty()) {
+            // New location without ending empty segment
+            return new Location(segments.subList(0, segments.size() - 1));
+        } else {
+            // Add empty ending segment
+            segments = new ArrayList<>(segments);
+            segments.add("");
+            return new Location(segments);
+        }
     }
 
     /**

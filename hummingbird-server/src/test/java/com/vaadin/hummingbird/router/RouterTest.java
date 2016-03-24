@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 
@@ -213,5 +214,50 @@ public class RouterTest {
         router.navigate(new RouterUI(), new Location(""));
 
         Assert.assertEquals("route", usedHandler.get());
+    }
+
+    @Test
+    public void testToggleEndingSlash() {
+        Assert.assertEquals("foo", toggleEndingSlash("foo/"));
+
+        Assert.assertEquals("foo/", toggleEndingSlash("foo"));
+    }
+
+    private static String toggleEndingSlash(String withoutSlash) {
+        return Router.toggleEndingSlash(new Location(withoutSlash)).getPath();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testToggleEndingSlash_emtpyLocation() {
+        // Does not make sense to change the location to "/"
+        Router.toggleEndingSlash(new Location(""));
+    }
+
+    @Test
+    public void testNavigateToEmptyLocation() {
+        RouterUI ui = new RouterUI();
+
+        Router router = new Router();
+
+        router.navigate(ui, new Location(""));
+
+        Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+    }
+
+    @Test
+    public void testNavigateWithToggledSlash() {
+        RouterUI ui = new RouterUI();
+
+        Router router = new Router();
+        router.reconfigure(c -> {
+            c.setRoute("foo/{name}", TestView.class);
+            c.setRoute("bar/*", TestView.class);
+        });
+
+        router.navigate(ui, new Location("foo/bar/"));
+        Assert.assertEquals("foo/bar", ui.getActiveViewLocation().getPath());
+
+        router.navigate(ui, new Location("bar"));
+        Assert.assertEquals("bar/", ui.getActiveViewLocation().getPath());
     }
 }

@@ -16,10 +16,13 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -35,26 +38,29 @@ public class Location implements Serializable {
     private List<String> segments;
 
     /**
-     * Creates a new location for the given path.
+     * Creates a new location for the given relative path.
      *
      * @param path
      *            the relative path, not <code>null</code>
      */
     public Location(String path) {
         this(parsePath(path));
-
-        assert !path.startsWith(PATH_SEPARATOR) : "path should be relative";
-        assert !path.contains("?") : "query string not yet supported";
     }
 
     /**
      * Creates a new location based on a list of path segments.
      *
      * @param segments
-     *            a list of path segments, not <code>null</code>
+     *            a non-empty list of path segments, not <code>null</code>
      */
     public Location(List<String> segments) {
-        assert segments != null;
+        if (segments == null) {
+            throw new IllegalArgumentException("Segments cannot be null");
+        }
+        if (segments.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "There must be at least one segment");
+        }
 
         this.segments = segments;
     }
@@ -71,38 +77,24 @@ public class Location implements Serializable {
     /**
      * Gets the first segment of this path.
      *
-     * @return the first path segment, or <code>null</code> if this path has no
-     *         segments
+     * @return the first path segment, not <code>null</code>
      */
     public String getFirstSegment() {
-        if (!hasSegments()) {
-            return null;
-        } else {
-            return segments.get(0);
-        }
+        return segments.get(0);
     }
 
     /**
-     * Checks whether this location has any segments.
+     * Creates a new location without the first path segment. The result is
+     * empty if this location only consists of one segment.
      *
-     * @return <code>true</code> if at least one path segment is available,
-     *         <code>false</code> if there are no path segments
+     * @return an optional new location
      */
-    public boolean hasSegments() {
-        return !segments.isEmpty();
-    }
-
-    /**
-     * Creates a new location without the first path segment. Throws
-     * {@link IllegalStateException} if this location has no path segments.
-     *
-     * @return a new location, not <code>null</code>
-     */
-    public Location getSubLocation() {
-        if (segments.isEmpty()) {
-            throw new IllegalStateException("Location has no path segments");
+    public Optional<Location> getSubLocation() {
+        List<String> subSegments = segments.subList(1, segments.size());
+        if (subSegments.isEmpty()) {
+            return Optional.empty();
         } else {
-            return new Location(segments.subList(1, segments.size()));
+            return Optional.of(new Location(subSegments));
         }
     }
 
@@ -116,6 +108,11 @@ public class Location implements Serializable {
     }
 
     private static List<String> parsePath(String path) {
+        assert !path.startsWith(PATH_SEPARATOR) : "path should be relative";
+        assert !path.contains("?") : "query string not yet supported";
+
+        verifyRelativePath(path);
+
         List<String> splitList = Arrays.asList(path.split(PATH_SEPARATOR));
         if (path.endsWith(PATH_SEPARATOR)) {
             // Explicitly add "" to the end even though it's ignored by
@@ -127,5 +124,41 @@ public class Location implements Serializable {
         } else {
             return splitList;
         }
+    }
+
+    /**
+     * Throws {@link IllegalArgumentException} if the provided path is not
+     * relative. A relative path should be parseable as a URI without a scheme
+     * or host, it should not contain any <code>..</code> segments and it
+     * shouldn't start with <code>/</code>.
+     *
+     * @param path
+     *            the path to check, not null
+     */
+    public static void verifyRelativePath(String path) {
+        assert path != null;
+
+        try {
+            // Ignore forbidden chars supported in route definitions
+            String strippedPath = path.replaceAll("[{}*]", "");
+
+            URI uri = new URI(strippedPath);
+            if (uri.isAbsolute()) {
+                // "A URI is absolute if, and only if, it has a scheme
+                // component"
+                throw new IllegalArgumentException(
+                        "Relative path cannot contain an URI scheme");
+            } else if (uri.getPath().startsWith("/")) {
+                throw new IllegalArgumentException(
+                        "Relative path cannot start with /");
+            } else if (uri.getRawPath().contains("..")) {
+                throw new IllegalArgumentException(
+                        "Relative path cannot contain .. segments");
+            }
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Cannot parse path: ", e);
+        }
+
+        // All is OK if we get here
     }
 }
