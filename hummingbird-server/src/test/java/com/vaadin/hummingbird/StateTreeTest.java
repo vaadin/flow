@@ -43,6 +43,23 @@ import com.vaadin.tests.util.TestUtil;
 public class StateTreeTest {
     private StateTree tree = new StateTree(ElementChildrenNamespace.class);
 
+    private static class LifecycleListener implements StateNodeListener {
+
+        private final List<StateNode> added = new ArrayList<>();
+        private final List<StateNode> removed = new ArrayList<>();
+
+        @Override
+        public void nodeAttached(StateNode node) {
+            added.add(node);
+        }
+
+        @Override
+        public void nodeDetached(StateNode node) {
+            removed.add(node);
+        }
+
+    }
+
     @Test
     public void testRootNodeState() {
         StateNode rootNode = tree.getRootNode();
@@ -288,6 +305,50 @@ public class StateTreeTest {
 
         Assert.assertTrue(TestUtil.isGarbageCollected(childRef));
         Assert.assertTrue(TestUtil.isGarbageCollected(grandChildRef));
+    }
+
+    @Test
+    public void nodeIsAttached_lifecycleListenerIsNotified() {
+        LifecycleListener listener = new LifecycleListener();
+        tree.addNodeListener(listener);
+
+        StateNode node = new StateNode(ElementChildrenNamespace.class);
+        node.setParent(tree.getRootNode());
+
+        Assert.assertTrue(listener.added.size() == 1);
+        Assert.assertTrue(listener.removed.size() == 0);
+        Assert.assertEquals(node, listener.added.get(0));
+    }
+
+    @Test
+    public void nodeIsDetached_lifecycleListenerIsNotified() {
+        LifecycleListener listener = new LifecycleListener();
+        tree.addNodeListener(listener);
+
+        StateNode node = new StateNode(ElementChildrenNamespace.class);
+        node.setParent(tree.getRootNode());
+
+        listener.added.clear();
+
+        node.setParent(null);
+
+        Assert.assertTrue(listener.added.size() == 0);
+        Assert.assertTrue(listener.removed.size() == 1);
+        Assert.assertEquals(node, listener.removed.get(0));
+    }
+
+    @Test
+    public void listenerIsRemoved_listenerIsNotifiedAnymore() {
+        LifecycleListener listener = new LifecycleListener();
+        StateNodeListenerRemover remover = tree.addNodeListener(listener);
+
+        remover.remove();
+
+        StateNode node = new StateNode(ElementChildrenNamespace.class);
+        node.setParent(tree.getRootNode());
+
+        Assert.assertTrue(listener.added.size() == 0);
+        Assert.assertTrue(listener.removed.size() == 0);
     }
 
 }

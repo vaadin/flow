@@ -64,6 +64,8 @@ public class StateTree implements NodeOwner {
 
     private final StateNode rootNode;
 
+    private Set<StateNodeListener> nodeListeners = new HashSet<>();
+
     /**
      * Creates a new state tree with a set of namespaces defined for the root
      * node.
@@ -105,6 +107,7 @@ public class StateTree implements NodeOwner {
         }
 
         idToNode.put(Integer.valueOf(nodeId), node);
+        nodeListeners.stream().forEach(listener -> listener.nodeAttached(node));
         return nodeId;
     }
 
@@ -125,6 +128,7 @@ public class StateTree implements NodeOwner {
             throw new IllegalStateException(
                     "Unregistered node was not found based on its id. The tree is most likely corrupted.");
         }
+        nodeListeners.stream().forEach(listener -> listener.nodeDetached(node));
     }
 
     /**
@@ -180,5 +184,18 @@ public class StateTree implements NodeOwner {
      */
     public boolean hasDirtyNodes() {
         return !dirtyNodes.isEmpty();
+    }
+
+    /**
+     * Adds lifecycle listener for nodes in the tree.
+     * 
+     * @param listener
+     *            lifecycle listener
+     * @return listener remover
+     */
+    public StateNodeListenerRemover addNodeListener(
+            StateNodeListener listener) {
+        nodeListeners.add(listener);
+        return () -> nodeListeners.remove(listener);
     }
 }
