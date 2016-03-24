@@ -1251,7 +1251,7 @@ public class Element implements Serializable {
      * 
      * @param child
      *            the child node
-     * @return index of the {@code child}
+     * @return index of the {@code child} or -1 if it's not a child
      */
     public int indexOfChild(Element child) {
         if (!equals(child.getParent())) {
