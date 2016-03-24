@@ -21,6 +21,7 @@ import java.io.Serializable;
 /**
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
 <<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
  * Creates input stream instances that provides the actual data of a
  * {@link StreamResource}.
  * <p>
@@ -73,6 +74,9 @@ public interface InputStreamFactory extends Serializable {
  * Creates input stream instances that provides the actual data of the resource.
 =======
  * Creates input stream instances that provides the actual data of the
+=======
+ * Creates input stream instances that provides the actual data of a
+>>>>>>> e054632 Corrections.
  * {@link StreamResource}.
 >>>>>>> 42f4cf7 Corrections.
  * <p>

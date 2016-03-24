@@ -58,10 +58,16 @@ public interface StreamResourceWriter {
 >>>>>>> fe3818a Corrections.
 =======
      * <p>
+<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
      * The method is not called under the session lock, so it's the developer's
      * responsibility to lock provided {@code session} in the method
      * implementation on application data access.
 >>>>>>> 42f4cf7 Corrections.
+=======
+     * Note that the method is not called under the session lock. It means that
+     * if implementation requires access to the application/session data then
+     * the session has to be locked explicitly.
+>>>>>>> e054632 Corrections.
      * 
      * @param stream
      *            data output stream
