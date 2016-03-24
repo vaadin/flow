@@ -61,7 +61,7 @@ public class StreamResourceRegistryTest {
         Assert.assertTrue("Unexpected URI prefix", uri.toString()
                 .startsWith(StreamResourceRegistry.DYN_RES_PREFIX));
 
-        Optional<StreamResource> stored = registry.getResource(uri);
+        Optional<StreamResource> stored = registry.getResource(uri.toString());
         Assert.assertSame(
                 "Unexpected stored resource is returned for registered URI",
                 stored.get(), resource);
@@ -81,7 +81,7 @@ public class StreamResourceRegistryTest {
 
         registration.unregister();
 
-        Optional<StreamResource> stored = registry.getResource(uri);
+        Optional<StreamResource> stored = registry.getResource(uri.toString());
         Assert.assertFalse(
                 "Unexpected stored resource is found after unregister()",
                 stored.isPresent());
@@ -109,7 +109,8 @@ public class StreamResourceRegistryTest {
 
         assertNotNull(
                 "Second resource is not found after first resource has been unregistered",
-                registry.getResource(registration2.getResourceUri()));
+                registry.getResource(
+                        registration2.getResourceUri().toString()));
     }
 
     @Test

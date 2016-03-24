@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 /**
- * Creates input stream instances that provides the actual data of the
+ * Creates input stream instances that provides the actual data of a
  * {@link StreamResource}.
  * <p>
  * The instance of this class should generate {@link InputStream} for the
