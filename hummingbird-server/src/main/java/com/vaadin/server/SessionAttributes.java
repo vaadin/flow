@@ -20,15 +20,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * The {@link SessionAttributes} class represents set of Vaadin session
+ * attributes.
+ * 
  * @author Vaadin Ltd
  *
  */
 public class SessionAttributes implements Serializable {
 
-    private final Map<String, Object> attributes = new HashMap<String, Object>();
+    private final Map<String, Object> attributes = new HashMap<>();
 
     private final VaadinSession session;
 
+    /**
+     * Creates an empty attributes set for given {@code session}.
+     * 
+     * @param session
+     *            vaadin session
+     */
     public SessionAttributes(VaadinSession session) {
         this.session = session;
     }

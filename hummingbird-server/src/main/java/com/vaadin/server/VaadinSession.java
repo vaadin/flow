@@ -714,7 +714,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         this.state = state;
     }
 
-    public boolean isValidChange(VaadinSessionState currentState,
+    private boolean isValidChange(VaadinSessionState currentState,
             VaadinSessionState newState) {
         return (currentState == VaadinSessionState.OPEN
                 && newState == VaadinSessionState.CLOSING)
