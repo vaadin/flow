@@ -220,8 +220,8 @@ import java.io.Serializable;
  * Represents dynamically generated data.
  * <p>
  * The instance should be registered via
- * {@link VaadinSession#registerResource(StreamResource)}. This method returns
- * an object which may be used to get resource URI.
+ * {@link StreamResourceRegistry#registerResource(StreamResource)}. This method
+ * returns an object which may be used to get resource URI.
  * 
  * @author Vaadin Ltd
  *
@@ -297,8 +297,8 @@ public class StreamResource implements Serializable {
      * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
      * <p>
      * {@code name} parameter value will be used in URI (generated when resource
-     * is registered) in a way that the {@name} is the last segment of the path.
-     * So this is synthetic file name (not real one).
+     * is registered) in a way that the {@code name} is the last segment of the
+     * path. So this is synthetic file name (not real one).
      * 
      * @param name
      *            resource file name. May not be null.
@@ -323,8 +323,8 @@ public class StreamResource implements Serializable {
      * a factory for data.
      * <p>
      * {@code name} parameter value will be used in URI (generated when resource
-     * is registered) in a way that the {@name} is the last segment of the path.
-     * So this is synthetic file name (not real one).
+     * is registered) in a way that the {@code name} is the last segment of the
+     * path. So this is synthetic file name (not real one).
      * 
      * @param name
      *            resource file name. May not be null.
@@ -391,7 +391,7 @@ public class StreamResource implements Serializable {
      * Get the resource file name.
      * <p>
      * The value will be used in URI (generated when resource is registered) in
-     * a way that the {@name} is the last segment of the path. So this is
+     * a way that the {@code name} is the last segment of the path. So this is
      * synthetic file name (not real one).
      * 
      * @return resource file name
