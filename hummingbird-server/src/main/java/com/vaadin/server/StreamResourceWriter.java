@@ -17,6 +17,7 @@ package com.vaadin.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 
 /**
  * Output stream consumer. Implementation of this interface should write data
@@ -27,7 +28,7 @@ import java.io.OutputStream;
  *
  */
 @FunctionalInterface
-public interface StreamResourceWriter {
+public interface StreamResourceWriter extends Serializable {
 
     /**
      * Handles {@code stream} (writes data to it) using {@code session} as a
