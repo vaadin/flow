@@ -37,6 +37,7 @@ public class BrowserDetailsTest extends TestCase {
 
     private static final String CHROME3_MAC = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_8; en-US) AppleWebKit/532.0 (KHTML, like Gecko) Chrome/3.0.198 Safari/532.0";
     private static final String CHROME4_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.89 Safari/532.5";
+    private static final String CHROME_IOS = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_2_1 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/49.0.2623.73 Mobile/13D15 Safari/601.1.46";
 
     private static final String SAFARI3_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 5.1; cs-CZ) AppleWebKit/525.28.3 (KHTML, like Gecko) Version/3.2.3 Safari/525.29";
     private static final String SAFARI4_MAC = "Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10_5_8; en-us) AppleWebKit/531.22.7 (KHTML, like Gecko) Version/4.0.5 Safari/531.22.7";
@@ -190,6 +191,16 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 532f);
         assertWindows(bd);
+    }
+
+    public void testChromeIOS() {
+        BrowserDetails bd = new BrowserDetails(CHROME_IOS);
+        assertWebKit(bd);
+        assertChrome(bd);
+        assertBrowserMajorVersion(bd, 49);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 601f);
+        assertIOS(bd, 9, 2);
     }
 
     public void testFirefox3() {

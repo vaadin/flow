@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -87,6 +88,16 @@ public class StreamResourceRequestHandler implements RequestHandler {
         return true;
     }
 
+    /**
+     * Generates URI string for a dynamic resource using its {@code id} and
+     * {@code name}.
+     * 
+     * @param id
+     *            unique resource id
+     * @param name
+     *            resource name
+     * @return generated URI string
+     */
     public static String generateURI(int id, String name) {
         StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
         try {
@@ -99,7 +110,7 @@ public class StreamResourceRequestHandler implements RequestHandler {
         return builder.toString();
     }
 
-    private Optional<StreamResource> getResource(VaadinSession session,
+    private static Optional<StreamResource> getResource(VaadinSession session,
             VaadinResponse response, String path) throws IOException {
         try {
             int index = path.lastIndexOf('/');
@@ -127,6 +138,9 @@ public class StreamResourceRequestHandler implements RequestHandler {
             // UTF8 has to be supported
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {
+            Logger.getLogger(StreamResourceRequestHandler.class.getName())
+                    .info("Path '" + path
+                            + "' is not correct URI (it violates RFC 2396)");
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
                     "Unsuppored path");
             return Optional.empty();
