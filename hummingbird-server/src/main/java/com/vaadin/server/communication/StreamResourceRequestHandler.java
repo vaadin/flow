@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
@@ -139,8 +140,10 @@ public class StreamResourceRequestHandler implements RequestHandler {
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {
             Logger.getLogger(StreamResourceRequestHandler.class.getName())
-                    .info("Path '" + path
-                            + "' is not correct URI (it violates RFC 2396)");
+                    .log(Level.INFO,
+                            "Path '" + path
+                                    + "' is not correct URI (it violates RFC 2396)",
+                            e);
             response.sendError(HttpServletResponse.SC_NOT_FOUND,
                     "Unsuppored path");
             return Optional.empty();
