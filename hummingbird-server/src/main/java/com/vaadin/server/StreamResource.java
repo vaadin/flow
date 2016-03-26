@@ -251,8 +251,17 @@ public class StreamResource implements Serializable {
         @Override
         public void accept(OutputStream stream, VaadinSession session)
                 throws IOException {
-            try (InputStream input = factory.createInputStream()) {
+            try (InputStream input = createInputStream(session)) {
                 copy(session, input, stream);
+            }
+        }
+
+        private InputStream createInputStream(VaadinSession session) {
+            session.lock();
+            try {
+                return factory.createInputStream();
+            } finally {
+                session.unlock();
             }
         }
 
