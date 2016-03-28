@@ -151,37 +151,14 @@ public class StateNode implements Serializable {
      */
     // protected only to get the root node attached
     protected void onAttach() {
-        assert isAttached();
-
-        int newId = owner.register(this);
-
-        if (newId != -1) {
-            if (id == -1) {
-                // Didn't have an id previously, set one now
-                id = newId;
-            } else if (newId != id) {
-                throw new IllegalStateException(
-                        "Can't change id once it has been assigned");
-            }
-        }
-
-        // Ensure attach change is sent
-        markAsDirty();
-
-        forEachChild(StateNode::onAttach);
+        visitNodeTree(StateNode::handleOnAttach);
     }
 
     /**
      * Called when this node has been detached from its state tree.
      */
     private void onDetach() {
-        assert !isAttached();
-
-        // Ensure detach change is sent
-        markAsDirty();
-
-        forEachChild(StateNode::onDetach);
-        owner.unregister(this);
+        visitNodeTree(StateNode::handleOnDetach);
     }
 
     private void forEachChild(Consumer<StateNode> action) {
@@ -196,18 +173,7 @@ public class StateNode implements Serializable {
      */
     // protected only to get the root node attached
     protected void setTree(StateTree tree) {
-        if (tree == owner) {
-            return;
-        }
-
-        if (owner instanceof StateTree) {
-            throw new IllegalStateException(
-                    "Can't move a node from one state tree to another");
-        }
-
-        owner = tree;
-
-        forEachChild(c -> c.setTree(tree));
+        visitNodeTree(node -> node.doSetTree(tree));
     }
 
     /**
@@ -305,5 +271,61 @@ public class StateNode implements Serializable {
         if (isAttached) {
             namespaces.values().forEach(n -> n.collectChanges(collector));
         }
+    }
+
+    /**
+     * Applies the {@code visitor} to this node and all its descendants.
+     * 
+     * @param visitor
+     *            visitor to apply
+     */
+    public void visitNodeTree(Consumer<StateNode> visitor) {
+        SimpleStack<StateNode> stack = new SimpleStack<>();
+        stack.push(this);
+        while (!stack.isEmpty()) {
+            StateNode node = stack.pop();
+            visitor.accept(node);
+            node.forEachChild(stack::push);
+        }
+    }
+
+    private void doSetTree(StateTree tree) {
+        if (tree == owner) {
+            return;
+        }
+
+        if (owner instanceof StateTree) {
+            throw new IllegalStateException(
+                    "Can't move a node from one state tree to another");
+        }
+        owner = tree;
+    }
+
+    private void handleOnAttach() {
+        assert isAttached();
+
+        int newId = owner.register(this);
+
+        if (newId != -1) {
+            if (id == -1) {
+                // Didn't have an id previously, set one now
+                id = newId;
+            } else if (newId != id) {
+                throw new IllegalStateException(
+                        "Can't change id once it has been assigned");
+            }
+
+        }
+        // Ensure attach change is sent
+        markAsDirty();
+    }
+
+    private void handleOnDetach() {
+        assert !isAttached();
+
+        // Ensure detach change is sent
+        markAsDirty();
+
+        owner.unregister(this);
     }
 }
