@@ -15,6 +15,7 @@ import elemental.client.Browser;
 import elemental.dom.Document.Events;
 import elemental.dom.Element;
 import elemental.events.MouseEvent;
+import elemental.html.BaseElement;
 import elemental.html.DivElement;
 
 public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
@@ -51,6 +52,9 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
             }
         };
         boundElement = Browser.getDocument().createDivElement();
+        BaseElement baseElement = Browser.getDocument().createBaseElement();
+        baseElement.setHref("/");
+        Browser.getDocument().getHead().appendChild(baseElement);
         Browser.getDocument().getBody().appendChild(boundElement);
         RouterLinkHandler.bind(registry, boundElement);
     }
@@ -220,4 +224,51 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertEventDefaultPrevented();
     }
 
+    public void testRouterLink_anchorWithRouterLinkAndFragment_eventNotIntercepted() {
+        currentEvent = null;
+        assertInvocations(0);
+
+        Element target = createTarget("a", "foobar", true);
+        boundElement.appendChild(target);
+        fireClickEvent(target);
+
+        Element targetWithFragment = createTarget("a", "foobar#anchor", true);
+        boundElement.appendChild(targetWithFragment);
+        fireClickEvent(targetWithFragment);
+
+        assertInvocations(1);
+        assertEventDefaultNotPrevented();
+    }
+
+    public void testRouterLink_anchorWithRouterLinkAndAnotherSegmentWithFragment_eventIntercepted() {
+        currentEvent = null;
+        assertInvocations(0);
+
+        Element target = createTarget("a", "foobar", true);
+        boundElement.appendChild(target);
+        fireClickEvent(target);
+
+        Element targetWithFragment = createTarget("a", "foobar1#anchor", true);
+        boundElement.appendChild(targetWithFragment);
+        fireClickEvent(targetWithFragment);
+
+        assertInvocations(2);
+        assertEventDefaultPrevented();
+    }
+
+    public void testRouterLink_anchorWithRouterLinkWithFragmentAndAnotherSegment_eventIntercepted() {
+        currentEvent = null;
+        assertInvocations(0);
+
+        Element target1 = createTarget("a", "foobar1#anchor1", true);
+        boundElement.appendChild(target1);
+        fireClickEvent(target1);
+
+        Element target2 = createTarget("a", "foobar2#anchor", true);
+        boundElement.appendChild(target2);
+        fireClickEvent(target2);
+
+        assertInvocations(2);
+        assertEventDefaultPrevented();
+    }
 }

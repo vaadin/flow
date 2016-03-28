@@ -15,7 +15,9 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,8 +28,38 @@ import org.mockito.Mockito;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
+import com.vaadin.ui.Page;
+import com.vaadin.ui.UI;
 
 public class RouterTest {
+
+    private static class TestPage extends Page {
+
+        private List<String> jsExpressions = new ArrayList<>();
+        private List<Object[]> jsParams = new ArrayList<>();
+
+        public TestPage(UI ui) {
+            super(ui);
+        }
+
+        @Override
+        public ExecutionCanceler executeJavaScript(String expression,
+                Object... parameters) {
+            jsExpressions.add(expression);
+            jsParams.add(parameters);
+            return null;
+        }
+    }
+
+    private static class TestRouterUI extends RouterUI {
+
+        private TestPage page = new TestPage(this);
+
+        @Override
+        public TestPage getPage() {
+            return page;
+        }
+    }
 
     private final class TestResolver implements Resolver {
         private final AtomicReference<Location> resolvedLocation = new AtomicReference<>();
@@ -259,5 +291,31 @@ public class RouterTest {
 
         router.navigate(ui, new Location("bar"));
         Assert.assertEquals("bar/", ui.getActiveViewLocation().getPath());
+    }
+
+    @Test
+    public void navigationToLocationWithHash_replaceUrl() {
+        TestRouterUI ui = new TestRouterUI();
+        Router router = new Router();
+        router.navigate(ui, new Location("foo#hash"));
+
+        Assert.assertEquals("window.location.replace('foo#hash')",
+                ui.getPage().jsExpressions.get(0));
+
+        Assert.assertArrayEquals(new Object[0], ui.getPage().jsParams.get(0));
+    }
+
+    @Test
+    public void navigationToTheSameLocation_ignoreRequest() {
+        TestRouterUI ui = new TestRouterUI();
+
+        Router router = new Router();
+        router.reconfigure(c -> c.setRoute("foo", TestView.class));
+        router.navigate(ui, new Location("foo#hash"));
+
+        Assert.assertEquals(1, ui.getPage().jsExpressions.size());
+
+        router.navigate(ui, new Location("foo#hash"));
+        Assert.assertEquals(1, ui.getPage().jsExpressions.size());
     }
 }

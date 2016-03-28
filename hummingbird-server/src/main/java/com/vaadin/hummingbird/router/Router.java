@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.router;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
@@ -91,6 +92,11 @@ public class Router implements Serializable {
      *            the location to navigate to
      */
     public void navigate(RouterUI ui, Location location) {
+        String currentPath = ui.getActiveViewLocation().getPath();
+        if (Objects.equals(location.getPath(), currentPath)
+                && !currentPath.isEmpty()) {
+            return;
+        }
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
                 ui);
 
@@ -120,6 +126,11 @@ public class Router implements Serializable {
         }
 
         handler.handle(navigationEvent);
+        if (location.getHash().isPresent()) {
+            StringBuilder js = new StringBuilder("window.location.replace('");
+            js.append(location.getPath()).append("')");
+            ui.getPage().executeJavaScript(js.toString());
+        }
     }
 
     // Non-private to enable testing

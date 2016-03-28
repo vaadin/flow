@@ -76,11 +76,45 @@ public class LocationTest {
         Location location = new Location(Collections.emptyList());
     }
 
+    @Test
     public void noSubLocation_emptyOptional() {
         Location location = new Location("foo");
         Optional<Location> maybeSubLocation = location.getSubLocation();
 
         Assert.assertFalse(maybeSubLocation.isPresent());
+    }
+
+    @Test
+    public void parseLocationWithHash() {
+        Location location = new Location("foo#hash");
+        Assert.assertEquals("#hash", location.getHash().get());
+    }
+
+    @Test
+    public void parseLocationWithoutHash() {
+        Location location = new Location("foo");
+        Assert.assertFalse(location.getHash().isPresent());
+    }
+
+    @Test
+    public void createLocationWithHash() {
+        Location location = new Location(Collections.singletonList("foo"),
+                Optional.of("#hash"));
+        Assert.assertEquals("#hash", location.getHash().get());
+    }
+
+    @Test
+    public void createLocationWithoutHash() {
+        Location location = new Location(Collections.singletonList("foo"),
+                Optional.empty());
+        Assert.assertFalse(location.getHash().isPresent());
+    }
+
+    @Test
+    public void createLocationWithHash_hashHasNoLeadingHashSign() {
+        Location location = new Location(Collections.singletonList("foo"),
+                Optional.of("hash"));
+        Assert.assertEquals("#hash", location.getHash().get());
     }
 
 }
