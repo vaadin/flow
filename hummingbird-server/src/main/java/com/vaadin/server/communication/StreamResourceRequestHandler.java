@@ -68,15 +68,15 @@ public class StreamResourceRequestHandler implements RequestHandler {
 
         session.lock();
         try {
-            Optional<Optional<StreamResource>> resource = getPathUri(pathInfo)
-                    .map(session.getResourceRegistry()::getResource);
-            if (!resource.isPresent() || !resource.get().isPresent()) {
+            Optional<StreamResource> resource = getPathUri(pathInfo)
+                    .flatMap(session.getResourceRegistry()::getResource);
+            if (!resource.isPresent()) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND,
                         "Resource is not found for path=" + pathInfo);
                 return true;
             }
 
-            StreamResource streamResource = resource.get().get();
+            StreamResource streamResource = resource.get();
             response.setContentType(streamResource.getContentType());
             response.setCacheTime(streamResource.getCacheTime());
             writer = streamResource.getWriter();
