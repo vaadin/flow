@@ -27,7 +27,7 @@ import java.io.Serializable;
  * {@link StreamResourceRegistry#registerResource(StreamResource)}. This method
  * returns an object which may be used to get resource URI.
  * <p>
- * This class is immutable. Use {@link Builder} to construct customized
+ * This class is immutable. Use {@link Builder} to construct a customized
  * instance.
  * 
  * @author Vaadin Ltd
@@ -56,11 +56,11 @@ public class StreamResource implements Serializable, Cloneable {
          * Creates a builder for {@link StreamResource} using mandatory
          * parameters {@code name} as a resource file name and output stream
          * {@code writer} as a data producer. {@code writer} should write data
-         * in the output stream provided as an argument to its
+         * to the output stream provided as an argument to its
          * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)}
          * method.
          * <p>
-         * {@code name} parameter value will be used in URI (generated when
+         * {@code name} parameter value will be used in the URI (generated when
          * resource is registered) in a way that the {@name} is the last segment
          * of the path. So this is synthetic file name (not real one).
          * 
@@ -78,7 +78,7 @@ public class StreamResource implements Serializable, Cloneable {
          * parameters {@code name} as a resource file name and input stream
          * {@code factory} as a factory for data.
          * <p>
-         * {@code name} parameter value will be used in URI (generated when
+         * {@code name} parameter value will be used in the URI (generated when
          * resource is registered) in a way that the {@name} is the last segment
          * of the path. So this is synthetic file name (not real one).
          * 
@@ -197,7 +197,7 @@ public class StreamResource implements Serializable, Cloneable {
      * @param writer
      *            data output stream consumer
      */
-    public StreamResource(String name, StreamResourceWriter writer) {
+    private StreamResource(String name, StreamResourceWriter writer) {
         assert name != null;
         assert writer != null;
 
@@ -223,7 +223,7 @@ public class StreamResource implements Serializable, Cloneable {
      * @param factory
      *            data input stream factory. May not be null.
      */
-    public StreamResource(String name, InputStreamFactory factory) {
+    private StreamResource(String name, InputStreamFactory factory) {
         this(name, new Pipe(factory));
         assert name != null;
     }
