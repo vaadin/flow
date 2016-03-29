@@ -74,6 +74,17 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
+     * Gets the view which is being shown.
+     * <p>
+     * This is the same as the most deeply nested view in the view chain.
+     *
+     * @return the view being shown, not <code>null</code>
+     */
+    public View getView() {
+        return viewChain.get(0);
+    }
+
+    /**
      * Gets the chain of views that will be nested inside the UI, starting from
      * the most deeply nested view.
      *
