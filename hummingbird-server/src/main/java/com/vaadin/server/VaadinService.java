@@ -655,7 +655,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
-                    throws SessionExpiredException, ServiceException {
+            throws SessionExpiredException, ServiceException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -976,8 +976,8 @@ public abstract class VaadinService implements Serializable {
             if (value instanceof VaadinSession) {
                 // set flag to avoid cleanup
                 VaadinSession serviceSession = (VaadinSession) value;
-                serviceSession.getAttributes().setAttribute(
-                        PRESERVE_UNBOUND_SESSION_ATTRIBUTE, Boolean.TRUE);
+                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
+                        Boolean.TRUE);
             }
             attrs.put(name, value);
         }
@@ -1003,8 +1003,8 @@ public abstract class VaadinService implements Serializable {
                         serviceSession.getLockInstance());
 
                 service.storeSession(serviceSession, newSession);
-                serviceSession.getAttributes()
-                        .setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE, null);
+                serviceSession.setAttribute(PRESERVE_UNBOUND_SESSION_ATTRIBUTE,
+                        null);
             }
         }
 
@@ -1335,7 +1335,7 @@ public abstract class VaadinService implements Serializable {
 
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
-                    throws ServiceException {
+            throws ServiceException {
         if (vaadinSession != null) {
             vaadinSession.lock();
         }

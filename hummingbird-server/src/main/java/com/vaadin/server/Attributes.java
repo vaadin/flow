@@ -20,33 +20,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The {@link SessionAttributes} class represents set of Vaadin session
- * attributes.
+ * The {@link Attributes} class represents set attributes.
  * 
  * @author Vaadin Ltd
  *
  */
-public class SessionAttributes implements Serializable {
+public class Attributes implements Serializable {
 
     private final Map<String, Object> attributes = new HashMap<>();
 
-    private final VaadinSession session;
-
     /**
-     * Creates an empty attributes set for given {@code session}.
-     * 
-     * @param session
-     *            vaadin session
-     */
-    public SessionAttributes(VaadinSession session) {
-        this.session = session;
-    }
-
-    /**
-     * Stores a value in this service session. This can be used to associate
-     * data with the current user so that it can be retrieved at a later point
-     * from some other part of the application. Setting the value to
-     * <code>null</code> clears the stored value.
+     * Stores a value in this set.
      *
      * @see #getAttribute(String)
      *
@@ -58,7 +42,6 @@ public class SessionAttributes implements Serializable {
      *            remove a previous association.
      */
     public void setAttribute(String name, Object value) {
-        assert hasLock();
         if (name == null) {
             throw new IllegalArgumentException("name can not be null");
         }
@@ -70,10 +53,8 @@ public class SessionAttributes implements Serializable {
     }
 
     /**
-     * Stores a value in this service session. This can be used to associate
-     * data with the current user so that it can be retrieved at a later point
-     * from some other part of the application. Setting the value to
-     * <code>null</code> clears the stored value.
+     * Stores a value in this set. Setting the value to <code>null</code> clears
+     * the stored value.
      * <p>
      * The fully qualified name of the type is used as the name when storing the
      * value. The outcome of calling this method is thus the same as if calling
@@ -90,7 +71,6 @@ public class SessionAttributes implements Serializable {
      *            remove a previous association.
      */
     public <T> void setAttribute(Class<T> type, T value) {
-        assert hasLock();
         if (type == null) {
             throw new IllegalArgumentException("type can not be null");
         }
@@ -102,8 +82,7 @@ public class SessionAttributes implements Serializable {
     }
 
     /**
-     * Gets a stored attribute value. If a value has been stored for the
-     * session, that value is returned. If no value is stored for the name,
+     * Gets a stored attribute value. If no value is stored for the name,
      * <code>null</code> is returned.
      *
      * @see #setAttribute(String, Object)
@@ -114,7 +93,6 @@ public class SessionAttributes implements Serializable {
      *         it has been set to null.
      */
     public Object getAttribute(String name) {
-        assert hasLock();
         if (name == null) {
             throw new IllegalArgumentException("name can not be null");
         }
@@ -122,8 +100,7 @@ public class SessionAttributes implements Serializable {
     }
 
     /**
-     * Gets a stored attribute value. If a value has been stored for the
-     * session, that value is returned. If no value is stored for the name,
+     * Gets a stored attribute value. If no value is stored for the name,
      * <code>null</code> is returned.
      * <p>
      * The fully qualified name of the type is used as the name when getting the
@@ -141,7 +118,6 @@ public class SessionAttributes implements Serializable {
      *         it has been set to null.
      */
     public <T> T getAttribute(Class<T> type) {
-        assert hasLock();
         if (type == null) {
             throw new IllegalArgumentException("type can not be null");
         }
@@ -153,7 +129,4 @@ public class SessionAttributes implements Serializable {
         }
     }
 
-    private boolean hasLock() {
-        return session.hasLock();
-    }
 }
