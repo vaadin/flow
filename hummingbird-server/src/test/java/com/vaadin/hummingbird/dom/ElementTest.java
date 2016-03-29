@@ -1499,6 +1499,59 @@ public class ElementTest {
     }
 
     @Test
+    public void appendAttachedChild() {
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+
+        Element target = ElementFactory.createDiv();
+
+        target.appendChild(child);
+
+        Assert.assertEquals(child.getParent(), target);
+
+        checkIsNotChild(parent, child);
+    }
+
+    @Test
+    public void insertAttachedChild() {
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+
+        Element target = ElementFactory.createDiv();
+        target.appendChild(ElementFactory.createAnchor());
+
+        target.insertChild(0, child);
+
+        Assert.assertEquals(child.getParent(), target);
+
+        checkIsNotChild(parent, child);
+    }
+
+    @Test
+    public void setAttachedChild() {
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+
+        Element target = ElementFactory.createDiv();
+        target.appendChild(ElementFactory.createAnchor());
+
+        target.setChild(0, child);
+
+        Assert.assertEquals(child.getParent(), target);
+
+        checkIsNotChild(parent, child);
+    }
+
+    private void checkIsNotChild(Element parent, Element child) {
+        Assert.assertNotEquals(child.getParent(), parent);
+
+        Assert.assertFalse(
+                parent.getChildren().anyMatch(el -> el.equals(child)));
+    }
+
     public void indexOfChild_firstChild() {
         Element parent = ElementFactory.createDiv();
         Element child = ElementFactory.createDiv();
