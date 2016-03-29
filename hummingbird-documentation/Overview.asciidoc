@@ -31,6 +31,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
 ** <<tutorial-routing-view-parameters#,Using View Parameters>>
 * Misc
+** <<tutorial-execute-javascript#,Executing JavaScript>>
 ** <<tutorial-history-api#,The History API>>
 
 The rest of this document gives a high-level overview of the features and explains how they fit together.
@@ -55,16 +56,6 @@ Instead, `element.equals(otherElement)` should be used to check whether two inst
 A web application is structured as a tree of elements with the root being the element of the `UI` instance. An element can be added as a child of another element using methods such as `element.appendChild(Element)` for adding an element to the end of a parent's child list or `element.insertChild(int, Element)` for adding to any position in the child list.
 
 The element hierarchy can be navigated upwards using `element.getParent()` and downwards using `element.getChildCount()` and `element.getChild(int)`.
-
-== Executing JavaScript
-
-There are cases where it's not enough to manipulate the client-side DOM tree only using child elements, attributes and properties.
-These can be handled with the help of a server-side Java API for invoking arbitrary JavaScript in the browser: `ui.getPage().executeJavaScript(String, Object...)`. The JavaScript will be executed in the browser after the DOM tree in the browser has been updated based on changes from the server.
-
-Along with the JavaScript expression to execute, parameters of various types can also be passed.
-The provided parameter values will be available to the script as variables named `$0`, `$1` and so on. Supported parameter types are `String`, `Boolean`, `Integer`, `Double`, `JsonValue` and `Element`. An element instance will be passed as `null` if the element is not attached to the DOM on the server when the changes are sent to the browser.
-
-As a practical example, this snippet will show the dimensions of the given element in the browser console: `ui.getPage().executeJavaScript("console.log($1, $0.offsetWidth, $0.offsetHeight)", element, "Element dimensions:")`.
 
 == History API
 
