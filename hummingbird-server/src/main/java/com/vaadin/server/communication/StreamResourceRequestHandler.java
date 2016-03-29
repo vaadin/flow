@@ -68,8 +68,8 @@ public class StreamResourceRequestHandler implements RequestHandler {
 
         session.lock();
         try {
-            Optional<Optional<StreamResource>> resource = getPathUri(response,
-                    pathInfo).map(session.getResourceRegistry()::getResource);
+            Optional<Optional<StreamResource>> resource = getPathUri(pathInfo)
+                    .map(session.getResourceRegistry()::getResource);
             if (!resource.isPresent() || !resource.get().isPresent()) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND,
                         "Resource is not found for path=" + pathInfo);
@@ -115,8 +115,7 @@ public class StreamResourceRequestHandler implements RequestHandler {
         return builder.toString();
     }
 
-    private static Optional<URI> getPathUri(VaadinResponse response,
-            String path) {
+    private static Optional<URI> getPathUri(String path) {
         int index = path.lastIndexOf('/');
         boolean hasPrefix = index >= 0;
         if (!hasPrefix) {
