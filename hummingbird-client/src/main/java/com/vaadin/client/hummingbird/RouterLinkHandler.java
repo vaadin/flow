@@ -70,7 +70,7 @@ public class RouterLinkHandler {
             return;
         }
         String href = anchor.getHref();
-        if (href != null && !navigateWithinPage(anchor)) {
+        if (href != null && !isNavigatingWithinPage(anchor)) {
             String baseURI = ((Element) clickEvent.getCurrentTarget())
                     .getOwnerDocument().getBaseURI();
 
@@ -92,7 +92,7 @@ public class RouterLinkHandler {
         }
     }
 
-    private static boolean navigateWithinPage(AnchorElement anchor) {
+    private static boolean isNavigatingWithinPage(AnchorElement anchor) {
         String currentPath = Browser.getWindow().getLocation().getPathname();
 
         String path = anchor.getPathname();

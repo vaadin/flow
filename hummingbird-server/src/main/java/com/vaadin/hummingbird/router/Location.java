@@ -140,7 +140,7 @@ public class Location implements Serializable {
     }
 
     private static Optional<String> extractFragment(String location) {
-        int index = location.lastIndexOf('#');
+        int index = location.indexOf('#');
         if (index != -1) {
             return Optional.of(location.substring(index, location.length()));
         }
@@ -153,7 +153,7 @@ public class Location implements Serializable {
 
         verifyRelativePath(location);
         String path = location;
-        int index = location.lastIndexOf('#');
+        int index = location.indexOf('#');
         if (index != -1) {
             path = location.substring(0, index);
         }

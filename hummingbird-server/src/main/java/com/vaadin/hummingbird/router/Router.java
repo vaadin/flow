@@ -85,6 +85,9 @@ public class Router implements Serializable {
 
     /**
      * Navigates the given UI to the given location.
+     * <p>
+     * It doesn't do anything if the {@location} is the same as active view
+     * location ({@link RouterUI#getActiveViewLocation()}) and it's not default.
      *
      * @param ui
      *            the router UI to update

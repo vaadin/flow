@@ -231,6 +231,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         Element target = createTarget("a", "foobar", true);
         boundElement.appendChild(target);
         fireClickEvent(target);
+        assertInvocations(1);
 
         Element targetWithFragment = createTarget("a", "foobar#anchor", true);
         boundElement.appendChild(targetWithFragment);
