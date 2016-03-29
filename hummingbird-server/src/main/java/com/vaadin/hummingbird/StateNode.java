@@ -281,12 +281,12 @@ public class StateNode implements Serializable {
      *            visitor to apply
      */
     public void visitNodeTree(Consumer<StateNode> visitor) {
-        LinkedList<StateNode> list = new LinkedList<>();
-        list.add(this);
-        while (!list.isEmpty()) {
-            StateNode node = list.removeFirst();
+        LinkedList<StateNode> stack = new LinkedList<>();
+        stack.add(this);
+        while (!stack.isEmpty()) {
+            StateNode node = stack.removeFirst();
             visitor.accept(node);
-            node.forEachChild(child -> list.add(0, child));
+            node.forEachChild(child -> stack.add(0, child));
         }
     }
 
