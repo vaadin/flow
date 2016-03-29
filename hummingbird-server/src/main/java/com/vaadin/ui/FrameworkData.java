@@ -336,9 +336,12 @@ public class FrameworkData implements Serializable {
      *
      * @param invocation
      *            the invocation to add
+     * @return a callback for canceling the execution if not yet sent to browser
      */
-    public void addJavaScriptInvocation(JavaScriptInvocation invocation) {
+    public ExecutionCanceler addJavaScriptInvocation(
+            JavaScriptInvocation invocation) {
         pendingJsInvocations.add(invocation);
+        return () -> pendingJsInvocations.remove(invocation);
     }
 
     /**
@@ -367,7 +370,8 @@ public class FrameworkData implements Serializable {
      *
      * @return the pending javascript invocations, never <code>null</code>
      */
-    protected List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
+    // Non-private for testing purposes
+    List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
         return pendingJsInvocations;
     }
 
@@ -386,9 +390,7 @@ public class FrameworkData implements Serializable {
         JavaScriptInvocation invocation = new JavaScriptInvocation(
                 "document.title = $0", Arrays.asList(title));
 
-        addJavaScriptInvocation(invocation);
-        pendingTitleUpdateCanceler = () -> pendingJsInvocations
-                .remove(invocation);
+        pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
 
         this.title = title;
     }

@@ -169,10 +169,8 @@ public class Page implements Serializable {
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 Arrays.asList(parameters));
-        ui.getFrameworkData().addJavaScriptInvocation(invocation);
 
-        return () -> ui.getFrameworkData().getPendingJavaScriptInvocations()
-                .remove(invocation);
+        return ui.getFrameworkData().addJavaScriptInvocation(invocation);
     }
 
     /**
