@@ -18,6 +18,7 @@ package com.vaadin.hummingbird;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -280,12 +281,12 @@ public class StateNode implements Serializable {
      *            visitor to apply
      */
     public void visitNodeTree(Consumer<StateNode> visitor) {
-        SimpleStack<StateNode> stack = new SimpleStack<>();
-        stack.push(this);
-        while (!stack.isEmpty()) {
-            StateNode node = stack.pop();
+        LinkedList<StateNode> list = new LinkedList<>();
+        list.add(this);
+        while (!list.isEmpty()) {
+            StateNode node = list.removeFirst();
             visitor.accept(node);
-            node.forEachChild(stack::push);
+            node.forEachChild(child -> list.add(0, child));
         }
     }
 
