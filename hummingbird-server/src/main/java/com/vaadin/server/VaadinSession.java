@@ -188,14 +188,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public static final String UI_PARAMETER = "UI";
 
     /**
-<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
-     * Dynamic resource URI prefix.
-     */
-    public static final String DYN_RES_PREFIX = "vaadin/dynamic/generated-resources/";
-
-    /**
-=======
->>>>>>> 542ad4a Review based fixes.
      * Configuration for the session.
      */
     private DeploymentConfiguration configuration;
@@ -242,15 +234,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final String csrfToken = UUID.randomUUID().toString();
 
-<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
-<<<<<<< HEAD
     private final StreamResourceRegistry resourceRegistry;
-=======
-    private final StreamResourceRegistry resourceRegistry = new StreamResourceRegistry();
->>>>>>> 80ab6ba... Stream resource registration on the session level.
-=======
-    private final StreamResourceRegistry resourceRegistry;
->>>>>>> 025249e Review based fixes.
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -1123,9 +1107,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
-<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
-<<<<<<< HEAD
      * Get resource registry instance.
      * <p>
      * Use this instance to manage {@link StreamResource}s.
@@ -1134,41 +1115,5 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public StreamResourceRegistry getResourceRegistry() {
         return resourceRegistry;
-=======
-     * Register stream resource in the session and returns registration handler.
-=======
-     * Registers a stream resource in the session and returns registration
-     * handler.
->>>>>>> 542ad4a Review based fixes.
-=======
-     * Get resource registry instance.
->>>>>>> 025249e Review based fixes.
-     * <p>
-     * Use this instance to manage {@link StreamResource}s.
-     * 
-     * @return resource registry
-     */
-<<<<<<< Upstream, based on 563d9fae047956f0206e367040e76bb7b77cad51
-    public StreamResourceRegistration registerResource(
-            StreamResource resource) {
-        assert hasLock();
-        return resourceRegistry.registerResource(resource);
-    }
-
-    /**
-     * Gets a registered resource by given {@code uri}.
-     * 
-     * @param uri
-     *            resource uri
-     * @return registered resource if any
-     */
-    public StreamResource getResource(String uri) {
-        assert hasLock();
-        return resourceRegistry.getResource(uri);
->>>>>>> 80ab6ba... Stream resource registration on the session level.
-=======
-    public StreamResourceRegistry getResourceRegistry() {
-        return resourceRegistry;
->>>>>>> 025249e Review based fixes.
     }
 }
