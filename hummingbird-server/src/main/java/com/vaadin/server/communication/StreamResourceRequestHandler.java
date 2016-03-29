@@ -55,11 +55,12 @@ public class StreamResourceRequestHandler implements RequestHandler {
             VaadinResponse response) throws IOException {
         StreamResourceWriter writer = null;
 
-        if (request.getPathInfo() == null) {
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null) {
             return false;
         }
-        String pathInfo = request.getPathInfo();
         // remove leading '/'
+        assert pathInfo.startsWith(Character.toString(PATH_SEPARATOR));
         pathInfo = pathInfo.substring(1);
         if (!pathInfo.startsWith(DYN_RES_PREFIX)) {
             return false;
@@ -67,15 +68,19 @@ public class StreamResourceRequestHandler implements RequestHandler {
 
         session.lock();
         try {
-            Optional<StreamResource> resource = getResource(session, response,
-                    pathInfo);
-            if (!resource.isPresent()) {
+            Optional<URI> uri = getPathUri(response, pathInfo);
+            if (!uri.isPresent()) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                        "Resource is not found for path=" + pathInfo);
                 return true;
             }
+            Optional<StreamResource> resource = session.getResourceRegistry()
+                    .getResource(uri.get());
 
-            response.setContentType(resource.get().getContentType());
-            response.setCacheTime(resource.get().getCacheTime());
-            writer = resource.get().getWriter();
+            StreamResource streamResource = resource.get();
+            response.setContentType(streamResource.getContentType());
+            response.setCacheTime(streamResource.getCacheTime());
+            writer = streamResource.getWriter();
             if (writer == null) {
                 throw new IOException(
                         "Stream resource produces null input stream");
@@ -111,43 +116,34 @@ public class StreamResourceRequestHandler implements RequestHandler {
         return builder.toString();
     }
 
-    private static Optional<StreamResource> getResource(VaadinSession session,
-            VaadinResponse response, String path) throws IOException {
+    private static Optional<URI> getPathUri(VaadinResponse response,
+            String path) {
+        int index = path.lastIndexOf('/');
+        boolean hasPrefix = index >= 0;
+        if (!hasPrefix) {
+            getLog().info("Unsupported path structure, path=" + path);
+            return Optional.empty();
+        }
+        String prefix = path.substring(0, index + 1);
+        String name = path.substring(prefix.length());
+        // path info returns decoded name but space ' ' remains encoded '+'
+        name = name.replace('+', ' ');
         try {
-            int index = path.lastIndexOf('/');
-            boolean hasPrefix = index >= 0;
-            if (!hasPrefix) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                        "Unsuppored path structure");
-                return Optional.empty();
-            }
-            String prefix = path.substring(0, index + 1);
-            String name = path.substring(prefix.length());
-            // path info returns decoded name but space ' ' remains encoded '+'
-            name = name.replace('+', ' ');
-
             URI uri = new URI(prefix
                     + URLEncoder.encode(name, StandardCharsets.UTF_8.name()));
-            Optional<StreamResource> resource = session.getResourceRegistry()
-                    .getResource(uri);
-            if (!resource.isPresent()) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                        "Resource is not found for path=" + path);
-            }
-            return resource;
+            return Optional.of(uri);
         } catch (UnsupportedEncodingException e) {
             // UTF8 has to be supported
             throw new RuntimeException(e);
         } catch (URISyntaxException e) {
-            Logger.getLogger(StreamResourceRequestHandler.class.getName())
-                    .log(Level.INFO,
-                            "Path '" + path
-                                    + "' is not correct URI (it violates RFC 2396)",
-                            e);
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    "Unsuppored path");
+            getLog().log(Level.INFO, "Path '" + path
+                    + "' is not correct URI (it violates RFC 2396)", e);
             return Optional.empty();
         }
+    }
+
+    private static Logger getLog() {
+        return Logger.getLogger(StreamResourceRequestHandler.class.getName());
     }
 
 }
