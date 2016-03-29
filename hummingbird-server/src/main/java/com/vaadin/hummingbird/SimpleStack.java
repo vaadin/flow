@@ -21,6 +21,8 @@ import java.util.EmptyStackException;
  * Simple stack implementation.
  * 
  * @author Vaadin Ltd
+ * @param <T>
+ *            the type of items in this stack
  *
  */
 public class SimpleStack<T> {
