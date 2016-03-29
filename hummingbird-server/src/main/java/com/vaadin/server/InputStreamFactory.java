@@ -34,7 +34,7 @@ public interface InputStreamFactory extends Serializable {
      * Produce {@link InputStream} instance to read resource data.
      * <p>
      * This method is called under the Vaadin session lock. So it's safe to
-     * access to the application/session data which is required to produce the
+     * access the application/session data which is required to produce the
      * {@link InputStream} data. The presence of the lock on subsequent access
      * to the {@link InputStream} is controlled by {@link #requiresLock()}
      * method. So {@link #createInputStream()} method is the best place to do
