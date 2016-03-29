@@ -36,7 +36,7 @@ public class Location implements Serializable {
 
     private static final String PATH_SEPARATOR = "/";
     private final List<String> segments;
-    private final Optional<String> hash;
+    private final String hash;
 
     /**
      * Creates a new location for the given relative path.
@@ -80,7 +80,7 @@ public class Location implements Serializable {
         if (fragment.isPresent() && !fragment.get().startsWith("#")) {
             fragment = Optional.of("#" + fragment.get());
         }
-        this.hash = fragment;
+        this.hash = fragment.orElse(null);
     }
 
     /**
@@ -112,7 +112,8 @@ public class Location implements Serializable {
         if (subSegments.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(new Location(subSegments, hash));
+            return Optional
+                    .of(new Location(subSegments, Optional.ofNullable(hash)));
         }
     }
 
@@ -121,7 +122,7 @@ public class Location implements Serializable {
      * any, in this path.
      */
     public Optional<String> getHash() {
-        return hash;
+        return Optional.ofNullable(hash);
     }
 
     /**
@@ -205,4 +206,5 @@ public class Location implements Serializable {
 
         // All is OK if we get here
     }
+
 }
