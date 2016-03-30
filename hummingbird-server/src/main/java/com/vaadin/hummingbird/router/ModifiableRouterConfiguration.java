@@ -473,4 +473,9 @@ public class ModifiableRouterConfiguration
 
         this.pageTitleGenerator = pageTitleGenerator;
     }
+
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
 }

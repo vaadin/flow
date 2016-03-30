@@ -20,25 +20,24 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
-import com.vaadin.hummingbird.router.RouterUI;
+import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.StaticViewRenderer;
+import com.vaadin.hummingbird.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
 import com.vaadin.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
-@VaadinServletConfiguration(ui = RouterUI.class, productionMode = false)
+@VaadinServletConfiguration(productionMode = false, routerConfigurator = ViewTestConfigurator.class)
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;
 
-    @Override
-    public void init(ServletConfig servletConfig) throws ServletException {
-        super.init(servletConfig);
-        viewLocator = new ViewClassLocator(getService().getClassLoader());
-
-        getService().getRouter().reconfigure(configuration -> {
+    public static class ViewTestConfigurator implements RouterConfigurator {
+        @Override
+        public void configure(ModifiableRouterConfiguration configuration) {
             configuration.setResolver(new Resolver() {
                 @Override
                 public NavigationHandler resolve(
@@ -54,7 +53,14 @@ public class ViewTestServlet extends VaadinServlet {
                     }
                 }
             });
-        });
+
+        }
+    }
+
+    @Override
+    public void init(ServletConfig servletConfig) throws ServletException {
+        super.init(servletConfig);
+        viewLocator = new ViewClassLocator(getService().getClassLoader());
     }
 
     static ViewClassLocator getViewLocator() {

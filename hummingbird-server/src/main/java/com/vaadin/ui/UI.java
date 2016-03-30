@@ -18,8 +18,10 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.EventObject;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +37,9 @@ import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.hummingbird.router.Location;
+import com.vaadin.hummingbird.router.Router;
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingCommand;
@@ -55,25 +60,20 @@ import com.vaadin.util.CurrentInstance;
  * The UI is the server side entry point for various client side features that
  * are not represented as components added to a layout, e.g notifications, sub
  * windows, and executing javascript in the browser.
- * </p>
  * <p>
  * When a new UI instance is needed, typically because the user opens a URL in a
  * browser window which points to e.g. {@link VaadinServlet}, the UI mapped to
  * that servlet is opened. The selection is based on the <code>UI</code> init
  * parameter.
- * </p>
  * <p>
  * After a UI has been created by the application, it is initialized using
- * {@link #init(VaadinRequest)}. This method is intended to be overridden by the
- * developer to add components to the user interface and initialize
- * non-component functionality.
- * </p>
+ * {@link #init(VaadinRequest)}.
  *
  * @see #init(VaadinRequest)
  *
  * @since 7.0
  */
-public abstract class UI implements Serializable, PollNotifier {
+public class UI implements Serializable, PollNotifier {
 
     public static final String POLL_DOM_EVENT_NAME = "ui-poll";
 
@@ -104,6 +104,8 @@ public abstract class UI implements Serializable, PollNotifier {
     private final FrameworkData frameworkData = new FrameworkData(this);
 
     private final Page page = new Page(this);
+
+    private Router router;
 
     /**
      * Creates a new empty UI.
@@ -241,6 +243,12 @@ public abstract class UI implements Serializable, PollNotifier {
         // Call the init overridden by the application developer
         init(request);
 
+        // Use router if it's active
+        Router serviceRouter = getSession().getService().getRouter();
+        if (serviceRouter.getConfiguration().isConfigured()) {
+            router = serviceRouter;
+            router.initializeUI(this, request);
+        }
     }
 
     /**
@@ -256,7 +264,9 @@ public abstract class UI implements Serializable, PollNotifier {
      * @param request
      *            the Vaadin request that caused this UI to be created
      */
-    protected abstract void init(VaadinRequest request);
+    protected void init(VaadinRequest request) {
+        // Does nothing by default
+    }
 
     /**
      * Sets the thread local for the current UI. This method is used by the
@@ -728,5 +738,59 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     public Page getPage() {
         return page;
+    }
+
+    /**
+     * Gets the currently active view and parent views.
+     *
+     * @return a list of view and parent view instances, starting from the
+     *         innermost part
+     */
+    public List<View> getActiveViewChain() {
+        return frameworkData.getActiveViewChain();
+    }
+
+    /**
+     * Gets the location of the currently shown view. The location is relative
+     * the the servlet mapping used for serving this UI.
+     *
+     * @return the view location, not <code>null</code>
+     */
+    public Location getActiveViewLocation() {
+        return frameworkData.getActiveViewLocation();
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given location. The
+     * location must be a relative URL without any ".." segments.
+     *
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     */
+    public void navigateTo(String location) {
+        if (location == null) {
+            throw new IllegalArgumentException("Location may not be null");
+        }
+        if (!getRouter().isPresent()) {
+            throw new IllegalStateException(
+                    "Can't navigate when UI has no router");
+        }
+
+        Location.verifyRelativePath(location);
+
+        // Enable navigating back
+        getPage().getHistory().pushState(null, location);
+
+        getRouter().get().navigate(this, new Location(location));
+    }
+
+    /**
+     * Gets the router used for navigating in this UI, if the router was active
+     * when this UI was initialized.
+     *
+     * @return an optional router,
+     */
+    protected Optional<Router> getRouter() {
+        return Optional.ofNullable(router);
     }
 }
