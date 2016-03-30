@@ -68,3 +68,4 @@ This will render `CompanyView` nested inside `CompanySideBarView`, which in turn
 See also:
 
 * <<tutorial-routing-view-parameters#,Using View Parameters>>
+* <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
