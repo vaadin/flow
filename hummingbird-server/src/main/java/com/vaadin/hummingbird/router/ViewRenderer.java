@@ -129,9 +129,12 @@ public abstract class ViewRenderer implements NavigationHandler {
 
         String title = pageTitleGenerator.getPageTitle(locationChangeEvent);
 
-        if (title != null) {
-            navigationEvent.getUI().getPage().setTitle(title);
-        }
+        assert title != null : "You cannot not use a null title. Use an "
+                + "explicit title or an empty string \"\" which will clear "
+                + "previous title.";
+
+        // Page.setTitle will throw IAE for null title
+        navigationEvent.getUI().getPage().setTitle(title);
     }
 
     private LocationChangeEvent createEvent(NavigationEvent event,
