@@ -6,13 +6,10 @@ The _Routing API_ allows you to define a mapping between _URLs_ and _Views_ and 
 [source,java]
 ----
 @WebServlet(urlPatterns = "/*", name = "MyServlet", asyncSupported = true)
-@VaadinServletConfiguration(ui = RouterUI.class, routerConfigurator = MyRouterConfigurator.class, productionMode = false)
+@VaadinServletConfiguration(routerConfigurator = MyRouterConfigurator.class, productionMode = false)
 public static class MyServlet extends VaadinServlet {
 }
 ----
-
-[NOTE]
-You must currently use RouterUI as the UI class for routing to work. This is bound to change in the future.
 
 Your `RouterConfigurator` class needs to override one method, where the actual configuration takes place. You cannot modify the configuration outside this method or store the configuration instance for later use. This is make sure that the configuration is thread safe.
 
@@ -54,13 +51,13 @@ To navigate between views you can use standard `<a href="company">` type links b
 
 Using Java you can create router links using the helper method `ElementFactory.createRouterLink(String href, String textContent)`.
 
-To trigger navigation from the server side, use `RouterUI.navigateTo(String)`, where the string parameter is the location to navigate to, e.g. to navigate to the `company` view when clicking a button:
+To trigger navigation from the server side, use `UI.navigateTo(String)`, where the string parameter is the location to navigate to, e.g. to navigate to the `company` view when clicking a button:
 
 [source,java]
 ----
 Element button = ElementFactory.createButton("Navigate to company");
 button.addEventListener("click", e-> {
-    ((RouterUI) UI.getCurrent()).navigateTo("company");
+    UI.getCurrent().navigateTo("company");
 });
 ----
 

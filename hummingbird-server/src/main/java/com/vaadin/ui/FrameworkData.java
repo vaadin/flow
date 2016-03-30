@@ -22,10 +22,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
@@ -33,6 +36,9 @@ import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.Location;
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.util.SerializableJson;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -143,6 +149,9 @@ public class FrameworkData implements Serializable {
     private String title;
 
     private ExecutionCanceler pendingTitleUpdateCanceler;
+
+    private Location viewLocation = new Location("");
+    private ArrayList<View> viewChain = new ArrayList<>();
 
     /**
      * Creates a new framework data instance for the given UI.
@@ -423,5 +432,102 @@ public class FrameworkData implements Serializable {
         boolean result = pendingTitleUpdateCanceler.cancelExecution();
         pendingTitleUpdateCanceler = null;
         return result;
+    }
+
+    /**
+     * Shows a view in a chain of layouts in this UI. This method is intended
+     * for framework use only. Use {@link UI#navigateTo(String)} to change the
+     * view that is shown in a UI.
+     *
+     * @param viewLocation
+     *            the location of the view relative to the servlet serving the
+     *            UI, not <code>null</code>
+     * @param view
+     *            the view to show, not <code>null</code>
+     * @param parentViews
+     *            the list of parent views to wrap the view in, starting from
+     *            the parent view immediately wrapping the main view, or
+     *            <code>null</code> to not use any parent views
+     */
+    public void showView(Location viewLocation, View view,
+            List<HasChildView> parentViews) {
+        assert view != null;
+        assert viewLocation != null;
+
+        this.viewLocation = viewLocation;
+
+        Element uiElement = ui.getElement();
+
+        // Assemble previous parent-child relationships to enable detecting
+        // changes
+        Map<HasChildView, View> oldChildren = new HashMap<>();
+        for (int i = 0; i < viewChain.size() - 1; i++) {
+            View child = viewChain.get(i);
+            HasChildView parent = (HasChildView) viewChain.get(i + 1);
+
+            oldChildren.put(parent, child);
+        }
+
+        viewChain = new ArrayList<>();
+        viewChain.add(view);
+
+        if (parentViews != null) {
+            viewChain.addAll(parentViews);
+        }
+
+        if (viewChain.isEmpty()) {
+            uiElement.removeAllChildren();
+        } else {
+            // Ensure the entire chain is connected
+            View root = null;
+            for (View part : viewChain) {
+                if (root != null) {
+                    assert part instanceof HasChildView : "All parts of the chain except the first must implement "
+                            + HasChildView.class.getSimpleName();
+                    HasChildView parent = (HasChildView) part;
+                    if (oldChildren.get(parent) != root) {
+                        parent.setChildView(root);
+                    }
+                } else if (part instanceof HasChildView
+                        && oldChildren.containsKey(part)) {
+                    // Remove old child view from leaf view if it had one
+                    ((HasChildView) part).setChildView(null);
+                }
+                root = part;
+            }
+
+            if (root == null) {
+                throw new IllegalArgumentException(
+                        "Root can't be null here since we know there's at least one item in the chain");
+            }
+
+            Element rootElement = root.getElement();
+
+            if (!uiElement.equals(rootElement.getParent())) {
+                uiElement.removeAllChildren();
+                rootElement.removeFromParent();
+                uiElement.appendChild(rootElement);
+            }
+        }
+    }
+
+    /**
+     * Gets the currently active view and parent views.
+     *
+     * @return a list of view and parent view instances, starting from the
+     *         innermost part
+     */
+    public List<View> getActiveViewChain() {
+        return Collections.unmodifiableList(viewChain);
+    }
+
+    /**
+     * Gets the location of the currently shown view. The location is relative
+     * the the servlet mapping used for serving this UI.
+     *
+     * @return the view location, not <code>null</code>
+     */
+    public Location getActiveViewLocation() {
+        return viewLocation;
     }
 }

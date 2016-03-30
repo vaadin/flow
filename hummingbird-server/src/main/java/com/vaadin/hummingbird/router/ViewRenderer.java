@@ -26,6 +26,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.ui.UI;
+
 /**
  * Handles navigation events by rendering a view of a specific type in the
  * target UI. The view can optionally be nested in a chain of parent views.
@@ -63,7 +65,7 @@ public abstract class ViewRenderer implements NavigationHandler {
 
     @Override
     public void handle(NavigationEvent event) {
-        RouterUI ui = event.getUI();
+        UI ui = event.getUI();
 
         Class<? extends View> viewType = getViewType();
         List<Class<? extends HasChildView>> parentViewTypes = getParentViewTypes();
@@ -100,7 +102,8 @@ public abstract class ViewRenderer implements NavigationHandler {
                     .subList(1, viewChain.size());
 
             // Show the new view and parent views
-            ui.showView(event.getLocation(), viewInstance, parentViews);
+            ui.getFrameworkData().showView(event.getLocation(), viewInstance,
+                    parentViews);
 
             updatePageTitle(event, locationChangeEvent);
         } catch (InstantiationException | IllegalAccessException e) {

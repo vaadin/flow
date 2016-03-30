@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,8 +27,18 @@ import org.mockito.Mockito;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
+import com.vaadin.ui.UI;
 
 public class RouterTest {
+
+    public static class RouterTestUI extends UI {
+        Router router = new Router();
+
+        @Override
+        protected Optional<Router> getRouter() {
+            return Optional.of(router);
+        }
+    }
 
     private final class TestResolver implements Resolver {
         private final AtomicReference<Location> resolvedLocation = new AtomicReference<>();
@@ -49,7 +60,7 @@ public class RouterTest {
 
     @Test
     public void testResolve() {
-        RouterUI ui = new RouterUI();
+        UI ui = new RouterTestUI();
 
         Router router = new Router();
         TestResolver resolver = new TestResolver();
@@ -70,7 +81,7 @@ public class RouterTest {
 
     @Test
     public void testChangeLocation() {
-        RouterUI ui = new RouterUI();
+        UI ui = new RouterTestUI();
 
         Router router = new Router();
         TestResolver resolver = new TestResolver();
@@ -97,7 +108,7 @@ public class RouterTest {
 
     @Test
     public void testResolveError() {
-        RouterUI ui = new RouterUI();
+        UI ui = new RouterTestUI();
 
         Router router = new Router();
         router.reconfigure(c -> c.setResolver(event -> null));
@@ -192,7 +203,7 @@ public class RouterTest {
             });
         });
 
-        router.navigate(new RouterUI(), new Location(""));
+        router.navigate(new RouterTestUI(), new Location(""));
 
         Assert.assertEquals("resolver", usedHandler.get());
     }
@@ -211,7 +222,7 @@ public class RouterTest {
             });
         });
 
-        router.navigate(new RouterUI(), new Location(""));
+        router.navigate(new RouterTestUI(), new Location(""));
 
         Assert.assertEquals("route", usedHandler.get());
     }
@@ -235,9 +246,11 @@ public class RouterTest {
 
     @Test
     public void testNavigateToEmptyLocation() {
-        RouterUI ui = new RouterUI();
+        UI ui = new RouterTestUI();
 
         Router router = new Router();
+        router.reconfigure(c -> {
+        });
 
         router.navigate(ui, new Location(""));
 
@@ -246,7 +259,7 @@ public class RouterTest {
 
     @Test
     public void testNavigateWithToggledSlash() {
-        RouterUI ui = new RouterUI();
+        UI ui = new RouterTestUI();
 
         Router router = new Router();
         router.reconfigure(c -> {
