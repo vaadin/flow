@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.ui.UI;
 
 /**
  * A navigation handler that shows an error to the user.
@@ -39,14 +40,14 @@ public class ErrorNavigationHandler implements NavigationHandler {
 
     @Override
     public void handle(NavigationEvent event) {
-        RouterUI ui = event.getUI();
+        UI ui = event.getUI();
 
         if (ui == null) {
             throw new IllegalArgumentException(
                     "This method should be updated to support downloads.");
         }
 
-        ui.showView(event.getLocation(),
+        ui.getFrameworkData().showView(event.getLocation(),
                 () -> Element.createText("Error: " + errorCode), null);
     }
 

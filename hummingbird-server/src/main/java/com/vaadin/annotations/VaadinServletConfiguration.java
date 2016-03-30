@@ -24,7 +24,6 @@ import java.lang.annotation.Target;
 
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.server.Constants;
 import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.DeploymentConfiguration;
@@ -77,17 +76,16 @@ public @interface VaadinServletConfiguration {
     boolean productionMode();
 
     /**
-     * Gets the default UI class to use for the servlet.
+     * Gets the UI class to use for the servlet.
      *
-     * @return the default UI class
+     * @return the UI class
      */
     @InitParameterName(VaadinSession.UI_PARAMETER)
-    Class<? extends UI> ui();
+    Class<? extends UI> ui() default UI.class;
 
     /**
      * Gets the {@link RouterConfigurator} class to use for configuring the
-     * {@link Router}. When this option is set, {@link #ui()} must be set to
-     * {@link RouterUI}.
+     * {@link Router}.
      *
      * @return the router configurator class
      */

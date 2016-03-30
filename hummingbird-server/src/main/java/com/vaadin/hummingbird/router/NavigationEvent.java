@@ -17,6 +17,8 @@ package com.vaadin.hummingbird.router;
 
 import java.util.EventObject;
 
+import com.vaadin.ui.UI;
+
 /**
  * Event object with data related to navigation.
  *
@@ -26,7 +28,7 @@ import java.util.EventObject;
 public class NavigationEvent extends EventObject {
 
     private final Location location;
-    private final RouterUI ui;
+    private final UI ui;
 
     /**
      * Creates a new navigation event.
@@ -38,7 +40,7 @@ public class NavigationEvent extends EventObject {
      * @param ui
      *            the UI in which the navigation occurs, not <code>null</code>
      */
-    public NavigationEvent(Router router, Location location, RouterUI ui) {
+    public NavigationEvent(Router router, Location location, UI ui) {
         super(router);
 
         assert location != null;
@@ -67,7 +69,7 @@ public class NavigationEvent extends EventObject {
      *
      * @return the UI of the navigation
      */
-    public RouterUI getUI() {
+    public UI getUI() {
         return ui;
     }
 }

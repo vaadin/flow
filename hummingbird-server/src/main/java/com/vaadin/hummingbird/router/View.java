@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.io.Serializable;
+
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
@@ -27,7 +29,7 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface View {
+public interface View extends Serializable {
     /**
      * Gets the element to show.
      *
