@@ -7,7 +7,7 @@
 		<artifactId>hummingbird-tests</artifactId>
 		<version>0.0.2-SNAPSHOT</version>
 	</parent>
-	<artifactId>test-subcontext</artifactId>
+	<artifactId>hummingbird-test-subcontext</artifactId>
 	<name>Hummingbird tests mapped for /context</name>
 	<packaging>war</packaging>
 
@@ -19,7 +19,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.vaadin</groupId>
-			<artifactId>test-resources</artifactId>
+			<artifactId>hummingbird-test-resources</artifactId>
 			<version>0.0.2-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
