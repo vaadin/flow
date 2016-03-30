@@ -26,13 +26,13 @@ public class IncludeCss extends UI {
     protected void init(VaadinRequest request) {
         //@formatter:off - custom line wrapping
 
-        // Loaded from "styles.css" in our context root
+        // Loaded from "styles.css" in your context root
         getPage().addStyleSheet("styles.css");
 
-        // Loaded from "/root.css" regardless of how our application is deployed
+        // Loaded from "/root.css" regardless of how your application is deployed
         getPage().addStyleSheet("/root.css");
 
-        // Loaded from "http://example.com/example.css" regardless of where our application is deployed
+        // Loaded from "http://example.com/example.css" regardless of how your application is deployed
         getPage().addStyleSheet("http://example.com/example.css");
 
         //@formatter:on
