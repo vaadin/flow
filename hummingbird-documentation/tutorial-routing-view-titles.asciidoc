@@ -1,0 +1,81 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+== Updating Page Title on Navigation
+
+The simplest way to update the
+https://developer.mozilla.org/en-US/docs/Web/API/Document/title[Page Title] is
+to use the `@Title` annotation on your `View` class.
+[source,java]
+----
+@Title("home")
+class HomeView implements View {
+
+  @Override
+  public Element getElement() {
+    return ElementFactory.createDiv("This is the home view");
+  }
+}
+----
+The `@Title` annotation is only read from the actually used view, parent views
+are not considered.
+
+If the page title for a view depends on dynamic view content, you can override
+the `View:getTitle()` method.
+[source,java]
+----
+class ProductView implements View {
+
+  @Override
+  public String getTitle(LocationChangeEvent event) {
+    // Default implementation returns "" which clears any previous title.
+    return "Product " + getProductName(event.getPathParameter("id"));
+  }
+
+  @Override
+  public Element getElement() {
+    return ElementFactory.createDiv("This is the Products view");
+  }
+}
+----
+[NOTE]
+When overriding `getTitle`, you can't return _null_ as it would keep the title
+unchanged, which means that the title used for the previous view will remain in use.
+The default implementation of `View:getTitle` checks for the `@Title` annotation
+and if it is not found, it returns an empty string which will clear any previously
+set title.
+
+For more control, you can replace the `DefaultPageTitleGenerator` (which uses
+the `@Title` annotation and the `View:getTitle` method) with your own custom
+`PageTitleGenerator`. You can set your `PageTitleGenerator` in the
+`RouterConfigurator` class where you register your views.
+[source,java]
+----
+@Override
+public void configure(ModifiableRouterConfiguration configuration) {
+  // setRoute calls omitted
+  configuration.setPageTitleGenerator(new CustomPageTitleGenerator());
+}
+----
+The _PageTitleGenerator's_ `getPageTitle(LocationChangeEvent)` method is
+triggered after the `onLocationChange` method has been called for the views.
+[source,java]
+----
+class CustomPageTitleGenerator extends DefaultPageTitleGenerator {
+
+  @Override
+  public String getPageTitle(LocationChangeEvent event) {
+    // use the annotation / getTitle() value if applicable
+    String annotationValue = super.getPageTitle(event);
+    if (annotationValue.isEmpty()) {
+      // use default title for views not using @Title or getTitle()
+      annotationValue = "Default Page Title";
+    }
+    return annotationValue;
+  }
+}
+----
+
+See also:
+
+* <<tutorial-routing#,Defining View Routes and Navigating>>
+* <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
+* <<tutorial-routing-view-parameters#,Using View Parameters>>
