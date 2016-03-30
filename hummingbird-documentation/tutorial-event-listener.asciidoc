@@ -12,25 +12,29 @@ helloButton.addEventListener("click", e -> {
 getElement().appendChild(helloButton);
 ----
 
-Clicking in the browser on the "Say hello" button will now send the event to the server, where it is processed and a new "Hello!" element is added to the DOM.
+Clicking the "Say hello" button in the browser will now send the event to the server, where it is processed and a new "Hello!" element is added to the DOM.
 
-== Getting Event Data
+== Accessing Data From the Event
 
 Sometimes you need more information about the element or the event which the user interacted with. You can get this by using the third, optional parameter for `addEventListener`:
 
 [source,java]
 ----
-helloButton.addEventListener("click", e -> {
-  JsonObject eventData = e.getEventData();
-  boolean shiftKey = eventData.getBoolean("event.shiftKey");
-  double width = eventData.getNumber("element.offsetWidth");
+helloButton.addEventListener("click", this::handleClick, "event.shiftKey", "element.offsetWidth");
 
-  String text = "Shift "+(shiftKey ? "down": "up");
-  text += " on button whose width is "+width+"px";
+private void handleClick(DomEvent event) {
+    JsonObject eventData = event.getEventData();
+    boolean shiftKey = eventData.getBoolean("event.shiftKey");
+    double width = eventData.getNumber("element.offsetWidth");
 
-  Element response = ElementFactory.createDiv(text);
-  getElement().appendChild(response);
-}, "event.shiftKey", "element.offsetWidth");
+    String text = "Shift " + (shiftKey ? "down" : "up");
+    text += " on button whose width is " + width + "px";
+
+    Element response = ElementFactory.createDiv(text);
+    getElement().appendChild(response);
+}
 ----
 
-The event data is sent as a JSON object from the client and made available through `event.getEventData()` in the listener. You must know what type of data to retrieve so you can use the proper getter. Also make sure you use the same keys that you provide as parameters to `addEventListener`.
+The requested event data values are sent as a JSON object from the client and made available through `event.getEventData()` in the listener.
+You should use the proper getter based on the data type.
+Also make sure you use the same keys that you provided as parameters to `addEventListener`.

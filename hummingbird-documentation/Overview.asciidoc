@@ -48,7 +48,7 @@ The root of the server-side DOM tree is the `Element` of the `UI` instance, acce
 This element represents the `<body>` tag.
 
 Elements on the server are implemented as flyweight instances.
-This means that you can usually not use `==` and `!=` checking element identity.
+This means that you cannot compare elements using `==` and `!=`.
 Instead, `element.equals(otherElement)` should be used to check whether two instances refer to the same DOM element in the browser.
 
 === Element hierarchy
@@ -61,10 +61,9 @@ The element hierarchy can be navigated upwards using `element.getParent()` and d
 
 Tutorial: <<tutorial-history-api#,The History API>>
 
-The _History API_ allows you to access the browser navigation history. As the history is
-always web page specific, you can access it through `ui.getPage().getHistory()`.
+The _History API_ allows you to access the browser navigation history through `ui.getPage().getHistory()`.
 The API allows you to:
 
-* programmatically traverse the history
-* modify the history by adding a new entry or replacing the current entry
-* listen to user originated history traversal events from browser
+* Programmatically traverse the history.
+* Modify the history by adding a new entry or replacing the current entry.
+* Listen to user originated history traversal events from the browser.

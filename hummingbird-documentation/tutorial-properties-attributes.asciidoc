@@ -20,7 +20,7 @@ nameField.setAttribute("autofocus", "");
 ----
 The above example expressed as HTML would look like `<input id=nameField placeholder="John Doe" autofocus>`.
 
-You can also investigate an manipulate attributes that have already been set.
+You can also investigate and manipulate attributes that have already been set.
 [source,java]
 ----
 // "John Doe"
@@ -40,18 +40,28 @@ nameField.getAttributeNames().toArray();
 Properties are mainly used for dynamically changing the settings of an element after it has been initialized.
 In the browser, any JavaScript value can be used as a property value.
 You can use different variations of the `setProperty` method for setting a property value as `String`, `boolean`, `double` and `JsonValue`.
+
+[source,java]
+----
+Element element = ElementFactory.createInput();
+element.setProperty("value", "42.2");
+----
+
 Similarly, the value of a property can be fetched as any of those types using different `getProperty` method variations.
 The value will be converted according to JavaScript type coercion rules if it is fetched as some other type than how it was set.
 For instance, a property set as a non-empty string will result in `true` if fetched as a boolean.
 
 [source,java]
 ----
-Element element = ElementFactory.createInput();
-element.setProperty("value", "Hello");
+// true, since any non-empty string is true in JavaScript
+boolean helloBoolean = element.getProperty("value", true);
+
+// 42, string is parsed to a JS number and truncated to an int
+int helloInt = element.getProperty("value", 0);
 ----
 
-[NOTE]
-There are many cases where you can use either an attribute or property with the same name for the same effect.
+[WARNING]
+There are many cases where you can use either an attribute or a property with the same name for the same effect.
 In some cases only one of them works, in other cases the attribute is considered when the element is initialized, but after initialization only the property is effective.
 Please check documentation specific to the element you're using to find out whether a feature should be configured using a property or an attribute.
 
@@ -72,10 +82,9 @@ element.getProperty("className"); // will return "error critical".
 ----
 
 [NOTE]
-You can set the element's _class_ attribute using `element.setAttribute("class", "foo bar");`,
-which will clear any previously set _classList_ property. You can get the element's
-class attribute using `element.getAttribute('class')` which will return the contents of the
-_classList_ property as a single concatenated string.
+You can set the element's _class_ attribute using `element.setAttribute("class", "foo bar");`.
+This will clear any previously set _classList_ property.
+You can get the element's class attribute using `element.getAttribute('class')` which will return the contents of the _classList_ property as a single concatenated string.
 
 [[style]]
 == Style object
@@ -98,14 +107,15 @@ element.getStyle().has("cursor");
 
 [NOTE]
 You cannot set the element's _style_ attribute using the `element.setAttribute` method.
-However you can use the `element.getAttribute('style')` which returns all the style rules in a single concatenated string.
+However you can use `element.getAttribute('style')` to get all the style rules in a single concatenated string.
+
 [[textContent]]
 == TextContent
 
 The element's _textContent_ property can be set using the `setTextContent` method.
-Note that this removes all of element's children and replaces them with a single
-text node with the given value.
+Note that this removes all children of the element and replaces them with a single text node with the given value.
 
+[TIP]
 `ElementFactory` provides helpers for creating elements with a given text content.
 
 [source,java]
