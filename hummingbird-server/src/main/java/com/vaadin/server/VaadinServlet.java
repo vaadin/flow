@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
+import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.UI;
@@ -127,6 +128,16 @@ public class VaadinServlet extends HttpServlet implements Constants {
         Optional<VaadinServletConfiguration> optionalConfigAnnotation = AnnotationReader
                 .getAnnotationFor(getClass(), VaadinServletConfiguration.class);
         if (optionalConfigAnnotation.isPresent()) {
+            VaadinServletConfiguration configuration = optionalConfigAnnotation
+                    .get();
+            if (configuration.ui() == UI.class && configuration
+                    .routerConfigurator() == RouterConfiguration.class) {
+                throw new ServletException(
+                        "At least one of ui and routerConfigurator must be defined in @"
+                                + VaadinServletConfiguration.class
+                                        .getSimpleName());
+            }
+
             Method[] methods = VaadinServletConfiguration.class
                     .getDeclaredMethods();
             for (Method method : methods) {
@@ -135,8 +146,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
                 assert name != null : "All methods declared in VaadinServletConfiguration should have a @InitParameterName annotation";
 
                 try {
-                    Object value = method
-                            .invoke(optionalConfigAnnotation.get());
+                    Object value = method.invoke(configuration);
 
                     String stringValue;
                     if (value instanceof Class<?>) {
@@ -194,7 +204,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         VaadinServletService service = new VaadinServletService(this,
                 deploymentConfiguration);
         service.init();
@@ -264,7 +274,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
      */
     protected boolean handleContextOrServletRootWithoutSlash(
             HttpServletRequest request, HttpServletResponse response)
-                    throws IOException {
+            throws IOException {
         // Query parameters like "?a=b" are handled by the servlet container but
         // path parameter (e.g. ;jsessionid=) needs to be handled here
         String location = request.getRequestURI();
@@ -495,7 +505,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
         c > 47 && c < 58 || // alphanum
                 c > 64 && c < 91 || // A-Z
                 c > 96 && c < 123 // a-z
-                ;
+        ;
     }
 
     /**

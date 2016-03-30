@@ -29,6 +29,7 @@ import com.vaadin.hummingbird.router.ViewRendererTest.AnotherParentView;
 import com.vaadin.hummingbird.router.ViewRendererTest.AnotherTestView;
 import com.vaadin.hummingbird.router.ViewRendererTest.ParentView;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
+import com.vaadin.ui.UI;
 
 public class ModifiableRouterConfigurationTest {
     @Test
@@ -221,7 +222,7 @@ public class ModifiableRouterConfigurationTest {
 
     @Test
     public void testParentViewsWithoutParent() {
-        RouterUI ui = new RouterUI();
+        UI ui = new UI();
 
         Router router = new Router();
 
@@ -244,7 +245,7 @@ public class ModifiableRouterConfigurationTest {
 
     @Test
     public void testParentViewsWithParent() {
-        RouterUI ui = new RouterUI();
+        UI ui = new UI();
 
         Router router = new Router();
 
@@ -262,7 +263,7 @@ public class ModifiableRouterConfigurationTest {
                 AnotherParentView.class), getViewChainTypes(ui));
     }
 
-    private List<Class<? extends View>> getViewChainTypes(RouterUI ui) {
+    private List<Class<? extends View>> getViewChainTypes(UI ui) {
         return ui.getActiveViewChain().stream().map(v -> v.getClass())
                 .collect(Collectors.toList());
     }

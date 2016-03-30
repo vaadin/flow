@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.UI;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -35,7 +36,13 @@ public class Router implements Serializable {
      * done on a copy, which is then swapped into use so that nobody outside
      * this class ever can have a reference to the actively used instance.
      */
-    private volatile ModifiableRouterConfiguration configuration = new ModifiableRouterConfiguration();
+    private volatile ModifiableRouterConfiguration configuration = new ModifiableRouterConfiguration() {
+        @Override
+        public boolean isConfigured() {
+            // Regular implementation always returns true
+            return false;
+        }
+    };
 
     /**
      * Lock used to ensure there's only one update going on at once.
@@ -61,8 +68,10 @@ public class Router implements Serializable {
      * @param initRequest
      *            the Vaadin request that bootstraps the provided UI
      */
-    public void initializeUI(RouterUI ui, VaadinRequest initRequest) {
+    public void initializeUI(UI ui, VaadinRequest initRequest) {
         String pathInfo = initRequest.getPathInfo();
+
+        assert getConfiguration().isConfigured();
 
         String path;
         if (pathInfo == null) {
@@ -86,16 +95,18 @@ public class Router implements Serializable {
      * Navigates the given UI to the given location.
      *
      * @param ui
-     *            the router UI to update
+     *            the UI to update
      * @param location
      *            the location to navigate to
      */
-    public void navigate(RouterUI ui, Location location) {
+    public void navigate(UI ui, Location location) {
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
                 ui);
 
         // Read volatile field only once per navigation
         RouterConfiguration currentConfig = configuration;
+
+        assert currentConfig.isConfigured();
 
         NavigationHandler handler = currentConfig.getResolver()
                 .resolve(navigationEvent);

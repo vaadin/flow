@@ -17,7 +17,11 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -35,6 +39,10 @@ import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.Location;
+import com.vaadin.hummingbird.router.Router;
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingCommand;
@@ -55,25 +63,20 @@ import com.vaadin.util.CurrentInstance;
  * The UI is the server side entry point for various client side features that
  * are not represented as components added to a layout, e.g notifications, sub
  * windows, and executing javascript in the browser.
- * </p>
  * <p>
  * When a new UI instance is needed, typically because the user opens a URL in a
  * browser window which points to e.g. {@link VaadinServlet}, the UI mapped to
  * that servlet is opened. The selection is based on the <code>UI</code> init
  * parameter.
- * </p>
  * <p>
  * After a UI has been created by the application, it is initialized using
- * {@link #init(VaadinRequest)}. This method is intended to be overridden by the
- * developer to add components to the user interface and initialize
- * non-component functionality.
- * </p>
+ * {@link #init(VaadinRequest)}.
  *
  * @see #init(VaadinRequest)
  *
  * @since 7.0
  */
-public abstract class UI implements Serializable, PollNotifier {
+public class UI implements Serializable, PollNotifier {
 
     public static final String POLL_DOM_EVENT_NAME = "ui-poll";
 
@@ -104,6 +107,11 @@ public abstract class UI implements Serializable, PollNotifier {
     private final FrameworkData frameworkData = new FrameworkData(this);
 
     private final Page page = new Page(this);
+
+    private Location viewLocation = new Location("");
+    private ArrayList<View> viewChain = new ArrayList<>();
+
+    private Router router;
 
     /**
      * Creates a new empty UI.
@@ -241,6 +249,12 @@ public abstract class UI implements Serializable, PollNotifier {
         // Call the init overridden by the application developer
         init(request);
 
+        // Use router if it's active
+        Router serviceRouter = getSession().getService().getRouter();
+        if (serviceRouter.getConfiguration().isConfigured()) {
+            router = serviceRouter;
+            serviceRouter.initializeUI(this, request);
+        }
     }
 
     /**
@@ -256,7 +270,9 @@ public abstract class UI implements Serializable, PollNotifier {
      * @param request
      *            the Vaadin request that caused this UI to be created
      */
-    protected abstract void init(VaadinRequest request);
+    protected void init(VaadinRequest request) {
+        // Does nothing by default
+    }
 
     /**
      * Sets the thread local for the current UI. This method is used by the
@@ -728,5 +744,130 @@ public abstract class UI implements Serializable, PollNotifier {
      */
     public Page getPage() {
         return page;
+    }
+
+    /**
+     * Shows a view in a chain of layouts in this UI.
+     *
+     * @param viewLocation
+     *            the location of the view relative to the servlet serving the
+     *            UI, not <code>null</code>
+     * @param view
+     *            the view to show, not <code>null</code>
+     * @param parentViews
+     *            the list of parent views to wrap the view in, starting from
+     *            the parent view immediately wrapping the main view, or
+     *            <code>null</code> to not use any parent views
+     */
+    public void showView(Location viewLocation, View view,
+            List<HasChildView> parentViews) {
+        assert view != null;
+        assert viewLocation != null;
+
+        this.viewLocation = viewLocation;
+
+        Element uiElement = getElement();
+
+        // Assemble previous parent-child relationships to enable detecting
+        // changes
+        Map<HasChildView, View> oldChildren = new HashMap<>();
+        for (int i = 0; i < viewChain.size() - 1; i++) {
+            View child = viewChain.get(i);
+            HasChildView parent = (HasChildView) viewChain.get(i + 1);
+
+            oldChildren.put(parent, child);
+        }
+
+        viewChain = new ArrayList<>();
+        viewChain.add(view);
+
+        if (parentViews != null) {
+            viewChain.addAll(parentViews);
+        }
+
+        if (viewChain.isEmpty()) {
+            uiElement.removeAllChildren();
+        } else {
+            // Ensure the entire chain is connected
+            View root = null;
+            for (View part : viewChain) {
+                if (root != null) {
+                    assert part instanceof HasChildView : "All parts of the chain except the first must implement "
+                            + HasChildView.class.getSimpleName();
+                    HasChildView parent = (HasChildView) part;
+                    if (oldChildren.get(parent) != root) {
+                        parent.setChildView(root);
+                    }
+                } else if (part instanceof HasChildView
+                        && oldChildren.containsKey(part)) {
+                    // Remove old child view from leaf view if it had one
+                    ((HasChildView) part).setChildView(null);
+                }
+                root = part;
+            }
+
+            if (root == null) {
+                throw new IllegalArgumentException(
+                        "Root can't be null here since we know there's at least one item in the chain");
+            }
+
+            Element rootElement = root.getElement();
+
+            if (!uiElement.equals(rootElement.getParent())) {
+                uiElement.removeAllChildren();
+                rootElement.removeFromParent();
+                uiElement.appendChild(rootElement);
+            }
+        }
+    }
+
+    /**
+     * Gets the currently active view and parent views.
+     *
+     * @return a list of view and parent view instances, starting from the
+     *         innermost part
+     */
+    public List<View> getActiveViewChain() {
+        return Collections.unmodifiableList(viewChain);
+    }
+
+    /**
+     * Gets the location of the currently shown view. The location is relative
+     * the the servlet mapping used for serving this UI.
+     *
+     * @return the view location, not <code>null</code>
+     */
+    public Location getActiveViewLocation() {
+        return viewLocation;
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given location. The
+     * location must be a relative URL without any ".." segments.
+     *
+     * @param location
+     *            the location to navigate to, not <code>null</code>
+     */
+    public void navigateTo(String location) {
+        if (location == null) {
+            throw new IllegalArgumentException("Location may not be null");
+        }
+
+        Location.verifyRelativePath(location);
+
+        // Enable navigating back
+        getPage().getHistory().pushState(null, location);
+
+        getRouter().navigate(this, new Location(location));
+    }
+
+    /**
+     * Gets the router used for navigating in this UI, or <code>null</code> if
+     * the router was not active when this UI was initialized.
+     *
+     * @return the router, or <code>null</code> if this UI doesn't use a router
+     */
+    protected Router getRouter() {
+        return router;
     }
 }

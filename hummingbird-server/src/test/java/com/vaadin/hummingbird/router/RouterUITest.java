@@ -22,9 +22,10 @@ import org.mockito.Mockito;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
+import com.vaadin.ui.UI;
 
 public class RouterUITest {
-    private static class TestUI extends RouterUI {
+    private static class TestUI extends UI {
         // Custom router so we don't have to set up a VaadinService for the test
         private Router router = new Router();
 
@@ -39,7 +40,10 @@ public class RouterUITest {
             }
             Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-            init(request);
+            router.reconfigure(c -> {
+            });
+
+            router.initializeUI(this, request);
         }
 
         @Override

@@ -23,12 +23,11 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
-import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.StaticViewRenderer;
 import com.vaadin.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
-@VaadinServletConfiguration(ui = RouterUI.class, productionMode = false)
+@VaadinServletConfiguration(productionMode = false)
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;

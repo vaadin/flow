@@ -27,6 +27,7 @@ import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
+import com.vaadin.ui.UI;
 
 public class ViewRendererTest {
 
@@ -98,7 +99,7 @@ public class ViewRendererTest {
     }
 
     private final Router router = new Router();
-    private final RouterUI ui = new RouterUI();
+    private final UI ui = new UI();
     private final NavigationEvent dummyEvent = new NavigationEvent(router,
             new Location(""), ui);
 
