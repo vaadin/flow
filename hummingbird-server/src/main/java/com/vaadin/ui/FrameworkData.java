@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
+import com.vaadin.ui.Page.ExecutionCanceler;
 
 /**
  * Holds UI-specific data that is mainly intended for internal use by the
@@ -137,6 +139,10 @@ public class FrameworkData implements Serializable {
     private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
     private final UI ui;
+
+    private String title;
+
+    private ExecutionCanceler pendingTitleUpdateCanceler;
 
     /**
      * Creates a new framework data instance for the given UI.
@@ -330,9 +336,12 @@ public class FrameworkData implements Serializable {
      *
      * @param invocation
      *            the invocation to add
+     * @return a callback for canceling the execution if not yet sent to browser
      */
-    public void addJavaScriptInvocation(JavaScriptInvocation invocation) {
+    public ExecutionCanceler addJavaScriptInvocation(
+            JavaScriptInvocation invocation) {
         pendingJsInvocations.add(invocation);
+        return () -> pendingJsInvocations.remove(invocation);
     }
 
     /**
@@ -341,6 +350,8 @@ public class FrameworkData implements Serializable {
      * @return a list of pending JavaScript invocations
      */
     public List<JavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+        pendingTitleUpdateCanceler = null;
+
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();
         }
@@ -359,7 +370,58 @@ public class FrameworkData implements Serializable {
      *
      * @return the pending javascript invocations, never <code>null</code>
      */
-    protected List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
+    // Non-private for testing purposes
+    List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
         return pendingJsInvocations;
+    }
+
+    /**
+     * Records the page title set with {@link Page#setTitle(String)}.
+     * <p>
+     * You should not set the page title for the browser with this method, use
+     * {@link Page#setTitle(String)} instead.
+     *
+     * @param title
+     *            the title to set
+     */
+    public void setTitle(String title) {
+        assert title != null;
+
+        JavaScriptInvocation invocation = new JavaScriptInvocation(
+                "document.title = $0", Arrays.asList(title));
+
+        pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
+
+        this.title = title;
+    }
+
+    /**
+     * Gets the page title recorded with {@link Page#setTitle(String)}.
+     * <p>
+     * <b>NOTE</b> this might not be up to date with the actual title set since
+     * it is not updated from the browser and the update might have been
+     * canceled before it has been sent to the browser with
+     * {@link #cancelPendingTitleUpdate()}.
+     *
+     * @return the page title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Cancels any pending page title update set via {@link #setTitle(String)}.
+     *
+     * @return <code>true</code> if pending title update was cancelled,
+     *         <code>false</code> if not
+     */
+    public boolean cancelPendingTitleUpdate() {
+        if (pendingTitleUpdateCanceler == null) {
+            return false;
+        }
+
+        boolean result = pendingTitleUpdateCanceler.cancelExecution();
+        pendingTitleUpdateCanceler = null;
+        return result;
     }
 }
