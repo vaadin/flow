@@ -38,7 +38,7 @@ class ProductView implements View {
 ----
 [NOTE]
 When overriding `getTitle`, you can't return _null_ as it would keep the title
-unchanged, which means that the title used for the previous view will remain in use.
+unchanged, which means that the title from the previous view is still displayed.
 The default implementation of `View:getTitle` checks for the `@Title` annotation
 and if it is not found, it returns an empty string which will clear any previously
 set title.

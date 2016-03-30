@@ -24,6 +24,8 @@ import com.vaadin.ui.Page;
  * {@link LocationChangeEvent}.
  * <p>
  * By default {@link DefaultPageTitleGenerator} is used.
+ *
+ * @see ModifiableRouterConfiguration#setPageTitleGenerator(PageTitleGenerator)
  */
 @FunctionalInterface
 public interface PageTitleGenerator extends Serializable {
@@ -34,12 +36,11 @@ public interface PageTitleGenerator extends Serializable {
      * Returning an empty string will clear any previous title that has been set
      * and let the browser decide what to show as the title.
      * <p>
-     * Returning a <code>null</code> page title will keep the previous title.
+     * May <b>NOT</b> return <code>null</code>.
      *
      * @param event
      *            the event object with information about the new location
-     * @return the page title to set, or <code>null</code> to keep the previous
-     *         page title
+     * @return the page title to set, not <code>null</code>
      */
     String getPageTitle(LocationChangeEvent event);
 }

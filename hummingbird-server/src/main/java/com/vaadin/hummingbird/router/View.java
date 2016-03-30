@@ -66,8 +66,7 @@ public interface View {
      * empty string will clear any previously set title. In that case the
      * browser will decide what to show as the title.
      * <p>
-     * Note that returning <code>null</code> will always keep the previously
-     * used page title.
+     * May <b>NOT</b> return <code>null</code>.
      * <p>
      * This method is triggered after the
      * {@link #onLocationChange(LocationChangeEvent)} callback and after the
@@ -75,8 +74,7 @@ public interface View {
      *
      * @param locationChangeEvent
      *            event object with information about the new location
-     * @return the page title to set, or <code>null</code> to keep the previous
-     *         title
+     * @return the page title to set, not <code>null</code>
      */
     default String getTitle(LocationChangeEvent locationChangeEvent) {
         // by default use whatever was defined with the title-annotation or if

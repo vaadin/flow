@@ -261,15 +261,13 @@ public class ViewRendererTest {
         verifyViewTitleUpdate("");
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     public void testViewTitle_nullTitleReturned_noTitleSet() {
         new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate(ANOTHER_VIEW_TITLE);
 
         new StaticViewRenderer(NullTitleView.class).handle(dummyEvent);
-
-        verifyNoTitleUpdate();
     }
 
     @Test
@@ -308,13 +306,11 @@ public class ViewRendererTest {
         verifyViewTitleUpdate(DYNAMIC_VIEW_TITLE);
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     public void testViewTitle_nullPageTitleGenerated_noTitleUpdate() {
         setPageTitleGenerator(lce -> null);
 
         new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
-
-        verifyNoTitleUpdate();
     }
 
     private void setPageTitleGenerator(PageTitleGenerator generator) {
