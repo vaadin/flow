@@ -26,7 +26,7 @@ public class MockUI extends UI {
     }
 
     public MockUI(VaadinSession session) {
-        setSession(session);
+        getInternals().setSession(session);
         setCurrent(this);
     }
 

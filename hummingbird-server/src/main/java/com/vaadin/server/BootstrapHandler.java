@@ -542,7 +542,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         UI ui = createInstance(uiClass);
 
         // Initialize some fields for a newly created UI
-        ui.setSession(session);
+        ui.getInternals().setSession(session);
 
         PushMode pushMode = AnnotationReader.getPushMode(uiClass);
         if (pushMode == null) {

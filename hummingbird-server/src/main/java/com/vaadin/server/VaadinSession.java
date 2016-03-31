@@ -515,7 +515,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert hasLock();
         assert UI.getCurrent() == ui;
         Integer id = Integer.valueOf(ui.getUIId());
-        ui.setSession(null);
+        ui.getInternals().setSession(null);
         uIs.remove(id);
     }
 
@@ -970,7 +970,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Get resource registry instance.
      * <p>
      * Use this instance to manage {@link StreamResource}s.
-     * 
+     *
      * @return resource registry
      */
     public StreamResourceRegistry getResourceRegistry() {

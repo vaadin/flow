@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
@@ -44,6 +46,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
+import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.Page.ExecutionCanceler;
 
 /**
@@ -153,6 +156,11 @@ public class UIInternals implements Serializable {
 
     private Location viewLocation = new Location("");
     private ArrayList<View> viewChain = new ArrayList<>();
+
+    /**
+     * The Vaadin session to which this UI belongs.
+     */
+    private volatile VaadinSession session;
 
     /**
      * Creates a new framework data instance for the given UI.
@@ -279,6 +287,60 @@ public class UIInternals implements Serializable {
                 .size() : "There are duplicates";
         return (Class<? extends Namespace>[]) namespaces
                 .toArray(new Class<?>[0]);
+    }
+
+    private static String getSessionDetails(VaadinSession session) {
+        if (session == null) {
+            return null;
+        } else {
+            return session.toString() + " for "
+                    + session.getService().getServiceName();
+        }
+    }
+
+    /**
+     * Sets the session to which this UI is assigned.
+     * <p>
+     * This method is for internal use by the framework. To explicitly close a
+     * UI, see {@link UI#close()}.
+     *
+     * @param session
+     *            the session to set
+     *
+     * @throws IllegalStateException
+     *             if the session has already been set
+     *
+     * @see #getSession()
+     */
+    public void setSession(VaadinSession session) {
+        if (session == null && this.session == null) {
+            throw new IllegalStateException(
+                    "Session should never be set to null when UI.session is already null");
+        } else if (session != null && this.session != null) {
+            throw new IllegalStateException(
+                    "Session has already been set. Old session: "
+                            + getSessionDetails(this.session)
+                            + ". New session: " + getSessionDetails(session)
+                            + ".");
+        } else {
+            if (session == null) {
+                try {
+                    ui.detach();
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING,
+                            "Error while detaching UI from session", e);
+                }
+                // Disable push when the UI is detached. Otherwise the
+                // push connection and possibly VaadinSession will live on.
+                ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+                setPushConnection(null);
+            }
+            this.session = session;
+        }
+
+        if (session != null) {
+            ui.attach();
+        }
     }
 
     /**
@@ -535,4 +597,21 @@ public class UIInternals implements Serializable {
     public Location getActiveViewLocation() {
         return viewLocation;
     }
+
+    /**
+     * Gets the VaadinSession to which this UI is attached.
+     *
+     * <p>
+     * The method will return {@code null} if the UI is not currently attached
+     * to a VaadinSession.
+     * </p>
+     */
+    public VaadinSession getSession() {
+        return session;
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(UIInternals.class.getName());
+    }
+
 }
