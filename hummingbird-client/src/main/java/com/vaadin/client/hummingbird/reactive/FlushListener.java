@@ -28,5 +28,5 @@ public interface FlushListener {
     /**
      * Invoked on {@link Reactive#flush()}.
      */
-    public void flush();
+    void flush();
 }

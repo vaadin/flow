@@ -16,13 +16,15 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.Console;
+import com.vaadin.client.Registry;
 import com.vaadin.client.URIResolver;
-import com.vaadin.client.communication.ServerMessager;
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
+import elemental.events.EventTarget;
 import elemental.events.MouseEvent;
 import elemental.html.AnchorElement;
 
@@ -45,22 +47,26 @@ public class RouterLinkHandler {
      * Adds a click event listener for the given element for intercepting
      * application navigation related click events and sending them to server.
      *
-     * @param messager
-     *            the messager sending the update to server
+     * @param registry
+     *            the registry
      * @param element
      *            the element to listen to click events in
      */
-    public static void bind(ServerMessager messager, Element element) {
-        element.addEventListener("click", event -> handleClick(messager, event),
+    public static void bind(Registry registry, Element element) {
+        element.addEventListener("click", event -> handleClick(registry, event),
                 false);
     }
 
-    private static void handleClick(ServerMessager messager, Event clickEvent) {
-        if (isRouterLinkClick(clickEvent) && !hasModifierKeys(clickEvent)) {
-            AnchorElement target = (AnchorElement) clickEvent.getTarget();
+    private static void handleClick(Registry registry, Event clickEvent) {
+        if (hasModifierKeys(clickEvent)
+                || !registry.getUILifecycle().isRunning()) {
+            return;
+        }
 
-            String href = target.getHref();
-            String baseURI = target.getOwnerDocument().getBaseURI();
+        String href = getRouterLinkHref(clickEvent);
+        if (href != null) {
+            String baseURI = ((Element) clickEvent.getCurrentTarget())
+                    .getOwnerDocument().getBaseURI();
 
             // verify that the link is actually for this application
             if (!href.startsWith(baseURI)) {
@@ -76,24 +82,43 @@ public class RouterLinkHandler {
             clickEvent.preventDefault();
 
             String location = URIResolver.getBaseRelativeUri(baseURI, href);
-
-            messager.sendNavigationMessage(location, null);
+            sendServerNavigationEvent(registry, location, null);
         }
     }
 
-    private static boolean isRouterLinkClick(Event clickEvent) {
+    /**
+     * Gets the target of a router link, if a router link was found between the
+     * click target and the event listener.
+     *
+     * @param clickEvent
+     *            the click event
+     * @return the target (href) of the link if a link was found, null otherwise
+     */
+    private static String getRouterLinkHref(Event clickEvent) {
         assert "click".equals(clickEvent.getType());
 
         Element target = (Element) clickEvent.getTarget();
-        if (!"A".equalsIgnoreCase(target.getTagName())) {
-            return false;
+        EventTarget eventListenerElement = clickEvent.getCurrentTarget();
+        while (target != eventListenerElement) {
+            if (isRouterLinkAnchorElement(target)) {
+                return ((AnchorElement) target).getHref();
+            }
+            target = target.getParentElement();
         }
 
-        if (!target.hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE)) {
-            return false;
-        }
+        return null;
+    }
 
-        return true;
+    /**
+     * Checks if the given element is {@code <a routerlink>}.
+     *
+     * @param target
+     *            the element to check
+     * @return true if the element is a routerlink, false otherwise
+     */
+    private static boolean isRouterLinkAnchorElement(Element target) {
+        return "a".equalsIgnoreCase(target.getTagName()) && target
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE);
     }
 
     private static boolean hasModifierKeys(Event clickEvent) {
@@ -104,4 +129,29 @@ public class RouterLinkHandler {
                 || event.isShiftKey();
     }
 
+    /**
+     * Notifies the server about navigation to the given location.
+     * <p>
+     * Ensures that navigation works even if the session has expired.
+     *
+     * @param registry
+     *            the registry
+     * @param location
+     *            the location to navigate to, relative to the base URI
+     * @param stateObject
+     *            the state object or <code>null</code> if none applicable
+     */
+    public static void sendServerNavigationEvent(Registry registry,
+            String location, Object stateObject) {
+        assert registry != null;
+        assert location != null;
+
+        // If the server tells us the session has expired, we refresh (using the
+        // new location) instead.
+        registry.getMessageHandler().setNextResponseSessionExpiredHandler(
+                () -> WidgetUtil.refresh());
+        registry.getServerConnector().sendNavigationMessage(location,
+                stateObject);
+
+    }
 }

@@ -25,38 +25,38 @@ import com.vaadin.shared.communication.PushMode;
  */
 public interface Constants {
 
-    static final String NOT_PRODUCTION_MODE_INFO = "\n"
+    String NOT_PRODUCTION_MODE_INFO = "\n"
             + "=================================================================\n"
             + "Vaadin is running in DEBUG MODE.\nAdd productionMode=true to web.xml "
             + "to disable debug features.\nTo show debug window, add ?debug to "
             + "your application URL.\n"
             + "=================================================================";
 
-    static final String WARNING_XSRF_PROTECTION_DISABLED = "\n"
+    String WARNING_XSRF_PROTECTION_DISABLED = "\n"
             + "===========================================================\n"
             + "WARNING: Cross-site request forgery protection is disabled!\n"
             + "===========================================================";
 
-    static final String WARNING_RESOURCE_CACHING_TIME_NOT_NUMERIC = "\n"
+    String WARNING_RESOURCE_CACHING_TIME_NOT_NUMERIC = "\n"
             + "===========================================================\n"
             + "WARNING: resourceCacheTime has been set to a non integer value "
             + "in web.xml. The default of 1h will be used.\n"
             + "===========================================================";
 
-    static final String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = "\n"
+    String WARNING_HEARTBEAT_INTERVAL_NOT_NUMERIC = "\n"
             + "===========================================================\n"
             + "WARNING: heartbeatInterval has been set to a non integer value "
             + "in web.xml. The default of 5min will be used.\n"
             + "===========================================================";
 
-    static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = "\n"
+    String WARNING_PUSH_MODE_NOT_RECOGNIZED = "\n"
             + "===========================================================\n"
             + "WARNING: pushMode has been set to an unrecognized value\n"
             + "in web.xml. The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used.\n"
             + "===========================================================";
 
-    static final String WIDGETSET_MISMATCH_INFO = "\n"
+    String WIDGETSET_MISMATCH_INFO = "\n"
             + "=================================================================\n"
             + "The widgetset in use does not seem to be built for the Vaadin\n"
             + "version in use. This might cause strange problems - a\n"
@@ -66,15 +66,15 @@ public interface Constants {
 
     // Keep the version number in sync with push/build.xml and other locations
     // listed in that file
-    static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.2.7.vaadin1";
+    String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.2.7.vaadin1";
 
-    static final String INVALID_ATMOSPHERE_VERSION_WARNING = "\n"
+    String INVALID_ATMOSPHERE_VERSION_WARNING = "\n"
             + "=================================================================\n"
             + "Vaadin depends on Atmosphere {0} but version {1} was found.\n"
             + "This might cause compatibility problems if push is used.\n"
             + "=================================================================";
 
-    static final String ATMOSPHERE_MISSING_ERROR = "\n"
+    String ATMOSPHERE_MISSING_ERROR = "\n"
             + "=================================================================\n"
             + "Atmosphere could not be loaded. When using push with Vaadin, the\n"
             + "Atmosphere framework must be present on the classpath.\n"
@@ -87,14 +87,14 @@ public interface Constants {
             + ".\n"
             + "=================================================================";
 
-    static final String PUSH_NOT_SUPPORTED_ERROR = "\n"
+    String PUSH_NOT_SUPPORTED_ERROR = "\n"
             + "=================================================================\n"
             + "Push is not supported for {0}\n" + "Will fall back to using "
             + PushMode.class.getSimpleName() + "." + PushMode.DISABLED.name()
             + ".\n"
             + "=================================================================";
 
-    static final String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = "\n"
+    String CANNOT_ACQUIRE_CLASSLOADER_SEVERE = "\n"
             + "=================================================================\n"
             + "Vaadin was unable to acquire class loader from servlet container\n"
             + "to load your application classes. Setup appropriate security\n"
@@ -103,19 +103,20 @@ public interface Constants {
             + "NullPointerExceptions will be thrown later."
             + "=================================================================";
 
-    static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
+    String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
     // Javadocs for VaadinService should be updated if this value is changed
-    static final String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
-    static final String SERVLET_PARAMETER_RESOURCE_CACHE_TIME = "resourceCacheTime";
-    static final String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = "heartbeatInterval";
-    static final String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
-    static final String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
-    static final String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
-    static final String SERVLET_PARAMETER_SENDURLSASPARAMETERS = "sendUrlsAsParameters";
-    static final String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
+    String SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION = "disable-xsrf-protection";
+    String SERVLET_PARAMETER_RESOURCE_CACHE_TIME = "resourceCacheTime";
+    String SERVLET_PARAMETER_HEARTBEAT_INTERVAL = "heartbeatInterval";
+    String SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS = "closeIdleSessions";
+    String SERVLET_PARAMETER_PUSH_MODE = "pushMode";
+    String SERVLET_PARAMETER_SYNC_ID_CHECK = "syncIdCheck";
+    String SERVLET_PARAMETER_SENDURLSASPARAMETERS = "sendUrlsAsParameters";
+    String SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING = "pushLongPollingSuspendTimeout";
+    String SERVLET_PARAMETER_ROUTER_CONFIGURATOR = "routerConfigurator";
 
-    static final int MAX_BUFFER_SIZE = 64 * 1024;
+    int MAX_BUFFER_SIZE = 64 * 1024;
 
-    static final String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
+    String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
 
 }

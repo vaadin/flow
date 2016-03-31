@@ -1,0 +1,60 @@
+= Building a Hello World Application
+
+The simplest possible Hello World application displays the text "Hello world" on the screen and does nothing else. To accomplish this you need two things:
+
+* A UI class containing our UI elements
+* A servlet handling the rendering of the UI class
+
+Let's start from the UI class and its init method:
+
+[source,java]
+----
+public class HelloWorldUI extends UI {
+
+    @Override
+    protected void init(VaadinRequest request) {
+        // Called whenever a user opens the page
+    }
+}
+----
+
+The main purpose of the init method is to populate the UI with elements. For the Hello world application you only need one element containing the "Hello world" text:
+[source,java]
+----
+Element div = ElementFactory.createDiv("Hello world");
+----
+
+[TIP]
+`ElementFactory` contains helper methods for creating commonly used elements. You can also use `new Element(tagName)` to create any element.
+
+You also need to attach the element to the root element of the UI, which represents the `<body>` tag on the page:
+[source,java]
+----
+getElement().appendChild(div);
+----
+
+You will thus end up with this `HelloWorldUI` class:
+
+[source,java]
+----
+public class HelloWorldUI extends UI {
+
+    @Override
+    protected void init(VaadinRequest request) {
+        Element div = ElementFactory.createDiv("Hello world");
+        getElement().appendChild(div);
+    }
+}
+----
+
+To get this to show up in the browser, you need to add a servlet configured to show `HelloWorldUI`:
+
+[source,java]
+----
+@WebServlet(urlPatterns = "/*", name = "HelloWorldServlet")
+@VaadinServletConfiguration(ui = HelloWorldUI.class, productionMode = false)
+public class HelloWorldServlet extends VaadinServlet {
+}
+----
+
+Your servlet will listen for HTTP requests to all paths (`"/*"`) and serve `HelloWorldUI` to the user. Deploy the application to a servlet container, and open the URL (typically http://localhost:8080/<name-of-project>) to see the "Hello world" text.

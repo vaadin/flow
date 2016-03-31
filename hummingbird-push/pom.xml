@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.2-SNAPSHOT</version>
+		<version>0.0.3-SNAPSHOT</version>
 	</parent>
 	<artifactId>hummingbird-push</artifactId>
 	<name>Hummingbird Push</name>
@@ -38,9 +38,9 @@
 						<configuration>
 							<target>
 								<property name="vaadinPush.js"
-									location="${project.build.outputDirectory}/META-INF/resources/VAADIN/push/vaadinPush.js" />
+									location="${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push/vaadinPush.js" />
 								<property name="vaadinPush-min.js"
-									location="${project.build.outputDirectory}/META-INF/resources/VAADIN/push/vaadinPush-min.js" />
+									location="${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push/vaadinPush-min.js" />
 
 								<!-- Gzipped versions -->
 								<gzip src="${vaadinPush.js}" destfile="${vaadinPush.js}.gz" />

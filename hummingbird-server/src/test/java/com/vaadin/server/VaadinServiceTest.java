@@ -26,6 +26,8 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.server.communication.StreamResourceRequestHandler;
+
 /**
  *
  * @author Vaadin Ltd
@@ -139,5 +141,17 @@ public class VaadinServiceTest {
                 "details", null);
 
         assertThat(notification, containsString("\"url\":null"));
+    }
+
+    @Test
+    public void serviceContainsStreamResourceHandler()
+            throws ServiceException, ServletException {
+        ServletConfig servletConfig = new MockServletConfig();
+        VaadinServlet servlet = new VaadinServlet();
+        servlet.init(servletConfig);
+        VaadinService service = servlet.getService();
+        Assert.assertTrue(service.createRequestHandlers().stream()
+                .filter(StreamResourceRequestHandler.class::isInstance)
+                .findAny().isPresent());
     }
 }

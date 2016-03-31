@@ -29,5 +29,5 @@ public interface MapPropertyChangeListener {
      * @param event
      *            the property change event
      */
-    public void onPropertyChange(MapPropertyChangeEvent event);
+    void onPropertyChange(MapPropertyChangeEvent event);
 }

@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.router;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,6 +28,15 @@ public class LocationTest {
         Location location = new Location("foo/bar/baz");
 
         Assert.assertEquals(Arrays.asList("foo", "bar", "baz"),
+                location.getSegments());
+        Assert.assertEquals("foo/bar/baz", location.getPath());
+    }
+
+    @Test
+    public void parseLocationWithEndingSlash() {
+        Location location = new Location("foo/bar/");
+
+        Assert.assertEquals(Arrays.asList("foo", "bar", ""),
                 location.getSegments());
     }
 
@@ -45,6 +55,7 @@ public class LocationTest {
         Location location = new Location(Arrays.asList("one", "two"));
         Assert.assertEquals(Arrays.asList("one", "two"),
                 location.getSegments());
+        Assert.assertEquals("one/two", location.getPath());
     }
 
     @Test
@@ -53,22 +64,23 @@ public class LocationTest {
 
         Assert.assertEquals("one", location.getFirstSegment());
 
-        Location subLocation = location.getSubLocation();
+        Optional<Location> subLocation = location.getSubLocation();
         Assert.assertEquals(Arrays.asList("two", "three"),
-                subLocation.getSegments());
+                subLocation.get().getSegments());
+        Assert.assertEquals("two/three", subLocation.get().getPath());
+
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void emptyLocation() {
         Location location = new Location(Collections.emptyList());
-
-        Assert.assertNull(location.getFirstSegment());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void emptyLocation_subLocation_throws() {
-        Location location = new Location(Collections.emptyList());
-        location.getSubLocation();
+    public void noSubLocation_emptyOptional() {
+        Location location = new Location("foo");
+        Optional<Location> maybeSubLocation = location.getSubLocation();
+
+        Assert.assertFalse(maybeSubLocation.isPresent());
     }
 
 }

@@ -38,7 +38,7 @@ public interface PushConfiguration extends Serializable {
      *
      * @return The push mode.
      */
-    public PushMode getPushMode();
+    PushMode getPushMode();
 
     /**
      * Sets the mode of bidirectional ("push") communication that should be
@@ -57,7 +57,7 @@ public interface PushConfiguration extends Serializable {
      * @throws IllegalStateException
      *             if push support is not available.
      */
-    public void setPushMode(PushMode pushMode);
+    void setPushMode(PushMode pushMode);
 
     /**
      * Returns the primary transport type for push.
@@ -68,7 +68,7 @@ public interface PushConfiguration extends Serializable {
      *
      * @return The primary transport type
      */
-    public Transport getTransport();
+    Transport getTransport();
 
     /**
      * Sets the primary transport type for push.
@@ -79,7 +79,7 @@ public interface PushConfiguration extends Serializable {
      * @param transport
      *            The primary transport type
      */
-    public void setTransport(Transport transport);
+    void setTransport(Transport transport);
 
     /**
      * Returns the fallback transport type for push.
@@ -90,7 +90,7 @@ public interface PushConfiguration extends Serializable {
      *
      * @return The fallback transport type
      */
-    public Transport getFallbackTransport();
+    Transport getFallbackTransport();
 
     /**
      * Sets the fallback transport type for push.
@@ -101,7 +101,7 @@ public interface PushConfiguration extends Serializable {
      * @param fallbackTransport
      *            The fallback transport type
      */
-    public void setFallbackTransport(Transport fallbackTransport);
+    void setFallbackTransport(Transport fallbackTransport);
 
     /**
      * Returns the given parameter, if set.
@@ -114,7 +114,7 @@ public interface PushConfiguration extends Serializable {
      *            The parameter name
      * @return The parameter value or null if not set
      */
-    public String getParameter(String parameter);
+    String getParameter(String parameter);
 
     /**
      * Returns the parameters which have been defined.
@@ -122,7 +122,7 @@ public interface PushConfiguration extends Serializable {
      * @since 7.1
      * @return A collection of parameter names
      */
-    public Collection<String> getParameterNames();
+    Collection<String> getParameterNames();
 
     /**
      * Sets the given parameter.
@@ -136,7 +136,7 @@ public interface PushConfiguration extends Serializable {
      * @param value
      *            The value
      */
-    public void setParameter(String parameter, String value);
+    void setParameter(String parameter, String value);
 
     /**
      * Sets the URL to use for push requests.
@@ -148,7 +148,7 @@ public interface PushConfiguration extends Serializable {
      * @param pushUrl
      *            The push URL to use
      */
-    public void setPushUrl(String pushUrl);
+    void setPushUrl(String pushUrl);
 
     /**
      * Returns the URL to use for push requests.
@@ -159,7 +159,7 @@ public interface PushConfiguration extends Serializable {
      * @since 7.6
      * @return the URL to use for push requests, or null to use to default
      */
-    public String getPushUrl();
+    String getPushUrl();
 
 }
 
@@ -172,7 +172,7 @@ public interface PushConfiguration extends Serializable {
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;
 
-    public PushConfigurationImpl(UI ui) {
+    PushConfigurationImpl(UI ui) {
         this.ui = ui;
         getPushConfigurationMap().setTransport(Transport.WEBSOCKET_XHR);
         getPushConfigurationMap().setTransport(Transport.LONG_POLLING);

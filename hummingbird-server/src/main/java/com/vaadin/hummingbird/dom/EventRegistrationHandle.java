@@ -28,5 +28,5 @@ public interface EventRegistrationHandle extends Serializable {
     /**
      * Removes the event listener.
      */
-    public void remove();
+    void remove();
 }

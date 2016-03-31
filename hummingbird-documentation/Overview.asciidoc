@@ -1,0 +1,70 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Hummingbird
+:toc:
+== Product overview
+
+Hummingbird is a Java framework for building interactive web sites.
+The heart of Hummingbird will consist of three ways of interacting with the DOM in the user's web browser:
+
+ 1. HTML-based templates that are bound to server-side Model data.
+ 1. A server-side representation of the client-side DOM tree.
+ 1. A type-safe Java RPC API for interacting with JavaScript in the browser.
+
+These mechanisms are intended to be encapsulated into reusable components with a high-level Java API.
+
+The current version only implements the DOM tree and beginnings of the RPC mechanism.
+
+== Tutorials
+
+These tutorials show how the different features are used.
+
+* Application structure
+** <<tutorial-hello-world#,Hello World>>
+** <<tutorial-include-css#,Including Style Sheets>>
+* Element API
+** <<tutorial-properties-attributes#,Element Properties and Attributes>>
+** <<tutorial-event-listener#,Listening to User Events>>
+** <<tutorial-user-input#,Retrieving User Input>>
+** <<tutorial-dynamic-styling#,Dynamic styling>>
+* Routing and Views
+** <<tutorial-routing#,Defining View Routes and Navigating>>
+** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
+** <<tutorial-routing-view-parameters#,Using View Parameters>>
+** <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
+* Misc
+** <<tutorial-execute-javascript#,Executing JavaScript>>
+** <<tutorial-history-api#,The History API>>
+
+The rest of this document gives a high-level overview of the features and explains how they fit together.
+
+== Server-side DOM tree
+
+Tutorials: <<tutorial-properties-attributes#,Element Properties and Attributes>>, <<tutorial-event-listener#,Listening to User Events>>, <<tutorial-user-input#,Retrieving User Input>>,  <<tutorial-dynamic-styling#,Dynamic styling>>
+
+Hummingbird allows Java code to control the DOM in the user's browser through a server-side representation of the same DOM tree.
+All changes are automatically synchronized to the real DOM tree in the browser.
+
+The DOM tree is built up from `Element` instances, each one representing a DOM element in the browser.
+The root of the server-side DOM tree is the `Element` of the `UI` instance, accessible using `ui.getElement()`.
+This element represents the `<body>` tag.
+
+Elements on the server are implemented as flyweight instances.
+This means that you cannot compare elements using `==` and `!=`.
+Instead, `element.equals(otherElement)` should be used to check whether two instances refer to the same DOM element in the browser.
+
+=== Element hierarchy
+
+A web application is structured as a tree of elements with the root being the element of the `UI` instance. An element can be added as a child of another element using methods such as `element.appendChild(Element)` for adding an element to the end of a parent's child list or `element.insertChild(int, Element)` for adding to any position in the child list.
+
+The element hierarchy can be navigated upwards using `element.getParent()` and downwards using `element.getChildCount()` and `element.getChild(int)`.
+
+== History API
+
+Tutorial: <<tutorial-history-api#,The History API>>
+
+The _History API_ allows you to access the browser navigation history through `ui.getPage().getHistory()`.
+The API allows you to:
+
+* Programmatically traverse the history.
+* Modify the history by adding a new entry or replacing the current entry.
+* Listen to user originated history traversal events from the browser.

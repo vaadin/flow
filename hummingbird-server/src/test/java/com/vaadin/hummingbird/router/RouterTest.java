@@ -16,16 +16,29 @@
 package com.vaadin.hummingbird.router;
 
 import java.util.Arrays;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.History.LocationChangeEvent;
+import com.vaadin.ui.History.HistoryStateChangeEvent;
+import com.vaadin.ui.UI;
 
 public class RouterTest {
+
+    public static class RouterTestUI extends UI {
+        Router router = new Router();
+
+        @Override
+        protected Optional<Router> getRouter() {
+            return Optional.of(router);
+        }
+    }
 
     private final class TestResolver implements Resolver {
         private final AtomicReference<Location> resolvedLocation = new AtomicReference<>();
@@ -47,11 +60,11 @@ public class RouterTest {
 
     @Test
     public void testResolve() {
-        RouterUI ui = new RouterUI();
+        UI ui = new RouterTestUI();
 
         Router router = new Router();
         TestResolver resolver = new TestResolver();
-        router.setResolver(resolver);
+        router.reconfigure(c -> c.setResolver(resolver));
 
         Assert.assertNull(resolver.resolvedLocation.get());
         Assert.assertNull(resolver.handledEvent.get());
@@ -68,11 +81,11 @@ public class RouterTest {
 
     @Test
     public void testChangeLocation() {
-        RouterUI ui = new RouterUI();
+        UI ui = new RouterTestUI();
 
         Router router = new Router();
         TestResolver resolver = new TestResolver();
-        router.setResolver(resolver);
+        router.reconfigure(c -> c.setResolver(resolver));
 
         VaadinRequest request = Mockito.mock(VaadinRequest.class);
         Mockito.when(request.getPathInfo()).thenReturn(null);
@@ -85,9 +98,9 @@ public class RouterTest {
         resolver.resolvedLocation.set(null);
         resolver.handledEvent.set(null);
 
-        ui.getPage().getHistory().getLocationChangeHandler().onLocationChange(
-                new LocationChangeEvent(ui.getPage().getHistory(), null,
-                        "foo"));
+        ui.getPage().getHistory().getHistoryStateChangeHandler()
+                .onHistoryStateChange(new HistoryStateChangeEvent(
+                        ui.getPage().getHistory(), null, "foo"));
 
         Assert.assertEquals(Arrays.asList("foo"),
                 resolver.resolvedLocation.get().getSegments());
@@ -95,13 +108,169 @@ public class RouterTest {
 
     @Test
     public void testResolveError() {
-        RouterUI ui = new RouterUI();
+        UI ui = new RouterTestUI();
 
         Router router = new Router();
-        router.setResolver(event -> null);
+        router.reconfigure(c -> c.setResolver(event -> null));
 
         router.navigate(ui, new Location(""));
 
         Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+    }
+
+    @Test
+    public void testReconfigureThreadSafety() throws InterruptedException {
+        Router router = new Router();
+        Resolver newResolver = e -> null;
+
+        CountDownLatch configUpdated = new CountDownLatch(1);
+        CountDownLatch configVerified = new CountDownLatch(1);
+
+        Thread updaterThread = new Thread() {
+            @Override
+            public void run() {
+                router.reconfigure(config -> {
+                    config.setResolver(newResolver);
+
+                    // Signal that config has been updated
+                    configUpdated.countDown();
+
+                    // Wait until main thread has verified that the
+                    // configuration is not yet in effect
+                    try {
+                        configVerified.await();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        };
+        updaterThread.start();
+
+        // Wait until updater thread has updated the config
+        configUpdated.await();
+
+        Assert.assertNotSame("Update should not yet be visible", newResolver,
+                router.getConfiguration().getResolver());
+
+        // Allow the update thread to exit the configure method
+        configVerified.countDown();
+
+        // Wait for updater thread to finish
+        updaterThread.join();
+
+        Assert.assertSame("Update should now be visible", newResolver,
+                router.getConfiguration().getResolver());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testConfigurationImmutable() {
+        Router router = new Router();
+
+        RouterConfiguration configuration = router.getConfiguration();
+
+        ((ModifiableRouterConfiguration) configuration).setResolver(e -> null);
+    }
+
+    @Test
+    public void testLeakedConfigurationImmutable() {
+        Router router = new Router();
+
+        AtomicReference<ModifiableRouterConfiguration> configurationLeak = new AtomicReference<>();
+
+        router.reconfigure(configurationLeak::set);
+
+        Resolver newResolver = e -> null;
+        configurationLeak.get().setResolver(newResolver);
+
+        Assert.assertNotSame(newResolver,
+                router.getConfiguration().getResolver());
+    }
+
+    @Test
+    public void testResolverBeforeSetRoute() {
+        Router router = new Router();
+
+        AtomicReference<String> usedHandler = new AtomicReference<>();
+
+        router.reconfigure(configuration -> {
+            configuration.setResolver(resolveEvent -> handlerEvent -> {
+                usedHandler.set("resolver");
+            });
+
+            configuration.setRoute("*", e -> {
+                usedHandler.set("route");
+            });
+        });
+
+        router.navigate(new RouterTestUI(), new Location(""));
+
+        Assert.assertEquals("resolver", usedHandler.get());
+    }
+
+    @Test
+    public void testSetRouteIfNoResolverHandler() {
+        Router router = new Router();
+
+        AtomicReference<String> usedHandler = new AtomicReference<>();
+
+        router.reconfigure(configuration -> {
+            configuration.setResolver(resolveEvent -> null);
+
+            configuration.setRoute("*", e -> {
+                usedHandler.set("route");
+            });
+        });
+
+        router.navigate(new RouterTestUI(), new Location(""));
+
+        Assert.assertEquals("route", usedHandler.get());
+    }
+
+    @Test
+    public void testToggleEndingSlash() {
+        Assert.assertEquals("foo", toggleEndingSlash("foo/"));
+
+        Assert.assertEquals("foo/", toggleEndingSlash("foo"));
+    }
+
+    private static String toggleEndingSlash(String withoutSlash) {
+        return Router.toggleEndingSlash(new Location(withoutSlash)).getPath();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testToggleEndingSlash_emtpyLocation() {
+        // Does not make sense to change the location to "/"
+        Router.toggleEndingSlash(new Location(""));
+    }
+
+    @Test
+    public void testNavigateToEmptyLocation() {
+        UI ui = new RouterTestUI();
+
+        Router router = new Router();
+        router.reconfigure(c -> {
+        });
+
+        router.navigate(ui, new Location(""));
+
+        Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+    }
+
+    @Test
+    public void testNavigateWithToggledSlash() {
+        UI ui = new RouterTestUI();
+
+        Router router = new Router();
+        router.reconfigure(c -> {
+            c.setRoute("foo/{name}", TestView.class);
+            c.setRoute("bar/*", TestView.class);
+        });
+
+        router.navigate(ui, new Location("foo/bar/"));
+        Assert.assertEquals("foo/bar", ui.getActiveViewLocation().getPath());
+
+        router.navigate(ui, new Location("bar"));
+        Assert.assertEquals("bar/", ui.getActiveViewLocation().getPath());
     }
 }

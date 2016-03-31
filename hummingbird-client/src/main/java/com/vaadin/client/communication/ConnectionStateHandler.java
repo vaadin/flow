@@ -51,7 +51,7 @@ public interface ConnectionStateHandler {
      * }
      * </pre>
      */
-    public static final String UIDL_REFRESH_TOKEN = "Vaadin-Refresh";
+    String UIDL_REFRESH_TOKEN = "Vaadin-Refresh";
 
     /**
      * Called when an exception occurs during a {@link Heartbeat} request.

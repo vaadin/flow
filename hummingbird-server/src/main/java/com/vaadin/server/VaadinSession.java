@@ -234,6 +234,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final String csrfToken = UUID.randomUUID().toString();
 
+    private final StreamResourceRegistry resourceRegistry;
+
     /**
      * Creates a new VaadinSession tied to a VaadinService.
      *
@@ -242,6 +244,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public VaadinSession(VaadinService service) {
         this.service = service;
+        resourceRegistry = new StreamResourceRegistry(this);
     }
 
     /**
@@ -1103,4 +1106,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         refreshLock();
     }
 
+    /**
+     * Get resource registry instance.
+     * <p>
+     * Use this instance to manage {@link StreamResource}s.
+     * 
+     * @return resource registry
+     */
+    public StreamResourceRegistry getResourceRegistry() {
+        return resourceRegistry;
+    }
 }

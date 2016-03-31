@@ -17,7 +17,6 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.server.VaadinService;
 import com.vaadin.ui.FrameworkData;
 
 /**
@@ -37,12 +36,7 @@ public class ApplicationConstants implements Serializable {
     /**
      * An internal protocol used for referencing the application context path.
      */
-    public static final String SERVICE_PROTOCOL_PREFIX = "service://";
-    /**
-     * An internal protocol used for referencing the {@literal VAADIN} folder
-     * inside the application context path.
-     */
-    public static final String VAADIN_PROTOCOL_PREFIX = "vaadin://";
+    public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
     /**
      * An internal protocol used for identifying a font icon resource.
      */
@@ -53,13 +47,6 @@ public class ApplicationConstants implements Serializable {
     public static final String UIDL_SECURITY_TOKEN_ID = "Vaadin-Security-Key";
 
     /**
-     * Configuration parameter giving the (in some cases relative) URL to the
-     * {@link VaadinService}.
-     * <p>
-     */
-    public static final String SERVICE_URL = "serviceUrl";
-
-    /**
      * URL parameter used in UIDL requests to indicate that the full server-side
      * state should be returned to the client, i.e. without any incremental
      * changes.
@@ -68,23 +55,25 @@ public class ApplicationConstants implements Serializable {
 
     /**
      * Configuration parameter giving the (in some cases relative) URL to the
-     * VAADIN folder from where static resources are loaded.
+     * web application context root.
      */
-    public static final String VAADIN_DIR_URL = "vaadinDir";
+    public static final String CONTEXT_ROOT_URL = "contextRootUrl";
 
     /**
-     * The name of the javascript containing push support. The file is located
-     * in the VAADIN/push directory.
+     * The prefix used for all internal static files, relative to context root.
      */
-    public static final String VAADIN_PUSH_JS = "vaadinPush.min.js";
+    public static final String VAADIN_STATIC_FILES_PATH = "VAADIN/static/";
+    /**
+     * The name of the javascript containing push support.
+     */
+    public static final String VAADIN_PUSH_JS = VAADIN_STATIC_FILES_PATH
+            + "push/vaadinPush.min.js";
 
     /**
      * The name of the debug version of the javascript containing push support.
-     * The file is located in the VAADIN/push directory.
-     *
-     * @since 7.1.6
      */
-    public static final String VAADIN_PUSH_DEBUG_JS = "vaadinPush.js";
+    public static final String VAADIN_PUSH_DEBUG_JS = VAADIN_STATIC_FILES_PATH
+            + "push/vaadinPush.js";
 
     /**
      * Name of the parameter used to transmit the CSRF token.
@@ -147,10 +136,10 @@ public class ApplicationConstants implements Serializable {
     public static final String UI_ID_PARAMETER = "v-uiId";
 
     /**
-     * Relative path of the Vaadin client engine folder inside the VAADIN
-     * folder.
+     * Path to the Vaadin client engine folder, relative to the context root.
      */
-    public static final String CLIENT_ENGINE_FOLDER = "client";
+    public static final String CLIENT_ENGINE_PATH = VAADIN_STATIC_FILES_PATH
+            + "client";
 
     /**
      * Get parameter used in framework requests to identify the request type.

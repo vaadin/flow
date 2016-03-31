@@ -15,6 +15,8 @@
  */
 package com.vaadin.server;
 
+import com.vaadin.ui.UI;
+
 /**
  * An abstract base class for DeploymentConfiguration implementations. This
  * class provides default implementation for common config properties.
@@ -28,11 +30,18 @@ public abstract class AbstractDeploymentConfiguration
 
     @Override
     public String getUIClassName() {
-        return getApplicationOrSystemProperty(VaadinSession.UI_PARAMETER, null);
+        return getApplicationOrSystemProperty(VaadinSession.UI_PARAMETER,
+                UI.class.getName());
     }
 
     @Override
     public String getClassLoaderName() {
         return getApplicationOrSystemProperty("ClassLoader", null);
+    }
+
+    @Override
+    public String getRouterConfiguratorClassName() {
+        return getApplicationOrSystemProperty(
+                Constants.SERVLET_PARAMETER_ROUTER_CONFIGURATOR, null);
     }
 }

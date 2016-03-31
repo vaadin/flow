@@ -30,7 +30,7 @@ import com.vaadin.client.bootstrap.ErrorMessage;
 public class ApplicationConfiguration {
 
     private String applicationId;
-    private String vaadinDirUrl;
+    private String contextRootUrl;
     private String serviceUrl;
     private int uiId;
     private ErrorMessage communicationError;
@@ -85,23 +85,23 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the URL of the VAADIN directory on the server.
+     * Gets the URL of the context root on the server.
      *
-     * @return the URL of the VAADIN directory, ending with a "/"
+     * @return the URL of the context root, ending with a "/"
      */
-    public String getVaadinDirUrl() {
-        return vaadinDirUrl;
+    public String getContextRootUrl() {
+        return contextRootUrl;
     }
 
     /**
-     * Sets the URL of the VAADIN directory on the server.
+     * Sets the URL of the context root on the server.
      *
-     * @param vaadinDirUrl
-     *            the URL of the VAADIN directory, ending with a "/"
+     * @param contextRootUrl
+     *            the URL of the context root, ending with a "/"
      */
-    public void setVaadinDirUrl(String vaadinDirUrl) {
-        assert vaadinDirUrl.endsWith("/");
-        this.vaadinDirUrl = vaadinDirUrl;
+    public void setContextRootUrl(String contextRootUrl) {
+        assert contextRootUrl.endsWith("/");
+        this.contextRootUrl = contextRootUrl;
     }
 
     /**

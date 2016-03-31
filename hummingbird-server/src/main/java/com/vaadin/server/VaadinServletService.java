@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.server.communication.PushRequestHandler;
-import com.vaadin.server.communication.ServletBootstrapHandler;
 import com.vaadin.shared.ApplicationConstants;
 
 /**
@@ -56,7 +55,7 @@ public class VaadinServletService extends VaadinService {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
-        handlers.add(0, new ServletBootstrapHandler());
+        handlers.add(0, new BootstrapHandler());
         if (isAtmosphereAvailable()) {
             try {
                 handlers.add(new PushRequestHandler(this));

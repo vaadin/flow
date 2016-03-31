@@ -42,7 +42,7 @@ public interface VaadinResponse {
      * @see HttpServletResponse#setStatus(int)
      *
      */
-    public void setStatus(int statusCode);
+    void setStatus(int statusCode);
 
     /**
      * Sets the content type of this response. If the content type including a
@@ -54,7 +54,7 @@ public interface VaadinResponse {
      *
      * @see ServletResponse#setContentType(String)
      */
-    public void setContentType(String contentType);
+    void setContentType(String contentType);
 
     /**
      * Sets the value of a generic response header. If the header had already
@@ -67,7 +67,7 @@ public interface VaadinResponse {
      *
      * @see HttpServletResponse#setHeader(String, String)
      */
-    public void setHeader(String name, String value);
+    void setHeader(String name, String value);
 
     /**
      * Properly formats a timestamp as a date header. If the header had already
@@ -80,7 +80,7 @@ public interface VaadinResponse {
      *
      * @see HttpServletResponse#setDateHeader(String, long)
      */
-    public void setDateHeader(String name, long timestamp);
+    void setDateHeader(String name, long timestamp);
 
     /**
      * Returns a <code>OutputStream</code> for writing binary data in the
@@ -96,7 +96,7 @@ public interface VaadinResponse {
      * @see #getWriter()
      * @see ServletResponse#getOutputStream()
      */
-    public OutputStream getOutputStream() throws IOException;
+    OutputStream getOutputStream() throws IOException;
 
     /**
      * Returns a <code>PrintWriter</code> object that can send character text to
@@ -113,7 +113,7 @@ public interface VaadinResponse {
      * @see #getOutputStream()
      * @see ServletResponse#getWriter()
      */
-    public PrintWriter getWriter() throws IOException;
+    PrintWriter getWriter() throws IOException;
 
     /**
      * Sets cache time in milliseconds, -1 means no cache at all. All required
@@ -122,7 +122,7 @@ public interface VaadinResponse {
      * @param milliseconds
      *            Cache time in milliseconds
      */
-    public void setCacheTime(long milliseconds);
+    void setCacheTime(long milliseconds);
 
     /**
      * Sends an error response to the client using the specified status code and
@@ -138,7 +138,7 @@ public interface VaadinResponse {
      *
      * @see HttpServletResponse#sendError(int, String)
      */
-    public void sendError(int errorCode, String message) throws IOException;
+    void sendError(int errorCode, String message) throws IOException;
 
     /**
      * Gets the vaadin service for the context of this response.
@@ -147,7 +147,7 @@ public interface VaadinResponse {
      *
      * @see VaadinService
      */
-    public VaadinService getService();
+    VaadinService getService();
 
     /**
      * Adds the specified cookie to the response. This method can be called
@@ -158,7 +158,7 @@ public interface VaadinResponse {
      *
      * @see HttpServletResponse#addCookie(Cookie)
      */
-    public void addCookie(Cookie cookie);
+    void addCookie(Cookie cookie);
 
     /**
      * Sets the length of the content body in the response In HTTP servlets,
@@ -169,5 +169,5 @@ public interface VaadinResponse {
      *            to the client
      * @since 7.3.8
      */
-    public void setContentLength(int len);
+    void setContentLength(int len);
 }

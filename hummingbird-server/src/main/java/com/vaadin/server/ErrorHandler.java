@@ -28,5 +28,5 @@ public interface ErrorHandler extends Serializable {
      * @param event
      *            the fired event.
      */
-    public void error(ErrorEvent event);
+    void error(ErrorEvent event);
 }

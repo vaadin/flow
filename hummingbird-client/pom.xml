@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.2-SNAPSHOT</version>
+		<version>0.0.3-SNAPSHOT</version>
 	</parent>
 	<artifactId>hummingbird-client</artifactId>
 	<name>Hummingbird Client</name>
@@ -13,7 +13,7 @@
 
 	<properties>
 		<gwt.module>com.vaadin.ClientEngine</gwt.module>
-		<gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/</gwt.module.output>
+		<gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
 		<gwt.module.style>OBF</gwt.module.style>
 	</properties>
 
@@ -23,17 +23,9 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-server</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
-			<classifier>sources</classifier>
+			<version>0.0.3-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-server</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
-			<scope>provided</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>com.google.gwt</groupId>
 			<artifactId>gwt-user</artifactId>
@@ -52,6 +44,15 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>../hummingbird-server/src/main/java</directory>
+			</resource>
+		</resources>
+
 		<!-- Output classes directly into the webapp, so that IDEs and "mvn process-classes" 
 			update them in DevMode -->
 		<!-- <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory> -->
@@ -60,8 +61,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
+					<!-- Exclude all source files and classes so only the compile result 
+						ends up in the JAR -->
 					<excludes>
-						<exclude>**/*.class</exclude>
+						<exclude>com/**</exclude>
 					</excludes>
 				</configuration>
 			</plugin>

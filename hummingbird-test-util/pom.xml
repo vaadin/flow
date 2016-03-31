@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.2-SNAPSHOT</version>
+		<version>0.0.3-SNAPSHOT</version>
 	</parent>
 	<artifactId>hummingbird-test-util</artifactId>
 	<name>Testing utilities for Hummingbird</name>
@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-server</artifactId>
-			<version>0.0.2-SNAPSHOT</version>
+			<version>0.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>

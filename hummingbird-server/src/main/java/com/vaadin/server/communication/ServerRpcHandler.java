@@ -35,8 +35,8 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
 import com.vaadin.ui.History;
-import com.vaadin.ui.History.LocationChangeEvent;
-import com.vaadin.ui.History.LocationChangeHandler;
+import com.vaadin.ui.History.HistoryStateChangeEvent;
+import com.vaadin.ui.History.HistoryStateChangeHandler;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -374,16 +374,17 @@ public class ServerRpcHandler implements Serializable {
     private static void handleNavigation(UI ui, JsonObject invocationJson) {
         History history = ui.getPage().getHistory();
 
-        LocationChangeHandler locationChangeHandler = history.getLocationChangeHandler();
-        if (locationChangeHandler != null) {
+        HistoryStateChangeHandler historyStateChangeHandler = history
+                .getHistoryStateChangeHandler();
+        if (historyStateChangeHandler != null) {
             JsonValue state = invocationJson
                     .get(JsonConstants.RPC_NAVIGATION_STATE);
             String location = invocationJson
                     .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
 
-            LocationChangeEvent event = new LocationChangeEvent(history, state,
-                    location);
-            locationChangeHandler.onLocationChange(event);
+            HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
+                    state, location);
+            historyStateChangeHandler.onHistoryStateChange(event);
         }
     }
 

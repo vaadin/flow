@@ -28,17 +28,17 @@ public final class ErrorMessage extends JavaScriptObject {
         // JSO constructor
     }
 
-    public final native String getCaption()
+    public native String getCaption()
     /*-{
         return this.caption;
     }-*/;
 
-    public final native String getMessage()
+    public native String getMessage()
     /*-{
         return this.message;
     }-*/;
 
-    public final native String getUrl()
+    public native String getUrl()
     /*-{
         return this.url;
     }-*/;

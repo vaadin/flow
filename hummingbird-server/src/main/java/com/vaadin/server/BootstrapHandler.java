@@ -59,7 +59,7 @@ import elemental.json.impl.JsonUtil;
  * @author Vaadin Ltd
  * @since 7.0.0
  */
-public abstract class BootstrapHandler extends SynchronizedRequestHandler {
+public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "vaadin.gwtStatsEvents = [];"
@@ -70,7 +70,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String META_TAG = "meta";
 
-    private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_FOLDER
+    /**
+     * Location of client nocache file, relative to the context root.
+     */
+    private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_PATH
             + "/client.nocache.js";
 
     private static String bootstrapJS;
@@ -93,16 +96,15 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             throw new ExceptionInInitializerError(e);
         }
         // read client engine file name
-        try (InputStream prop = BootstrapHandler.class
-                .getResourceAsStream("/META-INF/resources/VAADIN/"
-                        + ApplicationConstants.CLIENT_ENGINE_FOLDER
+        try (InputStream prop = BootstrapHandler.class.getResourceAsStream(
+                "/META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
                         + "/compile.properties")) {
             // null when running SDM or tests
             if (prop != null) {
                 Properties p = new Properties();
                 p.load(prop);
-                clientEngineFile = ApplicationConstants.CLIENT_ENGINE_FOLDER
-                        + "/" + p.getProperty("jsFile");
+                clientEngineFile = ApplicationConstants.CLIENT_ENGINE_PATH + "/"
+                        + p.getProperty("jsFile");
             } else {
                 getLogger().warning(
                         "No compile.properties available on initialization, "
@@ -113,7 +115,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    protected class BootstrapContext {
+    protected static class BootstrapContext {
 
         private final VaadinRequest request;
         private final VaadinResponse response;
@@ -180,7 +182,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         public JsonObject getApplicationParameters() {
             if (applicationParameters == null) {
-                applicationParameters = BootstrapHandler.this
+                applicationParameters = BootstrapHandler
                         .getApplicationParameters(this);
             }
 
@@ -204,30 +206,11 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         @Override
-        protected String getVaadinDirUrl() {
-            return context.getApplicationParameters()
-                    .getString(ApplicationConstants.VAADIN_DIR_URL);
-        }
-
-        @Override
-        protected String getServiceUrl() {
-            String serviceUrl = getConfigOrNull(
-                    ApplicationConstants.SERVICE_URL);
-            if (serviceUrl == null) {
-                return "./";
-            } else if (!serviceUrl.endsWith("/")) {
-                serviceUrl += "/";
-            }
-            return serviceUrl;
-        }
-
-        private String getConfigOrNull(String name) {
-            JsonObject parameters = context.getApplicationParameters();
-            if (parameters.hasKey(name)) {
-                return parameters.getString(name);
-            } else {
-                return null;
-            }
+        protected String getContextRootUrl() {
+            String root = context.getApplicationParameters()
+                    .getString(ApplicationConstants.CONTEXT_ROOT_URL);
+            assert root.endsWith("/");
+            return root;
         }
 
     }
@@ -294,9 +277,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
                 .attr(CONTENT_ATTRIBUTE, "IE=11;chrome=1");
 
-        head.appendElement("base").attr("href",
-                context.getUriResolver().resolveVaadinUri(
-                        ApplicationConstants.SERVICE_PROTOCOL_PREFIX));
+        head.appendElement("base").attr("href", getServiceUrl(context));
 
         Class<? extends UI> uiClass = context.getUI().getClass();
 
@@ -306,10 +287,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement(META_TAG).attr("name", "viewport")
                     .attr(CONTENT_ATTRIBUTE, viewportContent);
         }
-        String title = AnnotationReader.getPageTitle(uiClass);
-        if (title != null) {
-            head.appendElement("title").appendText(title);
+
+        Optional<String> title = resolvePageTitle(context);
+        if (title.isPresent() && !title.get().isEmpty()) {
+            head.appendElement("title").appendText(title.get());
         }
+
         Element styles = head.appendElement("style").attr("type", "text/css");
         styles.appendText("html, body {height:100%;margin:0;}");
         // Basic reconnect dialog style just to make it visible and outside of
@@ -336,9 +319,12 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         if (context.getSession().getBrowser().isPhantomJS()) {
             // Collections polyfill needed only for PhantomJS
 
-            head.appendElement("script").attr("type", "text/javascript")
-                    .attr("src", context.getUriResolver().resolveVaadinUri(
-                            "vaadin://server/es6-collections.js"));
+            head.appendElement("script").attr("type", "text/javascript").attr(
+                    "src",
+                    context.getUriResolver()
+                            .resolveVaadinUri("context://"
+                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                    + "server/es6-collections.js"));
         }
 
         if (context.getPushMode().isEnabled()) {
@@ -366,8 +352,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
         // Load client-side dependencies for push support
-        String pushJS = ServletHelper.getContextRootRelativePath(request)
-                + "/VAADIN/push/";
+        String pushJS = ServletHelper.getContextRootRelativePath(request) + "/";
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
             pushJS += ApplicationConstants.VAADIN_PUSH_JS;
@@ -428,7 +413,8 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                 .attr("src", getClientEngineUrl(context));
     }
 
-    protected JsonObject getApplicationParameters(BootstrapContext context) {
+    protected static JsonObject getApplicationParameters(
+            BootstrapContext context) {
         VaadinRequest request = context.getRequest();
         VaadinSession session = context.getSession();
         VaadinService vaadinService = request.getService();
@@ -488,11 +474,9 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
             appConfig.put("sessExpMsg", sessExpMsg);
         }
 
-        // getStaticFileLocation documented to never end with a slash
-        // vaadinDir should always end with a slash
-        String vaadinDir = ServletHelper.getContextRootRelativePath(request)
-                + "/VAADIN/";
-        appConfig.put(ApplicationConstants.VAADIN_DIR_URL, vaadinDir);
+        String contextRoot = ServletHelper.getContextRootRelativePath(request)
+                + "/";
+        appConfig.put(ApplicationConstants.CONTEXT_ROOT_URL, contextRoot);
 
         if (!productionMode) {
             appConfig.put("debug", true);
@@ -500,11 +484,6 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
 
         appConfig.put("heartbeatInterval", vaadinService
                 .getDeploymentConfiguration().getHeartbeatInterval());
-
-        String serviceUrl = getServiceUrl(context);
-        if (serviceUrl != null) {
-            appConfig.put(ApplicationConstants.SERVICE_URL, serviceUrl);
-        }
 
         boolean sendUrlsAsParameters = vaadinService
                 .getDeploymentConfiguration().isSendUrlsAsParameters();
@@ -515,7 +494,46 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         return appConfig;
     }
 
-    protected abstract String getServiceUrl(BootstrapContext context);
+    /**
+     * Gets the service URL as a URL relative to the request URI.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return the relative service URL
+     */
+    protected static String getServiceUrl(BootstrapContext context) {
+        String pathInfo = context.getRequest().getPathInfo();
+        if (pathInfo == null) {
+            return ".";
+        } else {
+            /*
+             * Make a relative URL to the servlet by adding one ../ for each
+             * path segment in pathInfo (i.e. the part of the requested path
+             * that comes after the servlet mapping)
+             */
+            return ServletHelper.getCancelingRelativePath(pathInfo);
+        }
+    }
+
+    /**
+     * Resolves the initial page title for the given bootstrap context and
+     * cancels any pending JS execution for it.
+     *
+     * @param context
+     *            the bootstrap context
+     * @return the optional initial page title
+     */
+    protected static Optional<String> resolvePageTitle(
+            BootstrapContext context) {
+        // check for explicitly set page title, eg. by PageTitleGenerator or
+        // View level title or page.setTitle
+        String title = context.getUI().getFrameworkData().getTitle();
+        if (title != null) {
+            // cancel the unnecessary execute javascript
+            context.getUI().getFrameworkData().cancelPendingTitleUpdate();
+        }
+        return Optional.ofNullable(title);
+    }
 
     protected UI createAndInitUI(Class<? extends UI> uiClass,
             VaadinRequest request, VaadinSession session) {
@@ -608,11 +626,10 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
         // has been compiled by SDM or eclipse
         final boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
-        if (!productionMode && BootstrapHandler.class
-                .getResource("/META-INF/resources/VAADIN/"
-                        + CLIENT_ENGINE_NOCACHE_FILE) != null) {
-            return context.getUriResolver()
-                    .resolveVaadinUri("vaadin://" + CLIENT_ENGINE_NOCACHE_FILE);
+        if (!productionMode && BootstrapHandler.class.getResource(
+                "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
+            return context.getUriResolver().resolveVaadinUri(
+                    "context://" + CLIENT_ENGINE_NOCACHE_FILE);
         }
 
         if (clientEngineFile == null) {
@@ -620,7 +637,7 @@ public abstract class BootstrapHandler extends SynchronizedRequestHandler {
                     "Client engine file name has not been resolved during initialization");
         }
         return context.getUriResolver()
-                .resolveVaadinUri("vaadin://" + clientEngineFile);
+                .resolveVaadinUri("context://" + clientEngineFile);
     }
 
     private static UI createInstance(Class<? extends UI> uiClass) {

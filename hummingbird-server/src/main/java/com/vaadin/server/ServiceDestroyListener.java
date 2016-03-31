@@ -35,5 +35,5 @@ public interface ServiceDestroyListener extends Serializable {
      * @param event
      *            the event
      */
-    public void serviceDestroy(ServiceDestroyEvent event);
+    void serviceDestroy(ServiceDestroyEvent event);
 }

@@ -190,7 +190,7 @@ public class AtmospherePushConnection implements PushConnection {
         if (getPushConfiguration().getPushUrl() != null) {
             url = getPushConfiguration().getPushUrl();
         } else {
-            url = ApplicationConstants.SERVICE_PROTOCOL_PREFIX;
+            url = registry.getApplicationConfiguration().getServiceUrl();
         }
         runWhenAtmosphereLoaded(
                 () -> Scheduler.get().scheduleDeferred(this::connect));
@@ -725,7 +725,7 @@ public class AtmospherePushConnection implements PushConnection {
             Console.log("Loading " + pushJs);
             ResourceLoader loader = ResourceLoader.get();
             String pushScriptUrl = registry.getApplicationConfiguration()
-                    .getVaadinDirUrl() + pushJs;
+                    .getContextRootUrl() + pushJs;
             ResourceLoadListener loadListener = new ResourceLoadListener() {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
@@ -760,7 +760,7 @@ public class AtmospherePushConnection implements PushConnection {
         }
         // Parameter appended to bypass caches after version upgrade.
         pushJs += "?v=" + Version.getFullVersion();
-        return "push/" + pushJs;
+        return pushJs;
     }
 
     @Override

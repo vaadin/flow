@@ -18,7 +18,10 @@ package com.vaadin.hummingbird;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,6 +35,28 @@ import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 
 public class StateNodeTest {
+
+    private static class TestStateNode extends StateNode {
+        private int i = -1;
+
+        public TestStateNode() {
+            super(ElementChildrenNamespace.class);
+        }
+
+        public void setData(int data) {
+            i = data;
+        }
+
+        public int getData() {
+            return i;
+        }
+
+        @Override
+        public String toString() {
+            return Integer.toString(getData());
+        }
+    }
+
     @Test
     public void newNodeState() {
         StateNode node = createEmptyNode();
@@ -157,6 +182,46 @@ public class StateNodeTest {
         setParent(parent, parent);
     }
 
+    /**
+     * Test for #252: stack overflow exception
+     */
+    @Test
+    public void recursiveTreeNavigation_resilienceInDepth() {
+        TestStateNode root = new TestStateNode();
+        TestStateNode node = createTree(root, 20000);
+        StateTree tree = new StateTree(ElementChildrenNamespace.class);
+        root.setTree(tree);
+        Set<Integer> set = IntStream.range(-1, node.getData() + 1).boxed()
+                .collect(Collectors.toSet());
+        root.visitNodeTree(n -> visit((TestStateNode) n, tree, set));
+        Assert.assertTrue(set.isEmpty());
+    }
+
+    /**
+     * Test for #252: stack overflow exception
+     */
+    @Test
+    public void recursiveTreeNavigation_resilienceInSize() {
+        TestStateNode root = new TestStateNode();
+        int count = 3000;
+        StateNode node = createTree(root, count);
+        while (node.getParent() != null) {
+            node = node.getParent();
+            for (int i = 1; i < 50; i++) {
+                TestStateNode child = new TestStateNode();
+                node.getNamespace(ElementChildrenNamespace.class).add(i, child);
+                child.setData(count);
+                count++;
+            }
+        }
+        root.setTree(new StateTree(ElementChildrenNamespace.class));
+        Set<Integer> set = IntStream.range(-1, count).boxed()
+                .collect(Collectors.toSet());
+        root.visitNodeTree(n -> visit((TestStateNode) n,
+                (StateTree) root.getOwner(), set));
+        Assert.assertTrue(set.isEmpty());
+    }
+
     public static StateNode createEmptyNode() {
         return createEmptyNode("Empty node");
     }
@@ -201,4 +266,27 @@ public class StateNodeTest {
             children.add(children.size(), child);
         }
     }
+
+    /**
+     * Creates a tree with given {@code root} and {@code depth}. The resulting
+     * tree is just a chain.
+     * <p>
+     * Returns the leaf (last) node.
+     */
+    private TestStateNode createTree(TestStateNode root, int depth) {
+        TestStateNode node = root;
+        for (int i = 0; i < depth; i++) {
+            TestStateNode child = new TestStateNode();
+            child.setData(i);
+            node.getNamespace(ElementChildrenNamespace.class).add(0, child);
+            node = child;
+        }
+        return node;
+    }
+
+    private void visit(TestStateNode node, StateTree tree, Set<Integer> set) {
+        Assert.assertEquals(tree, node.getOwner());
+        set.remove(node.getData());
+    }
+
 }

@@ -16,8 +16,12 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.UI;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -27,7 +31,32 @@ import com.vaadin.server.VaadinRequest;
  * @author Vaadin Ltd
  */
 public class Router implements Serializable {
-    private Resolver resolver;
+    /**
+     * The live configuration instance. All changes to the configuration are
+     * done on a copy, which is then swapped into use so that nobody outside
+     * this class ever can have a reference to the actively used instance.
+     */
+    private volatile ModifiableRouterConfiguration configuration = new ModifiableRouterConfiguration() {
+        @Override
+        public boolean isConfigured() {
+            // Regular implementation always returns true
+            return false;
+        }
+    };
+
+    /**
+     * Lock used to ensure there's only one update going on at once.
+     * <p>
+     * The lock is configured to always guarantee a fair ordering.
+     */
+    private final ReentrantLock configUpdateLock = new ReentrantLock(true);
+
+    /**
+     * Creates a new router.
+     */
+    public Router() {
+        // Nothing to here
+    }
 
     /**
      * Enables navigation for a new UI instance. This initializes the UI content
@@ -35,11 +64,13 @@ public class Router implements Serializable {
      * updated when the user navigates to some other location.
      *
      * @param ui
-     *            the router UI that navigation should be set up for
+     *            the UI that navigation should be set up for
      * @param initRequest
      *            the Vaadin request that bootstraps the provided UI
      */
-    public void initializeUI(RouterUI ui, VaadinRequest initRequest) {
+    public void initializeUI(UI ui, VaadinRequest initRequest) {
+        assert getConfiguration().isConfigured();
+
         String pathInfo = initRequest.getPathInfo();
 
         String path;
@@ -50,7 +81,7 @@ public class Router implements Serializable {
             path = pathInfo.substring(1);
         }
 
-        ui.getPage().getHistory().setLocationChangeHandler(e -> {
+        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
             String newLocation = e.getLocation();
 
             navigate(ui, new Location(newLocation));
@@ -64,20 +95,35 @@ public class Router implements Serializable {
      * Navigates the given UI to the given location.
      *
      * @param ui
-     *            the router UI to update
+     *            the UI to update
      * @param location
      *            the location to navigate to
      */
-    public void navigate(RouterUI ui, Location location) {
-        if (resolver == null) {
-            throw new IllegalStateException(
-                    "Resolver has not yet been initialized");
-        }
+    public void navigate(UI ui, Location location) {
+        // Read volatile field only once per navigation
+        RouterConfiguration currentConfig = configuration;
+        assert currentConfig.isConfigured();
 
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
                 ui);
 
-        NavigationHandler handler = resolver.resolve(navigationEvent);
+        NavigationHandler handler = currentConfig.getResolver()
+                .resolve(navigationEvent);
+
+        if (handler == null) {
+            handler = currentConfig.resolveRoute(location);
+        }
+
+        // Redirect foo/bar <-> foo/bar if there is no mapping for the given
+        // location but there is a mapping for the other
+        if (handler == null && !"".equals(location.getPath())) {
+            Location toggledLocation = toggleEndingSlash(location);
+            NavigationHandler toggledHandler = currentConfig
+                    .resolveRoute(toggledLocation);
+            if (toggledHandler != null) {
+                handler = new InternalRedirectHandler(toggledLocation);
+            }
+        }
 
         if (handler == null) {
             handler = new ErrorNavigationHandler(404);
@@ -86,14 +132,76 @@ public class Router implements Serializable {
         handler.handle(navigationEvent);
     }
 
+    // Non-private to enable testing
+    static Location toggleEndingSlash(Location location) {
+        List<String> segments = location.getSegments();
+
+        // Even Location for "" still contains one (empty) segment
+        assert !segments.isEmpty();
+
+        String lastSegment = segments.get(segments.size() - 1);
+
+        if (segments.size() == 1 && "".equals(lastSegment)) {
+            throw new IllegalArgumentException(
+                    "Can't toggle ending slash for the \"\" location");
+        }
+
+        if (lastSegment.isEmpty()) {
+            // New location without ending empty segment
+            return new Location(segments.subList(0, segments.size() - 1));
+        } else {
+            // Add empty ending segment
+            segments = new ArrayList<>(segments);
+            segments.add("");
+            return new Location(segments);
+        }
+    }
+
     /**
-     * Sets the resolver to use for resolving what to show for a given
-     * navigation event.
+     * Updates the configuration of this router in a thread-safe way.
      *
-     * @param resolver
-     *            the resolver
+     * @param configurator
+     *            the configurator that will update the configuration
      */
-    public void setResolver(Resolver resolver) {
-        this.resolver = resolver;
+    public void reconfigure(RouterConfigurator configurator) {
+        /*
+         * This is expected to be run so rarely (during service init and OSGi
+         * style dynamic reconfiguration) that blocking and copying values is
+         * not a problem.
+         */
+        configUpdateLock.lock();
+        try {
+            /*
+             * Create a copy that the configurator can modify without affecting
+             * the live instance.
+             */
+            ModifiableRouterConfiguration mutableCopy = new ModifiableRouterConfiguration(
+                    configuration, true);
+
+            configurator.configure(mutableCopy);
+
+            /*
+             * Create an use a new immutable copy that can be shared between
+             * concurrent request threads without risking any races.
+             */
+            configuration = new ModifiableRouterConfiguration(mutableCopy,
+                    false);
+        } finally {
+            configUpdateLock.unlock();
+        }
+    }
+
+    /**
+     * Gets the active router configuration. The returned instance cannot be
+     * directly modified. Use {@link #reconfigure(RouterConfigurator)} to update
+     * the configuration.
+     *
+     * @return the currently used router configuration
+     */
+    public RouterConfiguration getConfiguration() {
+        RouterConfiguration currentConfig = configuration;
+
+        assert !currentConfig.isModifiable();
+        return currentConfig;
     }
 }

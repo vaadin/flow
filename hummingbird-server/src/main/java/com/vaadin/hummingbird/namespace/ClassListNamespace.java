@@ -18,9 +18,9 @@ package com.vaadin.hummingbird.namespace;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Iterator;
-import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.ClassList;
 
 /**
  * Namespace for CSS class names for an element.
@@ -31,14 +31,14 @@ import com.vaadin.hummingbird.StateNode;
 public class ClassListNamespace extends SerializableListNamespace<String> {
 
     /**
-     * Provides access to the namespace contents as a set of strings.
+     * Provides access to the namespace contents.
      */
-    private static class ClassListSetView extends AbstractSet<String>
-            implements Serializable {
+    private static class ClassListView extends AbstractSet<String>
+            implements ClassList, Serializable {
 
         private ClassListNamespace namespace;
 
-        private ClassListSetView(ClassListNamespace namespace) {
+        private ClassListView(ClassListNamespace namespace) {
             this.namespace = namespace;
         }
 
@@ -72,6 +72,15 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
         }
 
         @Override
+        public boolean set(String className, boolean set) {
+            if (set) {
+                return add(className);
+            } else {
+                return remove(className);
+            }
+        }
+
+        @Override
         public boolean contains(Object o) {
             verifyClassName(o);
 
@@ -88,6 +97,10 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
                         "Class name must be a string");
             }
 
+            if ("".equals(className)) {
+                throw new IllegalArgumentException(
+                        "Class name cannot be empty");
+            }
             if (((String) className).indexOf(' ') != -1) {
                 throw new IllegalArgumentException(
                         "Class name cannot contain spaces");
@@ -111,11 +124,11 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
     }
 
     /**
-     * Creates a set view into this namespace.
+     * Creates a view into this namespace.
      *
-     * @return a set view
+     * @return a view into this namespace
      */
-    public Set<String> getAsSet() {
-        return new ClassListSetView(this);
+    public ClassList getClassList() {
+        return new ClassListView(this);
     }
 }

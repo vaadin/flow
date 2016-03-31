@@ -44,12 +44,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.event.EventRouter;
 import com.vaadin.hummingbird.router.Router;
+import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.VaadinSession.FutureAccess;
 import com.vaadin.server.VaadinSession.State;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
+import com.vaadin.server.communication.StreamResourceRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
@@ -179,7 +181,46 @@ public abstract class VaadinService implements Serializable {
         Collections.reverse(handlers);
         requestHandlers = Collections.unmodifiableCollection(handlers);
 
+        DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
+
+        String routerConfiguratorClassName = deploymentConf
+                .getRouterConfiguratorClassName();
+        if (routerConfiguratorClassName != null && !RouterConfigurator.class
+                .getName().equals(routerConfiguratorClassName)) {
+            // Configure router if we have a non-default configurator type
+
+            configureRouter(routerConfiguratorClassName);
+        }
+
         initialized = true;
+    }
+
+    private void configureRouter(String configuratorClassName)
+            throws ServiceException {
+        try {
+            Class<?> configuratorClass = Class.forName(configuratorClassName,
+                    true, getClassLoader());
+            if (!RouterConfigurator.class.isAssignableFrom(configuratorClass)) {
+                throw new IllegalStateException(
+                        "The defined router configurator class "
+                                + configuratorClassName + " does not implement "
+                                + RouterConfigurator.class.getName());
+            }
+
+            RouterConfigurator configurator = (RouterConfigurator) configuratorClass
+                    .newInstance();
+
+            getRouter().reconfigure(configurator);
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new ServiceException(
+                    "Could not create router configurator "
+                            + configuratorClassName
+                            + ". Please make sure it is a public non-abstract class with a public no-args constructor.",
+                    e);
+        } catch (ClassNotFoundException e) {
+            throw new ServiceException(
+                    "Could not find router class " + configuratorClassName, e);
+        }
     }
 
     /**
@@ -200,6 +241,7 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
+        handlers.add(new StreamResourceRequestHandler());
 
         return handlers;
     }
@@ -1424,7 +1466,6 @@ public abstract class VaadinService implements Serializable {
      */
     public static String createCriticalNotificationJSON(String caption,
             String message, String details, String url) {
-        String returnString = "";
         try {
             JsonObject appError = Json.createObject();
             putValueOrJsonNull(appError, "caption", caption);
@@ -1441,13 +1482,45 @@ public abstract class VaadinService implements Serializable {
             json.put("locales", Json.createObject());
             json.put("meta", meta);
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
-            returnString = JsonUtil.stringify(json);
+            return wrapJsonForClient(json);
         } catch (JsonException e) {
             getLogger().log(Level.WARNING,
                     "Error creating critical notification JSON message", e);
+            return wrapJsonForClient(Json.createObject());
         }
 
-        return "for(;;);[" + returnString + "]";
+    }
+
+    private static String wrapJsonForClient(JsonObject json) {
+        return "for(;;);[" + JsonUtil.stringify(json) + "]";
+    }
+
+    /**
+     * Creates the JSON to send to the client when the session has expired.
+     *
+     * @return the JSON used to inform the client about a session expiration, as
+     *         a string
+     */
+    public static String createSessionExpiredJSON() {
+        JsonObject json = Json.createObject();
+        JsonObject meta = Json.createObject();
+        json.put("meta", meta);
+
+        meta.put(JsonConstants.META_SESSION_EXPIRED, true);
+        return wrapJsonForClient(json);
+    }
+
+    /**
+     * Creates the JSON to send to the client when the UI cannot be found.
+     *
+     * @return the JSON used to inform the client that the UI cannot be found,
+     *         as a string
+     */
+    public static String createUINotFoundJSON() {
+        // Session Expired is technically not really the correct thing as
+        // the session exists but the requested UI does not. Still we want
+        // to handle it the same way on the client side.
+        return createSessionExpiredJSON();
     }
 
     private static void putValueOrJsonNull(JsonObject json, String key,

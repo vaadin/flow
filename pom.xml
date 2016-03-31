@@ -7,15 +7,16 @@
 	<artifactId>hummingbird-project</artifactId>
 	<name>Hummingbird</name>
 	<packaging>pom</packaging>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 
 	<modules>
 		<module>hummingbird</module>
 		<module>hummingbird-server</module>
 		<module>hummingbird-push</module>
 		<module>hummingbird-client</module>
+		<module>hummingbird-documentation</module>
 		<module>hummingbird-test-util</module>
-		<module>hummingbird-ui-test</module>
+		<module>hummingbird-tests</module>
 	</modules>
 
 	<organization>
@@ -48,6 +49,7 @@
 		<sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
 		<sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
 		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<failOnMissingWebXml>false</failOnMissingWebXml>
 	</properties>
 
 	<repositories>

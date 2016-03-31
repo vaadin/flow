@@ -26,5 +26,5 @@ public interface Command {
     /**
      * Runs the given command.
      */
-    public void execute();
+    void execute();
 }

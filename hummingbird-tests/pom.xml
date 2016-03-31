@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.vaadin</groupId>
+		<artifactId>hummingbird-project</artifactId>
+		<version>0.0.3-SNAPSHOT</version>
+	</parent>
+	<artifactId>hummingbird-tests</artifactId>
+	<name>Hummingbird tests</name>
+	<description>Test modules for Hummingbird</description>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>test-resources</module>
+		<module>test-root-context</module>
+		<module>test-subcontext</module>
+	</modules>
+
+	<properties>
+		<jetty.plugin.version>9.2.15.v20160210</jetty.plugin.version>
+		<!-- Don't care about coding style for tests -->
+		<sonar.skip>true</sonar.skip>
+		<!-- Used in the tests, should be overridden for each module to support 
+			concurrent running of test modules. -->
+		<server.port>8888</server.port>
+		<server.stop.port>8889</server.stop.port>
+	</properties>
+
+	<dependencies>
+		<!-- Project dependencies -->
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird</artifactId>
+			<version>0.0.3-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>hummingbird-test-util</artifactId>
+			<version>0.0.3-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<!-- export test server port to integration tests -->
+					<systemPropertyVariables>
+						<serverPort>${server.port}</serverPort>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<!-- jetty plugin for those child modules that need it -->
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jetty.plugin.version}</version>
+				<!-- Jetty execution is mapped in those modules that actually use Jetty -->
+				<configuration>
+					<webAppConfig>
+						<webInfIncludeJarPattern>.*/hummingbird-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
+						<containerIncludeJarPattern>^$</containerIncludeJarPattern>
+					</webAppConfig>
+					<scanIntervalSeconds>-1</scanIntervalSeconds>
+					<httpConnector>
+						<port>${server.port}</port>
+					</httpConnector>
+					<stopPort>${server.stop.port}</stopPort>
+					<stopKey>foo</stopKey>
+					<stopWait>5</stopWait>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<profiles>
+		<profile>
+			<id>eclipse</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.jetty</groupId>
+						<artifactId>jetty-maven-plugin</artifactId>
+						<version>${jetty.plugin.version}</version>
+						<configuration>
+							<webAppConfig>
+								<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
+								<!-- Configure all project META-INF/resources directories for Jetty 
+									as resource folders as Jetty inside Eclipse is run with "Resolve workspace 
+									artifacts" and this does not create any JARs. Jetty only scans JARs for META-INF/resources 
+									folders -->
+								<resourceBases>
+									<!-- these paths are relative to the project where the profile is 
+										triggered -->
+									<resourceBase>${project.basedir}/../../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../../hummingbird-client/target/classes/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
+									<resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>
+								</resourceBases>
+							</webAppConfig>
+							<!-- force default ports so that running IT tests from IDE work -->
+							<httpConnector>
+								<port>8888</port>
+							</httpConnector>
+							<stopPort>8889</stopPort>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>

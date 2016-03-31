@@ -121,34 +121,16 @@ public class Bootstrapper implements EntryPoint {
      */
     private static void populateApplicationConfiguration(
             ApplicationConfiguration conf, JsoConfiguration jsoConfiguration) {
-        String serviceUrl = jsoConfiguration
-                .getConfigString(ApplicationConstants.SERVICE_URL);
-
-        if (serviceUrl == null || "".equals(serviceUrl)) {
-            /*
-             * Use the current url without query parameters and fragment as the
-             * default value.
-             */
-            serviceUrl = Browser.getWindow().getLocation().getHref()
-                    .replaceFirst("[?#].*", "");
-        }
-
-        // Ensure there's an ending slash (to make appending e.g. UIDL work)
-        if (!serviceUrl.endsWith("/")) {
-            serviceUrl += Character.toString('/');
-        }
 
         /*
          * Resolve potentially relative URLs to ensure they point to the desired
          * locations even if the base URL of the page changes later (e.g. with
          * pushState)
          */
-        serviceUrl = WidgetUtil.getAbsoluteUrl(serviceUrl);
+        conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));
 
-        conf.setServiceUrl(serviceUrl);
-
-        conf.setVaadinDirUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
-                .getConfigString(ApplicationConstants.VAADIN_DIR_URL)));
+        conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
+                .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
         conf.setUIId(jsoConfiguration
                 .getConfigInteger(ApplicationConstants.UI_ID_PARAMETER)
                 .intValue());

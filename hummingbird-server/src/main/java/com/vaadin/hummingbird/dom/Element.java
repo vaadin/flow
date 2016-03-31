@@ -121,6 +121,10 @@ public class Element implements Serializable {
             Set<String> classList = element.getClassList();
             classList.clear();
 
+            if ("".equals(value)) {
+                return;
+            }
+
             String[] parts = value.split("\\s+");
             classList.addAll(Arrays.asList(parts));
         }
@@ -188,8 +192,8 @@ public class Element implements Serializable {
         illegalPropertyReplacements.put("className", "getClassList()");
     }
 
-    private ElementStateProvider stateProvider;
-    private StateNode node;
+    private final ElementStateProvider stateProvider;
+    private final StateNode node;
 
     /**
      * Private constructor for initializing with an existing node and state
@@ -289,7 +293,7 @@ public class Element implements Serializable {
      * @return the tag name
      */
     public String getTag() {
-        return stateProvider.getTag(node);
+        return stateProvider.getTag(getNode());
     }
 
     /**
@@ -302,6 +306,16 @@ public class Element implements Serializable {
      * <p>
      * Note: An empty attribute value ({@literal ""}) will be rendered as
      * {@literal <div something>} and not {@literal <div something="">}.
+     * <p>
+     * Note that setting the attribute <code>class</code> will override anything
+     * that has been set previously via {@link #getClassList()}.
+     * <p>
+     * Note that you cannot set the attribute <code>style</code> using this
+     * method. Instead you should use {@link #getStyle()} object.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @param attribute
      *            the name of the attribute
@@ -330,7 +344,7 @@ public class Element implements Serializable {
         if (customAttribute != null) {
             customAttribute.setAttribute(this, value);
         } else {
-            stateProvider.setAttribute(node, lowerCaseAttribute, value);
+            stateProvider.setAttribute(getNode(), lowerCaseAttribute, value);
         }
         return this;
     }
@@ -342,6 +356,17 @@ public class Element implements Serializable {
      * converted to lower case automatically.
      * <p>
      * An attribute always has a String key and a String value.
+     * <p>
+     * Note that for attribute <code>class</code> the contents of the
+     * {@link #getClassList()} collection are returned as a single concatenated
+     * string.
+     * <p>
+     * Note that for attribute <code>style</code> the contents of the
+     * {@link #getStyle()} object are returned as a single concatenated string.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @param attribute
      *            the name of the attribute
@@ -359,7 +384,7 @@ public class Element implements Serializable {
         if (customAttribute != null) {
             return customAttribute.getAttribute(this);
         } else {
-            return stateProvider.getAttribute(node, lowerCaseAttribute);
+            return stateProvider.getAttribute(getNode(), lowerCaseAttribute);
         }
     }
 
@@ -368,6 +393,10 @@ public class Element implements Serializable {
      * <p>
      * Attribute names are considered case insensitive and all names will be
      * converted to lower case automatically.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @param attribute
      *            the name of the attribute
@@ -383,7 +412,7 @@ public class Element implements Serializable {
         if (customAttribute != null) {
             return customAttribute.hasAttribute(this);
         } else {
-            return stateProvider.hasAttribute(node, lowerCaseAttribute);
+            return stateProvider.hasAttribute(getNode(), lowerCaseAttribute);
         }
 
     }
@@ -393,16 +422,21 @@ public class Element implements Serializable {
      * <p>
      * Attribute names are considered case insensitive and all names will be
      * converted to lower case automatically.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @return a stream of defined attribute names
      */
     public Stream<String> getAttributeNames() {
-        assert stateProvider.getAttributeNames(node)
+        assert stateProvider.getAttributeNames(getNode())
                 .filter(customAttributes::containsKey)
                 .filter(name -> customAttributes.get(name).hasAttribute(this))
                 .count() == 0 : "Overlap between stored attributes and existing custom attributes";
 
-        Stream<String> regularNames = stateProvider.getAttributeNames(node);
+        Stream<String> regularNames = stateProvider
+                .getAttributeNames(getNode());
 
         Stream<String> customNames = customAttributes.entrySet().stream()
                 .filter(e -> e.getValue().hasAttribute(this))
@@ -418,6 +452,10 @@ public class Element implements Serializable {
      * converted to lower case automatically.
      * <p>
      * If the attribute has not been set, does nothing.
+     * <p>
+     * Note that attribute changes made on the server are sent to the client but
+     * attribute changes made on the client side are not reflected back to the
+     * server.
      *
      * @param attribute
      *            the name of the attribute
@@ -433,7 +471,7 @@ public class Element implements Serializable {
         if (customAttribute != null) {
             customAttribute.removeAttribute(this);
         } else {
-            stateProvider.removeAttribute(node, lowerCaseAttribute);
+            stateProvider.removeAttribute(getNode(), lowerCaseAttribute);
         }
         return this;
     }
@@ -480,7 +518,7 @@ public class Element implements Serializable {
                     "The event data expressions array must not be null");
         }
 
-        return stateProvider.addEventListener(node, eventType, listener,
+        return stateProvider.addEventListener(getNode(), eventType, listener,
                 eventDataExpressions);
     }
 
@@ -505,7 +543,7 @@ public class Element implements Serializable {
      * @return the parent element or null if this element does not have a parent
      */
     public Element getParent() {
-        return stateProvider.getParent(node);
+        return stateProvider.getParent(getNode());
     }
 
     /**
@@ -514,7 +552,7 @@ public class Element implements Serializable {
      * @return the number of child elements
      */
     public int getChildCount() {
-        return stateProvider.getChildCount(node);
+        return stateProvider.getChildCount(getNode());
     }
 
     /**
@@ -531,7 +569,7 @@ public class Element implements Serializable {
                     index, getChildCount()));
         }
 
-        return stateProvider.getChild(node, index);
+        return stateProvider.getChild(getNode(), index);
     }
 
     /**
@@ -582,6 +620,7 @@ public class Element implements Serializable {
         }
 
         for (int i = 0; i < children.length; i++) {
+            children[i].removeFromParent();
             stateProvider.insertChild(node, index + i, children[i]);
             assert Objects.equals(this, children[i]
                     .getParent()) : "Child should have this element as parent after being inserted";
@@ -609,6 +648,10 @@ public class Element implements Serializable {
                     CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set",
                     index, getChildCount()));
         } else if (index < childCount) {
+            if (getChild(index).equals(child)) {
+                // Already there
+                return this;
+            }
             removeChild(index);
             insertChild(index, child);
         } else {
@@ -637,7 +680,7 @@ public class Element implements Serializable {
                 throw new IllegalArgumentException(
                         "The given element is not a child of this element");
             }
-            stateProvider.removeChild(node, children[i]);
+            stateProvider.removeChild(getNode(), children[i]);
         }
         return this;
     }
@@ -656,7 +699,7 @@ public class Element implements Serializable {
 
         }
 
-        stateProvider.removeChild(node, index);
+        stateProvider.removeChild(getNode(), index);
         return this;
     }
 
@@ -666,14 +709,14 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element removeAllChildren() {
-        stateProvider.removeAllChildren(node);
+        stateProvider.removeAllChildren(getNode());
 
         return this;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(node, stateProvider);
+        return Objects.hash(getNode(), stateProvider);
     }
 
     @Override
@@ -689,13 +732,42 @@ public class Element implements Serializable {
         }
         Element other = (Element) obj;
 
-        // Constructors guarantee that neither node nor stateProvider is null
-        return other.node.equals(node)
+        // Constructors guarantee that neither getNode() nor stateProvider is
+        // null
+        return other.getNode().equals(getNode())
                 && other.stateProvider.equals(stateProvider);
     }
 
     /**
      * Sets the given property to the given string value.
+     * <p>
+     * Note in order to update the following properties, you need to use the
+     * specific API for that:
+     * <p>
+     * <table>
+     * <caption>Properties with different API</caption>
+     * <tr>
+     * <th>Property</th>
+     * <th>Method</th>
+     * </tr>
+     * <tr>
+     * <td>classList / className</td>
+     * <td>{@link Element#getClassList()}</td>
+     * </tr>
+     * <tr>
+     * <td>style</td>
+     * <td>{@link Element#getStyle()}</td>
+     * </tr>
+     * <tr>
+     * <td>textContent</td>
+     * <td>{@link Element#setTextContent(String)}</td>
+     * </tr>
+     * </table>
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -709,6 +781,11 @@ public class Element implements Serializable {
 
     /**
      * Sets the given property to the given boolean value.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -722,6 +799,11 @@ public class Element implements Serializable {
 
     /**
      * Sets the given property to the given numeric value.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -734,9 +816,16 @@ public class Element implements Serializable {
     }
 
     /**
-     * Sets the given property to the given JSON value. Please note that this
-     * method does not accept <code>null</code> as a value, since
-     * {@link Json#createNull()} should be used instead for JSON values.
+     * Sets the given property to the given JSON value.
+     * <p>
+     * Please note that this method does not accept <code>null</code> as a
+     * value, since {@link Json#createNull()} should be used instead for JSON
+     * values.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -752,7 +841,7 @@ public class Element implements Serializable {
                     "Json.createNull() should be used instead of null for JSON values");
         }
 
-        stateProvider.setJsonProperty(node, name, value);
+        stateProvider.setJsonProperty(getNode(), name, value);
 
         return this;
     }
@@ -760,7 +849,7 @@ public class Element implements Serializable {
     private Element setRawProperty(String name, Serializable value) {
         verifySetPropertyName(name);
 
-        stateProvider.setProperty(node, name, value, true);
+        stateProvider.setProperty(getNode(), name, value, true);
 
         return this;
     }
@@ -941,23 +1030,33 @@ public class Element implements Serializable {
      * @return the raw property value, or <code>null</code>
      */
     public Object getPropertyRaw(String name) {
-        return stateProvider.getProperty(node, name);
+        return stateProvider.getProperty(getNode(), name);
     }
 
     /**
      * Removes the given property.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
      * @return this element
      */
     public Element removeProperty(String name) {
-        stateProvider.removeProperty(node, name);
+        stateProvider.removeProperty(getNode(), name);
         return this;
     }
 
     /**
      * Checks whether this element has a property with the given name.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -965,16 +1064,21 @@ public class Element implements Serializable {
      *         <code>false</code>
      */
     public boolean hasProperty(String name) {
-        return stateProvider.hasProperty(node, name);
+        return stateProvider.hasProperty(getNode(), name);
     }
 
     /**
      * Gets the defined property names.
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using {@link #setSynchronizedProperties(String...)} and
+     * {@link #setSynchronizedPropertiesEvents(String...)}.
      *
      * @return a stream of defined property names
      */
     public Stream<String> getPropertyNames() {
-        return stateProvider.getPropertyNames(node);
+        return stateProvider.getPropertyNames(getNode());
     }
 
     /**
@@ -984,7 +1088,7 @@ public class Element implements Serializable {
      *         <code>false</code>
      */
     public boolean isTextNode() {
-        return stateProvider.isTextNode(node);
+        return stateProvider.isTextNode(getNode());
     }
 
     /**
@@ -1002,7 +1106,7 @@ public class Element implements Serializable {
         }
 
         if (isTextNode()) {
-            stateProvider.setTextContent(node, textContent);
+            stateProvider.setTextContent(getNode(), textContent);
         } else {
             boolean hasText = !textContent.isEmpty();
             if (getChildCount() == 1 && getChild(0).isTextNode() && hasText) {
@@ -1026,7 +1130,7 @@ public class Element implements Serializable {
      */
     public String getTextContent() {
         if (isTextNode()) {
-            return stateProvider.getTextContent(node);
+            return stateProvider.getTextContent(getNode());
         } else {
             StringBuilder builder = new StringBuilder();
             appendTextContent(builder);
@@ -1056,8 +1160,8 @@ public class Element implements Serializable {
      *
      * @return a list of class names
      */
-    public Set<String> getClassList() {
-        return stateProvider.getClassList(node);
+    public ClassList getClassList() {
+        return stateProvider.getClassList(getNode());
     }
 
     /**
@@ -1066,7 +1170,7 @@ public class Element implements Serializable {
      * @return the style object for the element
      */
     public Style getStyle() {
-        return stateProvider.getStyle(node);
+        return stateProvider.getStyle(getNode());
     }
 
     /**
@@ -1090,7 +1194,7 @@ public class Element implements Serializable {
             throw new IllegalArgumentException(
                     "Property names must not be null and must not contain null values");
         }
-        stateProvider.setSynchronizedProperties(node, propertyNames);
+        stateProvider.setSynchronizedProperties(getNode(), propertyNames);
         return this;
     }
 
@@ -1104,7 +1208,7 @@ public class Element implements Serializable {
      * @return the property names which are synchronized
      */
     public Set<String> getSynchronizedProperties() {
-        return stateProvider.getSynchronizedProperties(node);
+        return stateProvider.getSynchronizedProperties(getNode());
     }
 
     /**
@@ -1127,7 +1231,7 @@ public class Element implements Serializable {
             throw new IllegalArgumentException(
                     "Event types must not be null and must not contain null values");
         }
-        stateProvider.setSynchronizedPropertiesEvents(node, eventTypes);
+        stateProvider.setSynchronizedPropertiesEvents(getNode(), eventTypes);
         return this;
     }
 
@@ -1141,7 +1245,32 @@ public class Element implements Serializable {
      *         property values to the server
      */
     public Set<String> getSynchronizedPropertiesEvents() {
-        return stateProvider.getSynchronizedPropertiesEvents(node);
+        return stateProvider.getSynchronizedPropertiesEvents(getNode());
+    }
+
+    /**
+     * Returns the index of the specified {@code child} in the children list, or
+     * -1 if this list does not contain the {@code child}.
+     * 
+     * @param child
+     *            the child element
+     * @return index of the {@code child} or -1 if it's not a child
+     */
+    public int indexOfChild(Element child) {
+        if (child == null) {
+            throw new IllegalArgumentException(
+                    "Child parameter cannot be null");
+        }
+        if (!equals(child.getParent())) {
+            return -1;
+        }
+        for (int i = 0; i < getChildCount(); i++) {
+            Element element = getChild(i);
+            if (element.equals(child)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
 }

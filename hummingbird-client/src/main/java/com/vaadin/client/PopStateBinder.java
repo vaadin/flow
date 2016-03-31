@@ -15,7 +15,7 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.client.communication.ServerMessager;
+import com.vaadin.client.hummingbird.RouterLinkHandler;
 
 import elemental.client.Browser;
 
@@ -34,16 +34,24 @@ public class PopStateBinder {
     /**
      * Sets up a <code>popstate</code> listener for delivering events to the
      * server.
+     * <p>
+     * If the UI is stopped when a popstate event occurs, performs a refresh to
+     * restart the UI.
      *
-     * @param messager
-     *            the messager sending the update to server
+     * @param registry
+     *            the registry
      */
-    public static void bind(ServerMessager messager) {
+    public static void bind(Registry registry) {
         Browser.getWindow().setOnpopstate(e -> {
             Object stateObject = WidgetUtil.getJsProperty(e, "state");
             String location = URIResolver.getCurrentLocationRelativeToBaseUri();
 
-            messager.sendNavigationMessage(location, stateObject);
+            if (!registry.getUILifecycle().isRunning()) {
+                WidgetUtil.refresh();
+            } else {
+                RouterLinkHandler.sendServerNavigationEvent(registry, location,
+                        stateObject);
+            }
         });
     }
 

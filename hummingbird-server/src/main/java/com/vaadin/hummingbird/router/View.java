@@ -15,17 +15,21 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.io.Serializable;
+
+import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.ui.UI;
 
 /**
- * A view that can be shown in a {@link UI} or {@link HasSubView}.
+ * A view that can be shown in a {@link UI} or {@link HasChildView}.
  *
  * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface View {
+public interface View extends Serializable {
     /**
      * Gets the element to show.
      *
@@ -49,10 +53,34 @@ public interface View {
      * <p>
      * This method does nothing by default.
      *
-     * @param location
-     *            the new location, not <code>null</code>
+     * @param locationChangeEvent
+     *            event object with information about the new location
      */
-    default void onLocationChange(Location location) {
+    default void onLocationChange(LocationChangeEvent locationChangeEvent) {
         // Does nothing by default
+    }
+
+    /**
+     * Get the page title to show for this view.
+     * <p>
+     * By default returns the value specified with the {@link Title @Title}
+     * annotation, or an empty string if the annotation is not present. The
+     * empty string will clear any previously set title. In that case the
+     * browser will decide what to show as the title.
+     * <p>
+     * May <b>NOT</b> return <code>null</code>.
+     * <p>
+     * This method is triggered after the
+     * {@link #onLocationChange(LocationChangeEvent)} callback and after the
+     * view has been attached to the UI.
+     *
+     * @param locationChangeEvent
+     *            event object with information about the new location
+     * @return the page title to set, not <code>null</code>
+     */
+    default String getTitle(LocationChangeEvent locationChangeEvent) {
+        // by default use whatever was defined with the title-annotation or if
+        // it is not available, "" to clear any previous title
+        return AnnotationReader.getPageTitle(getClass()).orElse("");
     }
 }
