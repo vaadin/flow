@@ -277,7 +277,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         VaadinServletService service = super.createServletService(
                 deploymentConfiguration);
         final SystemMessagesProvider provider = service
@@ -354,7 +354,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 try {
                     session.lock();
                     configuration = (DeploymentConfiguration) session
-                            .getAttributes().getAttribute(name);
+                            .getAttribute(name);
 
                     if (configuration == null) {
                         ApplicationRunnerServlet servlet = (ApplicationRunnerServlet) VaadinServlet
@@ -390,8 +390,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                             configuration = originalConfiguration;
                         }
 
-                        session.getAttributes().setAttribute(name,
-                                configuration);
+                        session.setAttribute(name, configuration);
                     }
                 } finally {
                     session.unlock();
