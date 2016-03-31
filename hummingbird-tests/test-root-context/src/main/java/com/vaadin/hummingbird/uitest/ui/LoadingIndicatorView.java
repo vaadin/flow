@@ -17,42 +17,47 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import java.util.function.Consumer;
 
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.hummingbird.router.LocationChangeEvent;
+import com.vaadin.hummingbird.uitest.component.Button;
+import com.vaadin.hummingbird.uitest.component.Div;
+import com.vaadin.ui.LoadingIndicatorConfiguration;
 import com.vaadin.ui.UI;
 
-public class LoadingIndicatorUI extends UI {
+public class LoadingIndicatorView extends AbstractDivView {
 
     @Override
-    protected void init(VaadinRequest request) {
-        setIfPresent(request, "first",
+    public void onLocationChange(LocationChangeEvent event) {
+        setIfPresent(event, "first",
                 getLoadingIndicatorConfiguration()::setFirstDelay);
-        setIfPresent(request, "second",
+        setIfPresent(event, "second",
                 getLoadingIndicatorConfiguration()::setSecondDelay);
-        setIfPresent(request, "third",
+        setIfPresent(event, "third",
                 getLoadingIndicatorConfiguration()::setThirdDelay);
 
-        getElement().appendChild(ElementFactory.createDiv("First delay: "
+        add(new Div().setText("First delay: "
                 + getLoadingIndicatorConfiguration().getFirstDelay()));
-        getElement().appendChild(ElementFactory.createDiv("Second delay: "
+        add(new Div().setText("Second delay: "
                 + getLoadingIndicatorConfiguration().getSecondDelay()));
-        getElement().appendChild(ElementFactory.createDiv("Third delay: "
+        add(new Div().setText("Third delay: "
                 + getLoadingIndicatorConfiguration().getThirdDelay()));
 
         int[] delays = new int[] { 100, 200, 500, 1000, 2000, 5000, 10000 };
         for (int delay : delays) {
-            Element button = ElementFactory
-                    .createButton("Trigger event which takes " + delay + "ms");
-            button.setAttribute("id", "wait" + delay);
-            button.addEventListener("click", e -> delay(delay));
-            getElement().appendChild(button);
+            Button button = new Button(
+                    "Trigger event which takes " + delay + "ms");
+            button.setId("wait" + delay);
+            button.getElement().addEventListener("click", e -> delay(delay));
+            add(button);
         }
     }
 
-    private void setIfPresent(VaadinRequest request, String parameter,
+    private LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
+        return UI.getCurrent().getLoadingIndicatorConfiguration();
+    }
+
+    private void setIfPresent(LocationChangeEvent event, String parameter,
             Consumer<Integer> setter) {
-        String value = request.getParameter(parameter);
+        String value = event.getPathParameter(parameter);
         if (value != null) {
             setter.accept(Integer.parseInt(value));
         }

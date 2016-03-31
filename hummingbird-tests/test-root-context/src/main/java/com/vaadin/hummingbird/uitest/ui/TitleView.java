@@ -1,15 +1,15 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.annotations.Title;
-import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.uitest.component.Div;
 
 @Title("Title view")
-public class TitleView extends TestView {
+public class TitleView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        getElement().removeAllChildren().appendChild(new Element("div")
-                .setTextContent("Title view").setAttribute("id", "annotated"));
+        removeAll();
+        add(new Div().setText("Title view").setId("annotated"));
     }
 
 }

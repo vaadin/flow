@@ -15,56 +15,46 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import java.util.Set;
-
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.uitest.component.Button;
+import com.vaadin.hummingbird.uitest.component.Div;
+import com.vaadin.hummingbird.uitest.component.Input;
 
-public class BasicElementView extends TestView {
+public class BasicElementView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        Element mainElement = getElement();
-        mainElement.getStyle().set("margin", "1em");
+        getElement().getStyle().set("margin", "1em");
 
-        Element button = ElementFactory.createButton("Click me");
+        Button button = new Button("Click me");
 
-        Element input = ElementFactory.createInput()
-                .setAttribute("placeholder", "Synchronized on change event")
-                .setSynchronizedProperties("value")
-                .setSynchronizedPropertiesEvents("change");
+        Input input = new Input()
+                .setPlaceholder("Synchronized on change event");
 
-        button.addEventListener("click", e -> {
+        button.getElement().addEventListener("click", e -> {
+            Div greeting = new Div().addClass("thankYou");
             String buttonText = e.getEventData()
                     .getString("element.textContent");
+            greeting.setText("Thank you for clicking at \"" + buttonText
+                    + "\"! The field value is " + input.getValue());
 
-            Element greeting = ElementFactory
-                    .createDiv("Thank you for clicking at \"" + buttonText
-                            + "\"! The field value is "
-                            + input.getProperty("value"));
-            greeting.setAttribute("class", "thankYou");
-            greeting.addEventListener("click",
-                    e2 -> greeting.removeFromParent());
-
-            mainElement.appendChild(greeting);
+            greeting.getElement().addEventListener("click",
+                    e2 -> remove(greeting));
+            add(greeting);
         } , "element.textContent");
 
-        Element helloWorldElement = ElementFactory.createDiv("Hello world");
-
-        Set<String> spanClasses = helloWorldElement.getClassList();
-
-        helloWorldElement.setProperty("id", "hello-world");
-        spanClasses.add("hello");
-        helloWorldElement.addEventListener("click", e -> {
-            helloWorldElement.setTextContent("Stop touching me!");
-            spanClasses.clear();
+        Div helloWorldElement = new Div();
+        helloWorldElement.setText("Hello world").addClass("hello")
+                .setId("hello-world");
+        helloWorldElement.getElement().addEventListener("click", e -> {
+            helloWorldElement.getElement().setTextContent("Stop touching me!");
+            helloWorldElement.getElement().getClassList().clear();
         });
-        Style s = helloWorldElement.getStyle();
+        Style s = helloWorldElement.getElement().getStyle();
         s.set("color", "red");
         s.set("fontWeight", "bold");
 
-        mainElement.appendChild(helloWorldElement, button, input);
+        add(helloWorldElement, button, input);
     }
 
 }

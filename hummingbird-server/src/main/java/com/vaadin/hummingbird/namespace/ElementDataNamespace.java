@@ -16,8 +16,11 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.util.Optional;
+
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.ui.Component;
 
 /**
  * Namespace for basic element information.
@@ -26,6 +29,8 @@ import com.vaadin.hummingbird.shared.Namespaces;
  * @author Vaadin Ltd
  */
 public class ElementDataNamespace extends MapNamespace {
+
+    private Component component = null;
 
     /**
      * Creates a new element data namespace for the given node.
@@ -55,6 +60,27 @@ public class ElementDataNamespace extends MapNamespace {
      */
     public String getTag() {
         return (String) get(Namespaces.TAG);
+    }
+
+    /**
+     * Adds the given component to the list of components.
+     *
+     * @param component
+     *            the component to add, must not exist in the component list
+     */
+    public void setComponent(Component component) {
+        assert (this.component == null) != (component == null) : "Cannot replace the component using setComponent";
+
+        this.component = component;
+    }
+
+    /**
+     * Gets the list of components.
+     *
+     * @return the list of components, never {@code null}
+     */
+    public Optional<Component> getComponent() {
+        return Optional.ofNullable(component);
     }
 
 }

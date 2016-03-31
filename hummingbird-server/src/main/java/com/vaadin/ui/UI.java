@@ -73,7 +73,7 @@ import com.vaadin.util.CurrentInstance;
  *
  * @since 7.0
  */
-public class UI implements Serializable, PollNotifier {
+public class UI implements Component, Serializable, PollNotifier {
 
     public static final String POLL_DOM_EVENT_NAME = "ui-poll";
 
@@ -113,6 +113,7 @@ public class UI implements Serializable, PollNotifier {
     public UI() {
         getNode().getNamespace(ElementDataNamespace.class).setTag("body");
         pushConfiguration = new PushConfigurationImpl(this);
+        getElement().attachComponent(this);
     }
 
     /**
@@ -709,6 +710,7 @@ public class UI implements Serializable, PollNotifier {
      *
      * @return the element for this UI
      */
+    @Override
     public Element getElement() {
         return Element.get(getNode());
     }
