@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
@@ -206,34 +207,12 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void addSynchronizedProperty(StateNode node, String propertyName) {
+    public Set<String> getSynchronizedProperties(StateNode node) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void addSynchronizedPropertyEvent(StateNode node, String eventType) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Stream<String> getSynchronizedProperties(StateNode node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Stream<String> getSynchronizedPropertiesEvents(StateNode node) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removeSynchronizedProperty(StateNode node,
-            String propertyName) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removeSynchronizedPropertyEvent(StateNode node,
-            String eventType) {
+    public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
         throw new UnsupportedOperationException();
     }
 }

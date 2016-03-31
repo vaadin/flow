@@ -1195,7 +1195,7 @@ public class Element implements Serializable {
      */
     public Element addSynchronizedProperty(String property) {
         verifySetPropertyName(property);
-        stateProvider.addSynchronizedProperty(getNode(), property);
+        stateProvider.getSynchronizedProperties(getNode()).add(property);
         return this;
     }
 
@@ -1215,7 +1215,7 @@ public class Element implements Serializable {
      */
     public Element addSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
-        stateProvider.addSynchronizedPropertyEvent(getNode(), eventType);
+        stateProvider.getSynchronizedPropertiesEvents(getNode()).add(eventType);
         return this;
     }
 
@@ -1231,7 +1231,8 @@ public class Element implements Serializable {
      */
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
-        stateProvider.removeSynchronizedProperty(getNode(), property);
+        stateProvider.getSynchronizedPropertiesEvents(getNode())
+                .remove(property);
         return this;
     }
 
@@ -1248,7 +1249,8 @@ public class Element implements Serializable {
      */
     public Element removeSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
-        stateProvider.removeSynchronizedPropertyEvent(getNode(), eventType);
+        stateProvider.getSynchronizedPropertiesEvents(getNode())
+                .remove(eventType);
         return this;
     }
 
@@ -1262,7 +1264,7 @@ public class Element implements Serializable {
      * @return the property names which are synchronized
      */
     public Stream<String> getSynchronizedProperties() {
-        return stateProvider.getSynchronizedProperties(getNode());
+        return stateProvider.getSynchronizedProperties(getNode()).stream();
     }
 
     /**
@@ -1275,7 +1277,8 @@ public class Element implements Serializable {
      *         property values to the server
      */
     public Stream<String> getSynchronizedPropertiesEvents() {
-        return stateProvider.getSynchronizedPropertiesEvents(getNode());
+        return stateProvider.getSynchronizedPropertiesEvents(getNode())
+                .stream();
     }
 
     /**

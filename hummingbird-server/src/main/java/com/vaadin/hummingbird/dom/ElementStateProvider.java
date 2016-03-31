@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
@@ -310,42 +311,17 @@ public interface ElementStateProvider extends Serializable {
     Style getStyle(StateNode node);
 
     /**
-     * Adds the {@code propertyName} to synchronize from the client side to the
-     * server.
-     * <p>
-     * The events which trigger synchronization are defined using
-     * {@link #addSynchronizedPropertyEvent(StateNode, String)}.
-     *
-     * @param node
-     *            the node containing the data
-     * @param propertyName
-     *            the name of the property to synchronize
-     */
-    void addSynchronizedProperty(StateNode node, String propertyName);
-
-    /**
      * Gets the names of the properties to synchronize from the client side to
      * the server.
+     * <p>
+     * The events which trigger synchronization are defined using
+     * {@link #getSynchronizedPropertyEvents(StateNode)}.
      *
      * @param node
      *            the node containing the data
      * @return the names of the properties to synchronize
      */
-    Stream<String> getSynchronizedProperties(StateNode node);
-
-    /**
-     * Adds the event type which should trigger synchronization of properties
-     * from the client side to the server.
-     * <p>
-     * The properties which are synchronized are defined using
-     * {@link #addSynchronizedProperty(StateNode, String)}.
-     *
-     * @param node
-     *            the node containing the data
-     * @param eventType
-     *            the event type which should trigger synchronization
-     */
-    void addSynchronizedPropertyEvent(StateNode node, String eventType);
+    Set<String> getSynchronizedProperties(StateNode node);
 
     /**
      * Gets the event types which should trigger synchronization of properties
@@ -355,31 +331,6 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the event types which should trigger synchronization
      */
-    Stream<String> getSynchronizedPropertiesEvents(StateNode node);
-
-    /**
-     * Removes the {@code propertyName} from the synchronized properties list.
-     * 
-     * @see #addSynchronizedProperty(StateNode, String)
-     * 
-     * @param node
-     *            the node containing the data
-     * @param propertyName
-     *            the name of the property to remove
-     */
-    void removeSynchronizedProperty(StateNode node, String propertyName);
-
-    /**
-     * Removes the {@code eventType} from the event set that is used for
-     * property synchronization).
-     * 
-     * @see #addSynchronizedPropertyEvent(StateNode, String)
-     * 
-     * @param node
-     *            the node containing the data
-     * @param eventType
-     *            the event type to remove
-     */
-    void removeSynchronizedPropertyEvent(StateNode node, String eventType);
+    Set<String> getSynchronizedPropertiesEvents(StateNode node);
 
 }
