@@ -24,7 +24,7 @@ import org.junit.Test;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.util.JsonUtil;
-import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
+import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

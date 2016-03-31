@@ -47,14 +47,13 @@ import com.vaadin.server.communication.PushConnection;
 import com.vaadin.ui.Page.ExecutionCanceler;
 
 /**
- * Holds UI-specific data that is mainly intended for internal use by the
- * framework. API for accessing this data is located in this class to reduce the
- * clutter in the API of the UI class.
+ * Holds UI-specific method and data which are intended for internal use by the
+ * framework.
  *
  * @author Vaadin Ltd
  * @since
  */
-public class FrameworkData implements Serializable {
+public class UIInternals implements Serializable {
 
     /**
      * A {@link Page#executeJavaScript(String, Object...)} invocation that has
@@ -161,7 +160,7 @@ public class FrameworkData implements Serializable {
      * @param ui
      *            the UI to use
      */
-    public FrameworkData(UI ui) {
+    public UIInternals(UI ui) {
         this.ui = ui;
     }
 

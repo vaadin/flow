@@ -527,10 +527,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapContext context) {
         // check for explicitly set page title, eg. by PageTitleGenerator or
         // View level title or page.setTitle
-        String title = context.getUI().getFrameworkData().getTitle();
+        String title = context.getUI().getInternals().getTitle();
         if (title != null) {
             // cancel the unnecessary execute javascript
-            context.getUI().getFrameworkData().cancelPendingTitleUpdate();
+            context.getUI().getInternals().cancelPendingTitleUpdate();
         }
         return Optional.ofNullable(title);
     }

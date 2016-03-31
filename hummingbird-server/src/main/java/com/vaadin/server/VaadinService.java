@@ -1184,7 +1184,7 @@ public abstract class VaadinService implements Serializable {
         } else {
             long now = System.currentTimeMillis();
             int timeout = 1000 * getHeartbeatTimeout();
-            return timeout < 0 || now - ui.getFrameworkData()
+            return timeout < 0 || now - ui.getInternals()
                     .getLastHeartbeatTimestamp() < timeout;
         }
     }
