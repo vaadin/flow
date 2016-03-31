@@ -47,7 +47,7 @@ public class ErrorNavigationHandler implements NavigationHandler {
                     "This method should be updated to support downloads.");
         }
 
-        ui.getFrameworkData().showView(event.getLocation(),
+        ui.getUIInternals().showView(event.getLocation(),
                 () -> Element.createText("Error: " + errorCode), null);
     }
 

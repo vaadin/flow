@@ -30,8 +30,8 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.ui.FrameworkData;
-import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
+import com.vaadin.ui.UIInternals;
+import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -62,7 +62,7 @@ public class UidlWriter implements Serializable {
     public JsonObject createUidl(UI ui, boolean async) {
         JsonObject response = Json.createObject();
 
-        FrameworkData frameworkData = ui.getFrameworkData();
+        UIInternals uiInternals = ui.getUIInternals();
 
         VaadinSession session = ui.getSession();
         VaadinService service = session.getService();
@@ -75,10 +75,10 @@ public class UidlWriter implements Serializable {
         getLogger().log(Level.FINE, "* Creating response to client");
 
         int syncId = service.getDeploymentConfiguration().isSyncIdCheckEnabled()
-                ? frameworkData.getServerSyncId() : -1;
+                ? uiInternals.getServerSyncId() : -1;
 
         response.put(ApplicationConstants.SERVER_SYNC_ID, syncId);
-        int nextClientToServerMessageId = frameworkData
+        int nextClientToServerMessageId = uiInternals
                 .getLastProcessedClientToServerId() + 1;
         response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                 nextClientToServerMessageId);
@@ -97,7 +97,7 @@ public class UidlWriter implements Serializable {
             response.put("changes", changes);
         }
 
-        List<JavaScriptInvocation> executeJavaScriptList = frameworkData
+        List<JavaScriptInvocation> executeJavaScriptList = uiInternals
                 .dumpPendingJavaScriptInvocations();
         if (!executeJavaScriptList.isEmpty()) {
             response.put(JsonConstants.UIDL_KEY_EXECUTE,
@@ -105,7 +105,7 @@ public class UidlWriter implements Serializable {
         }
 
         response.put("timings", createPerformanceData(ui));
-        frameworkData.incrementServerId();
+        uiInternals.incrementServerId();
         return response;
     }
 
@@ -140,7 +140,7 @@ public class UidlWriter implements Serializable {
     private JsonArray encodeChanges(UI ui) {
         JsonArray changes = Json.createArray();
 
-        StateTree stateTree = ui.getFrameworkData().getStateTree();
+        StateTree stateTree = ui.getUIInternals().getStateTree();
 
         stateTree.collectChanges(
                 change -> changes.set(changes.length(), change.toJson()));

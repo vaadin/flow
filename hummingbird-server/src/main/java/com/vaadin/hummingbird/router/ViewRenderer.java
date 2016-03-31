@@ -102,7 +102,7 @@ public abstract class ViewRenderer implements NavigationHandler {
                     .subList(1, viewChain.size());
 
             // Show the new view and parent views
-            ui.getFrameworkData().showView(event.getLocation(), viewInstance,
+            ui.getUIInternals().showView(event.getLocation(), viewInstance,
                     parentViews);
 
             updatePageTitle(event, locationChangeEvent);

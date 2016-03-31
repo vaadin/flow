@@ -22,7 +22,7 @@ import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.ui.Dependency.Type;
-import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
+import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
@@ -77,7 +77,7 @@ public class Page implements Serializable {
             throw new IllegalArgumentException("Cannot set a null page title.");
         }
 
-        ui.getFrameworkData().setTitle(title);
+        ui.getUIInternals().setTitle(title);
     }
 
     /**
@@ -127,7 +127,7 @@ public class Page implements Serializable {
     private void addDependency(Dependency dependency) {
         assert dependency != null;
 
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getUIInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
 
         namespace.add(dependency);
@@ -170,7 +170,7 @@ public class Page implements Serializable {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 Arrays.asList(parameters));
 
-        return ui.getFrameworkData().addJavaScriptInvocation(invocation);
+        return ui.getUIInternals().addJavaScriptInvocation(invocation);
     }
 
     /**

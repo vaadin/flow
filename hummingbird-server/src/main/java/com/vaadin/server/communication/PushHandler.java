@@ -247,13 +247,13 @@ public class PushHandler {
 
                 AtmosphereResource errorResource = resource;
                 if (ui != null
-                        && ui.getFrameworkData().getPushConnection() != null) {
+                        && ui.getUIInternals().getPushConnection() != null) {
                     // We MUST use the opened push connection if there is one.
                     // Otherwise we will write the response to the wrong request
                     // when using streaming (the client -> server request
                     // instead of the opened push channel)
                     errorResource = ((AtmospherePushConnection) ui
-                            .getFrameworkData().getPushConnection())
+                            .getUIInternals().getPushConnection())
                                     .getResource();
                 }
 
@@ -293,7 +293,7 @@ public class PushHandler {
     }
 
     private static AtmospherePushConnection getConnectionForUI(UI ui) {
-        PushConnection pushConnection = ui.getFrameworkData()
+        PushConnection pushConnection = ui.getUIInternals()
                 .getPushConnection();
         if (pushConnection instanceof AtmospherePushConnection) {
             return (AtmospherePushConnection) pushConnection;
@@ -407,7 +407,7 @@ public class PushHandler {
     private static UI findUiUsingResource(AtmosphereResource resource,
             Collection<UI> uIs) {
         for (UI ui : uIs) {
-            PushConnection pushConnection = ui.getFrameworkData()
+            PushConnection pushConnection = ui.getUIInternals()
                     .getPushConnection();
             if (pushConnection instanceof AtmospherePushConnection) {
                 if (((AtmospherePushConnection) pushConnection)

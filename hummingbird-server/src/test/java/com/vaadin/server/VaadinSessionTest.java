@@ -299,7 +299,7 @@ public class VaadinSessionTest {
         Assert.assertEquals("Session should be set when instance is created",
                 session, pc.session);
         ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
-        ui.getFrameworkData().setPushConnection(pc);
+        ui.getUIInternals().setPushConnection(pc);
         int uiId = ui.getUIId();
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -329,7 +329,7 @@ public class VaadinSessionTest {
 
         UI deserializedUi = deserializedSession.getUIById(uiId);
         SerializationPushConnection deserializedPc = (SerializationPushConnection) deserializedUi
-                .getFrameworkData().getPushConnection();
+                .getUIInternals().getPushConnection();
 
         Assert.assertEquals(
                 "Current session should be available in SerializationTestLabel.readObject",

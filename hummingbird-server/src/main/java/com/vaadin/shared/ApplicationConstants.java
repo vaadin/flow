@@ -17,7 +17,7 @@ package com.vaadin.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.ui.FrameworkData;
+import com.vaadin.ui.UIInternals;
 
 /**
  * A utility class providing static constants. Mostly for internal use.
@@ -99,7 +99,7 @@ public class ApplicationConstants implements Serializable {
      * set to -1 e.g. when testing with pre-recorded requests to make the
      * framework ignore the sync id.
      *
-     * @see FrameworkData#getServerSyncId()
+     * @see UIInternals#getServerSyncId()
      * @since 7.2
      */
     public static final String SERVER_SYNC_ID = "syncId";

@@ -180,7 +180,7 @@ class PushConfigurationImpl implements PushConfiguration {
     }
 
     private PushConfigurationMap getPushConfigurationMap() {
-        return ui.getFrameworkData().getStateTree().getRootNode()
+        return ui.getUIInternals().getStateTree().getRootNode()
                 .getNamespace(PushConfigurationMap.class);
     }
 
@@ -217,7 +217,7 @@ class PushConfigurationImpl implements PushConfiguration {
             if (!oldMode.isEnabled() && pushMode.isEnabled()) {
                 // The push connection is initially in a disconnected state;
                 // the client will establish the connection
-                ui.getFrameworkData()
+                ui.getUIInternals()
                         .setPushConnection(new AtmospherePushConnection(ui));
             }
             // Nothing to do here if disabling push;
