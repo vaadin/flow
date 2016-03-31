@@ -53,7 +53,7 @@ public class UITest {
 
             MockVaadinSession session = new MockVaadinSession(service);
 
-            ui.setSession(session);
+            ui.getInternals().setSession(session);
 
             ui.doInit(request, 0);
         } catch (ServletException e) {
