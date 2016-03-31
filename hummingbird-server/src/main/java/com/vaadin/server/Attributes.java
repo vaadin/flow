@@ -17,17 +17,16 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
- * The {@link Attributes} class represents set attributes.
+ * The {@link Attributes} class represents a set of attributes.
  * 
  * @author Vaadin Ltd
  *
  */
 public class Attributes implements Serializable {
 
-    private final Map<String, Object> attributes = new HashMap<>();
+    private final HashMap<String, Object> attributes = new HashMap<>();
 
     /**
      * Stores a value in this set.
