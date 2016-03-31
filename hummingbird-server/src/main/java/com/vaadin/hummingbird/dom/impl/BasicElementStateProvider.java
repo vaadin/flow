@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
@@ -350,38 +349,47 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void setSynchronizedProperties(StateNode node,
-            String[] propertyNames) {
-        assert propertyNames != null;
-        assert Arrays.stream(propertyNames).noneMatch(e -> e == null);
+    public void addSynchronizedProperty(StateNode node, String propertyName) {
+        assert propertyName != null;
 
         node.getNamespace(SynchronizedPropertiesNamespace.class)
-                .setSynchronizedProperties(propertyNames);
+                .addSynchronizedProperty(propertyName);
 
     }
 
     @Override
-    public void setSynchronizedPropertiesEvents(StateNode node,
-            String[] eventTypes) {
-        assert eventTypes != null;
-        assert Arrays.stream(eventTypes).noneMatch(e -> e == null);
+    public void addSynchronizedPropertyEvent(StateNode node, String eventType) {
+        assert eventType != null;
 
         node.getNamespace(SynchronizedPropertiesNamespace.class)
-                .setSynchronizedPropertiesEvents(eventTypes);
+                .addSynchronizedPropertyEvent(eventType);
 
     }
 
     @Override
-    public Set<String> getSynchronizedProperties(StateNode node) {
+    public Stream<String> getSynchronizedProperties(StateNode node) {
         return node.getNamespace(SynchronizedPropertiesNamespace.class)
                 .getSynchronizedProperties();
 
     }
 
     @Override
-    public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
+    public Stream<String> getSynchronizedPropertiesEvents(StateNode node) {
         return node.getNamespace(SynchronizedPropertiesNamespace.class)
                 .getSynchronizedPropertiesEvents();
+    }
+
+    @Override
+    public void removeSynchronizedProperty(StateNode node,
+            String propertyName) {
+
+    }
+
+    @Override
+    public void removeSynchronizedPropertyEvent(StateNode node,
+            String eventType) {
+        node.getNamespace(SynchronizedPropertiesNamespace.class)
+                .removeSynchronizedPropertyEvent(eventType);
     }
 
 }
