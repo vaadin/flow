@@ -21,7 +21,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.Style;
 
-public class BasicElementView extends TestView {
+public class BasicElementView extends AbstractDivView {
 
     @Override
     protected void onShow() {
