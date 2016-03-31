@@ -37,11 +37,9 @@ class ProductView implements View {
 }
 ----
 [NOTE]
-When overriding `getTitle`, you can't return _null_ as it would keep the title
-unchanged, which means that the title used for the previous view will remain in use.
-The default implementation of `View:getTitle` checks for the `@Title` annotation
-and if it is not found, it returns an empty string which will clear any previously
-set title.
+When overriding `getTitle`, you can't return _null_. The default implementation
+of `View:getTitle` checks for the `@Title` annotation and if it is not found, it
+returns an empty string which will clear any previously set title.
 
 For more control, you can replace the `DefaultPageTitleGenerator` (which uses
 the `@Title` annotation and the `View:getTitle` method) with your own custom
