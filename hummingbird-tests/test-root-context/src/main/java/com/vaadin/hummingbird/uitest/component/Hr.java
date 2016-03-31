@@ -13,8 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.hummingbird.uitest.component;
 
-public class BasicElementIT extends AbstractBasicElementComponentIT {
+import com.vaadin.hummingbird.dom.ElementFactory;
 
+public class Hr extends AbstractHtmlComponent {
+
+    public Hr() {
+        super(ElementFactory.createHorizontalRule());
+    }
 }
