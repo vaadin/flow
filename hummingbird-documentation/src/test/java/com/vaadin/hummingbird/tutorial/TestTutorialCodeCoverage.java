@@ -46,6 +46,19 @@ public class TestTutorialCodeCoverage {
 
         // Verify that tutorial code is actually found in the java files
         codeFileMap.forEach(TestTutorialCodeCoverage::verifyTutorialCode);
+
+        // Verify that there's at least one java file for each tutorial
+        Files.walk(location)
+                .filter(path -> path.toFile().getName()
+                        .matches("tutorial-.*\\.asciidoc"))
+                .forEach(tutorialPath -> {
+                    String tutorialName = location.relativize(tutorialPath)
+                            .toString();
+                    Assert.assertTrue(
+                            "Should be at least one java file for "
+                                    + tutorialName,
+                            codeFileMap.containsKey(tutorialName));
+                });
     }
 
     private static void verifyTutorialCode(String tutorialName,

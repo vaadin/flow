@@ -26,6 +26,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.ui.UI;
+
 /**
  * Handles navigation events by rendering a view of a specific type in the
  * target UI. The view can optionally be nested in a chain of parent views.
@@ -63,7 +65,7 @@ public abstract class ViewRenderer implements NavigationHandler {
 
     @Override
     public void handle(NavigationEvent event) {
-        RouterUI ui = event.getUI();
+        UI ui = event.getUI();
 
         Class<? extends View> viewType = getViewType();
         List<Class<? extends HasChildView>> parentViewTypes = getParentViewTypes();
@@ -100,10 +102,39 @@ public abstract class ViewRenderer implements NavigationHandler {
                     .subList(1, viewChain.size());
 
             // Show the new view and parent views
-            ui.showView(event.getLocation(), viewInstance, parentViews);
+            ui.getFrameworkData().showView(event.getLocation(), viewInstance,
+                    parentViews);
+
+            updatePageTitle(event, locationChangeEvent);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException("Cannot instantiate view", e);
         }
+    }
+
+    /**
+     * Updates the page title according to the currently opened views.
+     * <p>
+     * Uses the {@link RouterConfiguration#getPageTitleGenerator()} to resolve
+     * the title.
+     *
+     * @param navigationEvent
+     *            the event object about the navigation
+     * @param locationChangeEvent
+     *            event object with information on the new location
+     */
+    protected void updatePageTitle(NavigationEvent navigationEvent,
+            LocationChangeEvent locationChangeEvent) {
+        PageTitleGenerator pageTitleGenerator = navigationEvent.getSource()
+                .getConfiguration().getPageTitleGenerator();
+
+        String title = pageTitleGenerator.getPageTitle(locationChangeEvent);
+
+        assert title != null : "You cannot not use a null title. Use an "
+                + "explicit title or an empty string \"\" which will clear "
+                + "previous title.";
+
+        // Page.setTitle will throw IAE for null title
+        navigationEvent.getUI().getPage().setTitle(title);
     }
 
     private LocationChangeEvent createEvent(NavigationEvent event,

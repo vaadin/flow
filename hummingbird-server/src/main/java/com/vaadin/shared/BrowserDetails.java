@@ -77,7 +77,8 @@ public class BrowserDetails implements Serializable {
         isWebKit = !isTrident && userAgent.indexOf("applewebkit") != -1;
 
         // browser name
-        isChrome = userAgent.indexOf(" chrome/") != -1;
+        isChrome = userAgent.indexOf(" chrome/") != -1
+                || userAgent.indexOf(" crios/") != -1;
         isOpera = userAgent.indexOf("opera") != -1;
         isIE = userAgent.indexOf("msie") != -1 && !isOpera
                 && (userAgent.indexOf("webtv") == -1);
@@ -151,8 +152,14 @@ public class BrowserDetails implements Serializable {
                 int i = userAgent.indexOf(" firefox/") + 9;
                 parseVersionString(safeSubstring(userAgent, i, i + 5));
             } else if (isChrome) {
-                int i = userAgent.indexOf(" chrome/") + 8;
-                parseVersionString(safeSubstring(userAgent, i, i + 5));
+                int i = userAgent.indexOf(" crios/");
+                if (i == -1) {
+                    i = userAgent.indexOf(" chrome/") + 8;
+                    parseVersionString(safeSubstring(userAgent, i, i + 5));
+                } else {
+                    i += 7;
+                    parseVersionString(safeSubstring(userAgent, i, i + 6));
+                }
             } else if (isSafari) {
                 int i = userAgent.indexOf(" version/") + 9;
                 parseVersionString(safeSubstring(userAgent, i, i + 5));

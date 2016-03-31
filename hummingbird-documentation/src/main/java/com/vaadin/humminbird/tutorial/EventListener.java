@@ -16,6 +16,7 @@
 package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
+import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.UI;
@@ -33,16 +34,20 @@ public abstract class EventListener extends UI {
         });
         getElement().appendChild(helloButton);
 
-        helloButton.addEventListener("click", e -> {
-            JsonObject eventData = e.getEventData();
-            boolean shiftKey = eventData.getBoolean("event.shiftKey");
-            double width = eventData.getNumber("element.offsetWidth");
+        //@formatter:off - custom line wrapping
+        helloButton.addEventListener("click", this::handleClick, "event.shiftKey", "element.offsetWidth");
+        //@formatter:on
+    }
 
-            String text = "Shift " + (shiftKey ? "down" : "up");
-            text += " on button whose width is " + width + "px";
+    private void handleClick(DomEvent event) {
+        JsonObject eventData = event.getEventData();
+        boolean shiftKey = eventData.getBoolean("event.shiftKey");
+        double width = eventData.getNumber("element.offsetWidth");
 
-            Element response = ElementFactory.createDiv(text);
-            getElement().appendChild(response);
-        }, "event.shiftKey", "element.offsetWidth");
+        String text = "Shift " + (shiftKey ? "down" : "up");
+        text += " on button whose width is " + width + "px";
+
+        Element response = ElementFactory.createDiv(text);
+        getElement().appendChild(response);
     }
 }

@@ -45,11 +45,11 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.event.EventRouter;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
+import com.vaadin.server.communication.StreamResourceRequestHandler;
 import com.vaadin.server.communication.UidlRequestHandler;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
@@ -187,14 +187,6 @@ public abstract class VaadinService implements Serializable {
                 .getName().equals(routerConfiguratorClassName)) {
             // Configure router if we have a non-default configurator type
 
-            if (!RouterUI.class.getName()
-                    .equals(deploymentConf.getUIClassName())) {
-                throw new ServiceException("The UI class must be set to "
-                        + RouterUI.class.getName()
-                        + " if a router configurator is provided. The configured UI class is now "
-                        + getDeploymentConfiguration().getUIClassName());
-            }
-
             configureRouter(routerConfiguratorClassName);
         }
 
@@ -247,6 +239,7 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
         handlers.add(new UnsupportedBrowserHandler());
+        handlers.add(new StreamResourceRequestHandler());
 
         return handlers;
     }

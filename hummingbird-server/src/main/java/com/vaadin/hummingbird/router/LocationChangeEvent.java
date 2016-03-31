@@ -20,6 +20,8 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 
+import com.vaadin.ui.UI;
+
 /**
  * Event passed to {@link View#onLocationChange(LocationChangeEvent)} when the
  * context in which a view will be used changes.
@@ -31,7 +33,7 @@ public class LocationChangeEvent extends EventObject {
 
     private final Location location;
     private final List<View> viewChain;
-    private final RouterUI ui;
+    private final UI ui;
     private final Map<String, String> routePlaceholders;
 
     /**
@@ -49,7 +51,7 @@ public class LocationChangeEvent extends EventObject {
      *            a map containing actual path segment values used for
      *            placeholders in the used route mapping, not <code>null</code>
      */
-    public LocationChangeEvent(Router router, RouterUI ui, Location location,
+    public LocationChangeEvent(Router router, UI ui, Location location,
             List<View> viewChain, Map<String, String> routePlaceholders) {
         super(router);
 
@@ -74,6 +76,17 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
+     * Gets the view which is being shown.
+     * <p>
+     * This is the same as the most deeply nested view in the view chain.
+     *
+     * @return the view being shown, not <code>null</code>
+     */
+    public View getView() {
+        return viewChain.get(0);
+    }
+
+    /**
      * Gets the chain of views that will be nested inside the UI, starting from
      * the most deeply nested view.
      *
@@ -88,7 +101,7 @@ public class LocationChangeEvent extends EventObject {
      *
      * @return the UI, not <code>null</code>
      */
-    public RouterUI getUI() {
+    public UI getUI() {
         return ui;
     }
 

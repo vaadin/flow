@@ -16,26 +16,17 @@
 package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-include-css.asciidoc")
-public class IncludeCss extends UI {
+@CodeFor("tutorial-execute-javascript.asciidoc")
+public class ExecuteJavaScript {
+    public static void logElementSize(String name, Element element) {
+        Page page = UI.getCurrent().getPage();
 
-    @Override
-    protected void init(VaadinRequest request) {
-        //@formatter:off - custom line wrapping
-
-        // Loaded from "styles.css" in your context root
-        getPage().addStyleSheet("styles.css");
-
-        // Loaded from "/root.css" regardless of how your application is deployed
-        getPage().addStyleSheet("/root.css");
-
-        // Loaded from "http://example.com/example.css" regardless of how your application is deployed
-        getPage().addStyleSheet("http://example.com/example.css");
-
-        //@formatter:on
+        page.executeJavaScript(
+                "console.log($0 + ' size:', $1.offsetWidth, $1.offsetHeight)",
+                name, element);
     }
-
 }

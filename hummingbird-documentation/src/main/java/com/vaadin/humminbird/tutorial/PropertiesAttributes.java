@@ -40,7 +40,13 @@ public class PropertiesAttributes {
         nameField.getAttributeNames().toArray();
 
         Element element = ElementFactory.createInput();
-        element.setProperty("value", "Hello");
+        element.setProperty("value", "42.2");
+
+        // true, since any non-empty string is true in JavaScript
+        boolean helloBoolean = element.getProperty("value", true);
+
+        // 42, string is parsed to a JS number and truncated to an int
+        int helloInt = element.getProperty("value", 0);
 
         element.getClassList().add("error");
         element.getClassList().add("critical");

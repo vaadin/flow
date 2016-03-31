@@ -35,9 +35,16 @@ public class PageTest {
         page.addJavaScript(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetPageTitleNull() {
-        page.updateTitle(null);
+    public void testSetTitle_nullTitle_clearsPendingJsExecution() {
+        page.setTitle("foobar");
+
+        Assert.assertEquals(1,
+                ui.getFrameworkData().getPendingJavaScriptInvocations().size());
+
+        page.setTitle(null);
+
+        Assert.assertEquals(0,
+                ui.getFrameworkData().getPendingJavaScriptInvocations().size());
     }
 
     @Test

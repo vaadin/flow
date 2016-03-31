@@ -144,9 +144,10 @@ public class VaadinSessionTest {
 
         };
 
+        ui.setSession(session);
+
         ui.doInit(vaadinRequest, session.getNextUIid());
 
-        ui.setSession(session);
         session.addUI(ui);
 
     }

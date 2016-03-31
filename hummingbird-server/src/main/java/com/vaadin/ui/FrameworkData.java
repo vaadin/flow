@@ -20,11 +20,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
@@ -32,11 +36,15 @@ import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.Location;
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.util.SerializableJson;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
+import com.vaadin.ui.Page.ExecutionCanceler;
 
 /**
  * Holds UI-specific data that is mainly intended for internal use by the
@@ -119,24 +127,33 @@ public class FrameworkData implements Serializable {
     private PushConnection pushConnection = null;
 
     /**
-     * The id of this UI, used to find the server side instance of the UI form
-     * which a request originates. A negative value indicates that the UI id has
-     * not yet been assigned by the Application.
+     * The id of the UI to which this framework data belongs, used to find the
+     * server side instance of the UI form which a request originates. A
+     * negative value indicates that the UI id has not yet been assigned by the
+     * Application.
      *
      * @see VaadinSession#getNextUIid()
      */
     private int uiId = -1;
 
     /**
-     * Timestamp keeping track of the last heartbeat of this UI. Updated to the
-     * current time whenever the application receives a heartbeat or UIDL
-     * request from the client for this UI.
+     * Timestamp keeping track of the last heartbeat of the UI to which this
+     * framework data belongs. Updated to the current time whenever the
+     * application receives a heartbeat or UIDL request from the client for the
+     * UI.
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
     private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
     private final UI ui;
+
+    private String title;
+
+    private ExecutionCanceler pendingTitleUpdateCanceler;
+
+    private Location viewLocation = new Location("");
+    private ArrayList<View> viewChain = new ArrayList<>();
 
     /**
      * Creates a new framework data instance for the given UI.
@@ -149,7 +166,7 @@ public class FrameworkData implements Serializable {
     }
 
     /**
-     * Gets the state tree of this UI.
+     * Gets the state tree of the UI to which this framework data belongs.
      *
      * @return the state tree
      */
@@ -212,11 +229,12 @@ public class FrameworkData implements Serializable {
     }
 
     /**
-     * Returns the timestamp of the last received heartbeat for this UI.
+     * Returns the timestamp of the last received heartbeat for the UI to which
+     * this framework data belongs.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
+     * {@link UI#getCurrent()} does not return the UI.
      *
      * @see VaadinService#closeInactiveUIs(VaadinSession)
      *
@@ -228,13 +246,13 @@ public class FrameworkData implements Serializable {
     }
 
     /**
-     * Sets the last heartbeat request timestamp for this UI. Called by the
-     * framework whenever the application receives a valid heartbeat request for
-     * this UI.
+     * Sets the last heartbeat request timestamp for the UI to which this
+     * framework data belongs. Called by the framework whenever the application
+     * receives a valid heartbeat request for the UI.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
+     * {@link UI#getCurrent()} does not return the UI.
      *
      * @param lastHeartbeat
      *            The time the last heartbeat request occurred, in milliseconds
@@ -265,31 +283,32 @@ public class FrameworkData implements Serializable {
     }
 
     /**
-     * Gets the id of the UI, used to identify this UI within its application
-     * when processing requests. The UI id should be present in every request to
-     * the server that originates from this UI.
-     * {@link VaadinService#findUI(VaadinRequest)} uses this id to find the
+     * Gets the id of the UI, used to identify the UI to which this framework
+     * data belongs within its application when processing requests. The UI id
+     * should be present in every request to the server that originates from the
+     * UI. {@link VaadinService#findUI(VaadinRequest)} uses this id to find the
      * route to which the request belongs.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
+     * {@link UI#getCurrent()} does not return the UI.
      *
-     * @return the id of this UI
+     * @return the id of the UI
      */
     public int getUIId() {
         return uiId;
     }
 
     /**
-     * Returns the internal push connection object used by this UI. This method
-     * should only be called by the framework.
+     * Returns the internal push connection object used by the UI to which this
+     * framework data belongs. This method should only be called by the
+     * framework.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
-     * {@link UI#getCurrent()} does not return this UI.
+     * {@link UI#getCurrent()} does not return the UI.
      *
-     * @return the push connection used by this UI, or {@code null} if push is
+     * @return the push connection used by the UI, or {@code null} if push is
      *         not available.
      */
     public PushConnection getPushConnection() {
@@ -299,14 +318,15 @@ public class FrameworkData implements Serializable {
     }
 
     /**
-     * Sets the internal push connection object used by this UI. This method
-     * should only be called by the framework.
+     * Sets the internal push connection object used by the UI to which this
+     * framework data belongs. This method should only be called by the
+     * framework.
      * <p>
      * The {@code pushConnection} argument must be non-null if and only if
      * {@code getPushConfiguration().getPushMode().isEnabled()}.
      *
      * @param pushConnection
-     *            the push connection to use for this UI
+     *            the push connection to use for the UI
      */
     public void setPushConnection(PushConnection pushConnection) {
         // If pushMode is disabled then there should never be a pushConnection;
@@ -330,9 +350,12 @@ public class FrameworkData implements Serializable {
      *
      * @param invocation
      *            the invocation to add
+     * @return a callback for canceling the execution if not yet sent to browser
      */
-    public void addJavaScriptInvocation(JavaScriptInvocation invocation) {
+    public ExecutionCanceler addJavaScriptInvocation(
+            JavaScriptInvocation invocation) {
         pendingJsInvocations.add(invocation);
+        return () -> pendingJsInvocations.remove(invocation);
     }
 
     /**
@@ -341,6 +364,8 @@ public class FrameworkData implements Serializable {
      * @return a list of pending JavaScript invocations
      */
     public List<JavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+        pendingTitleUpdateCanceler = null;
+
         if (pendingJsInvocations.isEmpty()) {
             return Collections.emptyList();
         }
@@ -359,7 +384,156 @@ public class FrameworkData implements Serializable {
      *
      * @return the pending javascript invocations, never <code>null</code>
      */
-    protected List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
+    // Non-private for testing purposes
+    List<JavaScriptInvocation> getPendingJavaScriptInvocations() {
         return pendingJsInvocations;
+    }
+
+    /**
+     * Records the page title set with {@link Page#setTitle(String)}.
+     * <p>
+     * You should not set the page title for the browser with this method, use
+     * {@link Page#setTitle(String)} instead.
+     *
+     * @param title
+     *            the title to set
+     */
+    public void setTitle(String title) {
+        assert title != null;
+
+        JavaScriptInvocation invocation = new JavaScriptInvocation(
+                "document.title = $0", Arrays.asList(title));
+
+        pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
+
+        this.title = title;
+    }
+
+    /**
+     * Gets the page title recorded with {@link Page#setTitle(String)}.
+     * <p>
+     * <b>NOTE</b> this might not be up to date with the actual title set since
+     * it is not updated from the browser and the update might have been
+     * canceled before it has been sent to the browser with
+     * {@link #cancelPendingTitleUpdate()}.
+     *
+     * @return the page title
+     */
+    public String getTitle() {
+        return title;
+    }
+
+    /**
+     * Cancels any pending page title update set via {@link #setTitle(String)}.
+     *
+     * @return <code>true</code> if pending title update was cancelled,
+     *         <code>false</code> if not
+     */
+    public boolean cancelPendingTitleUpdate() {
+        if (pendingTitleUpdateCanceler == null) {
+            return false;
+        }
+
+        boolean result = pendingTitleUpdateCanceler.cancelExecution();
+        pendingTitleUpdateCanceler = null;
+        return result;
+    }
+
+    /**
+     * Shows a view in a chain of layouts in the UI to which this framework data
+     * belongs. This method is intended for framework use only. Use
+     * {@link UI#navigateTo(String)} to change the view that is shown in a UI.
+     *
+     * @param viewLocation
+     *            the location of the view relative to the servlet serving the
+     *            UI, not <code>null</code>
+     * @param view
+     *            the view to show, not <code>null</code>
+     * @param parentViews
+     *            the list of parent views to wrap the view in, starting from
+     *            the parent view immediately wrapping the main view, or
+     *            <code>null</code> to not use any parent views
+     */
+    public void showView(Location viewLocation, View view,
+            List<HasChildView> parentViews) {
+        assert view != null;
+        assert viewLocation != null;
+
+        this.viewLocation = viewLocation;
+
+        Element uiElement = ui.getElement();
+
+        // Assemble previous parent-child relationships to enable detecting
+        // changes
+        Map<HasChildView, View> oldChildren = new HashMap<>();
+        for (int i = 0; i < viewChain.size() - 1; i++) {
+            View child = viewChain.get(i);
+            HasChildView parent = (HasChildView) viewChain.get(i + 1);
+
+            oldChildren.put(parent, child);
+        }
+
+        viewChain = new ArrayList<>();
+        viewChain.add(view);
+
+        if (parentViews != null) {
+            viewChain.addAll(parentViews);
+        }
+
+        if (viewChain.isEmpty()) {
+            uiElement.removeAllChildren();
+        } else {
+            // Ensure the entire chain is connected
+            View root = null;
+            for (View part : viewChain) {
+                if (root != null) {
+                    assert part instanceof HasChildView : "All parts of the chain except the first must implement "
+                            + HasChildView.class.getSimpleName();
+                    HasChildView parent = (HasChildView) part;
+                    if (oldChildren.get(parent) != root) {
+                        parent.setChildView(root);
+                    }
+                } else if (part instanceof HasChildView
+                        && oldChildren.containsKey(part)) {
+                    // Remove old child view from leaf view if it had one
+                    ((HasChildView) part).setChildView(null);
+                }
+                root = part;
+            }
+
+            if (root == null) {
+                throw new IllegalArgumentException(
+                        "Root can't be null here since we know there's at least one item in the chain");
+            }
+
+            Element rootElement = root.getElement();
+
+            if (!uiElement.equals(rootElement.getParent())) {
+                uiElement.removeAllChildren();
+                rootElement.removeFromParent();
+                uiElement.appendChild(rootElement);
+            }
+        }
+    }
+
+    /**
+     * Gets the currently active view and parent views.
+     *
+     * @return a list of view and parent view instances, starting from the
+     *         innermost part
+     */
+    public List<View> getActiveViewChain() {
+        return Collections.unmodifiableList(viewChain);
+    }
+
+    /**
+     * Gets the location of the currently shown view. The location is relative
+     * the the servlet mapping used for serving the UI to which this framework
+     * data belongs.
+     *
+     * @return the view location, not <code>null</code>
+     */
+    public Location getActiveViewLocation() {
+        return viewLocation;
     }
 }

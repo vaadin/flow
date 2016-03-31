@@ -24,7 +24,6 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
 
@@ -32,7 +31,7 @@ import com.vaadin.server.VaadinServlet;
 public class RoutingViewHierarchy {
 
     @WebServlet(urlPatterns = "/*", name = "MyServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = RouterUI.class, routerConfigurator = MyRouterConfigurator.class, productionMode = false)
+    @VaadinServletConfiguration(routerConfigurator = MyRouterConfigurator.class, productionMode = false)
     public static class MyServlet extends VaadinServlet {
     }
 
