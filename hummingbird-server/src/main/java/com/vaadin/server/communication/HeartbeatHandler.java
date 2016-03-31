@@ -28,7 +28,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
-import com.vaadin.ui.FrameworkData;
+import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UI;
 
 /**
@@ -54,7 +54,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
      * Handles a heartbeat request for the given session. Reads the GET
      * parameter named {@link ApplicationConstants#UI_ID_PARAMETER} to identify
      * the UI. If the UI is found in the session, sets it
-     * {@link FrameworkData#getLastHeartbeatTimestamp() heartbeat timestamp} to
+     * {@link UIInternals#getLastHeartbeatTimestamp() heartbeat timestamp} to
      * the current time. Otherwise, writes a HTTP Not Found error to the
      * response.
      */
@@ -63,7 +63,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
             VaadinRequest request, VaadinResponse response) throws IOException {
         UI ui = session.getService().findUI(request);
         if (ui != null) {
-            ui.getFrameworkData()
+            ui.getInternals()
                     .setLastHeartbeatTimestamp(System.currentTimeMillis());
             // Ensure that the browser does not cache heartbeat responses.
             // iOS 6 Safari requires this (#10370)
