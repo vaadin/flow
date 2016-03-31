@@ -15,37 +15,36 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.uitest.component.Button;
+import com.vaadin.hummingbird.uitest.component.Div;
+import com.vaadin.hummingbird.uitest.component.Hr;
+import com.vaadin.hummingbird.uitest.component.Text;
 
-public class DependencyView extends TestView {
+public class DependencyView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        getElement().appendChild(ElementFactory.createDiv(
+        addComponent(new Text(
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
-        getElement().appendChild(ElementFactory.createHorizontalRule());
+        addComponent(new Hr());
+
         getPage().addStyleSheet("/test-files/css/allred.css");
         getPage().addJavaScript("/test-files/js/body-click-listener.js");
-        getElement()
-                .appendChild(ElementFactory
-                        .createDiv("Hello, click the body please"))
-                .setAttribute("id", "hello");
 
-        Element jsOrder = ElementFactory.createButton("Test JS order")
-                .setAttribute("id", "loadJs");
-        jsOrder.addEventListener("click", e -> {
+        addComponent(new Div().setText("Hello, click the body please").setId("hello"));
+
+        Button jsOrder = new Button("Test JS order").setId("loadJs");
+        jsOrder.getElement().addEventListener("click", e -> {
             getPage().addJavaScript("/test-files/js/set-global-var.js");
             getPage().addJavaScript("/test-files/js/read-global-var.js");
         });
-        Element allBlue = ElementFactory
-                .createButton("Load 'everything blue' stylesheet")
-                .setAttribute("id", "loadBlue");
-        allBlue.addEventListener("click", e -> {
+        Button allBlue = new Button("Load 'everything blue' stylesheet")
+                .setId("loadBlue");
+        allBlue.getElement().addEventListener("click", e -> {
             getPage().addStyleSheet("/test-files/css/allblueimportant.css");
 
         });
-        getElement().appendChild(jsOrder, allBlue, ElementFactory.createHorizontalRule());
+        addComponent(jsOrder, allBlue, new Hr());
     }
 
 }

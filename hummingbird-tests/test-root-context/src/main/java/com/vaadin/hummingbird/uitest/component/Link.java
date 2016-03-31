@@ -13,18 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.hummingbird.uitest.component;
 
-import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
 
-public class BaseHrefUI extends UI {
-    @Override
-    protected void init(VaadinRequest request) {
-        Element link = ElementFactory.createAnchor("link", "My link");
+public class Link extends AbstractComponent {
 
-        getElement().appendChild(link);
+    public Link(String href, String text) {
+        super(ElementFactory.createAnchor(href, text));
     }
+
 }

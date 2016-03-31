@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.ui.Component;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -51,22 +52,18 @@ public class JsonCodec {
      * JSON. Such types are encoded as an JSON array starting with an id
      * defining the actual type and followed by the actual data. Supported value
      * types are any native JSON type supported by
-     * {@link #encodeWithoutTypeInfo(Object)} and {@link Element}.
+     * {@link #encodeWithoutTypeInfo(Object)}, {@link Element} and
+     * {@link Component} (encoded as its root element).
      *
      * @param value
      *            the value to encode
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithTypeInfo(Object value) {
-        if (value instanceof Element) {
-            Element element = (Element) value;
-            StateNode node = element.getNode();
-            if (node.isAttached()) {
-                return wrapComplexValue(ELEMENT_TYPE,
-                        Json.create(node.getId()));
-            } else {
-                return Json.createNull();
-            }
+        if (value instanceof Component) {
+            return encodeElement(((Component) value).getElement());
+        } else if (value instanceof Element) {
+            return encodeElement((Element) value);
         } else {
             JsonValue encoded = encodeWithoutTypeInfo(value);
             if (encoded.getType() == JsonType.ARRAY) {
@@ -74,6 +71,15 @@ public class JsonCodec {
                 encoded = wrapComplexValue(ARRAY_TYPE, encoded);
             }
             return encoded;
+        }
+    }
+
+    private static JsonValue encodeElement(Element element) {
+        StateNode node = element.getNode();
+        if (node.isAttached()) {
+            return wrapComplexValue(ELEMENT_TYPE, Json.create(node.getId()));
+        } else {
+            return Json.createNull();
         }
     }
 

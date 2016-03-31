@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -32,6 +33,7 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.ui.Component;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -1251,7 +1253,7 @@ public class Element implements Serializable {
     /**
      * Returns the index of the specified {@code child} in the children list, or
      * -1 if this list does not contain the {@code child}.
-     * 
+     *
      * @param child
      *            the child element
      * @return index of the {@code child} or -1 if it's not a child
@@ -1271,6 +1273,64 @@ public class Element implements Serializable {
             }
         }
         return -1;
+    }
+
+    /**
+     * Defines a mapping between this element and the given {@link Component}.
+     *
+     * @param component
+     *            the component this element is attached to
+     * @return this element
+     */
+    public Element attachComponent(Component component) {
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null");
+        }
+
+        if (isAttachedToComponent(component)) {
+            throw new IllegalArgumentException(
+                    "The given component is already attached to this element");
+        }
+        if (getComponent().isPresent()) {
+            throw new IllegalStateException(
+                    "A component is already attached to this element");
+        }
+        stateProvider.attachComponent(getNode(), component);
+
+        return this;
+    }
+
+    /**
+     * Removes a mapping between this element and the given {@link Component}.
+     *
+     * @param component
+     *            the component this element is no longer attached to
+     * @return this element
+     */
+    public Element detachComponent(Component component) {
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null");
+        }
+        if (!isAttachedToComponent(component)) {
+            throw new IllegalArgumentException(
+                    "The given component is not attached to this element");
+        }
+        stateProvider.detachComponent(getNode(), component);
+
+        return this;
+    }
+
+    /**
+     * Gets the component this element is mapped to.
+     *
+     * @return the component this element is mapped to, never {@code null}.
+     */
+    public Optional<Component> getComponent() {
+        return stateProvider.getComponent(getNode());
+    }
+
+    private boolean isAttachedToComponent(Component component) {
+        return getComponent().isPresent() && getComponent().get() == component;
     }
 
 }
