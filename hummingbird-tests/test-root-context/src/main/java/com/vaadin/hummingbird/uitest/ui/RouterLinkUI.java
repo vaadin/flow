@@ -34,6 +34,11 @@ public class RouterLinkUI extends UI {
                 // external
                 ElementFactory.createDiv("external"),
                 createRouterLink("http://google.com"));
+        Element skip = ElementFactory.createDiv();
+        skip.getStyle().set("height", "2000px");
+        Element anchor = ElementFactory.createAnchor();
+        anchor.setAttribute("name", "fragment");
+        bodyElement.appendChild(skip, anchor);
 
         getPage().getHistory().setHistoryStateChangeHandler(
                 e -> location.setTextContent(e.getLocation()));

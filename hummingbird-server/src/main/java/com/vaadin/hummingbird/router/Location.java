@@ -35,8 +35,7 @@ import java.util.stream.Collectors;
 public class Location implements Serializable {
 
     private static final String PATH_SEPARATOR = "/";
-    private final List<String> segments;
-    private final String hash;
+    private List<String> segments;
 
     /**
      * Creates a new location for the given relative path.
@@ -45,7 +44,7 @@ public class Location implements Serializable {
      *            the relative path, not <code>null</code>
      */
     public Location(String path) {
-        this(parsePath(path), extractFragment(path));
+        this(parsePath(path));
     }
 
     /**
@@ -55,18 +54,6 @@ public class Location implements Serializable {
      *            a non-empty list of path segments, not <code>null</code>
      */
     public Location(List<String> segments) {
-        this(segments, Optional.empty());
-    }
-
-    /**
-     * Creates a new location based on a list of path segments and hash.
-     *
-     * @param segments
-     *            a non-empty list of path segments, not <code>null</code>
-     * @param hash
-     *            fragment identifier
-     */
-    public Location(List<String> segments, Optional<String> hash) {
         if (segments == null) {
             throw new IllegalArgumentException("Segments cannot be null");
         }
@@ -76,11 +63,6 @@ public class Location implements Serializable {
         }
 
         this.segments = segments;
-        Optional<String> fragment = hash;
-        if (fragment.isPresent() && !fragment.get().startsWith("#")) {
-            fragment = Optional.of("#" + fragment.get());
-        }
-        this.hash = fragment.orElse(null);
     }
 
     /**
@@ -112,17 +94,8 @@ public class Location implements Serializable {
         if (subSegments.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional
-                    .of(new Location(subSegments, Optional.ofNullable(hash)));
+            return Optional.of(new Location(subSegments));
         }
-    }
-
-    /**
-     * Gets the fragment identifier (including the leading hash mark (#)), if
-     * any, in this path.
-     */
-    public Optional<String> getHash() {
-        return Optional.ofNullable(hash);
     }
 
     /**
@@ -131,32 +104,14 @@ public class Location implements Serializable {
      * @return the location string, not <code>null</code>
      */
     public String getPath() {
-        String path = segments.stream().collect(Collectors.joining("/"));
-        if (getHash().isPresent()) {
-            return path + getHash().get();
-        } else {
-            return path;
-        }
+        return segments.stream().collect(Collectors.joining("/"));
     }
 
-    private static Optional<String> extractFragment(String location) {
-        int index = location.indexOf('#');
-        if (index != -1) {
-            return Optional.of(location.substring(index, location.length()));
-        }
-        return Optional.empty();
-    }
+    private static List<String> parsePath(String path) {
+        assert !path.startsWith(PATH_SEPARATOR) : "path should be relative";
+        assert !path.contains("?") : "query string not yet supported";
 
-    private static List<String> parsePath(String location) {
-        assert !location.startsWith(PATH_SEPARATOR) : "path should be relative";
-        assert !location.contains("?") : "query string not yet supported";
-
-        verifyRelativePath(location);
-        String path = location;
-        int index = location.indexOf('#');
-        if (index != -1) {
-            path = location.substring(0, index);
-        }
+        verifyRelativePath(path);
 
         List<String> splitList = Arrays.asList(path.split(PATH_SEPARATOR));
         if (path.endsWith(PATH_SEPARATOR)) {
@@ -206,5 +161,4 @@ public class Location implements Serializable {
 
         // All is OK if we get here
     }
-
 }

@@ -18,11 +18,9 @@ package com.vaadin.hummingbird.router;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.Page.ExecutionCanceler;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -45,8 +43,6 @@ public class Router implements Serializable {
      * The lock is configured to always guarantee a fair ordering.
      */
     private final ReentrantLock configUpdateLock = new ReentrantLock(true);
-
-    private ExecutionCanceler currentUrlReplacer;
 
     /**
      * Creates a new router.
@@ -88,10 +84,6 @@ public class Router implements Serializable {
 
     /**
      * Navigates the given UI to the given location.
-     * <p>
-     * It doesn't do anything if the {@code location} is the same as the active
-     * view location ({@link RouterUI#getActiveViewLocation()}) and the location
-     * is not empty (initial).
      *
      * @param ui
      *            the router UI to update
@@ -99,11 +91,6 @@ public class Router implements Serializable {
      *            the location to navigate to
      */
     public void navigate(RouterUI ui, Location location) {
-        String currentPath = ui.getActiveViewLocation().getPath();
-        if (Objects.equals(location.getPath(), currentPath)
-                && !currentPath.isEmpty()) {
-            return;
-        }
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
                 ui);
 
@@ -133,15 +120,6 @@ public class Router implements Serializable {
         }
 
         handler.handle(navigationEvent);
-        if (currentUrlReplacer != null) {
-            currentUrlReplacer.cancelExecution();
-            currentUrlReplacer = null;
-        }
-        if (location.getHash().isPresent()) {
-            StringBuilder js = new StringBuilder("window.location.replace('");
-            js.append(location.getPath()).append("')");
-            currentUrlReplacer = ui.getPage().executeJavaScript(js.toString());
-        }
     }
 
     // Non-private to enable testing

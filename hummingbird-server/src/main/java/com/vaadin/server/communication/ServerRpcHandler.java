@@ -382,9 +382,24 @@ public class ServerRpcHandler implements Serializable {
             String location = invocationJson
                     .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
 
+            int index = location.indexOf('#');
+            String path = location;
+            boolean hasFragment = index != -1;
+            if (hasFragment) {
+                path = location.substring(0, index);
+            }
+
             HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
-                    state, location);
+                    state, path);
             historyStateChangeHandler.onHistoryStateChange(event);
+            if (hasFragment) {
+                ui.getPage().executeJavaScript(
+                        "var func = window.onpopstate; "
+                                + "window.onpopstate = undefined; try { "
+                                + "window.location.replace($0); }"
+                                + "finally { window.onpopstate=func; }",
+                        location);
+            }
         }
     }
 

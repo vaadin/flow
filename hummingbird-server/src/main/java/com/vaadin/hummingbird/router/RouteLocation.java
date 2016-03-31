@@ -33,7 +33,7 @@ public class RouteLocation extends Location {
      *            the original location
      */
     public RouteLocation(Location location) {
-        super(location.getSegments(), location.getHash());
+        super(location.getSegments());
     }
 
     /**
