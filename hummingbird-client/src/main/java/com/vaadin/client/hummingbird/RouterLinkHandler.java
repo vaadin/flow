@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird;
 
+import java.util.Objects;
+
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.URIResolver;
@@ -63,8 +65,12 @@ public class RouterLinkHandler {
             return;
         }
 
-        String href = getRouterLinkHref(clickEvent);
-        if (href != null) {
+        AnchorElement anchor = getRouterLink(clickEvent);
+        if (anchor == null) {
+            return;
+        }
+        String href = anchor.getHref();
+        if (href != null && !isNavigatingWithinPage(anchor)) {
             String baseURI = ((Element) clickEvent.getCurrentTarget())
                     .getOwnerDocument().getBaseURI();
 
@@ -86,22 +92,34 @@ public class RouterLinkHandler {
         }
     }
 
+    private static boolean isNavigatingWithinPage(AnchorElement anchor) {
+        String currentPath = Browser.getWindow().getLocation().getPathname();
+
+        String path = anchor.getPathname();
+        String hash = anchor.getHash();
+        if (Objects.equals(path, currentPath) && hash != null
+                && !hash.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
     /**
-     * Gets the target of a router link, if a router link was found between the
-     * click target and the event listener.
+     * Gets the target link of the {@code clickEvent}, if a router link was
+     * found between the click target and the event listener.
      *
      * @param clickEvent
      *            the click event
-     * @return the target (href) of the link if a link was found, null otherwise
+     * @return the link target element if a link was found, null otherwise
      */
-    private static String getRouterLinkHref(Event clickEvent) {
+    private static AnchorElement getRouterLink(Event clickEvent) {
         assert "click".equals(clickEvent.getType());
 
         Element target = (Element) clickEvent.getTarget();
         EventTarget eventListenerElement = clickEvent.getCurrentTarget();
         while (target != eventListenerElement) {
             if (isRouterLinkAnchorElement(target)) {
-                return ((AnchorElement) target).getHref();
+                return (AnchorElement) target;
             }
             target = target.getParentElement();
         }

@@ -3,6 +3,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
@@ -19,8 +20,12 @@ public class RouterLinkIT extends PhantomJSTest {
 
         testInsideServlet("./foobar", "foobar");
         testInsideServlet("./foobar?what=not", "foobar?what=not");
+        JavascriptExecutor executor = (JavascriptExecutor) getDriver();
         testInsideServlet("./foobar?what=not#fragment",
-                "foobar?what=not#fragment");
+                "foobar?what=not#fragment", "foobar?what=not");
+        Long scroll = (Long) executor.executeScript("return window.scrollY;");
+        Assert.assertTrue("Page has not been scrolled to the anchor",
+                scroll > 0);
 
         testInsideServlet("/run/baz", "baz");
 
@@ -54,9 +59,15 @@ public class RouterLinkIT extends PhantomJSTest {
 
     private void testInsideServlet(String linkToTest,
             String pathAfterServletMapping) {
+        testInsideServlet(linkToTest, pathAfterServletMapping,
+                pathAfterServletMapping);
+    }
+
+    private void testInsideServlet(String linkToTest,
+            String pathAfterServletMapping, String historyLocation) {
         clickLink(linkToTest);
         verifyInsideServletLocation(pathAfterServletMapping);
-        verifyPopStateEvent(pathAfterServletMapping);
+        verifyPopStateEvent(historyLocation);
         verifySamePage();
     }
 
