@@ -21,7 +21,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
+import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
 import elemental.json.Json;
 import elemental.json.JsonString;
@@ -29,7 +29,7 @@ import elemental.json.JsonString;
 public class JavaScriptInvocationTest {
     @Test
     public void testSerializable() {
-        JavaScriptInvocation invocation = new FrameworkData.JavaScriptInvocation(
+        JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
                 "expression",
                 Arrays.asList("string", Json.create("jsonString")));
 
