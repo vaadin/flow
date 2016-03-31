@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -26,6 +27,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
 
@@ -226,5 +228,17 @@ public class TextElementStateProvider implements ElementStateProvider {
     @Override
     public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void attachComponent(StateNode node, Component component) {
+        assert node != null;
+        node.getNamespace(TextNodeNamespace.class).setComponent(component);
+    }
+
+    @Override
+    public Optional<Component> getComponent(StateNode node) {
+        assert node != null;
+        return node.getNamespace(TextNodeNamespace.class).getComponent();
     }
 }
