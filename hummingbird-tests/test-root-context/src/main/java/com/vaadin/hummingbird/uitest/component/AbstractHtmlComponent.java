@@ -13,28 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.hummingbird.uitest.component;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.router.LocationChangeEvent;
-import com.vaadin.hummingbird.router.View;
-import com.vaadin.ui.Page;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.Component;
 
-public abstract class TestView implements View {
+public class AbstractHtmlComponent implements Component {
 
     private Element element;
 
-    public TestView() {
-        element = ElementFactory.createDiv();
-    }
-
-    protected abstract void onShow();
-
-    @Override
-    public void onLocationChange(LocationChangeEvent event) {
-        onShow();
+    public AbstractHtmlComponent(Element element) {
+        this.element = element;
+        element.attachComponent(this);
     }
 
     @Override
@@ -42,12 +32,20 @@ public abstract class TestView implements View {
         return element;
     }
 
-    protected UI getUI() {
-        return UI.getCurrent();
+    public void setId(String id) {
+        getElement().setAttribute("id", id);
     }
 
-    protected Page getPage() {
-        return getUI().getPage();
+    public String getId() {
+        return getElement().getAttribute("id");
+    }
+
+    public void addClass(String className) {
+        getElement().getClassList().add(className);
+    }
+
+    public void setText(String text) {
+        getElement().setTextContent(text);
     }
 
 }

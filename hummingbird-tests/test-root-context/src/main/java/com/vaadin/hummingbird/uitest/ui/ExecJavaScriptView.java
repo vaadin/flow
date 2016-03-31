@@ -15,52 +15,49 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.uitest.component.Button;
+import com.vaadin.hummingbird.uitest.component.Input;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 
-public class ExecJavaScriptView extends TestView {
+public class ExecJavaScriptView extends AbstractDivView {
     @Override
     protected void onShow() {
-        Element root = getElement();
-
-        Element alertButton = createJsButton("Alert", "alertButton",
+        Button alertButton = createJsButton("Alert", "alertButton",
                 "window.alert($0)", "Hello world");
-        Element focusButton = createJsButton("Focus Alert button",
-                "focusButton", "$0.focus()", alertButton);
-        Element swapText = createJsButton("Swap button texts", "swapButton",
+        Button focusButton = createJsButton("Focus Alert button", "focusButton",
+                "$0.focus()", alertButton);
+        Button swapText = createJsButton("Swap button texts", "swapButton",
                 "(function() {var t = $0.textContent; $0.textContent = $1.textContent; $1.textContent = t;})()",
                 alertButton, focusButton);
-        Element logButton = createJsButton("Log", "logButton",
-                "console.log($0)", JsonUtil.createArray(
-                        Json.create("Hello world"), Json.create(true)));
+        Button logButton = createJsButton("Log", "logButton", "console.log($0)",
+                JsonUtil.createArray(Json.create("Hello world"),
+                        Json.create(true)));
 
-        Element createElementButton = ElementFactory
-                .createButton("Create and update element")
-                .setAttribute("id", "createButton");
-        createElementButton.addEventListener("click", e -> {
-            Element newElement = ElementFactory.createInput()
-                    .setAttribute("class", "newInput");
-            UI.getCurrent().getPage().executeJavaScript("$0.value = $1",
-                    newElement, "Value from js");
-            root.appendChild(newElement);
+        Button createElementButton = new Button("Create and update element");
+        createElementButton.setId("createButton");
+        createElementButton.getElement().addEventListener("click", e -> {
+            Input input = new Input();
+            input.addClass("newInput");
+            UI.getCurrent().getPage().executeJavaScript("$0.value = $1", input,
+                    "Value from js");
+            addComponents(input);
         });
 
-        root.appendChild(alertButton, focusButton, swapText, logButton,
+        addComponents(alertButton, focusButton, swapText, logButton,
                 createElementButton);
     }
 
-    private Element createJsButton(String text, String id, String script,
+    private Button createJsButton(String text, String id, String script,
             Object... arguments) {
-        Element element = ElementFactory.createButton(text).setAttribute("id",
-                id);
+        Button button = new Button(text);
+        button.setId(id);
 
-        element.addEventListener("click", e -> UI.getCurrent().getPage()
-                .executeJavaScript(script, arguments));
+        button.getElement().addEventListener("click", e -> UI.getCurrent()
+                .getPage().executeJavaScript(script, arguments));
 
-        return element;
+        return button;
     }
 }

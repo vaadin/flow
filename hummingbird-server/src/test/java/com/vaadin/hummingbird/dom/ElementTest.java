@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.MapPutChange;
@@ -24,6 +25,7 @@ import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.ui.Component;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -1577,5 +1579,51 @@ public class ElementTest {
         Element child = ElementFactory.createDiv();
 
         Assert.assertEquals(-1, parent.indexOfChild(child));
+    }
+
+    @Test
+    public void componentNotInitiallyAttached() {
+        Element e = ElementFactory.createDiv();
+        Assert.assertFalse(e.getComponent().isPresent());
+    }
+
+    @Test
+    public void attachToComponent() {
+        Element e = ElementFactory.createDiv();
+        Component c = Mockito.mock(Component.class);
+        e.attachComponent(c);
+        Assert.assertEquals(c, e.getComponent().get());
+    }
+
+    @Test
+    public void attachTextElementToComponent() {
+        Element e = Element.createText("Text text");
+        Component c = Mockito.mock(Component.class);
+        e.attachComponent(c);
+        Assert.assertEquals(c, e.getComponent().get());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void attachTwiceToComponent() {
+        Element e = ElementFactory.createDiv();
+        Component c = Mockito.mock(Component.class);
+        e.attachComponent(c);
+        e.attachComponent(c);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void attachToNull() {
+        Element e = ElementFactory.createDiv();
+        e.attachComponent(null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void attachTwoComponents() {
+        Element e = ElementFactory.createDiv();
+        Component c = Mockito.mock(Component.class);
+        Component c2 = Mockito.mock(Component.class);
+        e.attachComponent(c);
+        e.attachComponent(c2);
+
     }
 }

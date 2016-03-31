@@ -15,6 +15,32 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-public class BasicElementIT extends AbstractBasicElementComponentIT {
+import com.vaadin.hummingbird.router.LocationChangeEvent;
+import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.uitest.component.Div;
+import com.vaadin.ui.Page;
+import com.vaadin.ui.UI;
+
+public abstract class AbstractDivView extends Div implements View {
+
+    public AbstractDivView() {
+    }
+
+    protected void onShow() {
+
+    }
+
+    @Override
+    public void onLocationChange(LocationChangeEvent event) {
+        onShow();
+    }
+
+    protected UI getUI() {
+        return UI.getCurrent();
+    }
+
+    protected Page getPage() {
+        return getUI().getPage();
+    }
 
 }

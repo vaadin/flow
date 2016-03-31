@@ -13,8 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.hummingbird.uitest.component;
 
-public class BasicElementIT extends AbstractBasicElementComponentIT {
+import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.ui.Component;
+
+public class Div extends AbstractHtmlComponent
+        implements HasSimpleAddComponent {
+    public Div() {
+        super(ElementFactory.createDiv());
+    }
+
+    public Div(String text) {
+        this();
+        getElement().setTextContent(text);
+    }
+
+    public Div(Component... components) {
+        this();
+        for (Component component : components) {
+            addComponents(component);
+        }
+    }
 
 }

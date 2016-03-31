@@ -15,6 +15,6 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-public class BasicElementIT extends AbstractBasicElementComponentIT {
+public class BasicComponentIT extends AbstractBasicElementComponentIT {
 
 }

@@ -5,7 +5,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 
 @Title("foobar")
-public class DynamicTitleView extends TestView {
+public class DynamicTitleView extends AbstractDivView {
 
     @Override
     public String getTitle(LocationChangeEvent locationChangeEvent) {
