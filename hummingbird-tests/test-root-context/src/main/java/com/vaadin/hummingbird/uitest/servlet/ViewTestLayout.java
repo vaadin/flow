@@ -24,7 +24,6 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
-import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.UI;
 
@@ -60,7 +59,7 @@ public class ViewTestLayout implements HasChildView {
         viewSelect.setSynchronizedProperties("value");
         viewSelect.setSynchronizedPropertiesEvents("change");
         viewSelect.addEventListener("change", e -> {
-            RouterUI ui = (RouterUI) UI.getCurrent();
+            UI ui = UI.getCurrent();
             ui.navigateTo(viewSelect.getProperty("value"));
         });
 

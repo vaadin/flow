@@ -23,7 +23,6 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.UI;
@@ -32,7 +31,7 @@ import com.vaadin.ui.UI;
 public class Routing {
 
     @WebServlet(urlPatterns = "/*", name = "MyServlet", asyncSupported = true)
-    @VaadinServletConfiguration(ui = RouterUI.class, routerConfigurator = MyRouterConfigurator.class, productionMode = false)
+    @VaadinServletConfiguration(routerConfigurator = MyRouterConfigurator.class, productionMode = false)
     public static class MyServlet extends VaadinServlet {
     }
 
@@ -66,7 +65,7 @@ public class Routing {
     void navigation() {
         Element button = ElementFactory.createButton("Navigate to company");
         button.addEventListener("click", e -> {
-            ((RouterUI) UI.getCurrent()).navigateTo("company");
+            UI.getCurrent().navigateTo("company");
         });
 
     }

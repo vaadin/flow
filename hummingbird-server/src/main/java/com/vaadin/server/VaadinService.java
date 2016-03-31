@@ -45,7 +45,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.event.EventRouter;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.VaadinSession.FutureAccess;
 import com.vaadin.server.VaadinSession.State;
@@ -189,14 +188,6 @@ public abstract class VaadinService implements Serializable {
         if (routerConfiguratorClassName != null && !RouterConfigurator.class
                 .getName().equals(routerConfiguratorClassName)) {
             // Configure router if we have a non-default configurator type
-
-            if (!RouterUI.class.getName()
-                    .equals(deploymentConf.getUIClassName())) {
-                throw new ServiceException("The UI class must be set to "
-                        + RouterUI.class.getName()
-                        + " if a router configurator is provided. The configured UI class is now "
-                        + getDeploymentConfiguration().getUIClassName());
-            }
 
             configureRouter(routerConfiguratorClassName);
         }
@@ -659,7 +650,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
-                    throws SessionExpiredException, ServiceException {
+            throws SessionExpiredException, ServiceException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -1338,7 +1329,7 @@ public abstract class VaadinService implements Serializable {
 
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
-                    throws ServiceException {
+            throws ServiceException {
         if (vaadinSession != null) {
             vaadinSession.lock();
         }

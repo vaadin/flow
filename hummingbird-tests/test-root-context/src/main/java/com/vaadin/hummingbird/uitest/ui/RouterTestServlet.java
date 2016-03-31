@@ -32,7 +32,6 @@ import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.RouterUI;
 import com.vaadin.hummingbird.router.StaticViewRenderer;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.uitest.ui.RouterTestServlet.MyRouterConfigurator;
@@ -41,7 +40,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WrappedSession;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/router-session/*" })
-@VaadinServletConfiguration(ui = RouterUI.class, productionMode = false, routerConfigurator = MyRouterConfigurator.class)
+@VaadinServletConfiguration(productionMode = false, routerConfigurator = MyRouterConfigurator.class)
 public class RouterTestServlet extends VaadinServlet {
 
     public static class MyRouterConfigurator implements RouterConfigurator {
@@ -65,14 +64,15 @@ public class RouterTestServlet extends VaadinServlet {
                             .findAny();
                     return res.map(
                             new Function<Class<? extends View>, NavigationHandler>() {
-                        @Override
-                        public NavigationHandler apply(
-                                Class<? extends View> c) {
-                            return new StaticViewRenderer(c, Layout.class);
-                        }
-                    }).orElseGet(() -> {
-                        return new ErrorNavigationHandler(404);
-                    });
+                                @Override
+                                public NavigationHandler apply(
+                                        Class<? extends View> c) {
+                                    return new StaticViewRenderer(c,
+                                            Layout.class);
+                                }
+                            }).orElseGet(() -> {
+                                return new ErrorNavigationHandler(404);
+                            });
                 }
             });
 
