@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -40,6 +41,7 @@ import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
+import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
 
@@ -382,6 +384,20 @@ public class BasicElementStateProvider implements ElementStateProvider {
     public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
         return node.getNamespace(SynchronizedPropertiesNamespace.class)
                 .getSynchronizedPropertiesEvents();
+    }
+
+    @Override
+    public void attachComponent(StateNode node, Component component) {
+        assert node != null;
+        assert component != null;
+        node.getNamespace(ElementDataNamespace.class).setComponent(component);
+    }
+
+    @Override
+    public Optional<Component> getComponent(StateNode node) {
+        assert node != null;
+
+        return node.getNamespace(ElementDataNamespace.class).getComponent();
     }
 
 }
