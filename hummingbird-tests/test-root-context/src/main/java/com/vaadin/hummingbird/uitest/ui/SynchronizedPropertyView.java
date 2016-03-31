@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 
-public class SynchronizedPropertyView extends TestView {
+public class SynchronizedPropertyView extends AbstractDivView {
 
     @Override
     protected void onShow() {

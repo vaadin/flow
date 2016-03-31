@@ -15,31 +15,24 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.uitest.component.Div;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
-public abstract class TestView implements View {
+public abstract class AbstractDivView extends Div implements View {
 
-    private Element element;
-
-    public TestView() {
-        element = ElementFactory.createDiv();
+    public AbstractDivView() {
     }
 
-    protected abstract void onShow();
+    protected void onShow() {
+
+    }
 
     @Override
     public void onLocationChange(LocationChangeEvent event) {
         onShow();
-    }
-
-    @Override
-    public Element getElement() {
-        return element;
     }
 
     protected UI getUI() {
