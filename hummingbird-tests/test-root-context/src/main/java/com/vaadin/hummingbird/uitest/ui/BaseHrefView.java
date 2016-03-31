@@ -15,6 +15,12 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-public class BasicElementIT extends AbstractBasicElementComponentIT {
+import com.vaadin.hummingbird.uitest.component.Link;
+
+public class BaseHrefView extends AbstractDivView {
+
+    public BaseHrefView() {
+        addComponents(new Link("link", "My link"));
+    }
 
 }
