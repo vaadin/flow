@@ -120,4 +120,16 @@ public interface RouterConfiguration {
      * @return the page title generator, never <code>null</code>
      */
     PageTitleGenerator getPageTitleGenerator();
+
+    /**
+     * Checks whether this configuration has been configured. The configuration
+     * of a {@link Router} is considered configured if
+     * {@link RouterConfigurator} has been used or if
+     * {@link Router#reconfigure(RouterConfigurator)} has been run at least
+     * once.
+     *
+     * @return <code>true</code> if this instance has been configured,
+     *         <code>false</code> otherwise
+     */
+    boolean isConfigured();
 }

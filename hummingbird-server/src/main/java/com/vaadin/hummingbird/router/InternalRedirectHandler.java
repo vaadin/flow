@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.router;
 
+import com.vaadin.ui.UI;
+
 /**
  * Handles navigation by redirecting the user to some location in the
  * application.
@@ -38,7 +40,7 @@ public class InternalRedirectHandler implements NavigationHandler {
 
     @Override
     public void handle(NavigationEvent event) {
-        RouterUI ui = event.getUI();
+        UI ui = event.getUI();
         Router router = event.getSource();
 
         ui.getPage().getHistory().replaceState(null, target.getPath());

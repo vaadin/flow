@@ -27,6 +27,7 @@ import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.FrameworkData.JavaScriptInvocation;
+import com.vaadin.ui.UI;
 
 public class ViewRendererTest {
 
@@ -98,7 +99,7 @@ public class ViewRendererTest {
     }
 
     private final Router router = new Router();
-    private final RouterUI ui = new RouterUI();
+    private final UI ui = new UI();
     private final NavigationEvent dummyEvent = new NavigationEvent(router,
             new Location(""), ui);
 
@@ -261,15 +262,13 @@ public class ViewRendererTest {
         verifyViewTitleUpdate("");
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     public void testViewTitle_nullTitleReturned_noTitleSet() {
         new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate(ANOTHER_VIEW_TITLE);
 
         new StaticViewRenderer(NullTitleView.class).handle(dummyEvent);
-
-        verifyNoTitleUpdate();
     }
 
     @Test
@@ -308,13 +307,11 @@ public class ViewRendererTest {
         verifyViewTitleUpdate(DYNAMIC_VIEW_TITLE);
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     public void testViewTitle_nullPageTitleGenerated_noTitleUpdate() {
         setPageTitleGenerator(lce -> null);
 
         new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
-
-        verifyNoTitleUpdate();
     }
 
     private void setPageTitleGenerator(PageTitleGenerator generator) {
