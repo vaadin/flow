@@ -25,22 +25,20 @@ import com.vaadin.util.CurrentInstance;
 
 /**
  * Encapsulates a {@link Command} submitted using
- * {@link VaadinSession#access(Command)}. This class is used internally by
- * the framework and is not intended to be directly used by application
- * developers.
+ * {@link VaadinSession#access(Command)}. This class is used internally by the
+ * framework and is not intended to be directly used by application developers.
  *
- * @since 7.1
  * @author Vaadin Ltd
  */
 public class FutureAccess extends FutureTask<Void> {
     /**
-     * Snapshot of all non-inheritable current instances at the time this
-     * object was created.
+     * Snapshot of all non-inheritable current instances at the time this object
+     * was created.
      */
     private final Map<Class<?>, CurrentInstance> instances = CurrentInstance
             .getInstances(true);
     private final VaadinSession session;
-    private Command command;
+    private final Command command;
 
     /**
      * Creates an instance for the given command.
@@ -59,22 +57,22 @@ public class FutureAccess extends FutureTask<Void> {
     @Override
     public Void get() throws InterruptedException, ExecutionException {
         /*
-         * Help the developer avoid programming patterns that cause
-         * deadlocks unless implemented very carefully. get(long, TimeUnit)
-         * does not have the same detection since a sensible timeout should
-         * avoid completely locking up the application.
+         * Help the developer avoid programming patterns that cause deadlocks
+         * unless implemented very carefully. get(long, TimeUnit) does not have
+         * the same detection since a sensible timeout should avoid completely
+         * locking up the application.
          *
-         * Even though no deadlock could occur after the command has been
-         * run, the check is always done as the deterministic behavior makes
-         * it easier to detect potential problems.
+         * Even though no deadlock could occur after the command has been run,
+         * the check is always done as the deterministic behavior makes it
+         * easier to detect potential problems.
          */
         VaadinService.verifyNoOtherSessionLocked(session);
         return super.get();
     }
 
     /**
-     * Gets the current instance values that should be used when running
-     * this task.
+     * Gets the current instance values that should be used when running this
+     * task.
      *
      * @see CurrentInstance#restoreInstances(Map)
      *
@@ -87,7 +85,6 @@ public class FutureAccess extends FutureTask<Void> {
     /**
      * Handles exceptions thrown during the execution of this task.
      *
-     * @since 7.1.8
      * @param exception
      *            the thrown exception.
      */
@@ -110,8 +107,11 @@ public class FutureAccess extends FutureTask<Void> {
                 errorHandler.error(errorEvent);
             }
         } catch (Exception e) {
-            Logger.getLogger(FutureAccess.class.getName()).log(Level.SEVERE,
-                    e.getMessage(), e);
+            getLogger().log(Level.SEVERE, e.getMessage(), e);
         }
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(FutureAccess.class.getName());
     }
 }
