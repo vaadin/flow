@@ -23,6 +23,9 @@ import java.util.stream.Stream;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
 /**
  * A template AST node representing a regular element.
  *
@@ -30,6 +33,11 @@ import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
  * @author Vaadin Ltd
  */
 public class ElementTemplateNode extends TemplateNode {
+    /**
+     * Type value for element template nodes in JSON messages.
+     */
+    public static final String TYPE = "element";
+
     private final String tag;
 
     private final ArrayList<TemplateNode> children = new ArrayList<>();
@@ -97,5 +105,23 @@ public class ElementTemplateNode extends TemplateNode {
     @Override
     protected ElementStateProvider createStateProvider() {
         return new TemplateElementStateProvider(this);
+    }
+
+    @Override
+    protected void populateJson(JsonObject json) {
+        json.put(TemplateNode.KEY_TYPE, TYPE);
+
+        json.put("tag", tag);
+
+        if (!attributes.isEmpty()) {
+            JsonObject attributesJson = Json.createObject();
+
+            attributes.forEach((name, binding) -> attributesJson.put(name,
+                    binding.toJson()));
+
+            json.put("attributes", attributesJson);
+        }
+
+        // Super class takes care of the children
     }
 }

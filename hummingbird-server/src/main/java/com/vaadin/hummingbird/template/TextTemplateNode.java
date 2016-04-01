@@ -18,6 +18,8 @@ package com.vaadin.hummingbird.template;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TemplateTextElementStateProvider;
 
+import elemental.json.JsonObject;
+
 /**
  * A template AST node representing a text node.
  *
@@ -25,6 +27,10 @@ import com.vaadin.hummingbird.dom.impl.TemplateTextElementStateProvider;
  * @author Vaadin Ltd
  */
 public class TextTemplateNode extends TemplateNode {
+    /**
+     * Type value for text template nodes in JSON messages.
+     */
+    public static final String TYPE = "text";
 
     private final TemplateBinding binding;
 
@@ -62,5 +68,12 @@ public class TextTemplateNode extends TemplateNode {
     @Override
     protected ElementStateProvider createStateProvider() {
         return new TemplateTextElementStateProvider(this);
+    }
+
+    @Override
+    protected void populateJson(JsonObject json) {
+        json.put(TemplateNode.KEY_TYPE, TYPE);
+
+        json.put("binding", binding.toJson());
     }
 }
