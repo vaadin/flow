@@ -767,7 +767,7 @@ public class Element implements Serializable {
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
      * unless configured using {@link #addSynchronizedProperty(String)} and
-     * {@link #addSynchronizedPropertyEvent(String...)}.
+     * {@link #addSynchronizedPropertyEvent(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
