@@ -18,21 +18,26 @@ package com.vaadin.server.communication;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.change.MapPutChange;
+import com.vaadin.hummingbird.namespace.TemplateNamespace;
+import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -92,9 +97,16 @@ public class UidlWriter implements Serializable {
             response.put("meta", meta);
         }
 
-        JsonArray changes = encodeChanges(ui);
-        if (changes.length() != 0) {
-            response.put("changes", changes);
+        JsonArray stateChanges = Json.createArray();
+        JsonObject templates = Json.createObject();
+
+        encodeChanges(ui, stateChanges, templates);
+
+        if (stateChanges.length() != 0) {
+            response.put("changes", stateChanges);
+        }
+        if (templates.keys().length > 0) {
+            response.put("templates", templates);
         }
 
         List<JavaScriptInvocation> executeJavaScriptList = uiInternals
@@ -135,17 +147,46 @@ public class UidlWriter implements Serializable {
      *
      * @param ui
      *            the UI
-     * @return a JSON array of changes
+     * @param stateChanges
+     *            a JSON array to put state changes into
+     * @param templates
+     *            a JSON object to put new template nodes into
      */
-    private JsonArray encodeChanges(UI ui) {
-        JsonArray changes = Json.createArray();
-
+    private void encodeChanges(UI ui, JsonArray stateChanges,
+            JsonObject templates) {
         StateTree stateTree = ui.getInternals().getStateTree();
 
-        stateTree.collectChanges(
-                change -> changes.set(changes.length(), change.toJson()));
+        Consumer<TemplateNode> templateEncoder = new Consumer<TemplateNode>() {
+            private UIInternals uiInternals = ui.getInternals();
 
-        return changes;
+            @Override
+            public void accept(TemplateNode templateNode) {
+                // Send to client if it's a new template
+                if (!uiInternals.isTemplateSent(templateNode)) {
+                    uiInternals.setTemplateSent(templateNode);
+
+                    JsonObject json = templateNode.toJson(this);
+
+                    templates.put(Integer.toString(templateNode.getId()), json);
+                }
+            }
+        };
+
+        stateTree.collectChanges(change -> {
+            // Ensure new templates are sent to the client
+            if (change instanceof MapPutChange) {
+                MapPutChange put = (MapPutChange) change;
+                if (put.getNamespace() == TemplateNamespace.class
+                        && put.getKey().equals(Namespaces.ROOT_TEMPLATE_ID)) {
+                    Integer id = (Integer) put.getValue();
+                    TemplateNode template = TemplateNode.get(id.intValue());
+                    templateEncoder.accept(template);
+                }
+            }
+
+            // Encode the actual change
+            stateChanges.set(stateChanges.length(), change.toJson());
+        });
     }
 
     /**
