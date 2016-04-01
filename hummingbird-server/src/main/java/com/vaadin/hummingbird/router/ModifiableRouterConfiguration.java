@@ -181,6 +181,10 @@ public class ModifiableRouterConfiguration
      * parent view type may be rendered inside its own parent view type based on
      * configuration set using {@link #setParentView(Class, Class)}.
      * <p>
+     * NOTE: A view can have one parent or none. If the given view has been
+     * routed before without a parent, it will now on always use the parent set
+     * in this method.
+     * <p>
      * The path is made up of segments separated by <code>/</code>. A segment
      * name enclosed in <code>{</code> and <code>}</code> is interpreted as a
      * placeholder segment. If no exact match is found when resolving a URL but
@@ -199,8 +203,10 @@ public class ModifiableRouterConfiguration
      * @param parentViewType
      *            the type of the parent view to use for the path, not
      *            <code>null</code>
+     * @return this router configuration
      */
-    public void setRoute(String path, Class<? extends View> viewType,
+    public ModifiableRouterConfiguration setRoute(String path,
+            Class<? extends View> viewType,
             Class<? extends HasChildView> parentViewType) {
         assert path != null;
         assert viewType != null;
@@ -208,6 +214,8 @@ public class ModifiableRouterConfiguration
 
         setParentView(viewType, parentViewType);
         setRoute(path, viewType);
+
+        return this;
     }
 
     private void mapViewToRoute(Class<? extends View> viewType, String path) {
@@ -223,6 +231,10 @@ public class ModifiableRouterConfiguration
      * rendered inside a parent view type based on configuration set using
      * {@link #setParentView(Class, Class)}.
      * <p>
+     * NOTE: A view can have one parent or none. If this view has been
+     * registered previously with a parent, the parent will be used for this
+     * route too.
+     * <p>
      * See {@link #setRoute(String, Class, Class)} for a description of the
      * supported path formats.
      *
@@ -231,8 +243,10 @@ public class ModifiableRouterConfiguration
      *            <code>null</code>
      * @param viewType
      *            the view type to use for the path, not <code>null</code>
+     * @return this router configuration
      */
-    public void setRoute(String path, Class<? extends View> viewType) {
+    public ModifiableRouterConfiguration setRoute(String path,
+            Class<? extends View> viewType) {
         assert path != null;
         assert viewType != null;
 
@@ -253,6 +267,7 @@ public class ModifiableRouterConfiguration
                 return path;
             }
         });
+        return this;
     }
 
     /**
@@ -260,9 +275,9 @@ public class ModifiableRouterConfiguration
      * using {@link #setRoute(String, Class)} or
      * {@link #setRoute(String, Class, Class)}, the parent view type will be
      * used whenever the child view type is rendered, so that the child view
-     * type is rendered inside the parent view type. This nesting is applied
-     * recursively as long as a defined parent view type is found for the
-     * previous parent type.
+     * type is always rendered inside the parent view type. This nesting is
+     * applied recursively as long as a defined parent view type is found for
+     * the previous parent type.
      * <p>
      * To change a mapping, you must explicitly remove it using
      * <code>setParentView(type, null)</code> first.
@@ -273,8 +288,10 @@ public class ModifiableRouterConfiguration
      * @param parentView
      *            the parent view type to use, or <code>null</code> to remove a
      *            mapping
+     * @return this router configuration
      */
-    public void setParentView(Class<? extends View> viewType,
+    public ModifiableRouterConfiguration setParentView(
+            Class<? extends View> viewType,
             Class<? extends HasChildView> parentView) {
         assert viewType != null;
 
@@ -293,6 +310,7 @@ public class ModifiableRouterConfiguration
                     "There is alerady a parent view configured for "
                             + viewType);
         }
+        return this;
     }
 
     @Override
@@ -335,8 +353,10 @@ public class ModifiableRouterConfiguration
      *            the path to use for the route
      * @param navigationHandler
      *            the navigation handler to use for the route
+     * @return this router configuration
      */
-    public void setRoute(String path, NavigationHandler navigationHandler) {
+    public ModifiableRouterConfiguration setRoute(String path,
+            NavigationHandler navigationHandler) {
         assert path != null;
         assert navigationHandler != null;
         assert !path.startsWith("/");
@@ -345,6 +365,8 @@ public class ModifiableRouterConfiguration
         // Start the recursion
         setRoute(new RouteLocation(new Location(path)), routeTreeRoot,
                 navigationHandler);
+
+        return this;
     }
 
     private void setRoute(RouteLocation location, RouteTreeNode node,
