@@ -17,6 +17,8 @@ package com.vaadin.hummingbird.template;
 
 import com.vaadin.hummingbird.StateNode;
 
+import elemental.json.JsonValue;
+
 /**
  * Representation of a static or dynamic value derived from a template. A
  * binding can be used e.g. as the value of an element attribute or as the text
@@ -55,4 +57,11 @@ public interface TemplateBinding {
             return value.toString();
         }
     }
+
+    /**
+     * Encodes this binding as JSON.
+     * 
+     * @return the encoded JSONvalue
+     */
+    JsonValue toJson();
 }
