@@ -1173,6 +1173,24 @@ public class Element implements Serializable {
         return stateProvider.getStyle(getNode());
     }
 
+    /**
+     * Adds the event and the property whose value should automatically be
+     * synchronized from the client side and updated in this {@link Element}.
+     * <p>
+     * Only properties which can be set using setProperty can be synchronized,
+     * e.g. classList cannot be synchronized.
+     * <p>
+     * This is convenient method for batching
+     * {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String)}.
+     *
+     * @param property
+     *            the property name to synchronize
+     * @param eventType
+     *            the client side event which trigger synchronization of the
+     *            property values to the server
+     * @return this element
+     */
     public Element synchronizeProperty(String property, String eventType) {
         addSynchronizedProperty(property);
         addSynchronizedPropertyEvent(eventType);

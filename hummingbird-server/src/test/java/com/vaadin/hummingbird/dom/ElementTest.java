@@ -1391,7 +1391,7 @@ public class ElementTest {
     @Test
     public void getSetSynchronizedProperty() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedProperties("foo", "bar");
+        e.addSynchronizedProperty("foo").addSynchronizedProperty("bar");
         String[] expected = new String[] { "bar", "foo" };
 
         Assert.assertArrayEquals(expected,
@@ -1402,7 +1402,7 @@ public class ElementTest {
     @Test
     public void setSameSynchronizedPropertyManyTimes() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedProperties("foo", "foo");
+        e.addSynchronizedProperty("foo").addSynchronizedProperty("foo");
         String[] expected = new String[] { "foo" };
 
         Assert.assertArrayEquals(expected,
@@ -1421,7 +1421,8 @@ public class ElementTest {
     @Test
     public void setSameSynchronizedEventManyTimes() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedPropertiesEvents("foo", "foo");
+        e.addSynchronizedPropertyEvent("foo")
+                .addSynchronizedPropertyEvent("foo");
         String[] expected = new String[] { "foo" };
 
         Assert.assertArrayEquals(expected,
@@ -1440,19 +1441,20 @@ public class ElementTest {
     @Test
     public void getDefaultSynchronizedProperties() {
         Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedProperties().size());
+        Assert.assertEquals(0, e.getSynchronizedProperties().count());
     }
 
     @Test
     public void getDefaultSynchronizedPropertiesEvent() {
         Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedPropertiesEvents().size());
+        Assert.assertEquals(0, e.getSynchronizedPropertiesEvents().count());
     }
 
     @Test
     public void getSetSynchronizedEvent() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedPropertiesEvents("foo", "bar");
+        e.addSynchronizedPropertyEvent("foo")
+                .addSynchronizedPropertyEvent("bar");
         String[] expected = new String[] { "bar", "foo" };
 
         Assert.assertArrayEquals(expected,
@@ -1462,25 +1464,13 @@ public class ElementTest {
     @Test(expected = IllegalArgumentException.class)
     public void setNullSynchronizedEvent() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedPropertiesEvents((String[]) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNullSynchronizedEventType() {
-        Element e = ElementFactory.createDiv();
-        e.setSynchronizedPropertiesEvents((String) null);
+        e.addSynchronizedPropertyEvent(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setNullSynchronizedProperty() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedProperties((String[]) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNullSynchronizedPropertyType() {
-        Element e = ElementFactory.createDiv();
-        e.setSynchronizedProperties((String) null);
+        e.addSynchronizedProperty(null);
     }
 
     @Test(expected = IllegalStateException.class)

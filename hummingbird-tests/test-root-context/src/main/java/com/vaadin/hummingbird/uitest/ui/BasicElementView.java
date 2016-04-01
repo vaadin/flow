@@ -32,8 +32,8 @@ public class BasicElementView extends TestView {
 
         Element input = ElementFactory.createInput()
                 .setAttribute("placeholder", "Synchronized on change event")
-                .setSynchronizedProperties("value")
-                .setSynchronizedPropertiesEvents("change");
+                .addSynchronizedProperty("value")
+                .addSynchronizedPropertyEvent("change");
 
         button.addEventListener("click", e -> {
             String buttonText = e.getEventData()
@@ -48,7 +48,7 @@ public class BasicElementView extends TestView {
                     e2 -> greeting.removeFromParent());
 
             mainElement.appendChild(greeting);
-        } , "element.textContent");
+        }, "element.textContent");
 
         Element helloWorldElement = ElementFactory.createDiv("Hello world");
 

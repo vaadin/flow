@@ -12,8 +12,8 @@ To get the value from the input to the server, you could use the event data feat
 
 [source,java]
 ----
-textInput.setSynchronizedProperties("value");
-textInput.setSynchronizedPropertiesEvents("change");
+textInput.addSynchronizedProperty("value");
+textInput.addSynchronizedPropertyEvent("change");
 ----
 
 Any changes in the listed properties will be synchronized to the server when any one of the listed events occur in the browser.

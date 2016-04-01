@@ -11,8 +11,8 @@ public class PageTitleUI extends UI {
         Element input = new Element("input");
         input.setAttribute("id", "input");
         input.setProperty("value", "");
-        input.setSynchronizedProperties("value");
-        input.setSynchronizedPropertiesEvents("change");
+        input.addSynchronizedProperty("value");
+        input.addSynchronizedPropertyEvent("change");
 
         Element updateButton = new Element("div");
         updateButton.setAttribute("id", "button");

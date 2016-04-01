@@ -64,6 +64,11 @@ public class SynchronizedPropertiesNamespace extends MapNamespace {
 
         @Override
         public boolean add(String item) {
+            return addAll(Collections.singleton(item));
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends String> items) {
             Set<String> set;
             if (namespace.get(key) == null) {
                 set = new HashSet<>();
@@ -71,7 +76,7 @@ public class SynchronizedPropertiesNamespace extends MapNamespace {
                 set = getDataSet();
             }
             int size = set.size();
-            set.add(item);
+            set.addAll(items);
             if (size != set.size()) {
                 namespace.putJson(key, set.stream().map(Json::create)
                         .collect(JsonUtil.asArray()));
@@ -172,7 +177,9 @@ public class SynchronizedPropertiesNamespace extends MapNamespace {
 
         private SetViewIterator(SetView view, int serial) {
             this.view = view;
-            iterator = view.getDataSet().iterator();
+            iterator = view.isEmpty()
+                    ? Collections.<String> emptyList().iterator()
+                    : view.getDataSet().iterator();
             this.serial = serial;
         }
 
@@ -217,7 +224,7 @@ public class SynchronizedPropertiesNamespace extends MapNamespace {
      *
      * @return the event types which should trigger synchronization
      */
-    public Set<String> getSynchronizedPropertiesEvents() {
+    public Set<String> getSynchronizedPropertyEvents() {
         return new SetView(this, KEY_EVENTS);
     }
 

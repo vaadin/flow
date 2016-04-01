@@ -27,8 +27,8 @@ public abstract class UserInput extends UI {
         Element textInput = ElementFactory.createInput();
         textInput.setAttribute("placeholder", "Please enter your name");
 
-        textInput.setSynchronizedProperties("value");
-        textInput.setSynchronizedPropertiesEvents("change");
+        textInput.addSynchronizedProperty("value");
+        textInput.addSynchronizedPropertyEvent("change");
 
         Element button = ElementFactory.createDiv();
         button.addEventListener("click", e -> {

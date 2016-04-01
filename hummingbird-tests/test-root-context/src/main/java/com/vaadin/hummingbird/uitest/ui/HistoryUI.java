@@ -112,8 +112,8 @@ public class HistoryUI extends UI {
 
     private static Element createSynchronizedInput(String id) {
         return ElementFactory.createInput().setAttribute("id", id)
-                .setSynchronizedProperties("value")
-                .setSynchronizedPropertiesEvents("change");
+                .addSynchronizedProperty("value")
+                .addSynchronizedPropertyEvent("change");
     }
 
 }
