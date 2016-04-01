@@ -31,9 +31,11 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
-import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.TemplateNamespace;
+import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;
@@ -237,18 +239,41 @@ public class Element implements Serializable {
      * Gets the element mapped to the given state node.
      *
      * @param node
-     *            the state node
-     * @return the element for the node
+     *            the state node, not <code>null</code>
+     * @return the element for the node, not <code>null</code>
      */
     public static Element get(StateNode node) {
+        assert node != null;
+
         if (node.hasNamespace(TextNodeNamespace.class)) {
-            return new Element(node, TextElementStateProvider.get());
+            return new Element(node, BasicTextElementStateProvider.get());
         } else if (node.hasNamespace(ElementDataNamespace.class)) {
             return new Element(node, BasicElementStateProvider.get());
+        } else if (node.hasNamespace(TemplateNamespace.class)) {
+            TemplateNode rootTemplate = node
+                    .getNamespace(TemplateNamespace.class).getRootTemplate();
+            return new Element(node, rootTemplate.getStateProvider());
         } else {
             throw new IllegalArgumentException(
                     "Node is not valid as an element");
         }
+    }
+
+    /**
+     * Gets the element mapped to the given state node and element state
+     * provider.
+     *
+     * @param node
+     *            the state node
+     * @param stateProvider
+     *            the element state provider
+     * @return an element for the node and state provider, not <code>null</code>
+     */
+    // Static builder instead of regular constructor to keep it slightly out of
+    // view
+    public static Element get(StateNode node,
+            ElementStateProvider stateProvider) {
+        return new Element(node, stateProvider);
     }
 
     /**
@@ -263,8 +288,8 @@ public class Element implements Serializable {
             throw new IllegalArgumentException("Text cannot be null");
         }
 
-        return new Element(TextElementStateProvider.createStateNode(text),
-                TextElementStateProvider.get());
+        return new Element(BasicTextElementStateProvider.createStateNode(text),
+                BasicTextElementStateProvider.get());
     }
 
     /**

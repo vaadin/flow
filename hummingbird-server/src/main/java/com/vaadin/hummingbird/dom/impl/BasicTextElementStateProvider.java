@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
 
 /**
  * Handles storing and retrieval of the state information for a text node using
@@ -24,7 +25,8 @@ import com.vaadin.hummingbird.StateNode;
  * @since
  * @author Vaadin Ltd
  */
-public class BasicTextElementStateProvider extends AbstractTextElementStateProvider {
+public class BasicTextElementStateProvider
+        extends AbstractTextElementStateProvider {
     private static final BasicTextElementStateProvider INSTANCE = new BasicTextElementStateProvider();
 
     private BasicTextElementStateProvider() {
@@ -74,5 +76,10 @@ public class BasicTextElementStateProvider extends AbstractTextElementStateProvi
         assert textContent != null;
 
         node.getNamespace(TextNodeNamespace.class).setText(textContent);
+    }
+
+    @Override
+    public Element getParent(StateNode node) {
+        return BasicElementStateProvider.get().getParent(node);
     }
 }
