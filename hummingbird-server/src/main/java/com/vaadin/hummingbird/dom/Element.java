@@ -766,8 +766,8 @@ public class Element implements Serializable {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #setSynchronizedProperties(String...)} and
-     * {@link #setSynchronizedPropertiesEvents(String...)}.
+     * unless configured using {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String...)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -784,8 +784,8 @@ public class Element implements Serializable {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #setSynchronizedProperties(String...)} and
-     * {@link #setSynchronizedPropertiesEvents(String...)}.
+     * unless configured using {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -802,8 +802,8 @@ public class Element implements Serializable {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #setSynchronizedProperties(String...)} and
-     * {@link #setSynchronizedPropertiesEvents(String...)}.
+     * unless configured using {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -824,8 +824,8 @@ public class Element implements Serializable {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #setSynchronizedProperties(String...)} and
-     * {@link #setSynchronizedPropertiesEvents(String...)}.
+     * unless configured using {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -1038,8 +1038,8 @@ public class Element implements Serializable {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #setSynchronizedProperties(String...)} and
-     * {@link #setSynchronizedPropertiesEvents(String...)}.
+     * unless configured using {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -1055,8 +1055,8 @@ public class Element implements Serializable {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #setSynchronizedProperties(String...)} and
-     * {@link #setSynchronizedPropertiesEvents(String...)}.
+     * unless configured using {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String)}.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -1072,8 +1072,8 @@ public class Element implements Serializable {
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
-     * unless configured using {@link #setSynchronizedProperties(String...)} and
-     * {@link #setSynchronizedPropertiesEvents(String...)}.
+     * unless configured using {@link #addSynchronizedProperty(String)} and
+     * {@link #addSynchronizedPropertyEvent(String)}.
      *
      * @return a stream of defined property names
      */
@@ -1251,8 +1251,7 @@ public class Element implements Serializable {
      */
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
-        stateProvider.getSynchronizedPropertyEvents(getNode())
-                .remove(property);
+        stateProvider.getSynchronizedPropertyEvents(getNode()).remove(property);
         return this;
     }
 
@@ -1278,8 +1277,8 @@ public class Element implements Serializable {
      * Gets the properties whose values should automatically be synchronized
      * from the client side and updated in this {@link Element}.
      *
-     * @see #setSynchronizedProperties(String...)
-     * @see #setSynchronizedPropertiesEvents(String...)
+     * @see #addSynchronizedProperty(String)
+     * @see #addSynchronizedPropertyEvent(String)
      *
      * @return the property names which are synchronized
      */
@@ -1290,15 +1289,14 @@ public class Element implements Serializable {
     /**
      * Gets the events to use for property synchronization from the client side.
      *
-     * @see #setSynchronizedProperties(String...)
-     * @see #setSynchronizedPropertiesEvents(String...)
+     * @see #addSynchronizedProperty(String)
+     * @see #addSynchronizedPropertyEvent(String)
      *
      * @return the client side events which trigger synchronization of the
      *         property values to the server
      */
     public Stream<String> getSynchronizedPropertiesEvents() {
-        return stateProvider.getSynchronizedPropertyEvents(getNode())
-                .stream();
+        return stateProvider.getSynchronizedPropertyEvents(getNode()).stream();
     }
 
     /**
