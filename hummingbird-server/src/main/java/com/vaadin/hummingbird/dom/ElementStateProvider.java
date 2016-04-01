@@ -331,6 +331,6 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the event types which should trigger synchronization
      */
-    Set<String> getSynchronizedPropertiesEvents(StateNode node);
+    Set<String> getSynchronizedPropertyEvents(StateNode node);
 
 }

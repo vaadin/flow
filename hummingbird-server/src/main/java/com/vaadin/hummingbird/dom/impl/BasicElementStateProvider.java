@@ -356,7 +356,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
+    public Set<String> getSynchronizedPropertyEvents(StateNode node) {
         return node.getNamespace(SynchronizedPropertiesNamespace.class)
                 .getSynchronizedPropertyEvents();
     }

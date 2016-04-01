@@ -212,7 +212,7 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
+    public Set<String> getSynchronizedPropertyEvents(StateNode node) {
         throw new UnsupportedOperationException();
     }
 }

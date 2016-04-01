@@ -1235,7 +1235,7 @@ public class Element implements Serializable {
      */
     public Element addSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
-        stateProvider.getSynchronizedPropertiesEvents(getNode()).add(eventType);
+        stateProvider.getSynchronizedPropertyEvents(getNode()).add(eventType);
         return this;
     }
 
@@ -1251,7 +1251,7 @@ public class Element implements Serializable {
      */
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
-        stateProvider.getSynchronizedPropertiesEvents(getNode())
+        stateProvider.getSynchronizedPropertyEvents(getNode())
                 .remove(property);
         return this;
     }
@@ -1269,7 +1269,7 @@ public class Element implements Serializable {
      */
     public Element removeSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
-        stateProvider.getSynchronizedPropertiesEvents(getNode())
+        stateProvider.getSynchronizedPropertyEvents(getNode())
                 .remove(eventType);
         return this;
     }
@@ -1297,7 +1297,7 @@ public class Element implements Serializable {
      *         property values to the server
      */
     public Stream<String> getSynchronizedPropertiesEvents() {
-        return stateProvider.getSynchronizedPropertiesEvents(getNode())
+        return stateProvider.getSynchronizedPropertyEvents(getNode())
                 .stream();
     }
 
