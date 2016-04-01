@@ -18,8 +18,13 @@ package com.vaadin.hummingbird.template;
 import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.dom.ElementStateProvider;
+
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 /**
  * A node in the AST parsed from a template file. A template node is immutable.
@@ -28,6 +33,11 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
  * @author Vaadin Ltd
  */
 public abstract class TemplateNode implements Serializable {
+    /**
+     * Key for the node type in JSON messages.
+     */
+    public static final String KEY_TYPE = "type";
+
     private static final AtomicInteger nextId = new AtomicInteger();
 
     private static final ConcurrentHashMap<Integer, TemplateNode> registry = new ConcurrentHashMap<>();
@@ -134,4 +144,44 @@ public abstract class TemplateNode implements Serializable {
      * @return the element state provider, not <code>null</code>
      */
     protected abstract ElementStateProvider createStateProvider();
+
+    /**
+     * Encodes this node as JSON.
+     *
+     * @param childEncoder
+     *            callback that makes sure a child template is made available to
+     *            the client
+     * @return a JSON object with the data for this node
+     */
+    public final JsonObject toJson(Consumer<TemplateNode> childEncoder) {
+        JsonObject json = Json.createObject();
+
+        // Let subclass encode its own data
+        populateJson(json);
+
+        assert json.hasKey(KEY_TYPE) : "updateJson must set " + KEY_TYPE;
+
+        int childCount = getChildCount();
+        if (childCount > 0) {
+            JsonArray children = Json.createArray();
+
+            for (int i = 0; i < childCount; i++) {
+                TemplateNode child = getChild(i);
+                childEncoder.accept(child);
+                children.set(i, Json.create(child.getId()));
+            }
+
+            json.put("children", children);
+        }
+
+        return json;
+    }
+
+    /**
+     * Serializes data specific to a subclass to the provided JSON object.
+     *
+     * @param json
+     *            the JSON object to add data to, not <code>null</code>
+     */
+    protected abstract void populateJson(JsonObject json);
 }
