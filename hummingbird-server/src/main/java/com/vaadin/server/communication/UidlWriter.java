@@ -18,21 +18,26 @@ package com.vaadin.server.communication;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.change.MapPutChange;
+import com.vaadin.hummingbird.namespace.TemplateNamespace;
+import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -92,8 +97,25 @@ public class UidlWriter implements Serializable {
             response.put("meta", meta);
         }
 
-        JsonArray changes = encodeChanges(ui);
+        JsonObject templates = Json.createObject();
+        Consumer<TemplateNode> templateEncoder = new Consumer<TemplateNode>() {
+            @Override
+            public void accept(TemplateNode templateNode) {
+                // Send to client if it's a new template
+                if (uiInternals.shouldSendTemplate(templateNode)) {
+                    JsonObject json = templateNode.toJson(this);
+
+                    templates.put(Integer.toString(templateNode.getId()), json);
+                }
+            }
+        };
+
+        JsonArray changes = encodeChanges(ui, templateEncoder);
         if (changes.length() != 0) {
+            if (templates.keys().length > 0) {
+                response.put("templates", templates);
+            }
+
             response.put("changes", changes);
         }
 
@@ -135,15 +157,32 @@ public class UidlWriter implements Serializable {
      *
      * @param ui
      *            the UI
+     * @param templateEncoder
+     *            a callback that ensures a template node is available on the
+     *            client
      * @return a JSON array of changes
      */
-    private JsonArray encodeChanges(UI ui) {
+    private JsonArray encodeChanges(UI ui,
+            Consumer<TemplateNode> templateEncoder) {
         JsonArray changes = Json.createArray();
 
         StateTree stateTree = ui.getInternals().getStateTree();
 
-        stateTree.collectChanges(
-                change -> changes.set(changes.length(), change.toJson()));
+        stateTree.collectChanges(change -> {
+            // Ensure new templates are sent to the client
+            if (change instanceof MapPutChange) {
+                MapPutChange put = (MapPutChange) change;
+                if (put.getNamespace() == TemplateNamespace.class
+                        && put.getKey().equals(Namespaces.ROOT_TEMPLATE_ID)) {
+                    Integer id = (Integer) put.getValue();
+                    TemplateNode template = TemplateNode.get(id.intValue());
+                    templateEncoder.accept(template);
+                }
+            }
+
+            // Encode the actual change
+            changes.set(changes.length(), change.toJson());
+        });
 
         return changes;
     }
