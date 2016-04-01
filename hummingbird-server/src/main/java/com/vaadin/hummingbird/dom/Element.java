@@ -1174,8 +1174,10 @@ public class Element implements Serializable {
     }
 
     /**
-     * Adds the event and the property whose value should automatically be
-     * synchronized from the client side and updated in this {@link Element}.
+     * Synchronize the given {@code property}'s value when the given
+     * {@code eventType} occurs on this element on the client side. As a result
+     * the {@code property}'s value is automatically updated to this
+     * {@link Element}.
      * <p>
      * Only properties which can be set using setProperty can be synchronized,
      * e.g. classList cannot be synchronized.
