@@ -54,6 +54,13 @@ public class MessageSender {
         this.registry = registry;
     }
 
+    /**
+     * Sends any pending invocations to the server if there is no request in
+     * progress and the application is running.
+     * <p>
+     * If a request is in progress, this method does nothing and assumes that it
+     * is called again when the requests completes.
+     */
     public void sendInvocationsToServer() {
         if (!registry.getUILifecycle().isRunning()) {
             Console.warn(
