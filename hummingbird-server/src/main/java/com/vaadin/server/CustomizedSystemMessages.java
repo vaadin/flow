@@ -50,22 +50,24 @@ public class CustomizedSystemMessages extends SystemMessages
         implements Serializable {
 
     /**
-     * Sets the URL to go to when the session has expired.
+     * Sets the URL the user will be redirected to after dismissing a "session
+     * expired" message.
      *
      * @param sessionExpiredURL
-     *            the URL to go to, or null to reload current
+     *            the URL to redirect to, or null to refresh the page
      */
     public void setSessionExpiredURL(String sessionExpiredURL) {
         this.sessionExpiredURL = sessionExpiredURL;
     }
 
     /**
-     * Enables or disables the notification. If disabled, the set URL (or
-     * current) is loaded directly when next transaction between server and
-     * client happens.
+     * Sets whether a "session expired" notification should be shown to the end
+     * user. If the notification is disabled the user will be immediately
+     * redirected to the URL returned by {@link #getSessionExpiredURL()}.
      *
      * @param sessionExpiredNotificationEnabled
-     *            true = enabled, false = disabled
+     *            {@code true} to show the notification to the end user,
+     *            {@code false} to redirect directly
      */
     public void setSessionExpiredNotificationEnabled(
             boolean sessionExpiredNotificationEnabled) {
@@ -73,47 +75,55 @@ public class CustomizedSystemMessages extends SystemMessages
     }
 
     /**
-     * Sets the caption of the notification. Set to null for no caption. If both
-     * caption and message are null, client automatically forwards to
-     * sessionExpiredUrl after timeout timer expires. Timer uses value read from
-     * HTTPSession.getMaxInactiveInterval()
+     * Sets the caption to show in a "session expired" notification.
+     * <p>
+     * If both {@link #getSessionExpiredCaption()} and
+     * {@link #getSessionExpiredMessage()} return null, the user will
+     * automatically be forwarded to the URL returned by
+     * {@link #getSessionExpiredURL()} when the session expires.
      *
      * @param sessionExpiredCaption
-     *            the caption
+     *            The caption to show or {@code null} to show no caption.
      */
     public void setSessionExpiredCaption(String sessionExpiredCaption) {
         this.sessionExpiredCaption = sessionExpiredCaption;
     }
 
     /**
-     * Sets the message of the notification. Set to null for no message. If both
-     * caption and message are null, client automatically forwards to
-     * sessionExpiredUrl after timeout timer expires. Timer uses value read from
-     * HTTPSession.getMaxInactiveInterval()
+     * Sets the message to show in a "session expired" notification.
+     * <p>
+     * If both {@link #getSessionExpiredCaption()} and
+     * {@link #getSessionExpiredMessage()} return null, the user will
+     * automatically be forwarded to the URL returned by
+     * {@link #getSessionExpiredURL()} when the session expires.
      *
      * @param sessionExpiredMessage
-     *            the message
+     *            The message to show or {@code null} to show no message.
      */
     public void setSessionExpiredMessage(String sessionExpiredMessage) {
         this.sessionExpiredMessage = sessionExpiredMessage;
     }
 
     /**
-     * Sets the URL to go to when there is a authentication error.
+     * Sets the URL the user will be redirected to after dismissing an
+     * "authentication error" message.
      *
      * @param authenticationErrorURL
-     *            the URL to go to, or null to reload current
+     *            the URL to redirect to, or null to refresh the page
      */
     public void setAuthenticationErrorURL(String authenticationErrorURL) {
         this.authenticationErrorURL = authenticationErrorURL;
     }
 
     /**
-     * Enables or disables the notification. If disabled, the set URL (or
-     * current) is loaded directly.
+     * Sets whether an "authentication error" notification should be shown to
+     * the end user. If the notification is disabled the user will be
+     * immediately redirected to the URL returned by
+     * {@link #getAuthenticationErrorURL()}.
      *
      * @param authenticationErrorNotificationEnabled
-     *            true = enabled, false = disabled
+     *            {@code true} to show the notification to the end user,
+     *            {@code false} to redirect directly
      */
     public void setAuthenticationErrorNotificationEnabled(
             boolean authenticationErrorNotificationEnabled) {
@@ -121,11 +131,10 @@ public class CustomizedSystemMessages extends SystemMessages
     }
 
     /**
-     * Sets the caption of the notification. Set to null for no caption. If both
-     * caption and message is null, the notification is disabled;
+     * Sets the caption to show in an "authentication error" notification.
      *
      * @param authenticationErrorCaption
-     *            the caption
+     *            The caption to show or {@code null} to show no caption.
      */
     public void setAuthenticationErrorCaption(
             String authenticationErrorCaption) {
@@ -133,11 +142,10 @@ public class CustomizedSystemMessages extends SystemMessages
     }
 
     /**
-     * Sets the message of the notification. Set to null for no message. If both
-     * caption and message is null, the notification is disabled;
+     * Sets the message to show in an "authentication error" notification.
      *
      * @param authenticationErrorMessage
-     *            the message
+     *            The message to show or {@code null} to show no message.
      */
     public void setAuthenticationErrorMessage(
             String authenticationErrorMessage) {
@@ -145,21 +153,24 @@ public class CustomizedSystemMessages extends SystemMessages
     }
 
     /**
-     * Sets the URL to go to when there is a communication error.
+     * Sets the URL the user will be redirected to after dismissing a
+     * "communication error" message.
      *
      * @param communicationErrorURL
-     *            the URL to go to, or null to reload current
+     *            the URL to redirect to, or null to refresh the page
      */
     public void setCommunicationErrorURL(String communicationErrorURL) {
         this.communicationErrorURL = communicationErrorURL;
     }
 
     /**
-     * Enables or disables the notification. If disabled, the set URL (or
-     * current) is loaded directly.
+     * Sets whether a "communication error" notification should be shown to the
+     * end user. If the notification is disabled the user will be immediately
+     * redirected to the URL returned by {@link #getCommunicationErrorURL()}.
      *
      * @param communicationErrorNotificationEnabled
-     *            true = enabled, false = disabled
+     *            {@code true} to show the notification to the end user,
+     *            {@code false} to redirect directly
      */
     public void setCommunicationErrorNotificationEnabled(
             boolean communicationErrorNotificationEnabled) {
@@ -167,43 +178,44 @@ public class CustomizedSystemMessages extends SystemMessages
     }
 
     /**
-     * Sets the caption of the notification. Set to null for no caption. If both
-     * caption and message is null, the notification is disabled;
+     * Sets the caption to show in a "communication error" notification.
      *
      * @param communicationErrorCaption
-     *            the caption
+     *            The caption to show or {@code null} to show no caption.
      */
     public void setCommunicationErrorCaption(String communicationErrorCaption) {
         this.communicationErrorCaption = communicationErrorCaption;
     }
 
     /**
-     * Sets the message of the notification. Set to null for no message. If both
-     * caption and message is null, the notification is disabled;
+     * Sets the message to show in a "communication error" notification.
      *
      * @param communicationErrorMessage
-     *            the message
+     *            The message to show or {@code null} to show no message.
      */
     public void setCommunicationErrorMessage(String communicationErrorMessage) {
         this.communicationErrorMessage = communicationErrorMessage;
     }
 
     /**
-     * Sets the URL to go to when an internal error occurs.
+     * Sets the URL the user will be redirected to after dismissing an "internal
+     * error" message.
      *
      * @param internalErrorURL
-     *            the URL to go to, or null to reload current
+     *            the URL to redirect to, or null to refresh the page
      */
     public void setInternalErrorURL(String internalErrorURL) {
         this.internalErrorURL = internalErrorURL;
     }
 
     /**
-     * Enables or disables the notification. If disabled, the set URL (or
-     * current) is loaded directly.
+     * Sets whether an "internal error" notification should be shown to the end
+     * user. If the notification is disabled the user will be immediately
+     * redirected to the URL returned by {@link #getInternalErrorURL()}.
      *
      * @param internalErrorNotificationEnabled
-     *            true = enabled, false = disabled
+     *            {@code true} to show the notification to the end user,
+     *            {@code false} to redirect directly
      */
     public void setInternalErrorNotificationEnabled(
             boolean internalErrorNotificationEnabled) {
@@ -211,44 +223,44 @@ public class CustomizedSystemMessages extends SystemMessages
     }
 
     /**
-     * Sets the caption of the notification. Set to null for no caption. If both
-     * caption and message is null, the notification is disabled;
+     * Sets the caption to show in an "internal error" notification.
      *
      * @param internalErrorCaption
-     *            the caption
+     *            The caption to show or {@code null} to show no caption.
      */
     public void setInternalErrorCaption(String internalErrorCaption) {
         this.internalErrorCaption = internalErrorCaption;
     }
 
     /**
-     * Sets the message of the notification. Set to null for no message. If both
-     * caption and message is null, the notification is disabled;
+     * Sets the message to show in an "internal error" notification.
      *
      * @param internalErrorMessage
-     *            the message
+     *            The message to show or {@code null} to show no message.
      */
     public void setInternalErrorMessage(String internalErrorMessage) {
         this.internalErrorMessage = internalErrorMessage;
     }
 
     /**
-     * Sets the URL to redirect to when the browser has cookies disabled.
+     * Sets the URL the user will be redirected to after dismissing a
+     * "cookies disabled" message.
      *
      * @param cookiesDisabledURL
-     *            the URL to redirect to, or null to reload the current URL
+     *            the URL to redirect to, or null to refresh the page
      */
     public void setCookiesDisabledURL(String cookiesDisabledURL) {
         this.cookiesDisabledURL = cookiesDisabledURL;
     }
 
     /**
-     * Enables or disables the notification for "cookies disabled" messages. If
-     * disabled, the URL returned by {@link #getCookiesDisabledURL()} is loaded
-     * directly.
+     * Sets whether a "cookies disabled" notification should be shown to the end
+     * user. If the notification is disabled the user will be immediately
+     * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
      *
      * @param cookiesDisabledNotificationEnabled
-     *            true to enable "cookies disabled" messages, false otherwise
+     *            {@code true} to show the notification to the end user,
+     *            {@code false} to redirect directly
      */
     public void setCookiesDisabledNotificationEnabled(
             boolean cookiesDisabledNotificationEnabled) {
@@ -256,24 +268,20 @@ public class CustomizedSystemMessages extends SystemMessages
     }
 
     /**
-     * Sets the caption of the "cookies disabled" notification. Set to null for
-     * no caption. If both caption and message is null, the notification is
-     * disabled.
+     * Sets the caption to show in an "cookies disabled" notification.
      *
      * @param cookiesDisabledCaption
-     *            the caption for the "cookies disabled" notification
+     *            The caption to show or {@code null} to show no caption.
      */
     public void setCookiesDisabledCaption(String cookiesDisabledCaption) {
         this.cookiesDisabledCaption = cookiesDisabledCaption;
     }
 
     /**
-     * Sets the message of the "cookies disabled" notification. Set to null for
-     * no message. If both caption and message is null, the notification is
-     * disabled.
+     * Sets the message to show in a "cookies disabled" notification.
      *
      * @param cookiesDisabledMessage
-     *            the message for the "cookies disabled" notification
+     *            The message to show or {@code null} to show no message.
      */
     public void setCookiesDisabledMessage(String cookiesDisabledMessage) {
         this.cookiesDisabledMessage = cookiesDisabledMessage;

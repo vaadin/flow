@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -243,7 +244,7 @@ public abstract class VaadinService implements Serializable {
      */
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
-        ArrayList<RequestHandler> handlers = new ArrayList<RequestHandler>();
+        ArrayList<RequestHandler> handlers = new ArrayList<>();
         handlers.add(new SessionRequestHandler());
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
@@ -433,7 +434,7 @@ public abstract class VaadinService implements Serializable {
                 if (session.getState() == VaadinSessionState.OPEN) {
                     closeSession(session);
                 }
-                ArrayList<UI> uis = new ArrayList<UI>(session.getUIs());
+                ArrayList<UI> uis = new ArrayList<>(session.getUIs());
                 for (final UI ui : uis) {
                     ui.accessSynchronously(new Command() {
                         @Override
@@ -657,7 +658,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
-            throws SessionExpiredException, ServiceException {
+                    throws SessionExpiredException, ServiceException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -751,7 +752,6 @@ public abstract class VaadinService implements Serializable {
      *            The request for which to create a VaadinSession
      * @return A new VaadinSession
      * @throws ServiceException
-     *
      */
     protected VaadinSession createVaadinSession(VaadinRequest request)
             throws ServiceException {
@@ -971,7 +971,7 @@ public abstract class VaadinService implements Serializable {
         // Stores all attributes (security key, reference to this context
         // instance) so they can be added to the new session
         Set<String> attributeNames = oldSession.getAttributeNames();
-        HashMap<String, Object> attrs = new HashMap<String, Object>(
+        HashMap<String, Object> attrs = new HashMap<>(
                 attributeNames.size() * 2);
         for (String name : attributeNames) {
             Object value = oldSession.getAttribute(name);
@@ -992,8 +992,9 @@ public abstract class VaadinService implements Serializable {
 
         // Restores all attributes (security key, reference to this context
         // instance)
-        for (String name : attrs.keySet()) {
-            Object value = attrs.get(name);
+        for (Entry<String, Object> entry : attrs.entrySet()) {
+            String name = entry.getKey();
+            Object value = entry.getValue();
             newSession.setAttribute(name, value);
 
             // Ensure VaadinServiceSession knows where it's stored
@@ -1087,7 +1088,7 @@ public abstract class VaadinService implements Serializable {
      * @param session
      */
     private void removeClosedUIs(final VaadinSession session) {
-        ArrayList<UI> uis = new ArrayList<UI>(session.getUIs());
+        ArrayList<UI> uis = new ArrayList<>(session.getUIs());
         for (final UI ui : uis) {
             if (ui.isClosing()) {
                 ui.accessSynchronously(new Command() {
@@ -1337,7 +1338,7 @@ public abstract class VaadinService implements Serializable {
 
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
-            throws ServiceException {
+                    throws ServiceException {
         if (vaadinSession != null) {
             vaadinSession.lock();
         }

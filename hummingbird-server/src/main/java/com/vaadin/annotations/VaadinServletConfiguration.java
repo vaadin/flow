@@ -102,7 +102,7 @@ public @interface VaadinServletConfiguration {
      * @see DeploymentConfiguration#getHeartbeatInterval()
      */
     @InitParameterName(Constants.SERVLET_PARAMETER_HEARTBEAT_INTERVAL)
-    public int heartbeatInterval() default DefaultDeploymentConfiguration.DEFAULT_HEARTBEAT_INTERVAL;
+    int heartbeatInterval() default DefaultDeploymentConfiguration.DEFAULT_HEARTBEAT_INTERVAL;
 
     /**
      * Whether a session should be closed when all its open UIs have been idle

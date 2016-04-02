@@ -73,7 +73,7 @@ public class CurrentInstance implements Serializable {
                 return null;
             }
 
-            Map<Class<?>, CurrentInstance> value = new HashMap<Class<?>, CurrentInstance>();
+            Map<Class<?>, CurrentInstance> value = new HashMap<>();
 
             // Copy all inheritable values to child map
             for (Entry<Class<?>, CurrentInstance> e : parentValue.entrySet()) {
@@ -87,7 +87,7 @@ public class CurrentInstance implements Serializable {
     };
 
     private CurrentInstance(Object instance, boolean inheritable) {
-        this.instance = new WeakReference<Object>(instance);
+        this.instance = new WeakReference<>(instance);
         this.inheritable = inheritable;
     }
 
@@ -201,7 +201,7 @@ public class CurrentInstance implements Serializable {
         } else {
             assert type.isInstance(instance) : "Invald instance type";
             if (map == null) {
-                map = new HashMap<Class<?>, CurrentInstance>();
+                map = new HashMap<>();
                 instances.set(map);
             }
 
@@ -239,8 +239,9 @@ public class CurrentInstance implements Serializable {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static void restoreInstances(Map<Class<?>, CurrentInstance> old) {
         boolean removeStale = false;
-        for (Class c : old.keySet()) {
-            CurrentInstance ci = old.get(c);
+        for (Entry<Class<?>, CurrentInstance> entry : old.entrySet()) {
+            Class c = entry.getKey();
+            CurrentInstance ci = entry.getValue();
             Object v = ci.instance.get();
             if (v == null) {
                 removeStale = true;
@@ -288,10 +289,11 @@ public class CurrentInstance implements Serializable {
         if (map == null) {
             return Collections.emptyMap();
         } else {
-            Map<Class<?>, CurrentInstance> copy = new HashMap<Class<?>, CurrentInstance>();
+            Map<Class<?>, CurrentInstance> copy = new HashMap<>();
             boolean removeStale = false;
-            for (Class<?> c : map.keySet()) {
-                CurrentInstance ci = map.get(c);
+            for (Entry<Class<?>, CurrentInstance> entry : map.entrySet()) {
+                Class<?> c = entry.getKey();
+                CurrentInstance ci = entry.getValue();
                 if (ci.instance.get() == null) {
                     removeStale = true;
                 } else if (ci.inheritable || !onlyInheritable) {
@@ -340,7 +342,7 @@ public class CurrentInstance implements Serializable {
      */
     public static Map<Class<?>, CurrentInstance> setCurrent(
             VaadinSession session) {
-        Map<Class<?>, CurrentInstance> old = new HashMap<Class<?>, CurrentInstance>();
+        Map<Class<?>, CurrentInstance> old = new HashMap<>();
         old.put(VaadinSession.class, set(VaadinSession.class, session, true));
         VaadinService service = null;
         if (session != null) {

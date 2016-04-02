@@ -35,7 +35,7 @@ import java.util.EventObject;
 public class SessionInitEvent extends EventObject {
 
     private final VaadinSession session;
-    private final VaadinRequest request;
+    private final transient VaadinRequest request;
 
     /**
      * Creates a new event.
