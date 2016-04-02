@@ -277,7 +277,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     @Override
     protected VaadinServletService createServletService(
             DeploymentConfiguration deploymentConfiguration)
-                    throws ServiceException {
+            throws ServiceException {
         VaadinServletService service = super.createServletService(
                 deploymentConfiguration);
         final SystemMessagesProvider provider = service
