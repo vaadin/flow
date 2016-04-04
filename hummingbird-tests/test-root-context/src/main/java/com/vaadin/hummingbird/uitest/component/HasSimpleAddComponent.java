@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.uitest.component;
 
 import java.util.Optional;
 
+import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasElement;
 
@@ -45,8 +46,8 @@ public interface HasSimpleAddComponent extends HasElement {
 
     default void removeAllComponents() {
         for (int i = 0; i < getElement().getChildCount(); i++) {
-            Optional<Component> component = getElement().getChild(i)
-                    .getComponent();
+            Optional<Component> component = ElementUtil
+                    .getComponent(getElement().getChild(i));
             if (component.isPresent()) {
                 getElement().removeChild(i);
                 i--;

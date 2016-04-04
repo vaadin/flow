@@ -16,7 +16,11 @@
 package com.vaadin.hummingbird.dom;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.regex.Pattern;
+
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Composite;
 
 /**
  * Provides utility methods for {@link Element}.
@@ -157,6 +161,49 @@ public class ElementUtil {
             return "A style value cannot end in semicolon";
         }
         return null;
+    }
+
+    /**
+     * Defines a mapping between this element and the given {@link Component}.
+     * <p>
+     * An element can only be mapped to one component and the mapping cannot be
+     * changed. The only exception is {@link Composite} which can overwrite the
+     * mapping for its content.
+     *
+     * @param element
+     *            the element to map to the component
+     * @param component
+     *            the component this element is attached to
+     */
+    public static void setComponent(Element element, Component component) {
+        if (element == null) {
+            throw new IllegalArgumentException("Element must not be null");
+        }
+        if (component == null) {
+            throw new IllegalArgumentException("Component must not be null");
+        }
+
+        Optional<Component> currentComponent = getComponent(element);
+        if (currentComponent.isPresent() && !(component instanceof Composite)) {
+            throw new IllegalStateException(
+                    "A component is already attached to this element");
+        }
+        element.getStateProvider().setComponent(element.getNode(), component);
+    }
+
+    /**
+     * Gets the component the element has been mapped to, if any.
+     * <p>
+     * If the element is mapped to a {@link Composite} or a {@link Composite}
+     * chain, this will always return the outermost {@link Composite}.
+     *
+     * @param element
+     *            the element to retrieve the component for
+     * @return an optional component, or an empty optional if no component has
+     *         been mapped to this element
+     */
+    public static Optional<Component> getComponent(Element element) {
+        return element.getStateProvider().getComponent(element.getNode());
     }
 
 }

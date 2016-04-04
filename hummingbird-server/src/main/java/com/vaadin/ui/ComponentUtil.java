@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementUtil;
 
 /**
  * Utility methods for {@link Component}.
@@ -42,8 +43,11 @@ public interface ComponentUtil {
         assert element != null;
         assert componentConsumer != null;
 
-        if (element.getComponent().isPresent()) {
-            componentConsumer.accept(element.getComponent().get());
+        Optional<Component> maybeComponent = ElementUtil.getComponent(element);
+
+        if (maybeComponent.isPresent()) {
+            Component component = maybeComponent.get();
+            componentConsumer.accept(component);
             return;
         }
 
@@ -53,19 +57,4 @@ public interface ComponentUtil {
         }
     }
 
-    /**
-     * Checks if the given component is attached to the given element.
-     *
-     * @param component
-     *            the component
-     * @param element
-     *            the element
-     * @return {@code true} if the component is attached to the given element,
-     *         {@code false} otherwise
-     */
-    static boolean isAttachedTo(Component component, Element element) {
-        Optional<Component> elementComponent = element.getComponent();
-        return elementComponent.isPresent()
-                && elementComponent.get() == component;
-    }
 }
