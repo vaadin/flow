@@ -1592,37 +1592,37 @@ public class ElementTest {
     @Test
     public void componentNotInitiallyAttached() {
         Element e = ElementFactory.createDiv();
-        Assert.assertFalse(e.getComponent().isPresent());
+        Assert.assertFalse(ElementUtil.getComponent(e).isPresent());
     }
 
     @Test
     public void attachToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
-        e.setComponent(c);
-        Assert.assertEquals(c, e.getComponent().get());
+        ElementUtil.setComponent(e, c);
+        Assert.assertEquals(c, ElementUtil.getComponent(e).get());
     }
 
     @Test
     public void attachComponentToTextElement() {
         Element e = Element.createText("Text text");
         Component c = Mockito.mock(Component.class);
-        e.setComponent(c);
-        Assert.assertEquals(c, e.getComponent().get());
+        ElementUtil.setComponent(e, c);
+        Assert.assertEquals(c, ElementUtil.getComponent(e).get());
     }
 
     @Test(expected = IllegalStateException.class)
     public void attachTwiceToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
-        e.setComponent(c);
-        e.setComponent(c);
+        ElementUtil.setComponent(e, c);
+        ElementUtil.setComponent(e, c);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void attachToNull() {
         Element e = ElementFactory.createDiv();
-        e.setComponent(null);
+        ElementUtil.setComponent(e, null);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1630,8 +1630,8 @@ public class ElementTest {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         Component c2 = Mockito.mock(Component.class);
-        e.setComponent(c);
-        e.setComponent(c2);
+        ElementUtil.setComponent(e, c);
+        ElementUtil.setComponent(e, c2);
     }
 
     @Test

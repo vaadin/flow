@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementUtil;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -92,7 +93,7 @@ public abstract class Component implements HasElement, Serializable {
             throw new IllegalArgumentException("Element must not be null");
         }
         component.element = element;
-        element.setComponent(component);
+        ElementUtil.setComponent(element, component);
     }
 
     /**
@@ -103,11 +104,14 @@ public abstract class Component implements HasElement, Serializable {
      * @return the parent component
      */
     public Optional<Component> getParent() {
-        assert ComponentUtil.isAttachedTo(this, getElement());
+        Component c = getCompositeParent();
+        if (c != null) {
+            return Optional.of(c);
+        }
 
         Element parentElement = getElement().getParent();
         while (parentElement != null
-                && !parentElement.getComponent().isPresent()) {
+                && !ElementUtil.getComponent(parentElement).isPresent()) {
             parentElement = parentElement.getParent();
         }
 
@@ -115,7 +119,33 @@ public abstract class Component implements HasElement, Serializable {
             return Optional.empty();
         }
 
-        return parentElement.getComponent();
+        return ElementUtil.getComponent(parentElement);
+    }
+
+    private Component getCompositeParent() {
+        Optional<Component> maybeComposite = ElementUtil
+                .getComponent(getElement());
+        if (maybeComposite.isPresent()) {
+            Component component = maybeComposite.get();
+            if (!(component instanceof Composite) || component == this) {
+                return null;
+            }
+            Composite composite = (Composite) component;
+
+            // If this is the component inside a composite or a nested
+            // composite, we need to traverse the composite hierarchy to find
+            // the parent
+            while (true) {
+                Component compositeChild = composite.getContent();
+                if (compositeChild == this) {
+                    return composite;
+                }
+
+                composite = (Composite) composite.getContent();
+            }
+
+        }
+        return null;
     }
 
     /**
@@ -127,7 +157,10 @@ public abstract class Component implements HasElement, Serializable {
      * @return the child components of this component
      */
     public Stream<Component> getChildren() {
-        assert ComponentUtil.isAttachedTo(this, getElement());
+        // This should not ever be called for a Composite as it will return
+        // wrong results
+        assert !(this instanceof Composite);
+        assert ElementUtil.getComponent(getElement()).get() == this;
 
         Builder<Component> childComponents = Stream.builder();
         getElement().getChildren().forEach(childElement -> {
