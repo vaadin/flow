@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import com.vaadin.hummingbird.uitest.component.Button;
 import com.vaadin.hummingbird.uitest.component.Div;
 import com.vaadin.hummingbird.uitest.component.Hr;
-import com.vaadin.hummingbird.uitest.component.Text;
+import com.vaadin.ui.Text;
 
 public class DependencyView extends AbstractDivView {
 
