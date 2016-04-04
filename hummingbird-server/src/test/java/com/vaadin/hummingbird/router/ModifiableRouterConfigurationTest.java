@@ -18,8 +18,10 @@ package com.vaadin.hummingbird.router;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -30,6 +32,7 @@ import com.vaadin.hummingbird.router.ViewRendererTest.AnotherTestView;
 import com.vaadin.hummingbird.router.ViewRendererTest.ParentView;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.ui.UI;
+import com.vaadin.util.FluentAPITestHelper;
 
 public class ModifiableRouterConfigurationTest {
     @Test
@@ -489,6 +492,15 @@ public class ModifiableRouterConfigurationTest {
         router.reconfigure(conf -> {
             conf.setPageTitleGenerator(null);
         });
+    }
+
+    @Test
+    public void testAPIFluent() {
+        Set<String> ignore = new HashSet<>();
+        ignore.add("resolveRoute");
+
+        FluentAPITestHelper.testClassAPI(ModifiableRouterConfiguration.class,
+                ignore);
     }
 
 }
