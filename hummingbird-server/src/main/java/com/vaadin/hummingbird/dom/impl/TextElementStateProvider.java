@@ -30,6 +30,7 @@ import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Composite;
 
 import elemental.json.JsonValue;
 
@@ -236,6 +237,7 @@ public class TextElementStateProvider implements ElementStateProvider {
     @Override
     public void setComponent(StateNode node, Component component) {
         assert node != null;
+        assert component != null;
         node.getNamespace(ComponentMappingNamespace.class)
                 .setComponent(component);
     }
@@ -245,5 +247,20 @@ public class TextElementStateProvider implements ElementStateProvider {
         assert node != null;
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
+    }
+
+    @Override
+    public void setComposite(StateNode node, Composite composite) {
+        assert node != null;
+        assert composite != null;
+        node.getNamespace(ComponentMappingNamespace.class)
+                .setComposite(composite);
+    }
+
+    @Override
+    public Optional<Composite> getComposite(StateNode node) {
+        assert node != null;
+        return node.getNamespace(ComponentMappingNamespace.class)
+                .getComposite();
     }
 }

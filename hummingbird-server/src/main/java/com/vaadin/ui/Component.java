@@ -103,7 +103,13 @@ public abstract class Component implements HasElement, Serializable {
      * @return the parent component
      */
     public Optional<Component> getParent() {
-        assert ComponentUtil.isAttachedTo(this, getElement());
+        assert (this instanceof Composite)
+                || getElement().getComponent().get() == this;
+
+        Component c = getCompositeParent();
+        if (c != null) {
+            return Optional.of(c);
+        }
 
         Element parentElement = getElement().getParent();
         while (parentElement != null
@@ -118,6 +124,30 @@ public abstract class Component implements HasElement, Serializable {
         return parentElement.getComponent();
     }
 
+    private Component getCompositeParent() {
+        Optional<Composite> maybeComposite = getElement().getComposite();
+        if (maybeComposite.isPresent()) {
+            Composite composite = maybeComposite.get();
+            if (composite == this) {
+                return null;
+            }
+
+            // If this is the component inside a composite or a nested
+            // composite, we need to traverse the composite hierarchy to find
+            // the parent
+            while (true) {
+                Component compositeChild = composite.getContent();
+                if (compositeChild == this) {
+                    return composite;
+                }
+
+                composite = (Composite) composite.getContent();
+            }
+
+        }
+        return null;
+    }
+
     /**
      * Gets the child components of this component.
      * <p>
@@ -127,7 +157,10 @@ public abstract class Component implements HasElement, Serializable {
      * @return the child components of this component
      */
     public Stream<Component> getChildren() {
-        assert ComponentUtil.isAttachedTo(this, getElement());
+        // This should not ever be called for a Composite as it will return
+        // wrong results
+        assert !(this instanceof Composite);
+        assert getElement().getComponent().get() == this;
 
         Builder<Component> childComponents = Stream.builder();
         getElement().getChildren().forEach(childElement -> {

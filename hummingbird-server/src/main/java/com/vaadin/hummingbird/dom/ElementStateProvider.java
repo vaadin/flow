@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Composite;
 
 import elemental.json.JsonValue;
 
@@ -375,8 +376,29 @@ public interface ElementStateProvider extends Serializable {
      *
      * @param node
      *            the node containing the data
-     * @return the component this element is mapped to
+     * @return an optional component, or an empty optional if no component has
+     *         been mapped to this node
      */
     Optional<Component> getComponent(StateNode node);
+
+    /**
+     * Defines a mapping between the element and the given composite.
+     *
+     * @param node
+     *            the node containing the data
+     * @param composite
+     *            the composite to map the element to
+     */
+    void setComposite(StateNode node, Composite composite);
+
+    /**
+     * Gets the composite this element is mapped to.
+     *
+     * @param node
+     *            the node containing the data
+     * @return an optional composite , or an empty optional if no composite has
+     *         been mapped to this node
+     */
+    Optional<Composite> getComposite(StateNode node);
 
 }

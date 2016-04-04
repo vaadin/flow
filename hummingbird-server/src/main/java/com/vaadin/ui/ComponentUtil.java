@@ -42,9 +42,18 @@ public interface ComponentUtil {
         assert element != null;
         assert componentConsumer != null;
 
-        if (element.getComponent().isPresent()) {
-            componentConsumer.accept(element.getComponent().get());
-            return;
+        Optional<Component> component = element.getComponent();
+
+        if (component.isPresent()) {
+            Optional<Composite> composite = element.getComposite();
+            if (composite.isPresent()) {
+                // If element has one or more composites, return the outermost
+                componentConsumer.accept(composite.get());
+                return;
+            } else {
+                componentConsumer.accept(element.getComponent().get());
+                return;
+            }
         }
 
         for (int i = 0; i < element.getChildCount(); i++) {
@@ -53,19 +62,4 @@ public interface ComponentUtil {
         }
     }
 
-    /**
-     * Checks if the given component is attached to the given element.
-     *
-     * @param component
-     *            the component
-     * @param element
-     *            the element
-     * @return {@code true} if the component is attached to the given element,
-     *         {@code false} otherwise
-     */
-    static boolean isAttachedTo(Component component, Element element) {
-        Optional<Component> elementComponent = element.getComponent();
-        return elementComponent.isPresent()
-                && elementComponent.get() == component;
-    }
 }
