@@ -43,6 +43,7 @@ import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Composite;
 
 import elemental.json.JsonValue;
 
@@ -399,9 +400,23 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
+    }
+
+    @Override
+    public void setComposite(StateNode node, Composite composite) {
+        assert node != null;
+        assert composite != null;
+        node.getNamespace(ComponentMappingNamespace.class)
+                .setComposite(composite);
+    }
+
+    @Override
+    public Optional<Composite> getComposite(StateNode node) {
+        assert node != null;
+        return node.getNamespace(ComponentMappingNamespace.class)
+                .getComposite();
     }
 
 }

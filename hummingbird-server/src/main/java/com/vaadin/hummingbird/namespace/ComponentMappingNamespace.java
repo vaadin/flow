@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Composite;
 
 /**
  * A server side only namespace for mapping a node to components.
@@ -31,6 +32,7 @@ import com.vaadin.ui.Component;
 public class ComponentMappingNamespace extends Namespace {
 
     private Component component = null;
+    private Composite composite = null;
 
     /**
      * Creates an instance of this namespace.
@@ -65,6 +67,27 @@ public class ComponentMappingNamespace extends Namespace {
      */
     public Optional<Component> getComponent() {
         return Optional.ofNullable(component);
+    }
+
+    /**
+     * Assigns the given composite to this node.
+     *
+     * @param composite
+     *            the composite to assign to this node, not {@code null}
+     */
+    public void setComposite(Composite composite) {
+        assert (composite != null) : "Composite must not be null";
+        this.composite = composite;
+    }
+
+    /**
+     * Gets the composite this node has been mapped to, if any.
+     *
+     * @return an optional composite, or an empty optional if no composite has
+     *         been mapped to this node
+     */
+    public Optional<Composite> getComposite() {
+        return Optional.ofNullable(composite);
     }
 
     @Override

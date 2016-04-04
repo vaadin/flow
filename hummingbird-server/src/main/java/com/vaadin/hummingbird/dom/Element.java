@@ -35,6 +35,7 @@ import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Composite;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -1327,6 +1328,35 @@ public class Element implements Serializable {
      */
     public Optional<Component> getComponent() {
         return stateProvider.getComponent(getNode());
+    }
+
+    /**
+     * Defines a mapping between this element and the given {@link Composite}.
+     * <p>
+     * This method will overwrite any previous composite reference the element
+     * has. If an element is connected to multiple composite instance, the
+     * reference must be set to the outermost one.
+     *
+     * @param composite
+     *            the composite this element is attached to
+     * @return this element
+     */
+    public Element setComposite(Composite composite) {
+        stateProvider.setComposite(getNode(), composite);
+        return this;
+    }
+
+    /**
+     * Gets the composite this element has been mapped to, if any.
+     * <p>
+     * If an element is connected to multiple composite instance, this returns a
+     * reference to the outermost one.
+     *
+     * @return an optional composite, or an empty optional if no composite has
+     *         been mapped to this element
+     */
+    public Optional<Composite> getComposite() {
+        return stateProvider.getComposite(getNode());
     }
 
 }
