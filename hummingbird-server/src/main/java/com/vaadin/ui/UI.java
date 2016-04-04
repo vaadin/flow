@@ -101,7 +101,7 @@ public class UI implements Component, Serializable, PollNotifier {
 
     private EventRegistrationHandle domPollListener = null;
 
-    private final FrameworkData frameworkData = new FrameworkData(this);
+    private final UIInternals internals = new UIInternals(this);
 
     private final Page page = new Page(this);
 
@@ -176,7 +176,7 @@ public class UI implements Component, Serializable, PollNotifier {
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 getPushConfiguration().setPushMode(PushMode.DISABLED);
-                getFrameworkData().setPushConnection(null);
+                getInternals().setPushConnection(null);
             }
             this.session = session;
         }
@@ -329,7 +329,7 @@ public class UI implements Component, Serializable, PollNotifier {
 
         // FIXME Send info to client
 
-        PushConnection pushConnection = getFrameworkData().getPushConnection();
+        PushConnection pushConnection = getInternals().getPushConnection();
         if (pushConnection != null) {
             // Push the Rpc to the client. The connection will be closed when
             // the UI is detached and cleaned up.
@@ -637,7 +637,7 @@ public class UI implements Component, Serializable, PollNotifier {
             throw new IllegalStateException("Push not enabled");
         }
 
-        PushConnection pushConnection = getFrameworkData().getPushConnection();
+        PushConnection pushConnection = getInternals().getPushConnection();
         assert pushConnection != null;
 
         /*
@@ -647,7 +647,7 @@ public class UI implements Component, Serializable, PollNotifier {
          */
         session.getService().runPendingAccessTasks(session);
 
-        if (!getFrameworkData().getStateTree().hasDirtyNodes()) {
+        if (!getInternals().getStateTree().hasDirtyNodes()) {
             // Do not push if there is nothing to push
             return;
         }
@@ -721,7 +721,7 @@ public class UI implements Component, Serializable, PollNotifier {
      * @return the state node for the UI, in practice the state tree root node
      */
     private StateNode getNode() {
-        return getFrameworkData().getStateTree().getRootNode();
+        return getInternals().getStateTree().getRootNode();
     }
 
     /**
@@ -729,8 +729,8 @@ public class UI implements Component, Serializable, PollNotifier {
      *
      * @return the framework data object
      */
-    public FrameworkData getFrameworkData() {
-        return frameworkData;
+    public UIInternals getInternals() {
+        return internals;
     }
 
     /**
@@ -749,7 +749,7 @@ public class UI implements Component, Serializable, PollNotifier {
      *         innermost part
      */
     public List<View> getActiveViewChain() {
-        return frameworkData.getActiveViewChain();
+        return internals.getActiveViewChain();
     }
 
     /**
@@ -759,7 +759,7 @@ public class UI implements Component, Serializable, PollNotifier {
      * @return the view location, not <code>null</code>
      */
     public Location getActiveViewLocation() {
-        return frameworkData.getActiveViewLocation();
+        return internals.getActiveViewLocation();
     }
 
     /**

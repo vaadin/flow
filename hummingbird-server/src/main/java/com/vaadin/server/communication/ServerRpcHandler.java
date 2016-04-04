@@ -254,7 +254,7 @@ public class ServerRpcHandler implements Serializable {
 
         checkWidgetsetVersion(rpcRequest.getWidgetsetVersion());
 
-        int expectedId = ui.getFrameworkData()
+        int expectedId = ui.getInternals()
                 .getLastProcessedClientToServerId() + 1;
         if (rpcRequest.getClientToServerId() != -1
                 && rpcRequest.getClientToServerId() != expectedId) {
@@ -289,7 +289,7 @@ public class ServerRpcHandler implements Serializable {
                     "FIXME: Implement resync and call it above");
         } else {
             // Message id ok, process RPCs
-            ui.getFrameworkData().setLastProcessedClientToServerId(expectedId);
+            ui.getInternals().setLastProcessedClientToServerId(expectedId);
             handleInvocations(ui, rpcRequest.getSyncId(),
                     rpcRequest.getRpcInvocationsData());
         }
@@ -410,7 +410,7 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private static StateNode getNode(UI ui, JsonObject invocationJson) {
-        StateNode node = ui.getFrameworkData().getStateTree()
+        StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
 
         if (node == null) {

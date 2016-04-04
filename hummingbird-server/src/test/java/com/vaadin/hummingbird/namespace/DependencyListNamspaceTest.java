@@ -31,7 +31,7 @@ public class DependencyListNamspaceTest {
     @Test
     public void addAbsoluteStyleSheetDependency() {
         MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
 
         Assert.assertEquals(0, namespace.size());
@@ -52,7 +52,7 @@ public class DependencyListNamspaceTest {
     @Test
     public void addRelativeStyleSheetDependency() {
         MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
 
         Assert.assertEquals(0, namespace.size());
@@ -73,7 +73,7 @@ public class DependencyListNamspaceTest {
     @Test
     public void addAbsoluteJavaScriptDependency() {
         MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
 
         Assert.assertEquals(0, namespace.size());
@@ -93,7 +93,7 @@ public class DependencyListNamspaceTest {
     @Test
     public void addRelativeJavaScriptDependency() {
         MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
 
         Assert.assertEquals(0, namespace.size());
@@ -129,7 +129,7 @@ public class DependencyListNamspaceTest {
 
     private void assertUrlUnchanged(String url) {
         MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
         namespace.add(new Dependency(Type.JAVASCRIPT, url));
         Assert.assertEquals(url, ((JsonObject) namespace.get(0))
@@ -138,7 +138,7 @@ public class DependencyListNamspaceTest {
 
     private void assertUrlPrefixed(String url) {
         MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
         namespace.add(new Dependency(Type.JAVASCRIPT, url));
         Assert.assertEquals(url, ((JsonObject) namespace.get(0))
@@ -148,7 +148,7 @@ public class DependencyListNamspaceTest {
     @Test
     public void urlAddedOnlyOnce() {
         MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
         namespace.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
         namespace.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
@@ -164,7 +164,7 @@ public class DependencyListNamspaceTest {
     public void addDependencyPerformance() {
         long start = System.currentTimeMillis();
         MockUI ui = new MockUI();
-        DependencyListNamespace namespace = ui.getFrameworkData().getStateTree()
+        DependencyListNamespace namespace = ui.getInternals().getStateTree()
                 .getRootNode().getNamespace(DependencyListNamespace.class);
         for (int i = 0; i < 10000; i++) {
             namespace.add(
