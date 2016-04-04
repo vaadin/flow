@@ -26,7 +26,7 @@ import com.vaadin.server.communication.StreamResourceRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -71,7 +71,7 @@ public class StreamResourceRegistry implements Serializable {
 
     /**
      * Creates stream resource registry for provided {@code session}.
-     * 
+     *
      * @param session
      *            vaadin session
      */
@@ -89,7 +89,7 @@ public class StreamResourceRegistry implements Serializable {
      * needed anymore. Note that it is the developer's responsibility to
      * unregister resources. Otherwise resources won't be garbage collected
      * until the session expires which causes memory leak.
-     * 
+     *
      * @param resource
      *            stream resource to register
      * @return registration handler.
@@ -107,10 +107,11 @@ public class StreamResourceRegistry implements Serializable {
 
     /**
      * Get registered resource by its {@code URI}.
-     * 
+     *
      * @param uri
      *            resource URI
-     * @return registered resource if any
+     * @return an optional resource, or an empty optional no resource has been
+     *         registered with this URI
      */
     public Optional<StreamResource> getResource(URI uri) {
         assert session.hasLock();
