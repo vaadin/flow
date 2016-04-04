@@ -23,7 +23,7 @@ import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.ui.Component;
 
 /**
- * A server side only namespace for mapping a node to components.
+ * A server side only namespace for mapping a node to a component.
  *
  * @author Vaadin
  * @since
@@ -53,7 +53,6 @@ public class ComponentMappingNamespace extends Namespace {
      */
     public void setComponent(Component component) {
         assert component != null : "Component must not be null";
-        assert this.component == null : "A component reference cannot be replaced";
         this.component = component;
     }
 
