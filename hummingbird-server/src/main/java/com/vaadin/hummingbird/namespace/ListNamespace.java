@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
@@ -42,6 +44,63 @@ import com.vaadin.hummingbird.change.NodeChange;
  *            the type of the items in the list
  */
 public abstract class ListNamespace<T> extends Namespace {
+
+    /**
+     * Provides access to a {@link ListNamespace} as a {@link Set}.
+     */
+    public static abstract class SetView<T> extends AbstractSet<T>
+            implements Serializable {
+
+        private ListNamespace<T> namespace;
+
+        public SetView(ListNamespace<T> namespace) {
+            this.namespace = namespace;
+        }
+
+        @Override
+        public int size() {
+            return namespace.size();
+        }
+
+        @Override
+        public void clear() {
+            namespace.clear();
+        }
+
+        @Override
+        public boolean add(T o) {
+            validate(o);
+            if (contains(o)) {
+                return false;
+            }
+
+            namespace.add(size(), o);
+            return true;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            validate(o);
+            // Uses iterator() which supports proper remove()
+            return super.remove(o);
+        }
+
+        protected abstract void validate(Object o);
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean contains(Object o) {
+            validate(o);
+
+            return namespace.indexOf((T) o) != -1;
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            return namespace.iterator();
+        }
+
+    }
 
     private transient List<T> values = new ArrayList<>();
 
