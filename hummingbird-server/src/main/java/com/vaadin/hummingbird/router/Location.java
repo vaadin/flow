@@ -87,7 +87,8 @@ public class Location implements Serializable {
      * Creates a new location without the first path segment. The result is
      * empty if this location only consists of one segment.
      *
-     * @return an optional new location
+     * @return an optional new location, or an empty optional if this location
+     *         has only one path segment
      */
     public Optional<Location> getSubLocation() {
         List<String> subSegments = segments.subList(1, segments.size());
