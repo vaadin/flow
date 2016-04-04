@@ -22,7 +22,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -34,7 +33,6 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.TextNodeNamespace;
-import com.vaadin.ui.Component;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -283,11 +281,24 @@ public class Element implements Serializable {
 
     /**
      * Gets the node this element is connected to.
+     * <p>
+     * This method is meant for internal use only.
      *
      * @return the node for this element
      */
     public StateNode getNode() {
         return node;
+    }
+
+    /**
+     * Gets the state provider for this element.
+     * <p>
+     * This method is meant for internal use only.
+     *
+     * @return the state provider for this element
+     */
+    public ElementStateProvider getStateProvider() {
+        return stateProvider;
     }
 
     /**
@@ -1296,37 +1307,6 @@ public class Element implements Serializable {
             }
         }
         return -1;
-    }
-
-    /**
-     * Defines a mapping between this element and the given {@link Component}.
-     *
-     * @param component
-     *            the component this element is attached to
-     * @return this element
-     */
-    public Element setComponent(Component component) {
-        if (component == null) {
-            throw new IllegalArgumentException("Component must not be null");
-        }
-
-        if (getComponent().isPresent()) {
-            throw new IllegalStateException(
-                    "A component is already attached to this element");
-        }
-        stateProvider.setComponent(getNode(), component);
-
-        return this;
-    }
-
-    /**
-     * Gets the component this element has been mapped to, if any.
-     *
-     * @return an optional component, or an empty optional if no component has
-     *         been mapped to this element
-     */
-    public Optional<Component> getComponent() {
-        return stateProvider.getComponent(getNode());
     }
 
 }

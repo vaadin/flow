@@ -1,0 +1,87 @@
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.hummingbird.dom;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.ui.Component;
+
+public class ElementUtilTest {
+    @Test
+    public void isNullValidAttribute() {
+        Assert.assertFalse(ElementUtil.isValidAttributeName(null));
+    }
+
+    @Test
+    public void isEmptyValidAttribute() {
+        Assert.assertFalse(ElementUtil.isValidAttributeName(""));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void isUpperCaseValidAttribute() {
+        // isValidAttributeName is designed to only be called with lowercase
+        // attribute names
+        ElementUtil.isValidAttributeName("FOO");
+    }
+
+    @Test
+    public void componentNotInitiallyAttached() {
+        Element e = ElementFactory.createDiv();
+        Assert.assertFalse(ElementUtil.getComponent(e).isPresent());
+    }
+
+    @Test
+    public void attachToComponent() {
+        Element e = ElementFactory.createDiv();
+        Component c = Mockito.mock(Component.class);
+        ElementUtil.setComponent(e, c);
+        Assert.assertEquals(c, ElementUtil.getComponent(e).get());
+    }
+
+    @Test
+    public void attachComponentToTextElement() {
+        Element e = Element.createText("Text text");
+        Component c = Mockito.mock(Component.class);
+        ElementUtil.setComponent(e, c);
+        Assert.assertEquals(c, ElementUtil.getComponent(e).get());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void attachTwiceToComponent() {
+        Element e = ElementFactory.createDiv();
+        Component c = Mockito.mock(Component.class);
+        ElementUtil.setComponent(e, c);
+        ElementUtil.setComponent(e, c);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void attachToNull() {
+        Element e = ElementFactory.createDiv();
+        ElementUtil.setComponent(e, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void attachTwoComponents() {
+        Element e = ElementFactory.createDiv();
+        Component c = Mockito.mock(Component.class);
+        Component c2 = Mockito.mock(Component.class);
+        ElementUtil.setComponent(e, c);
+        ElementUtil.setComponent(e, c2);
+    }
+
+}
