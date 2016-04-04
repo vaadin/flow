@@ -1419,6 +1419,39 @@ public class ElementTest {
     }
 
     @Test
+    public void synchronizeProperty() {
+        Element element = ElementFactory.createDiv();
+        element.synchronizeProperty("foo", "event");
+
+        element.getSynchronizedProperties()
+                .allMatch(prop -> prop.equals("foo"));
+        element.getSynchronizedPropertyEvents()
+                .allMatch(event -> event.equals("event"));
+    }
+
+    @Test
+    public void removeSynchronizedProperty() {
+        Element element = ElementFactory.createDiv();
+        element.addSynchronizedProperty("foo");
+        element.addSynchronizedProperty("bar");
+
+        element.removeSynchronizedProperty("foo");
+        element.getSynchronizedProperties()
+                .allMatch(prop -> prop.equals("bar"));
+    }
+
+    @Test
+    public void removeSynchronizedPropertyEvent() {
+        Element element = ElementFactory.createDiv();
+        element.addSynchronizedPropertyEvent("foo");
+        element.addSynchronizedPropertyEvent("bar");
+
+        element.removeSynchronizedPropertyEvent("foo");
+        element.getSynchronizedPropertyEvents()
+                .allMatch(event -> event.equals("bar"));
+    }
+
+    @Test
     public void setSameSynchronizedEventManyTimes() {
         Element e = ElementFactory.createDiv();
         e.addSynchronizedPropertyEvent("foo")
@@ -1426,7 +1459,7 @@ public class ElementTest {
         String[] expected = new String[] { "foo" };
 
         Assert.assertArrayEquals(expected,
-                e.getSynchronizedPropertiesEvents().toArray());
+                e.getSynchronizedPropertyEvents().toArray());
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getNamespace(SynchronizedPropertiesNamespace.class)
@@ -1447,7 +1480,7 @@ public class ElementTest {
     @Test
     public void getDefaultSynchronizedPropertiesEvent() {
         Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedPropertiesEvents().count());
+        Assert.assertEquals(0, e.getSynchronizedPropertyEvents().count());
     }
 
     @Test
@@ -1458,7 +1491,7 @@ public class ElementTest {
         String[] expected = new String[] { "bar", "foo" };
 
         Assert.assertArrayEquals(expected,
-                e.getSynchronizedPropertiesEvents().toArray());
+                e.getSynchronizedPropertyEvents().toArray());
     }
 
     @Test(expected = IllegalArgumentException.class)

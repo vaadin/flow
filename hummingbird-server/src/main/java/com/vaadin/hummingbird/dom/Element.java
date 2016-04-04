@@ -1182,7 +1182,7 @@ public class Element implements Serializable {
      * Only properties which can be set using setProperty can be synchronized,
      * e.g. classList cannot be synchronized.
      * <p>
-     * This is convenient method for batching
+     * This is convenience method for batching
      * {@link #addSynchronizedProperty(String)} and
      * {@link #addSynchronizedPropertyEvent(String)}.
      *
@@ -1257,7 +1257,7 @@ public class Element implements Serializable {
 
     /**
      * Removes the event from the event set that is used for property
-     * synchronization ({@link #getSynchronizedPropertiesEvents()}).
+     * synchronization ({@link #getSynchronizedPropertyEvents()}).
      * 
      * @see #addSynchronizedPropertyEvent(String)
      *
@@ -1295,7 +1295,7 @@ public class Element implements Serializable {
      * @return the client side events which trigger synchronization of the
      *         property values to the server
      */
-    public Stream<String> getSynchronizedPropertiesEvents() {
+    public Stream<String> getSynchronizedPropertyEvents() {
         return stateProvider.getSynchronizedPropertyEvents(getNode()).stream();
     }
 
@@ -1324,7 +1324,7 @@ public class Element implements Serializable {
         return -1;
     }
 
-    private void verifyEventType(String eventType) {
+    private static void verifyEventType(String eventType) {
         if (eventType == null) {
             throw new IllegalArgumentException("Event type must not be null");
         }
