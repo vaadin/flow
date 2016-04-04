@@ -13,24 +13,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.ui;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+import com.vaadin.hummingbird.dom.Element;
 
-public class BasicComponentIT extends AbstractBasicElementComponentIT {
+public class Text implements Component {
 
-    @Test
-    public void tagsInText() {
-        open();
-        WebElement root = findElement(By.id("root"));
+    private Element element;
 
-        // Selenium does not support text nodes...
-        Assert.assertEquals(
-                BasicComponentView.TEXT + "\n" + BasicComponentView.DIV_TEXT
-                        + "\n" + BasicComponentView.BUTTON_TEXT,
-                root.getText());
+    public Text(String text) {
+        element = Element.createText(text);
     }
+
+    public void setText(String text) {
+        getElement().setTextContent(text);
+    }
+
+    public String getText() {
+        return getElement().getOwnTextContent();
+    }
+
+    @Override
+    public Element getElement() {
+        return element;
+    }
+
 }
