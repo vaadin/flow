@@ -13,14 +13,26 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.ui;
 
-import com.vaadin.hummingbird.dom.Element;
+import org.junit.Assert;
+import org.junit.Test;
 
-public class Text extends AbstractHtmlComponent {
+public class TextTest {
 
-    public Text(String text) {
-        super(Element.createText(text));
+    @Test(expected = IllegalArgumentException.class)
+    public void nullText() {
+        new Text(null);
     }
 
+    @Test
+    public void emptyText() {
+        Assert.assertEquals("", new Text("").getText());
+    }
+
+    @Test
+    public void setGetText() {
+        Assert.assertEquals("Simple", new Text("Simple").getText());
+        Assert.assertEquals("åäö €#%°#", new Text("åäö €#%°#").getText());
+    }
 }

@@ -15,6 +15,22 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
 public class BasicComponentIT extends AbstractBasicElementComponentIT {
 
+    @Test
+    public void tagsInText() {
+        open();
+        WebElement root = findElement(By.id("root"));
+
+        // Selenium does not support text nodes...
+        Assert.assertEquals(
+                BasicComponentView.TEXT + "\n" + BasicComponentView.DIV_TEXT
+                        + "\n" + BasicComponentView.BUTTON_TEXT,
+                root.getText());
+    }
 }

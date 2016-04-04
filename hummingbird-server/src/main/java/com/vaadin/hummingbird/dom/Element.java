@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -1125,29 +1126,51 @@ public class Element implements Serializable {
     }
 
     /**
+     * Gets the text content of this element. This includes only the text from
+     * any immediate child text nodes.
+     *
+     * @return the text content of this element
+     */
+    public String getOwnTextContent() {
+        return getTextContent(e -> e.isTextNode());
+    }
+
+    /**
      * Gets the text content of this element. The text content recursively
      * includes the text content of all child nodes.
      *
      * @return the text content
      */
     public String getTextContent() {
+        return getTextContent(e -> true);
+    }
+
+    /**
+     * Returns the text content for this element by including children matching
+     * the given filter.
+     *
+     * @param childFilter
+     *            the filter used to decide whether to include a child or not
+     * @return the text content for this element and any matching child nodes
+     *         recursively, never {@code null}
+     */
+    private String getTextContent(Predicate<? super Element> childFilter) {
         if (isTextNode()) {
             return stateProvider.getTextContent(getNode());
         } else {
             StringBuilder builder = new StringBuilder();
-            appendTextContent(builder);
+            appendTextContent(builder, childFilter);
             return builder.toString();
         }
     }
 
-    private void appendTextContent(StringBuilder builder) {
+    private void appendTextContent(StringBuilder builder,
+            Predicate<? super Element> childFilter) {
         if (isTextNode()) {
             builder.append(getTextContent());
         } else {
-            int childCount = getChildCount();
-            for (int i = 0; i < childCount; i++) {
-                getChild(i).appendTextContent(builder);
-            }
+            getChildren().filter(childFilter)
+                    .forEach(e -> e.appendTextContent(builder, childFilter));
         }
     }
 

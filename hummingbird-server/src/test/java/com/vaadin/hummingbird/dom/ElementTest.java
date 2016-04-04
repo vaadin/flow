@@ -1624,6 +1624,20 @@ public class ElementTest {
         Component c2 = Mockito.mock(Component.class);
         e.attachComponent(c);
         e.attachComponent(c2);
-
     }
+
+    @Test
+    public void testGetOwnTextContent() {
+        Element element = ElementFactory.createDiv();
+        element.setTextContent("foo");
+        element.appendChild(ElementFactory.createSpan("span contents"));
+        element.appendChild(ElementFactory.createStrong("strong contents"));
+        element.appendChild(Element.createText("Another text node"));
+
+        Assert.assertEquals("fooAnother text node",
+                element.getOwnTextContent());
+        Assert.assertEquals("foospan contentsstrong contentsAnother text node",
+                element.getTextContent());
+    }
+
 }
