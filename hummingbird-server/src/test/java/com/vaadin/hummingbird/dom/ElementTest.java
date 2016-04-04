@@ -24,6 +24,7 @@ import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
+import com.vaadin.util.FluentAPITestHelper;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -88,26 +89,7 @@ public class ElementTest {
         // Returns index of child element
         ignore.add("indexOfChild");
 
-        for (Method m : Element.class.getDeclaredMethods()) {
-            if (!Modifier.isPublic(m.getModifiers())) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (m.getName().startsWith("get") || m.getName().startsWith("has")
-                    || m.getName().startsWith("is")
-                    || ignore.contains(m.getName())) {
-                // Ignore
-            } else {
-                // Setters and such
-                Class<?> returnType = m.getReturnType();
-                Assert.assertEquals(
-                        "Method " + m.getName() + " has invalid return type",
-                        Element.class, returnType);
-            }
-        }
-
+        FluentAPITestHelper.testClassAPI(Element.class, ignore);
     }
 
     @Test

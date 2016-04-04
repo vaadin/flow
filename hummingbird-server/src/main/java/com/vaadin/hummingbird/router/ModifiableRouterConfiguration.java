@@ -107,13 +107,16 @@ public class ModifiableRouterConfiguration
      *
      * @param resolver
      *            the resolver, not <code>null</code>
+     * @return this router configuration
      */
-    public void setResolver(Resolver resolver) {
+    public ModifiableRouterConfiguration setResolver(Resolver resolver) {
         throwIfImmutable();
         if (resolver == null) {
             throw new IllegalArgumentException("Resolver cannot be null");
         }
         this.resolver = resolver;
+
+        return this;
     }
 
     private void throwIfImmutable() {
@@ -203,8 +206,10 @@ public class ModifiableRouterConfiguration
      * @param parentViewType
      *            the type of the parent view to use for the path, not
      *            <code>null</code>
+     * @return this router configuration
      */
-    public void setRoute(String path, Class<? extends View> viewType,
+    public ModifiableRouterConfiguration setRoute(String path,
+            Class<? extends View> viewType,
             Class<? extends HasChildView> parentViewType) {
         assert path != null;
         assert viewType != null;
@@ -212,6 +217,8 @@ public class ModifiableRouterConfiguration
 
         setParentView(viewType, parentViewType);
         setRoute(path, viewType);
+
+        return this;
     }
 
     private void mapViewToRoute(Class<? extends View> viewType, String path) {
@@ -239,8 +246,10 @@ public class ModifiableRouterConfiguration
      *            <code>null</code>
      * @param viewType
      *            the view type to use for the path, not <code>null</code>
+     * @return this router configuration
      */
-    public void setRoute(String path, Class<? extends View> viewType) {
+    public ModifiableRouterConfiguration setRoute(String path,
+            Class<? extends View> viewType) {
         assert path != null;
         assert viewType != null;
 
@@ -261,6 +270,8 @@ public class ModifiableRouterConfiguration
                 return path;
             }
         });
+
+        return this;
     }
 
     /**
@@ -281,8 +292,10 @@ public class ModifiableRouterConfiguration
      * @param parentView
      *            the parent view type to use, or <code>null</code> to remove a
      *            mapping
+     * @return this router configuration
      */
-    public void setParentView(Class<? extends View> viewType,
+    public ModifiableRouterConfiguration setParentView(
+            Class<? extends View> viewType,
             Class<? extends HasChildView> parentView) {
         assert viewType != null;
 
@@ -301,6 +314,7 @@ public class ModifiableRouterConfiguration
                     "There is alerady a parent view configured for "
                             + viewType);
         }
+        return this;
     }
 
     @Override
@@ -343,8 +357,10 @@ public class ModifiableRouterConfiguration
      *            the path to use for the route
      * @param navigationHandler
      *            the navigation handler to use for the route
+     * @return this router configuration
      */
-    public void setRoute(String path, NavigationHandler navigationHandler) {
+    public ModifiableRouterConfiguration setRoute(String path,
+            NavigationHandler navigationHandler) {
         assert path != null;
         assert navigationHandler != null;
         assert !path.startsWith("/");
@@ -353,6 +369,8 @@ public class ModifiableRouterConfiguration
         // Start the recursion
         setRoute(new RouteLocation(new Location(path)), routeTreeRoot,
                 navigationHandler);
+
+        return this;
     }
 
     private void setRoute(RouteLocation location, RouteTreeNode node,
@@ -391,13 +409,16 @@ public class ModifiableRouterConfiguration
      *
      * @param path
      *            the path of the route to remove, not <code>null</code>
+     * @return this router configuration
      */
-    public void removeRoute(String path) {
+    public ModifiableRouterConfiguration removeRoute(String path) {
         assert path != null;
 
         removeViewToRouteMapping(path);
         // Start the recursion
         removeRoute(new RouteLocation(new Location(path)), routeTreeRoot);
+
+        return this;
     }
 
     private void removeRoute(RouteLocation location, RouteTreeNode node) {
@@ -470,8 +491,10 @@ public class ModifiableRouterConfiguration
      *
      * @param pageTitleGenerator
      *            the page title generator to use
+     * @return this router configuration
      */
-    public void setPageTitleGenerator(PageTitleGenerator pageTitleGenerator) {
+    public ModifiableRouterConfiguration setPageTitleGenerator(
+            PageTitleGenerator pageTitleGenerator) {
         throwIfImmutable();
 
         if (pageTitleGenerator == null) {
@@ -480,6 +503,8 @@ public class ModifiableRouterConfiguration
         }
 
         this.pageTitleGenerator = pageTitleGenerator;
+
+        return this;
     }
 
     @Override
