@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.dom.ElementUtil;
 
 public class ComponentTest {
 
@@ -32,7 +33,7 @@ public class ComponentTest {
     private Component child1SpanComponent;
     private Component child2InputComponent;
 
-    private static class TestComponent extends Component {
+    public static class TestComponent extends Component {
 
         public TestComponent() {
             this(ElementFactory.createDiv());
@@ -44,7 +45,7 @@ public class ComponentTest {
 
         @Override
         public String toString() {
-            return getElement().getTextContent();
+            return getElement().getOwnTextContent();
         }
 
     }
@@ -107,7 +108,7 @@ public class ComponentTest {
                 child2InputComponent);
     }
 
-    private static void assertChildren(Component parent,
+    public static void assertChildren(Component parent,
             Component... expectedChildren) {
         List<Component> children = parent.getChildren()
                 .collect(Collectors.toList());
@@ -185,10 +186,11 @@ public class ComponentTest {
     @Test
     public void setElement() {
         Component c = new Component(null) {
+
         };
         Element element = ElementFactory.createDiv();
         Component.setElement(c, element);
-        Assert.assertEquals(c, element.getComponent().get());
+        Assert.assertEquals(c, ElementUtil.getComponent(element).get());
         Assert.assertEquals(element, c.getElement());
     }
 

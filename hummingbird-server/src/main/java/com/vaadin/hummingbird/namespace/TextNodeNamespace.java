@@ -30,6 +30,7 @@ public class TextNodeNamespace extends MapNamespace {
      * Creates a new text node namespace for the given node.
      *
      * @param node
+     *            the node that the namespace belongs to
      */
     public TextNodeNamespace(StateNode node) {
         super(node);
