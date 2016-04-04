@@ -20,10 +20,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
@@ -42,6 +44,87 @@ import com.vaadin.hummingbird.change.NodeChange;
  *            the type of the items in the list
  */
 public abstract class ListNamespace<T> extends Namespace {
+
+    /**
+     * Provides access to a {@link ListNamespace} as a {@link Set}.
+     *
+     * @param <T>
+     *            the type of objects in the namespace (and set)
+     */
+    public abstract static class SetView<T> extends AbstractSet<T>
+            implements Serializable {
+
+        private ListNamespace<T> namespace;
+
+        /**
+         * Creates a new view for the given namespace.
+         *
+         * @param namespace
+         *            the namespace to wrap
+         */
+        public SetView(ListNamespace<T> namespace) {
+            this.namespace = namespace;
+        }
+
+        @Override
+        public int size() {
+            return namespace.size();
+        }
+
+        @Override
+        public void clear() {
+            namespace.clear();
+        }
+
+        @Override
+        public boolean add(T o) {
+            validate(o);
+            if (contains(o)) {
+                return false;
+            }
+
+            namespace.add(size(), o);
+            return true;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            // Uses iterator() which supports proper remove()
+            return super.remove(o);
+        }
+
+        protected abstract void validate(T o);
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean contains(Object o) {
+            return namespace.indexOf((T) o) != -1;
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            return namespace.iterator();
+        }
+
+        @SuppressWarnings("rawtypes")
+        @Override
+        public boolean equals(Object o) {
+            if (!super.equals(o)) {
+                return false;
+            }
+
+            if (!(o instanceof SetView)) {
+                return false;
+            }
+
+            return namespace == ((SetView) o).namespace;
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode() + 13 * namespace.hashCode();
+        }
+    }
 
     private transient List<T> values = new ArrayList<>();
 
