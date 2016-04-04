@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
@@ -44,6 +46,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
+import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.Page.ExecutionCanceler;
 
 /**
@@ -126,25 +129,26 @@ public class UIInternals implements Serializable {
     private PushConnection pushConnection = null;
 
     /**
-     * The id of the UI to which this framework data belongs, used to find the
-     * server side instance of the UI form which a request originates. A
-     * negative value indicates that the UI id has not yet been assigned by the
-     * Application.
+     * The id of the related UI, used to find the server side instance of the UI
+     * from which a request originates. A negative value indicates that the UI
+     * id has not yet been assigned.
      *
      * @see VaadinSession#getNextUIid()
      */
     private int uiId = -1;
 
     /**
-     * Timestamp keeping track of the last heartbeat of the UI to which this
-     * framework data belongs. Updated to the current time whenever the
-     * application receives a heartbeat or UIDL request from the client for the
-     * UI.
+     * Timestamp for keeping track of the last heartbeat of the related UI.
+     * Updated to the current time whenever the application receives a heartbeat
+     * or UIDL request from the client for the related UI.
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
     private List<JavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
 
+    /**
+     * The related UI.
+     */
     private final UI ui;
 
     private String title;
@@ -155,7 +159,12 @@ public class UIInternals implements Serializable {
     private ArrayList<View> viewChain = new ArrayList<>();
 
     /**
-     * Creates a new framework data instance for the given UI.
+     * The Vaadin session to which the related UI belongs.
+     */
+    private volatile VaadinSession session;
+
+    /**
+     * Creates a new instance for the given UI.
      *
      * @param ui
      *            the UI to use
@@ -165,7 +174,7 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Gets the state tree of the UI to which this framework data belongs.
+     * Gets the state tree of the related UI.
      *
      * @return the state tree
      */
@@ -228,8 +237,7 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Returns the timestamp of the last received heartbeat for the UI to which
-     * this framework data belongs.
+     * Returns the timestamp of the last received heartbeat for the related UI.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
@@ -245,9 +253,9 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Sets the last heartbeat request timestamp for the UI to which this
-     * framework data belongs. Called by the framework whenever the application
-     * receives a valid heartbeat request for the UI.
+     * Sets the last heartbeat request timestamp for the related UI. Called by
+     * the framework whenever the application receives a valid heartbeat request
+     * for the UI.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
@@ -281,11 +289,65 @@ public class UIInternals implements Serializable {
                 .toArray(new Class<?>[0]);
     }
 
+    private static String getSessionDetails(VaadinSession session) {
+        if (session == null) {
+            return null;
+        } else {
+            return session.toString() + " for "
+                    + session.getService().getServiceName();
+        }
+    }
+
     /**
-     * Gets the id of the UI, used to identify the UI to which this framework
-     * data belongs within its application when processing requests. The UI id
-     * should be present in every request to the server that originates from the
-     * UI. {@link VaadinService#findUI(VaadinRequest)} uses this id to find the
+     * Sets the session to which the related UI is assigned.
+     * <p>
+     * This method is for internal use by the framework. To explicitly close a
+     * UI, see {@link UI#close()}.
+     *
+     * @param session
+     *            the session to set
+     *
+     * @throws IllegalStateException
+     *             if the session has already been set
+     *
+     * @see #getSession()
+     */
+    public void setSession(VaadinSession session) {
+        if (session == null && this.session == null) {
+            throw new IllegalStateException(
+                    "Session should never be set to null when UI.session is already null");
+        } else if (session != null && this.session != null) {
+            throw new IllegalStateException(
+                    "Session has already been set. Old session: "
+                            + getSessionDetails(this.session)
+                            + ". New session: " + getSessionDetails(session)
+                            + ".");
+        } else {
+            if (session == null) {
+                try {
+                    ui.detach();
+                } catch (Exception e) {
+                    getLogger().log(Level.WARNING,
+                            "Error while detaching UI from session", e);
+                }
+                // Disable push when the UI is detached. Otherwise the
+                // push connection and possibly VaadinSession will live on.
+                ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+                setPushConnection(null);
+            }
+            this.session = session;
+        }
+
+        if (session != null) {
+            ui.attach();
+        }
+    }
+
+    /**
+     * Gets the id of the UI, used to identify the related UI within its
+     * application when processing requests. The UI id should be present in
+     * every request to the server that originates from the UI.
+     * {@link VaadinService#findUI(VaadinRequest)} uses this id to find the
      * route to which the request belongs.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care
@@ -299,9 +361,8 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Returns the internal push connection object used by the UI to which this
-     * framework data belongs. This method should only be called by the
-     * framework.
+     * Returns the internal push connection object used by the related UI. This
+     * method should only be called by the framework.
      * <p>
      * This method is not intended to be overridden. If it is overridden, care
      * should be taken since this method might be called in situations where
@@ -317,9 +378,8 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Sets the internal push connection object used by the UI to which this
-     * framework data belongs. This method should only be called by the
-     * framework.
+     * Sets the internal push connection object used by the the related UI. This
+     * method should only be called by the framework.
      * <p>
      * The {@code pushConnection} argument must be non-null if and only if
      * {@code getPushConfiguration().getPushMode().isEnabled()}.
@@ -439,9 +499,9 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Shows a view in a chain of layouts in the UI to which this framework data
-     * belongs. This method is intended for framework use only. Use
-     * {@link UI#navigateTo(String)} to change the view that is shown in a UI.
+     * Shows a view in a chain of layouts in the the related UI. This method is
+     * intended for framework use only. Use {@link UI#navigateTo(String)} to
+     * change the view that is shown in a UI.
      *
      * @param viewLocation
      *            the location of the view relative to the servlet serving the
@@ -527,12 +587,28 @@ public class UIInternals implements Serializable {
 
     /**
      * Gets the location of the currently shown view. The location is relative
-     * the the servlet mapping used for serving the UI to which this framework
-     * data belongs.
+     * the the servlet mapping used for serving the related UI.
      *
      * @return the view location, not <code>null</code>
      */
     public Location getActiveViewLocation() {
         return viewLocation;
     }
+
+    /**
+     * Gets the VaadinSession to which the related UI is attached.
+     *
+     * <p>
+     * The method will return {@code null} if the UI is not currently attached
+     * to a VaadinSession.
+     * </p>
+     */
+    public VaadinSession getSession() {
+        return session;
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(UIInternals.class.getName());
+    }
+
 }
