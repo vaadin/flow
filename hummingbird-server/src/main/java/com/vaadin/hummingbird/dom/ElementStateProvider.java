@@ -16,10 +16,12 @@
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
 
@@ -332,5 +334,24 @@ public interface ElementStateProvider extends Serializable {
      * @return the event types which should trigger synchronization
      */
     Set<String> getSynchronizedPropertyEvents(StateNode node);
+
+    /**
+     * Defines a mapping between the element and the given component.
+     *
+     * @param node
+     *            the node containing the data
+     * @param component
+     *            the component to map the element to
+     */
+    void attachComponent(StateNode node, Component component);
+
+    /**
+     * Gets the component this element is mapped to.
+     *
+     * @param node
+     *            the node containing the data
+     * @return the component this element is mapped to
+     */
+    Optional<Component> getComponent(StateNode node);
 
 }

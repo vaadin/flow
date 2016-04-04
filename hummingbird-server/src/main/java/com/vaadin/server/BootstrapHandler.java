@@ -527,10 +527,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapContext context) {
         // check for explicitly set page title, eg. by PageTitleGenerator or
         // View level title or page.setTitle
-        String title = context.getUI().getFrameworkData().getTitle();
+        String title = context.getUI().getInternals().getTitle();
         if (title != null) {
             // cancel the unnecessary execute javascript
-            context.getUI().getFrameworkData().cancelPendingTitleUpdate();
+            context.getUI().getInternals().cancelPendingTitleUpdate();
         }
         return Optional.ofNullable(title);
     }
@@ -542,7 +542,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         UI ui = createInstance(uiClass);
 
         // Initialize some fields for a newly created UI
-        ui.setSession(session);
+        ui.getInternals().setSession(session);
 
         PushMode pushMode = AnnotationReader.getPushMode(uiClass);
         if (pushMode == null) {

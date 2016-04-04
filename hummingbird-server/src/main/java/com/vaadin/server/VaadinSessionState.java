@@ -13,18 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.server;
 
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-public class BaseHrefUI extends UI {
-    @Override
-    protected void init(VaadinRequest request) {
-        Element link = ElementFactory.createAnchor("link", "My link");
+/**
+ * The lifecycle state of a VaadinSession.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
+public enum VaadinSessionState {
+    /**
+     * The session is active and accepting client requests.
+     */
+    OPEN,
+    /**
+     * The {@link VaadinSession#close() close} method has been called; the
+     * session will be closed as soon as the current request ends.
+     */
+    CLOSING,
+    /**
+     * The session is closed; all the {@link UI}s have been removed and
+     * {@link SessionDestroyListener}s have been called.
+     */
+    CLOSED;
 
-        getElement().appendChild(link);
-    }
 }

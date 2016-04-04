@@ -31,12 +31,9 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpSession;
@@ -60,125 +57,6 @@ import com.vaadin.util.CurrentInstance;
  * @since 7.0.0
  */
 public class VaadinSession implements HttpSessionBindingListener, Serializable {
-
-    /**
-     * Encapsulates a {@link Command} submitted using
-     * {@link VaadinSession#access(Command)}. This class is used internally by
-     * the framework and is not intended to be directly used by application
-     * developers.
-     *
-     * @since 7.1
-     * @author Vaadin Ltd
-     */
-    public static class FutureAccess extends FutureTask<Void> {
-        /**
-         * Snapshot of all non-inheritable current instances at the time this
-         * object was created.
-         */
-        private final Map<Class<?>, CurrentInstance> instances = CurrentInstance
-                .getInstances(true);
-        private final VaadinSession session;
-        private Command command;
-
-        /**
-         * Creates an instance for the given command.
-         *
-         * @param session
-         *            the session to which the task belongs
-         * @param command
-         *            the command to run when this task is purged from the queue
-         */
-        public FutureAccess(VaadinSession session, Command command) {
-            super(() -> command.execute(), null);
-            this.session = session;
-            this.command = command;
-        }
-
-        @Override
-        public Void get() throws InterruptedException, ExecutionException {
-            /*
-             * Help the developer avoid programming patterns that cause
-             * deadlocks unless implemented very carefully. get(long, TimeUnit)
-             * does not have the same detection since a sensible timeout should
-             * avoid completely locking up the application.
-             *
-             * Even though no deadlock could occur after the command has been
-             * run, the check is always done as the deterministic behavior makes
-             * it easier to detect potential problems.
-             */
-            VaadinService.verifyNoOtherSessionLocked(session);
-            return super.get();
-        }
-
-        /**
-         * Gets the current instance values that should be used when running
-         * this task.
-         *
-         * @see CurrentInstance#restoreInstances(Map)
-         *
-         * @return a map of current instances.
-         */
-        public Map<Class<?>, CurrentInstance> getCurrentInstances() {
-            return instances;
-        }
-
-        /**
-         * Handles exceptions thrown during the execution of this task.
-         *
-         * @since 7.1.8
-         * @param exception
-         *            the thrown exception.
-         */
-        public void handleError(Exception exception) {
-            try {
-                if (command instanceof ErrorHandlingCommand) {
-                    ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
-
-                    errorHandlingCommand.handleError(exception);
-                } else {
-                    ErrorEvent errorEvent = new ErrorEvent(exception);
-
-                    ErrorHandler errorHandler = ErrorEvent
-                            .findErrorHandler(session);
-
-                    if (errorHandler == null) {
-                        errorHandler = new DefaultErrorHandler();
-                    }
-
-                    errorHandler.error(errorEvent);
-                }
-            } catch (Exception e) {
-                getLogger().log(Level.SEVERE, e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     * The lifecycle state of a VaadinSession.
-     *
-     * @since 7.2
-     */
-    public enum State {
-        /**
-         * The session is active and accepting client requests.
-         */
-        OPEN,
-        /**
-         * The {@link VaadinSession#close() close} method has been called; the
-         * session will be closed as soon as the current request ends.
-         */
-        CLOSING,
-        /**
-         * The session is closed; all the {@link UI}s have been removed and
-         * {@link SessionDestroyListener}s have been called.
-         */
-        CLOSED;
-
-        private boolean isValidChange(State newState) {
-            return (this == OPEN && newState == CLOSING)
-                    || (this == CLOSING && newState == CLOSED);
-        }
-    }
 
     /**
      * The name of the parameter that is by default used in e.g. web.xml to
@@ -215,11 +93,9 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private long lastRequestTimestamp = System.currentTimeMillis();
 
-    private State state = State.OPEN;
+    private VaadinSessionState state = VaadinSessionState.OPEN;
 
     private transient WrappedSession session;
-
-    private final Map<String, Object> attributes = new HashMap<String, Object>();
 
     private transient VaadinService service;
 
@@ -233,6 +109,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<FutureAccess>();
 
     private final String csrfToken = UUID.randomUUID().toString();
+
+    private final Attributes attributes = new Attributes();
 
     private final StreamResourceRegistry resourceRegistry;
 
@@ -280,7 +158,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
             // There is still a request in progress for this session. The
             // session will be destroyed after the response has been written.
-            if (getState() == State.OPEN) {
+            if (getState() == VaadinSessionState.OPEN) {
                 close();
             }
         } else {
@@ -637,7 +515,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         assert hasLock();
         assert UI.getCurrent() == ui;
         Integer id = Integer.valueOf(ui.getUIId());
-        ui.setSession(null);
+        ui.getInternals().setSession(null);
         uIs.remove(id);
     }
 
@@ -775,14 +653,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void setAttribute(String name, Object value) {
         assert hasLock();
-        if (name == null) {
-            throw new IllegalArgumentException("name can not be null");
-        }
-        if (value != null) {
-            attributes.put(name, value);
-        } else {
-            attributes.remove(name);
-        }
+        attributes.setAttribute(name, value);
     }
 
     /**
@@ -807,14 +678,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public <T> void setAttribute(Class<T> type, T value) {
         assert hasLock();
-        if (type == null) {
-            throw new IllegalArgumentException("type can not be null");
-        }
-        if (value != null && !type.isInstance(value)) {
-            throw new IllegalArgumentException("value of type " + type.getName()
-                    + " expected but got " + value.getClass().getName());
-        }
-        setAttribute(type.getName(), value);
+        attributes.setAttribute(type, value);
     }
 
     /**
@@ -831,10 +695,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public Object getAttribute(String name) {
         assert hasLock();
-        if (name == null) {
-            throw new IllegalArgumentException("name can not be null");
-        }
-        return attributes.get(name);
+        return attributes.getAttribute(name);
     }
 
     /**
@@ -858,15 +719,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public <T> T getAttribute(Class<T> type) {
         assert hasLock();
-        if (type == null) {
-            throw new IllegalArgumentException("type can not be null");
-        }
-        Object value = getAttribute(type.getName());
-        if (value == null) {
-            return null;
-        } else {
-            return type.cast(value);
-        }
+        return attributes.getAttribute(type);
     }
 
     /**
@@ -918,7 +771,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void close() {
         assert hasLock();
-        state = State.CLOSING;
+        state = VaadinSessionState.CLOSING;
     }
 
     /**
@@ -927,7 +780,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @since 7.2
      * @return the current state
      */
-    public State getState() {
+    public VaadinSessionState getState() {
         assert hasLock();
         return state;
     }
@@ -940,12 +793,19 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @param state
      *            the new state
      */
-    protected void setState(State state) {
+    protected void setState(VaadinSessionState state) {
         assert hasLock();
-        assert this.state.isValidChange(state) : "Invalid session state change "
+        assert isValidChange(state) : "Invalid session state change "
                 + this.state + "->" + state;
 
         this.state = state;
+    }
+
+    private boolean isValidChange(VaadinSessionState newState) {
+        return (state == VaadinSessionState.OPEN
+                && newState == VaadinSessionState.CLOSING)
+                || (state == VaadinSessionState.CLOSING
+                        && newState == VaadinSessionState.CLOSED);
     }
 
     private static final Logger getLogger() {
@@ -1110,7 +970,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Get resource registry instance.
      * <p>
      * Use this instance to manage {@link StreamResource}s.
-     * 
+     *
      * @return resource registry
      */
     public StreamResourceRegistry getResourceRegistry() {

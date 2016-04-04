@@ -41,7 +41,8 @@ public class RouteLocation extends Location {
      *
      * @see #getSubLocation()
      *
-     * @return an optional new route location
+     * @return an optional new route location, or an empty optional if this
+     *         route location has only one path segment
      */
     public Optional<RouteLocation> getRouteSubLocation() {
         return getSubLocation().map(RouteLocation::new);

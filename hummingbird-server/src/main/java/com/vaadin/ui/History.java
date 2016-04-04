@@ -84,7 +84,8 @@ public class History implements Serializable {
         /**
          * Gets the history state value as JSON.
          *
-         * @return an optional JSON state value
+         * @return an optional JSON state value or an empty optional if no state
+         *         has been provided
          */
         public Optional<JsonValue> getState() {
             return Optional.ofNullable(state);

@@ -21,7 +21,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.Style;
 
-public class BasicElementView extends TestView {
+public class BasicElementView extends AbstractDivView {
 
     @Override
     protected void onShow() {
@@ -32,8 +32,7 @@ public class BasicElementView extends TestView {
 
         Element input = ElementFactory.createInput()
                 .setAttribute("placeholder", "Synchronized on change event")
-                .addSynchronizedProperty("value")
-                .addSynchronizedPropertyEvent("change");
+                .synchronizeProperty("value", "change");
 
         button.addEventListener("click", e -> {
             String buttonText = e.getEventData()

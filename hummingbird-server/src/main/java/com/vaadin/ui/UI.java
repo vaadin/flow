@@ -48,7 +48,6 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
-import com.vaadin.shared.communication.PushMode;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -73,14 +72,9 @@ import com.vaadin.util.CurrentInstance;
  *
  * @since 7.0
  */
-public class UI implements Serializable, PollNotifier {
+public class UI implements Component, Serializable, PollNotifier {
 
     public static final String POLL_DOM_EVENT_NAME = "ui-poll";
-
-    /**
-     * The Vaadin session to which this UI belongs.
-     */
-    private volatile VaadinSession session;
 
     /**
      * The id of this UI, used to find the server side instance of the UI form
@@ -101,7 +95,7 @@ public class UI implements Serializable, PollNotifier {
 
     private EventRegistrationHandle domPollListener = null;
 
-    private final FrameworkData frameworkData = new FrameworkData(this);
+    private final UIInternals internals = new UIInternals(this);
 
     private final Page page = new Page(this);
 
@@ -113,14 +107,15 @@ public class UI implements Serializable, PollNotifier {
     public UI() {
         getNode().getNamespace(ElementDataNamespace.class).setTag("body");
         pushConfiguration = new PushConfigurationImpl(this);
+        Element.get(getNode()).attachComponent(this);
     }
 
     /**
-     * Gets the application object to which the component is attached.
+     * Gets the VaadinSession to which this UI is attached.
      *
      * <p>
-     * The method will return {@code null} if the component is not currently
-     * attached to an application.
+     * The method will return {@code null} if the UI is not currently attached
+     * to a VaadinSession.
      * </p>
      *
      * <p>
@@ -136,62 +131,7 @@ public class UI implements Serializable, PollNotifier {
      * @see #attach()
      */
     public VaadinSession getSession() {
-        return session;
-    }
-
-    /**
-     * Sets the session to which this UI is assigned.
-     * <p>
-     * This method is for internal use by the framework. To explicitly close a
-     * UI, see {@link #close()}.
-     * </p>
-     *
-     * @param session
-     *            the session to set
-     *
-     * @throws IllegalStateException
-     *             if the session has already been set
-     *
-     * @see #getSession()
-     */
-    public void setSession(VaadinSession session) {
-        if (session == null && this.session == null) {
-            throw new IllegalStateException(
-                    "Session should never be set to null when UI.session is already null");
-        } else if (session != null && this.session != null) {
-            throw new IllegalStateException(
-                    "Session has already been set. Old session: "
-                            + getSessionDetails(this.session)
-                            + ". New session: " + getSessionDetails(session)
-                            + ".");
-        } else {
-            if (session == null) {
-                try {
-                    detach();
-                } catch (Exception e) {
-                    getLogger().log(Level.WARNING,
-                            "Error while detaching UI from session", e);
-                }
-                // Disable push when the UI is detached. Otherwise the
-                // push connection and possibly VaadinSession will live on.
-                getPushConfiguration().setPushMode(PushMode.DISABLED);
-                getFrameworkData().setPushConnection(null);
-            }
-            this.session = session;
-        }
-
-        if (session != null) {
-            attach();
-        }
-    }
-
-    private static String getSessionDetails(VaadinSession session) {
-        if (session == null) {
-            return null;
-        } else {
-            return session.toString() + " for "
-                    + session.getService().getServiceName();
-        }
+        return internals.getSession();
     }
 
     /**
@@ -328,14 +268,14 @@ public class UI implements Serializable, PollNotifier {
 
         // FIXME Send info to client
 
-        PushConnection pushConnection = getFrameworkData().getPushConnection();
+        PushConnection pushConnection = getInternals().getPushConnection();
         if (pushConnection != null) {
             // Push the Rpc to the client. The connection will be closed when
             // the UI is detached and cleaned up.
 
             // Can't use UI.push() directly since it checks for a valid session
-            if (session != null) {
-                session.getService().runPendingAccessTasks(session);
+            if (getSession() != null) {
+                getSession().getService().runPendingAccessTasks(getSession());
             }
             pushConnection.push();
         }
@@ -636,7 +576,7 @@ public class UI implements Serializable, PollNotifier {
             throw new IllegalStateException("Push not enabled");
         }
 
-        PushConnection pushConnection = getFrameworkData().getPushConnection();
+        PushConnection pushConnection = getInternals().getPushConnection();
         assert pushConnection != null;
 
         /*
@@ -646,7 +586,7 @@ public class UI implements Serializable, PollNotifier {
          */
         session.getService().runPendingAccessTasks(session);
 
-        if (!getFrameworkData().getStateTree().hasDirtyNodes()) {
+        if (!getInternals().getStateTree().hasDirtyNodes()) {
             // Do not push if there is nothing to push
             return;
         }
@@ -709,6 +649,7 @@ public class UI implements Serializable, PollNotifier {
      *
      * @return the element for this UI
      */
+    @Override
     public Element getElement() {
         return Element.get(getNode());
     }
@@ -719,7 +660,7 @@ public class UI implements Serializable, PollNotifier {
      * @return the state node for the UI, in practice the state tree root node
      */
     private StateNode getNode() {
-        return getFrameworkData().getStateTree().getRootNode();
+        return getInternals().getStateTree().getRootNode();
     }
 
     /**
@@ -727,8 +668,8 @@ public class UI implements Serializable, PollNotifier {
      *
      * @return the framework data object
      */
-    public FrameworkData getFrameworkData() {
-        return frameworkData;
+    public UIInternals getInternals() {
+        return internals;
     }
 
     /**
@@ -747,7 +688,7 @@ public class UI implements Serializable, PollNotifier {
      *         innermost part
      */
     public List<View> getActiveViewChain() {
-        return frameworkData.getActiveViewChain();
+        return internals.getActiveViewChain();
     }
 
     /**
@@ -757,7 +698,7 @@ public class UI implements Serializable, PollNotifier {
      * @return the view location, not <code>null</code>
      */
     public Location getActiveViewLocation() {
-        return frameworkData.getActiveViewLocation();
+        return internals.getActiveViewLocation();
     }
 
     /**
