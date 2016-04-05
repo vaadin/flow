@@ -232,7 +232,7 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void attachComponent(StateNode node, Component component) {
+    public void setComponent(StateNode node, Component component) {
         assert node != null;
         node.getNamespace(TextNodeNamespace.class).setComponent(component);
     }
