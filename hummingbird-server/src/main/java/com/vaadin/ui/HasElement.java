@@ -18,40 +18,18 @@ package com.vaadin.ui;
 import com.vaadin.hummingbird.dom.Element;
 
 /**
- * A component which encapsulates the given text in a text node.
+ * Marker interface for any class which is based on an {@link Element}.
  *
  * @author Vaadin
  * @since
  */
-public class Text extends Component {
-
+@FunctionalInterface
+public interface HasElement {
     /**
-     * Creates an instance using the given text.
+     * Gets the element associated with this instance.
      *
-     * @param text
-     *            the text to show
+     * @return the element associated with this instance
      */
-    public Text(String text) {
-        super(Element.createText(text));
-    }
-
-    /**
-     * Sets the text of the component.
-     *
-     * @param text
-     *            the text of the component
-     */
-    public void setText(String text) {
-        getElement().setTextContent(text);
-    }
-
-    /**
-     * Gets the text of the component.
-     *
-     * @return the text of the component
-     */
-    public String getText() {
-        return getElement().getOwnTextContent();
-    }
+    Element getElement();
 
 }
