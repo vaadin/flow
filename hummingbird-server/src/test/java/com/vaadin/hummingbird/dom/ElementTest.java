@@ -1141,14 +1141,22 @@ public class ElementTest {
         ElementFactory.createDiv().getClassList().add("foo bar");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testRemoveClassWithSpaces_throws() {
-        ElementFactory.createDiv().getClassList().remove("foo bar");
+    @Test
+    public void testRemoveClassWithSpaces() {
+        ClassList cl = ElementFactory.createDiv().getClassList();
+        cl.add("foo");
+        cl.add("bar");
+        cl.remove("foo bar");
+        Assert.assertEquals(2, cl.size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testContainsClassWithSpaces_throws() {
-        ElementFactory.createDiv().getClassList().contains("foo bar");
+    @Test
+    public void testContainsClassWithSpaces() {
+        ClassList cl = ElementFactory.createDiv().getClassList();
+        cl.add("foo");
+        cl.add("bar");
+
+        Assert.assertFalse(cl.contains("foo bar"));
     }
 
     @Test
