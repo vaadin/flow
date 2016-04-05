@@ -15,7 +15,6 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.DefaultConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
@@ -24,10 +23,12 @@ import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.PushConfiguration;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
 import com.vaadin.client.communication.RequestResponseTracker;
+import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
 import com.vaadin.client.hummingbird.ExecuteJavaScriptProcessor;
 import com.vaadin.client.hummingbird.StateTree;
+import com.vaadin.client.hummingbird.template.Templates;
 
 /**
  * A registry implementation used by {@link ApplicationConnection}.
@@ -69,6 +70,7 @@ public class DefaultRegistry extends Registry {
         set(ServerConnector.class, new ServerConnector(this));
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
+        set(Templates.class, new Templates());
 
         // Classes with dependencies, in correct order
         set(Heartbeat.class, new Heartbeat(this));

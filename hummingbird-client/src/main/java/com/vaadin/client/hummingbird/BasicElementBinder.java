@@ -29,6 +29,7 @@ import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.template.TemplateElementBinder;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
@@ -448,6 +449,8 @@ public class BasicElementBinder {
     private static Node createDomNode(StateNode node) {
         if (node.hasNamespace(Namespaces.TEXT_NODE)) {
             return TextElementBinder.createAndBind(node);
+        } else if (node.hasNamespace(Namespaces.TEMPLATE)) {
+            return TemplateElementBinder.createAndBind(node);
         }
 
         String tag = getTag(node);
