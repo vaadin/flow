@@ -15,10 +15,6 @@
  */
 package com.vaadin.hummingbird.namespace;
 
-import java.io.Serializable;
-import java.util.AbstractSet;
-import java.util.Iterator;
-
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.ClassList;
 
@@ -30,45 +26,27 @@ import com.vaadin.hummingbird.dom.ClassList;
  */
 public class ClassListNamespace extends SerializableListNamespace<String> {
 
-    /**
-     * Provides access to the namespace contents.
-     */
-    private static class ClassListView extends AbstractSet<String>
-            implements ClassList, Serializable {
-
-        private ClassListNamespace namespace;
+    private static class ClassListView extends ListNamespace.SetView<String>
+            implements ClassList {
 
         private ClassListView(ClassListNamespace namespace) {
-            this.namespace = namespace;
+            super(namespace);
         }
 
         @Override
-        public int size() {
-            return namespace.size();
-        }
-
-        @Override
-        public void clear() {
-            namespace.clear();
-        }
-
-        @Override
-        public boolean add(String className) {
-            verifyClassName(className);
-
-            if (contains(className)) {
-                return false;
+        protected void validate(String className) {
+            if (className == null) {
+                throw new IllegalArgumentException("Class name cannot be null");
             }
 
-            namespace.add(size(), className);
-            return true;
-        }
-
-        @Override
-        public boolean remove(Object o) {
-            verifyClassName(o);
-            // Uses iterator() which supports proper remove()
-            return super.remove(o);
+            if ("".equals(className)) {
+                throw new IllegalArgumentException(
+                        "Class name cannot be empty");
+            }
+            if (className.indexOf(' ') != -1) {
+                throw new IllegalArgumentException(
+                        "Class name cannot contain spaces");
+            }
         }
 
         @Override
@@ -78,38 +56,6 @@ public class ClassListNamespace extends SerializableListNamespace<String> {
             } else {
                 return remove(className);
             }
-        }
-
-        @Override
-        public boolean contains(Object o) {
-            verifyClassName(o);
-
-            return namespace.indexOf((String) o) != -1;
-        }
-
-        private static void verifyClassName(Object className) {
-            if (className == null) {
-                throw new IllegalArgumentException("Class name cannot be null");
-            }
-
-            if (!(className instanceof String)) {
-                throw new IllegalArgumentException(
-                        "Class name must be a string");
-            }
-
-            if ("".equals(className)) {
-                throw new IllegalArgumentException(
-                        "Class name cannot be empty");
-            }
-            if (((String) className).indexOf(' ') != -1) {
-                throw new IllegalArgumentException(
-                        "Class name cannot contain spaces");
-            }
-        }
-
-        @Override
-        public Iterator<String> iterator() {
-            return namespace.iterator();
         }
     }
 

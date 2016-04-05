@@ -13,14 +13,45 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.ui;
 
 import com.vaadin.hummingbird.dom.Element;
 
-public class Text extends AbstractHtmlComponent {
+/**
+ * A component which encapsulates the given text in a text node.
+ *
+ * @author Vaadin
+ * @since
+ */
+public class Text extends Component {
 
+    /**
+     * Creates an instance using the given text.
+     *
+     * @param text
+     *            the text to show
+     */
     public Text(String text) {
         super(Element.createText(text));
+    }
+
+    /**
+     * Sets the text of the component.
+     *
+     * @param text
+     *            the text of the component
+     */
+    public void setText(String text) {
+        getElement().setTextContent(text);
+    }
+
+    /**
+     * Gets the text of the component.
+     *
+     * @return the text of the component
+     */
+    public String getText() {
+        return getElement().getOwnTextContent();
     }
 
 }

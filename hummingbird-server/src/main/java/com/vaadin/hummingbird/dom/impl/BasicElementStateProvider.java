@@ -33,6 +33,7 @@ import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
+import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
@@ -68,7 +69,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementChildrenNamespace.class, ElementPropertyNamespace.class,
             ElementListenersNamespace.class, ClassListNamespace.class,
             ElementStylePropertyNamespace.class,
-            SynchronizedPropertiesNamespace.class };
+            SynchronizedPropertiesNamespace.class,
+            ComponentMappingNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -364,17 +366,19 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void attachComponent(StateNode node, Component component) {
+    public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
-        node.getNamespace(ElementDataNamespace.class).setComponent(component);
+        node.getNamespace(ComponentMappingNamespace.class)
+                .setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
 
-        return node.getNamespace(ElementDataNamespace.class).getComponent();
+        return node.getNamespace(ComponentMappingNamespace.class)
+                .getComponent();
     }
 
 }

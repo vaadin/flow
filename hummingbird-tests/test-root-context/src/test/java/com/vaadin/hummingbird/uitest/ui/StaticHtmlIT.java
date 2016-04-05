@@ -13,28 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.hummingbird.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.openqa.selenium.By;
 
-import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-public class ComponentUtilTest {
-
-    @Test
-    public void attachedToComponent() {
-        Component c = Mockito.mock(Component.class);
-        Element e = new Element("e");
-        e.setComponent(c);
-        Assert.assertTrue(ComponentUtil.isAttachedTo(c, e));
-    }
+public class StaticHtmlIT extends PhantomJSTest {
 
     @Test
-    public void notAttachedToComponent() {
-        Component c = Mockito.mock(Component.class);
-        Element e = new Element("e");
-        Assert.assertFalse(ComponentUtil.isAttachedTo(c, e));
+    public void ensureStaticHtmlShown() {
+        open();
+        Assert.assertEquals("NetBeans plugin",
+                findElement(By.xpath("//a[@href='/netbeans']")).getText());
     }
 }

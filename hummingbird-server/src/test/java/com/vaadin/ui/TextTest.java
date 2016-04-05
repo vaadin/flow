@@ -17,24 +17,29 @@ package com.vaadin.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import com.vaadin.hummingbird.dom.Element;
-
-public class ComponentUtilTest {
+public class TextTest {
 
     @Test
-    public void attachedToComponent() {
-        Component c = Mockito.mock(Component.class);
-        Element e = new Element("e");
-        e.setComponent(c);
-        Assert.assertTrue(ComponentUtil.isAttachedTo(c, e));
+    public void elementAttached() {
+        // This will throw an assertion error if the element is not attached to
+        // the component
+        new Text("Foo").getParent();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nullText() {
+        new Text(null);
     }
 
     @Test
-    public void notAttachedToComponent() {
-        Component c = Mockito.mock(Component.class);
-        Element e = new Element("e");
-        Assert.assertFalse(ComponentUtil.isAttachedTo(c, e));
+    public void emptyText() {
+        Assert.assertEquals("", new Text("").getText());
+    }
+
+    @Test
+    public void setGetText() {
+        Assert.assertEquals("Simple", new Text("Simple").getText());
+        Assert.assertEquals("åäö €#%°#", new Text("åäö €#%°#").getText());
     }
 }

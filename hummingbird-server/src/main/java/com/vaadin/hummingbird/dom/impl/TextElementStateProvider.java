@@ -27,6 +27,8 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
+import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -55,7 +57,8 @@ public class TextElementStateProvider implements ElementStateProvider {
     public static StateNode createStateNode(String text) {
         assert text != null;
 
-        StateNode node = new StateNode(TextNodeNamespace.class);
+        StateNode node = new StateNode(TextNodeNamespace.class,
+                ComponentMappingNamespace.class);
         node.getNamespace(TextNodeNamespace.class).setText(text);
 
         return node;
@@ -219,14 +222,16 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void attachComponent(StateNode node, Component component) {
+    public void setComponent(StateNode node, Component component) {
         assert node != null;
-        node.getNamespace(TextNodeNamespace.class).setComponent(component);
+        node.getNamespace(ComponentMappingNamespace.class)
+                .setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-        return node.getNamespace(TextNodeNamespace.class).getComponent();
+        return node.getNamespace(ComponentMappingNamespace.class)
+                .getComponent();
     }
 }

@@ -15,26 +15,21 @@
  */
 package com.vaadin.ui;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.vaadin.hummingbird.dom.Element;
 
-public class ComponentUtilTest {
+/**
+ * Marker interface for any class which is based on an {@link Element}.
+ *
+ * @author Vaadin
+ * @since
+ */
+@FunctionalInterface
+public interface HasElement {
+    /**
+     * Gets the element associated with this instance.
+     *
+     * @return the element associated with this instance
+     */
+    Element getElement();
 
-    @Test
-    public void attachedToComponent() {
-        Component c = Mockito.mock(Component.class);
-        Element e = new Element("e");
-        e.setComponent(c);
-        Assert.assertTrue(ComponentUtil.isAttachedTo(c, e));
-    }
-
-    @Test
-    public void notAttachedToComponent() {
-        Component c = Mockito.mock(Component.class);
-        Element e = new Element("e");
-        Assert.assertFalse(ComponentUtil.isAttachedTo(c, e));
-    }
 }

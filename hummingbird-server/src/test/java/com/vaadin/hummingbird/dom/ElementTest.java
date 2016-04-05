@@ -1141,14 +1141,22 @@ public class ElementTest {
         ElementFactory.createDiv().getClassList().add("foo bar");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testRemoveClassWithSpaces_throws() {
-        ElementFactory.createDiv().getClassList().remove("foo bar");
+    @Test
+    public void testRemoveClassWithSpaces() {
+        ClassList cl = ElementFactory.createDiv().getClassList();
+        cl.add("foo");
+        cl.add("bar");
+        cl.remove("foo bar");
+        Assert.assertEquals(2, cl.size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testContainsClassWithSpaces_throws() {
-        ElementFactory.createDiv().getClassList().contains("foo bar");
+    @Test
+    public void testContainsClassWithSpaces() {
+        ClassList cl = ElementFactory.createDiv().getClassList();
+        cl.add("foo");
+        cl.add("bar");
+
+        Assert.assertFalse(cl.contains("foo bar"));
     }
 
     @Test
@@ -1614,7 +1622,7 @@ public class ElementTest {
     public void attachToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
+        e.setComponent(c);
         Assert.assertEquals(c, e.getComponent().get());
     }
 
@@ -1622,7 +1630,7 @@ public class ElementTest {
     public void attachComponentToTextElement() {
         Element e = Element.createText("Text text");
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
+        e.setComponent(c);
         Assert.assertEquals(c, e.getComponent().get());
     }
 
@@ -1630,14 +1638,14 @@ public class ElementTest {
     public void attachTwiceToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
-        e.attachComponent(c);
+        e.setComponent(c);
+        e.setComponent(c);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void attachToNull() {
         Element e = ElementFactory.createDiv();
-        e.attachComponent(null);
+        e.setComponent(null);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1645,8 +1653,23 @@ public class ElementTest {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         Component c2 = Mockito.mock(Component.class);
-        e.attachComponent(c);
-        e.attachComponent(c2);
-
+        e.setComponent(c);
+        e.setComponent(c2);
     }
+
+    @Test
+    public void testGetOwnTextContent() {
+        Element element = ElementFactory.createDiv();
+        element.setTextContent("foo");
+        element.appendChild(ElementFactory.createDiv()
+                .appendChild(ElementFactory.createSpan("span contents")));
+        element.appendChild(ElementFactory.createStrong("strong contents"));
+        element.appendChild(Element.createText("Another text node"));
+
+        Assert.assertEquals("fooAnother text node",
+                element.getOwnTextContent());
+        Assert.assertEquals("foospan contentsstrong contentsAnother text node",
+                element.getTextContent());
+    }
+
 }
