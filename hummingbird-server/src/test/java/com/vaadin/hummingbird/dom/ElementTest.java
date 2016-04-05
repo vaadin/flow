@@ -1435,8 +1435,8 @@ public class ElementTest {
 
         element.getSynchronizedProperties()
                 .allMatch(prop -> prop.equals("foo"));
-        element.getSynchronizedPropertyEvents()
-                .allMatch(event -> event.equals("event"));
+        Assert.assertTrue(element.getSynchronizedPropertyEvents()
+                .allMatch(event -> event.equals("event")));
     }
 
     @Test
@@ -1446,8 +1446,8 @@ public class ElementTest {
         element.addSynchronizedProperty("bar");
 
         element.removeSynchronizedProperty("foo");
-        element.getSynchronizedProperties()
-                .allMatch(prop -> prop.equals("bar"));
+        Assert.assertTrue(element.getSynchronizedProperties()
+                .allMatch(prop -> prop.equals("bar")));
     }
 
     @Test
@@ -1457,8 +1457,8 @@ public class ElementTest {
         element.addSynchronizedPropertyEvent("bar");
 
         element.removeSynchronizedPropertyEvent("foo");
-        element.getSynchronizedPropertyEvents()
-                .allMatch(event -> event.equals("bar"));
+        Assert.assertTrue(element.getSynchronizedPropertyEvents()
+                .allMatch(event -> event.equals("bar")));
     }
 
     @Test
