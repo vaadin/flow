@@ -161,6 +161,15 @@ public class StateTree {
     }
 
     /**
+     * Gets the {@link Registry} that this state tree belongs to.
+     *
+     * @return the registry of this tree, not <code>null</code>
+     */
+    public Registry getRegistry() {
+        return registry;
+    }
+
+    /**
      * Returns a human readable string for the name space with the given id.
      *
      * @param id
@@ -195,6 +204,7 @@ public class StateTree {
                     "dependencyList");
             namespaceDebugName.set(Namespaces.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
+            namespaceDebugName.set(Namespaces.TEMPLATE, "template");
         }
         if (namespaceDebugName.has(id)) {
             return namespaceDebugName.get(id);
