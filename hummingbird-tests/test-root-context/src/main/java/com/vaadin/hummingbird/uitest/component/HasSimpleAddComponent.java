@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.uitest.component;
 import java.util.Optional;
 
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasElement;
 
 /**
  * Interface for components which allows the user to add and remove components
@@ -29,7 +30,7 @@ import com.vaadin.ui.Component;
  * @author Vaadin
  * @since
  */
-public interface HasSimpleAddComponent extends Component {
+public interface HasSimpleAddComponent extends HasElement {
     default void addComponents(Component... components) {
         for (Component component : components) {
             getElement().appendChild(component.getElement());
