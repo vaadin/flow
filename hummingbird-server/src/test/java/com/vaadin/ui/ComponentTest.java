@@ -38,7 +38,7 @@ public class ComponentTest {
 
         public TestComponent(Element element) {
             this.element = element;
-            this.element.attachComponent(this);
+            this.element.setComponent(this);
         }
 
         @Override

@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.shared;
 
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
+import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
@@ -102,6 +103,10 @@ public class Namespaces {
      * Id for {@link SynchronizedPropertiesNamespace}.
      */
     public static final int SYNCHRONIZED_PROPERTIES = 14;
+    /**
+     * Id for {@link ComponentMappingNamespace}.
+     */
+    public static final int COMPONENT_MAPPING = 15;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.
