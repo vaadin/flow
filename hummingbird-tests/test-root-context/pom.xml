@@ -10,7 +10,9 @@
 	<artifactId>hummingbird-test-root-context</artifactId>
 	<name>Hummingbird root context tests</name>
 	<packaging>war</packaging>
-
+	<properties>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
 	<!-- uses default ports 8888 and 8889 -->
 
 	<dependencies>
