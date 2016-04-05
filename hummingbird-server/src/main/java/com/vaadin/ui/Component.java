@@ -26,25 +26,76 @@ import com.vaadin.hummingbird.dom.Element;
  * A Component is a higher level abstraction of an {@link Element} or a
  * hierarchy of {@link Element}s.
  * <p>
- * A Component must attach itself to its element, as returned by
- * {@link #getElement()}, once the element has been decided. The element must be
- * decided in the constructor and the element must not change during the
- * lifetime of the component.
+ * A component must have exactly one root element and it must be set using
+ * {@link #setElement(Element)} before the component is attached to a parent (or
+ * before {@link #getElement()} is called). The root element cannot be changed
+ * once it has been set.
  *
  * @author Vaadin
  * @since
  */
-public interface Component extends Serializable {
+public abstract class Component implements HasElement, Serializable {
+
+    private Element element;
+
+    /**
+     * Creates a component instance based on the given element.
+     * <p>
+     * For nearly all cases you want to pass an element reference but it is
+     * possible to pass {@code null} to this method. If you pass {@code null}
+     * you must ensure that {@link #setElement(Element)} is called before
+     * {@link #getElement()}.
+     *
+     * @param element
+     *            the root element for the component
+     */
+    protected Component(Element element) {
+        if (element != null) {
+            setElement(element);
+        }
+    }
+
     /**
      * Gets the root element of this component.
      * <p>
-     * Each component must have exactly one root element. This element is
-     * attached to the {@link Element} tree when this component is attached to a
-     * parent component.
+     * Each component must have exactly one root element. When the component is
+     * attached to a parent component, this element is attached to the parent
+     * component's element hierarchy.
      *
-     * @return the root element of this component.
+     * @see #setElement(Element)
+     * @return the root element of this component
      */
-    Element getElement();
+    @Override
+    public Element getElement() {
+        assert element != null : "getElement() must not be called before the element has been set";
+        return element;
+    }
+
+    /**
+     * Initializes the root element of this component.
+     * <p>
+     * Each component must have a root element and it must be set before the
+     * component is attached to a parent.
+     * <p>
+     * This method must be called only once. The root element of a component
+     * cannot be changed once it has been set.
+     * <p>
+     * This method should never be overridden but is not marked as final because
+     * of dependency injection frameworks.
+     *
+     * @param element
+     *            the root element of the component
+     */
+    protected void setElement(Element element) {
+        if (this.element != null) {
+            throw new IllegalStateException("Element has already been set");
+        }
+        if (element == null) {
+            throw new IllegalArgumentException("Element must not be null");
+        }
+        this.element = element;
+        element.attachComponent(this);
+    }
 
     /**
      * Gets the parent component of this component.
@@ -53,7 +104,7 @@ public interface Component extends Serializable {
      *
      * @return the parent component
      */
-    default Optional<Component> getParent() {
+    public Optional<Component> getParent() {
         assert ComponentUtil.isAttachedTo(this, getElement());
 
         Element parentElement = getElement().getParent();
@@ -77,7 +128,7 @@ public interface Component extends Serializable {
      *
      * @return the child components of this component
      */
-    default Stream<Component> getChildren() {
+    public Stream<Component> getChildren() {
         assert ComponentUtil.isAttachedTo(this, getElement());
 
         Builder<Component> childComponents = Stream.builder();
