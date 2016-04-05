@@ -18,18 +18,10 @@ package com.vaadin.hummingbird.uitest.component;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.ui.Component;
 
-public class AbstractHtmlComponent implements Component {
-
-    private Element element;
+public class AbstractHtmlComponent extends Component {
 
     public AbstractHtmlComponent(Element element) {
-        this.element = element;
-        element.setComponent(this);
-    }
-
-    @Override
-    public Element getElement() {
-        return element;
+        super(element);
     }
 
     public void setId(String id) {
