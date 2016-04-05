@@ -132,7 +132,7 @@ public class Html implements Component {
         assert element != null : "Element can not be null";
 
         this.element = element;
-        this.element.attachComponent(this);
+        this.element.setComponent(this);
     }
 
     /**

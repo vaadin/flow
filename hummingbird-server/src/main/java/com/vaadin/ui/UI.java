@@ -107,7 +107,7 @@ public class UI implements Component, Serializable, PollNotifier {
     public UI() {
         getNode().getNamespace(ElementDataNamespace.class).setTag("body");
         pushConfiguration = new PushConfigurationImpl(this);
-        Element.get(getNode()).attachComponent(this);
+        Element.get(getNode()).setComponent(this);
     }
 
     /**

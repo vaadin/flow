@@ -73,6 +73,8 @@ public class NamespaceRegistry {
                 ElementStylePropertyNamespace::new);
         registerNamespace(SynchronizedPropertiesNamespace.class,
                 SynchronizedPropertiesNamespace::new);
+        registerNamespace(ComponentMappingNamespace.class,
+                ComponentMappingNamespace::new);
     }
 
     private NamespaceRegistry() {

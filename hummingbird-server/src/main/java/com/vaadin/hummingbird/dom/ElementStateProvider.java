@@ -368,7 +368,7 @@ public interface ElementStateProvider extends Serializable {
      * @param component
      *            the component to map the element to
      */
-    void attachComponent(StateNode node, Component component);
+    void setComponent(StateNode node, Component component);
 
     /**
      * Gets the component this element is mapped to.

@@ -27,7 +27,7 @@ public class ComponentUtilTest {
     public void attachedToComponent() {
         Component c = Mockito.mock(Component.class);
         Element e = new Element("e");
-        e.attachComponent(c);
+        e.setComponent(c);
         Assert.assertTrue(ComponentUtil.isAttachedTo(c, e));
     }
 

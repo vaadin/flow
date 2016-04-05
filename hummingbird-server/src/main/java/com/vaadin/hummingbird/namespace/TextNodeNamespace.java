@@ -15,11 +15,8 @@
  */
 package com.vaadin.hummingbird.namespace;
 
-import java.util.Optional;
-
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.shared.Namespaces;
-import com.vaadin.ui.Component;
 
 /**
  * Namespace holding the data of a text node.
@@ -28,8 +25,6 @@ import com.vaadin.ui.Component;
  * @author Vaadin Ltd
  */
 public class TextNodeNamespace extends MapNamespace {
-
-    private Component component = null;
 
     /**
      * Creates a new text node namespace for the given node.
@@ -62,33 +57,6 @@ public class TextNodeNamespace extends MapNamespace {
         assert contains(Namespaces.TEXT);
 
         return (String) get(Namespaces.TEXT);
-    }
-
-    /**
-     * Assigns the given component to this node or removes the component if the
-     * parameter is null.
-     * <p>
-     * When assigning a component to the node, there must be no previously
-     * assigned component, i.e. you cannot replace one component with another
-     * using this method.
-     *
-     * @param component
-     *            the component to assign to this node
-     */
-    public void setComponent(Component component) {
-        assert (component == null)
-                || (this.component == null) : "Cannot replace the component using setComponent";
-
-        this.component = component;
-    }
-
-    /**
-     * Gets the component assigned to this node, if any.
-     *
-     * @return the assigned component, if present
-     */
-    public Optional<Component> getComponent() {
-        return Optional.ofNullable(component);
     }
 
 }
