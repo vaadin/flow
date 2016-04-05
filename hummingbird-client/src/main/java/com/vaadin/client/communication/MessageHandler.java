@@ -35,6 +35,7 @@ import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.template.TemplateRegistry;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 
@@ -310,6 +311,15 @@ public class MessageHandler {
                 double processUidlStart = Duration.currentTimeMillis();
 
                 JsonObject json = valueMap.cast();
+
+                if (json.hasKey("templates")) {
+                    TemplateRegistry templates = registry.getTemplates();
+
+                    JsonObject templatesJson = json.getObject("templates");
+
+                    templates.importFromJson(templatesJson);
+                }
+
                 if (json.hasKey("changes")) {
                     StateTree tree = registry.getStateTree();
                     TreeChangeProcessor.processChanges(tree,
