@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.dom;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
+import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 
 public class TextElementStateProviderTest {
     private Element element = Element.createText("foo");

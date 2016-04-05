@@ -32,8 +32,8 @@ import java.util.stream.Stream;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
-import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;

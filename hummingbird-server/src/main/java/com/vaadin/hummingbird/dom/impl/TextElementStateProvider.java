@@ -27,6 +27,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
