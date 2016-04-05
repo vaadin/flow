@@ -1276,7 +1276,7 @@ public class Element implements Serializable {
      */
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
-        stateProvider.getSynchronizedPropertyEvents(getNode()).remove(property);
+        stateProvider.getSynchronizedProperties(getNode()).remove(property);
         return this;
     }
 

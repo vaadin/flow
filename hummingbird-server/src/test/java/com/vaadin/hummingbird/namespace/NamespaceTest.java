@@ -82,6 +82,8 @@ public class NamespaceTest {
                 Namespaces.ELEMENT_STYLE_PROPERTIES);
         expectedIds.put(SynchronizedPropertiesNamespace.class,
                 Namespaces.SYNCHRONIZED_PROPERTIES);
+        expectedIds.put(SynchronizedPropertyEventsNamespace.class,
+                Namespaces.SYNCHRONIZED_PROPERTY_EVENTS);
         expectedIds.put(ComponentMappingNamespace.class,
                 Namespaces.COMPONENT_MAPPING);
 

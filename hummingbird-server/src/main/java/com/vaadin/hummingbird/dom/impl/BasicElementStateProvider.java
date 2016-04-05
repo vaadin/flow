@@ -42,6 +42,7 @@ import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -70,6 +71,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementListenersNamespace.class, ClassListNamespace.class,
             ElementStylePropertyNamespace.class,
             SynchronizedPropertiesNamespace.class,
+            SynchronizedPropertyEventsNamespace.class,
             ComponentMappingNamespace.class };
 
     private BasicElementStateProvider() {
@@ -361,7 +363,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public Set<String> getSynchronizedPropertyEvents(StateNode node) {
-        return node.getNamespace(SynchronizedPropertiesNamespace.class)
+        return node.getNamespace(SynchronizedPropertyEventsNamespace.class)
                 .getSynchronizedPropertyEvents();
     }
 

@@ -17,18 +17,17 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.MapPutChange;
+import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
 
@@ -1402,11 +1401,14 @@ public class ElementTest {
     public void getSetSynchronizedProperty() {
         Element e = ElementFactory.createDiv();
         e.addSynchronizedProperty("foo").addSynchronizedProperty("bar");
-        String[] expected = new String[] { "bar", "foo" };
 
-        Assert.assertArrayEquals(expected,
-                e.getSynchronizedProperties().toArray());
+        Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
 
+        List<String> list = e.getSynchronizedProperties()
+                .collect(Collectors.toList());
+        Assert.assertEquals(expected.size(), list.size());
+        expected.removeAll(list);
+        Assert.assertEquals(0, expected.size());
     }
 
     @Test
@@ -1420,11 +1422,8 @@ public class ElementTest {
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getNamespace(SynchronizedPropertiesNamespace.class)
-                .collectChanges(change -> {
-                    JsonUtil.stream(
-                            (JsonArray) ((MapPutChange) change).getValue())
-                            .forEach(item -> i.incrementAndGet());
-                });
+                .collectChanges(change -> i.addAndGet(
+                        ((ListSpliceChange) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }
 
@@ -1472,12 +1471,9 @@ public class ElementTest {
                 e.getSynchronizedPropertyEvents().toArray());
 
         AtomicInteger i = new AtomicInteger(0);
-        e.getNode().getNamespace(SynchronizedPropertiesNamespace.class)
-                .collectChanges(change -> {
-                    JsonUtil.stream(
-                            (JsonArray) ((MapPutChange) change).getValue())
-                            .forEach(item -> i.incrementAndGet());
-                });
+        e.getNode().getNamespace(SynchronizedPropertyEventsNamespace.class)
+                .collectChanges(change -> i.addAndGet(
+                        ((ListSpliceChange) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }
 
@@ -1498,10 +1494,13 @@ public class ElementTest {
         Element e = ElementFactory.createDiv();
         e.addSynchronizedPropertyEvent("foo")
                 .addSynchronizedPropertyEvent("bar");
-        String[] expected = new String[] { "bar", "foo" };
+        Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
 
-        Assert.assertArrayEquals(expected,
-                e.getSynchronizedPropertyEvents().toArray());
+        List<String> list = e.getSynchronizedPropertyEvents()
+                .collect(Collectors.toList());
+        Assert.assertEquals(expected.size(), list.size());
+        expected.removeAll(list);
+        Assert.assertEquals(0, expected.size());
     }
 
     @Test(expected = IllegalArgumentException.class)
