@@ -19,14 +19,22 @@ import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.uitest.component.Button;
 import com.vaadin.hummingbird.uitest.component.Div;
 import com.vaadin.hummingbird.uitest.component.Input;
+import com.vaadin.ui.Text;
 
 public class BasicComponentView extends AbstractDivView {
+
+    public static final String TEXT = "This is the basic component view text component with some tags: <b><html></body>";
+    public static final String BUTTON_TEXT = "Click me";
+    public static final String DIV_TEXT = "Hello world";
 
     @Override
     protected void onShow() {
         getElement().getStyle().set("margin", "1em");
+        getElement().setAttribute("id", "root");
 
-        Button button = new Button("Click me");
+        Text text = new Text(TEXT);
+
+        Button button = new Button(BUTTON_TEXT);
 
         Input input = new Input();
         input.setPlaceholder("Synchronized on change event");
@@ -42,9 +50,9 @@ public class BasicComponentView extends AbstractDivView {
             greeting.getElement().addEventListener("click",
                     e2 -> removeComponents(greeting));
             addComponents(greeting);
-        } , "element.textContent");
+        }, "element.textContent");
 
-        Div helloWorld = new Div("Hello world");
+        Div helloWorld = new Div(DIV_TEXT);
         helloWorld.addClass("hello");
         helloWorld.setId("hello-world");
         helloWorld.getElement().addEventListener("click", e -> {
@@ -55,7 +63,7 @@ public class BasicComponentView extends AbstractDivView {
         s.set("color", "red");
         s.set("fontWeight", "bold");
 
-        addComponents(helloWorld, button, input);
+        addComponents(text, helloWorld, button, input);
     }
 
 }
