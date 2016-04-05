@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.template;
 
+import com.vaadin.hummingbird.dom.ElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.TemplateTextElementStateProvider;
+
 /**
  * A template AST node representing a text node.
  *
@@ -54,5 +57,10 @@ public class TextTemplateNode extends TemplateNode {
     @Override
     public TemplateNode getChild(int index) {
         throw new IndexOutOfBoundsException();
+    }
+
+    @Override
+    protected ElementStateProvider createStateProvider() {
+        return new TemplateTextElementStateProvider(this);
     }
 }

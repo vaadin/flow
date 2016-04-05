@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.dom.ElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+
 /**
  * A template AST node representing a regular element.
  *
@@ -46,7 +49,7 @@ public class ElementTemplateNode extends TemplateNode {
         attributes = new HashMap<>(builder.getAttributes());
 
         builder.getChildren().map(TemplateBuilder::build).forEach(child -> {
-            child.setParent(this);
+            child.init(this);
             children.add(child);
         });
     }
@@ -89,5 +92,10 @@ public class ElementTemplateNode extends TemplateNode {
     @Override
     public TemplateNode getChild(int childIndex) {
         return children.get(childIndex);
+    }
+
+    @Override
+    protected ElementStateProvider createStateProvider() {
+        return new TemplateElementStateProvider(this);
     }
 }

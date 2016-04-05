@@ -27,6 +27,7 @@ public class TemplateBuilderTest {
                 .addChild(new TextTemplateBuilder(new StaticBinding("baz")));
 
         ElementTemplateNode node = builder.build();
+        node.init(null);
 
         Assert.assertNull(node.getParent());
         Assert.assertEquals("div", node.getTag());
