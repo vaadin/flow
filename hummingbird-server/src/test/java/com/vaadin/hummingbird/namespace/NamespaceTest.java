@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
-import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.shared.Namespaces;
 

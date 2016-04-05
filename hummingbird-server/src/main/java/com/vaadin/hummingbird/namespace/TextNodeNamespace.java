@@ -13,12 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.dom.impl;
+package com.vaadin.hummingbird.namespace;
 
 import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.namespace.MapNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
 import com.vaadin.ui.Component;
 

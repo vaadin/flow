@@ -15,7 +15,6 @@
  */
 package com.vaadin.hummingbird.shared;
 
-import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
@@ -29,6 +28,7 @@ import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 
 /**
  * Registry of namespace id numbers and map keys shared between server and

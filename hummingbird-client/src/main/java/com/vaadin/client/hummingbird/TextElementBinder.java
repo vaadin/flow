@@ -19,7 +19,7 @@ import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
+import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;

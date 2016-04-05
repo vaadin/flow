@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.dom.impl.TextNodeNamespace;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 
 /**
