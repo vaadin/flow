@@ -24,7 +24,7 @@ public class AbstractHtmlComponent implements Component {
 
     public AbstractHtmlComponent(Element element) {
         this.element = element;
-        element.attachComponent(this);
+        element.setComponent(this);
     }
 
     @Override

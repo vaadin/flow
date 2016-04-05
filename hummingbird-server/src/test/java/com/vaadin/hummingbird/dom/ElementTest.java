@@ -1599,7 +1599,7 @@ public class ElementTest {
     public void attachToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
+        e.setComponent(c);
         Assert.assertEquals(c, e.getComponent().get());
     }
 
@@ -1607,7 +1607,7 @@ public class ElementTest {
     public void attachComponentToTextElement() {
         Element e = Element.createText("Text text");
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
+        e.setComponent(c);
         Assert.assertEquals(c, e.getComponent().get());
     }
 
@@ -1615,14 +1615,14 @@ public class ElementTest {
     public void attachTwiceToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
-        e.attachComponent(c);
+        e.setComponent(c);
+        e.setComponent(c);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void attachToNull() {
         Element e = ElementFactory.createDiv();
-        e.attachComponent(null);
+        e.setComponent(null);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1630,8 +1630,8 @@ public class ElementTest {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         Component c2 = Mockito.mock(Component.class);
-        e.attachComponent(c);
-        e.attachComponent(c2);
+        e.setComponent(c);
+        e.setComponent(c2);
     }
 
     @Test

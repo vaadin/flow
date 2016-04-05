@@ -387,7 +387,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void attachComponent(StateNode node, Component component) {
+    public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
         node.getNamespace(ElementDataNamespace.class).setComponent(component);

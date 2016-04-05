@@ -1305,7 +1305,7 @@ public class Element implements Serializable {
      *            the component this element is attached to
      * @return this element
      */
-    public Element attachComponent(Component component) {
+    public Element setComponent(Component component) {
         if (component == null) {
             throw new IllegalArgumentException("Component must not be null");
         }
@@ -1314,7 +1314,7 @@ public class Element implements Serializable {
             throw new IllegalStateException(
                     "A component is already attached to this element");
         }
-        stateProvider.attachComponent(getNode(), component);
+        stateProvider.setComponent(getNode(), component);
 
         return this;
     }
