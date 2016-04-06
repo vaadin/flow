@@ -28,9 +28,10 @@ import com.vaadin.hummingbird.StateNode;
 public class SynchronizedPropertiesNamespace
         extends SerializableListNamespace<String> {
 
-    private static class SetView extends ListNamespace.SetView<String> {
+    private static class PropertiesSetView
+            extends ListNamespace.SetView<String> {
 
-        private SetView(SynchronizedPropertiesNamespace namespace) {
+        private PropertiesSetView(SynchronizedPropertiesNamespace namespace) {
             super(namespace);
         }
 
@@ -60,7 +61,7 @@ public class SynchronizedPropertiesNamespace
      * @return a view into this namespace
      */
     public Set<String> getSynchronizedProperties() {
-        return new SetView(this);
+        return new PropertiesSetView(this);
     }
 
 }

@@ -28,9 +28,9 @@ import com.vaadin.hummingbird.StateNode;
 public class SynchronizedPropertyEventsNamespace
         extends SerializableListNamespace<String> {
 
-    private static class SetView extends ListNamespace.SetView<String> {
+    private static class EventsSetView extends ListNamespace.SetView<String> {
 
-        private SetView(SynchronizedPropertyEventsNamespace namespace) {
+        private EventsSetView(SynchronizedPropertyEventsNamespace namespace) {
             super(namespace);
         }
 
@@ -60,7 +60,7 @@ public class SynchronizedPropertyEventsNamespace
      * @return a view into this namespace
      */
     public Set<String> getSynchronizedPropertyEvents() {
-        return new SetView(this);
+        return new EventsSetView(this);
     }
 
 }
