@@ -81,7 +81,6 @@ public class BasicElementBinder {
             .map();
     private final JsMap<String, EventRemover> listenerRemovers = JsCollections
             .map();
-    private Computation synchronizedPropertyComputation;
 
     private final JsArray<EventRemover> listeners = JsCollections.array();
     private final JsSet<EventRemover> synchronizedPropertyEventListeners = JsCollections
@@ -107,7 +106,7 @@ public class BasicElementBinder {
         listeners.push(bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
                 this::updateAttribute));
 
-        bindSynchronizedProperties();
+        listeners.push(bindSynchronizedPropertyEvents());
 
         listeners.push(bindChildren());
 
@@ -120,9 +119,12 @@ public class BasicElementBinder {
         node.setDomNode(element);
     }
 
-    private void bindSynchronizedProperties() {
-        synchronizedPropertyComputation = Reactive
-                .runWhenDepedenciesChange(this::synchronizeEventTypesChanged);
+    private EventRemover bindSynchronizedPropertyEvents() {
+        synchronizeEventTypesChanged();
+
+        ListNamespace namespace = node
+                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTY_EVENTS);
+        return namespace.addSpliceListener(e -> synchronizeEventTypesChanged());
     }
 
     private void synchronizeEventTypesChanged() {
@@ -455,7 +457,6 @@ public class BasicElementBinder {
         propertyBindings.forEach(computationStopper);
         attributeBindings.forEach(computationStopper);
         listenerBindings.forEach(computationStopper);
-        synchronizedPropertyComputation.stop();
 
         listenerRemovers.forEach((remover, name) -> remover.remove());
         listeners.forEach(EventRemover::remove);
