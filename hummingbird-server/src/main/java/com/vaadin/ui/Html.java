@@ -46,10 +46,9 @@ import com.vaadin.hummingbird.dom.Element;
  * @author Vaadin
  * @since
  */
-public class Html implements Component {
+public class Html extends Component {
 
     private static final String INNER_HTML = "innerHTML";
-    private Element element;
 
     /**
      * Creates an instance based on the HTML fragment read from the stream. The
@@ -67,6 +66,7 @@ public class Html implements Component {
      *             if reading the stream fails
      */
     public Html(InputStream stream) {
+        super(null);
         if (stream == null) {
             throw new IllegalArgumentException("HTML stream cannot be null");
         }
@@ -92,6 +92,7 @@ public class Html implements Component {
      *            the HTML to wrap
      */
     public Html(String outerHtml) {
+        super(null);
         if (outerHtml == null || outerHtml.isEmpty()) {
             throw new IllegalArgumentException("HTML cannot be null or empty");
         }
@@ -110,7 +111,7 @@ public class Html implements Component {
         org.jsoup.nodes.Element root = doc.body().child(0);
         Attributes attrs = root.attributes();
 
-        setElement(new Element(root.tagName()));
+        Component.setElement(this, new Element(root.tagName()));
         attrs.forEach(a -> {
             String name = a.getKey();
             String value = a.getValue();
@@ -118,21 +119,13 @@ public class Html implements Component {
                 getLogger().warning("Style values '" + value
                         + "' ignored for root element.");
             } else {
-                element.setAttribute(name, value);
+                getElement().setAttribute(name, value);
             }
         });
 
         doc.outputSettings().prettyPrint(false);
         setInnerHtml(root.html());
 
-    }
-
-    private void setElement(Element element) {
-        assert this.element == null : "Element has already been set";
-        assert element != null : "Element can not be null";
-
-        this.element = element;
-        this.element.setComponent(this);
     }
 
     /**
@@ -152,11 +145,6 @@ public class Html implements Component {
      */
     public String getInnerHtml() {
         return getElement().getProperty(INNER_HTML);
-    }
-
-    @Override
-    public Element getElement() {
-        return element;
     }
 
     private static final Logger getLogger() {

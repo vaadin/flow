@@ -32,23 +32,38 @@ public class ComponentTest {
     private Component child1SpanComponent;
     private Component child2InputComponent;
 
-    private static class TestComponent implements Component {
+    private static class TestComponent extends Component {
 
-        private Element element;
-
-        public TestComponent(Element element) {
-            this.element = element;
-            this.element.setComponent(this);
+        public TestComponent() {
+            this(ElementFactory.createDiv());
         }
 
-        @Override
-        public Element getElement() {
-            return element;
+        public TestComponent(Element element) {
+            super(element);
         }
 
         @Override
         public String toString() {
-            return element.getTextContent();
+            return getElement().getTextContent();
+        }
+
+    }
+
+    private static class BrokenComponent extends Component {
+
+        public BrokenComponent() {
+            super(null);
+        }
+
+    }
+
+    private static class TestComponentContainer extends TestComponent {
+
+        public TestComponentContainer() {
+        }
+
+        public void add(Component c) {
+            getElement().appendChild(c.getElement());
         }
 
     }
@@ -157,6 +172,40 @@ public class ComponentTest {
         Assert.assertArrayEquals(
                 new Component[] { child1SpanComponent, child2InputComponent },
                 children.toArray());
+
+    }
+
+    @Test(expected = AssertionError.class)
+    public void attachBrokenComponent() {
+        BrokenComponent c = new BrokenComponent();
+        TestComponentContainer tc = new TestComponentContainer();
+        tc.add(c);
+    }
+
+    @Test
+    public void setElement() {
+        Component c = new Component(null) {
+        };
+        Element element = ElementFactory.createDiv();
+        Component.setElement(c, element);
+        Assert.assertEquals(c, element.getComponent().get());
+        Assert.assertEquals(element, c.getElement());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setElementNull() {
+        Component c = new Component(null) {
+        };
+        Component.setElement(c, null);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setElementTwice() {
+        Component c = new Component(null) {
+        };
+        Element element = ElementFactory.createDiv();
+        Component.setElement(c, element);
+        Component.setElement(c, element);
 
     }
 }
