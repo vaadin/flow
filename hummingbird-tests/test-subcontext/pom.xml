@@ -12,6 +12,7 @@
 	<packaging>war</packaging>
 
 	<properties>
+		<maven.deploy.skip>true</maven.deploy.skip>
 		<server.port>9999</server.port>
 		<server.stop.port>9998</server.stop.port>
 	</properties>
