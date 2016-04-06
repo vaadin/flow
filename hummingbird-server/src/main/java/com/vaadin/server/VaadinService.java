@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -203,6 +204,14 @@ public abstract class VaadinService implements Serializable {
                         "The defined router configurator class "
                                 + configuratorClassName + " does not implement "
                                 + RouterConfigurator.class.getName());
+            }
+
+            if (configuratorClass.getDeclaringClass() != null
+                    && !Modifier.isStatic(configuratorClass.getModifiers())) {
+                throw new ServiceException("Configurator class "
+                        + configuratorClassName
+                        + " cannot be a non-static inner class. "
+                        + "If an inner class is used, it must be static.");
             }
 
             RouterConfigurator configurator = (RouterConfigurator) configuratorClass
@@ -1182,8 +1191,8 @@ public abstract class VaadinService implements Serializable {
         } else {
             long now = System.currentTimeMillis();
             int timeout = 1000 * getHeartbeatTimeout();
-            return timeout < 0 || now - ui.getInternals()
-                    .getLastHeartbeatTimestamp() < timeout;
+            return timeout < 0 || now
+                    - ui.getInternals().getLastHeartbeatTimestamp() < timeout;
         }
     }
 
