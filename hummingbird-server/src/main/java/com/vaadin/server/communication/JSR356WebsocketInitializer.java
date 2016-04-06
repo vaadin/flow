@@ -18,6 +18,7 @@ package com.vaadin.server.communication;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -120,8 +121,10 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
 
         Map<String, ? extends ServletRegistration> regs = servletContext
                 .getServletRegistrations();
-        for (String servletName : regs.keySet()) {
-            ServletRegistration servletRegistration = regs.get(servletName);
+        for (Entry<String, ? extends ServletRegistration> entry : regs
+                .entrySet()) {
+            String servletName = entry.getKey();
+            ServletRegistration servletRegistration = entry.getValue();
 
             if (isVaadinServlet(servletRegistration)) {
                 try {

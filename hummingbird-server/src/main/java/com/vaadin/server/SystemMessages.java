@@ -79,29 +79,38 @@ public class SystemMessages implements Serializable {
     protected String cookiesDisabledMessage = "This application requires cookies to function.<br>Please enable cookies in your browser and <u>click here</u> or press ESC to try again.";
 
     /**
-     * Use {@link CustomizedSystemMessages} to customize
+     * Private constructor
      */
     SystemMessages() {
 
     }
 
     /**
-     * @return null to indicate that the application will be restarted after
-     *         session expired message has been shown.
+     * Gets the URL the user will be redirected to after dismissing a session
+     * expired message.
+     *
+     * @return the URL to redirect to, or null to refresh the page
      */
     public String getSessionExpiredURL() {
         return sessionExpiredURL;
     }
 
     /**
-     * @return true to show session expiration message.
+     * Checks if "session expired" notifications should be shown to the end
+     * user. If the notification is disabled the user will be immediately
+     * redirected to the URL returned by {@link #getSessionExpiredURL()}.
+     *
+     * @return {@code true} to show the notification to the end user,
+     *         {@code false} to redirect directly
      */
     public boolean isSessionExpiredNotificationEnabled() {
         return sessionExpiredNotificationEnabled;
     }
 
     /**
-     * @return "" to show no caption.
+     * Gets the caption to show in a "session expired" notification.
+     *
+     * @return The caption to show or {@code null} to show no caption.
      */
     public String getSessionExpiredCaption() {
         return (sessionExpiredNotificationEnabled ? sessionExpiredCaption
@@ -109,7 +118,9 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * @return "Take note of any unsaved data, and <u>click here</u> to continue."
+     * Gets the message to show in a "session expired" notification.
+     *
+     * @return The message to show or {@code null} to show no message.
      */
     public String getSessionExpiredMessage() {
         return (sessionExpiredNotificationEnabled ? sessionExpiredMessage
@@ -117,21 +128,31 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * @return null to reload the application after communication error message.
+     * Gets the URL the user will be redirected to after dismissing a
+     * communication error message.
+     *
+     * @return the URL to redirect to, or null to refresh the page
      */
     public String getCommunicationErrorURL() {
         return communicationErrorURL;
     }
 
     /**
-     * @return true to show the communication error message.
+     * Checks if "communication error" notifications should be shown to the end
+     * user. If the notification is disabled the user will be immediately
+     * redirected to the URL returned by {@link #getCommunicationErrorURL()}.
+     *
+     * @return {@code true} to show the notification to the end user,
+     *         {@code false} to redirect directly
      */
     public boolean isCommunicationErrorNotificationEnabled() {
         return communicationErrorNotificationEnabled;
     }
 
     /**
-     * @return "Communication problem"
+     * Gets the caption to show in a "communication error" notification.
+     *
+     * @return The caption to show or {@code null} to show no caption.
      */
     public String getCommunicationErrorCaption() {
         return (communicationErrorNotificationEnabled
@@ -139,7 +160,9 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * @return "Take note of any unsaved data, and <u>click here</u> to continue."
+     * Gets the message to show in a "communication error" notification.
+     *
+     * @return The message to show or {@code null} to show no message.
      */
     public String getCommunicationErrorMessage() {
         return (communicationErrorNotificationEnabled
@@ -147,22 +170,31 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * @return null to reload the application after authentication error
-     *         message.
+     * Gets the URL the user will be redirected to after dismissing an
+     * authentication error message.
+     *
+     * @return the URL to redirect to, or null to refresh the page
      */
     public String getAuthenticationErrorURL() {
         return authenticationErrorURL;
     }
 
     /**
-     * @return true to show the authentication error message.
+     * Checks if "authentication error" messages should be shown to the end
+     * user. If the notification is disabled the user will be immediately
+     * redirected to the URL returned by {@link #getAuthenticationErrorURL()}.
+     *
+     * @return {@code true} to show the notification to the end user,
+     *         {@code false} to redirect directly
      */
     public boolean isAuthenticationErrorNotificationEnabled() {
         return authenticationErrorNotificationEnabled;
     }
 
     /**
-     * @return "Authentication problem"
+     * Gets the caption to show in an "authentication error" notification.
+     *
+     * @return The caption to show or {@code null} to show no caption.
      */
     public String getAuthenticationErrorCaption() {
         return (authenticationErrorNotificationEnabled
@@ -170,7 +202,9 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * @return "Take note of any unsaved data, and <u>click here</u> to continue."
+     * Gets the message to show in a "authentication error" notification.
+     *
+     * @return The message to show or {@code null} to show no message.
      */
     public String getAuthenticationErrorMessage() {
         return (authenticationErrorNotificationEnabled
@@ -178,64 +212,71 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * @return null to reload the current URL after internal error message has
-     *         been shown.
+     * Gets the URL the user will be redirected to after dismissing an internal
+     * error message.
+     *
+     * @return the URL to redirect to, or null to refresh the page
      */
     public String getInternalErrorURL() {
         return internalErrorURL;
     }
 
     /**
-     * @return true to enable showing of internal error message.
+     * Checks if "internal error" notifications should be shown to the end user.
+     * If the notification is disabled the user will be immediately redirected
+     * to the URL returned by {@link #getInternalErrorURL()}.
+     *
+     * @return {@code true} to show the notification to the end user,
+     *         {@code false} to redirect directly
      */
     public boolean isInternalErrorNotificationEnabled() {
         return internalErrorNotificationEnabled;
     }
 
     /**
-     * @return "Internal error"
+     * Gets the caption to show in an "internal error" notification.
+     *
+     * @return The caption to show or {@code null} to show no caption.
      */
     public String getInternalErrorCaption() {
         return (internalErrorNotificationEnabled ? internalErrorCaption : null);
     }
 
     /**
-     * @return "Please notify the administrator.<br>
-     *         Take note of any unsaved data, and <u>click here</u> to
-     *         continue."
+     * Gets the message to show in a "internal error" notification.
+     *
+     * @return The message to show or {@code null} to show no message.
      */
     public String getInternalErrorMessage() {
         return (internalErrorNotificationEnabled ? internalErrorMessage : null);
     }
 
     /**
-     * Returns the URL the user should be redirected to after dismissing the
-     * "you have to enable your cookies" message. Typically null.
+     * Gets the URL the user will be redirected to after dismissing a
+     * "cookies disabled" message.
      *
-     * @return A URL the user should be redirected to after dismissing the
-     *         message or null to reload the current URL.
+     * @return the URL to redirect to, or null to refresh the page
      */
     public String getCookiesDisabledURL() {
         return cookiesDisabledURL;
     }
 
     /**
-     * Determines if "cookies disabled" messages should be shown to the end user
-     * or not. If the notification is disabled the user will be immediately
+     * Checks if "cookies disabled" notifications should be shown to the end
+     * user. If the notification is disabled the user will be immediately
      * redirected to the URL returned by {@link #getCookiesDisabledURL()}.
      *
-     * @return true to show "cookies disabled" messages to the end user, false
-     *         to redirect to the given URL directly
+     * @return {@code true} to show the notification to the end user,
+     *         {@code false} to redirect directly
      */
     public boolean isCookiesDisabledNotificationEnabled() {
         return cookiesDisabledNotificationEnabled;
     }
 
     /**
-     * Returns the caption of the message shown to the user when cookies are
-     * disabled in the browser.
+     * Gets the caption to show in a "cookies disabled" notification.
      *
-     * @return The caption of the "cookies disabled" message
+     * @return The caption to show or {@code null} to show no caption.
      */
     public String getCookiesDisabledCaption() {
         return (cookiesDisabledNotificationEnabled ? cookiesDisabledCaption
@@ -243,10 +284,9 @@ public class SystemMessages implements Serializable {
     }
 
     /**
-     * Returns the message shown to the user when cookies are disabled in the
-     * browser.
+     * Gets the message to show in a "cookies disabled" notification.
      *
-     * @return The "cookies disabled" message
+     * @return The message to show or {@code null} to show no message.
      */
     public String getCookiesDisabledMessage() {
         return (cookiesDisabledNotificationEnabled ? cookiesDisabledMessage

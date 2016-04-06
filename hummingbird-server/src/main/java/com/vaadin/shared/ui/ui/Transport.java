@@ -44,6 +44,11 @@ public enum Transport {
         this.identifier = identifier;
     }
 
+    /**
+     * Gets the low level identifier for the transport.
+     *
+     * @return the low level transport identifier
+     */
     public String getIdentifier() {
         return identifier;
     }
@@ -55,6 +60,8 @@ public enum Transport {
      * @param identifier
      *            the transport identifier, as returned by
      *            {@link #getIdentifier()}
+     * @return the transport identified by the identifier or {@code null} if no
+     *         matching transport was found
      * @since 7.3.10
      */
     public static Transport getByIdentifier(String identifier) {
