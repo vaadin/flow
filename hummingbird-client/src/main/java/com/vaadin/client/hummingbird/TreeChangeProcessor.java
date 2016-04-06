@@ -98,14 +98,14 @@ public class TreeChangeProcessor {
             processPutChange(change, node);
             break;
         case JsonConstants.CHANGE_TYPE_DETACH:
-            processDetachChange(change, node);
+            processDetachChange(node);
             break;
         default:
             assert false : "Unsupported change type: " + type;
         }
     }
 
-    private static void processDetachChange(JsonObject change, StateNode node) {
+    private static void processDetachChange(StateNode node) {
         node.getTree().unregisterNode(node);
     }
 

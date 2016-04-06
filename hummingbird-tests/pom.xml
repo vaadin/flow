@@ -22,6 +22,7 @@
 		<jetty.plugin.version>9.2.15.v20160210</jetty.plugin.version>
 		<!-- Don't care about coding style for tests -->
 		<sonar.skip>true</sonar.skip>
+		<maven.deploy.skip>true</maven.deploy.skip>
 		<!-- Used in the tests, should be overridden for each module to support 
 			concurrent running of test modules. -->
 		<server.port>8888</server.port>
