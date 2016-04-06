@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -78,6 +79,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static String bootstrapJS;
     private static String clientEngineFile;
+
+    private static Pattern scriptEndTagPattern = Pattern.compile("</(script)",
+            Pattern.CASE_INSENSITIVE);
 
     private static Logger getLogger() {
         return Logger.getLogger(BootstrapHandler.class.getName());
@@ -393,7 +397,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         JsonValue initialUIDL = getInitialUidl(context.getUI());
 
         String appConfigString = JsonUtil.stringify(appConfig, indent);
+
         String initialUIDLString = JsonUtil.stringify(initialUIDL, indent);
+        // Browser interpret </script> as end of script no matter if it is
+        // inside a string or not so we must escape it
+        initialUIDLString = scriptEndTagPattern.matcher(initialUIDLString)
+                .replaceAll("<\\\\x2F$1");
+
         if (isDebug) {
             // only used in debug mode by profiler
             result = result.replace("{{GWT_STAT_EVENTS}}", GWT_STAT_EVENTS_JS);
