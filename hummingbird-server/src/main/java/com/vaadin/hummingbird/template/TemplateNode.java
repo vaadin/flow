@@ -17,7 +17,10 @@ package com.vaadin.hummingbird.template;
 
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.vaadin.hummingbird.dom.ElementStateProvider;
 
 /**
  * A node in the AST parsed from a template file. A template node is immutable.
@@ -28,9 +31,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class TemplateNode implements Serializable {
     private static final AtomicInteger nextId = new AtomicInteger();
 
+    private static final ConcurrentHashMap<Integer, TemplateNode> registry = new ConcurrentHashMap<>();
+
     private final int id = nextId.incrementAndGet();
 
     private final TemplateNode parent;
+
+    private final ElementStateProvider stateProvider;
 
     /**
      * Creates a new template node with the given node as its parent.
@@ -41,6 +48,25 @@ public abstract class TemplateNode implements Serializable {
      */
     public TemplateNode(TemplateNode parent) {
         this.parent = parent;
+
+        registry.put(Integer.valueOf(id), this);
+
+        stateProvider = createStateProvider(this);
+    }
+
+    /*
+     * Fulgy hack just to avoid complaints from sonarcube about calling
+     * overrideable methods in the constructor, which is exactly what we want to
+     * do in this case even though it's generally a dangerous operation.
+     */
+    private static ElementStateProvider createStateProvider(TemplateNode node) {
+        assert node != null;
+
+        ElementStateProvider provider = node.createStateProvider();
+
+        assert provider != null;
+
+        return provider;
     }
 
     /**
@@ -54,7 +80,8 @@ public abstract class TemplateNode implements Serializable {
     }
 
     /**
-     * Gets the globally unique id of this template node.
+     * Gets the globally unique id of this template node. A node can be found
+     * based on its id using {@link #get(int)}.
      *
      * @return the template node id
      */
@@ -77,4 +104,52 @@ public abstract class TemplateNode implements Serializable {
      * @return the child at the given index
      */
     public abstract TemplateNode getChild(int index);
+
+    /**
+     * Gets a node by its id.
+     *
+     * @see #getId()
+     *
+     * @param id
+     *            the id of the node to get
+     * @return the node with the given id, not <code>null</code>
+     */
+    public static TemplateNode get(int id) {
+        assert has(id);
+
+        return registry.get(Integer.valueOf(id));
+    }
+
+    /**
+     * Checks whether a template node with the given id has been registered.
+     *
+     * @see #get(int)
+     *
+     * @param id
+     *            the id to check
+     * @return <code>true</code> if there is a template for the given id,
+     *         <code>false</code> otherwise
+     */
+    public static boolean has(int id) {
+        return registry.containsKey(Integer.valueOf(id));
+    }
+
+    /**
+     * Gets the element state provider used for elements based on this node.
+     *
+     * @return the element state provider, not <code>null</code>
+     */
+    public ElementStateProvider getStateProvider() {
+        return stateProvider;
+    }
+
+    /**
+     * Creates an element state provider that will be used for all elements
+     * based on this node. This method is called by the super constructor, so
+     * implementations should avoid accessing own internal fields from inside
+     * the method.
+     *
+     * @return the element state provider, not <code>null</code>
+     */
+    protected abstract ElementStateProvider createStateProvider();
 }

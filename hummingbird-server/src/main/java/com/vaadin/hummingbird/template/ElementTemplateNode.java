@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.dom.ElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+
 /**
  * A template AST node representing a regular element.
  *
@@ -105,5 +108,10 @@ public class ElementTemplateNode extends TemplateNode {
     @Override
     public TemplateNode getChild(int childIndex) {
         return children.get(childIndex);
+    }
+
+    @Override
+    protected ElementStateProvider createStateProvider() {
+        return new TemplateElementStateProvider(this);
     }
 }
