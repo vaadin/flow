@@ -30,7 +30,6 @@ import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.util.NativeFunction;
-import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
@@ -122,30 +121,24 @@ public class BasicElementBinder {
     }
 
     private void bindSynchronizedProperties() {
-        MapProperty eventTypesProperty = node
-                .getMapNamespace(Namespaces.SYNCHRONIZED_PROPERTIES)
-                .getProperty(SynchronizedPropertiesNamespace.KEY_EVENTS);
-        synchronizedPropertyComputation = Reactive.runWhenDepedenciesChange(
-                () -> synchronizeEventTypesChanged(eventTypesProperty));
+        synchronizedPropertyComputation = Reactive
+                .runWhenDepedenciesChange(this::synchronizeEventTypesChanged);
     }
 
-    @SuppressWarnings("unchecked")
-    private void synchronizeEventTypesChanged(MapProperty eventTypesProperty) {
+    private void synchronizeEventTypesChanged() {
+        ListNamespace namespace = node
+                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTY_EVENTS);
+
         // Remove all old listeners and add new ones
         synchronizedPropertyEventListeners.forEach(EventRemover::remove);
         synchronizedPropertyEventListeners.clear();
 
-        if (eventTypesProperty.hasValue()) {
-            JsArray<String> syncEvents = (JsArray<String>) eventTypesProperty
-                    .getValue();
-
-            syncEvents.forEach(eventType -> {
-                EventRemover remover = element.addEventListener(eventType,
-                        this::handlePropertySyncDomEvent, false);
-                synchronizedPropertyEventListeners.add(remover);
-            });
+        for (int i = 0; i < namespace.length(); i++) {
+            String eventType = namespace.get(i).toString();
+            EventRemover remover = element.addEventListener(eventType,
+                    this::handlePropertySyncDomEvent, false);
+            synchronizedPropertyEventListeners.add(remover);
         }
-
     }
 
     private EventRemover bindClassList() {
@@ -334,23 +327,12 @@ public class BasicElementBinder {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private JsArray<String> getPropertiesToSync() {
-        MapNamespace namespace = node
-                .getMapNamespace(Namespaces.SYNCHRONIZED_PROPERTIES);
-        MapProperty p = namespace
-                .getProperty(SynchronizedPropertiesNamespace.KEY_PROPERTIES);
-        if (!p.hasValue()) {
-            // No properties to sync
-            return JsCollections.array();
-        }
-
-        return (JsArray<String>) p.getValue();
-    }
-
     private void handlePropertySyncDomEvent(Event event) {
-        getPropertiesToSync()
-                .forEach(propertyName -> syncPropertyIfNeeded(propertyName));
+        ListNamespace namespace = node
+                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTIES);
+        for (int i = 0; i < namespace.length(); i++) {
+            syncPropertyIfNeeded(namespace.get(i).toString());
+        }
     }
 
     /**

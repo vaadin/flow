@@ -1432,8 +1432,8 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.synchronizeProperty("foo", "event");
 
-        element.getSynchronizedProperties()
-                .allMatch(prop -> prop.equals("foo"));
+        Assert.assertTrue(element.getSynchronizedProperties()
+                .allMatch(prop -> prop.equals("foo")));
         Assert.assertTrue(element.getSynchronizedPropertyEvents()
                 .allMatch(event -> event.equals("event")));
     }
