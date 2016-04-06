@@ -29,6 +29,7 @@ import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.TemplateNamespace;
 
 /**
  * Registry of namespace id numbers and map keys shared between server and
@@ -102,6 +103,10 @@ public class Namespaces {
      * Id for {@link SynchronizedPropertiesNamespace}.
      */
     public static final int SYNCHRONIZED_PROPERTIES = 14;
+    /**
+     * Id for {@link TemplateNamespace}.
+     */
+    public static final int TEMPLATE = 15;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.
@@ -112,6 +117,11 @@ public class Namespaces {
      * Key for {@link TextNodeNamespace#getText()}.
      */
     public static final String TEXT = "text";
+
+    /**
+     * Key for {@link TemplateNamespace#getRootTemplate()}.
+     */
+    public static final String ROOT_TEMPLATE_ID = "root";
 
     private Namespaces() {
         // Only static
