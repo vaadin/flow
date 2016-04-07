@@ -35,7 +35,7 @@ public class CompositeNestedView extends Composite implements View {
         nameField.setId(NAME_FIELD_ID);
         Div name = new Div("Name on server: " + nameField.getName());
         name.setId(NAME_ID);
-        nameField.setNameChangeListener(e -> {
+        nameField.addNameChangeListener(e -> {
             name.setText("Name on server: " + nameField.getName());
         });
         div.addComponents(name, nameField);
