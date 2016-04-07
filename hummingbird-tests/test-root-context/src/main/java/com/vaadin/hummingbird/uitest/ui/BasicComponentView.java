@@ -15,7 +15,11 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.function.Consumer;
+
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.uitest.component.AbstractHtmlComponent;
 import com.vaadin.hummingbird.uitest.component.Button;
 import com.vaadin.hummingbird.uitest.component.Div;
 import com.vaadin.hummingbird.uitest.component.Input;
@@ -26,6 +30,7 @@ public class BasicComponentView extends AbstractDivView {
     public static final String TEXT = "This is the basic component view text component with some tags: <b><html></body>";
     public static final String BUTTON_TEXT = "Click me";
     public static final String DIV_TEXT = "Hello world";
+    private EventRegistrationHandle remover;
 
     @Override
     protected void onShow() {
@@ -39,23 +44,30 @@ public class BasicComponentView extends AbstractDivView {
         Input input = new Input();
         input.setPlaceholder("Synchronized on change event");
 
-        button.getElement().addEventListener("click", e -> {
-            Div greeting = new Div();
-            greeting.addClass("thankYou");
-            String buttonText = e.getEventData()
-                    .getString("element.textContent");
-            greeting.setText("Thank you for clicking at \"" + buttonText
-                    + "\"! The field value is " + input.getValue());
+        remover = button.addClickListener(
+                new Consumer<AbstractHtmlComponent.ClickEvent>() {
+                    @Override
+                    public void accept(ClickEvent e) {
+                        Div greeting = new Div();
+                        greeting.addClass("thankYou");
+                        String buttonText = "(" + e.getClientX() + ","
+                                + e.getClientY() + ")";
+                        greeting.setText("Thank you for clicking at \""
+                                + buttonText + "\"! The field value is "
+                                + input.getValue());
 
-            greeting.getElement().addEventListener("click",
-                    e2 -> removeComponents(greeting));
-            addComponents(greeting);
-        }, "element.textContent");
+                        greeting.getElement().addEventListener("click",
+                                e2 -> removeComponents(greeting));
+                        addComponents(greeting);
+                        remover.remove();
+                    }
+
+                });
 
         Div helloWorld = new Div(DIV_TEXT);
         helloWorld.addClass("hello");
         helloWorld.setId("hello-world");
-        helloWorld.getElement().addEventListener("click", e -> {
+        helloWorld.addClickListener(e -> {
             helloWorld.getElement().setTextContent("Stop touching me!");
             helloWorld.getElement().getClassList().clear();
         });

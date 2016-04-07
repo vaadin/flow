@@ -15,8 +15,14 @@
  */
 package com.vaadin.hummingbird.uitest.component;
 
+import java.util.function.Consumer;
+
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.annotations.EventData;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 
 public class AbstractHtmlComponent extends Component {
 
@@ -40,4 +46,28 @@ public class AbstractHtmlComponent extends Component {
         getElement().setTextContent(text);
     }
 
+    public EventRegistrationHandle addClickListener(
+            Consumer<ClickEvent> listener) {
+        return addListener(ClickEvent.class, listener);
+    }
+
+    @DomEvent("click")
+    public static class ClickEvent extends ComponentEvent {
+        @EventData("event.clientX")
+        private int clientX;
+        @EventData("event.clientY")
+        private int clientY;
+
+        public ClickEvent(Button source) {
+            super(source);
+        }
+
+        public int getClientX() {
+            return clientX;
+        }
+
+        public int getClientY() {
+            return clientY;
+        }
+    }
 }

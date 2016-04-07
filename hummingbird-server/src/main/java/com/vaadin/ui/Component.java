@@ -17,11 +17,14 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventBus;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -38,6 +41,8 @@ import com.vaadin.hummingbird.dom.ElementUtil;
 public abstract class Component implements HasElement, Serializable {
 
     private Element element;
+
+    private ComponentEventBus eventBus = new ComponentEventBus(this);
 
     /**
      * Creates a component instance based on the given element.
@@ -153,4 +158,15 @@ public abstract class Component implements HasElement, Serializable {
         return childComponents.build();
     }
 
+    protected <T extends ComponentEvent> EventRegistrationHandle addListener(
+            Class<T> eventType, Consumer<T> listener) {
+        eventBus.addListener(eventType, listener);
+        return () -> {
+            eventBus.removeListener(eventType, listener);
+        };
+    }
+
+    protected void fireEvent(ComponentEvent event) {
+        eventBus.fireEvent(event);
+    }
 }
