@@ -13,26 +13,33 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.annotations;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 import com.vaadin.ui.Component;
 
-public class AbstractHtmlComponent extends Component {
-
-    public void setId(String id) {
-        getElement().setAttribute("id", id);
-    }
-
-    public String getId() {
-        return getElement().getAttribute("id");
-    }
-
-    public void addClass(String className) {
-        getElement().getClassList().add(className);
-    }
-
-    protected void setText(String text) {
-        getElement().setTextContent(text);
-    }
-
+/**
+ * Defines the tag to use for a component created using the default
+ * {@link Component} constructor.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@Inherited
+@Documented
+public @interface Tag {
+    /**
+     * Gets the tag name
+     * 
+     * @return the tag name
+     */
+    public String value();
 }
