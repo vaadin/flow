@@ -16,14 +16,14 @@ public class PageTitleView extends AbstractDivView {
         Div updateButton = new Div();
         updateButton.setId("button");
         updateButton.setText("Update page title");
-        updateButton.getElement().addEventListener("click", e -> {
+        updateButton.addClickListener(e -> {
             getPage().setTitle(input.getValue());
         });
 
         Div overrideButton = new Div();
         overrideButton.setId("override");
         overrideButton.setText("Triggers two updates");
-        overrideButton.getElement().addEventListener("click", e -> {
+        overrideButton.addClickListener(e -> {
             getPage().setTitle(input.getValue());
             getPage().setTitle("OVERRIDDEN");
         });
