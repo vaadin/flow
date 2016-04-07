@@ -39,24 +39,24 @@ public class BasicComponentView extends AbstractDivView {
         Input input = new Input();
         input.setPlaceholder("Synchronized on change event");
 
-        button.getElement().addEventListener("click", e -> {
+        button.addClickListener(e -> {
             Div greeting = new Div();
             greeting.addClass("thankYou");
-            String buttonText = e.getEventData()
-                    .getString("element.textContent");
-            greeting.setText("Thank you for clicking at \"" + buttonText
-                    + "\"! The field value is " + input.getValue());
+            String buttonText = e.getSource().getElement().getOwnTextContent();
 
-            greeting.getElement().addEventListener("click",
-                    e2 -> removeComponents(greeting));
+            greeting.setText("Thank you for clicking \"" + buttonText
+                    + "\" at (" + e.getClientX() + "," + e.getClientY()
+                    + ")! The field value is " + input.getValue());
+
+            greeting.addClickListener(e2 -> removeComponents(greeting));
             addComponents(greeting);
-        }, "element.textContent");
+        });
 
         Div helloWorld = new Div(DIV_TEXT);
         helloWorld.addClass("hello");
         helloWorld.setId("hello-world");
-        helloWorld.getElement().addEventListener("click", e -> {
-            helloWorld.getElement().setTextContent("Stop touching me!");
+        helloWorld.addClickListener(e -> {
+            helloWorld.setText("Stop touching me!");
             helloWorld.getElement().getClassList().clear();
         });
         Style s = helloWorld.getElement().getStyle();
