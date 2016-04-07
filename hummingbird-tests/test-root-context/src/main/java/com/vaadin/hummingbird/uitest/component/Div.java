@@ -15,22 +15,21 @@
  */
 package com.vaadin.hummingbird.uitest.component;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 
+@Tag("div")
 public class Div extends AbstractHtmlComponent
         implements HasSimpleAddComponent {
     public Div() {
-        super(ElementFactory.createDiv());
+        super();
     }
 
     public Div(String text) {
-        this();
         getElement().setTextContent(text);
     }
 
     public Div(Component... components) {
-        this();
         for (Component component : components) {
             addComponents(component);
         }

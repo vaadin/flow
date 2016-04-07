@@ -15,12 +15,14 @@
  */
 package com.vaadin.hummingbird.uitest.component;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.annotations.Tag;
 
+@Tag("a")
 public class Link extends AbstractHtmlComponent {
 
     public Link(String href, String text) {
-        super(ElementFactory.createAnchor(href, text));
+        getElement().setAttribute("href", href);
+        getElement().setTextContent(text);
     }
 
 }
