@@ -37,7 +37,7 @@ public class DependencyView extends AbstractDivView {
 
         Button jsOrder = new Button("Test JS order");
         jsOrder.setId("loadJs");
-        jsOrder.getElement().addEventListener("click", e -> {
+        jsOrder.addClickListener(e -> {
             getPage().addJavaScript("/test-files/js/set-global-var.js");
             getPage().addJavaScript("/test-files/js/read-global-var.js");
         });

@@ -15,14 +15,16 @@
  */
 package com.vaadin.hummingbird.uitest.component;
 
+import java.util.function.Consumer;
+
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 
 @Tag("input")
 public class Input extends AbstractHtmlComponent {
 
     public Input() {
         getElement().synchronizeProperty("value", "change");
-
     }
 
     public void setPlaceholder(String placeholder) {
@@ -39,6 +41,11 @@ public class Input extends AbstractHtmlComponent {
 
     public void setValue(String value) {
         getElement().setProperty("value", value);
+    }
+
+    public EventRegistrationHandle addChangeListener(
+            Consumer<ChangeEvent> listener) {
+        return addListener(ChangeEvent.class, listener);
     }
 
 }

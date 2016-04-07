@@ -16,10 +16,12 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.uitest.component.AbstractHtmlComponent.ClickEvent;
+import com.vaadin.hummingbird.uitest.component.Button;
 import com.vaadin.server.Command;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History;
@@ -103,11 +105,12 @@ public class HistoryUI extends UI {
         statusRow.getClassList().add("status");
     }
 
-    private static Element createButton(String id, DomEventListener listener) {
-        Element button = ElementFactory.createButton(id).setAttribute("id", id);
-        button.addEventListener("click", listener);
-
-        return button;
+    private static Element createButton(String id,
+            Consumer<ClickEvent> listener) {
+        Button button = new Button(id);
+        button.setId(id);
+        button.addClickListener(listener);
+        return button.getElement();
     }
 
     private static Element createSynchronizedInput(String id) {
