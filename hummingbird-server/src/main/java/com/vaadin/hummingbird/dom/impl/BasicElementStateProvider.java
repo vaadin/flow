@@ -33,6 +33,7 @@ import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
+import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
@@ -41,6 +42,7 @@ import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -68,7 +70,9 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementChildrenNamespace.class, ElementPropertyNamespace.class,
             ElementListenersNamespace.class, ClassListNamespace.class,
             ElementStylePropertyNamespace.class,
-            SynchronizedPropertiesNamespace.class };
+            SynchronizedPropertiesNamespace.class,
+            SynchronizedPropertyEventsNamespace.class,
+            ComponentMappingNamespace.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -352,52 +356,31 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void setSynchronizedProperties(StateNode node,
-            String[] propertyNames) {
-        assert propertyNames != null;
-        assert Arrays.stream(propertyNames).noneMatch(e -> e == null);
-
-        node.getNamespace(SynchronizedPropertiesNamespace.class)
-                .setSynchronizedProperties(propertyNames);
-
-    }
-
-    @Override
-    public void setSynchronizedPropertiesEvents(StateNode node,
-            String[] eventTypes) {
-        assert eventTypes != null;
-        assert Arrays.stream(eventTypes).noneMatch(e -> e == null);
-
-        node.getNamespace(SynchronizedPropertiesNamespace.class)
-                .setSynchronizedPropertiesEvents(eventTypes);
-
-    }
-
-    @Override
     public Set<String> getSynchronizedProperties(StateNode node) {
         return node.getNamespace(SynchronizedPropertiesNamespace.class)
                 .getSynchronizedProperties();
-
     }
 
     @Override
-    public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
-        return node.getNamespace(SynchronizedPropertiesNamespace.class)
-                .getSynchronizedPropertiesEvents();
+    public Set<String> getSynchronizedPropertyEvents(StateNode node) {
+        return node.getNamespace(SynchronizedPropertyEventsNamespace.class)
+                .getSynchronizedPropertyEvents();
     }
 
     @Override
-    public void attachComponent(StateNode node, Component component) {
+    public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
-        node.getNamespace(ElementDataNamespace.class).setComponent(component);
+        node.getNamespace(ComponentMappingNamespace.class)
+                .setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
 
-        return node.getNamespace(ElementDataNamespace.class).getComponent();
+        return node.getNamespace(ComponentMappingNamespace.class)
+                .getComponent();
     }
 
 }

@@ -17,18 +17,17 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.MapPutChange;
+import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
 
@@ -1401,18 +1400,21 @@ public class ElementTest {
     @Test
     public void getSetSynchronizedProperty() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedProperties("foo", "bar");
-        String[] expected = new String[] { "bar", "foo" };
+        e.addSynchronizedProperty("foo").addSynchronizedProperty("bar");
 
-        Assert.assertArrayEquals(expected,
-                e.getSynchronizedProperties().toArray());
+        Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
 
+        List<String> list = e.getSynchronizedProperties()
+                .collect(Collectors.toList());
+        Assert.assertEquals(expected.size(), list.size());
+        expected.removeAll(list);
+        Assert.assertEquals(0, expected.size());
     }
 
     @Test
     public void setSameSynchronizedPropertyManyTimes() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedProperties("foo", "foo");
+        e.addSynchronizedProperty("foo").addSynchronizedProperty("foo");
         String[] expected = new String[] { "foo" };
 
         Assert.assertArrayEquals(expected,
@@ -1420,77 +1422,97 @@ public class ElementTest {
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getNamespace(SynchronizedPropertiesNamespace.class)
-                .collectChanges(change -> {
-                    JsonUtil.stream(
-                            (JsonArray) ((MapPutChange) change).getValue())
-                            .forEach(item -> i.incrementAndGet());
-                });
+                .collectChanges(change -> i.addAndGet(
+                        ((ListSpliceChange) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
+    }
+
+    @Test
+    public void synchronizeProperty() {
+        Element element = ElementFactory.createDiv();
+        element.synchronizeProperty("foo", "event");
+
+        Assert.assertTrue(element.getSynchronizedProperties()
+                .allMatch(prop -> prop.equals("foo")));
+        Assert.assertTrue(element.getSynchronizedPropertyEvents()
+                .allMatch(event -> event.equals("event")));
+    }
+
+    @Test
+    public void removeSynchronizedProperty() {
+        Element element = ElementFactory.createDiv();
+        element.addSynchronizedProperty("foo");
+        element.addSynchronizedProperty("bar");
+
+        element.removeSynchronizedProperty("foo");
+        Assert.assertTrue(element.getSynchronizedProperties()
+                .allMatch(prop -> prop.equals("bar")));
+    }
+
+    @Test
+    public void removeSynchronizedPropertyEvent() {
+        Element element = ElementFactory.createDiv();
+        element.addSynchronizedPropertyEvent("foo");
+        element.addSynchronizedPropertyEvent("bar");
+
+        element.removeSynchronizedPropertyEvent("foo");
+        Assert.assertTrue(element.getSynchronizedPropertyEvents()
+                .allMatch(event -> event.equals("bar")));
     }
 
     @Test
     public void setSameSynchronizedEventManyTimes() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedPropertiesEvents("foo", "foo");
+        e.addSynchronizedPropertyEvent("foo")
+                .addSynchronizedPropertyEvent("foo");
         String[] expected = new String[] { "foo" };
 
         Assert.assertArrayEquals(expected,
-                e.getSynchronizedPropertiesEvents().toArray());
+                e.getSynchronizedPropertyEvents().toArray());
 
         AtomicInteger i = new AtomicInteger(0);
-        e.getNode().getNamespace(SynchronizedPropertiesNamespace.class)
-                .collectChanges(change -> {
-                    JsonUtil.stream(
-                            (JsonArray) ((MapPutChange) change).getValue())
-                            .forEach(item -> i.incrementAndGet());
-                });
+        e.getNode().getNamespace(SynchronizedPropertyEventsNamespace.class)
+                .collectChanges(change -> i.addAndGet(
+                        ((ListSpliceChange) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }
 
     @Test
     public void getDefaultSynchronizedProperties() {
         Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedProperties().size());
+        Assert.assertEquals(0, e.getSynchronizedProperties().count());
     }
 
     @Test
     public void getDefaultSynchronizedPropertiesEvent() {
         Element e = ElementFactory.createDiv();
-        Assert.assertEquals(0, e.getSynchronizedPropertiesEvents().size());
+        Assert.assertEquals(0, e.getSynchronizedPropertyEvents().count());
     }
 
     @Test
     public void getSetSynchronizedEvent() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedPropertiesEvents("foo", "bar");
-        String[] expected = new String[] { "bar", "foo" };
+        e.addSynchronizedPropertyEvent("foo")
+                .addSynchronizedPropertyEvent("bar");
+        Set<String> expected = new HashSet<>(Arrays.asList("bar", "foo"));
 
-        Assert.assertArrayEquals(expected,
-                e.getSynchronizedPropertiesEvents().toArray());
+        List<String> list = e.getSynchronizedPropertyEvents()
+                .collect(Collectors.toList());
+        Assert.assertEquals(expected.size(), list.size());
+        expected.removeAll(list);
+        Assert.assertEquals(0, expected.size());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setNullSynchronizedEvent() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedPropertiesEvents((String[]) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNullSynchronizedEventType() {
-        Element e = ElementFactory.createDiv();
-        e.setSynchronizedPropertiesEvents((String) null);
+        e.addSynchronizedPropertyEvent(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setNullSynchronizedProperty() {
         Element e = ElementFactory.createDiv();
-        e.setSynchronizedProperties((String[]) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void setNullSynchronizedPropertyType() {
-        Element e = ElementFactory.createDiv();
-        e.setSynchronizedProperties((String) null);
+        e.addSynchronizedProperty(null);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1599,7 +1621,7 @@ public class ElementTest {
     public void attachToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
+        e.setComponent(c);
         Assert.assertEquals(c, e.getComponent().get());
     }
 
@@ -1607,7 +1629,7 @@ public class ElementTest {
     public void attachComponentToTextElement() {
         Element e = Element.createText("Text text");
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
+        e.setComponent(c);
         Assert.assertEquals(c, e.getComponent().get());
     }
 
@@ -1615,14 +1637,14 @@ public class ElementTest {
     public void attachTwiceToComponent() {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
-        e.attachComponent(c);
-        e.attachComponent(c);
+        e.setComponent(c);
+        e.setComponent(c);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void attachToNull() {
         Element e = ElementFactory.createDiv();
-        e.attachComponent(null);
+        e.setComponent(null);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -1630,8 +1652,8 @@ public class ElementTest {
         Element e = ElementFactory.createDiv();
         Component c = Mockito.mock(Component.class);
         Component c2 = Mockito.mock(Component.class);
-        e.attachComponent(c);
-        e.attachComponent(c2);
+        e.setComponent(c);
+        e.setComponent(c2);
     }
 
     @Test

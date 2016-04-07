@@ -26,8 +26,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
                 ElementFactory.createSpan("Synchronized on 'change' event"));
         Element input = ElementFactory.createInput().setAttribute("placeholder",
                 "Enter text here");
-        input.setSynchronizedProperties("value")
-                .setSynchronizedPropertiesEvents("change");
+        input.synchronizeProperty("value", "change");
         Element label = ElementFactory
                 .createDiv("Server value: " + input.getProperty("value"));
         input.addEventListener("change", e -> {
@@ -39,8 +38,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
                 ElementFactory.createSpan("Synchronized on 'input' event"));
         Element input2 = ElementFactory.createInput()
                 .setAttribute("placeholder", "Enter text here");
-        input2.setSynchronizedProperties("value")
-                .setSynchronizedPropertiesEvents("input");
+        input2.synchronizeProperty("value", "input");
         Element label2 = ElementFactory
                 .createDiv("Server value: " + input2.getProperty("value"));
         input2.addEventListener("input", e -> {

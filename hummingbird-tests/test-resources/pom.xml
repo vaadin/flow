@@ -11,4 +11,7 @@
 	<name>Hummingbird Test Resources</name>
 	<description>Static resources shared between test modules</description>
 	<packaging>jar</packaging>
+	<properties>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
 </project>

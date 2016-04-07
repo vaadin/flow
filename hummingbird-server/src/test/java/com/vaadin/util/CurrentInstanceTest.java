@@ -90,9 +90,7 @@ public class CurrentInstanceTest {
         CurrentInstance.set(CurrentInstanceTest.class, null);
 
         assertCleared();
-        while (t.isAlive()) {
-            Thread.sleep(1000);
-        }
+        t.join();
         Assert.assertFalse("Thread failed", threadFailed.get());
 
     }
@@ -121,10 +119,7 @@ public class CurrentInstanceTest {
             }
         };
         t.start();
-
-        while (t.isAlive()) {
-            Thread.sleep(1000);
-        }
+        t.join();
         Assert.assertFalse("Thread failed", threadFailed.get());
 
         // Clearing the threadlocal in the thread should not have cleared it

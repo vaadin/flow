@@ -324,10 +324,12 @@ public class AtmospherePushConnection implements PushConnection {
                 outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
             } catch (TimeoutException e) {
                 getLogger().log(Level.INFO,
-                        "Timeout waiting for messages to be sent to client before disconnect");
+                        "Timeout waiting for messages to be sent to client before disconnect",
+                        e);
             } catch (Exception e) {
                 getLogger().log(Level.INFO,
-                        "Error waiting for messages to be sent to client before disconnect");
+                        "Error waiting for messages to be sent to client before disconnect",
+                        e);
             }
             outgoingMessage = null;
         }

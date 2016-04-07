@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.shared;
 
 import com.vaadin.hummingbird.namespace.ClassListNamespace;
+import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.DependencyListNamespace;
 import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
@@ -28,6 +29,7 @@ import com.vaadin.hummingbird.namespace.PushConfigurationMap;
 import com.vaadin.hummingbird.namespace.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
 import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 
 /**
@@ -102,6 +104,14 @@ public class Namespaces {
      * Id for {@link SynchronizedPropertiesNamespace}.
      */
     public static final int SYNCHRONIZED_PROPERTIES = 14;
+    /**
+     * Id for {@link SynchronizedPropertyEventsNamespace}.
+     */
+    public static final int SYNCHRONIZED_PROPERTY_EVENTS = 15;
+    /**
+     * Id for {@link ComponentMappingNamespace}.
+     */
+    public static final int COMPONENT_MAPPING = 16;
 
     /**
      * Key for {@link ElementDataNamespace#getTag()}.
