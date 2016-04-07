@@ -15,12 +15,12 @@
  */
 package com.vaadin.hummingbird.uitest.component;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.annotations.Tag;
 
+@Tag("input")
 public class Input extends AbstractHtmlComponent {
 
     public Input() {
-        super(ElementFactory.createInput());
         getElement().synchronizeProperty("value", "change");
 
     }
