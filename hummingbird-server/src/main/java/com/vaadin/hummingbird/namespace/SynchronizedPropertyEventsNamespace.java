@@ -20,38 +20,37 @@ import java.util.Set;
 import com.vaadin.hummingbird.StateNode;
 
 /**
- * Namespace for synchronized properties for an element.
+ * Namespace for synchronized property events for an element.
  * 
  * @author Vaadin Ltd
  * @since
  */
-public class SynchronizedPropertiesNamespace
+public class SynchronizedPropertyEventsNamespace
         extends SerializableListNamespace<String> {
 
-    private static class PropertiesSetView
-            extends ListNamespace.SetView<String> {
+    private static class EventsSetView extends ListNamespace.SetView<String> {
 
-        private PropertiesSetView(SynchronizedPropertiesNamespace namespace) {
+        private EventsSetView(SynchronizedPropertyEventsNamespace namespace) {
             super(namespace);
         }
 
         @Override
         protected void validate(String item) {
             if (item == null) {
-                throw new IllegalArgumentException(
-                        "Property name cannot be null");
+                throw new IllegalArgumentException("Event name cannot be null");
             }
         }
 
     }
 
     /**
-     * Creates a new synchronized properties set namespace for the given node.
+     * Creates a new synchronized property events set namespace for the given
+     * node.
      *
      * @param node
      *            the node that the namespace belongs to
      */
-    public SynchronizedPropertiesNamespace(StateNode node) {
+    public SynchronizedPropertyEventsNamespace(StateNode node) {
         super(node);
     }
 
@@ -60,8 +59,8 @@ public class SynchronizedPropertiesNamespace
      *
      * @return a view into this namespace
      */
-    public Set<String> getSynchronizedProperties() {
-        return new PropertiesSetView(this);
+    public Set<String> getSynchronizedPropertyEvents() {
+        return new EventsSetView(this);
     }
 
 }

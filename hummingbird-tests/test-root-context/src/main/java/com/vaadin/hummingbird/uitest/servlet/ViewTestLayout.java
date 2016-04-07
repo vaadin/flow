@@ -56,8 +56,7 @@ public class ViewTestLayout implements HasChildView {
             optionGroup.appendChild(option);
         }
 
-        viewSelect.setSynchronizedProperties("value");
-        viewSelect.setSynchronizedPropertiesEvents("change");
+        viewSelect.synchronizeProperty("value", "change");
         viewSelect.addEventListener("change", e -> {
             UI ui = UI.getCurrent();
             ui.navigateTo(viewSelect.getProperty("value"));

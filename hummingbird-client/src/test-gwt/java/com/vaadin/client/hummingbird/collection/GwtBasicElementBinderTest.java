@@ -24,7 +24,6 @@ import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
@@ -76,7 +75,8 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     private MapNamespace attributes;
     private MapNamespace elementData;
     private ListNamespace children;
-    private MapNamespace synchronizedPropertyNamespace;
+    private ListNamespace synchronizedPropertyNamespace;
+    private ListNamespace synchronizedPropertyEventsNamespace;
 
     private MapProperty titleProperty;
     private MapProperty idAttribute;
@@ -97,7 +97,9 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         elementData = node.getMapNamespace(Namespaces.ELEMENT_DATA);
         children = node.getListNamespace(Namespaces.ELEMENT_CHILDREN);
         synchronizedPropertyNamespace = node
-                .getMapNamespace(Namespaces.SYNCHRONIZED_PROPERTIES);
+                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTIES);
+        synchronizedPropertyEventsNamespace = node
+                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTY_EVENTS);
 
         titleProperty = properties.getProperty("title");
         idAttribute = attributes.getProperty("id");
@@ -575,15 +577,19 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     private void setSyncEvents(String... eventTypes) {
-        synchronizedPropertyNamespace
-                .getProperty(SynchronizedPropertiesNamespace.KEY_EVENTS)
-                .setValue(JsCollections.array(eventTypes));
+        synchronizedPropertyEventsNamespace.splice(0,
+                synchronizedPropertyEventsNamespace.length());
+        for (int i = 0; i < eventTypes.length; i++) {
+            synchronizedPropertyEventsNamespace.add(i, eventTypes[i]);
+        }
     }
 
     private void setSyncProperties(String... properties) {
-        synchronizedPropertyNamespace
-                .getProperty(SynchronizedPropertiesNamespace.KEY_PROPERTIES)
-                .setValue(JsCollections.array(properties));
+        synchronizedPropertyNamespace.splice(0,
+                synchronizedPropertyNamespace.length());
+        for (int i = 0; i < properties.length; i++) {
+            synchronizedPropertyNamespace.add(i, properties[i]);
+        }
     }
 
     public void testSynchronizePropertySendsToServer() {
@@ -646,9 +652,8 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertSynchronized("offsetWidth");
         tree.clearSynchronizedProperties();
 
-        synchronizedPropertyNamespace
-                .getProperty(SynchronizedPropertiesNamespace.KEY_EVENTS)
-                .removeValue();
+        synchronizedPropertyEventsNamespace.splice(0,
+                synchronizedPropertyEventsNamespace.length());
         dispatchEvent("event2");
         assertSynchronized();
 

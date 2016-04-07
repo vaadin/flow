@@ -313,42 +313,17 @@ public interface ElementStateProvider extends Serializable {
     Style getStyle(StateNode node);
 
     /**
-     * Sets the names of the properties to synchronize from the client side to
+     * Gets the names of the properties to synchronize from the client side to
      * the server.
      * <p>
      * The events which trigger synchronization are defined using
-     * {@link #setSynchronizedPropertiesEvents(StateNode, String[])}.
-     *
-     * @param node
-     *            the node containing the data
-     * @param propertyNames
-     *            the names of the properties to synchronize
-     */
-    void setSynchronizedProperties(StateNode node, String[] propertyNames);
-
-    /**
-     * Gets the names of the properties to synchronize from the client side to
-     * the server.
+     * {@link #getSynchronizedPropertyEvents(StateNode)}.
      *
      * @param node
      *            the node containing the data
      * @return the names of the properties to synchronize
      */
     Set<String> getSynchronizedProperties(StateNode node);
-
-    /**
-     * Sets the event types which should trigger synchronization of properties
-     * from the client side to the server.
-     * <p>
-     * The properties which are synchronized are defined using
-     * {@link #setSynchronizedProperties(StateNode, String[])}.
-     *
-     * @param node
-     *            the node containing the data
-     * @param eventTypes
-     *            the event types which should trigger synchronization
-     */
-    void setSynchronizedPropertiesEvents(StateNode node, String[] eventTypes);
 
     /**
      * Gets the event types which should trigger synchronization of properties
@@ -358,7 +333,7 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the event types which should trigger synchronization
      */
-    Set<String> getSynchronizedPropertiesEvents(StateNode node);
+    Set<String> getSynchronizedPropertyEvents(StateNode node);
 
     /**
      * Defines a mapping between the element and the given component.

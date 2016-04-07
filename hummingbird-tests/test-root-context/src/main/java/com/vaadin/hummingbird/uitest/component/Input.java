@@ -21,8 +21,7 @@ public class Input extends AbstractHtmlComponent {
 
     public Input() {
         super(ElementFactory.createInput());
-        getElement().setSynchronizedProperties("value");
-        getElement().setSynchronizedPropertiesEvents("change");
+        getElement().synchronizeProperty("value", "change");
 
     }
 
