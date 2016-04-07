@@ -183,4 +183,10 @@ public class JsonCodecTest {
         Assert.assertNull(JsonCodec.decodeAs(json, Integer.class));
         Assert.assertNull(JsonCodec.decodeAs(json, Double.class));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void decodeAs_unsupportedType() {
+        Assert.assertNull(
+                JsonCodec.decodeAs(Json.create("foo"), boolean.class));
+    }
 }
