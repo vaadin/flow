@@ -378,7 +378,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
     }
