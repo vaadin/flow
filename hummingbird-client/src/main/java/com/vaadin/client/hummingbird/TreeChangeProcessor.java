@@ -97,6 +97,9 @@ public class TreeChangeProcessor {
         case JsonConstants.CHANGE_TYPE_PUT:
             processPutChange(change, node);
             break;
+        case JsonConstants.CHANGE_TYPE_REMOVE:
+            processRemoveChnage(change, node);
+            break;
         case JsonConstants.CHANGE_TYPE_DETACH:
             processDetachChange(node);
             break;
@@ -110,11 +113,7 @@ public class TreeChangeProcessor {
     }
 
     private static void processPutChange(JsonObject change, StateNode node) {
-        int nsId = (int) change.getNumber(JsonConstants.CHANGE_NAMESPACE);
-        MapNamespace namespace = node.getMapNamespace(nsId);
-        String key = change.getString(JsonConstants.CHANGE_MAP_KEY);
-
-        MapProperty property = namespace.getProperty(key);
+        MapProperty property = findProperty(change, node);
 
         if (change.hasKey(JsonConstants.CHANGE_PUT_VALUE)) {
             JsonValue jsonValue = change.get(JsonConstants.CHANGE_PUT_VALUE);
@@ -131,6 +130,20 @@ public class TreeChangeProcessor {
             assert false : "Change should have either value or nodeValue property: "
                     + change.toJson();
         }
+    }
+
+    private static void processRemoveChnage(JsonObject change, StateNode node) {
+        MapProperty property = findProperty(change, node);
+
+        property.removeValue();
+    }
+
+    private static MapProperty findProperty(JsonObject change, StateNode node) {
+        int nsId = (int) change.getNumber(JsonConstants.CHANGE_NAMESPACE);
+        MapNamespace namespace = node.getMapNamespace(nsId);
+        String key = change.getString(JsonConstants.CHANGE_MAP_KEY);
+
+        return namespace.getProperty(key);
     }
 
     private static void processSpliceChange(JsonObject change, StateNode node) {

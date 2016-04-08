@@ -19,9 +19,12 @@ import java.util.Set;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 
 public class BasicElementView extends AbstractDivView {
+
+    private EventRegistrationHandle helloWorldEventRemover;
 
     @Override
     protected void onShow() {
@@ -55,10 +58,19 @@ public class BasicElementView extends AbstractDivView {
 
         helloWorldElement.setProperty("id", "hello-world");
         spanClasses.add("hello");
-        helloWorldElement.addEventListener("click", e -> {
-            helloWorldElement.setTextContent("Stop touching me!");
-            spanClasses.clear();
-        });
+        helloWorldEventRemover = helloWorldElement.addEventListener("click",
+                e -> {
+                    if (helloWorldElement.getOwnTextContent()
+                            .equals("Hello world")) {
+                        helloWorldElement.setTextContent("Stop touching me!");
+                    } else {
+                        helloWorldElement.setTextContent(
+                                helloWorldElement.getOwnTextContent()
+                                        + " This might be your last warning!");
+                    }
+                    spanClasses.clear();
+                    helloWorldEventRemover.remove();
+                });
         Style s = helloWorldElement.getStyle();
         s.set("color", "red");
         s.set("fontWeight", "bold");
