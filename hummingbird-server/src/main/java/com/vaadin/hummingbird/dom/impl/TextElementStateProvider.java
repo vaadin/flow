@@ -224,6 +224,7 @@ public class TextElementStateProvider implements ElementStateProvider {
     @Override
     public void setComponent(StateNode node, Component component) {
         assert node != null;
+        assert component != null;
         node.getNamespace(ComponentMappingNamespace.class)
                 .setComponent(component);
     }
@@ -234,4 +235,5 @@ public class TextElementStateProvider implements ElementStateProvider {
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
     }
+
 }

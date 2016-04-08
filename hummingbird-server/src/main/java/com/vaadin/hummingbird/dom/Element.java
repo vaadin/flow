@@ -283,11 +283,24 @@ public class Element implements Serializable {
 
     /**
      * Gets the node this element is connected to.
+     * <p>
+     * This method is meant for internal use only.
      *
      * @return the node for this element
      */
     public StateNode getNode() {
         return node;
+    }
+
+    /**
+     * Gets the state provider for this element.
+     * <p>
+     * This method is meant for internal use only.
+     *
+     * @return the state provider for this element
+     */
+    public ElementStateProvider getStateProvider() {
+        return stateProvider;
     }
 
     /**
@@ -1267,7 +1280,7 @@ public class Element implements Serializable {
     /**
      * Removes the property from the synchronized properties set (
      * {@link #getSynchronizedProperties()}).
-     * 
+     *
      * @see #addSynchronizedProperty(String)
      *
      * @param property
@@ -1283,7 +1296,7 @@ public class Element implements Serializable {
     /**
      * Removes the event from the event set that is used for property
      * synchronization ({@link #getSynchronizedPropertyEvents()}).
-     * 
+     *
      * @see #addSynchronizedPropertyEvent(String)
      *
      * @param eventType
