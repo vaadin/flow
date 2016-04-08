@@ -37,8 +37,8 @@ public class Input extends AbstractHtmlComponent {
         return getElement().getProperty("value");
     }
 
-    public void setValue(String string) {
-        getElement().setProperty("value", "");
+    public void setValue(String value) {
+        getElement().setProperty("value", value);
     }
 
 }

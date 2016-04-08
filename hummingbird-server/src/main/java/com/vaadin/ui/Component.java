@@ -22,6 +22,7 @@ import java.util.stream.Stream.Builder;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementUtil;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -116,7 +117,7 @@ public abstract class Component implements HasElement, Serializable {
             throw new IllegalArgumentException("Element must not be null");
         }
         component.element = element;
-        element.setComponent(component);
+        ElementUtil.setComponent(element, component);
     }
 
     /**
@@ -127,19 +128,30 @@ public abstract class Component implements HasElement, Serializable {
      * @return the parent component
      */
     public Optional<Component> getParent() {
-        assert ComponentUtil.isAttachedTo(this, getElement());
+        assert ElementUtil.isComponentElementMappedCorrectly(this);
 
-        Element parentElement = getElement().getParent();
-        while (parentElement != null
-                && !parentElement.getComponent().isPresent()) {
-            parentElement = parentElement.getParent();
+        // If "this" is a component inside a Composite, iterate from the
+        // Composite downwards
+        Optional<Component> mappedComponent = ElementUtil
+                .getComponent(getElement());
+        if (isInsideComposite(mappedComponent)) {
+            Component parent = ComponentUtil.getParentUsingComposite(
+                    (Composite) mappedComponent.get(), this);
+            return Optional.of(parent);
         }
 
-        if (parentElement == null) {
-            return Optional.empty();
+        // Find the parent component based on the first parent element which is
+        // mapped to a component
+        return ComponentUtil.findParentComponent(getElement().getParent());
+    }
+
+    private boolean isInsideComposite(Optional<Component> mappedComponent) {
+        if (!mappedComponent.isPresent()) {
+            return false;
         }
 
-        return parentElement.getComponent();
+        Component component = mappedComponent.get();
+        return component instanceof Composite && component != this;
     }
 
     /**
@@ -151,7 +163,10 @@ public abstract class Component implements HasElement, Serializable {
      * @return the child components of this component
      */
     public Stream<Component> getChildren() {
-        assert ComponentUtil.isAttachedTo(this, getElement());
+        // This should not ever be called for a Composite as it will return
+        // wrong results
+        assert !(this instanceof Composite);
+        assert ElementUtil.isComponentElementMappedCorrectly(this);
 
         Builder<Component> childComponents = Stream.builder();
         getElement().getChildren().forEach(childElement -> {
