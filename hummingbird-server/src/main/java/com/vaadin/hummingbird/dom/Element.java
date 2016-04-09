@@ -1398,4 +1398,48 @@ public class Element implements Serializable {
             throw new IllegalArgumentException("Event type must not be null");
         }
     }
+
+    /**
+     * Adds an attach listener for this element. It is invoked when the element
+     * is attached to the UI.
+     * <p>
+     * When a hierarchy of elements is being attached, this event is fired
+     * child-first.
+     *
+     * @param attachListener
+     *            the attach listener to add
+     * @return event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addAttachListener(
+            ElementAttachListener attachListener) {
+        if (attachListener == null) {
+            throw new IllegalArgumentException(
+                    "ElementAttachListener cannot be null");
+        }
+
+        return getNode().addAttachListener(
+                () -> attachListener.onAttach(new ElementAttachEvent(this)));
+    }
+
+    /**
+     * Adds a detach listener for this element. It is invoked when the element
+     * is detached from the UI.
+     * <p>
+     * When a hierarchy of elements is being detached, this event is fired
+     * child-first.
+     *
+     * @param detachListener
+     *            the detach listener to add
+     * @return event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addDetachListener(
+            ElementDetachListener detachListener) {
+        if (detachListener == null) {
+            throw new IllegalArgumentException(
+                    "ElementDetachListener cannot be null");
+        }
+
+        return getNode().addDetachListener(
+                () -> detachListener.onDetach(new ElementDetachEvent(this)));
+    }
 }

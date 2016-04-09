@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
+import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -84,6 +86,8 @@ public class ElementTest {
 
         // Returns EventRegistrationHandle
         ignore.add("addEventListener");
+        ignore.add("addAttachListener");
+        ignore.add("addDetachListener");
 
         // Returns index of child element
         ignore.add("indexOfChild");
@@ -1607,4 +1611,167 @@ public class ElementTest {
                 element.getTextContent());
     }
 
+    @Test
+    public void testAttachListener_parentAttach_childListenersTriggered() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        Element grandChild = ElementFactory.createDiv();
+
+        AtomicInteger triggered = new AtomicInteger();
+
+        EventRegistrationHandle registrationHandle = child
+                .addAttachListener(event -> {
+                    triggered.addAndGet(1);
+                    Assert.assertEquals(child, event.getElement());
+                });
+        grandChild.addAttachListener(event -> {
+            triggered.addAndGet(1);
+            Assert.assertEquals(grandChild, event.getElement());
+        });
+
+        parent.appendChild(child);
+        child.appendChild(grandChild);
+
+        Assert.assertEquals(triggered.get(), 0);
+
+        body.appendChild(parent);
+
+        Assert.assertEquals(triggered.get(), 2);
+
+        body.removeAllChildren();
+        parent.removeAllChildren();
+
+        body.appendChild(parent);
+        parent.appendChild(child);
+
+        Assert.assertEquals(triggered.get(), 4);
+
+        registrationHandle.remove();
+
+        body.removeAllChildren();
+        body.appendChild(child);
+
+        Assert.assertEquals(triggered.get(), 5);
+    }
+
+    @Test
+    public void testDetachListener_parentDetach_childListenersTriggered() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        Element grandChild = ElementFactory.createDiv();
+
+        AtomicInteger triggered = new AtomicInteger();
+
+        EventRegistrationHandle registrationHandle = child
+                .addDetachListener(event -> {
+                    triggered.addAndGet(1);
+                    Assert.assertEquals(child, event.getElement());
+                });
+
+        grandChild.addDetachListener(event -> {
+            triggered.addAndGet(1);
+            Assert.assertEquals(grandChild, event.getElement());
+        });
+
+        child.appendChild(grandChild);
+        parent.appendChild(child);
+        body.appendChild(parent);
+
+        Assert.assertEquals(triggered.get(), 0);
+
+        body.removeAllChildren();
+        Assert.assertEquals(triggered.get(), 2);
+
+        body.appendChild(parent);
+        body.removeAllChildren();
+
+        Assert.assertEquals(triggered.get(), 4);
+
+        body.appendChild(parent);
+        registrationHandle.remove();
+
+        body.removeAllChildren();
+
+        Assert.assertEquals(triggered.get(), 5);
+    }
+
+    @Test
+    public void testAttachListener_eventOrder_childFirst() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+
+        AtomicBoolean parentAttached = new AtomicBoolean();
+        AtomicBoolean childAttached = new AtomicBoolean();
+
+        child.addAttachListener(event -> {
+            childAttached.set(true);
+            Assert.assertFalse(parentAttached.get());
+        });
+        parent.addAttachListener(event -> {
+            parentAttached.set(true);
+            Assert.assertTrue(childAttached.get());
+        });
+
+        body.appendChild(parent);
+
+        Assert.assertTrue(parentAttached.get());
+        Assert.assertTrue(childAttached.get());
+    }
+
+    @Test
+    public void testDetachListener_eventOrder_childFirst() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+        body.appendChild(parent);
+
+        AtomicBoolean parentDetached = new AtomicBoolean();
+        AtomicBoolean childDetached = new AtomicBoolean();
+
+        child.addDetachListener(event -> {
+            childDetached.set(true);
+            Assert.assertFalse(parentDetached.get());
+        });
+        parent.addDetachListener(event -> {
+            parentDetached.set(true);
+            Assert.assertTrue(childDetached.get());
+        });
+
+        body.removeAllChildren();
+
+        Assert.assertTrue(parentDetached.get());
+        Assert.assertTrue(childDetached.get());
+    }
+
+    @Test
+    public void testAttachDetach_elementMoved_bothEventsTriggered() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+
+        parent.appendChild(child);
+        body.appendChild(parent);
+
+        AtomicBoolean attached = new AtomicBoolean();
+        AtomicBoolean detached = new AtomicBoolean();
+
+        child.addAttachListener(event -> {
+            attached.set(true);
+            Assert.assertTrue(detached.get());
+        });
+        child.addDetachListener(event -> {
+            detached.set(true);
+            Assert.assertFalse(attached.get());
+        });
+
+        body.appendChild(child);
+
+        Assert.assertTrue(attached.get());
+        Assert.assertTrue(detached.get());
+    }
 }
