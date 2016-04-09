@@ -13,20 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.hummingbird.dom;
 
-import java.io.Serializable;
+import java.util.EventObject;
 
 /**
- * A generic command interface meant to be used for passing lambdas around.
- *
- * @author Vaadin
- * @since
+ * Event fired after an element has been detached from the UI.
+ * <p>
+ * When a hierarchy of elements is being detached, this event is fired
+ * child-first.
  */
-@FunctionalInterface
-public interface Command extends Serializable {
+public class ElementDetachEvent extends EventObject {
+
     /**
-     * Runs the given command.
+     * Creates a new detach event with the given element as source.
+     *
+     * @param source
+     *            the element that was detached
      */
-    void execute();
+    public ElementDetachEvent(Element source) {
+        super(source);
+    }
+
+    @Override
+    public Element getSource() {
+        return (Element) super.getSource();
+    }
 }
