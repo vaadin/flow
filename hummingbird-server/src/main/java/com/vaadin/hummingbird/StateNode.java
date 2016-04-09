@@ -17,8 +17,10 @@
 package com.vaadin.hummingbird;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -26,8 +28,10 @@ import java.util.function.Consumer;
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.server.Command;
 
 /**
  * A node in the state tree that is synchronized with the client-side. Data
@@ -40,6 +44,10 @@ import com.vaadin.hummingbird.namespace.NamespaceRegistry;
  */
 public class StateNode implements Serializable {
     private final Map<Class<? extends Namespace>, Namespace> namespaces = new HashMap<>();
+
+    private List<Command> attachListeners;
+
+    private List<Command> detachListeners;
 
     private NodeOwner owner = NullOwner.get();
 
@@ -152,14 +160,16 @@ public class StateNode implements Serializable {
      */
     // protected only to get the root node attached
     protected void onAttach() {
-        visitNodeTree(StateNode::handleOnAttach);
+        visitNodeTree(StateNode::handleOnAttach, false);
+        visitNodeTree(StateNode::fireAttachListeners, true);
     }
 
     /**
      * Called when this node has been detached from its state tree.
      */
     private void onDetach() {
-        visitNodeTree(StateNode::handleOnDetach);
+        visitNodeTree(StateNode::handleOnDetach, false);
+        visitNodeTree(StateNode::fireDetachListeners, true);
     }
 
     private void forEachChild(Consumer<StateNode> action) {
@@ -174,7 +184,7 @@ public class StateNode implements Serializable {
      */
     // protected only to get the root node attached
     protected void setTree(StateTree tree) {
-        visitNodeTree(node -> node.doSetTree(tree));
+        visitNodeTree(node -> node.doSetTree(tree), false);
     }
 
     /**
@@ -276,17 +286,32 @@ public class StateNode implements Serializable {
 
     /**
      * Applies the {@code visitor} to this node and all its descendants.
-     * 
+     *
      * @param visitor
      *            visitor to apply
+     * @param childFirst
+     *            <code>true</code> for visiting the lowest child node first,
+     *            <code>false</code> for visiting this node (root) first
      */
-    public void visitNodeTree(Consumer<StateNode> visitor) {
+    public void visitNodeTree(Consumer<StateNode> visitor, boolean childFirst) {
         LinkedList<StateNode> stack = new LinkedList<>();
         stack.add(this);
-        while (!stack.isEmpty()) {
-            StateNode node = stack.removeFirst();
-            visitor.accept(node);
-            node.forEachChild(child -> stack.add(0, child));
+        if (childFirst) {
+            int i = 0;
+            while (i < stack.size()) {
+                stack.get(i).forEachChild(child -> stack.add(child));
+                i++;
+            }
+            while (!stack.isEmpty()) {
+                StateNode node = stack.removeLast();
+                visitor.accept(node);
+            }
+        } else {
+            while (!stack.isEmpty()) {
+                StateNode node = stack.removeFirst();
+                visitor.accept(node);
+                node.forEachChild(child -> stack.add(0, child));
+            }
         }
     }
 
@@ -328,5 +353,55 @@ public class StateNode implements Serializable {
         markAsDirty();
 
         owner.unregister(this);
+    }
+
+    /**
+     * Adds a command as an attach listener. It is executed whenever this state
+     * node is attached to the state tree.
+     *
+     * @param attachListener
+     *            the attach listener to add
+     * @return an event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addAttachListener(Command attachListener) {
+        assert attachListener != null;
+
+        if (attachListeners == null) {
+            attachListeners = new ArrayList<>(1);
+        }
+        attachListeners.add(attachListener);
+
+        return () -> attachListeners.remove(attachListener);
+    }
+
+    /**
+     * Adds a command as a detach listener. It is executed whenever this state
+     * node is detached from the state tree.
+     *
+     * @param detachListener
+     *            the detach listener to add
+     * @return an event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addDetachListener(Command detachListener) {
+        assert detachListener != null;
+
+        if (detachListeners == null) {
+            detachListeners = new ArrayList<>(1);
+        }
+        detachListeners.add(detachListener);
+
+        return () -> detachListeners.remove(detachListener);
+    }
+
+    private void fireAttachListeners() {
+        if (attachListeners != null) {
+            attachListeners.forEach(Command::execute);
+        }
+    }
+
+    private void fireDetachListeners() {
+        if (detachListeners != null) {
+            detachListeners.forEach(Command::execute);
+        }
     }
 }

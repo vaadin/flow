@@ -269,7 +269,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     /**
-     * Gets all the namesapces used by an element node.
+     * Gets all the namespaces used by an element node.
      *
      * @return an unmodifiable collection of namespace classes
      */

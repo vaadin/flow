@@ -52,6 +52,24 @@ public class Element implements Serializable {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
     /**
+     * Interface for listening element attach events. It is called when the
+     * element is attached to a UI.
+     */
+    @FunctionalInterface
+    public interface AttachListener {
+        void onAttach(AttachEvent event);
+    }
+
+    /**
+     * Interface for listening element detach events. It is called when the
+     * element is detached from the UI.
+     */
+    @FunctionalInterface
+    public interface DetachListener {
+        void onDetach(DetachEvent event);
+    }
+
+    /**
      * Callbacks for handling attributes with special semantics. This is used
      * for e.g. <code>class</code> which is assembled from a separate list of
      * tokens instead of being stored as a regular attribute string.
@@ -1397,5 +1415,41 @@ public class Element implements Serializable {
         if (eventType == null) {
             throw new IllegalArgumentException("Event type must not be null");
         }
+    }
+
+    /**
+     * Adds an attach listener for this element. It is fired when the element is
+     * attached to the UI.
+     *
+     * @param attachListener
+     *            the attach listener to add
+     * @return event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addAttachListener(
+            AttachListener attachListener) {
+        if (attachListener == null) {
+            throw new IllegalArgumentException("AttachListener cannot be null");
+        }
+
+        return getNode().addAttachListener(
+                () -> attachListener.onAttach(new AttachEvent(this)));
+    }
+
+    /**
+     * Adds a detach listener for this element. It is fired when the element is
+     * detached from the UI.
+     *
+     * @param detachListener
+     *            the detach listener to add
+     * @return event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addDetachListener(
+            DetachListener detachListener) {
+        if (detachListener == null) {
+            throw new IllegalArgumentException("DetachListener cannot be null");
+        }
+
+        return getNode().addDetachListener(
+                () -> detachListener.onDetach(new DetachEvent(this)));
     }
 }

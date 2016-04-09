@@ -19,6 +19,7 @@ package com.vaadin.hummingbird;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -29,6 +30,7 @@ import org.junit.Test;
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
@@ -54,6 +56,14 @@ public class StateNodeTest {
         @Override
         public String toString() {
             return Integer.toString(getData());
+        }
+    }
+
+    private static class RootStateNode extends TestStateNode {
+
+        @Override
+        public boolean isAttached() {
+            return true;
         }
     }
 
@@ -193,7 +203,7 @@ public class StateNodeTest {
         root.setTree(tree);
         Set<Integer> set = IntStream.range(-1, node.getData() + 1).boxed()
                 .collect(Collectors.toSet());
-        root.visitNodeTree(n -> visit((TestStateNode) n, tree, set));
+        root.visitNodeTree(n -> visit((TestStateNode) n, tree, set), false);
         Assert.assertTrue(set.isEmpty());
     }
 
@@ -217,9 +227,76 @@ public class StateNodeTest {
         root.setTree(new StateTree(ElementChildrenNamespace.class));
         Set<Integer> set = IntStream.range(-1, count).boxed()
                 .collect(Collectors.toSet());
-        root.visitNodeTree(n -> visit((TestStateNode) n,
-                (StateTree) root.getOwner(), set));
+        root.visitNodeTree(
+                n -> visit((TestStateNode) n, (StateTree) root.getOwner(), set),
+                false);
         Assert.assertTrue(set.isEmpty());
+    }
+
+    @Test
+    public void testAttachListener_onSetParent_listenerTriggered() {
+        TestStateNode root = new RootStateNode();
+        TestStateNode child = new TestStateNode();
+
+        Assert.assertFalse(child.isAttached());
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        child.addAttachListener(() -> triggered.set(true));
+
+        setParent(child, root);
+
+        Assert.assertTrue(triggered.get());
+    }
+
+    @Test
+    public void testAttachListener_listenerRemoved_listenerNotTriggered() {
+        TestStateNode root = new RootStateNode();
+        TestStateNode child = new TestStateNode();
+
+        Assert.assertFalse(child.isAttached());
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        EventRegistrationHandle registrationHandle = child
+                .addAttachListener(() -> triggered.set(true));
+        registrationHandle.remove();
+
+        setParent(child, root);
+
+        Assert.assertFalse(triggered.get());
+    }
+
+    @Test
+    public void testDetachListener_onSetParent_listenerTriggered() {
+        TestStateNode root = new RootStateNode();
+        TestStateNode child = new TestStateNode();
+
+        setParent(child, root);
+        Assert.assertTrue(child.isAttached());
+
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        child.addDetachListener(() -> triggered.set(true));
+
+        setParent(child, null);
+
+        Assert.assertTrue(triggered.get());
+    }
+
+    @Test
+    public void testDetachListener_listenerRemoved_listenerNotTriggered() {
+        TestStateNode root = new RootStateNode();
+        TestStateNode child = new TestStateNode();
+
+        setParent(child, root);
+        Assert.assertTrue(child.isAttached());
+
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        EventRegistrationHandle registrationHandle = child
+                .addDetachListener(() -> triggered.set(true));
+        registrationHandle.remove();
+
+        Assert.assertFalse(triggered.get());
     }
 
     public static StateNode createEmptyNode() {
