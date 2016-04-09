@@ -17,6 +17,7 @@
 package com.vaadin.hummingbird;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -26,8 +27,10 @@ import java.util.function.Consumer;
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.server.Command;
 
 /**
  * A node in the state tree that is synchronized with the client-side. Data
@@ -40,6 +43,10 @@ import com.vaadin.hummingbird.namespace.NamespaceRegistry;
  */
 public class StateNode implements Serializable {
     private final Map<Class<? extends Namespace>, Namespace> namespaces = new HashMap<>();
+
+    private ArrayList<Command> attachListeners;
+
+    private ArrayList<Command> detachListeners;
 
     private NodeOwner owner = NullOwner.get();
 
@@ -152,14 +159,14 @@ public class StateNode implements Serializable {
      */
     // protected only to get the root node attached
     protected void onAttach() {
-        visitNodeTree(StateNode::handleOnAttach);
+        visitNodeTreeBottomUp(StateNode::handleOnAttach);
     }
 
     /**
      * Called when this node has been detached from its state tree.
      */
     private void onDetach() {
-        visitNodeTree(StateNode::handleOnDetach);
+        visitNodeTreeBottomUp(StateNode::handleOnDetach);
     }
 
     private void forEachChild(Consumer<StateNode> action) {
@@ -276,7 +283,9 @@ public class StateNode implements Serializable {
 
     /**
      * Applies the {@code visitor} to this node and all its descendants.
-     * 
+     * <p>
+     * The visitor is first applied to this node (root) and then to children.
+     *
      * @param visitor
      *            visitor to apply
      */
@@ -287,6 +296,34 @@ public class StateNode implements Serializable {
             StateNode node = stack.removeFirst();
             visitor.accept(node);
             node.forEachChild(child -> stack.add(0, child));
+        }
+    }
+
+    /**
+     * Applies the {@code visitor} to this node and all its descendants.
+     * <p>
+     * The visitor is recursively applied to the child nodes before it is
+     * applied to this node.
+     *
+     * @param visitor
+     *            visitor to apply
+     */
+    // package protected for testing
+    void visitNodeTreeBottomUp(Consumer<StateNode> visitor) {
+        LinkedList<StateNode> stack = new LinkedList<>();
+        stack.add(this);
+        StateNode previousParent = null;
+
+        while (!stack.isEmpty()) {
+            StateNode current = stack.getFirst();
+            if (current == previousParent) {
+                visitor.accept(stack.removeFirst());
+                assert current != null : "LinkedList.getFirst() throws NoSuchElementException if empty, which it can't be here";
+                previousParent = current.getParent();
+            } else {
+                current.forEachChild(stack::addFirst);
+                previousParent = current;
+            }
         }
     }
 
@@ -319,6 +356,8 @@ public class StateNode implements Serializable {
         }
         // Ensure attach change is sent
         markAsDirty();
+
+        fireAttachListeners();
     }
 
     private void handleOnDetach() {
@@ -328,5 +367,81 @@ public class StateNode implements Serializable {
         markAsDirty();
 
         owner.unregister(this);
+
+        fireDetachListeners();
+    }
+
+    /**
+     * Adds a command as an attach listener. It is executed whenever this state
+     * node is attached to the state tree.
+     *
+     * @param attachListener
+     *            the attach listener to add
+     * @return an event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addAttachListener(Command attachListener) {
+        assert attachListener != null;
+
+        if (attachListeners == null) {
+            attachListeners = new ArrayList<>(1);
+        }
+        attachListeners.add(attachListener);
+
+        return () -> removeAttachListener(attachListener);
+    }
+
+    /**
+     * Adds a command as a detach listener. It is executed whenever this state
+     * node is detached from the state tree.
+     *
+     * @param detachListener
+     *            the detach listener to add
+     * @return an event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addDetachListener(Command detachListener) {
+        assert detachListener != null;
+
+        if (detachListeners == null) {
+            detachListeners = new ArrayList<>(1);
+        }
+        detachListeners.add(detachListener);
+
+        return () -> removeDetachListener(detachListener);
+    }
+
+    private void removeAttachListener(Command attachListener) {
+        assert attachListener != null;
+
+        attachListeners.remove(attachListener);
+
+        if (attachListeners.isEmpty()) {
+            attachListeners = null;
+        }
+    }
+
+    private void removeDetachListener(Command detachListener) {
+        assert detachListener != null;
+
+        detachListeners.remove(detachListener);
+
+        if (detachListeners.isEmpty()) {
+            detachListeners = null;
+        }
+    }
+
+    private void fireAttachListeners() {
+        if (attachListeners != null) {
+            ArrayList<Command> copy = new ArrayList<>(attachListeners);
+
+            copy.forEach(Command::execute);
+        }
+    }
+
+    private void fireDetachListeners() {
+        if (detachListeners != null) {
+            ArrayList<Command> copy = new ArrayList<>(detachListeners);
+
+            copy.forEach(Command::execute);
+        }
     }
 }
