@@ -13,20 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
+package com.vaadin.hummingbird.dom;
 
-import java.io.Serializable;
+import java.util.EventObject;
 
 /**
- * A generic command interface meant to be used for passing lambdas around.
- *
- * @author Vaadin
- * @since
+ * Event fired after an Element is attached to the UI.
  */
-@FunctionalInterface
-public interface Command extends Serializable {
+public class AttachEvent extends EventObject {
+
     /**
-     * Runs the given command.
+     * Creates a new attach event with the given element as source.
+     *
+     * @param source
+     *            the element that was attached
      */
-    void execute();
+    public AttachEvent(Element source) {
+        super(source);
+    }
+
+    /**
+     * Gets the element that was attached to the UI.
+     *
+     * @return the attached element
+     */
+    public Element getElement() {
+        return (Element) getSource();
+    }
 }
