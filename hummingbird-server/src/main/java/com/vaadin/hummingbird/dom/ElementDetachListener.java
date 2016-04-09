@@ -13,20 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server;
-
-import java.io.Serializable;
+package com.vaadin.hummingbird.dom;
 
 /**
- * A generic command interface meant to be used for passing lambdas around.
- *
- * @author Vaadin
- * @since
+ * Interface for listening element detach events. It is invoked when the element
+ * is detached from the UI.
  */
 @FunctionalInterface
-public interface Command extends Serializable {
+public interface ElementDetachListener {
     /**
-     * Runs the given command.
+     * Invoked when an element is detached from the UI.
+     *
+     * @param event
+     *            the detach event fired
      */
-    void execute();
+    void onDetach(ElementDetachEvent event);
 }
