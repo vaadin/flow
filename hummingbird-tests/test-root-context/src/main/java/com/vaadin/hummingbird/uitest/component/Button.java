@@ -15,16 +15,16 @@
  */
 package com.vaadin.hummingbird.uitest.component;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.annotations.Tag;
 
+@Tag("button")
 public class Button extends AbstractHtmlComponent {
 
     public Button() {
-        super(ElementFactory.createButton());
+        super();
     }
 
     public Button(String text) {
-        this();
         setText(text);
     }
 

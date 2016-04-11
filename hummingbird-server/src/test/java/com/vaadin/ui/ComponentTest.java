@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.ElementUtil;
@@ -47,6 +48,25 @@ public class ComponentTest {
         public String toString() {
             return getElement().getOwnTextContent();
         }
+
+    }
+
+    @Tag("div")
+    private static class TestComponentWithTag extends Component {
+
+    }
+
+    private static class TestComponentWithInheritedTag
+            extends TestComponentWithTag {
+
+    }
+
+    @Tag("")
+    private static class TestComponentWithEmptyTag extends Component {
+
+    }
+
+    private static class TestComponentWithoutTag extends Component {
 
     }
 
@@ -210,4 +230,29 @@ public class ComponentTest {
         Component.setElement(c, element);
 
     }
+
+    @Test
+    public void createComponentWithTag() {
+        Component component = new TestComponentWithTag();
+
+        Assert.assertEquals("div", component.getElement().getTag());
+    }
+
+    @Test
+    public void createComponentWithInheritedTag() {
+        Component component = new TestComponentWithInheritedTag();
+
+        Assert.assertEquals("div", component.getElement().getTag());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void createComponentWithEmptyTag() {
+        new TestComponentWithEmptyTag();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void createComponentWithoutTag() {
+        new TestComponentWithoutTag();
+    }
+
 }
