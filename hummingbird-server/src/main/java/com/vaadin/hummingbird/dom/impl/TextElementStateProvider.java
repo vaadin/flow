@@ -29,6 +29,7 @@ import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.TextNodeNamespace;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -234,6 +235,12 @@ public class TextElementStateProvider implements ElementStateProvider {
         assert node != null;
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
+    }
+
+    @Override
+    public void setAttribute(StateNode node, String attribute,
+            StreamResource resource) {
+        throw new UnsupportedOperationException();
     }
 
 }

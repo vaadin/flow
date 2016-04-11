@@ -1,17 +1,22 @@
 package com.vaadin.hummingbird.dom;
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,6 +29,10 @@ import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -156,7 +165,7 @@ public class ElementTest {
     @Test(expected = IllegalArgumentException.class)
     public void setNullAttribute() {
         Element e = ElementFactory.createDiv();
-        e.setAttribute("foo", null);
+        e.setAttribute("foo", (String) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -1607,4 +1616,303 @@ public class ElementTest {
                 element.getTextContent());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void setResourceAttribute_elementIsNotAttached_elementHasNoAttribute() {
+        Element element = ElementFactory.createDiv();
+        StreamResource resource = EasyMock.createMock(StreamResource.class);
+        element.setAttribute("foo", resource);
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+
+        // Throws an exception
+        element.getAttribute("foo");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setResourceAttribute_elementIsNotAttachedAndHasAttribute_elementHasNoAttribute() {
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", "bar");
+
+        StreamResource resource = EasyMock.createMock(StreamResource.class);
+        element.setAttribute("foo", resource);
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+
+        // Throws an exception
+        element.getAttribute("foo");
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setResourceAttributeSeveralTimes_elementIsNotAttached_elementHasNoAttribute() {
+        Element element = ElementFactory.createDiv();
+        StreamResource resource = EasyMock.createMock(StreamResource.class);
+        element.setAttribute("foo", resource);
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+
+        element.setAttribute("foo", EasyMock.createMock(StreamResource.class));
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+
+        // Throws an exception
+        element.getAttribute("foo");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setResourceAttribute_nullValue() {
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", (StreamResource) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setResourceAttribute_classAttribute() {
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("class",
+                EasyMock.createMock(StreamResource.class));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setResourceAttribute_nullAttribute() {
+        Element element = ElementFactory.createDiv();
+        element.setAttribute(null, EasyMock.createMock(StreamResource.class));
+    }
+
+    @Test
+    public void setResourceAttribute_elementIsAttached_elementHasAttribute() {
+        UI ui = createUI();
+        String resName = "resource";
+        StreamResource resource = createEmptyResource(resName);
+        ui.getElement().setAttribute("foo", resource);
+
+        Assert.assertTrue(ui.getElement().hasAttribute("foo"));
+        Assert.assertTrue(
+                ui.getElement().getAttribute("foo").endsWith(resName));
+    }
+
+    @Test
+    public void setResourceAttribute_elementIsAttached_setAnotherResource()
+            throws URISyntaxException {
+        UI ui = createUI();
+        StreamResource resource = createEmptyResource("resource1");
+        ui.getElement().setAttribute("foo", resource);
+
+        String uri = ui.getElement().getAttribute("foo");
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(new URI(uri));
+        Assert.assertTrue(res.isPresent());
+
+        String resName = "resource2";
+        ui.getElement().setAttribute("foo", createEmptyResource(resName));
+        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        Assert.assertFalse(res.isPresent());
+
+        Assert.assertTrue(ui.getElement().hasAttribute("foo"));
+        Assert.assertTrue(
+                ui.getElement().getAttribute("foo").endsWith(resName));
+    }
+
+    @Test
+    public void setResourceAttribute_elementIsAttached_setRawAttribute()
+            throws URISyntaxException {
+        UI ui = createUI();
+        StreamResource resource = createEmptyResource("resource");
+        ui.getElement().setAttribute("foo", resource);
+
+        String uri = ui.getElement().getAttribute("foo");
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(new URI(uri));
+        Assert.assertTrue(res.isPresent());
+
+        ui.getElement().setAttribute("foo", "bar");
+
+        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        Assert.assertFalse(res.isPresent());
+        Assert.assertTrue(ui.getElement().hasAttribute("foo"));
+        Assert.assertTrue(ui.getElement().getAttribute("foo").equals("bar"));
+    }
+
+    @Test
+    public void setResourceAttribute_elementIsAttached_removeAttribute()
+            throws URISyntaxException {
+        UI ui = createUI();
+        StreamResource resource = createEmptyResource("resource");
+        ui.getElement().setAttribute("foo", resource);
+
+        String uri = ui.getElement().getAttribute("foo");
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(new URI(uri));
+        Assert.assertTrue(res.isPresent());
+
+        ui.getElement().removeAttribute("foo");
+
+        res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+        Assert.assertFalse(res.isPresent());
+        Assert.assertFalse(ui.getElement().hasAttribute("foo"));
+        Assert.assertNull(ui.getElement().getAttribute("foo"));
+    }
+
+    @Test
+    public void setResourceAttribute_attachElement_resourceIsRegistered()
+            throws URISyntaxException {
+        UI ui = createUI();
+
+        StreamResource resource = createEmptyResource("resource");
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", resource);
+
+        ui.getElement().appendChild(element);
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+
+        String uri = element.getAttribute("foo");
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(new URI(uri));
+        Assert.assertTrue(res.isPresent());
+    }
+
+    @Test
+    public void setResourceAttribute_attachElement_setAnotherResource()
+            throws URISyntaxException {
+        UI ui = createUI();
+
+        StreamResource resource = createEmptyResource("resource1");
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", resource);
+
+        String resName = "resource2";
+        element.setAttribute("foo", createEmptyResource(resName));
+
+        ui.getElement().appendChild(element);
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+
+        String uri = element.getAttribute("foo");
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(new URI(uri));
+        Assert.assertTrue(res.isPresent());
+        Assert.assertTrue(uri.endsWith(resName));
+    }
+
+    @Test
+    public void setResourceAttribute_attachElement_setRawAttribute()
+            throws URISyntaxException {
+        UI ui = createUI();
+
+        StreamResource resource = createEmptyResource("resource");
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", resource);
+
+        element.setAttribute("foo", "bar");
+
+        ui.getElement().appendChild(element);
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+
+        Assert.assertEquals("bar", element.getAttribute("foo"));
+    }
+
+    @Test
+    public void setResourceAttribute_attachElement_removeAttribute()
+            throws URISyntaxException {
+        UI ui = createUI();
+
+        StreamResource resource = createEmptyResource("resource");
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", resource);
+
+        element.removeAttribute("foo");
+
+        ui.getElement().appendChild(element);
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+
+        Assert.assertNull(element.getAttribute("foo"));
+    }
+
+    @Test
+    public void setResourceAttribute_attachElement_setAnotherResourceAfterAttaching()
+            throws URISyntaxException {
+        UI ui = createUI();
+
+        StreamResource resource = createEmptyResource("resource1");
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", resource);
+
+        ui.getElement().appendChild(element);
+
+        String resName = "resource2";
+        element.setAttribute("foo", createEmptyResource(resName));
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+
+        String uri = element.getAttribute("foo");
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(new URI(uri));
+        Assert.assertTrue(res.isPresent());
+        Assert.assertTrue(uri.endsWith(resName));
+    }
+
+    @Test
+    public void setResourceAttribute_attachElement_setRawAttributeAfterAttaching()
+            throws URISyntaxException {
+        UI ui = createUI();
+
+        StreamResource resource = createEmptyResource("resource");
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", resource);
+
+        ui.getElement().appendChild(element);
+
+        element.setAttribute("foo", "bar");
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+
+        Assert.assertEquals("bar", element.getAttribute("foo"));
+    }
+
+    @Test
+    public void setResourceAttribute_attachElement_removeAttributeAfterAttaching()
+            throws URISyntaxException {
+        UI ui = createUI();
+
+        StreamResource resource = createEmptyResource("resource");
+        Element element = ElementFactory.createDiv();
+        element.setAttribute("foo", resource);
+
+        ui.getElement().appendChild(element);
+
+        element.removeAttribute("foo");
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+
+        Assert.assertNull(element.getAttribute("foo"));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void setResourceAttribute_elementIsText_operationIsNotSupported() {
+        Element.createText("").setAttribute("foo",
+                EasyMock.createMock(StreamResource.class));
+    }
+
+    private StreamResource createEmptyResource(String resName) {
+        return new StreamResource(resName,
+                () -> new ByteArrayInputStream(new byte[0]));
+    }
+
+    private UI createUI() {
+        VaadinSession session = new VaadinSession(
+                EasyMock.createMock(VaadinService.class)) {
+            @Override
+            public boolean hasLock() {
+                return true;
+            }
+        };
+        UI ui = new UI() {
+            @Override
+            public VaadinSession getSession() {
+                return session;
+            }
+        };
+        return ui;
+    }
 }

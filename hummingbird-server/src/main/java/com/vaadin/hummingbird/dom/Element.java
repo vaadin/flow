@@ -34,6 +34,7 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.TextNodeNamespace;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;
@@ -340,20 +341,7 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
-        if (attribute == null) {
-            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
-        }
-
-        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
-            throw new IllegalArgumentException(String.format(
-                    "Attribute \"%s\" is not a valid attribute name",
-                    lowerCaseAttribute));
-        }
-
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
-        }
+        String lowerCaseAttribute = validateAttribute(attribute, value);
 
         CustomAttribute customAttribute = customAttributes
                 .get(lowerCaseAttribute);
@@ -362,6 +350,43 @@ public class Element implements Serializable {
         } else {
             stateProvider.setAttribute(getNode(), lowerCaseAttribute, value);
         }
+        return this;
+    }
+
+    /**
+     * Sets the given attribute to the given {@link StreamResource} value.
+     * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
+     * <p>
+     * This is convenience method to register a {@link StreamResource} instance
+     * into the session and use registered resource URI as an element attribute.
+     * <p>
+     * Note that there is no session until element is attached so the attribute
+     * gets its value only when element is attached. As a result
+     * {@link #getAttribute(String)} method will throw an exception for the
+     * {@code attribute} if the element is not attached.
+     * 
+     * @see #setAttribute(String, String)
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param value
+     *            the value of the attribute, not null
+     * @return this element
+     */
+    public Element setAttribute(String attribute, StreamResource resource) {
+        String lowerCaseAttribute = validateAttribute(attribute, resource);
+
+        CustomAttribute customAttribute = customAttributes
+                .get(lowerCaseAttribute);
+        if (customAttribute == null) {
+            stateProvider.setAttribute(node, attribute, resource);
+        } else {
+            throw new IllegalArgumentException("Can't set " + attribute
+                    + ". This attribute has special semantic");
+        }
+
         return this;
     }
 
@@ -1391,6 +1416,24 @@ public class Element implements Serializable {
      */
     public Optional<Component> getComponent() {
         return stateProvider.getComponent(getNode());
+    }
+
+    private String validateAttribute(String attribute, Object value) {
+        if (attribute == null) {
+            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
+        }
+
+        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
+        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
+            throw new IllegalArgumentException(String.format(
+                    "Attribute \"%s\" is not a valid attribute name",
+                    lowerCaseAttribute));
+        }
+
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
+        return lowerCaseAttribute;
     }
 
     private static void verifyEventType(String eventType) {

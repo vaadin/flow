@@ -16,9 +16,15 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.util.HashMap;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.NodeOwner;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.StateTree;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.server.VaadinSession;
 
 /**
  * Namespace for element attribute values.
@@ -27,6 +33,10 @@ import com.vaadin.hummingbird.StateNode;
  * @author Vaadin Ltd
  */
 public class ElementAttributeNamespace extends MapNamespace {
+
+    private final HashMap<String, StreamResourceRegistration> resourceRegistrations = new HashMap<>();
+
+    private final HashMap<String, Runnable> resourceAttributes = new HashMap<>();
 
     /**
      * Creates a new element attribute namespace for the given node.
@@ -47,6 +57,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      *            the value
      */
     public void set(String attribute, String value) {
+        unregisterResource(attribute);
         put(attribute, value);
     }
 
@@ -59,6 +70,9 @@ public class ElementAttributeNamespace extends MapNamespace {
      *         <code>false</code> if there is no property
      */
     public boolean has(String attribute) {
+        if (resourceAttributes.containsKey(attribute)) {
+            return false;
+        }
         return contains(attribute);
     }
 
@@ -70,6 +84,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     @Override
     public void remove(String attribute) {
+        unregisterResource(attribute);
         super.remove(attribute);
     }
 
@@ -83,6 +98,11 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     @Override
     public String get(String attribute) {
+        if (resourceAttributes.containsKey(attribute)) {
+            throw new IllegalStateException("The node is not attached "
+                    + "therefore resource URL which is the value "
+                    + "for this attribute is not defined.");
+        }
         return (String) super.get(attribute);
     }
 
@@ -93,6 +113,54 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     public Stream<String> attributes() {
         return super.keySet().stream();
+    }
+
+    /**
+     * Sets the given attribute to the given {@link StreamResource} value.
+     *
+     * @param attribute
+     *            the attribute name
+     * @param resource
+     *            the value
+     */
+    public void setResource(String attribute, StreamResource resource) {
+        if (getNode().isAttached()) {
+            doSetResource(attribute, resource);
+        } else {
+            // TODO : add attach listener
+            resourceAttributes.put(attribute, new Runnable() {
+
+                @Override
+                public void run() {
+                    // TODO : it should be listener removal, not runnable
+
+                }
+            });
+        }
+    }
+
+    private void unregisterResource(String attribute) {
+        StreamResourceRegistration registration = resourceRegistrations
+                .get(attribute);
+        Runnable remove = resourceAttributes.remove(attribute);
+        if (remove != null) {
+            remove.run();
+        }
+        if (registration != null) {
+            registration.unregister();
+        }
+    }
+
+    private void doSetResource(String attribute, StreamResource resource) {
+        NodeOwner owner = getNode().getOwner();
+        assert owner instanceof StateTree;
+        VaadinSession session = ((StateTree) owner).getUI().getSession();
+        StreamResourceRegistration registration = session.getResourceRegistry()
+                .registerResource(resource);
+        set(attribute, registration.getResourceUri().toASCIIString());
+        resourceRegistrations.put(attribute, registration);
+
+        // TODO : add detach listener
     }
 
 }

@@ -33,6 +33,7 @@ import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.ui.UI;
 
 public class StateNodeTest {
 
@@ -107,8 +108,7 @@ public class StateNodeTest {
         Assert.assertTrue("Node should have no changes", changes.isEmpty());
 
         // Attach node
-        setParent(node,
-                new StateTree(ElementChildrenNamespace.class).getRootNode());
+        setParent(node, createStateTree().getRootNode());
 
         node.collectChanges(collector);
 
@@ -136,8 +136,7 @@ public class StateNodeTest {
         StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
 
-        StateNode root = new StateTree(ElementChildrenNamespace.class)
-                .getRootNode();
+        StateNode root = createStateTree().getRootNode();
 
         setParent(grandchild, child);
         setParent(child, parent);
@@ -154,8 +153,7 @@ public class StateNodeTest {
         StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
 
-        StateNode root = new StateTree(ElementChildrenNamespace.class)
-                .getRootNode();
+        StateNode root = createStateTree().getRootNode();
 
         setParent(parent, root);
         setParent(child, parent);
@@ -189,7 +187,7 @@ public class StateNodeTest {
     public void recursiveTreeNavigation_resilienceInDepth() {
         TestStateNode root = new TestStateNode();
         TestStateNode node = createTree(root, 20000);
-        StateTree tree = new StateTree(ElementChildrenNamespace.class);
+        StateTree tree = createStateTree();
         root.setTree(tree);
         Set<Integer> set = IntStream.range(-1, node.getData() + 1).boxed()
                 .collect(Collectors.toSet());
@@ -214,7 +212,7 @@ public class StateNodeTest {
                 count++;
             }
         }
-        root.setTree(new StateTree(ElementChildrenNamespace.class));
+        root.setTree(createStateTree());
         Set<Integer> set = IntStream.range(-1, count).boxed()
                 .collect(Collectors.toSet());
         root.visitNodeTree(n -> visit((TestStateNode) n,
@@ -289,4 +287,9 @@ public class StateNodeTest {
         set.remove(node.getData());
     }
 
+    private StateTree createStateTree() {
+        StateTree stateTree = new StateTree(new UI(),
+                ElementChildrenNamespace.class);
+        return stateTree;
+    }
 }
