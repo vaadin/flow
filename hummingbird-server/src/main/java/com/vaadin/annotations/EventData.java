@@ -15,6 +15,7 @@
  */
 package com.vaadin.annotations;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -38,6 +39,7 @@ import com.vaadin.ui.ComponentEvent;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PARAMETER })
+@Documented
 public @interface EventData {
     /**
      * The identifier used in

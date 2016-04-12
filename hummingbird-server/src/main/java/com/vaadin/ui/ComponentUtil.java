@@ -71,13 +71,13 @@ public interface ComponentUtil {
      * @return the parent of the component, never <code>null</code>
      */
     static Component getParentUsingComposite(Composite composite,
-            Component component) {
+            EventNotifier component) {
         // If this is the component inside a composite or a nested
         // composite, we need to traverse the composite hierarchy to find
         // the parent
         Composite compositeAncestor = composite;
         while (true) {
-            Component compositeChild = compositeAncestor.getContent();
+            EventNotifier compositeChild = compositeAncestor.getContent();
             if (compositeChild == component) {
                 return compositeAncestor;
             }
@@ -115,8 +115,8 @@ public interface ComponentUtil {
      *         <code>false</code> otherwise
      */
     static boolean isCompositeContent(Composite composite,
-            Component component) {
-        Component compositeContent = composite.getContent();
+            EventNotifier component) {
+        EventNotifier compositeContent = composite.getContent();
         if (compositeContent == component) {
             return true;
         } else if (compositeContent instanceof Composite) {

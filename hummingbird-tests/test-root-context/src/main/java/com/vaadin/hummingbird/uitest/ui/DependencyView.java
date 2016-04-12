@@ -15,25 +15,25 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Div;
-import com.vaadin.hummingbird.uitest.component.Hr;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Hr;
 import com.vaadin.ui.Text;
 
 public class DependencyView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        addComponents(new Text(
+        add(new Text(
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
-        addComponents(new Hr());
+        add(new Hr());
 
         getPage().addStyleSheet("/test-files/css/allred.css");
         getPage().addJavaScript("/test-files/js/body-click-listener.js");
 
         Div clickBody = new Div("Hello, click the body please");
         clickBody.setId("hello");
-        addComponents(clickBody);
+        add(clickBody);
 
         Button jsOrder = new Button("Test JS order");
         jsOrder.setId("loadJs");
@@ -47,7 +47,7 @@ public class DependencyView extends AbstractDivView {
             getPage().addStyleSheet("/test-files/css/allblueimportant.css");
 
         });
-        addComponents(jsOrder, allBlue, new Hr());
+        add(jsOrder, allBlue, new Hr());
     }
 
 }

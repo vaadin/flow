@@ -40,7 +40,8 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
  * @author Vaadin Ltd
  * @since
  */
-public abstract class Component implements HasElement, Serializable {
+public abstract class Component
+        implements HasElement, Serializable, EventNotifier {
 
     private Element element;
 
@@ -156,7 +157,7 @@ public abstract class Component implements HasElement, Serializable {
             return false;
         }
 
-        Component component = mappedComponent.get();
+        EventNotifier component = mappedComponent.get();
         return component instanceof Composite && component != this;
     }
 
@@ -197,16 +198,8 @@ public abstract class Component implements HasElement, Serializable {
         return eventBus;
     }
 
-    /**
-     * Adds a listener for an event of the given type.
-     *
-     * @param eventType
-     *            the component event type
-     * @param listener
-     *            the listener to add
-     * @return a handle that can be used for removing the listener
-     */
-    protected <T extends ComponentEvent> EventRegistrationHandle addListener(
+    @Override
+    public <T extends ComponentEvent> EventRegistrationHandle addListener(
             Class<T> eventType, Consumer<T> listener) {
 
         return getEventBus().addListener(eventType, listener);

@@ -13,31 +13,44 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.html;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.html.event.ClickNotifier;
 import com.vaadin.ui.Component;
 
+/**
+ * Component representing a <code>&lt;div&gt;</code> element.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
 @Tag("div")
-public class Div extends AbstractHtmlComponent
-        implements HasSimpleAddComponent {
+public class Div extends HtmlComponentWithContent implements ClickNotifier {
+
+    /**
+     * Creates a new empty div.
+     */
     public Div() {
         super();
     }
 
+    /**
+     * Creates a new div with the given text content.
+     *
+     * @param text
+     */
     public Div(String text) {
-        getElement().setTextContent(text);
+        setText(text);
     }
 
+    /**
+     * Creates a new div with the given child components.
+     *
+     * @param components
+     *            the child components
+     */
     public Div(Component... components) {
-        for (Component component : components) {
-            addComponents(component);
-        }
+        super(components);
     }
-
-    @Override
-    public void setText(String text) {
-        super.setText(text);
-    }
-
 }

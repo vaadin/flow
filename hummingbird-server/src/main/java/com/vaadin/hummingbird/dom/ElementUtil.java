@@ -214,8 +214,9 @@ public class ElementUtil {
     }
 
     /**
-     * Checks if the element of the component is correctly mapped to the
-     * component.
+     * Checks if the component mapping of the element of the provided component
+     * actually refers to the the provided component, either directly or through
+     * a chain of composites.
      * <p>
      * Meant for internal use only.
      *

@@ -13,11 +13,34 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.html;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.html.event.ClickNotifier;
 
-@Tag("hr")
-public class Hr extends AbstractHtmlComponent {
+/**
+ * Component representing a <code>&lt;button&gt;</code> element.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
+@Tag("button")
+public class Button extends HtmlComponentWithContent implements ClickNotifier {
+    /**
+     * Creates a new empty button.
+     */
+    public Button() {
+        super();
+    }
+
+    /**
+     * Creates a button with the given text.
+     *
+     * @param text
+     *            the button text
+     */
+    public Button(String text) {
+        setText(text);
+    }
 
 }
