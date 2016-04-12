@@ -15,6 +15,7 @@
  */
 package com.vaadin.annotations;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
@@ -51,6 +52,7 @@ import com.vaadin.ui.ComponentEvent;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Documented
 @Inherited
 public @interface DomEvent {
     /**
