@@ -736,4 +736,42 @@ public class UI extends Component implements Serializable, PollNotifier {
     protected Optional<Router> getRouter() {
         return Optional.ofNullable(router);
     }
+
+    /**
+     * Adds the given components to the UI.
+     * <p>
+     * The components' elements are attached to the UI element (the body tag).
+     *
+     * @param components
+     *            the components to add
+     */
+    public void add(Component... components) {
+        assert components != null;
+        for (Component component : components) {
+            assert component != null;
+            getElement().appendChild(component.getElement());
+        }
+    }
+
+    /**
+     * Removes the given components from the UI.
+     * <p>
+     *
+     * @param components
+     *            the components to remove
+     * @throws IllegalArgumentException
+     *             if one of the components is not a child of this UI
+     */
+    public void remove(Component... components) {
+        assert components != null;
+        for (Component component : components) {
+            assert component != null;
+            if (getElement().equals(component.getElement().getParent())) {
+                getElement().removeChild(component.getElement());
+            } else {
+                throw new IllegalArgumentException("The given component ("
+                        + component + ") is not a child of this UI");
+            }
+        }
+    }
 }
