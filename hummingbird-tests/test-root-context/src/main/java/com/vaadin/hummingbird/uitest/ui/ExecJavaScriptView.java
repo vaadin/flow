@@ -15,8 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Input;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.ui.UI;
 
@@ -43,10 +43,10 @@ public class ExecJavaScriptView extends AbstractDivView {
             input.addClass("newInput");
             UI.getCurrent().getPage().executeJavaScript("$0.value = $1", input,
                     "Value from js");
-            addComponents(input);
+            add(input);
         });
 
-        addComponents(alertButton, focusButton, swapText, logButton,
+        add(alertButton, focusButton, swapText, logButton,
                 createElementButton);
     }
 

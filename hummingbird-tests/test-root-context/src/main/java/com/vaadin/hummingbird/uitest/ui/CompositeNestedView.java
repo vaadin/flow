@@ -15,8 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.uitest.component.Div;
 import com.vaadin.hummingbird.uitest.ui.CompositeView.NameField;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
@@ -38,7 +38,7 @@ public class CompositeNestedView extends Composite implements View {
         nameField.addNameChangeListener(e -> {
             name.setText("Name on server: " + nameField.getName());
         });
-        div.addComponents(name, nameField);
+        div.add(name, nameField);
         return div;
     }
 }

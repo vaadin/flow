@@ -15,9 +15,10 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import com.vaadin.hummingbird.html.Div;
+
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.uitest.component.Div;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 

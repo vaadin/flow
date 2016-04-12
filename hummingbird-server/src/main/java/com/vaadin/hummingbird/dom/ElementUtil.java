@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Composite;
+import com.vaadin.ui.EventNotifier;
 
 /**
  * Provides utility methods for {@link Element}.
@@ -228,7 +229,7 @@ public class ElementUtil {
             Component component) {
         Element element = component.getElement();
 
-        Component mappedComponent = ElementUtil.getComponent(element).get();
+        EventNotifier mappedComponent = ElementUtil.getComponent(element).get();
         if (mappedComponent == component) {
             return true;
         }

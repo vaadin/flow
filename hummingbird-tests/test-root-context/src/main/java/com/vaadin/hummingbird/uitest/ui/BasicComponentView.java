@@ -16,9 +16,9 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Div;
-import com.vaadin.hummingbird.uitest.component.Input;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.ui.Text;
 
 public class BasicComponentView extends AbstractDivView {
@@ -48,8 +48,8 @@ public class BasicComponentView extends AbstractDivView {
                     + "\" at (" + e.getClientX() + "," + e.getClientY()
                     + ")! The field value is " + input.getValue());
 
-            greeting.addClickListener(e2 -> removeComponents(greeting));
-            addComponents(greeting);
+            greeting.addClickListener(e2 -> remove(greeting));
+            add(greeting);
         });
 
         Div helloWorld = new Div(DIV_TEXT);
@@ -63,7 +63,7 @@ public class BasicComponentView extends AbstractDivView {
         s.set("color", "red");
         s.set("fontWeight", "bold");
 
-        addComponents(text, helloWorld, button, input);
+        add(text, helloWorld, button, input);
     }
 
 }
