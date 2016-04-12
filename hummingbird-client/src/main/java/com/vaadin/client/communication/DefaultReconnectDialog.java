@@ -38,11 +38,14 @@ public class DefaultReconnectDialog implements ReconnectDialog {
     private static final String STYLE_MODAL = "modal";
     private static final String STYLE_BODY_RECONNECTING = "v-reconnecting";
 
-    public Element label;
+    private Element label;
 
     private EventRemover clickHandler = null;
     private Element root;
 
+    /**
+     * Creates a new instance.
+     */
     public DefaultReconnectDialog() {
         // super(false, true);
 

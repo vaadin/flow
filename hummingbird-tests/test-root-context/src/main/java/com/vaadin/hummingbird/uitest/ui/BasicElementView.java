@@ -19,9 +19,12 @@ import java.util.Set;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 
 public class BasicElementView extends AbstractDivView {
+
+    private EventRegistrationHandle helloWorldEventRemover;
 
     @Override
     protected void onShow() {
@@ -32,8 +35,7 @@ public class BasicElementView extends AbstractDivView {
 
         Element input = ElementFactory.createInput()
                 .setAttribute("placeholder", "Synchronized on change event")
-                .setSynchronizedProperties("value")
-                .setSynchronizedPropertiesEvents("change");
+                .synchronizeProperty("value", "change");
 
         button.addEventListener("click", e -> {
             String buttonText = e.getEventData()
@@ -48,7 +50,7 @@ public class BasicElementView extends AbstractDivView {
                     e2 -> greeting.removeFromParent());
 
             mainElement.appendChild(greeting);
-        } , "element.textContent");
+        }, "element.textContent");
 
         Element helloWorldElement = ElementFactory.createDiv("Hello world");
 
@@ -56,10 +58,21 @@ public class BasicElementView extends AbstractDivView {
 
         helloWorldElement.setProperty("id", "hello-world");
         spanClasses.add("hello");
-        helloWorldElement.addEventListener("click", e -> {
-            helloWorldElement.setTextContent("Stop touching me!");
-            spanClasses.clear();
-        });
+        helloWorldEventRemover = helloWorldElement.addEventListener("click",
+                e -> {
+                    if (helloWorldElement.getOwnTextContent()
+                            .equals("Hello world")) {
+                        helloWorldElement.setTextContent("Stop touching me!");
+                    } else {
+                        // We never get to this code as long as the event
+                        // removal actually works
+                        helloWorldElement.setTextContent(
+                                helloWorldElement.getOwnTextContent()
+                                        + " This might be your last warning!");
+                    }
+                    spanClasses.clear();
+                    helloWorldEventRemover.remove();
+                });
         Style s = helloWorldElement.getStyle();
         s.set("color", "red");
         s.set("fontWeight", "bold");

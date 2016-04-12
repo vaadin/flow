@@ -42,6 +42,7 @@ import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
+import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -70,6 +71,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementListenersNamespace.class, ClassListNamespace.class,
             ElementStylePropertyNamespace.class,
             SynchronizedPropertiesNamespace.class,
+            SynchronizedPropertyEventsNamespace.class,
             ComponentMappingNamespace.class };
 
     private BasicElementStateProvider() {
@@ -354,38 +356,15 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void setSynchronizedProperties(StateNode node,
-            String[] propertyNames) {
-        assert propertyNames != null;
-        assert Arrays.stream(propertyNames).noneMatch(e -> e == null);
-
-        node.getNamespace(SynchronizedPropertiesNamespace.class)
-                .setSynchronizedProperties(propertyNames);
-
-    }
-
-    @Override
-    public void setSynchronizedPropertiesEvents(StateNode node,
-            String[] eventTypes) {
-        assert eventTypes != null;
-        assert Arrays.stream(eventTypes).noneMatch(e -> e == null);
-
-        node.getNamespace(SynchronizedPropertiesNamespace.class)
-                .setSynchronizedPropertiesEvents(eventTypes);
-
-    }
-
-    @Override
     public Set<String> getSynchronizedProperties(StateNode node) {
         return node.getNamespace(SynchronizedPropertiesNamespace.class)
                 .getSynchronizedProperties();
-
     }
 
     @Override
-    public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
-        return node.getNamespace(SynchronizedPropertiesNamespace.class)
-                .getSynchronizedPropertiesEvents();
+    public Set<String> getSynchronizedPropertyEvents(StateNode node) {
+        return node.getNamespace(SynchronizedPropertyEventsNamespace.class)
+                .getSynchronizedPropertyEvents();
     }
 
     @Override
@@ -399,7 +378,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
     }

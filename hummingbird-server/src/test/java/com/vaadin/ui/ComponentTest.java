@@ -22,8 +22,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.dom.ElementUtil;
 
 public class ComponentTest {
 
@@ -32,7 +34,7 @@ public class ComponentTest {
     private Component child1SpanComponent;
     private Component child2InputComponent;
 
-    private static class TestComponent extends Component {
+    public static class TestComponent extends Component {
 
         public TestComponent() {
             this(ElementFactory.createDiv());
@@ -44,8 +46,27 @@ public class ComponentTest {
 
         @Override
         public String toString() {
-            return getElement().getTextContent();
+            return getElement().getOwnTextContent();
         }
+
+    }
+
+    @Tag("div")
+    private static class TestComponentWithTag extends Component {
+
+    }
+
+    private static class TestComponentWithInheritedTag
+            extends TestComponentWithTag {
+
+    }
+
+    @Tag("")
+    private static class TestComponentWithEmptyTag extends Component {
+
+    }
+
+    private static class TestComponentWithoutTag extends Component {
 
     }
 
@@ -107,7 +128,7 @@ public class ComponentTest {
                 child2InputComponent);
     }
 
-    private static void assertChildren(Component parent,
+    public static void assertChildren(Component parent,
             Component... expectedChildren) {
         List<Component> children = parent.getChildren()
                 .collect(Collectors.toList());
@@ -185,10 +206,11 @@ public class ComponentTest {
     @Test
     public void setElement() {
         Component c = new Component(null) {
+
         };
         Element element = ElementFactory.createDiv();
         Component.setElement(c, element);
-        Assert.assertEquals(c, element.getComponent().get());
+        Assert.assertEquals(c, ElementUtil.getComponent(element).get());
         Assert.assertEquals(element, c.getElement());
     }
 
@@ -208,4 +230,29 @@ public class ComponentTest {
         Component.setElement(c, element);
 
     }
+
+    @Test
+    public void createComponentWithTag() {
+        Component component = new TestComponentWithTag();
+
+        Assert.assertEquals("div", component.getElement().getTag());
+    }
+
+    @Test
+    public void createComponentWithInheritedTag() {
+        Component component = new TestComponentWithInheritedTag();
+
+        Assert.assertEquals("div", component.getElement().getTag());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void createComponentWithEmptyTag() {
+        new TestComponentWithEmptyTag();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void createComponentWithoutTag() {
+        new TestComponentWithoutTag();
+    }
+
 }

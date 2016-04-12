@@ -15,14 +15,13 @@
  */
 package com.vaadin.hummingbird.uitest.component;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.annotations.Tag;
 
+@Tag("input")
 public class Input extends AbstractHtmlComponent {
 
     public Input() {
-        super(ElementFactory.createInput());
-        getElement().setSynchronizedProperties("value");
-        getElement().setSynchronizedPropertiesEvents("change");
+        getElement().synchronizeProperty("value", "change");
 
     }
 
@@ -38,8 +37,8 @@ public class Input extends AbstractHtmlComponent {
         return getElement().getProperty("value");
     }
 
-    public void setValue(String string) {
-        getElement().setProperty("value", "");
+    public void setValue(String value) {
+        getElement().setProperty("value", value);
     }
 
 }

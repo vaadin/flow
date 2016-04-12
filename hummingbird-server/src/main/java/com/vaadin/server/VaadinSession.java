@@ -80,10 +80,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * unhandled.
      */
     private ErrorHandler errorHandler = new DefaultErrorHandler();
-    private LinkedList<RequestHandler> requestHandlers = new LinkedList<RequestHandler>();
+    private LinkedList<RequestHandler> requestHandlers = new LinkedList<>();
 
     private int nextUIId = 0;
-    private Map<Integer, UI> uIs = new HashMap<Integer, UI>();
+    private Map<Integer, UI> uIs = new HashMap<>();
 
     protected WebBrowser browser = new WebBrowser();
 
@@ -106,7 +106,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * session is serialized as long as it doesn't happen while some other
      * thread has the lock.
      */
-    private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<FutureAccess>();
+    private transient ConcurrentLinkedQueue<FutureAccess> pendingAccessQueue = new ConcurrentLinkedQueue<>();
 
     private final String csrfToken = UUID.randomUUID().toString();
 
@@ -260,7 +260,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public static Collection<VaadinSession> getAllSessions(
             HttpSession httpSession) {
-        Set<VaadinSession> sessions = new HashSet<VaadinSession>();
+        Set<VaadinSession> sessions = new HashSet<>();
         Enumeration<String> attributeNames = httpSession.getAttributeNames();
 
         while (attributeNames.hasMoreElements()) {
@@ -941,7 +941,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         Map<Class<?>, CurrentInstance> old = CurrentInstance.setCurrent(this);
         try {
             stream.defaultReadObject();
-            pendingAccessQueue = new ConcurrentLinkedQueue<FutureAccess>();
+            pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
             CurrentInstance.restoreInstances(old);
         }

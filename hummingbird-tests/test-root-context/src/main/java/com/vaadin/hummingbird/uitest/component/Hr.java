@@ -15,11 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.component;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.annotations.Tag;
 
+@Tag("hr")
 public class Hr extends AbstractHtmlComponent {
 
-    public Hr() {
-        super(ElementFactory.createHorizontalRule());
-    }
 }

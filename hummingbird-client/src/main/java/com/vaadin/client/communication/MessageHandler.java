@@ -143,6 +143,12 @@ public class MessageHandler {
     private static class PendingUIDLMessage {
         private ValueMap json;
 
+        /**
+         * Creates a new instance based on the given JSON.
+         *
+         * @param json
+         *            the JSON to wrap
+         */
         public PendingUIDLMessage(ValueMap json) {
             this.json = json;
         }

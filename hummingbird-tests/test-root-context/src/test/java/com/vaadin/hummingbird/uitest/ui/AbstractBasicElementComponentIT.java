@@ -40,6 +40,10 @@ public abstract class AbstractBasicElementComponentIT extends PhantomJSTest {
 
         Assert.assertEquals("Stop touching me!", helloElement.getText());
         Assert.assertEquals("", helloElement.getAttribute("class"));
+
+        // Clicking again shouldn't have any effect
+        helloElement.click();
+        Assert.assertEquals("Stop touching me!", helloElement.getText());
     }
 
     private int getThankYouCount() {

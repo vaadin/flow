@@ -28,7 +28,7 @@ import java.util.Locale;
 public class SystemMessagesInfo implements Serializable {
 
     private Locale locale;
-    private VaadinRequest request;
+    private transient VaadinRequest request;
     private VaadinService service;
 
     /**

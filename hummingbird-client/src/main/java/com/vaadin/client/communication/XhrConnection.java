@@ -33,8 +33,8 @@ import elemental.events.EventListener;
 import elemental.json.JsonObject;
 
 /**
- * Provides a connection to the /UIDL url on the server and knows how to send
- * messages to that end point
+ * Provides a connection to the UIDL request handler on the server and knows how
+ * to send messages to that end point.
  *
  * @since 7.6
  * @author Vaadin Ltd
@@ -79,6 +79,12 @@ public class XhrConnection {
         return new XhrResponseHandler();
     }
 
+    /**
+     * Handles the response from the server by forwarding the received message
+     * to {@link MessageHandler} or failures to the appropriate method in
+     * {@link ConnectionStateHandler}.
+     *
+     */
     public class XhrResponseHandler implements Xhr.Callback {
 
         private JsonObject payload;

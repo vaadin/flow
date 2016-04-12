@@ -212,30 +212,19 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public void setSynchronizedProperties(StateNode node,
-            String[] propertyNames) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setSynchronizedPropertiesEvents(StateNode node,
-            String[] eventTypes) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Set<String> getSynchronizedProperties(StateNode node) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Set<String> getSynchronizedPropertiesEvents(StateNode node) {
+    public Set<String> getSynchronizedPropertyEvents(StateNode node) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public void setComponent(StateNode node, Component component) {
         assert node != null;
+        assert component != null;
         node.getNamespace(ComponentMappingNamespace.class)
                 .setComponent(component);
     }
@@ -246,4 +235,5 @@ public class TextElementStateProvider implements ElementStateProvider {
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
     }
+
 }

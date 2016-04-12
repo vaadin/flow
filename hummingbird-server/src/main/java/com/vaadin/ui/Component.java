@@ -20,14 +20,17 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementUtil;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
  * hierarchy of {@link Element}s.
  * <p>
- * A component must have exactly one root element and it is set using the
- * constructor {@link #Component(Element)} (or in special cases using
+ * A component must have exactly one root element which is created based on the
+ * {@link Tag} annotation of the sub class (or in special cases set using the
+ * constructor {@link #Component(Element)} or using
  * {@link #setElement(Component, Element)} before the element is attached to a
  * parent). The root element cannot be changed once it has been set.
  *
@@ -37,6 +40,28 @@ import com.vaadin.hummingbird.dom.Element;
 public abstract class Component implements HasElement, Serializable {
 
     private Element element;
+
+    /**
+     * Creates a component instance with an element created based on the
+     * {@link Tag} annotation of the sub class.
+     */
+    protected Component() {
+        Tag tag = getClass().getAnnotation(Tag.class);
+        if (tag == null) {
+            throw new IllegalStateException(
+                    "Component class must be annotated with @"
+                            + Tag.class.getName()
+                            + " if the default constructor is used.");
+        }
+
+        String tagName = tag.value();
+        if (tagName.isEmpty()) {
+            throw new IllegalStateException("@" + Tag.class.getSimpleName()
+                    + " value cannot be empty.");
+        }
+
+        setElement(this, new Element(tagName));
+    }
 
     /**
      * Creates a component instance based on the given element.
@@ -92,7 +117,7 @@ public abstract class Component implements HasElement, Serializable {
             throw new IllegalArgumentException("Element must not be null");
         }
         component.element = element;
-        element.setComponent(component);
+        ElementUtil.setComponent(element, component);
     }
 
     /**
@@ -103,19 +128,30 @@ public abstract class Component implements HasElement, Serializable {
      * @return the parent component
      */
     public Optional<Component> getParent() {
-        assert ComponentUtil.isAttachedTo(this, getElement());
+        assert ElementUtil.isComponentElementMappedCorrectly(this);
 
-        Element parentElement = getElement().getParent();
-        while (parentElement != null
-                && !parentElement.getComponent().isPresent()) {
-            parentElement = parentElement.getParent();
+        // If "this" is a component inside a Composite, iterate from the
+        // Composite downwards
+        Optional<Component> mappedComponent = ElementUtil
+                .getComponent(getElement());
+        if (isInsideComposite(mappedComponent)) {
+            Component parent = ComponentUtil.getParentUsingComposite(
+                    (Composite) mappedComponent.get(), this);
+            return Optional.of(parent);
         }
 
-        if (parentElement == null) {
-            return Optional.empty();
+        // Find the parent component based on the first parent element which is
+        // mapped to a component
+        return ComponentUtil.findParentComponent(getElement().getParent());
+    }
+
+    private boolean isInsideComposite(Optional<Component> mappedComponent) {
+        if (!mappedComponent.isPresent()) {
+            return false;
         }
 
-        return parentElement.getComponent();
+        Component component = mappedComponent.get();
+        return component instanceof Composite && component != this;
     }
 
     /**
@@ -127,7 +163,10 @@ public abstract class Component implements HasElement, Serializable {
      * @return the child components of this component
      */
     public Stream<Component> getChildren() {
-        assert ComponentUtil.isAttachedTo(this, getElement());
+        // This should not ever be called for a Composite as it will return
+        // wrong results
+        assert !(this instanceof Composite);
+        assert ElementUtil.isComponentElementMappedCorrectly(this);
 
         Builder<Component> childComponents = Stream.builder();
         getElement().getChildren().forEach(childElement -> {
