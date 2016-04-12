@@ -27,10 +27,10 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.ErrorNavigationHandler;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
-import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
+import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.StaticViewRenderer;
 import com.vaadin.hummingbird.router.View;
@@ -46,7 +46,7 @@ public class RouterTestServlet extends VaadinServlet {
     public static class MyRouterConfigurator implements RouterConfigurator {
 
         @Override
-        public void configure(ModifiableRouterConfiguration configuration) {
+        public void configure(RouterConfiguration configuration) {
             configuration.setResolver(new Resolver() {
 
                 @Override
