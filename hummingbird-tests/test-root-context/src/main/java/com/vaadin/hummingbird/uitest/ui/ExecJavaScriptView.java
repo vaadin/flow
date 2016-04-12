@@ -15,8 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Input;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.ui.UI;
 
@@ -36,28 +36,25 @@ public class ExecJavaScriptView extends AbstractDivView {
                 JsonUtil.createArray(Json.create("Hello world"),
                         Json.create(true)));
 
-        Button createElementButton = new Button("Create and update element");
+        Button createElementButton = new Button("Create and update element",
+                e -> {
+                    Input input = new Input();
+                    input.addClass("newInput");
+                    UI.getCurrent().getPage().executeJavaScript("$0.value = $1",
+                            input, "Value from js");
+                    add(input);
+                });
         createElementButton.setId("createButton");
-        createElementButton.addClickListener(e -> {
-            Input input = new Input();
-            input.addClass("newInput");
-            UI.getCurrent().getPage().executeJavaScript("$0.value = $1", input,
-                    "Value from js");
-            addComponents(input);
-        });
 
-        addComponents(alertButton, focusButton, swapText, logButton,
-                createElementButton);
+        add(alertButton, focusButton, swapText, logButton, createElementButton);
     }
 
     private Button createJsButton(String text, String id, String script,
             Object... arguments) {
-        Button button = new Button(text);
-        button.setId(id);
-
-        button.addClickListener(e -> UI.getCurrent().getPage()
+        Button button = new Button(text, e -> UI.getCurrent().getPage()
                 .executeJavaScript(script, arguments));
 
+        button.setId(id);
         return button;
     }
 }

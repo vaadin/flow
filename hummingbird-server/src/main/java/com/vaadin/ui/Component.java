@@ -40,7 +40,8 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
  * @author Vaadin Ltd
  * @since
  */
-public abstract class Component implements HasElement, Serializable {
+public abstract class Component
+        implements HasElement, Serializable, ComponentEventNotifier {
 
     private Element element;
 
@@ -53,10 +54,10 @@ public abstract class Component implements HasElement, Serializable {
     protected Component() {
         Tag tag = getClass().getAnnotation(Tag.class);
         if (tag == null) {
-            throw new IllegalStateException(
-                    "Component class must be annotated with @"
-                            + Tag.class.getName()
-                            + " if the default constructor is used.");
+            throw new IllegalStateException(getClass().getSimpleName()
+                    + " (or a super class) must be annotated with @"
+                    + Tag.class.getName()
+                    + " if the default constructor is used.");
         }
 
         String tagName = tag.value();
@@ -197,16 +198,8 @@ public abstract class Component implements HasElement, Serializable {
         return eventBus;
     }
 
-    /**
-     * Adds a listener for an event of the given type.
-     *
-     * @param eventType
-     *            the component event type
-     * @param listener
-     *            the listener to add
-     * @return a handle that can be used for removing the listener
-     */
-    protected <T extends ComponentEvent> EventRegistrationHandle addListener(
+    @Override
+    public <T extends ComponentEvent> EventRegistrationHandle addListener(
             Class<T> eventType, Consumer<T> listener) {
 
         return getEventBus().addListener(eventType, listener);
@@ -231,4 +224,29 @@ public abstract class Component implements HasElement, Serializable {
     public Optional<UI> getUI() {
         return getParent().flatMap(Component::getUI);
     }
+
+    /**
+     * Sets the id of the root element of this component. The id is used with
+     * various APIs to identify the element, and it should be unique on the
+     * page.
+     *
+     * @param id
+     *            the id to set, or <code>null</code> to remove any previously
+     *            set id
+     */
+    public void setId(String id) {
+        getElement().setAttribute("id", id);
+    }
+
+    /**
+     * Gets the id of the root element of this component.
+     *
+     * @see #setId(String)
+     *
+     * @return the id, or <code>null</code> if no id has been set
+     */
+    public String getId() {
+        return getElement().getAttribute("id");
+    }
+
 }
