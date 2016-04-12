@@ -13,16 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.html;
 
 import com.vaadin.annotations.Tag;
 
-@Tag("a")
-public class Link extends AbstractHtmlComponent {
-
-    public Link(String href, String text) {
-        getElement().setAttribute("href", href);
-        getElement().setTextContent(text);
+/**
+ * Component representing a <code>&lt;hr&gt;</code> element.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
+@Tag("hr")
+public class Hr extends HtmlComponent {
+    /**
+     * Creates a new hr.
+     */
+    public Hr() {
+        super();
     }
-
 }
