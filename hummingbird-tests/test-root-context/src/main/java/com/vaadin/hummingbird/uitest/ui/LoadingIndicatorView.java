@@ -17,9 +17,9 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import java.util.function.Consumer;
 
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Div;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
 import com.vaadin.ui.UI;
 
@@ -34,11 +34,11 @@ public class LoadingIndicatorView extends AbstractDivView {
         setIfPresent(event, "third",
                 getLoadingIndicatorConfiguration()::setThirdDelay);
 
-        addComponents(new Div("First delay: "
+        add(new Div("First delay: "
                 + getLoadingIndicatorConfiguration().getFirstDelay()));
-        addComponents(new Div("Second delay: "
+        add(new Div("Second delay: "
                 + getLoadingIndicatorConfiguration().getSecondDelay()));
-        addComponents(new Div("Third delay: "
+        add(new Div("Third delay: "
                 + getLoadingIndicatorConfiguration().getThirdDelay()));
 
         int[] delays = new int[] { 100, 200, 500, 1000, 2000, 5000, 10000 };
@@ -47,7 +47,7 @@ public class LoadingIndicatorView extends AbstractDivView {
                     "Trigger event which takes " + delay + "ms");
             button.setId("wait" + delay);
             button.addClickListener(e -> delay(delay));
-            addComponents(button);
+            add(button);
         }
     }
 

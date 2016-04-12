@@ -17,8 +17,8 @@ package com.vaadin.hummingbird.uitest.ui.push;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Div;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.server.VaadinRequest;
 
 public class BasicPollUI extends ClientServerCounterUI {

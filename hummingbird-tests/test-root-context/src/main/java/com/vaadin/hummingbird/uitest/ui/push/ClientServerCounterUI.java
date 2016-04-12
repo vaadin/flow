@@ -5,7 +5,7 @@ import java.util.TimerTask;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.uitest.component.Button;
+import com.vaadin.hummingbird.html.Button;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 

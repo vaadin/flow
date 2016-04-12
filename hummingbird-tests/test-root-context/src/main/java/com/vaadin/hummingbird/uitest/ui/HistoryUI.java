@@ -20,8 +20,8 @@ import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.uitest.component.AbstractHtmlComponent.ClickEvent;
-import com.vaadin.hummingbird.uitest.component.Button;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.event.ClickEvent;
 import com.vaadin.server.Command;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History;
