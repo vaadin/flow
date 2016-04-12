@@ -18,10 +18,10 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.util.function.Consumer;
 
 import com.vaadin.annotations.DomEvent;
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Div;
-import com.vaadin.hummingbird.uitest.component.Hr;
-import com.vaadin.hummingbird.uitest.component.Input;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Hr;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.Composite;
@@ -83,19 +83,18 @@ public class CompositeView extends AbstractDivView {
             } else {
                 text += "server";
             }
-            addComponents(new Div(text));
+            add(new Div(text));
         });
-        addComponents(name, nameField, new Hr());
+        add(name, nameField, new Hr());
 
         Input serverInput = new Input();
         serverInput.setId(SERVER_INPUT_ID);
-        Button serverInputButton = new Button("Set");
-        serverInputButton.setId(SERVER_INPUT_BUTTON_ID);
-        serverInputButton.addClickListener(e -> {
+        Button serverInputButton = new Button("Set", e -> {
             nameField.setName(serverInput.getValue());
             serverInput.setValue("");
         });
-        addComponents(new Text("Enter a value to set the name on the server"),
+        serverInputButton.setId(SERVER_INPUT_BUTTON_ID);
+        add(new Text("Enter a value to set the name on the server"),
                 serverInput, serverInputButton);
     }
 }

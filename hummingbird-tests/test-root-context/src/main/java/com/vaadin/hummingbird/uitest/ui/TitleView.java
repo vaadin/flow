@@ -1,17 +1,17 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.annotations.Title;
-import com.vaadin.hummingbird.uitest.component.Div;
+import com.vaadin.hummingbird.html.Div;
 
 @Title("Title view")
 public class TitleView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        removeAllComponents();
+        removeAll();
         Div titleView = new Div("Title view");
         titleView.setId("annotated");
-        addComponents(titleView);
+        add(titleView);
     }
 
 }
