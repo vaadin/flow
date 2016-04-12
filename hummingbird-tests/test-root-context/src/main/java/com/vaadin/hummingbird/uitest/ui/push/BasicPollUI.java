@@ -17,8 +17,8 @@ package com.vaadin.hummingbird.uitest.ui.push;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Div;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.server.VaadinRequest;
 
 public class BasicPollUI extends ClientServerCounterUI {
@@ -41,18 +41,17 @@ public class BasicPollUI extends ClientServerCounterUI {
             pollCounter.setTextContent("Polls received: " + (++pollCount));
         });
 
-        Button stopPolling = new Button("Stop polling");
-        stopPolling.setId(STOP_POLLING_BUTTON);
-        stopPolling.addClickListener(e -> {
+        Button stopPolling = new Button("Stop polling", e -> {
             setPollInterval(-1);
             updatePollIntervalText();
         });
-        Button startPolling = new Button("Start polling");
-        startPolling.setId(START_POLLING_BUTTON);
-        startPolling.addClickListener(e -> {
+        stopPolling.setId(STOP_POLLING_BUTTON);
+
+        Button startPolling = new Button("Start polling", e -> {
             setPollInterval(500);
             updatePollIntervalText();
         });
+        startPolling.setId(START_POLLING_BUTTON);
 
         spacer();
         getElement()

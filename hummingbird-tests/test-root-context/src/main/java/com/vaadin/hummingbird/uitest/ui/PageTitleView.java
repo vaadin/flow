@@ -1,8 +1,8 @@
 package com.vaadin.hummingbird.uitest.ui;
 
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
-import com.vaadin.hummingbird.uitest.component.Div;
-import com.vaadin.hummingbird.uitest.component.Input;
 
 public class PageTitleView extends AbstractDivView {
 
@@ -28,7 +28,7 @@ public class PageTitleView extends AbstractDivView {
             getPage().setTitle("OVERRIDDEN");
         });
 
-        addComponents(input, updateButton, overrideButton);
+        add(input, updateButton, overrideButton);
     }
 
 }
