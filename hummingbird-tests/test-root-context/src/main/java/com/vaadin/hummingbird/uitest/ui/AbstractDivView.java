@@ -35,12 +35,10 @@ public abstract class AbstractDivView extends Div implements View {
         onShow();
     }
 
-    protected UI getUI() {
-        return UI.getCurrent();
-    }
-
     protected Page getPage() {
-        return getUI().getPage();
+        // getUI not available in onLocationChange so leaving getCurrent here
+        // for now
+        return UI.getCurrent().getPage();
     }
 
 }
