@@ -298,6 +298,15 @@ public class ComponentEventBus implements Serializable {
         try {
             Constructor<T> c = ComponentEventBusUtil
                     .getEventConstructor(eventType);
+            // Make sure that the source component type is ok
+            if (!c.getParameterTypes()[0].isAssignableFrom(source.getClass())) {
+                Class<?> definedSourceType = c.getParameterTypes()[0];
+                throw new IllegalArgumentException(String.format(
+                        "The event type %s define the source type to be %s, which is not compatible with the used source of type %s",
+                        eventType.getName(), definedSourceType.getName(),
+                        source.getClass().getName()));
+            }
+
             List<Object> eventData = createEventDataObjects(domEvent,
                     eventType);
             Object[] params = new Object[eventData.size() + 2];
