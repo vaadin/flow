@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -374,12 +373,4 @@ public class BasicElementStateProvider implements ElementStateProvider {
         node.getNamespace(ComponentMappingNamespace.class)
                 .setComponent(component);
     }
-
-    @Override
-    public Optional<Component> getComponent(StateNode node) {
-        assert node != null;
-        return node.getNamespace(ComponentMappingNamespace.class)
-                .getComponent();
-    }
-
 }

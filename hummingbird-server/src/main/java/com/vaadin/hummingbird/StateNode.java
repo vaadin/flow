@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -28,9 +29,12 @@ import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.NamespaceRegistry;
 import com.vaadin.server.Command;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentUtil;
 
 /**
  * A node in the state tree that is synchronized with the client-side. Data
@@ -123,12 +127,28 @@ public class StateNode implements Serializable {
             }
         }
 
-        this.parent = parent;
-
         if (!attachedBefore && attachedAfter) {
+            this.parent = parent;
             onAttach();
         } else if (attachedBefore && !attachedAfter) {
             onDetach();
+            this.parent = parent;
+        } else {
+            this.parent = parent;
+        }
+    }
+
+    /**
+     * Gets the optional component mapped to this state node.
+     *
+     * @return an optional component, or an empty optional if no component has
+     *         been mapped to this node
+     */
+    public Optional<Component> getComponent() {
+        if (hasNamespace(ComponentMappingNamespace.class)) {
+            return getNamespace(ComponentMappingNamespace.class).getComponent();
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -363,8 +383,6 @@ public class StateNode implements Serializable {
     }
 
     private void handleOnDetach() {
-        assert !isAttached();
-
         // Ensure detach change is sent
         markAsDirty();
 
@@ -437,6 +455,8 @@ public class StateNode implements Serializable {
 
             copy.forEach(Command::execute);
         }
+
+        getComponent().ifPresent(ComponentUtil::fireComponentAttach);
     }
 
     private void fireDetachListeners() {
@@ -445,5 +465,8 @@ public class StateNode implements Serializable {
 
             copy.forEach(Command::execute);
         }
+
+        getComponent().ifPresent(ComponentUtil::fireComponentDetach);
     }
+
 }

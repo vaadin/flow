@@ -353,6 +353,8 @@ public interface ElementStateProvider extends Serializable {
      * @return an optional component, or an empty optional if no component has
      *         been mapped to this node
      */
-    Optional<Component> getComponent(StateNode node);
+    default Optional<Component> getComponent(StateNode node) {
+        return node.getComponent();
+    }
 
 }
