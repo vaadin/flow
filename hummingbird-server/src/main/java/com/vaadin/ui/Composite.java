@@ -193,4 +193,5 @@ public abstract class Composite<T extends Component> extends Component {
     public Stream<Component> getChildren() {
         return Stream.of(getContent());
     }
+
 }
