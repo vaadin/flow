@@ -46,7 +46,7 @@ public class LoadingIndicatorView extends AbstractDivView {
             Button button = new Button(
                     "Trigger event which takes " + delay + "ms");
             button.setId("wait" + delay);
-            button.getElement().addEventListener("click", e -> delay(delay));
+            button.addClickListener(e -> delay(delay));
             addComponents(button);
         }
     }
