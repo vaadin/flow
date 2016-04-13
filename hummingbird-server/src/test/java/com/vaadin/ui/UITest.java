@@ -120,4 +120,38 @@ public class UITest {
         Assert.assertFalse(
                 ui.getElement().getTextContent().contains("UI.init"));
     }
+
+    @Test
+    public void addComponent() {
+        UI ui = new UI();
+        Text text = new Text("foo");
+        ui.add(text);
+        ComponentTest.assertChildren(ui, text);
+    }
+
+    @Test
+    public void addComponents() {
+        UI ui = new UI();
+        Text text = new Text("foo");
+        Html html = new Html("<div>foobar</div>");
+        ui.add(text, html);
+        ComponentTest.assertChildren(ui, text, html);
+    }
+
+    @Test
+    public void removeComponent() {
+        UI ui = new UI();
+        Text text = new Text("foo");
+        ui.add(text);
+        ui.remove(text);
+
+        ComponentTest.assertChildren(ui);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeNotChildComponent() {
+        UI ui = new UI();
+        Text text = new Text("foo");
+        ui.remove(text);
+    }
 }

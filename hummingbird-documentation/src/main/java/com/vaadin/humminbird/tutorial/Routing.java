@@ -21,7 +21,7 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
+import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
@@ -37,7 +37,7 @@ public class Routing {
 
     public static class MyRouterConfigurator implements RouterConfigurator {
         @Override
-        public void configure(ModifiableRouterConfiguration configuration) {
+        public void configure(RouterConfiguration configuration) {
             configuration.setRoute("", HomeView.class);
             configuration.setRoute("company", CompanyView.class);
         }

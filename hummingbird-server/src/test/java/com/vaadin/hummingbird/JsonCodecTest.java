@@ -32,6 +32,10 @@ import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
+import elemental.json.JsonBoolean;
+import elemental.json.JsonNull;
+import elemental.json.JsonNumber;
+import elemental.json.JsonString;
 import elemental.json.JsonValue;
 
 public class JsonCodecTest {
@@ -138,5 +142,47 @@ public class JsonCodecTest {
         Assert.assertTrue(
                 actual.toJson() + " does not equal " + expected.toJson(),
                 JsonUtil.jsonEquals(expected, actual));
+    }
+
+    @Test
+    public void decodeAs_booleanJson() {
+        JsonBoolean json = Json.create(true);
+        Assert.assertTrue(JsonCodec.decodeAs(json, Boolean.class));
+        Assert.assertEquals("true", JsonCodec.decodeAs(json, String.class));
+        Assert.assertEquals(Integer.valueOf(1),
+                JsonCodec.decodeAs(json, Integer.class));
+        Assert.assertEquals(Double.valueOf(1.0),
+                JsonCodec.decodeAs(json, Double.class));
+    }
+
+    @Test
+    public void decodeAs_stringJson() {
+        JsonString json = Json.create("Test123 String\n !%");
+        Assert.assertTrue(JsonCodec.decodeAs(json, Boolean.class));
+        Assert.assertEquals("Test123 String\n !%",
+                JsonCodec.decodeAs(json, String.class));
+        Assert.assertEquals(Integer.valueOf(0),
+                JsonCodec.decodeAs(json, Integer.class));
+        Assert.assertTrue(JsonCodec.decodeAs(json, Double.class).isNaN());
+    }
+
+    @Test
+    public void decodeAs_numberJson() {
+        JsonNumber json = Json.create(15.7);
+        Assert.assertTrue(JsonCodec.decodeAs(json, Boolean.class));
+        Assert.assertEquals("15.7", JsonCodec.decodeAs(json, String.class));
+        Assert.assertEquals(Integer.valueOf(15),
+                JsonCodec.decodeAs(json, Integer.class));
+        Assert.assertEquals(Double.valueOf(15.7),
+                JsonCodec.decodeAs(json, Double.class));
+    }
+
+    @Test
+    public void decodeAs_nullJson() {
+        JsonNull json = Json.createNull();
+        Assert.assertNull(JsonCodec.decodeAs(json, Boolean.class));
+        Assert.assertNull(JsonCodec.decodeAs(json, String.class));
+        Assert.assertNull(JsonCodec.decodeAs(json, Integer.class));
+        Assert.assertNull(JsonCodec.decodeAs(json, Double.class));
     }
 }

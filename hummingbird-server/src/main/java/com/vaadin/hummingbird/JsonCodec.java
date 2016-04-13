@@ -123,18 +123,54 @@ public class JsonCodec {
      * @return the decoded value
      */
     public static Serializable decodeWithoutTypeInfo(JsonValue json) {
+        assert json != null;
         switch (json.getType()) {
         case BOOLEAN:
-            return json.asBoolean();
+            return decodeAs(json, Boolean.class);
         case STRING:
-            return json.asString();
+            return decodeAs(json, String.class);
         case NUMBER:
-            return json.asNumber();
+            return decodeAs(json, Double.class);
         case NULL:
             return null;
         default:
             throw new IllegalArgumentException(
                     "Can't (yet) decode " + json.getType());
+        }
+
+    }
+
+    /**
+     * Decodes the given JSON value as the given type.
+     * <p>
+     * Supported types are {@link String}, {@link Boolean}, {@link Integer},
+     * {@link Double}.
+     *
+     * @param json
+     *            the JSON value
+     * @param type
+     *            the type to decode as
+     * @return the value decoded as the given type
+     * @throws IllegalArgumentException
+     *             if the type was unsupported
+     */
+    public static <T> T decodeAs(JsonValue json, Class<T> type) {
+        assert json != null;
+        if (json.getType() == JsonType.NULL) {
+            return null;
+        }
+
+        if (type == String.class) {
+            return type.cast(json.asString());
+        } else if (type == Boolean.class) {
+            return type.cast(Boolean.valueOf(json.asBoolean()));
+        } else if (type == Double.class) {
+            return type.cast(Double.valueOf(json.asNumber()));
+        } else if (type == Integer.class) {
+            return type.cast(Integer.valueOf((int) json.asNumber()));
+        } else {
+            throw new IllegalArgumentException(
+                    "Unknown type " + type.getName());
         }
 
     }

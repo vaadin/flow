@@ -133,7 +133,9 @@ public class ComponentTest {
         List<Component> children = parent.getChildren()
                 .collect(Collectors.toList());
         Assert.assertArrayEquals(expectedChildren, children.toArray());
-
+        for (Component c : children) {
+            Assert.assertEquals(c.getParent().get(), parent);
+        }
     }
 
     @Test

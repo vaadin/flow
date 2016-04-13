@@ -6,7 +6,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.DefaultPageTitleGenerator;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
-import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
+import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
 
@@ -42,7 +42,7 @@ public class RoutingViewTitles {
 
     class MyRouterConfigurator implements RouterConfigurator {
         @Override
-        public void configure(ModifiableRouterConfiguration configuration) {
+        public void configure(RouterConfiguration configuration) {
             // setRoute calls omitted
 
             // setting a custom generator

@@ -15,6 +15,8 @@
  */
 package com.vaadin.server;
 
+import java.io.Serializable;
+
 /**
  * A generic command interface meant to be used for passing lambdas around.
  *
@@ -22,7 +24,7 @@ package com.vaadin.server;
  * @since
  */
 @FunctionalInterface
-public interface Command {
+public interface Command extends Serializable {
     /**
      * Runs the given command.
      */

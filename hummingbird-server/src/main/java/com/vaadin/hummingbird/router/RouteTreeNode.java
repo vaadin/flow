@@ -21,9 +21,8 @@ import java.util.Map;
 
 /**
  * A node in the routing tree that is built up based on the paths configured
- * using
- * {@link ModifiableRouterConfiguration#setRoute(String, NavigationHandler)}.
- * Each node in the tree corresponds to the options for a specific path.
+ * using {@link RouterConfiguration#setRoute(String, NavigationHandler)}. Each
+ * node in the tree corresponds to the options for a specific path.
  *
  * @since
  * @author Vaadin Ltd

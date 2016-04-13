@@ -13,23 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.router;
+package com.vaadin.hummingbird.dom;
+
+import java.util.EventObject;
 
 /**
- * The default implementation of {@link PageTitleGenerator}. Uses
- * {@link View#getTitle(LocationChangeEvent)} for the opened view to generate
- * the title.
+ * Event fired after an element has been detached from the UI.
  * <p>
- * Can be replaced with
- * {@link RouterConfiguration#setPageTitleGenerator(PageTitleGenerator)}.
- *
- * @see View#getTitle(LocationChangeEvent)
+ * When a hierarchy of elements is being detached, this event is fired
+ * child-first.
  */
-public class DefaultPageTitleGenerator implements PageTitleGenerator {
+public class ElementDetachEvent extends EventObject {
 
-    @Override
-    public String getPageTitle(LocationChangeEvent event) {
-        return event.getViewChain().get(0).getTitle(event);
+    /**
+     * Creates a new detach event with the given element as source.
+     *
+     * @param source
+     *            the element that was detached
+     */
+    public ElementDetachEvent(Element source) {
+        super(source);
     }
 
+    @Override
+    public Element getSource() {
+        return (Element) super.getSource();
+    }
 }

@@ -25,7 +25,7 @@ import com.vaadin.ui.Page;
  * <p>
  * By default {@link DefaultPageTitleGenerator} is used.
  *
- * @see ModifiableRouterConfiguration#setPageTitleGenerator(PageTitleGenerator)
+ * @see RouterConfiguration#setPageTitleGenerator(PageTitleGenerator)
  */
 @FunctionalInterface
 public interface PageTitleGenerator extends Serializable {

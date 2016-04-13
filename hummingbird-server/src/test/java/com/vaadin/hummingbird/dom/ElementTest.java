@@ -2,6 +2,7 @@ package com.vaadin.hummingbird.dom;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
@@ -13,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -20,6 +22,7 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.NullOwner;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -93,6 +96,8 @@ public class ElementTest {
 
         // Returns EventRegistrationHandle
         ignore.add("addEventListener");
+        ignore.add("addAttachListener");
+        ignore.add("addDetachListener");
 
         // Returns index of child element
         ignore.add("indexOfChild");
@@ -1722,10 +1727,17 @@ public class ElementTest {
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
+        res = null;
+
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
 
         ui.getElement().setAttribute("foo", "bar");
 
+        assertIsGCollected(ref);
         res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
+
         Assert.assertFalse(res.isPresent());
         Assert.assertTrue(ui.getElement().hasAttribute("foo"));
         Assert.assertTrue(ui.getElement().getAttribute("foo").equals("bar"));
@@ -1742,8 +1754,14 @@ public class ElementTest {
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
                 .getResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
+        res = null;
+
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
 
         ui.getElement().removeAttribute("foo");
+        assertIsGCollected(ref);
 
         res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
         Assert.assertFalse(res.isPresent());
@@ -1779,8 +1797,14 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
+
         String resName = "resource2";
         element.setAttribute("foo", createEmptyResource(resName));
+
+        assertIsGCollected(ref);
 
         ui.getElement().appendChild(element);
 
@@ -1802,12 +1826,17 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
+
         element.setAttribute("foo", "bar");
+
+        assertIsGCollected(ref);
 
         ui.getElement().appendChild(element);
 
         Assert.assertTrue(element.hasAttribute("foo"));
-
         Assert.assertEquals("bar", element.getAttribute("foo"));
     }
 
@@ -1820,9 +1849,15 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
+
         element.removeAttribute("foo");
 
         ui.getElement().appendChild(element);
+
+        assertIsGCollected(ref);
 
         Assert.assertFalse(element.hasAttribute("foo"));
 
@@ -1838,12 +1873,20 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
+
         ui.getElement().appendChild(element);
 
         String resName = "resource2";
         element.setAttribute("foo", createEmptyResource(resName));
 
         Assert.assertTrue(element.hasAttribute("foo"));
+
+        assertIsGCollected(ref);
+
+        Assert.assertNull(ref.get());
 
         String uri = element.getAttribute("foo");
         Optional<StreamResource> res = ui.getSession().getResourceRegistry()
@@ -1861,9 +1904,17 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
+
         ui.getElement().appendChild(element);
 
         element.setAttribute("foo", "bar");
+
+        assertIsGCollected(ref);
+
+        Assert.assertNull(ref.get());
 
         Assert.assertTrue(element.hasAttribute("foo"));
 
@@ -1879,19 +1930,275 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
+
         ui.getElement().appendChild(element);
 
         element.removeAttribute("foo");
+
+        assertIsGCollected(ref);
+
+        Assert.assertNull(ref.get());
 
         Assert.assertFalse(element.hasAttribute("foo"));
 
         Assert.assertNull(element.getAttribute("foo"));
     }
 
+    @Test
+    public void setResourceAttribute_detachElement_resourceIsUnregistered()
+            throws URISyntaxException {
+        UI ui = createUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        StreamResource resource = createEmptyResource("resource");
+        element.setAttribute("foo", resource);
+        String attribute = element.getAttribute("foo");
+
+        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+                resource);
+        resource = null;
+
+        URI uri = new URI(attribute);
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(uri);
+        Assert.assertTrue(res.isPresent());
+
+        ui.getElement().removeAllChildren();
+
+        res = ui.getSession().getResourceRegistry().getResource(uri);
+        Assert.assertFalse(res.isPresent());
+
+        assertIsGCollected(ref);
+
+        Assert.assertNull(ref.get());
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertNull(element.getAttribute("foo"));
+
+        element.setAttribute("foo", "bar");
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertEquals("bar", element.getAttribute("foo"));
+    }
+
     @Test(expected = UnsupportedOperationException.class)
     public void setResourceAttribute_elementIsText_operationIsNotSupported() {
         Element.createText("").setAttribute("foo",
                 EasyMock.createMock(StreamResource.class));
+    }
+
+    @Test
+    public void testAttachListener_parentAttach_childListenersTriggered() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        Element grandChild = ElementFactory.createDiv();
+
+        AtomicInteger childTriggered = new AtomicInteger();
+        AtomicInteger grandChildTriggered = new AtomicInteger();
+
+        EventRegistrationHandle registrationHandle = child
+                .addAttachListener(event -> {
+                    childTriggered.addAndGet(1);
+                });
+        child.addAttachListener(event -> {
+            Assert.assertEquals(child, event.getSource());
+        });
+        grandChild.addAttachListener(event -> {
+            grandChildTriggered.addAndGet(1);
+        });
+        grandChild.addAttachListener(event -> {
+            Assert.assertEquals(grandChild, event.getSource());
+        });
+
+        parent.appendChild(child);
+        child.appendChild(grandChild);
+
+        Assert.assertEquals(childTriggered.get(), 0);
+        Assert.assertEquals(grandChildTriggered.get(), 0);
+
+        body.appendChild(parent);
+
+        Assert.assertEquals(childTriggered.get(), 1);
+        Assert.assertEquals(grandChildTriggered.get(), 1);
+
+        body.removeAllChildren();
+        parent.removeAllChildren();
+
+        body.appendChild(parent);
+        parent.appendChild(child);
+
+        Assert.assertEquals(childTriggered.get(), 2);
+        Assert.assertEquals(grandChildTriggered.get(), 2);
+
+        registrationHandle.remove();
+
+        body.removeAllChildren();
+        body.appendChild(child);
+
+        Assert.assertEquals(childTriggered.get(), 2);
+        Assert.assertEquals(grandChildTriggered.get(), 3);
+    }
+
+    @Test
+    public void testDetachListener_parentDetach_childListenersTriggered() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        Element grandChild = ElementFactory.createDiv();
+
+        AtomicInteger triggered = new AtomicInteger();
+
+        EventRegistrationHandle registrationHandle = child
+                .addDetachListener(event -> {
+                    triggered.addAndGet(1);
+                    Assert.assertEquals(child, event.getSource());
+                });
+
+        grandChild.addDetachListener(event -> {
+            triggered.addAndGet(1);
+            Assert.assertEquals(grandChild, event.getSource());
+        });
+
+        child.appendChild(grandChild);
+        parent.appendChild(child);
+        body.appendChild(parent);
+
+        Assert.assertEquals(triggered.get(), 0);
+
+        body.removeAllChildren();
+        Assert.assertEquals(triggered.get(), 2);
+
+        body.appendChild(parent);
+        body.removeAllChildren();
+
+        Assert.assertEquals(triggered.get(), 4);
+
+        body.appendChild(parent);
+        registrationHandle.remove();
+
+        body.removeAllChildren();
+
+        Assert.assertEquals(triggered.get(), 5);
+    }
+
+    @Test
+    public void testAttachListener_eventOrder_childFirst() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+
+        AtomicBoolean parentAttached = new AtomicBoolean();
+        AtomicBoolean childAttached = new AtomicBoolean();
+
+        child.addAttachListener(event -> {
+            childAttached.set(true);
+            Assert.assertFalse(parentAttached.get());
+        });
+        parent.addAttachListener(event -> {
+            parentAttached.set(true);
+            Assert.assertTrue(childAttached.get());
+        });
+
+        body.appendChild(parent);
+
+        Assert.assertTrue(parentAttached.get());
+        Assert.assertTrue(childAttached.get());
+    }
+
+    @Test
+    public void testDetachListener_eventOrder_childFirst() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+        body.appendChild(parent);
+
+        AtomicBoolean parentDetached = new AtomicBoolean();
+        AtomicBoolean childDetached = new AtomicBoolean();
+
+        child.addDetachListener(event -> {
+            childDetached.set(true);
+            Assert.assertFalse(parentDetached.get());
+        });
+        parent.addDetachListener(event -> {
+            parentDetached.set(true);
+            Assert.assertTrue(childDetached.get());
+        });
+
+        body.removeAllChildren();
+
+        Assert.assertTrue(parentDetached.get());
+        Assert.assertTrue(childDetached.get());
+    }
+
+    @Test
+    public void testAttachDetach_elementMoved_bothEventsTriggered() {
+        Element body = new UI().getElement();
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+
+        parent.appendChild(child);
+        body.appendChild(parent);
+
+        AtomicBoolean attached = new AtomicBoolean();
+        AtomicBoolean detached = new AtomicBoolean();
+
+        child.addAttachListener(event -> {
+            attached.set(true);
+            Assert.assertTrue(detached.get());
+        });
+        child.addDetachListener(event -> {
+            detached.set(true);
+            Assert.assertFalse(attached.get());
+        });
+
+        body.appendChild(child);
+
+        Assert.assertTrue(attached.get());
+        Assert.assertTrue(detached.get());
+    }
+
+    @Test
+    public void testAttachEvent_stateTreeCanFound() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+
+        AtomicInteger attached = new AtomicInteger();
+
+        child.addAttachListener(event -> {
+            Assert.assertNotNull(event.getSource().getNode().getOwner());
+            Assert.assertNotEquals(NullOwner.get(),
+                    event.getSource().getNode().getOwner());
+        });
+        child.addAttachListener(event -> attached.incrementAndGet());
+
+        body.appendChild(child);
+        Assert.assertEquals(1, attached.get());
+    }
+
+    @Test
+    public void testDetachEvent_stateTreeCanFound() {
+        Element body = new UI().getElement();
+        Element child = ElementFactory.createDiv();
+        body.appendChild(child);
+
+        AtomicInteger detached = new AtomicInteger();
+
+        child.addDetachListener(event -> {
+            Assert.assertNotNull(event.getSource().getNode().getOwner());
+            Assert.assertNotEquals(NullOwner.get(),
+                    event.getSource().getNode().getOwner());
+        });
+        child.addDetachListener(event -> detached.incrementAndGet());
+
+        body.removeAllChildren();
+
+        Assert.assertEquals(1, detached.get());
     }
 
     private StreamResource createEmptyResource(String resName) {
@@ -1914,5 +2221,11 @@ public class ElementTest {
             }
         };
         return ui;
+    }
+
+    private void assertIsGCollected(WeakReference<StreamResource> ref) {
+        // Run GC to make sure resource is cleaned out
+        System.gc();
+        Assert.assertNull(ref.get());
     }
 }

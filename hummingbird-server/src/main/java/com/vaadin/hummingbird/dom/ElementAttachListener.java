@@ -13,23 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.router;
+package com.vaadin.hummingbird.dom;
 
 /**
- * The default implementation of {@link PageTitleGenerator}. Uses
- * {@link View#getTitle(LocationChangeEvent)} for the opened view to generate
- * the title.
- * <p>
- * Can be replaced with
- * {@link RouterConfiguration#setPageTitleGenerator(PageTitleGenerator)}.
- *
- * @see View#getTitle(LocationChangeEvent)
+ * Listener for element attach events. It is invoked when the element is
+ * attached to the UI.
  */
-public class DefaultPageTitleGenerator implements PageTitleGenerator {
-
-    @Override
-    public String getPageTitle(LocationChangeEvent event) {
-        return event.getViewChain().get(0).getTitle(event);
-    }
-
+@FunctionalInterface
+public interface ElementAttachListener {
+    /**
+     * Invoked when an element is attached to the UI.
+     *
+     * @param event
+     *            the attach event fired
+     */
+    void onAttach(ElementAttachEvent event);
 }

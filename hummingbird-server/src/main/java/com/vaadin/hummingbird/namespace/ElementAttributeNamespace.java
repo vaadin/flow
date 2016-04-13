@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import com.vaadin.hummingbird.NodeOwner;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinSession;
@@ -36,7 +37,7 @@ public class ElementAttributeNamespace extends MapNamespace {
 
     private final HashMap<String, StreamResourceRegistration> resourceRegistrations = new HashMap<>();
 
-    private final HashMap<String, Runnable> resourceAttributes = new HashMap<>();
+    private final HashMap<String, EventRegistrationHandle> resourceAttributeHandles = new HashMap<>();
 
     /**
      * Creates a new element attribute namespace for the given node.
@@ -46,6 +47,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     public ElementAttributeNamespace(StateNode node) {
         super(node);
+        getNode().addDetachListener(this::unregisterResources);
     }
 
     /**
@@ -70,7 +72,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      *         <code>false</code> if there is no property
      */
     public boolean has(String attribute) {
-        if (resourceAttributes.containsKey(attribute)) {
+        if (resourceAttributeHandles.containsKey(attribute)) {
             return false;
         }
         return contains(attribute);
@@ -85,7 +87,7 @@ public class ElementAttributeNamespace extends MapNamespace {
     @Override
     public void remove(String attribute) {
         unregisterResource(attribute);
-        super.remove(attribute);
+        doRemove(attribute);
     }
 
     /**
@@ -98,7 +100,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     @Override
     public String get(String attribute) {
-        if (resourceAttributes.containsKey(attribute)) {
+        if (resourceAttributeHandles.containsKey(attribute)) {
             throw new IllegalStateException("The node is not attached "
                     + "therefore resource URL which is the value "
                     + "for this attribute is not defined.");
@@ -127,28 +129,37 @@ public class ElementAttributeNamespace extends MapNamespace {
         if (getNode().isAttached()) {
             doSetResource(attribute, resource);
         } else {
-            // TODO : add attach listener
-            resourceAttributes.put(attribute, new Runnable() {
-
-                @Override
-                public void run() {
-                    // TODO : it should be listener removal, not runnable
-
-                }
-            });
+            unregisterResource(attribute);
+            EventRegistrationHandle handle = getNode().addAttachListener(
+                    () -> doSetResource(attribute, resource));
+            resourceAttributeHandles.put(attribute, handle);
         }
+    }
+
+    private void unregisterResources() {
+        resourceRegistrations.entrySet().forEach(
+                entry -> unsetResource(entry.getKey(), entry.getValue()));
     }
 
     private void unregisterResource(String attribute) {
         StreamResourceRegistration registration = resourceRegistrations
-                .get(attribute);
-        Runnable remove = resourceAttributes.remove(attribute);
-        if (remove != null) {
-            remove.run();
+                .remove(attribute);
+        EventRegistrationHandle handle = resourceAttributeHandles
+                .remove(attribute);
+        if (handle != null) {
+            handle.remove();
         }
         if (registration != null) {
             registration.unregister();
         }
+    }
+
+    private void unsetResource(String attribute,
+            StreamResourceRegistration registration) {
+        if (registration != null) {
+            registration.unregister();
+        }
+        doRemove(attribute);
     }
 
     private void doSetResource(String attribute, StreamResource resource) {
@@ -159,8 +170,10 @@ public class ElementAttributeNamespace extends MapNamespace {
                 .registerResource(resource);
         set(attribute, registration.getResourceUri().toASCIIString());
         resourceRegistrations.put(attribute, registration);
+    }
 
-        // TODO : add detach listener
+    private void doRemove(String attribute) {
+        super.remove(attribute);
     }
 
 }
