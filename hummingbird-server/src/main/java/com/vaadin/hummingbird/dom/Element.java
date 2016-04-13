@@ -360,7 +360,8 @@ public class Element implements Serializable {
      * converted to lower case automatically.
      * <p>
      * This is convenience method to register a {@link StreamResource} instance
-     * into the session and use registered resource URI as an element attribute.
+     * into the session and use the registered resource URI as an element
+     * attribute.
      * <p>
      * Note that there is no session until element is attached so the attribute
      * gets its value only when element is attached. As a result
@@ -384,7 +385,7 @@ public class Element implements Serializable {
             stateProvider.setAttribute(node, attribute, resource);
         } else {
             throw new IllegalArgumentException("Can't set " + attribute
-                    + ". This attribute has special semantic");
+                    + " to StreamResource value. This attribute has special semantic");
         }
 
         return this;

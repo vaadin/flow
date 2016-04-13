@@ -37,7 +37,7 @@ public class ElementAttributeNamespace extends MapNamespace {
 
     private final HashMap<String, StreamResourceRegistration> resourceRegistrations = new HashMap<>();
 
-    private final HashMap<String, EventRegistrationHandle> resourceAttributeHandles = new HashMap<>();
+    private final HashMap<String, EventRegistrationHandle> pendingResources = new HashMap<>();
 
     /**
      * Creates a new element attribute namespace for the given node.
@@ -72,7 +72,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      *         <code>false</code> if there is no property
      */
     public boolean has(String attribute) {
-        if (resourceAttributeHandles.containsKey(attribute)) {
+        if (pendingResources.containsKey(attribute)) {
             return false;
         }
         return contains(attribute);
@@ -100,7 +100,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     @Override
     public String get(String attribute) {
-        if (resourceAttributeHandles.containsKey(attribute)) {
+        if (pendingResources.containsKey(attribute)) {
             throw new IllegalStateException("The node is not attached "
                     + "therefore resource URL which is the value "
                     + "for this attribute is not defined.");
@@ -132,7 +132,7 @@ public class ElementAttributeNamespace extends MapNamespace {
             unregisterResource(attribute);
             EventRegistrationHandle handle = getNode().addAttachListener(
                     () -> doSetResource(attribute, resource));
-            resourceAttributeHandles.put(attribute, handle);
+            pendingResources.put(attribute, handle);
         }
     }
 
@@ -142,15 +142,14 @@ public class ElementAttributeNamespace extends MapNamespace {
     }
 
     private void unregisterResources() {
-        resourceRegistrations.entrySet().forEach(
-                entry -> unsetResource(entry.getKey(), entry.getValue()));
+        resourceRegistrations.forEach(this::unsetResource);
+        resourceRegistrations.clear();
     }
 
     private void unregisterResource(String attribute) {
         StreamResourceRegistration registration = resourceRegistrations
                 .remove(attribute);
-        EventRegistrationHandle handle = resourceAttributeHandles
-                .remove(attribute);
+        EventRegistrationHandle handle = pendingResources.remove(attribute);
         if (handle != null) {
             handle.remove();
         }

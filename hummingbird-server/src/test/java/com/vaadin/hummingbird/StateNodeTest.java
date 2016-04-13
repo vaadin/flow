@@ -201,8 +201,7 @@ public class StateNodeTest {
     public void recursiveTreeNavigation_resilienceInDepth() {
         TestStateNode childOfRoot = new TestStateNode();
         TestStateNode node = createTree(childOfRoot, 5000);
-        StateTree tree = new StateTree(new UI(),
-                ElementChildrenNamespace.class);
+        StateTree tree = createStateTree();
 
         setParent(childOfRoot, tree.getRootNode());
 
@@ -232,8 +231,7 @@ public class StateNodeTest {
                 count++;
             }
         }
-        StateTree tree = new StateTree(new UI(),
-                ElementChildrenNamespace.class);
+        StateTree tree = createStateTree();
 
         setParent(childOfRoot, tree.getRootNode());
 

@@ -74,7 +74,7 @@ public class StateTree implements NodeOwner {
      * @param namespaces
      *            the namespaces of the root node
      * @param ui
-     *            the {@link UI} that this tree belongs to
+     *            the UI that this tree belongs to
      */
     @SafeVarargs
     public StateTree(UI ui, Class<? extends Namespace>... namespaces) {
@@ -189,9 +189,9 @@ public class StateTree implements NodeOwner {
     }
 
     /**
-     * Gets {@link UI} that this tree belongs to.
+     * Gets the {@link UI} that this tree belongs to.
      * 
-     * @return the {@link UI}
+     * @return the UI that this tree belongs to
      */
     public UI getUI() {
         return ui;
