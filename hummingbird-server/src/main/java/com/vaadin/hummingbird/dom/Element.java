@@ -371,8 +371,8 @@ public class Element implements Serializable {
      *
      * @param attribute
      *            the name of the attribute
-     * @param value
-     *            the value of the attribute, not null
+     * @param resource
+     *            the resource value, not null
      * @return this element
      */
     public Element setAttribute(String attribute, StreamResource resource) {
