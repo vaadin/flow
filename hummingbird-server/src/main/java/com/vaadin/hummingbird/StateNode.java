@@ -123,12 +123,14 @@ public class StateNode implements Serializable {
             }
         }
 
-        this.parent = parent;
-
         if (!attachedBefore && attachedAfter) {
+            this.parent = parent;
             onAttach();
         } else if (attachedBefore && !attachedAfter) {
             onDetach();
+            this.parent = parent;
+        } else {
+            this.parent = parent;
         }
     }
 
@@ -363,8 +365,6 @@ public class StateNode implements Serializable {
     }
 
     private void handleOnDetach() {
-        assert !isAttached();
-
         // Ensure detach change is sent
         markAsDirty();
 
@@ -446,4 +446,5 @@ public class StateNode implements Serializable {
             copy.forEach(Command::execute);
         }
     }
+
 }

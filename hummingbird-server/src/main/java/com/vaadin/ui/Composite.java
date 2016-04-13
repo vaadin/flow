@@ -193,4 +193,18 @@ public abstract class Composite<T extends Component> extends Component {
     public Stream<Component> getChildren() {
         return Stream.of(getContent());
     }
+
+    @Override
+    protected void fireAttachEvent() {
+        getContent().fireAttachEvent();
+
+        super.fireAttachEvent();
+    }
+
+    @Override
+    protected void fireDetachEvent() {
+        getContent().fireDetachEvent();
+
+        super.fireDetachEvent();
+    }
 }

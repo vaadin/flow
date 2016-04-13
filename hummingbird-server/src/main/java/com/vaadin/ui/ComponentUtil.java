@@ -172,4 +172,67 @@ public interface ComponentUtil {
         }
     }
 
+    /**
+     * Fires the {@link AttachEvent} for the given component.
+     *
+     * @param element
+     *            the element being attached
+     * @param component
+     *            the component to fire the attach event for
+     */
+    static void fireComponentAttachEvent(Element element, Component component) {
+        fireComponentEventIfNecessary(element, component, AttachEvent.class,
+                Component::fireAttachEvent);
+    }
+
+    /**
+     * Fires the {@link DetachEvent} for the given component.
+     *
+     * @param element
+     *            the element being detached
+     * @param component
+     *            the component to fire the detach event for
+     */
+    static void fireComponentDetachEvent(Element element, Component component) {
+        fireComponentEventIfNecessary(element, component, DetachEvent.class,
+                Component::fireDetachEvent);
+    }
+
+    /**
+     * Fires the given event type using the given event trigger if necessary.
+     * E.g. event is not fired if the given component is the content of any
+     * composite component, and the composite will handle firing of that event.
+     *
+     * @param element
+     *            the source element of the event
+     * @param component
+     *            the component to fire the event on
+     * @param eventType
+     *            the type of the event
+     * @param eventTrigger
+     *            the trigger handling the event
+     */
+    static void fireComponentEventIfNecessary(Element element,
+            Component component, Class<? extends ComponentEvent> eventType,
+            Consumer<Component> eventTrigger) {
+        Optional<Component> componentMappedToElement = element.getComponent();
+        assert componentMappedToElement.isPresent();
+
+        if (componentMappedToElement.get() != component) {
+            // don't fire component event if it will be done via parent
+            // composite that has added element has the same listener too
+            Component parent = component.getParent().get();
+            if (parent.hasListener(eventType)) {
+                return;
+            }
+            while (parent != componentMappedToElement.get()) {
+                parent = parent.getParent().get();
+                if (parent.hasListener(eventType)) {
+                    return;
+                }
+            }
+        }
+        eventTrigger.accept(component);
+    }
+
 }

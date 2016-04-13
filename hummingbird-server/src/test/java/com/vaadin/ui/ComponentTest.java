@@ -17,6 +17,7 @@ package com.vaadin.ui;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -38,7 +39,57 @@ public class ComponentTest {
     private Component child1SpanComponent;
     private Component child2InputComponent;
 
-    public static class TestComponent extends Component {
+    public interface TracksAttachDetach {
+        default void track() {
+            if (this instanceof Component) {
+                ((Component) this).addListener(AttachEvent.class,
+                        event -> getAttachEvents().incrementAndGet());
+                ((Component) this).addListener(DetachEvent.class,
+                        event -> getDetachEvents().incrementAndGet());
+            } else {
+                throw new IllegalStateException("Cannot track a non-component");
+            }
+        }
+
+        AtomicInteger getAttachEvents();
+
+        AtomicInteger getDetachEvents();
+
+        default void assertAttachEvents(int attachEvents) {
+            Assert.assertEquals(attachEvents, getAttachEvents().get());
+        }
+
+        default void assertDetachEvents(int detachEvents) {
+            Assert.assertEquals(detachEvents, getDetachEvents().get());
+        }
+    }
+
+    public static abstract class TracksAttachDetachComponent extends Component
+            implements TracksAttachDetach {
+
+        private AtomicInteger attachEvents = new AtomicInteger();
+        private AtomicInteger detachEvents = new AtomicInteger();
+
+        public TracksAttachDetachComponent() {
+        }
+
+        public TracksAttachDetachComponent(Element element) {
+            super(element);
+        }
+
+        @Override
+        public AtomicInteger getAttachEvents() {
+            return attachEvents;
+        }
+
+        @Override
+        public AtomicInteger getDetachEvents() {
+            return detachEvents;
+        }
+
+    }
+
+    public static class TestComponent extends TracksAttachDetachComponent {
 
         public TestComponent() {
             this(ElementFactory.createDiv());
@@ -107,6 +158,9 @@ public class ComponentTest {
             getElement().appendChild(c.getElement());
         }
 
+        public void remove(Component c) {
+            getElement().removeChild(c.getElement());
+        }
     }
 
     @Before
@@ -312,6 +366,163 @@ public class ComponentTest {
     private void assertEmpty(Optional<?> optional) {
         Assert.assertEquals("Optional should be empty but is " + optional,
                 Optional.empty(), optional);
+    }
+
+    @Test
+    public void testAttachDetachListeners_parentAttachDetach_childListenersTriggered() {
+        UI ui = new UI();
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponentContainer child = new TestComponentContainer();
+        TestComponent grandChild = new TestComponent();
+        child.track();
+        EventRegistrationHandle attachRegistrationHandle = grandChild
+                .addListener(AttachEvent.class, event -> grandChild
+                        .getAttachEvents().incrementAndGet());
+        EventRegistrationHandle detachRegistrationHandle = grandChild
+                .addListener(DetachEvent.class, event -> grandChild
+                        .getDetachEvents().incrementAndGet());
+
+        parent.add(child);
+        child.add(grandChild);
+
+        child.assertAttachEvents(0);
+        grandChild.assertAttachEvents(0);
+
+        ui.add(parent);
+
+        child.assertAttachEvents(1);
+        grandChild.assertAttachEvents(1);
+        child.assertDetachEvents(0);
+        grandChild.assertDetachEvents(0);
+
+        ui.remove(parent);
+        parent.remove(child);
+
+        child.assertAttachEvents(1);
+        grandChild.assertAttachEvents(1);
+        child.assertDetachEvents(1);
+        grandChild.assertDetachEvents(1);
+
+        ui.add(parent);
+        parent.add(child);
+
+        child.assertAttachEvents(2);
+        grandChild.assertAttachEvents(2);
+        child.assertDetachEvents(1);
+        grandChild.assertDetachEvents(1);
+
+        ui.remove(parent);
+
+        child.assertAttachEvents(2);
+        grandChild.assertAttachEvents(2);
+        child.assertDetachEvents(2);
+        grandChild.assertDetachEvents(2);
+
+        attachRegistrationHandle.remove();
+        detachRegistrationHandle.remove();
+
+        ui.add(child);
+
+        child.assertAttachEvents(3);
+        grandChild.assertAttachEvents(2);
+
+        ui.remove(child);
+
+        child.assertDetachEvents(3);
+        grandChild.assertDetachEvents(2);
+    }
+
+    @Test
+    public void testAttachListener_eventOrder_childFirst() {
+        UI ui = new UI();
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponent child = new TestComponent();
+        child.track();
+        parent.track();
+
+        child.addListener(AttachEvent.class, event -> {
+            Assert.assertEquals(0, parent.getAttachEvents().get());
+        });
+        parent.addListener(AttachEvent.class, event -> {
+            Assert.assertEquals(1, child.getAttachEvents().get());
+        });
+
+        parent.add(child);
+
+        child.assertAttachEvents(0);
+        parent.assertAttachEvents(0);
+
+        ui.add(parent);
+
+        child.assertAttachEvents(1);
+        parent.assertAttachEvents(1);
+    }
+
+    @Test
+    public void testDetachListener_eventOrder_childFirst() {
+        UI ui = new UI();
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponent child = new TestComponent();
+        child.track();
+        parent.track();
+
+        child.addListener(DetachEvent.class, event -> {
+            Assert.assertEquals(0, parent.getDetachEvents().get());
+        });
+        parent.addListener(DetachEvent.class, event -> {
+            Assert.assertEquals(1, child.getDetachEvents().get());
+        });
+
+        parent.add(child);
+        ui.add(parent);
+
+        child.assertDetachEvents(0);
+        parent.assertDetachEvents(0);
+
+        ui.remove(parent);
+
+        child.assertDetachEvents(1);
+        parent.assertDetachEvents(1);
+    }
+
+    @Test
+    public void testAttachDetach_elementMoved_bothEventsTriggered() {
+        UI ui = new UI();
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponent child = new TestComponent();
+
+        parent.add(child);
+        ui.add(parent);
+
+        child.track();
+
+        child.addListener(AttachEvent.class, event -> {
+            Assert.assertEquals(1, child.getDetachEvents().get());
+        });
+        child.addListener(DetachEvent.class, event -> {
+            Assert.assertEquals(0, child.getAttachEvents().get());
+        });
+
+        ui.add(child);
+
+        child.assertAttachEvents(1);
+        child.assertDetachEvents(1);
+    }
+
+    @Test
+    public void testAttachDetachEvent_uiCanBeFound() {
+        UI ui = new UI();
+        TestComponent testComponent = new TestComponent();
+        testComponent.track();
+
+        testComponent.addListener(AttachEvent.class,
+                event -> event.getSource().getUI().equals(ui));
+
+        testComponent.addListener(DetachEvent.class,
+                event -> event.getSource().getUI().equals(ui));
+
+        ui.add(testComponent);
+        ui.remove(testComponent);
     }
 
 }

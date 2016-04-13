@@ -28,8 +28,11 @@ import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.ComponentUtil;
+import com.vaadin.ui.DetachEvent;
 
 import elemental.json.JsonValue;
 
@@ -60,6 +63,10 @@ public class ComponentEventBus implements Serializable {
 
     private Component component;
 
+    private EventRegistrationHandle attachEventRemoverHandle;
+
+    private EventRegistrationHandle detachEventRemoverHandle;
+
     /**
      * Creates an event bus for the given component.
      *
@@ -82,7 +89,11 @@ public class ComponentEventBus implements Serializable {
      */
     public <T extends ComponentEvent> EventRegistrationHandle addListener(
             Class<T> eventType, Consumer<T> listener) {
-        addDomTriggerIfNeeded(eventType);
+        boolean alreadyRegistered = hasListener(eventType);
+        if (!alreadyRegistered) {
+            addDomTriggerIfNeeded(eventType);
+            addElementTriggerIfNeeded(eventType);
+        }
 
         List<Consumer<? extends ComponentEvent>> listeners = componentEventData
                 .computeIfAbsent(eventType,
@@ -133,11 +144,6 @@ public class ComponentEventBus implements Serializable {
      */
     private void addDomTriggerIfNeeded(
             Class<? extends ComponentEvent> eventType) {
-        boolean alreadyRegistered = hasListener(eventType);
-        if (alreadyRegistered) {
-            return;
-        }
-
         ComponentEventBusUtil.getDomEventType(eventType)
                 .ifPresent(e -> addDomTrigger(eventType, e));
     }
@@ -174,6 +180,46 @@ public class ComponentEventBus implements Serializable {
                 e -> handleDomEvent(eventType, e), eventData);
         componentEventData.computeIfAbsent(eventType,
                 t -> new ComponentEventData()).domEventRemover = remover;
+    }
+
+    /**
+     * Adds any other element level listeners than DOM listeners. E.g. element
+     * attach & detach listeners.
+     *
+     * @param eventType
+     *            the type of event
+     */
+    private void addElementTriggerIfNeeded(
+            Class<? extends ComponentEvent> eventType) {
+        if (AttachEvent.class.equals(eventType)) {
+            attachEventRemoverHandle = component.getElement().addAttachListener(
+                    event -> ComponentUtil.fireComponentAttachEvent(
+                            event.getSource(), component));
+        } else if (DetachEvent.class.equals(eventType)) {
+            detachEventRemoverHandle = component.getElement().addDetachListener(
+                    event -> ComponentUtil.fireComponentDetachEvent(
+                            event.getSource(), component));
+        }
+    }
+
+    /**
+     * Removes any element level listeners other than DOM listeners. E.g.
+     * element attach & detach listeners.
+     *
+     * @param eventType
+     *            the type of event
+     */
+    private void removeElementTrigger(
+            Class<? extends ComponentEvent> eventType) {
+        if (AttachEvent.class.equals(eventType)) {
+            assert attachEventRemoverHandle != null;
+            attachEventRemoverHandle.remove();
+            attachEventRemoverHandle = null;
+        } else if (DetachEvent.class.equals(eventType)) {
+            assert detachEventRemoverHandle != null;
+            detachEventRemoverHandle.remove();
+            detachEventRemoverHandle = null;
+        }
     }
 
     /**
@@ -238,6 +284,7 @@ public class ComponentEventBus implements Serializable {
             // No more listeners for this event type
             ComponentEventBusUtil.getDomEventType(eventType)
                     .ifPresent(e -> unregisterDomEvent(eventType, e));
+            removeElementTrigger(eventType);
             componentEventData.remove(eventType);
         }
     }

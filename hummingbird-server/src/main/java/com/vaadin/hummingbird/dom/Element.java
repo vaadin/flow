@@ -1433,7 +1433,7 @@ public class Element implements Serializable {
             throw new IllegalArgumentException("Event type must not be null");
         }
     }
-
+    
     /**
      * Adds an attach listener for this element. It is invoked when the element
      * is attached to a UI.

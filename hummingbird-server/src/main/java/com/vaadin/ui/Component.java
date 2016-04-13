@@ -264,4 +264,17 @@ public abstract class Component
         return getElement().getAttribute("id");
     }
 
+    /**
+     * Fires an attach event for this component.
+     */
+    protected void fireAttachEvent() {
+        fireEvent(new AttachEvent(this));
+    }
+
+    /**
+     * Fires a detach event for this component.
+     */
+    protected void fireDetachEvent() {
+        fireEvent(new DetachEvent(this));
+    }
 }
