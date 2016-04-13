@@ -18,23 +18,13 @@ package com.vaadin.hummingbird.uitest.ui;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.namespace.TemplateNamespace;
-import com.vaadin.hummingbird.template.ElementTemplateBuilder;
-import com.vaadin.hummingbird.template.StaticBinding;
 import com.vaadin.hummingbird.template.TemplateNode;
-import com.vaadin.hummingbird.template.TextTemplateBuilder;
+import com.vaadin.hummingbird.template.TemplateParser;
 
 public class BasicTemplateView extends AbstractDivView {
 
-    private static final TemplateNode templateNode;
-    static {
-        // <div id=bar>baz<input></div>
-        // Should be parsed from a template once a parser is implemented
-        ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .setProperty("id", new StaticBinding("bar"))
-                .addChild(new TextTemplateBuilder(new StaticBinding("baz")))
-                .addChild(new ElementTemplateBuilder("input"));
-        templateNode = builder.build(null);
-    }
+    private static final TemplateNode templateNode = TemplateParser
+            .parse("<div id=bar>baz<input></div>");
 
     @Override
     protected void onShow() {
