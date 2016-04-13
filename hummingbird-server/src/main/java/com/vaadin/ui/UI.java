@@ -774,4 +774,9 @@ public class UI extends Component implements Serializable, PollNotifier {
             }
         }
     }
+
+    @Override
+    public Optional<UI> getUI() {
+        return Optional.of(this);
+    }
 }
