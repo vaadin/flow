@@ -635,10 +635,24 @@ public class Element implements Serializable {
                     index, getChildCount()));
         }
 
-        for (int i = 0; i < children.length; i++) {
-            children[i].removeFromParent();
-            stateProvider.insertChild(node, index + i, children[i]);
-            assert Objects.equals(this, children[i]
+        for (int i = 0, insertIndex = index; i < children.length; i++, insertIndex++) {
+            Element child = children[i];
+
+            if (equals(child.getParent())) {
+                int childIndex = indexOfChild(child);
+                if (childIndex == insertIndex) {
+                    // No-op of inserting to the current position
+                    continue;
+                } else if (childIndex < insertIndex) {
+                    // Adjust target index if the new child is already our
+                    // child,
+                    // and we will be removing it from before the target index
+                    insertIndex--;
+                }
+            }
+            child.removeFromParent();
+            stateProvider.insertChild(node, insertIndex, child);
+            assert Objects.equals(this, child
                     .getParent()) : "Child should have this element as parent after being inserted";
         }
 
