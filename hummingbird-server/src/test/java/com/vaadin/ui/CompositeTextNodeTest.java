@@ -1,8 +1,7 @@
 package com.vaadin.ui;
 
-public class CompositeTextNodeTest extends CompositeTest {
+public class CompositeTextNodeTest extends ComponentTest {
 
-    @Override
     protected Component createTestComponent() {
         return new Text("Test component");
     }

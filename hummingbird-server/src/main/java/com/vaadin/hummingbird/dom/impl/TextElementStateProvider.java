@@ -16,7 +16,6 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -227,13 +226,6 @@ public class TextElementStateProvider implements ElementStateProvider {
         assert component != null;
         node.getNamespace(ComponentMappingNamespace.class)
                 .setComponent(component);
-    }
-
-    @Override
-    public Optional<Component> getComponent(StateNode node) {
-        assert node != null;
-        return node.getNamespace(ComponentMappingNamespace.class)
-                .getComponent();
     }
 
 }

@@ -92,6 +92,22 @@ public class ComponentEventBus implements Serializable {
     }
 
     /**
+     * Checks if there is at least one listener registered for the given event
+     * type.
+     *
+     * @param eventType
+     *            the component event type
+     * @return <code>true</code> if at least one listener is registered,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasListener(Class<? extends ComponentEvent> eventType) {
+        if (eventType == null) {
+            throw new IllegalArgumentException("Event type cannot be null");
+        }
+        return componentEventData.containsKey(eventType);
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @param event
@@ -124,19 +140,6 @@ public class ComponentEventBus implements Serializable {
 
         ComponentEventBusUtil.getDomEventType(eventType)
                 .ifPresent(e -> addDomTrigger(eventType, e));
-    }
-
-    /**
-     * Checks if there is at least one listener registered for the given event
-     * type.
-     *
-     * @param eventType
-     *            the component event type
-     * @return <code>true</code> if at least one listener is registered,
-     *         <code>false</code> otherwise
-     */
-    private boolean hasListener(Class<? extends ComponentEvent> eventType) {
-        return componentEventData.containsKey(eventType);
     }
 
     /**

@@ -1,11 +1,14 @@
 package com.vaadin.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.ComponentTest.TestComponent;
+import com.vaadin.ui.ComponentTest.TracksAttachDetach;
 
 public class CompositeNestedTest {
     TestLayout layout;
@@ -13,9 +16,13 @@ public class CompositeNestedTest {
     Composite compositeOuter;
     Composite compositeInner;
 
-    public static class TestComposite extends Composite {
+    public static class TestComposite extends Composite
+            implements TracksAttachDetach {
 
         private Component content;
+
+        private AtomicInteger attachEvents = new AtomicInteger();
+        private AtomicInteger detachEvents = new AtomicInteger();
 
         public TestComposite(Component content) {
             this.content = content;
@@ -25,6 +32,17 @@ public class CompositeNestedTest {
         protected Component initContent() {
             return content;
         }
+
+        @Override
+        public AtomicInteger getAttachEvents() {
+            return attachEvents;
+        }
+
+        @Override
+        public AtomicInteger getDetachEvents() {
+            return detachEvents;
+        }
+
     }
 
     public static class TestLayout extends TestComponent {

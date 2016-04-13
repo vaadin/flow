@@ -184,6 +184,31 @@ public abstract class Component implements HasElement, Serializable {
     }
 
     /**
+     * Checks if there is at least one event listener registered for the given
+     * event type for this component.
+     *
+     * @param eventType
+     *            the component event type
+     * @return <code>true</code> if at least one listener is registered,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasListener(Class<? extends ComponentEvent> eventType) {
+        return eventBus != null && eventBus.hasListener(eventType);
+    }
+
+    /**
+     * Dispatches the event to all listeners registered for the event type.
+     *
+     * @param componentEvent
+     *            the event to fire
+     */
+    public void fireEvent(ComponentEvent componentEvent) {
+        if (hasListener(componentEvent.getClass())) {
+            getEventBus().fireEvent(componentEvent);
+        }
+    }
+
+    /**
      * Gets the event bus for this component.
      * <p>
      * This method will create the event bus if it has not yet been created.
@@ -210,16 +235,6 @@ public abstract class Component implements HasElement, Serializable {
             Class<T> eventType, Consumer<T> listener) {
 
         return getEventBus().addListener(eventType, listener);
-    }
-
-    /**
-     * Dispatches the event to all listeners registered for the event type.
-     *
-     * @param componentEvent
-     *            the event to fire
-     */
-    protected void fireEvent(ComponentEvent componentEvent) {
-        getEventBus().fireEvent(componentEvent);
     }
 
     /**
