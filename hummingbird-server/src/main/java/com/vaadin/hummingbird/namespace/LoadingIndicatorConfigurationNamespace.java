@@ -21,7 +21,7 @@ import com.vaadin.ui.LoadingIndicatorConfiguration;
 /**
  * Namespace for storing configuration for the loading indicator.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class LoadingIndicatorConfigurationNamespace extends MapNamespace

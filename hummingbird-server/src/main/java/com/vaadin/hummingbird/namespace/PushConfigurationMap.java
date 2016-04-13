@@ -25,7 +25,7 @@ import com.vaadin.ui.PushConfiguration;
 /**
  * Map for storing the push configuration for a UI.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class PushConfigurationMap extends MapNamespace
@@ -35,7 +35,7 @@ public class PushConfigurationMap extends MapNamespace
     /**
      * Map for storing push parameters.
      *
-     * @author Vaadin
+     * @author Vaadin Ltd
      * @since
      */
     public static class PushConfigurationParametersMap extends MapNamespace {

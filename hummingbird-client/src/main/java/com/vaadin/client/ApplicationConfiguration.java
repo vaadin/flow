@@ -24,7 +24,7 @@ import com.vaadin.client.bootstrap.ErrorMessage;
  * This class is effectively immutable although setters exist to assign the
  * values during construction.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ApplicationConfiguration {

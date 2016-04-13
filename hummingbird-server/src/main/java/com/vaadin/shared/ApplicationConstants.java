@@ -22,7 +22,7 @@ import com.vaadin.ui.UIInternals;
 /**
  * A utility class providing static constants. Mostly for internal use.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ApplicationConstants implements Serializable {

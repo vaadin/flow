@@ -45,7 +45,7 @@ import elemental.json.JsonValue;
  * Contains methods for updating and querying various parts of the element, such
  * as attributes.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class Element implements Serializable {
