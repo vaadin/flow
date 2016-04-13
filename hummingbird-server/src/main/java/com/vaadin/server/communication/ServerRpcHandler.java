@@ -203,7 +203,7 @@ public class ServerRpcHandler implements Serializable {
      * Exception thrown then the security key sent by the client does not match
      * the expected one.
      *
-     * @author Vaadin
+     * @author Vaadin Ltd
      * @since
      */
     public static class InvalidUIDLSecurityKeyException

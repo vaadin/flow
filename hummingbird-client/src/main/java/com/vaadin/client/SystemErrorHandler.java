@@ -24,7 +24,7 @@ import elemental.dom.Element;
 /**
  * Class handling system errors in the application.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class SystemErrorHandler {

@@ -46,7 +46,7 @@ import com.vaadin.ui.ComponentEvent;
  * @see EventData
  * @see Element#addEventListener(String,
  *      com.vaadin.hummingbird.dom.DomEventListener, String...)
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 @Retention(RetentionPolicy.RUNTIME)

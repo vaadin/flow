@@ -26,7 +26,7 @@ import com.vaadin.ui.ComponentEvent;
  * Cache for tracking global information related to {@link ComponentEvent}
  * types.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class EventDataCache {

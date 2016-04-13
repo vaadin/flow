@@ -34,7 +34,7 @@ import com.vaadin.client.hummingbird.collection.JsMap;
  * A registry of singleton instances, such as {@link ServerRpcQueue}, which can
  * be looked up based on their class.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class Registry {

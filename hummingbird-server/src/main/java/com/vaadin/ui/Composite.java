@@ -33,7 +33,7 @@ import com.vaadin.hummingbird.dom.ElementUtil;
  * Composite is a way to hide API on the server side. It does not contribute any
  * element to the {@link Element} tree.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public abstract class Composite extends Component {
