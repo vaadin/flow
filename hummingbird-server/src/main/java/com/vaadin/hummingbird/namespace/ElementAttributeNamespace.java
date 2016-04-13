@@ -136,6 +136,11 @@ public class ElementAttributeNamespace extends MapNamespace {
         }
     }
 
+    @Override
+    public final StateNode getNode() {
+        return super.getNode();
+    }
+
     private void unregisterResources() {
         resourceRegistrations.entrySet().forEach(
                 entry -> unsetResource(entry.getKey(), entry.getValue()));

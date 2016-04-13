@@ -73,6 +73,8 @@ public class StateTree implements NodeOwner {
      *
      * @param namespaces
      *            the namespaces of the root node
+     * @param ui
+     *            the {@link UI} that this tree belongs to
      */
     @SafeVarargs
     public StateTree(UI ui, Class<? extends Namespace>... namespaces) {
