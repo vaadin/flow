@@ -16,6 +16,7 @@
 package com.vaadin.ui;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -274,6 +275,43 @@ public class ComponentTest {
     @Test(expected = IllegalStateException.class)
     public void createComponentWithoutTag() {
         new TestComponentWithoutTag();
+    }
+
+    @Test
+    public void getUI_noParent() {
+        TestComponent c = new TestComponent();
+        assertEmpty(c.getUI());
+    }
+
+    @Test
+    public void getUI_detachedParent() {
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponent child = new TestComponent();
+        parent.add(child);
+        assertEmpty(child.getUI());
+    }
+
+    @Test
+    public void getUI_attachedToUI() {
+        TestComponent child = new TestComponent();
+        UI ui = new UI();
+        ui.add(child);
+        Assert.assertEquals(ui, child.getUI().get());
+    }
+
+    @Test
+    public void getUI_attachedThroughParent() {
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponent child = new TestComponent();
+        parent.add(child);
+        UI ui = new UI();
+        ui.add(parent);
+        Assert.assertEquals(ui, child.getUI().get());
+    }
+
+    private void assertEmpty(Optional<?> optional) {
+        Assert.assertEquals("Optional should be empty but is " + optional,
+                Optional.empty(), optional);
     }
 
 }

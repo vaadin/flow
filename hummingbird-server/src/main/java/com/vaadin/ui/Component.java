@@ -130,7 +130,8 @@ public abstract class Component implements HasElement, Serializable {
      * <p>
      * A component can only have one parent.
      *
-     * @return the parent component
+     * @return an optional parent component, or an empty optional if the
+     *         component is not attached to a parent
      */
     public Optional<Component> getParent() {
         assert ElementUtil.isComponentElementMappedCorrectly(this);
@@ -219,5 +220,16 @@ public abstract class Component implements HasElement, Serializable {
      */
     protected void fireEvent(ComponentEvent componentEvent) {
         getEventBus().fireEvent(componentEvent);
+    }
+
+    /**
+     * Gets the UI the component is attached to.
+     *
+     * @return an optional UI component, or an empty optional if the component
+     *         is not attached to a UI
+     */
+    public Optional<UI> getUI() {
+        return getParent().map(parent -> parent.getUI())
+                .orElse(Optional.empty());
     }
 }
