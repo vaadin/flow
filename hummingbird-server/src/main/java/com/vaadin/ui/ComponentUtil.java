@@ -172,4 +172,30 @@ public interface ComponentUtil {
         }
     }
 
+    /**
+     * Fires the {@link AttachEvent} for the given component.
+     *
+     * @param component
+     *            the component to fire the attach event for
+     */
+    static void fireComponentAttachEvent(Component component) {
+        if (component instanceof Composite) {
+            fireComponentAttachEvent(((Composite<?>) component).getContent());
+        }
+        component.fireEvent(new AttachEvent(component));
+    }
+
+    /**
+     * Fires the {@link DetachEvent} for the given component.
+     *
+     * @param component
+     *            the component to fire the detach event for
+     */
+    static void fireComponentDetachEvent(Component component) {
+        if (component instanceof Composite) {
+            fireComponentDetachEvent(((Composite<?>) component).getContent());
+        }
+        component.fireEvent(new DetachEvent(component));
+    }
+
 }
