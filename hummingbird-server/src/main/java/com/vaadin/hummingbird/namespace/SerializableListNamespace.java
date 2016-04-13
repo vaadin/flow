@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.StateNode;
  *
  * @param <T>
  *            the type of Serializable this namespace contains
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public abstract class SerializableListNamespace<T extends Serializable>

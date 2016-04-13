@@ -5,7 +5,7 @@ package com.vaadin.hummingbird.testcategory;
  * {@code @Category(ContainerTests.class)}. They are currently excluded by
  * default to speed up testing.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public interface ContainerTests {

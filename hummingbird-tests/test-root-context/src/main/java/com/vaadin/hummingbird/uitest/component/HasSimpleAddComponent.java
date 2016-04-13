@@ -28,7 +28,7 @@ import com.vaadin.ui.HasElement;
  * The components are by default added as direct children to the component
  * element, as returned by {@link #getElement()}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public interface HasSimpleAddComponent extends HasElement {

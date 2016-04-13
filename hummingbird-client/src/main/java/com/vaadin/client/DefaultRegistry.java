@@ -32,7 +32,7 @@ import com.vaadin.client.hummingbird.StateTree;
 /**
  * A registry implementation used by {@link ApplicationConnection}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class DefaultRegistry extends Registry {

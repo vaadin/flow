@@ -22,7 +22,7 @@ import elemental.client.Browser;
 /**
  * Client side URL resolver for vaadin protocols.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class URIResolver extends VaadinUriResolver {

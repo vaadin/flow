@@ -18,7 +18,7 @@ package com.vaadin.client.bootstrap;
 /**
  * Utility methods for parsing the document URL.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class LocationParser {

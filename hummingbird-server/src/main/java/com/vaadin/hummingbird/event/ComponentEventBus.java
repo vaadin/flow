@@ -44,7 +44,7 @@ import elemental.json.JsonValue;
  * (see @{@link DomEvent}). Automatically fired events must have a suitable
  * constructor, as defined in {@link DomEvent}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ComponentEventBus implements Serializable {
