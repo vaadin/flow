@@ -20,7 +20,7 @@ import com.vaadin.shared.ApplicationConstants;
 /**
  * Helpers to create {@link Element} instances.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public interface ElementFactory {

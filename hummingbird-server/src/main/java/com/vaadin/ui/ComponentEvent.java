@@ -24,7 +24,7 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
  * <p>
  * Typically used together with {@link ComponentEventBus}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ComponentEvent extends EventObject {

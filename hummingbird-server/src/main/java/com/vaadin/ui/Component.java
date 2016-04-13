@@ -37,7 +37,7 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
  * {@link #setElement(Component, Element)} before the element is attached to a
  * parent). The root element cannot be changed once it has been set.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public abstract class Component implements HasElement, Serializable {

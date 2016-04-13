@@ -25,7 +25,7 @@ import com.vaadin.hummingbird.shared.Namespaces;
  * Observes the poll configuration stored in the given node and configures
  * polling accordingly.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class PollConfigurator {

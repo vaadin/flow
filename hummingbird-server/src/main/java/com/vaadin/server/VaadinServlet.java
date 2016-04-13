@@ -49,7 +49,7 @@ import com.vaadin.util.CurrentInstance;
  * {@link #createServletService(DeploymentConfiguration)} and delegates handling
  * of most requests to that.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class VaadinServlet extends HttpServlet implements Constants {

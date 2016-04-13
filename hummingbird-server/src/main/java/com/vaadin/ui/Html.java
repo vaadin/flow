@@ -43,7 +43,7 @@ import com.vaadin.hummingbird.dom.Element;
  * The HTML fragment cannot be changed after creation. You should create a new
  * instance to encapsulate another fragment.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class Html extends Component {
