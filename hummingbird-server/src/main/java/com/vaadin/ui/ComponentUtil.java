@@ -170,4 +170,39 @@ public interface ComponentUtil {
         }
     }
 
+    /**
+     * Fires the {@link AttachEvent} for the given component. If the given
+     * component is a {@link Composite}, the event will be fired to the content
+     * component of the composite first.
+     *
+     * @param component
+     *            the component to fire the attach event for
+     */
+    static void fireComponentAttach(Component component) {
+        if (component instanceof Composite) {
+            component.getChildren().findFirst()
+                    .ifPresent(ComponentUtil::fireComponentAttach);
+        }
+        if (component.hasListener(AttachEvent.class)) {
+            component.fireEvent(new AttachEvent(component));
+        }
+    }
+
+    /**
+     * Fires the {@link DetachEvent} for the given component. If the given
+     * component is a {@link Composite}, the event will be fired to the content
+     * component of the composite first.
+     *
+     * @param component
+     *            the component to fire the detach event for
+     */
+    static void fireComponentDetach(Component component) {
+        if (component instanceof Composite) {
+            component.getChildren().findFirst()
+                    .ifPresent(ComponentUtil::fireComponentDetach);
+        }
+        if (component.hasListener(DetachEvent.class)) {
+            component.fireEvent(new DetachEvent(component));
+        }
+    }
 }
