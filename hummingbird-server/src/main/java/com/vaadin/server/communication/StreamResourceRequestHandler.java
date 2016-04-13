@@ -103,7 +103,7 @@ public class StreamResourceRequestHandler implements RequestHandler {
      *            resource name
      * @return generated URI string
      */
-    public static String generateURI(int id, String name) {
+    public static String generateURI(String id, String name) {
         StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
         try {
             builder.append(id).append(PATH_SEPARATOR).append(

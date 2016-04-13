@@ -25,6 +25,7 @@ import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.server.StreamResourceRegistry;
 import com.vaadin.server.VaadinSession;
 
 /**
@@ -72,9 +73,6 @@ public class ElementAttributeNamespace extends MapNamespace {
      *         <code>false</code> if there is no property
      */
     public boolean has(String attribute) {
-        if (pendingResources.containsKey(attribute)) {
-            return false;
-        }
         return contains(attribute);
     }
 
@@ -100,11 +98,6 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     @Override
     public String get(String attribute) {
-        if (pendingResources.containsKey(attribute)) {
-            throw new IllegalStateException("The node is not attached "
-                    + "therefore resource URL which is the value "
-                    + "for this attribute is not defined.");
-        }
         return (String) super.get(attribute);
     }
 
@@ -126,12 +119,12 @@ public class ElementAttributeNamespace extends MapNamespace {
      *            the value
      */
     public void setResource(String attribute, StreamResource resource) {
+        set(attribute, StreamResourceRegistry.getURI(resource).toASCIIString());
         if (getNode().isAttached()) {
-            doSetResource(attribute, resource);
+            registerResource(attribute, resource);
         } else {
-            unregisterResource(attribute);
             EventRegistrationHandle handle = getNode().addAttachListener(
-                    () -> doSetResource(attribute, resource));
+                    () -> registerResource(attribute, resource));
             pendingResources.put(attribute, handle);
         }
     }
@@ -166,13 +159,12 @@ public class ElementAttributeNamespace extends MapNamespace {
         doRemove(attribute);
     }
 
-    private void doSetResource(String attribute, StreamResource resource) {
+    private void registerResource(String attribute, StreamResource resource) {
         NodeOwner owner = getNode().getOwner();
         assert owner instanceof StateTree;
         VaadinSession session = ((StateTree) owner).getUI().getSession();
         StreamResourceRegistration registration = session.getResourceRegistry()
                 .registerResource(resource);
-        set(attribute, registration.getResourceUri().toASCIIString());
         resourceRegistrations.put(attribute, registration);
     }
 

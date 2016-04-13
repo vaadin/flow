@@ -36,8 +36,6 @@ public class StreamResourceRegistry implements Serializable {
 
     private final VaadinSession session;
 
-    private int nextResourceId;
-
     private static final class Registration
             implements StreamResourceRegistration {
 
@@ -45,16 +43,10 @@ public class StreamResourceRegistry implements Serializable {
 
         private final URI uri;
 
-        private Registration(StreamResourceRegistry registry, int id,
+        private Registration(StreamResourceRegistry registry, String id,
                 String fileName) {
             this.registry = registry;
-            try {
-                uri = new URI(
-                        StreamResourceRequestHandler.generateURI(id, fileName));
-            } catch (URISyntaxException e) {
-                // this may not happen if implementation is correct
-                throw new RuntimeException(e);
-            }
+            uri = getURI(id, fileName);
         }
 
         @Override
@@ -97,9 +89,7 @@ public class StreamResourceRegistry implements Serializable {
     public StreamResourceRegistration registerResource(
             StreamResource resource) {
         assert session.hasLock();
-        int id = nextResourceId;
-        nextResourceId++;
-        Registration registration = new Registration(this, id,
+        Registration registration = new Registration(this, resource.getId(),
                 resource.getFileName());
         resources.put(registration.getResourceUri(), resource);
         return registration;
@@ -118,4 +108,17 @@ public class StreamResourceRegistry implements Serializable {
         return Optional.ofNullable(resources.get(uri));
     }
 
+    public static URI getURI(StreamResource resource) {
+        return getURI(resource.getId(), resource.getFileName());
+    }
+
+    private static URI getURI(String id, String fileName) {
+        try {
+            return new URI(
+                    StreamResourceRequestHandler.generateURI(id, fileName));
+        } catch (URISyntaxException e) {
+            // this may not happen if implementation is correct
+            throw new RuntimeException(e);
+        }
+    }
 }

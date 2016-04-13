@@ -1621,46 +1621,48 @@ public class ElementTest {
                 element.getTextContent());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void setResourceAttribute_elementIsNotAttached_elementHasNoAttribute() {
+    @Test
+    public void setResourceAttribute_elementIsNotAttached_elementHasAttribute() {
         Element element = ElementFactory.createDiv();
-        StreamResource resource = EasyMock.createMock(StreamResource.class);
+        String resName = "resource";
+        StreamResource resource = createEmptyResource(resName);
         element.setAttribute("foo", resource);
 
-        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertTrue(element.hasAttribute("foo"));
 
-        // Throws an exception
-        element.getAttribute("foo");
+        Assert.assertTrue(element.getAttribute("foo").endsWith(resName));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void setResourceAttribute_elementIsNotAttachedAndHasAttribute_elementHasNoAttribute() {
+    @Test
+    public void setResourceAttribute_elementIsNotAttachedAndHasAttribute_elementHasAttribute() {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", "bar");
 
-        StreamResource resource = EasyMock.createMock(StreamResource.class);
+        String resName = "resource";
+        StreamResource resource = createEmptyResource(resName);
         element.setAttribute("foo", resource);
 
-        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertTrue(element.hasAttribute("foo"));
 
-        // Throws an exception
-        element.getAttribute("foo");
+        Assert.assertTrue(element.getAttribute("foo").endsWith(resName));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void setResourceAttributeSeveralTimes_elementIsNotAttached_elementHasNoAttribute() {
+    @Test
+    public void setResourceAttributeSeveralTimes_elementIsNotAttached_elementHasAttribute() {
         Element element = ElementFactory.createDiv();
-        StreamResource resource = EasyMock.createMock(StreamResource.class);
+        String resName = "resource";
+        StreamResource resource = createEmptyResource(resName);
         element.setAttribute("foo", resource);
 
-        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertTrue(element.hasAttribute("foo"));
 
-        element.setAttribute("foo", EasyMock.createMock(StreamResource.class));
+        resName = "resource1";
+        resource = createEmptyResource(resName);
+        element.setAttribute("foo", resource);
 
-        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertTrue(element.hasAttribute("foo"));
 
-        // Throws an exception
-        element.getAttribute("foo");
+        Assert.assertTrue(element.getAttribute("foo").endsWith(resName));
     }
 
     @Test(expected = IllegalArgumentException.class)
