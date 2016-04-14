@@ -128,14 +128,6 @@ public class ElementAttributeNamespace extends MapNamespace {
         }
     }
 
-    /*
-     * Overridden to make it final since it's called in the constructor.
-     */
-    @Override
-    public final StateNode getNode() {
-        return super.getNode();
-    }
-
     private void unregisterResource(String attribute) {
         StreamResourceRegistration registration = resourceRegistrations
                 .remove(attribute);
@@ -155,7 +147,7 @@ public class ElementAttributeNamespace extends MapNamespace {
         StreamResourceRegistration registration = session.getResourceRegistry()
                 .registerResource(resource);
         resourceRegistrations.put(attribute, registration);
-        getNode().addDetachListener(() -> remove(attribute));
+        getNode().addDetachListener(() -> unregisterResource(attribute));
     }
 
 }

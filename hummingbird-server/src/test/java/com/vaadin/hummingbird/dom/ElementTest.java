@@ -1956,7 +1956,8 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
 
-        StreamResource resource = createEmptyResource("resource");
+        String resName = "resource";
+        StreamResource resource = createEmptyResource(resName);
         element.setAttribute("foo", resource);
         String attribute = element.getAttribute("foo");
 
@@ -1978,8 +1979,9 @@ public class ElementTest {
 
         Assert.assertNull(ref.get());
 
-        Assert.assertFalse(element.hasAttribute("foo"));
-        Assert.assertNull(element.getAttribute("foo"));
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertNotNull(element.getAttribute("foo"));
+        Assert.assertTrue(element.getAttribute("foo").endsWith(resName));
 
         element.setAttribute("foo", "bar");
         Assert.assertTrue(element.hasAttribute("foo"));
