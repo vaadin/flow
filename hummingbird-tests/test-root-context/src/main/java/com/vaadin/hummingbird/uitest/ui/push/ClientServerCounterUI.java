@@ -96,7 +96,7 @@ public class ClientServerCounterUI extends UI {
     }
 
     protected void spacer() {
-        getElement().appendChild(ElementFactory.createHorizontalRule());
+        getElement().appendChild(ElementFactory.createHr());
     }
 
     @Override
