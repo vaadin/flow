@@ -82,6 +82,7 @@ public class ComponentEventBusTest {
                 return false;
             }
 
+            @SuppressWarnings("unchecked")
             EventTracker<T> o = (EventTracker<T>) obj;
             return eventHandlerCalled.get() == o.eventHandlerCalled.get()
                     && eventObject.equals(o.eventObject);

@@ -35,7 +35,6 @@ public class HistoryIT extends PhantomJSTest {
         open();
 
         URI baseUrl = getCurrentUrl();
-        String base = baseUrl.toString();
 
         WebElement stateField = findElement(By.id("state"));
         WebElement locationField = findElement(By.id("location"));
