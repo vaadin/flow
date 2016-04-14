@@ -17,12 +17,15 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventBus;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -34,12 +37,14 @@ import com.vaadin.hummingbird.dom.ElementUtil;
  * {@link #setElement(Component, Element)} before the element is attached to a
  * parent). The root element cannot be changed once it has been set.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public abstract class Component implements HasElement, Serializable {
 
     private Element element;
+
+    private ComponentEventBus eventBus = null;
 
     /**
      * Creates a component instance with an element created based on the
@@ -125,7 +130,8 @@ public abstract class Component implements HasElement, Serializable {
      * <p>
      * A component can only have one parent.
      *
-     * @return the parent component
+     * @return an optional parent component, or an empty optional if the
+     *         component is not attached to a parent
      */
     public Optional<Component> getParent() {
         assert ElementUtil.isComponentElementMappedCorrectly(this);
@@ -177,4 +183,52 @@ public abstract class Component implements HasElement, Serializable {
         return childComponents.build();
     }
 
+    /**
+     * Gets the event bus for this component.
+     * <p>
+     * This method will create the event bus if it has not yet been created.
+     *
+     * @return the event bus for this component
+     */
+    protected ComponentEventBus getEventBus() {
+        if (eventBus == null) {
+            eventBus = new ComponentEventBus(this);
+        }
+        return eventBus;
+    }
+
+    /**
+     * Adds a listener for an event of the given type.
+     *
+     * @param eventType
+     *            the component event type
+     * @param listener
+     *            the listener to add
+     * @return a handle that can be used for removing the listener
+     */
+    protected <T extends ComponentEvent> EventRegistrationHandle addListener(
+            Class<T> eventType, Consumer<T> listener) {
+
+        return getEventBus().addListener(eventType, listener);
+    }
+
+    /**
+     * Dispatches the event to all listeners registered for the event type.
+     *
+     * @param componentEvent
+     *            the event to fire
+     */
+    protected void fireEvent(ComponentEvent componentEvent) {
+        getEventBus().fireEvent(componentEvent);
+    }
+
+    /**
+     * Gets the UI this component is attached to.
+     *
+     * @return an optional UI component, or an empty optional if this component
+     *         is not attached to a UI
+     */
+    public Optional<UI> getUI() {
+        return getParent().flatMap(Component::getUI);
+    }
 }

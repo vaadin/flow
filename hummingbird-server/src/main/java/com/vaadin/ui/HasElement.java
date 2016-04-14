@@ -20,7 +20,7 @@ import com.vaadin.hummingbird.dom.Element;
 /**
  * Marker interface for any class which is based on an {@link Element}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 @FunctionalInterface

@@ -22,6 +22,8 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 
+import elemental.json.JsonObject;
+
 public class BasicElementView extends AbstractDivView {
 
     private EventRegistrationHandle helloWorldEventRemover;
@@ -38,19 +40,20 @@ public class BasicElementView extends AbstractDivView {
                 .synchronizeProperty("value", "change");
 
         button.addEventListener("click", e -> {
-            String buttonText = e.getEventData()
-                    .getString("element.textContent");
-
-            Element greeting = ElementFactory
-                    .createDiv("Thank you for clicking at \"" + buttonText
-                            + "\"! The field value is "
+            JsonObject eventData = e.getEventData();
+            String buttonText = eventData.getString("element.textContent");
+            int clientX = (int) eventData.getNumber("event.clientX");
+            int clientY = (int) eventData.getNumber("event.clientY");
+            Element greeting = ElementFactory.createDiv(
+                    "Thank you for clicking \"" + buttonText + "\" at ("
+                            + clientX + "," + clientY + ")! The field value is "
                             + input.getProperty("value"));
             greeting.setAttribute("class", "thankYou");
             greeting.addEventListener("click",
                     e2 -> greeting.removeFromParent());
 
             mainElement.appendChild(greeting);
-        }, "element.textContent");
+        }, "element.textContent", "event.clientX", "event.clientY");
 
         Element helloWorldElement = ElementFactory.createDiv("Hello world");
 

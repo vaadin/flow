@@ -30,7 +30,7 @@ import elemental.json.JsonValue;
  * Handles storing and retrieval of the state information for an element using a
  * state node.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public interface ElementStateProvider extends Serializable {
@@ -74,7 +74,7 @@ public interface ElementStateProvider extends Serializable {
      * @param attribute
      *            the attribute name, not null
      * @param resource
-     *            the attribute value
+     *            the attribute value, not null
      */
     void setAttribute(StateNode node, String attribute,
             StreamResource resource);

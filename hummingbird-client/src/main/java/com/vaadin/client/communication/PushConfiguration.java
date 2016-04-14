@@ -33,7 +33,7 @@ import com.vaadin.hummingbird.shared.Namespaces;
  * Additionally tracks when push is enabled/disabled and informs
  * {@link MessageSender}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class PushConfiguration {

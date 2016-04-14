@@ -21,7 +21,7 @@ import com.google.web.bindery.event.shared.Event;
 /**
  * Event fired when handling of a response ends.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ResponseHandlingEndedEvent

@@ -20,7 +20,7 @@ import java.io.Serializable;
 /**
  * Represents a stylesheet or Javascript to include on the page.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class Dependency implements Serializable {

@@ -38,7 +38,7 @@ public class ExecJavaScriptView extends AbstractDivView {
 
         Button createElementButton = new Button("Create and update element");
         createElementButton.setId("createButton");
-        createElementButton.getElement().addEventListener("click", e -> {
+        createElementButton.addClickListener(e -> {
             Input input = new Input();
             input.addClass("newInput");
             UI.getCurrent().getPage().executeJavaScript("$0.value = $1", input,
@@ -55,8 +55,8 @@ public class ExecJavaScriptView extends AbstractDivView {
         Button button = new Button(text);
         button.setId(id);
 
-        button.getElement().addEventListener("click", e -> UI.getCurrent()
-                .getPage().executeJavaScript(script, arguments));
+        button.addClickListener(e -> UI.getCurrent().getPage()
+                .executeJavaScript(script, arguments));
 
         return button;
     }

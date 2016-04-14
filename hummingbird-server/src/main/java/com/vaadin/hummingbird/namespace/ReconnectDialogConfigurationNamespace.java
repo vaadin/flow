@@ -21,7 +21,7 @@ import com.vaadin.ui.ReconnectDialogConfiguration;
 /**
  * Map for storing the reconnect dialog configuration for a UI.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ReconnectDialogConfigurationNamespace extends MapNamespace

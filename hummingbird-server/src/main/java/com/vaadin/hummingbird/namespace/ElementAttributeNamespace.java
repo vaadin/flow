@@ -48,7 +48,6 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     public ElementAttributeNamespace(StateNode node) {
         super(node);
-        getNode().addDetachListener(this::unregisterResources);
     }
 
     /**
@@ -85,7 +84,7 @@ public class ElementAttributeNamespace extends MapNamespace {
     @Override
     public void remove(String attribute) {
         unregisterResource(attribute);
-        doRemove(attribute);
+        super.remove(attribute);
     }
 
     /**
@@ -129,14 +128,12 @@ public class ElementAttributeNamespace extends MapNamespace {
         }
     }
 
+    /*
+     * Overridden to make it final since it's called in the constructor.
+     */
     @Override
     public final StateNode getNode() {
         return super.getNode();
-    }
-
-    private void unregisterResources() {
-        resourceRegistrations.forEach(this::unsetResource);
-        resourceRegistrations.clear();
     }
 
     private void unregisterResource(String attribute) {
@@ -151,14 +148,6 @@ public class ElementAttributeNamespace extends MapNamespace {
         }
     }
 
-    private void unsetResource(String attribute,
-            StreamResourceRegistration registration) {
-        if (registration != null) {
-            registration.unregister();
-        }
-        doRemove(attribute);
-    }
-
     private void registerResource(String attribute, StreamResource resource) {
         NodeOwner owner = getNode().getOwner();
         assert owner instanceof StateTree;
@@ -166,10 +155,7 @@ public class ElementAttributeNamespace extends MapNamespace {
         StreamResourceRegistration registration = session.getResourceRegistry()
                 .registerResource(resource);
         resourceRegistrations.put(attribute, registration);
-    }
-
-    private void doRemove(String attribute) {
-        super.remove(attribute);
+        getNode().addDetachListener(() -> remove(attribute));
     }
 
 }

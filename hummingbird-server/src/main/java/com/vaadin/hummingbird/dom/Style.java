@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 /**
  * Provides inline styles for {@link Element}s.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public interface Style extends Serializable {
