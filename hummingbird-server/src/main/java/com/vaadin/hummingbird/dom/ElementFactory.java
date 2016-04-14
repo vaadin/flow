@@ -249,7 +249,7 @@ public interface ElementFactory {
      *
      * @return an {@code &lt;hr>} element.
      */
-    static Element createHorizontalRule() {
+    static Element createHr() {
         return new Element("hr");
     }
 
