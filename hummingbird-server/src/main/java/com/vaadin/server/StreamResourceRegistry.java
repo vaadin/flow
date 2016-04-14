@@ -108,6 +108,13 @@ public class StreamResourceRegistry implements Serializable {
         return Optional.ofNullable(resources.get(uri));
     }
 
+    /**
+     * Gets URI for the given {@code resource}.
+     * 
+     * @param resource
+     *            stream resource
+     * @return resource URI
+     */
     public static URI getURI(StreamResource resource) {
         return getURI(resource.getId(), resource.getFileName());
     }

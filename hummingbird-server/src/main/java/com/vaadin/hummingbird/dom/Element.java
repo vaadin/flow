@@ -363,10 +363,6 @@ public class Element implements Serializable {
      * into the session and use the registered resource URI as an element
      * attribute.
      * <p>
-     * Note that there is no session until element is attached so the attribute
-     * gets its value only when element is attached. As a result
-     * {@link #getAttribute(String)} method will throw an exception for the
-     * {@code attribute} if the element is not attached.
      * 
      * @see #setAttribute(String, String)
      *
