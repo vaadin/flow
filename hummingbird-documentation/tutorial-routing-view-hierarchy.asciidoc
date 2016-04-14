@@ -18,31 +18,25 @@ All parent views must implement the `HasChildView` interface and override the me
 
 [source,java]
 ----
-public class MainLayout implements HasChildView {
+public class MainLayout extends Div implements HasChildView {
 
-  private Element childContainer;
-  private Element root;
+  private Div childContainer;
 
   public MainLayout() {
     // Initialize the main layout DOM
-    root = ElementFactory.createDiv();
-    Element header = ElementFactory.createDiv("This header will always be shown");
-    childContainer = ElementFactory.createDiv();
-    root.appendChild(header, childContainer);
+    Div header = new Div("This header will always be shown");
+    childContainer = new Div();
+    add(header, childContainer);
 
     // Just so we can use setChild later
-    childContainer.appendChild(ElementFactory.createDiv("Child placeholder"));
+    childContainer.add(new Div());
 
-  }
-
-  @Override
-  public Element getElement() {
-    return root; // The element for this view
   }
 
   @Override
   public void setChildView(View childView) {
-    childContainer.setChild(0, childView.getElement());
+    childContainer.removeAll();
+    childContainer.add((Component)childView);
   }
 }
 ----

@@ -27,21 +27,15 @@ This will set up routing so that `HomeView` is used when the base URL (servlet p
 [NOTE]
 Do not start routes with a `/` as the URLs are relative to the servlet path.
 
-All views must implement the `View` interface and override one method: `getElement()`. This method must return the root element of the view and cannot be changed while the view is visible. The HomeView class could thus look like:
+All views must implement the `View` interface and override one method: `getElement()`. This method must return the root element of the view and cannot be changed while the view is visible. You can extends some existing HTML component class which already has this method. The HomeView class could thus look like:
 [source,java]
 ----
-public class HomeView implements View {
-
-    private Element element;
+public class HomeView extends Div implements View {
 
     public HomeView() {
-        element = ElementFactory.createDiv("This is the home view");
+        super("This is the home view");
     }
 
-    @Override
-    public Element getElement() {
-        return element;
-    }
 }
 ----
 
@@ -55,8 +49,8 @@ To trigger navigation from the server side, use `UI.navigateTo(String)`, where t
 
 [source,java]
 ----
-Element button = ElementFactory.createButton("Navigate to company");
-button.addEventListener("click", e-> {
+Button button = new Button("Navigate to company");
+button.addClickListener( e-> {
     UI.getCurrent().navigateTo("company");
 });
 ----

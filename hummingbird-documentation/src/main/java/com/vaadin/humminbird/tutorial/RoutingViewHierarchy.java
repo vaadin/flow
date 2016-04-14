@@ -15,8 +15,6 @@
  */
 package com.vaadin.humminbird.tutorial;
 
-import javax.servlet.annotation.WebServlet;
-
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
@@ -68,49 +66,36 @@ public class RoutingViewHierarchy {
 
     }
 
-    public class MainLayout implements HasChildView {
+    public class MainLayout extends Div implements HasChildView {
 
-        private Element childContainer;
-        private Element root;
+        private Div childContainer;
 
         public MainLayout() {
             // Initialize the main layout DOM
-            root = ElementFactory.createDiv();
             //@formatter:off
-            Element header = ElementFactory.createDiv("This header will always be shown");
+            Div header = new Div("This header will always be shown");
             //@formatter:on
-            childContainer = ElementFactory.createDiv();
-            root.appendChild(header, childContainer);
+            childContainer = new Div();
+            add(header, childContainer);
 
             // Just so we can use setChild later
             //@formatter:off
-            childContainer.appendChild(ElementFactory.createDiv("Child placeholder"));
+            childContainer.add(new Div());
             //@formatter:on
 
-        }
-
-        @Override
-        public Element getElement() {
-            return root; // The element for this view
         }
 
         @Override
         public void setChildView(View childView) {
-            childContainer.setChild(0, childView.getElement());
+            childContainer.removeAll();
+            childContainer.add((Component) childView);
         }
     }
 
-    public class CompanyView implements View {
-
-        private Element element;
+    public class CompanyView extends Div implements View {
 
         public CompanyView() {
-            element = ElementFactory.createDiv("This is the home view");
-        }
-
-        @Override
-        public Element getElement() {
-            return element;
+            super("This is the home view");
         }
 
     }

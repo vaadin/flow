@@ -7,11 +7,10 @@ to use the `@Title` annotation on your `View` class.
 [source,java]
 ----
 @Title("home")
-class HomeView implements View {
+class HomeView extends Div implements View {
 
-  @Override
-  public Element getElement() {
-    return ElementFactory.createDiv("This is the home view");
+  HomeView(){
+    super("This is the home view");
   }
 }
 ----
@@ -22,7 +21,11 @@ If the page title for a view depends on dynamic view content, you can override
 the `View:getTitle()` method.
 [source,java]
 ----
-class ProductView implements View {
+class ProductView extends Div implements View {
+
+  ProductView(){
+    super("This is the Products view");
+  }
 
   @Override
   public String getTitle(LocationChangeEvent event) {
@@ -30,10 +33,6 @@ class ProductView implements View {
     return "Product " + getProductName(event.getPathParameter("id"));
   }
 
-  @Override
-  public Element getElement() {
-    return ElementFactory.createDiv("This is the Products view");
-  }
 }
 ----
 [NOTE]

@@ -15,8 +15,7 @@
  */
 package com.vaadin.humminbird.tutorial;
 
-import javax.servlet.annotation.WebServlet;
-
+import com.sun.org.apache.xpath.internal.operations.Div;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
@@ -44,18 +43,12 @@ public class Routing {
 
     }
 
-    public class HomeView implements View {
-
-        private Element element;
+    public class HomeView extends Div implements View {
 
         public HomeView() {
-            element = ElementFactory.createDiv("This is the home view");
+            super("This is the home view");
         }
 
-        @Override
-        public Element getElement() {
-            return element;
-        }
     }
 
     public class CompanyView extends HomeView {
@@ -63,8 +56,8 @@ public class Routing {
     }
 
     void navigation() {
-        Element button = ElementFactory.createButton("Navigate to company");
-        button.addEventListener("click", e -> {
+        Button button = new Button("Navigate to company");
+        button.addClickListener( e -> {
             UI.getCurrent().navigateTo("company");
         });
 

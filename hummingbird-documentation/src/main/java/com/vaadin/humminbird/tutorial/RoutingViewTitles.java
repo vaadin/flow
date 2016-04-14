@@ -13,15 +13,19 @@ import com.vaadin.hummingbird.router.View;
 @CodeFor("tutorial-routing-view-titles.asciidoc")
 public class RoutingViewTitles {
     @Title("home")
-    class HomeView implements View {
-
-        @Override
-        public Element getElement() {
-            return ElementFactory.createDiv("This is the home view");
+    class HomeView extends Div implements View {
+        
+        HomeView(){
+            super("This is the home view");
         }
+
     }
 
-    class ProductView implements View {
+    class ProductView extends Div implements View {
+        
+        ProductView(){
+            super("This is the Products view");
+        }
 
         @Override
         public String getTitle(LocationChangeEvent event) {
@@ -29,10 +33,6 @@ public class RoutingViewTitles {
             return "Product " + getProductName(event.getPathParameter("id"));
         }
 
-        @Override
-        public Element getElement() {
-            return ElementFactory.createDiv("This is the Products view");
-        }
     }
 
     public String getProductName(String idParameter) {
