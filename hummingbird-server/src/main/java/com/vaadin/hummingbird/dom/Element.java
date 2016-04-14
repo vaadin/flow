@@ -364,7 +364,7 @@ public class Element implements Serializable {
      * element attribute.
      * <p>
      * 
-     * @see #setAttribute(String, String)T
+     * @see #setAttribute(String, String)
      *
      * @param attribute
      *            the name of the attribute
