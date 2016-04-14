@@ -2230,4 +2230,65 @@ public class ElementTest {
         System.gc();
         Assert.assertNull(ref.get());
     }
+
+    @Test
+    public void appendFirstChildToOwnParent() {
+        Element parent = ElementFactory.createDiv();
+        Element child1 = ElementFactory.createDiv();
+        Element child2 = ElementFactory.createDiv();
+        parent.appendChild(child1, child2);
+
+        parent.appendChild(child1);
+        assertChildren(parent, child2, child1);
+    }
+
+    @Test
+    public void appendLastChildToOwnParent() {
+        Element parent = ElementFactory.createDiv();
+        Element child1 = ElementFactory.createDiv();
+        Element child2 = ElementFactory.createDiv();
+        parent.appendChild(child1, child2);
+
+        parent.appendChild(child2);
+        assertChildren(parent, child1, child2);
+    }
+
+    @Test
+    public void appendManyChildrenToOwnParent() {
+        Element parent = ElementFactory.createDiv();
+        Element child1 = ElementFactory.createDiv();
+        Element child2 = ElementFactory.createDiv();
+        parent.appendChild(child1, child2);
+
+        parent.appendChild(child2, child1);
+        // Order should be changed
+        assertChildren(parent, child2, child1);
+    }
+
+    @Test
+    public void appendExistingAndNewChildren() {
+        Element parent = ElementFactory.createDiv();
+        Element child1 = ElementFactory.createDiv();
+        Element child2 = ElementFactory.createDiv();
+        parent.appendChild(child1);
+
+        parent.appendChild(child2, child1);
+
+        assertChildren(parent, child2, child1);
+    }
+
+    @Test
+    public void insertAtCurrentPositionNoOp() {
+        // Must have an UI to get attach events
+        UI ui = new UI();
+        Element parent = ui.getElement();
+        Element child = ElementFactory.createDiv();
+
+        parent.appendChild(child);
+
+        child.addDetachListener(
+                e -> Assert.fail("Child should not be detached"));
+        parent.insertChild(0, child);
+    }
+
 }

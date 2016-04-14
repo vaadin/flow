@@ -30,7 +30,7 @@ import com.vaadin.shared.ApplicationConstants;
 /**
  * A service implementation connected to a {@link VaadinServlet}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class VaadinServletService extends VaadinService {

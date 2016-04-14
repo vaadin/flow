@@ -31,7 +31,7 @@ import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
  * Fires events when a requests starts, response handling starts and when
  * response handling ends.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class RequestResponseTracker {

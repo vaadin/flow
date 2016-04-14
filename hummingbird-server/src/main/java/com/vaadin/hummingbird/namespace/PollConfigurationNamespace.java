@@ -21,7 +21,7 @@ import com.vaadin.ui.UI;
 /**
  * Namespace for storing configuration for polling.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class PollConfigurationNamespace extends MapNamespace {

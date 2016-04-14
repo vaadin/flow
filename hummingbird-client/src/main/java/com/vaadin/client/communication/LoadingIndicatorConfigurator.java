@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.shared.Namespaces;
  * Observes the loading indicator configuration stored in the given node and
  * configures the loading indicator accordingly.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class LoadingIndicatorConfigurator {

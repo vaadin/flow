@@ -22,9 +22,11 @@ public abstract class AbstractBasicElementComponentIT extends PhantomJSTest {
 
         Assert.assertEquals(1, getThankYouCount());
 
-        Assert.assertEquals(
-                "Thank you for clicking at \"Click me\"! The field value is abc",
-                getThankYouElements().get(0).getText());
+        String buttonText = getThankYouElements().get(0).getText();
+        String expected = "Thank you for clicking \"Click me\" at \\((\\d+),(\\d+)\\)! The field value is abc";
+        Assert.assertTrue(
+                "Expected '" + expected + "', was '" + buttonText + "'",
+                buttonText.matches(expected));
 
         // Clicking removes the element
         getThankYouElements().get(0).click();

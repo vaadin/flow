@@ -24,7 +24,7 @@ import com.vaadin.hummingbird.StateNode;
  * Abstract namespace to be used as a parent for namespaces which supports
  * setting properties in a map.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public abstract class AbstractPropertyNamespace extends MapNamespace {

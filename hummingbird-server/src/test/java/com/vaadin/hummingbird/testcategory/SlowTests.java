@@ -5,7 +5,7 @@ package com.vaadin.hummingbird.testcategory;
  * {@code @Category(SlowTests.class)} and will be excluded by default from the
  * test suite.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public interface SlowTests {

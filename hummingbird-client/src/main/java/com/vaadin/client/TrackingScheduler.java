@@ -21,7 +21,7 @@ import com.google.gwt.core.client.impl.SchedulerImpl;
  * Scheduler implementation which tracks and reports whether there is any work
  * queued or currently being executed.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class TrackingScheduler extends SchedulerImpl {

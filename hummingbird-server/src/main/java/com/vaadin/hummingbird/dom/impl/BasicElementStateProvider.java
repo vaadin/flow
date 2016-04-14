@@ -58,7 +58,7 @@ import elemental.json.JsonValue;
  * The data is stored directly in the state node but this should be considered
  * an implementation detail which can change.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class BasicElementStateProvider implements ElementStateProvider {

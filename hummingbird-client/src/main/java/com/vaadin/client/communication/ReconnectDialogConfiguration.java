@@ -29,7 +29,7 @@ import com.vaadin.hummingbird.shared.Namespaces;
  * Also triggers {@link ConnectionStateHandler#configurationUpdated()} whenever
  * part of the configuration changes.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ReconnectDialogConfiguration {
