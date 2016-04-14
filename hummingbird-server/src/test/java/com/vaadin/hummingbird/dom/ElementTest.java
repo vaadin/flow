@@ -1806,8 +1806,6 @@ public class ElementTest {
         String resName = "resource2";
         element.setAttribute("foo", createEmptyResource(resName));
 
-        assertIsGCollected(ref);
-
         ui.getElement().appendChild(element);
 
         Assert.assertTrue(element.hasAttribute("foo"));
@@ -1817,6 +1815,11 @@ public class ElementTest {
                 .getResource(new URI(uri));
         Assert.assertTrue(res.isPresent());
         Assert.assertTrue(uri.endsWith(resName));
+
+        // allow GC to collect element and all its (detach) listeners
+        element = null;
+
+        assertIsGCollected(ref);
     }
 
     @Test
@@ -1975,10 +1978,6 @@ public class ElementTest {
         res = ui.getSession().getResourceRegistry().getResource(uri);
         Assert.assertFalse(res.isPresent());
 
-        assertIsGCollected(ref);
-
-        Assert.assertNull(ref.get());
-
         Assert.assertTrue(element.hasAttribute("foo"));
         Assert.assertNotNull(element.getAttribute("foo"));
         Assert.assertTrue(element.getAttribute("foo").endsWith(resName));
@@ -1986,6 +1985,65 @@ public class ElementTest {
         element.setAttribute("foo", "bar");
         Assert.assertTrue(element.hasAttribute("foo"));
         Assert.assertEquals("bar", element.getAttribute("foo"));
+
+        assertIsGCollected(ref);
+    }
+
+    @Test
+    public void setResourceAttribute_detachAndReattachElement_resourceReregistered()
+            throws URISyntaxException {
+        UI ui = createUI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        String resName = "resource";
+        StreamResource resource = createEmptyResource(resName);
+        element.setAttribute("foo", resource);
+        String attribute = element.getAttribute("foo");
+
+        URI uri = new URI(attribute);
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(uri);
+        Assert.assertTrue(res.isPresent());
+
+        ui.getElement().removeAllChildren();
+
+        res = ui.getSession().getResourceRegistry().getResource(uri);
+        Assert.assertFalse(res.isPresent());
+
+        ui.getElement().appendChild(element);
+
+        res = ui.getSession().getResourceRegistry().getResource(uri);
+        Assert.assertTrue(res.isPresent());
+    }
+
+    @Test
+    public void setResourceAttribute_attachAndDetachAndReattachElement_resourceReregistered()
+            throws URISyntaxException {
+        UI ui = createUI();
+        Element element = ElementFactory.createDiv();
+
+        String resName = "resource";
+        StreamResource resource = createEmptyResource(resName);
+        element.setAttribute("foo", resource);
+        String attribute = element.getAttribute("foo");
+
+        ui.getElement().appendChild(element);
+
+        URI uri = new URI(attribute);
+        Optional<StreamResource> res = ui.getSession().getResourceRegistry()
+                .getResource(uri);
+        Assert.assertTrue(res.isPresent());
+
+        ui.getElement().removeAllChildren();
+
+        res = ui.getSession().getResourceRegistry().getResource(uri);
+        Assert.assertFalse(res.isPresent());
+
+        ui.getElement().appendChild(element);
+
+        res = ui.getSession().getResourceRegistry().getResource(uri);
+        Assert.assertTrue(res.isPresent());
     }
 
     @Test(expected = UnsupportedOperationException.class)

@@ -17,6 +17,7 @@
 package com.vaadin.hummingbird.namespace;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.NodeOwner;
@@ -122,9 +123,7 @@ public class ElementAttributeNamespace extends MapNamespace {
         if (getNode().isAttached()) {
             registerResource(attribute, resource);
         } else {
-            EventRegistrationHandle handle = getNode().addAttachListener(
-                    () -> registerResource(attribute, resource));
-            pendingResources.put(attribute, handle);
+            defferRegistration(attribute, resource);
         }
     }
 
@@ -140,14 +139,40 @@ public class ElementAttributeNamespace extends MapNamespace {
         }
     }
 
+    private void defferRegistration(String attribute, StreamResource resource) {
+        EventRegistrationHandle handle = getNode()
+                .addAttachListener(() -> registerResource(attribute, resource));
+        pendingResources.put(attribute, handle);
+    }
+
     private void registerResource(String attribute, StreamResource resource) {
+        StreamResourceRegistration registration = getSession()
+                .getResourceRegistry().registerResource(resource);
+        resourceRegistrations.put(attribute, registration);
+        EventRegistrationHandle handle = pendingResources.remove(attribute);
+        if (handle != null) {
+            handle.remove();
+        }
+        pendingResources.put(attribute,
+                getNode().addDetachListener(() -> unsetResource(attribute)));
+    }
+
+    private void unsetResource(String attribute) {
+        StreamResourceRegistration registration = resourceRegistrations
+                .get(attribute);
+        Optional<StreamResource> resource = Optional.empty();
+        if (registration != null) {
+            resource = getSession().getResourceRegistry()
+                    .getResource(registration.getResourceUri());
+        }
+        unregisterResource(attribute);
+        resource.ifPresent(res -> defferRegistration(attribute, res));
+    }
+
+    private VaadinSession getSession() {
         NodeOwner owner = getNode().getOwner();
         assert owner instanceof StateTree;
-        VaadinSession session = ((StateTree) owner).getUI().getSession();
-        StreamResourceRegistration registration = session.getResourceRegistry()
-                .registerResource(resource);
-        resourceRegistrations.put(attribute, registration);
-        getNode().addDetachListener(() -> unregisterResource(attribute));
+        return ((StateTree) owner).getUI().getSession();
     }
 
 }
