@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -64,6 +65,19 @@ public interface ElementStateProvider extends Serializable {
      *            the attribute value
      */
     void setAttribute(StateNode node, String attribute, String value);
+
+    /**
+     * Sets the given attribute to the given {@link StreamResource} value.
+     *
+     * @param node
+     *            the node containing the data
+     * @param attribute
+     *            the attribute name, not null
+     * @param resource
+     *            the attribute value, not null
+     */
+    void setAttribute(StateNode node, String attribute,
+            StreamResource resource);
 
     /**
      * Gets the value of the given attribute.
