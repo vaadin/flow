@@ -15,16 +15,16 @@
  */
 package com.vaadin.humminbird.tutorial;
 
-import com.sun.org.apache.xpath.internal.operations.Div;
+import javax.servlet.annotation.WebServlet;
+
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.ui.UI;
 
 @CodeFor("tutorial-routing.asciidoc")
 public class Routing {
@@ -46,7 +46,7 @@ public class Routing {
     public class HomeView extends Div implements View {
 
         public HomeView() {
-            super("This is the home view");
+            setText("This is the home view");
         }
 
     }
@@ -57,8 +57,8 @@ public class Routing {
 
     void navigation() {
         Button button = new Button("Navigate to company");
-        button.addClickListener( e -> {
-            UI.getCurrent().navigateTo("company");
+        button.addClickListener(e -> {
+            button.getUI().ifPresent(ui -> ui.navigateTo("company"));
         });
 
     }

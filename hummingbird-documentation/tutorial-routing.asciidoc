@@ -33,7 +33,7 @@ All views must implement the `View` interface and override one method: `getEleme
 public class HomeView extends Div implements View {
 
     public HomeView() {
-        super("This is the home view");
+        setText("This is the home view");
     }
 
 }
@@ -51,7 +51,7 @@ To trigger navigation from the server side, use `UI.navigateTo(String)`, where t
 ----
 Button button = new Button("Navigate to company");
 button.addClickListener( e-> {
-    UI.getCurrent().navigateTo("company");
+     button.getUI().ifPresent(ui -> ui.navigateTo("company"));
 });
 ----
 

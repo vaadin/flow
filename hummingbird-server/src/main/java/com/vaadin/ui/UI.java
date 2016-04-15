@@ -72,7 +72,8 @@ import com.vaadin.util.CurrentInstance;
  *
  * @since 7.0
  */
-public class UI extends Component implements Serializable, PollNotifier {
+public class UI extends Component
+        implements Serializable, PollNotifier, HasComponents {
 
     public static final String POLL_DOM_EVENT_NAME = "ui-poll";
 
@@ -745,34 +746,10 @@ public class UI extends Component implements Serializable, PollNotifier {
      * @param components
      *            the components to add
      */
+    // Overridden just to mention UI and <body> in the javadocs
+    @Override
     public void add(Component... components) {
-        assert components != null;
-        for (Component component : components) {
-            assert component != null;
-            getElement().appendChild(component.getElement());
-        }
-    }
-
-    /**
-     * Removes the given components from the UI.
-     * <p>
-     *
-     * @param components
-     *            the components to remove
-     * @throws IllegalArgumentException
-     *             if one of the components is not a child of this UI
-     */
-    public void remove(Component... components) {
-        assert components != null;
-        for (Component component : components) {
-            assert component != null;
-            if (getElement().equals(component.getElement().getParent())) {
-                getElement().removeChild(component.getElement());
-            } else {
-                throw new IllegalArgumentException("The given component ("
-                        + component + ") is not a child of this UI");
-            }
-        }
+        HasComponents.super.add(components);
     }
 
     @Override

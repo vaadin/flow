@@ -15,9 +15,11 @@
  */
 package com.vaadin.humminbird.tutorial;
 
-import com.sun.org.apache.xpath.internal.operations.Div;
+import javax.servlet.annotation.WebServlet;
+
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
@@ -43,7 +45,7 @@ public class RoutingViewParameters {
     public class ProductView extends Div implements View {
 
         public ProductView() {
-            super("This is the home view");
+            setText("This is the home view");
         }
 
         @Override

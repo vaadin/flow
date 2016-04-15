@@ -118,6 +118,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
     @Override
     protected URL getApplicationUrl(HttpServletRequest request)
             throws MalformedURLException {
+        @SuppressWarnings("deprecation")
         URL url = super.getApplicationUrl(request);
 
         String path = url.toString();

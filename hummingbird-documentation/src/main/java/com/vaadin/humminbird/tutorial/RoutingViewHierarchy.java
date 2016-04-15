@@ -15,15 +15,18 @@
  */
 package com.vaadin.humminbird.tutorial;
 
+import javax.servlet.annotation.WebServlet;
+
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.ui.Component;
 
 @CodeFor("tutorial-routing-view-hierarchy.asciidoc")
 public class RoutingViewHierarchy {
@@ -73,7 +76,8 @@ public class RoutingViewHierarchy {
         public MainLayout() {
             // Initialize the main layout DOM
             //@formatter:off
-            Div header = new Div("This header will always be shown");
+            Div header = new Div();
+            header.setText("This header will always be shown");
             //@formatter:on
             childContainer = new Div();
             add(header, childContainer);
@@ -95,7 +99,8 @@ public class RoutingViewHierarchy {
     public class CompanyView extends Div implements View {
 
         public CompanyView() {
-            super("This is the home view");
+            super();
+            setText("This is the home view");
         }
 
     }

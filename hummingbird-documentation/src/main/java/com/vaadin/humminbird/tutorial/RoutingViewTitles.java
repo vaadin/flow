@@ -2,8 +2,7 @@ package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.annotations.Title;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.DefaultPageTitleGenerator;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.RouterConfiguration;
@@ -14,22 +13,23 @@ import com.vaadin.hummingbird.router.View;
 public class RoutingViewTitles {
     @Title("home")
     class HomeView extends Div implements View {
-        
-        HomeView(){
-            super("This is the home view");
+
+        HomeView() {
+            setText("This is the home view");
         }
 
     }
 
     class ProductView extends Div implements View {
-        
-        ProductView(){
-            super("This is the Products view");
+
+        ProductView() {
+            setText("This is the Products view");
         }
 
         @Override
         public String getTitle(LocationChangeEvent event) {
-            // Default implementation returns "" which clears any previous title.
+            // Default implementation returns "" which clears any previous
+            // title.
             return "Product " + getProductName(event.getPathParameter("id"));
         }
 

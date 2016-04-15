@@ -16,6 +16,7 @@
 package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -25,7 +26,8 @@ public class HelloWorldUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
         // Called whenever a user opens the page
-        Div div = new Div("Hello world");
+        Div div = new Div();
+        div.setText("Hello world");
         add(div);
     }
 }

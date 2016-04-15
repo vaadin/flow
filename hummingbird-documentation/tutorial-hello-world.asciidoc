@@ -21,7 +21,8 @@ public class HelloWorldUI extends UI {
 The main purpose of the init method is to populate the UI with components. For the Hello world application you only need one component containing the "Hello world" text:
 [source,java]
 ----
-Div div = new Div("Hello world");
+Div div = new Div();
+div.setText("Hello world");
 ----
 
 [TIP]
@@ -41,7 +42,8 @@ public class HelloWorldUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        Div div = new Div("Hello world");
+        Div div = new Div();
+        div.setText("Hello world");
         add(div);
     }
 }
