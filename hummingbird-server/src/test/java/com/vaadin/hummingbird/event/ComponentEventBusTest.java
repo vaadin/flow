@@ -375,4 +375,24 @@ public class ComponentEventBusTest {
         });
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void hasListeners_nullEventType_throws() {
+        new ComponentEventBus(new TestComponent()).hasListener(null);
+    }
+
+    @Test
+    public void testFireEvent_noListeners_eventBusNotCreated() {
+        AtomicInteger eventBusCreated = new AtomicInteger();
+        TestComponent c = new TestComponent() {
+            @Override
+            public ComponentEventBus getEventBus() {
+                eventBusCreated.incrementAndGet();
+                return super.getEventBus();
+            }
+        };
+        c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
+
+        Assert.assertEquals(0, eventBusCreated.get());
+    }
+
 }
