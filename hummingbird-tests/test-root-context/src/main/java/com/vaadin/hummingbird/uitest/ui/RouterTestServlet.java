@@ -91,7 +91,7 @@ public class RouterTestServlet extends VaadinServlet {
                     "sessionId");
             element.appendChild(sessionId);
             element.appendChild(ElementFactory.createDiv());
-            element.appendChild(ElementFactory.createHorizontalRule());
+            element.appendChild(ElementFactory.createHr());
         }
 
         @Override
@@ -138,7 +138,7 @@ public class RouterTestServlet extends VaadinServlet {
                     div.appendChild(ElementFactory.createRouterLink(viewName,
                             viewName));
                 }
-                div.appendChild(ElementFactory.createHorizontalRule());
+                div.appendChild(ElementFactory.createHr());
             });
         }
 

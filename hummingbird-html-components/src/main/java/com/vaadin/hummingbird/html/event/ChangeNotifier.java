@@ -13,39 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.html.event;
 
 import java.util.function.Consumer;
 
-import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.ui.ComponentEventNotifier;
 
-@Tag("input")
-public class Input extends AbstractHtmlComponent {
-
-    public Input() {
-        getElement().synchronizeProperty("value", "change");
-    }
-
-    public void setPlaceholder(String placeholder) {
-        getElement().setAttribute("placeholder", placeholder);
-    }
-
-    public String getPlaceholder() {
-        return getElement().getAttribute("placeholder");
-    }
-
-    public String getValue() {
-        return getElement().getProperty("value");
-    }
-
-    public void setValue(String value) {
-        getElement().setProperty("value", value);
-    }
-
-    public EventRegistrationHandle addChangeListener(
+/**
+ * Mixin interface for components that support adding change listeners to the
+ * their root elements.
+ *
+ * @since
+ * @author Vaadin Ltd
+ */
+public interface ChangeNotifier extends ComponentEventNotifier {
+    /**
+     * Adds a change listener to this component.
+     *
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    default EventRegistrationHandle addChangeListener(
             Consumer<ChangeEvent> listener) {
         return addListener(ChangeEvent.class, listener);
     }
-
 }

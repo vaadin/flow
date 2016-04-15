@@ -26,8 +26,8 @@ import org.junit.Test;
 import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
 public class ViewRendererTest {
 
@@ -324,11 +324,5 @@ public class ViewRendererTest {
                 .dumpPendingJavaScriptInvocations();
         Assert.assertEquals("Page.setTitle should use title from annotation",
                 pageTitle, jsInvocations.get(0).getParameters().get(0));
-    }
-
-    private void verifyNoTitleUpdate() {
-        Assert.assertEquals("Page.setTitle should not have been triggered", 0,
-                ui.getInternals().dumpPendingJavaScriptInvocations()
-                        .size());
     }
 }
