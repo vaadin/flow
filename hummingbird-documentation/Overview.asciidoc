@@ -34,6 +34,7 @@ These tutorials show how the different features are used.
 * Misc
 ** <<tutorial-execute-javascript#,Executing JavaScript>>
 ** <<tutorial-history-api#,The History API>>
+** <<tutorial-dynamic-content#,Dynamic Content>>
 
 The rest of this document gives a high-level overview of the features and explains how they fit together.
 

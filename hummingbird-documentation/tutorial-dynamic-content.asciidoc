@@ -1,0 +1,104 @@
+= Dynamic Content
+:toc:
+
+There are two options to generate content dynamically based on data provided by 
+the current application state:
+
+* You can build a custom URL including parameters with `String` type. In this case you will need one more servlet which handles the URL.
+* The other option is to use `StreamResource`.
+
+=== Using custom servlet and request parameters 
+
+So let's create a custom servlet which handles "image" as a relative URL: 
+
+[source,java]
+----
+@WebServlet(urlPatterns = "/image", name = "DynamicContentServlet")
+public class DynamicContentServlet extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        resp.setContentType("image/svg+xml");
+        String name = req.getParameter("name");
+        if (name == null) {
+            name = "";
+        }
+        String svg = "<?xml version='1.0' encoding='UTF-8' standalone='no'?>"
+                + "<svg  xmlns='http://www.w3.org/2000/svg' "
+                + "xmlns:xlink='http://www.w3.org/1999/xlink'>"
+                + "<rect x='10' y='10' height='100' width='100' "
+                + "style=' fill: #90C3D4'/><text x='30' y='30' fill='red'>"
+                + name + "</text>" + "</svg>";
+        resp.getWriter().write(svg);
+    }
+}
+----
+
+The following code should be used in the application (which has its own servlet). 
+It generates the resource URL on the fly based on the current application state.
+The property value of the input element is used here as a state:
+
+[source,java]
+----
+Element name = ElementFactory.createInput("text");
+name.synchronizeProperty("value", "change");
+Element button = ElementFactory.createButton("Generate Image");
+
+Element image = new Element("object");
+image.setAttribute("type", "image/svg+xml");
+image.getStyle().set("display", "block");
+
+button.addEventListener("click", event -> image.setAttribute("data", "image?name="+name.getProperty("value")));
+
+UI.getCurrent().getElement().appendChild(name, image, button);
+----
+
+==== Using `StreamResource`
+
+To be able to generate dynamic content inside the same application you should use `StreamResource`.
+In this case application will generate URL transparently for you and register an internal  handler for this URL.
+The code below shows how to implement the same functionality as above using `StreamResource`.
+
+[source,java]
+----
+Element name = ElementFactory.createInput("text");
+name.synchronizeProperty("value", "change");
+Element button = ElementFactory.createButton("Generate Image");
+
+Element image = new Element("object");
+image.setAttribute("type", "image/svg+xml");
+image.getStyle().set("display", "block");
+
+button.addEventListener("click", event -> image.setAttribute("data", createResource(name)));
+
+UI.getCurrent().getElement().appendChild(name, image, button);
+----
+
+"data" attribute here is set to `StreamResource` value. `StreamResource` instance requires dynamic data provider and the resource file name.
+The latter name will be the last path segment in the generated URL. As a result it will become a downloaded file name if user donwload it.
+And here is an example how to create a `StreamResource` instance:
+
+[source,java]
+----
+
+private StreamResource createResource(Element name) {
+    StreamResource resource = new StreamResource("image", () -> getImageInputStream(name));
+    resource.setContentType("image/svg+xml");
+    return resource;
+}
+
+private InputStream getImageInputStream(Element name) {
+    String value = name.getProperty("value");
+    if (value == null) {
+        value = "";
+    }
+    String svg = "<?xml version='1.0' encoding='UTF-8' standalone='no'?>"
+        + "<svg  xmlns='http://www.w3.org/2000/svg' "
+        + "xmlns:xlink='http://www.w3.org/1999/xlink'>"
+        + "<rect x='10' y='10' height='100' width='100' "
+        + "style=' fill: #90C3D4'/><text x='30' y='30' fill='red'>"
+        + value + "</text>" + "</svg>";
+    return new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8));
+}
+----
