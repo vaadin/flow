@@ -51,8 +51,8 @@ public class StreamResourceRegistryTest {
     public void registerResource_registrationResultCanBeFound() {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
-        StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource.Builder("name",
+                () -> makeEmptyStream()).build();
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
         Assert.assertNotNull(registration);
@@ -69,8 +69,8 @@ public class StreamResourceRegistryTest {
     public void unregisterResource_resourceIsRemoved() {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
-        StreamResource resource = new StreamResource("name",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource.Builder("name",
+                () -> makeEmptyStream()).build();
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
         Assert.assertNotNull(registration);
@@ -89,13 +89,13 @@ public class StreamResourceRegistryTest {
     public void registerTwoResourcesWithSameName_resourcesHasDifferentURI() {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
-        StreamResource resource1 = new StreamResource("name",
-                () -> makeEmptyStream());
+        StreamResource resource1 = new StreamResource.Builder("name",
+                () -> makeEmptyStream()).build();
         StreamResourceRegistration registration1 = registry
                 .registerResource(resource1);
 
-        StreamResource resource2 = new StreamResource("name",
-                () -> makeEmptyStream());
+        StreamResource resource2 = new StreamResource.Builder("name",
+                () -> makeEmptyStream()).build();
         StreamResourceRegistration registration2 = registry
                 .registerResource(resource2);
 
@@ -115,8 +115,8 @@ public class StreamResourceRegistryTest {
     public void getResourceUrlIsEncoded() throws UnsupportedEncodingException {
         StreamResourceRegistry registry = session.getResourceRegistry();
 
-        StreamResource resource = new StreamResource("a?b=c d&e",
-                () -> makeEmptyStream());
+        StreamResource resource = new StreamResource.Builder("a?b=c d&e",
+                () -> makeEmptyStream()).build();
         StreamResourceRegistration registration = registry
                 .registerResource(resource);
 

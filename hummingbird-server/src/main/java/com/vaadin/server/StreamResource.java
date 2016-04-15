@@ -26,11 +26,14 @@ import java.io.Serializable;
  * The instance should be registered via
  * {@link StreamResourceRegistry#registerResource(StreamResource)}. This method
  * returns an object which may be used to get resource URI.
+ * <p>
+ * This class is immutable. Use {@link Builder} to construct a customized
+ * instance.
  * 
  * @author Vaadin Ltd
  *
  */
-public class StreamResource implements Serializable {
+public class StreamResource implements Serializable, Cloneable {
 
     private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
@@ -41,6 +44,91 @@ public class StreamResource implements Serializable {
     private long cacheTime = 0L;
 
     private final StreamResourceWriter writer;
+
+    /**
+     * Builder for {@link StreamResource}.
+     */
+    public static class Builder {
+
+        private final StreamResource resource;
+
+        /**
+         * Creates a builder for {@link StreamResource} using mandatory
+         * parameters {@code name} as a resource file name and output stream
+         * {@code writer} as a data producer. {@code writer} should write data
+         * to the output stream provided as an argument to its
+         * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)}
+         * method.
+         * <p>
+         * {@code name} parameter value will be used in the URI (generated when
+         * resource is registered) in a way that the {@name} is the last segment
+         * of the path. So this is synthetic file name (not real one).
+         * 
+         * @param name
+         *            resource file name. May not be null.
+         * @param writer
+         *            data output stream consumer
+         */
+        public Builder(String name, StreamResourceWriter writer) {
+            resource = new StreamResource(name, writer);
+        }
+
+        /**
+         * Creates a builder for {@link StreamResource} using mandatory
+         * parameters {@code name} as a resource file name and input stream
+         * {@code factory} as a factory for data.
+         * <p>
+         * {@code name} parameter value will be used in the URI (generated when
+         * resource is registered) in a way that the {@name} is the last segment
+         * of the path. So this is synthetic file name (not real one).
+         * 
+         * @param name
+         *            resource file name. May not be null.
+         * @param factory
+         *            data input stream factory. May not be null.
+         */
+        public Builder(String name, InputStreamFactory factory) {
+            resource = new StreamResource(name, factory);
+        }
+
+        /**
+         * Set cache time in millis. Zero or negative value disables the caching
+         * of this stream.
+         * 
+         * @param cacheTime
+         *            cache time
+         */
+        public Builder setCacheTime(long cacheTime) {
+            resource.cacheTime = cacheTime;
+            return this;
+        }
+
+        /**
+         * Set content type for the resource.
+         * 
+         * @param contentType
+         *            resource content type
+         */
+        public Builder setContentType(String contentType) {
+            resource.contentType = contentType;
+            return this;
+        }
+
+        /**
+         * Builds {@link StreamResource} instance using values set via the
+         * builder. Constructed instance is immutable.
+         * 
+         * @return constructed {@link StreamResource} instance
+         */
+        public StreamResource build() {
+            try {
+                return (StreamResource) resource.clone();
+            } catch (CloneNotSupportedException e) {
+                // Cannot happen since StreamResource implements Cloneable
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     private static class Pipe implements StreamResourceWriter {
 
@@ -109,7 +197,7 @@ public class StreamResource implements Serializable {
      * @param writer
      *            data output stream consumer
      */
-    public StreamResource(String name, StreamResourceWriter writer) {
+    private StreamResource(String name, StreamResourceWriter writer) {
         assert name != null;
         assert writer != null;
 
@@ -135,7 +223,7 @@ public class StreamResource implements Serializable {
      * @param factory
      *            data input stream factory. May not be null.
      */
-    public StreamResource(String name, InputStreamFactory factory) {
+    private StreamResource(String name, InputStreamFactory factory) {
         this(name, new Pipe(factory));
         assert name != null;
     }
@@ -173,27 +261,6 @@ public class StreamResource implements Serializable {
      */
     public String getFileName() {
         return fileName;
-    }
-
-    /**
-     * Set content type for the resource.
-     * 
-     * @param contentType
-     *            resource content type
-     */
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    /**
-     * Set cache time in millis. Zero or negative value disables the caching of
-     * this stream.
-     * 
-     * @param cacheTime
-     *            cache time
-     */
-    public void setCacheTime(long cacheTime) {
-        this.cacheTime = cacheTime;
     }
 
     /**
