@@ -43,6 +43,7 @@ import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -380,6 +381,15 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert node != null;
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
+    }
+
+    @Override
+    public void setAttribute(StateNode node, String attribute,
+            StreamResource resource) {
+        assert node != null;
+        assert attribute != null;
+        assert resource != null;
+        getAttributeNamespace(node).setResource(attribute, resource);
     }
 
 }

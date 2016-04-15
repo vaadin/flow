@@ -29,6 +29,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonBoolean;
@@ -103,7 +104,8 @@ public class JsonCodecTest {
     public void encodeWithTypeInfo_attachedElement() {
         Element element = ElementFactory.createDiv();
 
-        StateTree tree = new StateTree(ElementChildrenNamespace.class);
+        StateTree tree = new StateTree(new UI(),
+                ElementChildrenNamespace.class);
         tree.getRootNode().getNamespace(ElementChildrenNamespace.class).add(0,
                 element.getNode());
 
