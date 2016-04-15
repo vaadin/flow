@@ -123,7 +123,7 @@ public class ElementAttributeNamespace extends MapNamespace {
         if (getNode().isAttached()) {
             registerResource(attribute, resource);
         } else {
-            defferRegistration(attribute, resource);
+            deferRegistration(attribute, resource);
         }
     }
 
@@ -139,13 +139,15 @@ public class ElementAttributeNamespace extends MapNamespace {
         }
     }
 
-    private void defferRegistration(String attribute, StreamResource resource) {
+    private void deferRegistration(String attribute, StreamResource resource) {
+        assert !pendingResources.containsKey(attribute);
         EventRegistrationHandle handle = getNode()
                 .addAttachListener(() -> registerResource(attribute, resource));
         pendingResources.put(attribute, handle);
     }
 
     private void registerResource(String attribute, StreamResource resource) {
+        assert !resourceRegistrations.containsKey(attribute);
         StreamResourceRegistration registration = getSession()
                 .getResourceRegistry().registerResource(resource);
         resourceRegistrations.put(attribute, registration);
@@ -162,11 +164,10 @@ public class ElementAttributeNamespace extends MapNamespace {
                 .get(attribute);
         Optional<StreamResource> resource = Optional.empty();
         if (registration != null) {
-            resource = getSession().getResourceRegistry()
-                    .getResource(registration.getResourceUri());
+            resource = registration.getResource();
         }
         unregisterResource(attribute);
-        resource.ifPresent(res -> defferRegistration(attribute, res));
+        resource.ifPresent(res -> deferRegistration(attribute, res));
     }
 
     private VaadinSession getSession() {

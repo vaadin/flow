@@ -17,6 +17,7 @@ package com.vaadin.server;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Optional;
 
 /**
  * Stream resource registration result.
@@ -49,4 +50,13 @@ public interface StreamResourceRegistration extends Serializable {
      * until the session expires.
      */
     void unregister();
+
+    /**
+     * Get the resource whose registration result is represented by this
+     * {@link StreamResourceRegistration} instance.
+     *
+     * @return an optional resource, or an empty optional if resource has been
+     *         already unregistered
+     */
+    Optional<StreamResource> getResource();
 }

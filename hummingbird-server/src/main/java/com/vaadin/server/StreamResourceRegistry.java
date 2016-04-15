@@ -59,6 +59,11 @@ public class StreamResourceRegistry implements Serializable {
             registry.resources.remove(getResourceUri());
         }
 
+        @Override
+        public Optional<StreamResource> getResource() {
+            return registry.getResource(getResourceUri());
+        }
+
     }
 
     /**

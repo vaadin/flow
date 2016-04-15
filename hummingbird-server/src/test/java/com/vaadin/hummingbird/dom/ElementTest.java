@@ -35,6 +35,7 @@ import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -1720,7 +1721,7 @@ public class ElementTest {
 
     @Test
     public void setResourceAttribute_elementIsAttached_setRawAttribute()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         StreamResource resource = createEmptyResource("resource");
         ui.getElement().setAttribute("foo", resource);
@@ -1737,7 +1738,7 @@ public class ElementTest {
 
         ui.getElement().setAttribute("foo", "bar");
 
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
         res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
 
         Assert.assertFalse(res.isPresent());
@@ -1747,7 +1748,7 @@ public class ElementTest {
 
     @Test
     public void setResourceAttribute_elementIsAttached_removeAttribute()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         StreamResource resource = createEmptyResource("resource");
         ui.getElement().setAttribute("foo", resource);
@@ -1763,7 +1764,7 @@ public class ElementTest {
         resource = null;
 
         ui.getElement().removeAttribute("foo");
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
 
         res = ui.getSession().getResourceRegistry().getResource(new URI(uri));
         Assert.assertFalse(res.isPresent());
@@ -1792,7 +1793,7 @@ public class ElementTest {
 
     @Test
     public void setResourceAttribute_attachElement_setAnotherResource()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
 
         StreamResource resource = createEmptyResource("resource1");
@@ -1819,12 +1820,12 @@ public class ElementTest {
         // allow GC to collect element and all its (detach) listeners
         element = null;
 
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
     }
 
     @Test
     public void setResourceAttribute_attachElement_setRawAttribute()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
 
         StreamResource resource = createEmptyResource("resource");
@@ -1837,7 +1838,7 @@ public class ElementTest {
 
         element.setAttribute("foo", "bar");
 
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
 
         ui.getElement().appendChild(element);
 
@@ -1847,7 +1848,7 @@ public class ElementTest {
 
     @Test
     public void setResourceAttribute_attachElement_removeAttribute()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
 
         StreamResource resource = createEmptyResource("resource");
@@ -1862,7 +1863,7 @@ public class ElementTest {
 
         ui.getElement().appendChild(element);
 
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
 
         Assert.assertFalse(element.hasAttribute("foo"));
 
@@ -1871,7 +1872,7 @@ public class ElementTest {
 
     @Test
     public void setResourceAttribute_attachElement_setAnotherResourceAfterAttaching()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
 
         StreamResource resource = createEmptyResource("resource1");
@@ -1889,7 +1890,7 @@ public class ElementTest {
 
         Assert.assertTrue(element.hasAttribute("foo"));
 
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
 
         Assert.assertNull(ref.get());
 
@@ -1902,7 +1903,7 @@ public class ElementTest {
 
     @Test
     public void setResourceAttribute_attachElement_setRawAttributeAfterAttaching()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
 
         StreamResource resource = createEmptyResource("resource");
@@ -1917,7 +1918,7 @@ public class ElementTest {
 
         element.setAttribute("foo", "bar");
 
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
 
         Assert.assertNull(ref.get());
 
@@ -1928,7 +1929,7 @@ public class ElementTest {
 
     @Test
     public void setResourceAttribute_attachElement_removeAttributeAfterAttaching()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
 
         StreamResource resource = createEmptyResource("resource");
@@ -1943,7 +1944,7 @@ public class ElementTest {
 
         element.removeAttribute("foo");
 
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
 
         Assert.assertNull(ref.get());
 
@@ -1954,7 +1955,7 @@ public class ElementTest {
 
     @Test
     public void setResourceAttribute_detachElement_resourceIsUnregistered()
-            throws URISyntaxException {
+            throws URISyntaxException, InterruptedException {
         UI ui = createUI();
         Element element = ElementFactory.createDiv();
         ui.getElement().appendChild(element);
@@ -1986,7 +1987,7 @@ public class ElementTest {
         Assert.assertTrue(element.hasAttribute("foo"));
         Assert.assertEquals("bar", element.getAttribute("foo"));
 
-        assertIsGCollected(ref);
+        TestUtil.isGarbageCollected(ref);
     }
 
     @Test
@@ -2283,12 +2284,6 @@ public class ElementTest {
             }
         };
         return ui;
-    }
-
-    private void assertIsGCollected(WeakReference<StreamResource> ref) {
-        // Run GC to make sure resource is cleaned out
-        System.gc();
-        Assert.assertNull(ref.get());
     }
 
     @Test
