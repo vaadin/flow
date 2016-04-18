@@ -31,7 +31,7 @@ public class CompositeTest {
         };
     }
 
-    public class CompositeWithComponent extends Composite {
+    public class CompositeWithComponent extends Composite<Component> {
 
         @Override
         protected Component initContent() {
@@ -41,6 +41,10 @@ public class CompositeTest {
                     .addComponent(componentInsideLayoutInsideComposite);
             return layoutInsideComposite;
         }
+    }
+
+    public class CompositeWithGenericType extends Composite<TestComponent> {
+        // That's all
     }
 
     @Before
@@ -113,6 +117,14 @@ public class CompositeTest {
     public void getChildren_layoutInComposite() {
         ComponentTest.assertChildren(layoutInsideComposite,
                 componentInsideLayoutInsideComposite);
+    }
+
+    @Test
+    public void automaticCompositeContentType() {
+        CompositeWithGenericType instance = new CompositeWithGenericType();
+
+        Assert.assertEquals(TestComponent.class,
+                instance.getContent().getClass());
     }
 
     public static void assertElementChildren(Element parent,
