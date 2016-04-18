@@ -94,10 +94,10 @@ public interface ComponentUtil {
      *            a composite in the chain
      * @return the innermost component
      */
-    static Component getInnermostComponent(Composite composite) {
+    static Component getInnermostComponent(Composite<?> composite) {
         Component content = composite.getContent();
         while (content instanceof Composite) {
-            content = ((Composite) content).getContent();
+            content = ((Composite<?>) content).getContent();
         }
         return content;
     }
@@ -114,14 +114,15 @@ public interface ComponentUtil {
      * @return <code>true</code> if the component is inside the composite chain,
      *         <code>false</code> otherwise
      */
-    static boolean isCompositeContent(Composite composite,
+    static boolean isCompositeContent(Composite<?> composite,
             Component component) {
         Component compositeContent = composite.getContent();
         if (compositeContent == component) {
             return true;
         } else if (compositeContent instanceof Composite) {
             // Nested composites
-            return isCompositeContent((Composite) compositeContent, component);
+            return isCompositeContent((Composite<?>) compositeContent,
+                    component);
         } else {
             return false;
         }
@@ -164,7 +165,8 @@ public interface ComponentUtil {
 
         Component component = ElementUtil.getComponent(element).get();
         if (component instanceof Composite) {
-            return ComponentUtil.getInnermostComponent((Composite) component);
+            return ComponentUtil
+                    .getInnermostComponent((Composite<?>) component);
         } else {
             return component;
         }
