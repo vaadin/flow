@@ -149,7 +149,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
             fireClickEvent(target);
         } catch (JavaScriptException e) {
             // Happens because localhost:120 does not answer
-            assertTrue(e.getMessage().contains("failed: Connection refused"));
+            assertTrue(e.getMessage().contains("HttpHostConnectException"));
         }
 
         assertInvocations(0);
