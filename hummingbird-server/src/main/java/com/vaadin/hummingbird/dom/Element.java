@@ -363,7 +363,7 @@ public class Element implements Serializable {
      * instance into the session and use the registered resource URI as an
      * element attribute.
      * <p>
-     * 
+     *
      * @see #setAttribute(String, String)
      *
      * @param attribute
@@ -705,6 +705,8 @@ public class Element implements Serializable {
                 return this;
             }
             removeChild(index);
+            insertChild(index, child);
+        } else if (index == childCount) {
             insertChild(index, child);
         } else {
             throw new IllegalArgumentException(String.format(

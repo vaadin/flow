@@ -81,12 +81,6 @@ public class RoutingViewHierarchy {
             //@formatter:on
             childContainer = ElementFactory.createDiv();
             root.appendChild(header, childContainer);
-
-            // Just so we can use setChild later
-            //@formatter:off
-            childContainer.appendChild(ElementFactory.createDiv("Child placeholder"));
-            //@formatter:on
-
         }
 
         @Override
