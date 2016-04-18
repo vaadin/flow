@@ -25,16 +25,14 @@
 			<artifactId>hummingbird-server</artifactId>
 			<version>${parent.version}</version>
 		</dependency>
-
+		<dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>hummingbird-html-components</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-html-components</artifactId>
-			<version>0.0.3-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
