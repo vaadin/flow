@@ -4,7 +4,7 @@
 There are two options to generate content dynamically based on data provided by 
 the current application state:
 
-* The other option is to use `StreamResource`.
+* You can use a `StreamResource` which will handle URLs automatically.
 * You can build a custom URL including parameters with `String` type parameters. In this case you will need one more servlet which handles the URL.
 
 The first option is preferable since it doesn't require additional servlet and allows to use data with any type from the application state.
@@ -52,8 +52,8 @@ image.getStyle().set("display", "block");
 Button button = new Button("Generate Image");
 button.addClickListener(event -> {
     String url = "image?name=" + name.getValue();
-        image.setAttribute("data", url);
-    });
+    image.setAttribute("data", url);
+});
 
 UI.getCurrent().getElement().appendChild(name.getElement(), image,
     button.getElement());
