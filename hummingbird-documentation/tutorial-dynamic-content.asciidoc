@@ -4,12 +4,14 @@
 There are two options to generate content dynamically based on data provided by 
 the current application state:
 
-* You can build a custom URL including parameters with `String` type. In this case you will need one more servlet which handles the URL.
 * The other option is to use `StreamResource`.
+* You can build a custom URL including parameters with `String` type parameters. In this case you will need one more servlet which handles the URL.
+
+The first option is preferable since it doesn't require additional servlet and allows to use data with any type from the application state.
 
 === Using custom servlet and request parameters 
 
-So let's create a custom servlet which handles "image" as a relative URL: 
+You can create a custom servlet which handles "image" as a relative URL: 
 
 [source,java]
 ----
@@ -37,7 +39,7 @@ public class DynamicContentServlet extends HttpServlet {
 
 The following code should be used in the application (which has its own servlet). 
 It generates the resource URL on the fly based on the current application state.
-The property value of the input element is used here as a state:
+The property value of the input component is used here as a state:
 
 [source,java]
 ----
