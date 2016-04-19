@@ -75,7 +75,8 @@ image.getStyle().set("display", "block");
 
 Button button = new Button("Generate Image");
 button.addClickListener(event -> {
-    StreamResource resource = createResource(name);
+    StreamResource resource = new StreamResource("image.svg",
+            () -> getImageInputStream(name));
     image.setAttribute("data", resource);
 });
 
@@ -85,17 +86,10 @@ UI.getCurrent().getElement().appendChild(name.getElement(), image,
 
 The `data` attribute value is set to the StreamResource, which will automatically be converted into a URL. A `StreamResource` uses a dynamic data provider to produce the data.
 The file name given to a `StreamResource` is used as a part of the URL and will also become the filename if the user selects to download the resource.
-And here is an example how to create a `StreamResource` instance:
+And here is an example how to create a data provider:
 
 [source,java]
 ----
-
-private StreamResource createResource(Input name) {
-    StreamResource resource = new StreamResource("image", () -> getImageInputStream(name));
-    resource.setContentType("image/svg+xml");
-    return resource;
-}
-
 private InputStream getImageInputStream(Input name) {
     String value = name.getValue();
     if (value == null) {

@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.server.RequestHandler;
@@ -33,6 +34,7 @@ import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceWriter;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
+import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinSession;
 
 /**
@@ -77,7 +79,10 @@ public class StreamResourceRequestHandler implements RequestHandler {
             }
 
             StreamResource streamResource = resource.get();
-            response.setContentType(streamResource.getContentType());
+            ServletContext context = ((VaadinServletRequest) request)
+                    .getServletContext();
+            response.setContentType(streamResource.getResolver()
+                    .apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());
             writer = streamResource.getWriter();
             if (writer == null) {
