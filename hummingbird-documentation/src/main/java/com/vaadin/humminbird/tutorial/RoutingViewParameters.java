@@ -24,11 +24,18 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
+import com.vaadin.hummingbird.router.RouterLink;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
 
 @CodeFor("tutorial-routing-view-parameters.asciidoc")
 public class RoutingViewParameters {
+
+    private interface Product {
+        String getId();
+
+        String getName();
+    }
 
     @WebServlet(urlPatterns = "/*", name = "MyServlet", asyncSupported = true)
     @VaadinServletConfiguration(routerConfigurator = MyRouterConfigurator.class, productionMode = false)
@@ -71,5 +78,11 @@ public class RoutingViewParameters {
             System.out.println(docsSubPage);
         }
 
+    }
+
+    void routerLink() {
+        Product product = null;
+
+        new RouterLink(product.getName(), ProductView.class, product.getId());
     }
 }

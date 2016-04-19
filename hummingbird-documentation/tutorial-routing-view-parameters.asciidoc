@@ -14,7 +14,7 @@ public void configure(RouterConfiguration configuration) {
 }
 ----
 
-All `product/something` URLs (but not `product/something/somethingelse`) are now mapped to the `ProductsView`. The `id` parameter can be retrieved in `ProductsView` by overriding the `onLocationChange(LocationChangeEvent)` method:
+All `product/something` URLs (but not `product/something/somethingelse`) are now mapped to the `ProductView`. The `id` parameter can be retrieved in `ProductView` by overriding the `onLocationChange(LocationChangeEvent)` method:
 
 [source,java]
 ----
@@ -32,6 +32,15 @@ The `DocsView` is used for all URLs starting with `docs/`, even if there are mor
 public void onLocationChange(LocationChangeEvent locationChangeEvent) {
   String docsSubPage = locationChangeEvent.getPathWildcard();
 }
+----
+
+== Navigating With Parameters
+
+The `RouterLink` knows how to fill in parameter values based on the route set for a view.
+You should provide values for all parameters defined in the route, starting from the left.
+[source,java]
+----
+new RouterLink(product.getName(), ProductView.class, product.getId());
 ----
 
 See also:
