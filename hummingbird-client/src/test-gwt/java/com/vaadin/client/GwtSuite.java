@@ -9,6 +9,7 @@ import com.vaadin.client.hummingbird.collection.GwtJsArrayTest;
 import com.vaadin.client.hummingbird.collection.GwtJsMapTest;
 import com.vaadin.client.hummingbird.collection.GwtJsSetTest;
 import com.vaadin.client.hummingbird.collection.GwtJsWeakMapTest;
+import com.vaadin.client.hummingbird.template.GwtTemplateBinderTest;
 import com.vaadin.client.hummingbird.util.GwtNativeFunctionTest;
 
 import junit.framework.Test;
@@ -31,6 +32,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtNativeFunctionTest.class);
         suite.addTestSuite(GwtRouterLinkHandlerTest.class);
         suite.addTestSuite(GwtDefaultReconnectDialogTest.class);
+        suite.addTestSuite(GwtTemplateBinderTest.class);
         return suite;
     }
 }
