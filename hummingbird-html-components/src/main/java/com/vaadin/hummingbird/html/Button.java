@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.html.event.ClickNotifier;
  * @since
  * @author Vaadin Ltd
  */
-@Tag("button")
+@Tag(Tag.BUTTON)
 public class Button extends HtmlContainer implements ClickNotifier {
     /**
      * Creates a new empty button.
@@ -48,7 +48,7 @@ public class Button extends HtmlContainer implements ClickNotifier {
 
     /**
      * Creates a button with the given text and click listener.
-     * 
+     *
      * @param text
      *            the button text
      * @param clickListener

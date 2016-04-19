@@ -1,5 +1,6 @@
 package com.vaadin.hummingbird.uitest.ui;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
@@ -14,7 +15,7 @@ public class DynamicTitleView extends AbstractDivView {
 
     @Override
     protected void onShow() {
-        getElement().removeAllChildren().appendChild(new Element("div")
+        getElement().removeAllChildren().appendChild(new Element(Tag.DIV)
                 .setTextContent("Dynamic").setAttribute("id", "dynamic"));
     }
 

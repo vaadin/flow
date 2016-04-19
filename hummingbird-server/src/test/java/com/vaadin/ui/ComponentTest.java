@@ -71,7 +71,7 @@ public class ComponentTest {
 
     }
 
-    @Tag("div")
+    @Tag(Tag.DIV)
     private static class TestComponentWithTag extends Component {
 
     }
@@ -124,7 +124,8 @@ public class ComponentTest {
 
     @Test
     public void getElement() {
-        Assert.assertEquals("div", divWithTextComponent.getElement().getTag());
+        Assert.assertEquals(Tag.DIV,
+                divWithTextComponent.getElement().getTag());
         Assert.assertEquals("Test component",
                 divWithTextComponent.getElement().getTextContent());
     }
@@ -257,14 +258,14 @@ public class ComponentTest {
     public void createComponentWithTag() {
         Component component = new TestComponentWithTag();
 
-        Assert.assertEquals("div", component.getElement().getTag());
+        Assert.assertEquals(Tag.DIV, component.getElement().getTag());
     }
 
     @Test
     public void createComponentWithInheritedTag() {
         Component component = new TestComponentWithInheritedTag();
 
-        Assert.assertEquals("div", component.getElement().getTag());
+        Assert.assertEquals(Tag.DIV, component.getElement().getTag());
     }
 
     @Test(expected = IllegalStateException.class)

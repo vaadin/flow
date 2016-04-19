@@ -37,9 +37,103 @@ import com.vaadin.ui.Component;
 @Documented
 public @interface Tag {
     /**
+     * Tag for an <code>&lt;a&gt;</code>
+     */
+    public static final String A = "a";
+    /**
+     * Tag for an <code>&lt;br&gt;</code>
+     */
+    public static final String BR = "br";
+    /**
+     * Tag for an <code>&lt;button&gt;</code>
+     */
+    public static final String BUTTON = "button";
+    /**
+     * Tag for an <code>&lt;div&gt;</code>
+     */
+    public static final String DIV = "div";
+    /**
+     * Tag for an <code>&lt;em&gt;</code>
+     */
+    public static final String EM = "em";
+    /**
+     * Tag for an <code>&lt;h1&gt;</code>
+     */
+    public static final String H1 = "h1";
+    /**
+     * Tag for an <code>&lt;h2&gt;</code>
+     */
+    public static final String H2 = "h2";
+    /**
+     * Tag for an <code>&lt;h3&gt;</code>
+     */
+    public static final String H3 = "h3";
+    /**
+     * Tag for an <code>&lt;h4&gt;</code>
+     */
+    public static final String H4 = "h4";
+    /**
+     * Tag for an <code>&lt;h5&gt;</code>
+     */
+    public static final String H5 = "h5";
+    /**
+     * Tag for an <code>&lt;g6&gt;</code>
+     */
+    public static final String H6 = "h6";
+    /**
+     * Tag for an <code>&lt;hr&gt;</code>
+     */
+    public static final String HR = "hr";
+    /**
+     * Tag for an <code>&lt;input&gt;</code>
+     */
+    public static final String INPUT = "input";
+    /**
+     * Tag for an <code>&lt;label&gt;</code>
+     */
+    public static final String LABEL = "label";
+    /**
+     * Tag for an <code>&lt;li&gt;</code>
+     */
+    public static final String LI = "li";
+    /**
+     * Tag for an <code>&lt;option&gt;</code>
+     */
+    public static final String OPTION = "option";
+    /**
+     * Tag for an <code>&lt;p&gt;</code>
+     */
+    public static final String P = "p";
+    /**
+     * Tag for an <code>&lt;pre&gt;</code>
+     */
+    public static final String PRE = "pre";
+    /**
+     * Tag for an <code>&lt;select&gt;</code>
+     */
+    public static final String SELECT = "select";
+    /**
+     * Tag for an <code>&lt;span&gt;</code>
+     */
+    public static final String SPAN = "span";
+    /**
+     * Tag for an <code>&lt;strong&gt;</code>
+     */
+    public static final String STRONG = "strong";
+    /**
+     * Tag for an <code>&lt;textarea&gt;</code>
+     */
+    public static final String TEXTAREA = "textarea";
+    /**
+     * Tag for an <code>&lt;ul&gt;</code>
+     */
+    public static final String UL = "ul";
+
+    /**
      * Gets the tag name.
      *
      * @return the tag name
      */
     String value();
+
 }
