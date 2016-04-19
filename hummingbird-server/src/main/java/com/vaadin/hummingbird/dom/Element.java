@@ -1399,27 +1399,6 @@ public class Element implements Serializable {
     }
 
     /**
-     * Defines a mapping between this element and the given {@link Component}.
-     *
-     * @param component
-     *            the component this element is attached to
-     * @return this element
-     */
-    public Element setComponent(Component component) {
-        if (component == null) {
-            throw new IllegalArgumentException("Component must not be null");
-        }
-
-        if (getComponent().isPresent()) {
-            throw new IllegalStateException(
-                    "A component is already attached to this element");
-        }
-        stateProvider.setComponent(getNode(), component);
-
-        return this;
-    }
-
-    /**
      * Gets the component this element has been mapped to, if any.
      *
      * @return an optional component, or an empty optional if no component has
