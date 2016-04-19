@@ -16,6 +16,7 @@
 package com.vaadin.client.hummingbird.collection;
 
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
@@ -24,6 +25,8 @@ import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.template.TemplateRegistry;
+import com.vaadin.client.hummingbird.template.TestElementTemplateNode;
 import com.vaadin.hummingbird.shared.Namespaces;
 
 import elemental.client.Browser;
@@ -714,6 +717,43 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
                 }
             });
         }
+    }
+
+    public void testAddTemplateChild() {
+        final int templateId = 43;
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("child");
+
+        TemplateRegistry templates = new TemplateRegistry();
+
+        templates.register(templateId, templateNode);
+
+        Registry registry = new Registry() {
+            {
+                set(TemplateRegistry.class, templates);
+            }
+        };
+
+        StateTree stateTree = new StateTree(registry);
+
+        StateNode templateStateNode = new StateNode(345, stateTree);
+        templateStateNode.getMapNamespace(Namespaces.TEMPLATE)
+                .getProperty(Namespaces.ROOT_TEMPLATE_ID)
+                .setValue(Double.valueOf(templateId));
+
+        StateNode parentElementNode = new StateNode(94, stateTree);
+        parentElementNode.getMapNamespace(Namespaces.ELEMENT_DATA)
+                .getProperty(Namespaces.TAG).setValue("div");
+        parentElementNode.getListNamespace(Namespaces.ELEMENT_CHILDREN).add(0,
+                templateStateNode);
+
+        Element element = Browser.getDocument().createElement("div");
+        BasicElementBinder.bind(parentElementNode, element);
+
+        Reactive.flush();
+
+        assertEquals(1, element.getChildElementCount());
+        assertEquals("CHILD", element.getFirstElementChild().getTagName());
     }
 
 }
