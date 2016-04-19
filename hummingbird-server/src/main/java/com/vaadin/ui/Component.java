@@ -143,7 +143,7 @@ public abstract class Component
                 .getComponent(getElement());
         if (isInsideComposite(mappedComponent)) {
             Component parent = ComponentUtil.getParentUsingComposite(
-                    (Composite) mappedComponent.get(), this);
+                    (Composite<?>) mappedComponent.get(), this);
             return Optional.of(parent);
         }
 

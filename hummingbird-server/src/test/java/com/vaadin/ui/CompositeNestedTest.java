@@ -10,10 +10,10 @@ import com.vaadin.ui.ComponentTest.TestComponent;
 public class CompositeNestedTest {
     TestLayout layout;
     TestComponent componentInComposite;
-    Composite compositeOuter;
-    Composite compositeInner;
+    Composite<?> compositeOuter;
+    Composite<?> compositeInner;
 
-    public static class TestComposite extends Composite {
+    public static class TestComposite extends Composite<Component> {
 
         private Component content;
 

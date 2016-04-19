@@ -237,8 +237,8 @@ public class ElementUtil {
         if (mappedComponent instanceof Composite) {
             // If "this" is the content of a composite, getComponent will return
             // the composite
-            return ComponentUtil.isCompositeContent((Composite) mappedComponent,
-                    component);
+            return ComponentUtil.isCompositeContent(
+                    (Composite<?>) mappedComponent, component);
         } else {
             return false;
         }
