@@ -19,7 +19,7 @@ import java.util.Optional;
 
 /**
  * Location with support for the syntax used in route definitions used with e.g.
- * {@link ModifiableRouterConfiguration#setRoute(String, Class, Class)}.
+ * {@link RouterConfiguration#setRoute(String, Class, Class)}.
  *
  * @since
  * @author Vaadin Ltd

@@ -24,7 +24,7 @@ import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 /**
  * Implementation of {@link Style} for {@link BasicElementStateProvider}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class BasicElementStyle implements Style {

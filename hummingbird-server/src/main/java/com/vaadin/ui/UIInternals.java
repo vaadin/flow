@@ -126,7 +126,7 @@ public class UIInternals implements Serializable {
 
     private int serverSyncId = 0;
 
-    private final StateTree stateTree = new StateTree(getRootNodeNamespaces());
+    private final StateTree stateTree;
 
     private PushConnection pushConnection = null;
 
@@ -175,6 +175,7 @@ public class UIInternals implements Serializable {
      */
     public UIInternals(UI ui) {
         this.ui = ui;
+        stateTree = new StateTree(ui, getRootNodeNamespaces());
     }
 
     /**

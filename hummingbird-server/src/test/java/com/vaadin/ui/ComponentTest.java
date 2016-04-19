@@ -16,15 +16,20 @@
 package com.vaadin.ui;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.ElementUtil;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventBus;
 
 public class ComponentTest {
 
@@ -47,6 +52,41 @@ public class ComponentTest {
         public String toString() {
             return getElement().getOwnTextContent();
         }
+
+        @Override
+        public void fireEvent(ComponentEvent componentEvent) {
+            super.fireEvent(componentEvent);
+        }
+
+        @Override
+        public <T extends ComponentEvent> EventRegistrationHandle addListener(
+                Class<T> eventType, Consumer<T> listener) {
+            return super.addListener(eventType, listener);
+        }
+
+        @Override
+        public ComponentEventBus getEventBus() {
+            return super.getEventBus();
+        }
+
+    }
+
+    @Tag("div")
+    private static class TestComponentWithTag extends Component {
+
+    }
+
+    private static class TestComponentWithInheritedTag
+            extends TestComponentWithTag {
+
+    }
+
+    @Tag("")
+    private static class TestComponentWithEmptyTag extends Component {
+
+    }
+
+    private static class TestComponentWithoutTag extends Component {
 
     }
 
@@ -113,7 +153,9 @@ public class ComponentTest {
         List<Component> children = parent.getChildren()
                 .collect(Collectors.toList());
         Assert.assertArrayEquals(expectedChildren, children.toArray());
-
+        for (Component c : children) {
+            Assert.assertEquals(c.getParent().get(), parent);
+        }
     }
 
     @Test
@@ -210,4 +252,66 @@ public class ComponentTest {
         Component.setElement(c, element);
 
     }
+
+    @Test
+    public void createComponentWithTag() {
+        Component component = new TestComponentWithTag();
+
+        Assert.assertEquals("div", component.getElement().getTag());
+    }
+
+    @Test
+    public void createComponentWithInheritedTag() {
+        Component component = new TestComponentWithInheritedTag();
+
+        Assert.assertEquals("div", component.getElement().getTag());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void createComponentWithEmptyTag() {
+        new TestComponentWithEmptyTag();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void createComponentWithoutTag() {
+        new TestComponentWithoutTag();
+    }
+
+    @Test
+    public void getUI_noParent() {
+        TestComponent c = new TestComponent();
+        assertEmpty(c.getUI());
+    }
+
+    @Test
+    public void getUI_detachedParent() {
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponent child = new TestComponent();
+        parent.add(child);
+        assertEmpty(child.getUI());
+    }
+
+    @Test
+    public void getUI_attachedToUI() {
+        TestComponent child = new TestComponent();
+        UI ui = new UI();
+        ui.add(child);
+        Assert.assertEquals(ui, child.getUI().get());
+    }
+
+    @Test
+    public void getUI_attachedThroughParent() {
+        TestComponentContainer parent = new TestComponentContainer();
+        TestComponent child = new TestComponent();
+        parent.add(child);
+        UI ui = new UI();
+        ui.add(parent);
+        Assert.assertEquals(ui, child.getUI().get());
+    }
+
+    private void assertEmpty(Optional<?> optional) {
+        Assert.assertEquals("Optional should be empty but is " + optional,
+                Optional.empty(), optional);
+    }
+
 }

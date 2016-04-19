@@ -43,6 +43,7 @@ import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
 import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -57,7 +58,7 @@ import elemental.json.JsonValue;
  * The data is stored directly in the state node but this should be considered
  * an implementation detail which can change.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class BasicElementStateProvider implements ElementStateProvider {
@@ -269,7 +270,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     /**
-     * Gets all the namesapces used by an element node.
+     * Gets all the namespaces used by an element node.
      *
      * @return an unmodifiable collection of namespace classes
      */
@@ -380,6 +381,15 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert node != null;
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
+    }
+
+    @Override
+    public void setAttribute(StateNode node, String attribute,
+            StreamResource resource) {
+        assert node != null;
+        assert attribute != null;
+        assert resource != null;
+        getAttributeNamespace(node).setResource(attribute, resource);
     }
 
 }

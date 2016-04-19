@@ -36,7 +36,7 @@ public class Router implements Serializable {
      * done on a copy, which is then swapped into use so that nobody outside
      * this class ever can have a reference to the actively used instance.
      */
-    private volatile ModifiableRouterConfiguration configuration = new ModifiableRouterConfiguration() {
+    private volatile RouterConfiguration configuration = new RouterConfiguration() {
         @Override
         public boolean isConfigured() {
             // Regular implementation always returns true
@@ -101,7 +101,7 @@ public class Router implements Serializable {
      */
     public void navigate(UI ui, Location location) {
         // Read volatile field only once per navigation
-        RouterConfiguration currentConfig = configuration;
+        ImmutableRouterConfiguration currentConfig = configuration;
         assert currentConfig.isConfigured();
 
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
@@ -175,7 +175,7 @@ public class Router implements Serializable {
              * Create a copy that the configurator can modify without affecting
              * the live instance.
              */
-            ModifiableRouterConfiguration mutableCopy = new ModifiableRouterConfiguration(
+            RouterConfiguration mutableCopy = new RouterConfiguration(
                     configuration, true);
 
             configurator.configure(mutableCopy);
@@ -184,8 +184,7 @@ public class Router implements Serializable {
              * Create an use a new immutable copy that can be shared between
              * concurrent request threads without risking any races.
              */
-            configuration = new ModifiableRouterConfiguration(mutableCopy,
-                    false);
+            configuration = new RouterConfiguration(mutableCopy, false);
         } finally {
             configUpdateLock.unlock();
         }
@@ -198,8 +197,8 @@ public class Router implements Serializable {
      *
      * @return the currently used router configuration
      */
-    public RouterConfiguration getConfiguration() {
-        RouterConfiguration currentConfig = configuration;
+    public ImmutableRouterConfiguration getConfiguration() {
+        ImmutableRouterConfiguration currentConfig = configuration;
 
         assert !currentConfig.isModifiable();
         return currentConfig;

@@ -22,7 +22,7 @@ import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.HasChildView;
-import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
+import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
@@ -37,7 +37,7 @@ public class RoutingViewHierarchy {
 
     public static class MyRouterConfigurator implements RouterConfigurator {
         @Override
-        public void configure(ModifiableRouterConfiguration configuration) {
+        public void configure(RouterConfiguration configuration) {
             //@formatter:off - custom line wrapping
             configuration.setRoute("company", CompanyView.class, MainLayout.class);
             //@formatter:on
@@ -46,7 +46,7 @@ public class RoutingViewHierarchy {
 
     public static class MyRouterConfigurator2 implements RouterConfigurator {
         @Override
-        public void configure(ModifiableRouterConfiguration configuration) {
+        public void configure(RouterConfiguration configuration) {
             //@formatter:off - custom line wrapping
             configuration.setRoute("company", CompanyView.class, CompanySideBarView.class);
             configuration.setParentView(CompanySideBarView.class, MainLayout.class);
@@ -81,12 +81,6 @@ public class RoutingViewHierarchy {
             //@formatter:on
             childContainer = ElementFactory.createDiv();
             root.appendChild(header, childContainer);
-
-            // Just so we can use setChild later
-            //@formatter:off
-            childContainer.appendChild(ElementFactory.createDiv("Child placeholder"));
-            //@formatter:on
-
         }
 
         @Override

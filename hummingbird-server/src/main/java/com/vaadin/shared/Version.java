@@ -20,7 +20,7 @@ import java.io.Serializable;
 /**
  * Provides information about the current version of the framework.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class Version implements Serializable {

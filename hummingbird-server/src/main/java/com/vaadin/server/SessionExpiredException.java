@@ -18,7 +18,7 @@ package com.vaadin.server;
 /**
  * Exception indicating that the session has expired.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class SessionExpiredException extends Exception {

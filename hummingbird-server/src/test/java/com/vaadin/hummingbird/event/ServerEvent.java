@@ -13,32 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.event;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import java.math.BigDecimal;
+
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 
-public class Div extends AbstractHtmlComponent
-        implements HasSimpleAddComponent {
-    public Div() {
-        super(ElementFactory.createDiv());
+public class ServerEvent extends ComponentEvent {
+
+    private BigDecimal someValue;
+
+    public ServerEvent(Component source, BigDecimal someValue) {
+        super(source, false);
+        this.someValue = someValue;
     }
 
-    public Div(String text) {
-        this();
-        getElement().setTextContent(text);
-    }
-
-    public Div(Component... components) {
-        this();
-        for (Component component : components) {
-            addComponents(component);
-        }
-    }
-
-    @Override
-    public void setText(String text) {
-        super.setText(text);
+    public BigDecimal getSomeValue() {
+        return someValue;
     }
 
 }

@@ -20,7 +20,7 @@ import com.vaadin.shared.ApplicationConstants;
 /**
  * Helpers to create {@link Element} instances.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public interface ElementFactory {
@@ -249,7 +249,7 @@ public interface ElementFactory {
      *
      * @return an {@code &lt;hr>} element.
      */
-    static Element createHorizontalRule() {
+    static Element createHr() {
         return new Element("hr");
     }
 

@@ -48,7 +48,7 @@ the `@Title` annotation and the `View:getTitle` method) with your own custom
 [source,java]
 ----
 @Override
-public void configure(ModifiableRouterConfiguration configuration) {
+public void configure(RouterConfiguration configuration) {
   // setRoute calls omitted
   configuration.setPageTitleGenerator(new CustomPageTitleGenerator());
 }

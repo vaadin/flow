@@ -29,12 +29,10 @@ import com.vaadin.ui.UI;
 public class UpdateDivUI extends UI {
 
     private int msgId = 1;
-    private String ip;
     private Element div = ElementFactory.createDiv();
 
     @Override
     protected void init(VaadinRequest request) {
-        ip = request.getRemoteAddr();
         Element bodyElement = getElement();
         bodyElement.appendChild(div);
         updateDiv();
@@ -50,7 +48,7 @@ public class UpdateDivUI extends UI {
             if (msgId > 1000) {
                 throw new RuntimeException("Done");
             }
-        } , delay, delay, TimeUnit.MILLISECONDS);
+        }, delay, delay, TimeUnit.MILLISECONDS);
     }
 
     private void updateDiv() {

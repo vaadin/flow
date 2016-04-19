@@ -19,9 +19,14 @@ import java.util.Set;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 
+import elemental.json.JsonObject;
+
 public class BasicElementView extends AbstractDivView {
+
+    private EventRegistrationHandle helloWorldEventRemover;
 
     @Override
     protected void onShow() {
@@ -35,19 +40,20 @@ public class BasicElementView extends AbstractDivView {
                 .synchronizeProperty("value", "change");
 
         button.addEventListener("click", e -> {
-            String buttonText = e.getEventData()
-                    .getString("element.textContent");
-
-            Element greeting = ElementFactory
-                    .createDiv("Thank you for clicking at \"" + buttonText
-                            + "\"! The field value is "
+            JsonObject eventData = e.getEventData();
+            String buttonText = eventData.getString("element.textContent");
+            int clientX = (int) eventData.getNumber("event.clientX");
+            int clientY = (int) eventData.getNumber("event.clientY");
+            Element greeting = ElementFactory.createDiv(
+                    "Thank you for clicking \"" + buttonText + "\" at ("
+                            + clientX + "," + clientY + ")! The field value is "
                             + input.getProperty("value"));
             greeting.setAttribute("class", "thankYou");
             greeting.addEventListener("click",
                     e2 -> greeting.removeFromParent());
 
             mainElement.appendChild(greeting);
-        }, "element.textContent");
+        }, "element.textContent", "event.clientX", "event.clientY");
 
         Element helloWorldElement = ElementFactory.createDiv("Hello world");
 
@@ -55,10 +61,21 @@ public class BasicElementView extends AbstractDivView {
 
         helloWorldElement.setProperty("id", "hello-world");
         spanClasses.add("hello");
-        helloWorldElement.addEventListener("click", e -> {
-            helloWorldElement.setTextContent("Stop touching me!");
-            spanClasses.clear();
-        });
+        helloWorldEventRemover = helloWorldElement.addEventListener("click",
+                e -> {
+                    if (helloWorldElement.getOwnTextContent()
+                            .equals("Hello world")) {
+                        helloWorldElement.setTextContent("Stop touching me!");
+                    } else {
+                        // We never get to this code as long as the event
+                        // removal actually works
+                        helloWorldElement.setTextContent(
+                                helloWorldElement.getOwnTextContent()
+                                        + " This might be your last warning!");
+                    }
+                    spanClasses.clear();
+                    helloWorldEventRemover.remove();
+                });
         Style s = helloWorldElement.getStyle();
         s.set("color", "red");
         s.set("fontWeight", "bold");

@@ -62,9 +62,8 @@ public class ViewTestLayout implements HasChildView {
             ui.navigateTo(viewSelect.getProperty("value"));
         });
 
-        element.appendChild(viewSelect, ElementFactory.createHorizontalRule(),
+        element.appendChild(viewSelect, ElementFactory.createHr(),
                 viewContainer);
-        viewContainer.appendChild(ElementFactory.createDiv());
     }
 
     @Override

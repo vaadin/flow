@@ -32,5 +32,5 @@ public interface RouterConfigurator {
      * @param configuration
      *            the router configuration to update
      */
-    void configure(ModifiableRouterConfiguration configuration);
+    void configure(RouterConfiguration configuration);
 }

@@ -40,7 +40,7 @@ import com.vaadin.shared.ApplicationConstants;
  * from the servlet (using a default servlet if such exists) or through a stand
  * alone static file server.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class StaticFileServer implements Serializable {

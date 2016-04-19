@@ -1,8 +1,8 @@
 package com.vaadin.hummingbird.uitest.ui;
 
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
-import com.vaadin.hummingbird.uitest.component.Div;
-import com.vaadin.hummingbird.uitest.component.Input;
 
 public class PageTitleView extends AbstractDivView {
 
@@ -16,19 +16,19 @@ public class PageTitleView extends AbstractDivView {
         Div updateButton = new Div();
         updateButton.setId("button");
         updateButton.setText("Update page title");
-        updateButton.getElement().addEventListener("click", e -> {
+        updateButton.addClickListener(e -> {
             getPage().setTitle(input.getValue());
         });
 
         Div overrideButton = new Div();
         overrideButton.setId("override");
         overrideButton.setText("Triggers two updates");
-        overrideButton.getElement().addEventListener("click", e -> {
+        overrideButton.addClickListener(e -> {
             getPage().setTitle(input.getValue());
             getPage().setTitle("OVERRIDDEN");
         });
 
-        addComponents(input, updateButton, overrideButton);
+        add(input, updateButton, overrideButton);
     }
 
 }

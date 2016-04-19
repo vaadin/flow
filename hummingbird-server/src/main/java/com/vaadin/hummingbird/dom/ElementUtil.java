@@ -26,7 +26,7 @@ import com.vaadin.ui.Composite;
 /**
  * Provides utility methods for {@link Element}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ElementUtil {
@@ -214,8 +214,9 @@ public class ElementUtil {
     }
 
     /**
-     * Checks if the element of the component is correctly mapped to the
-     * component.
+     * Checks if the component mapping of the element of the provided component
+     * actually refers to the the provided component, either directly or through
+     * a chain of composites.
      * <p>
      * Meant for internal use only.
      *
@@ -236,8 +237,8 @@ public class ElementUtil {
         if (mappedComponent instanceof Composite) {
             // If "this" is the content of a composite, getComponent will return
             // the composite
-            return ComponentUtil.isCompositeContent((Composite) mappedComponent,
-                    component);
+            return ComponentUtil.isCompositeContent(
+                    (Composite<?>) mappedComponent, component);
         } else {
             return false;
         }

@@ -36,6 +36,7 @@ import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.TemplateNamespace;
 import com.vaadin.hummingbird.namespace.TextNodeNamespace;
 import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;
@@ -47,7 +48,7 @@ import elemental.json.JsonValue;
  * Contains methods for updating and querying various parts of the element, such
  * as attributes.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class Element implements Serializable {
@@ -365,20 +366,7 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
-        if (attribute == null) {
-            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
-        }
-
-        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
-            throw new IllegalArgumentException(String.format(
-                    "Attribute \"%s\" is not a valid attribute name",
-                    lowerCaseAttribute));
-        }
-
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
-        }
+        String lowerCaseAttribute = validateAttribute(attribute, value);
 
         CustomAttribute customAttribute = customAttributes
                 .get(lowerCaseAttribute);
@@ -387,6 +375,40 @@ public class Element implements Serializable {
         } else {
             stateProvider.setAttribute(getNode(), lowerCaseAttribute, value);
         }
+        return this;
+    }
+
+    /**
+     * Sets the given attribute to the given {@link StreamResource} value.
+     * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
+     * <p>
+     * This is a convenience method to register a {@link StreamResource}
+     * instance into the session and use the registered resource URI as an
+     * element attribute.
+     * <p>
+     *
+     * @see #setAttribute(String, String)
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param resource
+     *            the resource value, not null
+     * @return this element
+     */
+    public Element setAttribute(String attribute, StreamResource resource) {
+        String lowerCaseAttribute = validateAttribute(attribute, resource);
+
+        CustomAttribute customAttribute = customAttributes
+                .get(lowerCaseAttribute);
+        if (customAttribute == null) {
+            stateProvider.setAttribute(node, attribute, resource);
+        } else {
+            throw new IllegalArgumentException("Can't set " + attribute
+                    + " to StreamResource value. This attribute has special semantic");
+        }
+
         return this;
     }
 
@@ -660,10 +682,24 @@ public class Element implements Serializable {
                     index, getChildCount()));
         }
 
-        for (int i = 0; i < children.length; i++) {
-            children[i].removeFromParent();
-            stateProvider.insertChild(node, index + i, children[i]);
-            assert Objects.equals(this, children[i]
+        for (int i = 0, insertIndex = index; i < children.length; i++, insertIndex++) {
+            Element child = children[i];
+
+            if (equals(child.getParent())) {
+                int childIndex = indexOfChild(child);
+                if (childIndex == insertIndex) {
+                    // No-op of inserting to the current position
+                    continue;
+                } else if (childIndex < insertIndex) {
+                    // Adjust target index if the new child is already our
+                    // child,
+                    // and we will be removing it from before the target index
+                    insertIndex--;
+                }
+            }
+            child.removeFromParent();
+            stateProvider.insertChild(node, insertIndex, child);
+            assert Objects.equals(this, child
                     .getParent()) : "Child should have this element as parent after being inserted";
         }
 
@@ -694,6 +730,8 @@ public class Element implements Serializable {
                 return this;
             }
             removeChild(index);
+            insertChild(index, child);
+        } else if (index == childCount) {
             insertChild(index, child);
         } else {
             throw new IllegalArgumentException(String.format(
@@ -1388,27 +1426,6 @@ public class Element implements Serializable {
     }
 
     /**
-     * Defines a mapping between this element and the given {@link Component}.
-     *
-     * @param component
-     *            the component this element is attached to
-     * @return this element
-     */
-    public Element setComponent(Component component) {
-        if (component == null) {
-            throw new IllegalArgumentException("Component must not be null");
-        }
-
-        if (getComponent().isPresent()) {
-            throw new IllegalStateException(
-                    "A component is already attached to this element");
-        }
-        stateProvider.setComponent(getNode(), component);
-
-        return this;
-    }
-
-    /**
      * Gets the component this element has been mapped to, if any.
      *
      * @return an optional component, or an empty optional if no component has
@@ -1418,9 +1435,71 @@ public class Element implements Serializable {
         return stateProvider.getComponent(getNode());
     }
 
+    private String validateAttribute(String attribute, Object value) {
+        if (attribute == null) {
+            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
+        }
+
+        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
+        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
+            throw new IllegalArgumentException(String.format(
+                    "Attribute \"%s\" is not a valid attribute name",
+                    lowerCaseAttribute));
+        }
+
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
+        return lowerCaseAttribute;
+    }
+
     private static void verifyEventType(String eventType) {
         if (eventType == null) {
             throw new IllegalArgumentException("Event type must not be null");
         }
+    }
+
+    /**
+     * Adds an attach listener for this element. It is invoked when the element
+     * is attached to a UI.
+     * <p>
+     * When a hierarchy of elements is being attached, the event is fired
+     * child-first.
+     *
+     * @param attachListener
+     *            the attach listener to add
+     * @return an event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addAttachListener(
+            ElementAttachListener attachListener) {
+        if (attachListener == null) {
+            throw new IllegalArgumentException(
+                    "ElementAttachListener cannot be null");
+        }
+
+        return getNode().addAttachListener(
+                () -> attachListener.onAttach(new ElementAttachEvent(this)));
+    }
+
+    /**
+     * Adds a detach listener for this element. It is invoked when the element
+     * is detached from a UI.
+     * <p>
+     * When a hierarchy of elements is being detached, the event is fired
+     * child-first.
+     *
+     * @param detachListener
+     *            the detach listener to add
+     * @return an event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addDetachListener(
+            ElementDetachListener detachListener) {
+        if (detachListener == null) {
+            throw new IllegalArgumentException(
+                    "ElementDetachListener cannot be null");
+        }
+
+        return getNode().addDetachListener(
+                () -> detachListener.onDetach(new ElementDetachEvent(this)));
     }
 }

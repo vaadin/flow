@@ -33,7 +33,7 @@ import com.vaadin.client.hummingbird.template.TemplateRegistry;
 /**
  * A registry implementation used by {@link ApplicationConnection}.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class DefaultRegistry extends Registry {

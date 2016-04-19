@@ -22,7 +22,7 @@ import com.vaadin.hummingbird.StateNode;
 /**
  * A list namespace which contains {@link StateNode}s.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public abstract class StateNodeListNamespace extends ListNamespace<StateNode> {

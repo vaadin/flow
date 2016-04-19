@@ -13,13 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.event;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 
-public class Hr extends AbstractHtmlComponent {
+@DomEvent("dom-event")
+public class InvalidMappedToDomEvent extends ComponentEvent {
 
-    public Hr() {
-        super(ElementFactory.createHorizontalRule());
+    public InvalidMappedToDomEvent(Component source) {
+        super(source, true);
     }
+
 }

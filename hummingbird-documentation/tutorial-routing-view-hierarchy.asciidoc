@@ -9,7 +9,7 @@ When defining routes using `setRoute(String, Class)`, the view will be rendered 
 [source,java]
 ----
 @Override
-public void configure(ModifiableRouterConfiguration configuration) {
+public void configure(RouterConfiguration configuration) {
   configuration.setRoute("company", CompanyView.class, MainLayout.class);
 }
 ----
@@ -29,10 +29,6 @@ public class MainLayout implements HasChildView {
     Element header = ElementFactory.createDiv("This header will always be shown");
     childContainer = ElementFactory.createDiv();
     root.appendChild(header, childContainer);
-
-    // Just so we can use setChild later
-    childContainer.appendChild(ElementFactory.createDiv("Child placeholder"));
-
   }
 
   @Override
@@ -57,7 +53,7 @@ To define multiple view levels, you can use the method `setParentView(Class<? ex
 [source,java]
 ----
 @Override
-public void configure(ModifiableRouterConfiguration configuration) {
+public void configure(RouterConfiguration configuration) {
   configuration.setRoute("company", CompanyView.class, CompanySideBarView.class);
   configuration.setParentView(CompanySideBarView.class, MainLayout.class);
 }

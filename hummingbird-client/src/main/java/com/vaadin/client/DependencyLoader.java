@@ -30,7 +30,7 @@ import elemental.json.JsonObject;
 /**
  * Handles loading of dependencies (stylesheets and scripts) in the application.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class DependencyLoader {

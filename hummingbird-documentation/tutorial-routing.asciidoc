@@ -16,7 +16,7 @@ Your `RouterConfigurator` class needs to override one method, where the actual c
 [source,java]
 ----
 @Override
-public void configure(ModifiableRouterConfiguration configuration) {
+public void configure(RouterConfiguration configuration) {
   configuration.setRoute("", HomeView.class);
   configuration.setRoute("company", CompanyView.class);
 }

@@ -25,7 +25,7 @@ import com.vaadin.ui.Component;
 /**
  * A server side only namespace for mapping a node to a component.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class ComponentMappingNamespace extends Namespace {

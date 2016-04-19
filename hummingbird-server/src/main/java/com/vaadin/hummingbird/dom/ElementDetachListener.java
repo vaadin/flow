@@ -13,19 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.dom;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
-
-public class Button extends AbstractHtmlComponent {
-
-    public Button() {
-        super(ElementFactory.createButton());
-    }
-
-    public Button(String text) {
-        this();
-        setText(text);
-    }
-
+/**
+ * Listener for element detach events. It is invoked when the element is
+ * detached from the UI.
+ */
+@FunctionalInterface
+public interface ElementDetachListener {
+    /**
+     * Invoked when an element is detached from the UI.
+     *
+     * @param event
+     *            the detach event fired
+     */
+    void onDetach(ElementDetachEvent event);
 }

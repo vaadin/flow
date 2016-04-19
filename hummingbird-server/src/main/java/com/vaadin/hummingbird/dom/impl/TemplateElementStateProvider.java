@@ -33,6 +33,7 @@ import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.TemplateNamespace;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
@@ -129,6 +130,12 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute, String value) {
+        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+    }
+
+    @Override
+    public void setAttribute(StateNode node, String attribute,
+            StreamResource resource) {
         throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 

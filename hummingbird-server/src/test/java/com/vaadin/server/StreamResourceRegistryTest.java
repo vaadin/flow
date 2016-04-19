@@ -62,7 +62,11 @@ public class StreamResourceRegistryTest {
         Optional<StreamResource> stored = registry.getResource(uri);
         Assert.assertSame(
                 "Unexpected stored resource is returned for registered URI",
-                stored.get(), resource);
+                resource, stored.get());
+
+        Assert.assertSame(
+                "Unexpected resource is returned by the registration instance",
+                resource, registration.getResource().get());
     }
 
     @Test
@@ -83,6 +87,9 @@ public class StreamResourceRegistryTest {
         Assert.assertFalse(
                 "Unexpected stored resource is found after unregister()",
                 stored.isPresent());
+        Assert.assertFalse(
+                "Unexpected resource is returned by the registration instance",
+                registration.getResource().isPresent());
     }
 
     @Test

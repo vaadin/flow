@@ -15,14 +15,15 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import java.util.EventObject;
 import java.util.function.Consumer;
 
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Div;
-import com.vaadin.hummingbird.uitest.component.Hr;
-import com.vaadin.hummingbird.uitest.component.Input;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Hr;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.Text;
 
@@ -33,92 +34,71 @@ public class CompositeView extends AbstractDivView {
 
     public static class NameField extends Composite {
 
-        public static class NameChangeEvent extends EventObject {
-
-            private boolean clientOriginated;
-
-            public NameChangeEvent(NameField source, boolean clientOriginated) {
-                super(source);
-                this.clientOriginated = clientOriginated;
-            }
-
-            public boolean isClientOriginated() {
-                return clientOriginated;
-            }
-
-            @Override
-            public NameField getSource() {
-                return (NameField) super.getSource();
+        @DomEvent("change")
+        public static class NameChangeEvent extends ComponentEvent {
+            public NameChangeEvent(NameField source, boolean fromClient) {
+                super(source, fromClient);
             }
         }
 
         private Input input = new Input();
-        private Consumer<NameChangeEvent> nameChangeListener = null;
 
         @Override
         protected Component initContent() {
             input.setPlaceholder("Enter your name");
-            input.getElement().addEventListener("change", e -> {
-                fireNameChangeEvent(true);
-            });
             return input;
-        }
-
-        private void fireNameChangeEvent(boolean clientOriginated) {
-            if (nameChangeListener != null) {
-                nameChangeListener
-                        .accept(new NameChangeEvent(this, clientOriginated));
-            }
-
         }
 
         public void setName(String name) {
             input.setValue(name);
-            fireNameChangeEvent(false);
+            fireEvent(new NameChangeEvent(this, false));
         }
 
         public String getName() {
             return input.getValue();
         }
 
-        public void setNameChangeListener(
+        public void addNameChangeListener(
                 Consumer<NameChangeEvent> nameChangeListener) {
-            this.nameChangeListener = nameChangeListener;
+            addListener(NameChangeEvent.class, nameChangeListener);
         }
 
+        @Override
         public void setId(String id) {
             input.setId(id);
         }
     }
 
     public CompositeView() {
-        Div name = new Div("Name on server: ");
+        Div name = new Div();
+        name.setText("Name on server: ");
         name.setId(CompositeNestedView.NAME_ID);
 
         NameField nameField = new NameField();
         nameField.setId(CompositeNestedView.NAME_FIELD_ID);
-        nameField.setNameChangeListener(e -> {
+        nameField.addNameChangeListener(e -> {
             name.setText("Name on server: " + nameField.getName());
             String text = "Name value changed to " + nameField.getName()
                     + " on the ";
-            if (e.isClientOriginated()) {
+            if (e.isFromClient()) {
                 text += "client";
             } else {
                 text += "server";
             }
-            addComponents(new Div(text));
+            Div changeMessage = new Div();
+            changeMessage.setText(text);
+            add(changeMessage);
         });
-        addComponents(name, nameField, new Hr());
+        add(name, nameField, new Hr());
 
         Input serverInput = new Input();
         serverInput.setId(SERVER_INPUT_ID);
-        Button serverInputButton = new Button("Set");
-        serverInputButton.setId(SERVER_INPUT_BUTTON_ID);
-        serverInputButton.getElement().addEventListener("click", e -> {
+        Button serverInputButton = new Button("Set", e -> {
             nameField.setName(serverInput.getValue());
             serverInput.setValue("");
         });
-        addComponents(new Text("Enter a value to set the name on the server"),
+        serverInputButton.setId(SERVER_INPUT_BUTTON_ID);
+        add(new Text("Enter a value to set the name on the server"),
                 serverInput, serverInputButton);
     }
 }

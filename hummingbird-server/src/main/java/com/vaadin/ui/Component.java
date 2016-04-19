@@ -17,27 +17,57 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventBus;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
  * hierarchy of {@link Element}s.
  * <p>
- * A component must have exactly one root element and it is set using the
- * constructor {@link #Component(Element)} (or in special cases using
+ * A component must have exactly one root element which is created based on the
+ * {@link Tag} annotation of the sub class (or in special cases set using the
+ * constructor {@link #Component(Element)} or using
  * {@link #setElement(Component, Element)} before the element is attached to a
  * parent). The root element cannot be changed once it has been set.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
-public abstract class Component implements HasElement, Serializable {
+public abstract class Component
+        implements HasElement, Serializable, ComponentEventNotifier {
 
     private Element element;
+
+    private ComponentEventBus eventBus = null;
+
+    /**
+     * Creates a component instance with an element created based on the
+     * {@link Tag} annotation of the sub class.
+     */
+    protected Component() {
+        Tag tag = getClass().getAnnotation(Tag.class);
+        if (tag == null) {
+            throw new IllegalStateException(getClass().getSimpleName()
+                    + " (or a super class) must be annotated with @"
+                    + Tag.class.getName()
+                    + " if the default constructor is used.");
+        }
+
+        String tagName = tag.value();
+        if (tagName.isEmpty()) {
+            throw new IllegalStateException("@" + Tag.class.getSimpleName()
+                    + " value cannot be empty.");
+        }
+
+        setElement(this, new Element(tagName));
+    }
 
     /**
      * Creates a component instance based on the given element.
@@ -101,7 +131,8 @@ public abstract class Component implements HasElement, Serializable {
      * <p>
      * A component can only have one parent.
      *
-     * @return the parent component
+     * @return an optional parent component, or an empty optional if the
+     *         component is not attached to a parent
      */
     public Optional<Component> getParent() {
         assert ElementUtil.isComponentElementMappedCorrectly(this);
@@ -112,7 +143,7 @@ public abstract class Component implements HasElement, Serializable {
                 .getComponent(getElement());
         if (isInsideComposite(mappedComponent)) {
             Component parent = ComponentUtil.getParentUsingComposite(
-                    (Composite) mappedComponent.get(), this);
+                    (Composite<?>) mappedComponent.get(), this);
             return Optional.of(parent);
         }
 
@@ -151,6 +182,86 @@ public abstract class Component implements HasElement, Serializable {
             });
         });
         return childComponents.build();
+    }
+
+    /**
+     * Gets the event bus for this component.
+     * <p>
+     * This method will create the event bus if it has not yet been created.
+     *
+     * @return the event bus for this component
+     */
+    protected ComponentEventBus getEventBus() {
+        if (eventBus == null) {
+            eventBus = new ComponentEventBus(this);
+        }
+        return eventBus;
+    }
+
+    @Override
+    public <T extends ComponentEvent> EventRegistrationHandle addListener(
+            Class<T> eventType, Consumer<T> listener) {
+
+        return getEventBus().addListener(eventType, listener);
+    }
+
+    /**
+     * Checks if there is at least one listener registered for the given event
+     * type for this component.
+     *
+     * @param eventType
+     *            the component event type
+     * @return <code>true</code> if at least one listener is registered,
+     *         <code>false</code> otherwise
+     */
+    protected boolean hasListener(Class<? extends ComponentEvent> eventType) {
+        return eventBus != null && eventBus.hasListener(eventType);
+    }
+
+    /**
+     * Dispatches the event to all listeners registered for the event type.
+     *
+     * @param componentEvent
+     *            the event to fire
+     */
+    protected void fireEvent(ComponentEvent componentEvent) {
+        if (hasListener(componentEvent.getClass())) {
+            getEventBus().fireEvent(componentEvent);
+        }
+    }
+
+    /**
+     * Gets the UI this component is attached to.
+     *
+     * @return an optional UI component, or an empty optional if this component
+     *         is not attached to a UI
+     */
+    public Optional<UI> getUI() {
+        return getParent().flatMap(Component::getUI);
+    }
+
+    /**
+     * Sets the id of the root element of this component. The id is used with
+     * various APIs to identify the element, and it should be unique on the
+     * page.
+     *
+     * @param id
+     *            the id to set, or <code>null</code> to remove any previously
+     *            set id
+     */
+    public void setId(String id) {
+        getElement().setAttribute("id", id);
+    }
+
+    /**
+     * Gets the id of the root element of this component.
+     *
+     * @see #setId(String)
+     *
+     * @return the id, or <code>null</code> if no id has been set
+     */
+    public String getId() {
+        return getElement().getAttribute("id");
     }
 
 }

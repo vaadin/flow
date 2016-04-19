@@ -22,7 +22,7 @@ import java.util.Locale;
  * Provides information available for {@link SystemMessagesProvider} when
  * defining what {@link SystemMessages} to use.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class SystemMessagesInfo implements Serializable {
