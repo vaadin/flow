@@ -64,7 +64,6 @@ public class ViewTestLayout implements HasChildView {
 
         element.appendChild(viewSelect, ElementFactory.createHr(),
                 viewContainer);
-        viewContainer.appendChild(ElementFactory.createDiv());
     }
 
     @Override
