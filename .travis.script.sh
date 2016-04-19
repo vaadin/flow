@@ -8,7 +8,7 @@ export PATH=$PWD/phantomjs-2.1.1-linux-x86_64/bin:$PATH
 # TRAVIS_SECURE_ENV_VARS == true if encrypted variables, e.g. SONAR_HOST is available
 # TRAVIS_REPO_SLUG == the repository, e.g. vaadin/vaadin
 
-if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "${TRAVIS_BRANCH}" == "master" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]
+if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]
 then
 	# Pull request for master with secure vars (SONAR_GITHUB_OAUTH, SONAR_HOST) available
 
@@ -19,7 +19,3 @@ else
 	# Something else than a "safe" pull request
 	mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= verify javadoc:javadoc
 fi
-
-
-
-
