@@ -628,13 +628,31 @@ public class ElementTest {
         parent.setChild(-1, child2);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
+    public void setForEmptyParent() {
+        Element parent = ElementFactory.createDiv();
+        Element child1 = new Element("child1");
+        parent.setChild(0, child1);
+        assertChildren(parent, child1);
+    }
+
+    @Test
     public void replaceAfterLastChild() {
         Element parent = ElementFactory.createDiv();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         parent.appendChild(child1);
         parent.setChild(1, child2);
+        assertChildren(parent, child1, child2);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void replaceAfterAfterLastChild() {
+        Element parent = ElementFactory.createDiv();
+        Element child1 = new Element("child1");
+        Element child2 = new Element("child2");
+        parent.appendChild(child1);
+        parent.setChild(2, child2);
     }
 
     @Test
