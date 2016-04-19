@@ -20,6 +20,7 @@ import com.vaadin.hummingbird.dom.ClassList;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.HasSize;
 
 /**
  * Base class for a {@link Component} that represents a single built-in HTML
@@ -28,7 +29,7 @@ import com.vaadin.ui.Component;
  * @since
  * @author Vaadin Ltd
  */
-public class HtmlComponent extends Component {
+public class HtmlComponent extends Component implements HasSize {
 
     /**
      * Creates a component with the element type based on the {@link Tag}
