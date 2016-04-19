@@ -43,55 +43,61 @@ The property value of the input component is used here as a state:
 
 [source,java]
 ----
-Element name = ElementFactory.createInput("text");
-name.synchronizeProperty("value", "change");
-Element button = ElementFactory.createButton("Generate Image");
+Input name = new Input();
 
 Element image = new Element("object");
 image.setAttribute("type", "image/svg+xml");
 image.getStyle().set("display", "block");
 
-button.addEventListener("click", event -> image.setAttribute("data", "image?name="+name.getProperty("value")));
+Button button = new Button("Generate Image");
+button.addClickListener(event -> {
+    String url = "image?name=" + name.getValue();
+        image.setAttribute("data", url);
+    });
 
-UI.getCurrent().getElement().appendChild(name, image, button);
+UI.getCurrent().getElement().appendChild(name.getElement(), image,
+    button.getElement());
 ----
 
 ==== Using `StreamResource`
 
-To be able to generate dynamic content inside the same application you should use `StreamResource`.
-In this case application will generate URL transparently for you and register an internal  handler for this URL.
+Use `StreamResource` to generate dynamic content within the same servlet.
+In this case the application will generate the URL transparently for you and register an internal  handler for this URL.
 The code below shows how to implement the same functionality as above using `StreamResource`.
 
 [source,java]
 ----
-Element name = ElementFactory.createInput("text");
-name.synchronizeProperty("value", "change");
-Element button = ElementFactory.createButton("Generate Image");
+Input name = new Input();
 
 Element image = new Element("object");
 image.setAttribute("type", "image/svg+xml");
 image.getStyle().set("display", "block");
 
-button.addEventListener("click", event -> image.setAttribute("data", createResource(name)));
+Button button = new Button("Generate Image");
+button.addClickListener(event -> {
+    StreamResource resource = createResource(name);
+    image.setAttribute("data", resource);
+});
 
-UI.getCurrent().getElement().appendChild(name, image, button);
+UI.getCurrent().getElement().appendChild(name.getElement(), image,
+    button.getElement());
 ----
 
-"data" attribute here is set to `StreamResource` value. `StreamResource` instance requires dynamic data provider and the resource file name.
-The latter name will be the last path segment in the generated URL. As a result it will become a downloaded file name if user donwload it.
+The `data` attribute value is set to the StreamResource, which will automatically be converted into a URL. A `StreamResource` uses a dynamic data provider to produce the data.
+The file name given to a `StreamResource` is used as a part of the URL and will also become the filename if the user selects to download the resource.
 And here is an example how to create a `StreamResource` instance:
 
 [source,java]
 ----
 
-private StreamResource createResource(Element name) {
+private StreamResource createResource(Input name) {
     StreamResource resource = new StreamResource("image", () -> getImageInputStream(name));
     resource.setContentType("image/svg+xml");
     return resource;
 }
 
-private InputStream getImageInputStream(Element name) {
-    String value = name.getProperty("value");
+private InputStream getImageInputStream(Input name) {
+    String value = name.getValue();
     if (value == null) {
         value = "";
     }

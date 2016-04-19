@@ -21,7 +21,8 @@ import java.nio.charset.StandardCharsets;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.UI;
 
@@ -29,22 +30,23 @@ import com.vaadin.ui.UI;
 public class DynamicContent {
 
     void tutorialCode() {
-        Element name = ElementFactory.createInput("text");
-        name.synchronizeProperty("value", "change");
-        Element button = ElementFactory.createButton("Generate Image");
+        Input name = new Input();
 
         Element image = new Element("object");
         image.setAttribute("type", "image/svg+xml");
         image.getStyle().set("display", "block");
 
-        //@formatter:off - custom line wrapping
-        button.addEventListener("click", event -> image.setAttribute("data", createResource(name)));
-        //@formatter:on
+        Button button = new Button("Generate Image");
+        button.addClickListener(event -> {
+            StreamResource resource = createResource(name);
+            image.setAttribute("data", resource);
+        });
 
-        UI.getCurrent().getElement().appendChild(name, image, button);
+        UI.getCurrent().getElement().appendChild(name.getElement(), image,
+                button.getElement());
     }
 
-    private StreamResource createResource(Element name) {
+    private StreamResource createResource(Input name) {
         //@formatter:off - custom line wrapping
         StreamResource resource = new StreamResource("image", () -> getImageInputStream(name));
         //@formatter:on
@@ -52,8 +54,8 @@ public class DynamicContent {
         return resource;
     }
 
-    private InputStream getImageInputStream(Element name) {
-        String value = name.getProperty("value");
+    private InputStream getImageInputStream(Input name) {
+        String value = name.getValue();
         if (value == null) {
             value = "";
         }

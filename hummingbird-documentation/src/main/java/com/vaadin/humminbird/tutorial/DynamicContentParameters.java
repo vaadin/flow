@@ -17,26 +17,28 @@ package com.vaadin.humminbird.tutorial;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.ui.UI;
 
 @CodeFor("tutorial-dynamic-content.asciidoc")
 public class DynamicContentParameters {
 
     void tutorialCode() {
-        Element name = ElementFactory.createInput("text");
-        name.synchronizeProperty("value", "change");
-        Element button = ElementFactory.createButton("Generate Image");
+        Input name = new Input();
 
         Element image = new Element("object");
         image.setAttribute("type", "image/svg+xml");
         image.getStyle().set("display", "block");
 
-        //@formatter:off - custom line wrapping
-        button.addEventListener("click", event -> image.setAttribute("data", "image?name="+name.getProperty("value")));
-        //@formatter:on
+        Button button = new Button("Generate Image");
+        button.addClickListener(event -> {
+            String url = "image?name=" + name.getValue();
+            image.setAttribute("data", url);
+        });
 
-        UI.getCurrent().getElement().appendChild(name, image, button);
+        UI.getCurrent().getElement().appendChild(name.getElement(), image,
+                button.getElement());
     }
 
 }
