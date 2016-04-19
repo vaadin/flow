@@ -25,7 +25,7 @@ import com.vaadin.ui.Component;
  * @since
  * @author Vaadin Ltd
  */
-@Tag("div")
+@Tag(Tag.DIV)
 public class Div extends HtmlContainer implements ClickNotifier {
 
     /**
