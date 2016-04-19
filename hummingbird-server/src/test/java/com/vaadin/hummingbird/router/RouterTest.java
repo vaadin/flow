@@ -35,7 +35,7 @@ public class RouterTest {
         Router router = new Router();
 
         @Override
-        protected Optional<Router> getRouter() {
+        public Optional<Router> getRouter() {
             return Optional.of(router);
         }
     }
