@@ -13,27 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.dom;
+package com.vaadin.hummingbird.template;
 
 /**
- * Constants for common element attribute, property, style names.
+ * Exception thrown when there's a problem parsing a template.
  *
- * @author Vaadin Ltd
  * @since
+ * @author Vaadin Ltd
  */
-public class ElementConstants {
-
+public class TemplateParseException extends RuntimeException {
     /**
-     * The style property for width.
+     * Creates a new template parse exception with the given message.
+     *
+     * @param message
+     *            the exception message
      */
-    public static final String STYLE_WIDTH = "width";
-    /**
-     * The style property for height.
-     */
-    public static final String STYLE_HEIGHT = "height";
-
-    private ElementConstants() {
-        // Constants only
+    public TemplateParseException(String message) {
+        super(message);
     }
-
 }

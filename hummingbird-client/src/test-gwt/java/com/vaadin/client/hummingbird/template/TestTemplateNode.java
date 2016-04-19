@@ -13,27 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.dom;
+package com.vaadin.client.hummingbird.template;
 
-/**
- * Constants for common element attribute, property, style names.
- *
- * @author Vaadin Ltd
- * @since
- */
-public class ElementConstants {
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
 
-    /**
-     * The style property for width.
-     */
-    public static final String STYLE_WIDTH = "width";
-    /**
-     * The style property for height.
-     */
-    public static final String STYLE_HEIGHT = "height";
+@JsType(isNative = true)
+public interface TestTemplateNode extends TemplateNode {
+    @JsProperty
+    public void setType(String type);
 
-    private ElementConstants() {
-        // Constants only
-    }
-
+    @JsProperty
+    public void setChildren(double[] children);
 }

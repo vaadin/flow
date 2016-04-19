@@ -1,3 +1,4 @@
+package com.vaadin.hummingbird.uitest.ui;
 /*
  * Copyright 2000-2016 Vaadin Ltd.
  *
@@ -13,27 +14,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.dom;
 
-/**
- * Constants for common element attribute, property, style names.
- *
- * @author Vaadin Ltd
- * @since
- */
-public class ElementConstants {
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-    /**
-     * The style property for width.
-     */
-    public static final String STYLE_WIDTH = "width";
-    /**
-     * The style property for height.
-     */
-    public static final String STYLE_HEIGHT = "height";
+import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-    private ElementConstants() {
-        // Constants only
+public class BasicTemplateIT extends PhantomJSTest {
+    @Test
+    public void testBasicTemplate() {
+        open();
+
+        WebElement element = findElement(By.id("bar"));
+
+        Assert.assertEquals("baz", element.getText());
+        Assert.assertTrue(isElementPresent(By.cssSelector("#bar input")));
     }
-
 }
