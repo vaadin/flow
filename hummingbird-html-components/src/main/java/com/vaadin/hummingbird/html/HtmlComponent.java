@@ -177,4 +177,54 @@ public class HtmlComponent extends Component {
         assert name != null;
         return getElement().getAttribute(name);
     }
+
+    /**
+     * Sets the width of the component.
+     * <p>
+     * The width should be in a format understood by the browser, e.g. "100px"
+     * or "2.5em".
+     *
+     * @param width
+     *            the width to set
+     */
+    public void setWidth(String width) {
+        getStyle().set("width", width);
+    }
+
+    /**
+     * Gets the width defined for the component.
+     * <p>
+     * Note that this does not return the actual size of the component but the
+     * width which has been set using {@link #setWidth(String)}.
+     *
+     * @return the width which has been set for the component
+     */
+    public String getWidth() {
+        return getStyle().get("width");
+    }
+
+    /**
+     * Sets the height of the component.
+     * <p>
+     * The height should be in a format understood by the browser, e.g. "100px"
+     * or "2.5em".
+     *
+     * @param height
+     *            the height to set
+     */
+    public void setHeight(String height) {
+        getStyle().set("height", height);
+    }
+
+    /**
+     * Gets the height defined for the component.
+     * <p>
+     * Note that this does not return the actual size of the component but the
+     * height which has been set using {@link #setHeight(String)}.
+     *
+     * @return the height which has been set for the component
+     */
+    public String getHeight() {
+        return getStyle().get("height");
+    }
 }
