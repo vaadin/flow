@@ -26,7 +26,7 @@ div.setText("Hello world");
 ----
 
 [TIP]
-`com.vaadin.hummingbird.html` package contains a number of commonly used components. You can also extends `HtmlComponent` to create any custom component.
+The `com.vaadin.hummingbird.html` package contains a number of commonly used components. You can also extend `HtmlComponent` to create any custom component.
 
 You also need to attach the component to the UI component, which represents the `<body>` tag on the page:
 [source,java]

@@ -28,10 +28,6 @@ public class MainLayout extends Div implements HasChildView {
     header.setText("This header will always be shown");
     childContainer = new Div();
     add(header, childContainer);
-
-    // Just so we can use setChild later
-    childContainer.add(new Div());
-
   }
 
   @Override

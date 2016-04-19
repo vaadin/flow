@@ -81,12 +81,6 @@ public class RoutingViewHierarchy {
             //@formatter:on
             childContainer = new Div();
             add(header, childContainer);
-
-            // Just so we can use setChild later
-            //@formatter:off
-            childContainer.add(new Div());
-            //@formatter:on
-
         }
 
         @Override
