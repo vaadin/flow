@@ -77,6 +77,7 @@ public class NamespaceRegistry {
                 SynchronizedPropertyEventsNamespace::new);
         registerNamespace(ComponentMappingNamespace.class,
                 ComponentMappingNamespace::new);
+        registerNamespace(TemplateNamespace.class, TemplateNamespace::new);
     }
 
     private NamespaceRegistry() {
