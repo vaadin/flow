@@ -167,16 +167,16 @@ public class RouterTest {
     public void testConfigurationImmutable() {
         Router router = new Router();
 
-        RouterConfiguration configuration = router.getConfiguration();
+        ImmutableRouterConfiguration configuration = router.getConfiguration();
 
-        ((ModifiableRouterConfiguration) configuration).setResolver(e -> null);
+        ((RouterConfiguration) configuration).setResolver(e -> null);
     }
 
     @Test
     public void testLeakedConfigurationImmutable() {
         Router router = new Router();
 
-        AtomicReference<ModifiableRouterConfiguration> configurationLeak = new AtomicReference<>();
+        AtomicReference<RouterConfiguration> configurationLeak = new AtomicReference<>();
 
         router.reconfigure(configurationLeak::set);
 

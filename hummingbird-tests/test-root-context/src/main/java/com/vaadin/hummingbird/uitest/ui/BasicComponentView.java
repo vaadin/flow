@@ -16,9 +16,9 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.hummingbird.uitest.component.Button;
-import com.vaadin.hummingbird.uitest.component.Div;
-import com.vaadin.hummingbird.uitest.component.Input;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.ui.Text;
 
 public class BasicComponentView extends AbstractDivView {
@@ -34,36 +34,35 @@ public class BasicComponentView extends AbstractDivView {
 
         Text text = new Text(TEXT);
 
-        Button button = new Button(BUTTON_TEXT);
-
         Input input = new Input();
         input.setPlaceholder("Synchronized on change event");
 
-        button.getElement().addEventListener("click", e -> {
+        Button button = new Button(BUTTON_TEXT, e -> {
             Div greeting = new Div();
-            greeting.addClass("thankYou");
-            String buttonText = e.getEventData()
-                    .getString("element.textContent");
-            greeting.setText("Thank you for clicking at \"" + buttonText
-                    + "\"! The field value is " + input.getValue());
+            greeting.addClassName("thankYou");
+            String buttonText = e.getSource().getElement().getOwnTextContent();
 
-            greeting.getElement().addEventListener("click",
-                    e2 -> removeComponents(greeting));
-            addComponents(greeting);
-        }, "element.textContent");
+            greeting.setText("Thank you for clicking \"" + buttonText
+                    + "\" at (" + e.getClientX() + "," + e.getClientY()
+                    + ")! The field value is " + input.getValue());
 
-        Div helloWorld = new Div(DIV_TEXT);
-        helloWorld.addClass("hello");
+            greeting.addClickListener(e2 -> remove(greeting));
+            add(greeting);
+        });
+
+        Div helloWorld = new Div();
+        helloWorld.setText(DIV_TEXT);
+        helloWorld.addClassName("hello");
         helloWorld.setId("hello-world");
-        helloWorld.getElement().addEventListener("click", e -> {
-            helloWorld.getElement().setTextContent("Stop touching me!");
+        helloWorld.addClickListener(e -> {
+            helloWorld.setText("Stop touching me!");
             helloWorld.getElement().getClassList().clear();
         });
         Style s = helloWorld.getElement().getStyle();
         s.set("color", "red");
         s.set("fontWeight", "bold");
 
-        addComponents(text, helloWorld, button, input);
+        add(text, helloWorld, button, input);
     }
 
 }

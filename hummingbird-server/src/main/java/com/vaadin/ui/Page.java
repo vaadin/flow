@@ -28,7 +28,7 @@ import com.vaadin.ui.UIInternals.JavaScriptInvocation;
  * Represents the web page open in the browser, containing the UI it is
  * connected to.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class Page implements Serializable {

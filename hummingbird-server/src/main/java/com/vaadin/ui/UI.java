@@ -72,7 +72,8 @@ import com.vaadin.util.CurrentInstance;
  *
  * @since 7.0
  */
-public class UI extends Component implements Serializable, PollNotifier {
+public class UI extends Component
+        implements Serializable, PollNotifier, HasComponents {
 
     public static final String POLL_DOM_EVENT_NAME = "ui-poll";
 
@@ -735,5 +736,24 @@ public class UI extends Component implements Serializable, PollNotifier {
      */
     protected Optional<Router> getRouter() {
         return Optional.ofNullable(router);
+    }
+
+    /**
+     * Adds the given components to the UI.
+     * <p>
+     * The components' elements are attached to the UI element (the body tag).
+     *
+     * @param components
+     *            the components to add
+     */
+    // Overridden just to mention UI and <body> in the javadocs
+    @Override
+    public void add(Component... components) {
+        HasComponents.super.add(components);
+    }
+
+    @Override
+    public Optional<UI> getUI() {
+        return Optional.of(this);
     }
 }

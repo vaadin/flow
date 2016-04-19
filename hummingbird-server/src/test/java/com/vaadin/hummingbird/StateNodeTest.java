@@ -17,8 +17,10 @@
 package com.vaadin.hummingbird;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -29,10 +31,12 @@ import org.junit.Test;
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.ui.UI;
 
 public class StateNodeTest {
 
@@ -54,6 +58,14 @@ public class StateNodeTest {
         @Override
         public String toString() {
             return Integer.toString(getData());
+        }
+    }
+
+    private static class RootStateNode extends TestStateNode {
+
+        @Override
+        public boolean isAttached() {
+            return true;
         }
     }
 
@@ -107,8 +119,7 @@ public class StateNodeTest {
         Assert.assertTrue("Node should have no changes", changes.isEmpty());
 
         // Attach node
-        setParent(node,
-                new StateTree(ElementChildrenNamespace.class).getRootNode());
+        setParent(node, createStateTree().getRootNode());
 
         node.collectChanges(collector);
 
@@ -136,8 +147,7 @@ public class StateNodeTest {
         StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
 
-        StateNode root = new StateTree(ElementChildrenNamespace.class)
-                .getRootNode();
+        StateNode root = createStateTree().getRootNode();
 
         setParent(grandchild, child);
         setParent(child, parent);
@@ -154,8 +164,7 @@ public class StateNodeTest {
         StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
 
-        StateNode root = new StateTree(ElementChildrenNamespace.class)
-                .getRootNode();
+        StateNode root = createStateTree().getRootNode();
 
         setParent(parent, root);
         setParent(child, parent);
@@ -184,42 +193,148 @@ public class StateNodeTest {
 
     /**
      * Test for #252: stack overflow exception
+     *
+     * Firefox won't show elements nested more than 200 levels deep, thus makes
+     * no sense to test insane depth.
      */
     @Test
     public void recursiveTreeNavigation_resilienceInDepth() {
-        TestStateNode root = new TestStateNode();
-        TestStateNode node = createTree(root, 20000);
-        StateTree tree = new StateTree(ElementChildrenNamespace.class);
-        root.setTree(tree);
+        TestStateNode childOfRoot = new TestStateNode();
+        TestStateNode node = createTree(childOfRoot, 5000);
+        StateTree tree = createStateTree();
+
+        setParent(childOfRoot, tree.getRootNode());
+
         Set<Integer> set = IntStream.range(-1, node.getData() + 1).boxed()
                 .collect(Collectors.toSet());
-        root.visitNodeTree(n -> visit((TestStateNode) n, tree, set));
+        childOfRoot.visitNodeTree(n -> visit((TestStateNode) n, tree, set));
         Assert.assertTrue(set.isEmpty());
     }
 
     /**
      * Test for #252: stack overflow exception
+     *
+     * Firefox won't show elements nested more than 200 levels deep, thus makes
+     * no sense to test insane depth.
      */
     @Test
     public void recursiveTreeNavigation_resilienceInSize() {
-        TestStateNode root = new TestStateNode();
-        int count = 3000;
-        StateNode node = createTree(root, count);
+        TestStateNode childOfRoot = new TestStateNode();
+        int count = 300;
+        StateNode node = createTree(childOfRoot, count);
         while (node.getParent() != null) {
             node = node.getParent();
             for (int i = 1; i < 50; i++) {
                 TestStateNode child = new TestStateNode();
-                node.getNamespace(ElementChildrenNamespace.class).add(i, child);
+                setParent(child, node);
                 child.setData(count);
                 count++;
             }
         }
-        root.setTree(new StateTree(ElementChildrenNamespace.class));
+        StateTree tree = createStateTree();
+
+        setParent(childOfRoot, tree.getRootNode());
+
         Set<Integer> set = IntStream.range(-1, count).boxed()
                 .collect(Collectors.toSet());
-        root.visitNodeTree(n -> visit((TestStateNode) n,
-                (StateTree) root.getOwner(), set));
+        childOfRoot.visitNodeTree(n -> visit((TestStateNode) n,
+                (StateTree) childOfRoot.getOwner(), set));
         Assert.assertTrue(set.isEmpty());
+    }
+
+    @Test
+    public void nodeTreeOnAttach_bottomUpTraversing_correctOrder() {
+        TestStateNode root = new TestStateNode();
+        LinkedList<Integer> data = new LinkedList<>();
+        data.add(0);
+        root.setData(0);
+        int count = 1;
+
+        for (int i = 0; i < 5; i++) {
+            TestStateNode childOfRoot = new TestStateNode();
+            childOfRoot.setData(count);
+            data.add(count);
+            if (i % 2 == 0) {
+                for (int j = 0; j < 5; j++) {
+                    TestStateNode child = new TestStateNode();
+                    setParent(child, childOfRoot);
+                    child.setData(count);
+                    data.add(count);
+                    count++;
+                }
+            }
+            setParent(childOfRoot, root);
+        }
+
+        root.visitNodeTreeBottomUp(node -> Assert.assertEquals(
+                ((Integer) ((TestStateNode) node).getData()),
+                data.removeLast()));
+    }
+
+    @Test
+    public void testAttachListener_onSetParent_listenerTriggered() {
+        TestStateNode root = new RootStateNode();
+        TestStateNode child = new TestStateNode();
+
+        Assert.assertFalse(child.isAttached());
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        child.addAttachListener(() -> triggered.set(true));
+
+        setParent(child, root);
+
+        Assert.assertTrue(triggered.get());
+    }
+
+    @Test
+    public void testAttachListener_listenerRemoved_listenerNotTriggered() {
+        TestStateNode root = new RootStateNode();
+        TestStateNode child = new TestStateNode();
+
+        Assert.assertFalse(child.isAttached());
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        EventRegistrationHandle registrationHandle = child
+                .addAttachListener(() -> triggered.set(true));
+        registrationHandle.remove();
+
+        setParent(child, root);
+
+        Assert.assertFalse(triggered.get());
+    }
+
+    @Test
+    public void testDetachListener_onSetParent_listenerTriggered() {
+        TestStateNode root = new RootStateNode();
+        TestStateNode child = new TestStateNode();
+
+        setParent(child, root);
+        Assert.assertTrue(child.isAttached());
+
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        child.addDetachListener(() -> triggered.set(true));
+
+        setParent(child, null);
+
+        Assert.assertTrue(triggered.get());
+    }
+
+    @Test
+    public void testDetachListener_listenerRemoved_listenerNotTriggered() {
+        TestStateNode root = new RootStateNode();
+        TestStateNode child = new TestStateNode();
+
+        setParent(child, root);
+        Assert.assertTrue(child.isAttached());
+
+        AtomicBoolean triggered = new AtomicBoolean(false);
+
+        EventRegistrationHandle registrationHandle = child
+                .addDetachListener(() -> triggered.set(true));
+        registrationHandle.remove();
+
+        Assert.assertFalse(triggered.get());
     }
 
     public static StateNode createEmptyNode() {
@@ -289,4 +404,9 @@ public class StateNodeTest {
         set.remove(node.getData());
     }
 
+    private StateTree createStateTree() {
+        StateTree stateTree = new StateTree(new UI(),
+                ElementChildrenNamespace.class);
+        return stateTree;
+    }
 }

@@ -15,9 +15,10 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import com.vaadin.hummingbird.html.Div;
+
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.uitest.component.Div;
 import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
@@ -35,12 +36,10 @@ public abstract class AbstractDivView extends Div implements View {
         onShow();
     }
 
-    protected UI getUI() {
-        return UI.getCurrent();
-    }
-
     protected Page getPage() {
-        return getUI().getPage();
+        // getUI not available in onLocationChange so leaving getCurrent here
+        // for now
+        return UI.getCurrent().getPage();
     }
 
 }

@@ -39,9 +39,11 @@ import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
 import com.vaadin.tests.util.TestUtil;
+import com.vaadin.ui.UI;
 
 public class StateTreeTest {
-    private StateTree tree = new StateTree(ElementChildrenNamespace.class);
+    private StateTree tree = new StateTree(new UI(),
+            ElementChildrenNamespace.class);
 
     @Test
     public void testRootNodeState() {
@@ -90,7 +92,8 @@ public class StateTreeTest {
 
         StateNodeTest.setParent(node, null);
 
-        StateTree anotherTree = new StateTree(ElementChildrenNamespace.class);
+        StateTree anotherTree = new StateTree(new UI(),
+                ElementChildrenNamespace.class);
 
         StateNodeTest.setParent(node, anotherTree.getRootNode());
     }
@@ -208,7 +211,7 @@ public class StateTreeTest {
                 ElementChildrenNamespace.class, ElementDataNamespace.class,
                 ElementAttributeNamespace.class,
                 ElementPropertyNamespace.class };
-        StateTree tree = new StateTree(namespaces);
+        StateTree tree = new StateTree(new UI(), namespaces);
 
         StateNode root = tree.getRootNode();
         root.getNamespace(ElementDataNamespace.class).setTag("body");

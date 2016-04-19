@@ -21,8 +21,7 @@ package com.vaadin.hummingbird.router;
  * the title.
  * <p>
  * Can be replaced with
- * {@link ModifiableRouterConfiguration#setPageTitleGenerator(PageTitleGenerator)}
- * .
+ * {@link RouterConfiguration#setPageTitleGenerator(PageTitleGenerator)}.
  *
  * @see View#getTitle(LocationChangeEvent)
  */

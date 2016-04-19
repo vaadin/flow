@@ -13,31 +13,24 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.event;
 
-import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.annotations.EventData;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentEvent;
 
-public class AbstractHtmlComponent extends Component {
+@DomEvent("dom-event")
+public class MappedToDomEventMultipleConstructors extends ComponentEvent {
 
-    public AbstractHtmlComponent(Element element) {
-        super(element);
+    public MappedToDomEventMultipleConstructors(Component source,
+            boolean fromClient, @EventData("someParam") int someParam) {
+        super(source, fromClient);
     }
 
-    public void setId(String id) {
-        getElement().setAttribute("id", id);
-    }
-
-    public String getId() {
-        return getElement().getAttribute("id");
-    }
-
-    public void addClass(String className) {
-        getElement().getClassList().add(className);
-    }
-
-    protected void setText(String text) {
-        getElement().setTextContent(text);
+    public MappedToDomEventMultipleConstructors(Component source,
+            boolean fromClient, @EventData("otherParam") boolean otherParam) {
+        super(source, fromClient);
     }
 
 }

@@ -16,9 +16,18 @@
 
 package com.vaadin.hummingbird.namespace;
 
+import java.util.HashMap;
+import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.NodeOwner;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.server.StreamResourceRegistry;
+import com.vaadin.server.VaadinSession;
 
 /**
  * Namespace for element attribute values.
@@ -27,6 +36,10 @@ import com.vaadin.hummingbird.StateNode;
  * @author Vaadin Ltd
  */
 public class ElementAttributeNamespace extends MapNamespace {
+
+    private final HashMap<String, StreamResourceRegistration> resourceRegistrations = new HashMap<>();
+
+    private final HashMap<String, EventRegistrationHandle> pendingResources = new HashMap<>();
 
     /**
      * Creates a new element attribute namespace for the given node.
@@ -47,6 +60,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      *            the value
      */
     public void set(String attribute, String value) {
+        unregisterResource(attribute);
         put(attribute, value);
     }
 
@@ -70,6 +84,7 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     @Override
     public void remove(String attribute) {
+        unregisterResource(attribute);
         super.remove(attribute);
     }
 
@@ -93,6 +108,72 @@ public class ElementAttributeNamespace extends MapNamespace {
      */
     public Stream<String> attributes() {
         return super.keySet().stream();
+    }
+
+    /**
+     * Sets the given attribute to the given {@link StreamResource} value.
+     *
+     * @param attribute
+     *            the attribute name
+     * @param resource
+     *            the value
+     */
+    public void setResource(String attribute, StreamResource resource) {
+        set(attribute, StreamResourceRegistry.getURI(resource).toASCIIString());
+        if (getNode().isAttached()) {
+            registerResource(attribute, resource);
+        } else {
+            deferRegistration(attribute, resource);
+        }
+    }
+
+    private void unregisterResource(String attribute) {
+        StreamResourceRegistration registration = resourceRegistrations
+                .remove(attribute);
+        EventRegistrationHandle handle = pendingResources.remove(attribute);
+        if (handle != null) {
+            handle.remove();
+        }
+        if (registration != null) {
+            registration.unregister();
+        }
+    }
+
+    private void deferRegistration(String attribute, StreamResource resource) {
+        assert !pendingResources.containsKey(attribute);
+        EventRegistrationHandle handle = getNode()
+                .addAttachListener(() -> registerResource(attribute, resource));
+        pendingResources.put(attribute, handle);
+    }
+
+    private void registerResource(String attribute, StreamResource resource) {
+        assert !resourceRegistrations.containsKey(attribute);
+        StreamResourceRegistration registration = getSession()
+                .getResourceRegistry().registerResource(resource);
+        resourceRegistrations.put(attribute, registration);
+        EventRegistrationHandle handle = pendingResources.remove(attribute);
+        if (handle != null) {
+            handle.remove();
+        }
+        pendingResources.put(attribute,
+                getNode().addDetachListener(() -> unsetResource(attribute)));
+    }
+
+    private void unsetResource(String attribute) {
+        StreamResourceRegistration registration = resourceRegistrations
+                .get(attribute);
+        Optional<StreamResource> resource = Optional.empty();
+        if (registration != null) {
+            resource = registration.getResource();
+        }
+        unregisterResource(attribute);
+        resource.ifPresent(res -> deferRegistration(attribute, res));
+    }
+
+    private VaadinSession getSession() {
+        NodeOwner owner = getNode().getOwner();
+        assert owner instanceof StateTree;
+        return ((StateTree) owner).getUI().getSession();
     }
 
 }

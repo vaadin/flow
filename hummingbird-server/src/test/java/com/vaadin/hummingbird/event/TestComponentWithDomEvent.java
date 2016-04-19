@@ -13,14 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.component;
+package com.vaadin.hummingbird.event;
 
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.ui.ComponentTest.TestComponent;
 
-public class Link extends AbstractHtmlComponent {
-
-    public Link(String href, String text) {
-        super(ElementFactory.createAnchor(href, text));
-    }
+public class TestComponentWithDomEvent extends TestComponent {
 
 }

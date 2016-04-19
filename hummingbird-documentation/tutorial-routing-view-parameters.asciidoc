@@ -8,7 +8,7 @@ For dynamic views you can map many URLs to the same view as follows:
 [source,java]
 ----
 @Override
-public void configure(ModifiableRouterConfiguration configuration) {
+public void configure(RouterConfiguration configuration) {
   configuration.setRoute("product/{id}", ProductView.class);
   configuration.setRoute("docs/*", DocsView.class);
 }

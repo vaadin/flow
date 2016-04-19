@@ -73,7 +73,7 @@ public class LocationTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void emptyLocation() {
-        Location location = new Location(Collections.emptyList());
+        new Location(Collections.emptyList());
     }
 
     public void noSubLocation_emptyOptional() {

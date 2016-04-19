@@ -15,12 +15,12 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.uitest.component.Link;
+import com.vaadin.hummingbird.html.Anchor;
 
 public class BaseHrefView extends AbstractDivView {
 
     public BaseHrefView() {
-        addComponents(new Link("link", "My link"));
+        add(new Anchor("link", "My link"));
     }
 
 }

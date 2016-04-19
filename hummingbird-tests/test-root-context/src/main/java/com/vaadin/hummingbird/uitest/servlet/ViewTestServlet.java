@@ -20,10 +20,10 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.hummingbird.router.ModifiableRouterConfiguration;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
+import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.StaticViewRenderer;
 import com.vaadin.hummingbird.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
@@ -37,7 +37,7 @@ public class ViewTestServlet extends VaadinServlet {
 
     public static class ViewTestConfigurator implements RouterConfigurator {
         @Override
-        public void configure(ModifiableRouterConfiguration configuration) {
+        public void configure(RouterConfiguration configuration) {
             configuration.setResolver(new Resolver() {
                 @Override
                 public NavigationHandler resolve(

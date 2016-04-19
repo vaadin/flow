@@ -26,7 +26,7 @@ public class DependencyUI extends UI {
     protected void init(VaadinRequest request) {
         getElement().appendChild(ElementFactory.createDiv(
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
-        getElement().appendChild(ElementFactory.createHorizontalRule());
+        getElement().appendChild(ElementFactory.createHr());
         getPage().addStyleSheet("context://test-files/css/allred.css");
         getPage().addJavaScript(getServletToContextPath(
                 "test-files/js/body-click-listener.js"));
@@ -49,7 +49,7 @@ public class DependencyUI extends UI {
                     "context://test-files/css/allblueimportant.css");
 
         });
-        getElement().appendChild(jsOrder, allBlue, ElementFactory.createHorizontalRule());
+        getElement().appendChild(jsOrder, allBlue, ElementFactory.createHr());
     }
 
     protected String getServletToContextPath(String url) {

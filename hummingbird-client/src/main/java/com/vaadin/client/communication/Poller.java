@@ -23,7 +23,7 @@ import com.vaadin.ui.UI;
 /**
  * Handles polling the server with a given interval.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public class Poller {

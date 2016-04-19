@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.ui.UI;
 
 /**
  * The state tree that is synchronized with the client-side.
@@ -64,16 +65,21 @@ public class StateTree implements NodeOwner {
 
     private final StateNode rootNode;
 
+    private final UI ui;
+
     /**
      * Creates a new state tree with a set of namespaces defined for the root
      * node.
      *
      * @param namespaces
      *            the namespaces of the root node
+     * @param ui
+     *            the UI that this tree belongs to
      */
     @SafeVarargs
-    public StateTree(Class<? extends Namespace>... namespaces) {
+    public StateTree(UI ui, Class<? extends Namespace>... namespaces) {
         rootNode = new RootNode(namespaces);
+        this.ui = ui;
     }
 
     /**
@@ -180,5 +186,14 @@ public class StateTree implements NodeOwner {
      */
     public boolean hasDirtyNodes() {
         return !dirtyNodes.isEmpty();
+    }
+
+    /**
+     * Gets the {@link UI} that this tree belongs to.
+     * 
+     * @return the UI that this tree belongs to
+     */
+    public UI getUI() {
+        return ui;
     }
 }

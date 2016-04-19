@@ -28,7 +28,7 @@ import elemental.json.JsonValue;
 /**
  * A list namespace which contains {@link JsonValue}s.
  *
- * @author Vaadin
+ * @author Vaadin Ltd
  * @since
  */
 public abstract class JsonListNamespace extends ListNamespace<JsonValue> {

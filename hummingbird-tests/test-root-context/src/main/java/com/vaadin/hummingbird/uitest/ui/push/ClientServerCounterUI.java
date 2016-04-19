@@ -5,6 +5,7 @@ import java.util.TimerTask;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Button;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -40,14 +41,13 @@ public class ClientServerCounterUI extends UI {
                 .setAttribute("id", CLIENT_COUNTER_ID);
         getElement().appendChild(lbl);
 
-        Element button = ElementFactory.createButton("Increment")
-                .setAttribute("id", INCREMENT_BUTTON_ID);
-        button.addEventListener("click", e -> {
+        Button button = new Button("Increment", e -> {
             clientCounter++;
             lbl.setTextContent(clientCounter + "");
         });
+        button.setId(INCREMENT_BUTTON_ID);
 
-        getElement().appendChild(button);
+        getElement().appendChild(button.getElement());
         spacer();
 
         /*
@@ -60,10 +60,7 @@ public class ClientServerCounterUI extends UI {
         serverCounterElement.setTextContent(serverCounter + "");
         getElement().appendChild(serverCounterElement);
 
-        Element startTimer = ElementFactory.createButton("Start timer")
-                .setAttribute("id", START_TIMER_ID);
-
-        startTimer.addEventListener("click", e -> {
+        Button startTimer = new Button("Start timer", e -> {
             serverCounter = 0;
             if (task != null) {
                 task.cancel();
@@ -79,7 +76,8 @@ public class ClientServerCounterUI extends UI {
             };
             timer.scheduleAtFixedRate(task, 1000, 1000);
         });
-        getElement().appendChild(startTimer);
+        startTimer.setId(START_TIMER_ID);
+        getElement().appendChild(startTimer.getElement());
 
         Element stopTimer = ElementFactory.createButton("Stop timer")
                 .setAttribute("id", STOP_TIMER_ID);
@@ -95,7 +93,7 @@ public class ClientServerCounterUI extends UI {
     }
 
     protected void spacer() {
-        getElement().appendChild(ElementFactory.createHorizontalRule());
+        getElement().appendChild(ElementFactory.createHr());
     }
 
     @Override

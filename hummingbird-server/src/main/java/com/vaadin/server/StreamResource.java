@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Represents dynamically generated data.
@@ -41,6 +42,8 @@ public class StreamResource implements Serializable {
     private long cacheTime = 0L;
 
     private final StreamResourceWriter writer;
+
+    private final String id = UUID.randomUUID().toString();
 
     private static class Pipe implements StreamResourceWriter {
 
@@ -206,6 +209,15 @@ public class StreamResource implements Serializable {
      */
     public StreamResourceWriter getWriter() {
         return writer;
+    }
+
+    /**
+     * Gets unique identifier of the resource.
+     * 
+     * @return the resource unique id
+     */
+    public final String getId() {
+        return id;
     }
 
 }

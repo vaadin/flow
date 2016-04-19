@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
+import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.shared.JsonConstants;
 
@@ -48,6 +49,39 @@ public class TreeChangeProcessorTest {
                 .getValue();
 
         Assert.assertEquals(myValue, value);
+    }
+
+    @Test
+    public void testMapRemoveChange() {
+        MapProperty property = tree.getRootNode().getMapNamespace(ns)
+                .getProperty(myKey);
+        property.setValue(myValue);
+
+        JsonObject change = removeChange(rootId, ns, myKey);
+
+        TreeChangeProcessor.processChange(tree, change);
+
+        Assert.assertFalse(property.hasValue());
+    }
+
+    @Test
+    public void testMapReAdd() {
+        MapProperty property = tree.getRootNode().getMapNamespace(ns)
+                .getProperty(myKey);
+        property.setValue(myValue);
+
+        JsonObject change = removeChange(rootId, ns, myKey);
+
+        TreeChangeProcessor.processChange(tree, change);
+
+        StateNode child = new StateNode(2, tree);
+        tree.registerNode(child);
+
+        change = putNodeChange(rootId, ns, myKey, child.getId());
+
+        TreeChangeProcessor.processChange(tree, change);
+
+        Assert.assertSame(child, property.getValue());
     }
 
     @Test
@@ -159,8 +193,9 @@ public class TreeChangeProcessorTest {
         return json;
     }
 
-    private static JsonObject mapBaseChange(int node, int ns, String key) {
-        JsonObject json = baseChange(node, JsonConstants.CHANGE_TYPE_PUT);
+    private static JsonObject mapBaseChange(int node, int ns, String type,
+            String key) {
+        JsonObject json = baseChange(node, type);
         json.put(JsonConstants.CHANGE_NAMESPACE, ns);
         json.put(JsonConstants.CHANGE_MAP_KEY, key);
         return json;
@@ -176,15 +211,21 @@ public class TreeChangeProcessorTest {
 
     private static JsonObject putChange(int node, int ns, String key,
             JsonValue value) {
-        JsonObject json = mapBaseChange(node, ns, key);
+        JsonObject json = mapBaseChange(node, ns, JsonConstants.CHANGE_TYPE_PUT,
+                key);
         json.put(JsonConstants.CHANGE_PUT_VALUE, value);
 
         return json;
     }
 
+    private static JsonObject removeChange(int node, int ns, String key) {
+        return mapBaseChange(node, ns, JsonConstants.CHANGE_TYPE_REMOVE, key);
+    }
+
     private static JsonObject putNodeChange(int node, int ns, String key,
             int child) {
-        JsonObject json = mapBaseChange(node, ns, key);
+        JsonObject json = mapBaseChange(node, ns, JsonConstants.CHANGE_TYPE_PUT,
+                key);
 
         json.put(JsonConstants.CHANGE_PUT_NODE_VALUE, child);
 
