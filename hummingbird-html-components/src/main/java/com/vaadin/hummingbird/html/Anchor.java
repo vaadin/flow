@@ -23,7 +23,7 @@ import com.vaadin.annotations.Tag;
  * @since
  * @author Vaadin Ltd
  */
-@Tag("a")
+@Tag(Tag.A)
 public class Anchor extends HtmlContainer {
 
     /**

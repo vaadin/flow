@@ -24,7 +24,7 @@ import com.vaadin.ui.Component;
  * @since
  * @author Vaadin Ltd
  */
-@Tag("label")
+@Tag(Tag.LABEL)
 public class Label extends HtmlContainer {
     /**
      * Creates a new empty label.

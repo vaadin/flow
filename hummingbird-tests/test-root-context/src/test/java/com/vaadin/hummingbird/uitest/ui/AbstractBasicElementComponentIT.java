@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
 public abstract class AbstractBasicElementComponentIT extends PhantomJSTest {
@@ -17,8 +18,8 @@ public abstract class AbstractBasicElementComponentIT extends PhantomJSTest {
 
         Assert.assertEquals(0, getThankYouCount());
 
-        findElement(By.tagName("input")).sendKeys("abc");
-        findElement(By.tagName("button")).click();
+        findElement(By.tagName(Tag.INPUT)).sendKeys("abc");
+        findElement(By.tagName(Tag.BUTTON)).click();
 
         Assert.assertEquals(1, getThankYouCount());
 
