@@ -21,7 +21,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiFunction;
 
 import javax.servlet.ServletContext;
 
@@ -39,7 +38,7 @@ public class StreamResource implements Serializable {
 
     private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
-    private static final ContentTypeResolver DEFAULT_RESOLVER = new ContentTypeResolver();
+    private static final DefaultResolver DEFAULT_RESOLVER = new DefaultResolver();
 
     private final String fileName;
 
@@ -49,10 +48,9 @@ public class StreamResource implements Serializable {
 
     private final String id = UUID.randomUUID().toString();
 
-    private BiFunction<StreamResource, ServletContext, String> resolver = DEFAULT_RESOLVER;
+    private ContentTypeResolver resolver = DEFAULT_RESOLVER;
 
-    private static class ContentTypeResolver
-            implements BiFunction<StreamResource, ServletContext, String> {
+    private static class DefaultResolver implements ContentTypeResolver {
 
         @Override
         public String apply(StreamResource resource, ServletContext context) {
@@ -222,8 +220,7 @@ public class StreamResource implements Serializable {
      *            content type resolver, not <code>null</code>
      * @return this resource
      */
-    public StreamResource setResolver(
-            BiFunction<StreamResource, ServletContext, String> resolver) {
+    public StreamResource setResolver(ContentTypeResolver resolver) {
         if (resolver == null) {
             throw new IllegalArgumentException("Resolver cannot be null");
         }
@@ -237,7 +234,7 @@ public class StreamResource implements Serializable {
      * 
      * @return content type resolver
      */
-    public BiFunction<StreamResource, ServletContext, String> getResolver() {
+    public ContentTypeResolver getResolver() {
         return resolver;
     }
 
