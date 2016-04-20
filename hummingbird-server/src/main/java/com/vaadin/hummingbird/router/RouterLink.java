@@ -23,6 +23,7 @@ import java.util.Optional;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
@@ -87,6 +88,13 @@ public class RouterLink extends Component implements HasText, HasComponents {
         if (getElement().getNode().isAttached()) {
             updateHref(viewType, parameters);
         } else {
+            VaadinService currentService = VaadinService.getCurrent();
+            if (currentService != null) {
+                // Use the service to validate the mapping so that we can
+                // provide early feedback if there's a problem.
+                buildUrl(currentService.getRouter(), viewType, parameters);
+            }
+
             if (attachHandle != null) {
                 attachHandle.remove();
             }
