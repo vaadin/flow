@@ -38,9 +38,21 @@ public class RouterLinkTest {
         Assert.assertEquals("param1/bar/param2/param3", url);
     }
 
+    @Test
+    public void bildUrlWithEmptyWildcard() {
+        String url = RouterLink.buildUrl("{foo}/bar/*", "param1", "");
+        Assert.assertEquals("param1/bar/", url);
+    }
+
+    @Test
+    public void bildUrlWithOmittedWildcard() {
+        String url = RouterLink.buildUrl("{foo}/bar/*", "param1");
+        Assert.assertEquals("param1/bar/", url);
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void buildUrlWithTooFewParameters() {
-        RouterLink.buildUrl("{foo}/bar/*", "param1");
+        RouterLink.buildUrl("{foo}/bar/{baz}", "param1");
     }
 
     @Test(expected = IllegalArgumentException.class)
