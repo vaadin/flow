@@ -26,6 +26,37 @@ import java.util.Optional;
 public class RouteLocation extends Location {
 
     /**
+     * Callbacks for accepting the different route segment types encountered
+     * when walking a route.
+     *
+     * @see RouteLocation#visitSegments(RouteSegmentVisitor)
+     * @author Vaadin Ltd
+     */
+    public interface RouteSegmentVisitor {
+        /**
+         * Called when encountering a placeholder segment in the walked route.
+         *
+         * @param placeholderName
+         *            the name of the placeholder, not <code>null</code>
+         */
+        void acceptPlaceholder(String placeholderName);
+
+        /**
+         * Called when encountering a wildcard segment in the walked route.
+         * Walking the route ends after a wildcard has been accepted.
+         */
+        void acceptWildcard();
+
+        /**
+         * Called when encountering a regular segment in the walked route.
+         *
+         * @param segmentName
+         *            the name of the segment
+         */
+        void acceptSegment(String segmentName);
+    }
+
+    /**
      * Creates a new route location from a regular location.
      *
      * @param location
@@ -105,6 +136,50 @@ public class RouteLocation extends Location {
         // Catch problems if/when startsWithPlaceholder is changed to also
         // accept e.g. "prefix{name}"
         assert segment.startsWith("{") && segment.endsWith("}");
-        return segment.substring(1, segment.length() - 1);
+
+        String placeholderName = segment.substring(1, segment.length() - 1);
+
+        if (placeholderName.contains("*")) {
+            throw new IllegalArgumentException(
+                    "Placeholder name cannot contain *");
+        }
+
+        return placeholderName;
+    }
+
+    /**
+     * Iterates through all segments of this route, calling the appropriate
+     * method in the provided walker for each segment.
+     *
+     * @param visitor
+     *            the route segment visitor
+     */
+    public void visitSegments(RouteSegmentVisitor visitor) {
+        assert visitor != null;
+
+        RouteLocation location = this;
+        while (true) {
+            if (location.startsWithWildcard()) {
+                if (location.getSegments().size() != 1) {
+                    throw new IllegalArgumentException(getPath()
+                            + " wildcard is not at the end of the route");
+                }
+                visitor.acceptWildcard();
+            } else if (location.startsWithPlaceholder()) {
+                String placeholderName = location.getPlaceholderName();
+
+                visitor.acceptPlaceholder(placeholderName);
+            } else {
+                visitor.acceptSegment(location.getFirstSegment());
+            }
+
+            Optional<RouteLocation> maybeSubLocation = location
+                    .getRouteSubLocation();
+            if (maybeSubLocation.isPresent()) {
+                location = maybeSubLocation.get();
+            } else {
+                return;
+            }
+        }
     }
 }
