@@ -143,7 +143,7 @@ public abstract class Component
                 .getComponent(getElement());
         if (isInsideComposite(mappedComponent)) {
             Component parent = ComponentUtil.getParentUsingComposite(
-                    (Composite) mappedComponent.get(), this);
+                    (Composite<?>) mappedComponent.get(), this);
             return Optional.of(parent);
         }
 
@@ -206,13 +206,28 @@ public abstract class Component
     }
 
     /**
+     * Checks if there is at least one listener registered for the given event
+     * type for this component.
+     *
+     * @param eventType
+     *            the component event type
+     * @return <code>true</code> if at least one listener is registered,
+     *         <code>false</code> otherwise
+     */
+    protected boolean hasListener(Class<? extends ComponentEvent> eventType) {
+        return eventBus != null && eventBus.hasListener(eventType);
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @param componentEvent
      *            the event to fire
      */
     protected void fireEvent(ComponentEvent componentEvent) {
-        getEventBus().fireEvent(componentEvent);
+        if (hasListener(componentEvent.getClass())) {
+            getEventBus().fireEvent(componentEvent);
+        }
     }
 
     /**

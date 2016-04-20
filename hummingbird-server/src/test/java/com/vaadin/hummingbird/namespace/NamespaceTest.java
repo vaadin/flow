@@ -86,6 +86,7 @@ public class NamespaceTest {
                 Namespaces.SYNCHRONIZED_PROPERTY_EVENTS);
         expectedIds.put(ComponentMappingNamespace.class,
                 Namespaces.COMPONENT_MAPPING);
+        expectedIds.put(TemplateNamespace.class, Namespaces.TEMPLATE);
 
         Assert.assertEquals(
                 "The number of expected namespaces is not up to date",

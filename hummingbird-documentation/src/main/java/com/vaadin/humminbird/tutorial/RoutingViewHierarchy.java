@@ -79,6 +79,7 @@ public class RoutingViewHierarchy {
             Div header = new Div();
             header.setText("This header will always be shown");
             //@formatter:on
+
             childContainer = new Div();
             add(header, childContainer);
         }

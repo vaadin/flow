@@ -36,6 +36,7 @@ import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
 import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.ui.UI;
 
 public class StateNodeTest {
 
@@ -118,8 +119,7 @@ public class StateNodeTest {
         Assert.assertTrue("Node should have no changes", changes.isEmpty());
 
         // Attach node
-        setParent(node,
-                new StateTree(ElementChildrenNamespace.class).getRootNode());
+        setParent(node, createStateTree().getRootNode());
 
         node.collectChanges(collector);
 
@@ -147,8 +147,7 @@ public class StateNodeTest {
         StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
 
-        StateNode root = new StateTree(ElementChildrenNamespace.class)
-                .getRootNode();
+        StateNode root = createStateTree().getRootNode();
 
         setParent(grandchild, child);
         setParent(child, parent);
@@ -165,8 +164,7 @@ public class StateNodeTest {
         StateNode child = createParentNode("child");
         StateNode grandchild = createEmptyNode("grandchild");
 
-        StateNode root = new StateTree(ElementChildrenNamespace.class)
-                .getRootNode();
+        StateNode root = createStateTree().getRootNode();
 
         setParent(parent, root);
         setParent(child, parent);
@@ -203,7 +201,7 @@ public class StateNodeTest {
     public void recursiveTreeNavigation_resilienceInDepth() {
         TestStateNode childOfRoot = new TestStateNode();
         TestStateNode node = createTree(childOfRoot, 5000);
-        StateTree tree = new StateTree(ElementChildrenNamespace.class);
+        StateTree tree = createStateTree();
 
         setParent(childOfRoot, tree.getRootNode());
 
@@ -233,7 +231,7 @@ public class StateNodeTest {
                 count++;
             }
         }
-        StateTree tree = new StateTree(ElementChildrenNamespace.class);
+        StateTree tree = createStateTree();
 
         setParent(childOfRoot, tree.getRootNode());
 
@@ -406,4 +404,9 @@ public class StateNodeTest {
         set.remove(node.getData());
     }
 
+    private StateTree createStateTree() {
+        StateTree stateTree = new StateTree(new UI(),
+                ElementChildrenNamespace.class);
+        return stateTree;
+    }
 }

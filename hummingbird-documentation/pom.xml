@@ -25,7 +25,7 @@
 			<artifactId>hummingbird-server</artifactId>
 			<version>${parent.version}</version>
 		</dependency>
-		<dependency>
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>hummingbird-html-components</artifactId>
             <version>${parent.version}</version>

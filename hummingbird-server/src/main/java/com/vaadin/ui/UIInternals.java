@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,6 +42,7 @@ import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.util.SerializableJson;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -124,7 +126,7 @@ public class UIInternals implements Serializable {
 
     private int serverSyncId = 0;
 
-    private final StateTree stateTree = new StateTree(getRootNodeNamespaces());
+    private final StateTree stateTree;
 
     private PushConnection pushConnection = null;
 
@@ -158,6 +160,8 @@ public class UIInternals implements Serializable {
     private Location viewLocation = new Location("");
     private ArrayList<View> viewChain = new ArrayList<>();
 
+    private Set<Integer> sentTemplateIds = new HashSet<>();
+
     /**
      * The Vaadin session to which the related UI belongs.
      */
@@ -171,6 +175,7 @@ public class UIInternals implements Serializable {
      */
     public UIInternals(UI ui) {
         this.ui = ui;
+        stateTree = new StateTree(ui, getRootNodeNamespaces());
     }
 
     /**
@@ -611,4 +616,35 @@ public class UIInternals implements Serializable {
         return Logger.getLogger(UIInternals.class.getName());
     }
 
+    /**
+     * Checks whether the given template node has already been sent to the
+     * client.
+     *
+     * @see #setTemplateSent(TemplateNode)
+     * @param node
+     *            the node to check, not <code>null</code>
+     * @return <code>true</code> if the template node has already been sent to
+     *         the client, <code>false</code> if the client does not know about
+     *         the template node
+     */
+    public boolean isTemplateSent(TemplateNode node) {
+        assert node != null;
+
+        return sentTemplateIds.contains(Integer.valueOf(node.getId()));
+    }
+
+    /**
+     * Marks the given template node as being sent to the client.
+     *
+     * @see #isTemplateSent(TemplateNode)
+     *
+     * @param node
+     *            the template node to set as sent, not <code>null</code>
+     */
+    public void setTemplateSent(TemplateNode node) {
+        assert node != null;
+        assert !isTemplateSent(node);
+
+        sentTemplateIds.add(Integer.valueOf(node.getId()));
+    }
 }

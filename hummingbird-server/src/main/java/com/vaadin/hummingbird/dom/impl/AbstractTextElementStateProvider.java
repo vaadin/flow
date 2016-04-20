@@ -28,54 +28,24 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
-import com.vaadin.hummingbird.namespace.TextNodeNamespace;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.JsonValue;
 
 /**
- * Handles storing and retrieval of the state information for a text node using
- * a state node.
+ * Abstract element state provider for text nodes. Operations that are not
+ * applicable for text nodes throw {@link UnsupportedOperationException}.
  *
  * @since
  * @author Vaadin Ltd
  */
-public class TextElementStateProvider implements ElementStateProvider {
-    private static final TextElementStateProvider INSTANCE = new TextElementStateProvider();
-
-    private TextElementStateProvider() {
-        // Singleton
-    }
-
-    /**
-     * Creates a compatible text state node using the given text.
-     *
-     * @param text
-     *            the text to use
-     * @return a initialized and compatible state node
-     */
-    public static StateNode createStateNode(String text) {
-        assert text != null;
-
-        StateNode node = new StateNode(TextNodeNamespace.class,
-                ComponentMappingNamespace.class);
-        node.getNamespace(TextNodeNamespace.class).setText(text);
-
-        return node;
-    }
-
-    /**
-     * Gets the one and only instance.
-     *
-     * @return the instance to use for all basic text nodes
-     */
-    public static TextElementStateProvider get() {
-        return INSTANCE;
-    }
+public abstract class AbstractTextElementStateProvider
+        implements ElementStateProvider {
 
     @Override
-    public boolean supports(StateNode node) {
-        return node.hasNamespace(TextNodeNamespace.class);
+    public boolean isTextNode(StateNode node) {
+        return true;
     }
 
     @Override
@@ -106,11 +76,6 @@ public class TextElementStateProvider implements ElementStateProvider {
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Element getParent(StateNode node) {
-        return BasicElementStateProvider.get().getParent(node);
     }
 
     @Override
@@ -182,26 +147,6 @@ public class TextElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public boolean isTextNode(StateNode node) {
-        return true;
-    }
-
-    @Override
-    public String getTextContent(StateNode node) {
-        assert node != null;
-
-        return node.getNamespace(TextNodeNamespace.class).getText();
-    }
-
-    @Override
-    public void setTextContent(StateNode node, String textContent) {
-        assert node != null;
-        assert textContent != null;
-
-        node.getNamespace(TextNodeNamespace.class).setText(textContent);
-    }
-
-    @Override
     public ClassList getClassList(StateNode node) {
         throw new UnsupportedOperationException();
     }
@@ -234,6 +179,12 @@ public class TextElementStateProvider implements ElementStateProvider {
         assert node != null;
         return node.getNamespace(ComponentMappingNamespace.class)
                 .getComponent();
+    }
+
+    @Override
+    public void setAttribute(StateNode node, String attribute,
+            StreamResource resource) {
+        throw new UnsupportedOperationException();
     }
 
 }

@@ -31,9 +31,12 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
-import com.vaadin.hummingbird.dom.impl.TextElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
+import com.vaadin.hummingbird.namespace.TemplateNamespace;
 import com.vaadin.hummingbird.namespace.TextNodeNamespace;
+import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;
@@ -237,18 +240,41 @@ public class Element implements Serializable {
      * Gets the element mapped to the given state node.
      *
      * @param node
-     *            the state node
-     * @return the element for the node
+     *            the state node, not <code>null</code>
+     * @return the element for the node, not <code>null</code>
      */
     public static Element get(StateNode node) {
+        assert node != null;
+
         if (node.hasNamespace(TextNodeNamespace.class)) {
-            return new Element(node, TextElementStateProvider.get());
+            return get(node, BasicTextElementStateProvider.get());
         } else if (node.hasNamespace(ElementDataNamespace.class)) {
-            return new Element(node, BasicElementStateProvider.get());
+            return get(node, BasicElementStateProvider.get());
+        } else if (node.hasNamespace(TemplateNamespace.class)) {
+            TemplateNode rootTemplate = node
+                    .getNamespace(TemplateNamespace.class).getRootTemplate();
+            return get(node, rootTemplate.getStateProvider());
         } else {
             throw new IllegalArgumentException(
                     "Node is not valid as an element");
         }
+    }
+
+    /**
+     * Gets the element mapped to the given state node and element state
+     * provider.
+     *
+     * @param node
+     *            the state node
+     * @param stateProvider
+     *            the element state provider
+     * @return an element for the node and state provider, not <code>null</code>
+     */
+    // Static builder instead of regular constructor to keep it slightly out of
+    // view
+    public static Element get(StateNode node,
+            ElementStateProvider stateProvider) {
+        return new Element(node, stateProvider);
     }
 
     /**
@@ -263,8 +289,8 @@ public class Element implements Serializable {
             throw new IllegalArgumentException("Text cannot be null");
         }
 
-        return new Element(TextElementStateProvider.createStateNode(text),
-                TextElementStateProvider.get());
+        return new Element(BasicTextElementStateProvider.createStateNode(text),
+                BasicTextElementStateProvider.get());
     }
 
     /**
@@ -340,20 +366,7 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
-        if (attribute == null) {
-            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
-        }
-
-        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
-            throw new IllegalArgumentException(String.format(
-                    "Attribute \"%s\" is not a valid attribute name",
-                    lowerCaseAttribute));
-        }
-
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
-        }
+        String lowerCaseAttribute = validateAttribute(attribute, value);
 
         CustomAttribute customAttribute = customAttributes
                 .get(lowerCaseAttribute);
@@ -362,6 +375,40 @@ public class Element implements Serializable {
         } else {
             stateProvider.setAttribute(getNode(), lowerCaseAttribute, value);
         }
+        return this;
+    }
+
+    /**
+     * Sets the given attribute to the given {@link StreamResource} value.
+     * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
+     * <p>
+     * This is a convenience method to register a {@link StreamResource}
+     * instance into the session and use the registered resource URI as an
+     * element attribute.
+     * <p>
+     *
+     * @see #setAttribute(String, String)
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param resource
+     *            the resource value, not null
+     * @return this element
+     */
+    public Element setAttribute(String attribute, StreamResource resource) {
+        String lowerCaseAttribute = validateAttribute(attribute, resource);
+
+        CustomAttribute customAttribute = customAttributes
+                .get(lowerCaseAttribute);
+        if (customAttribute == null) {
+            stateProvider.setAttribute(node, attribute, resource);
+        } else {
+            throw new IllegalArgumentException("Can't set " + attribute
+                    + " to StreamResource value. This attribute has special semantic");
+        }
+
         return this;
     }
 
@@ -683,6 +730,8 @@ public class Element implements Serializable {
                 return this;
             }
             removeChild(index);
+            insertChild(index, child);
+        } else if (index == childCount) {
             insertChild(index, child);
         } else {
             throw new IllegalArgumentException(String.format(
@@ -1377,27 +1426,6 @@ public class Element implements Serializable {
     }
 
     /**
-     * Defines a mapping between this element and the given {@link Component}.
-     *
-     * @param component
-     *            the component this element is attached to
-     * @return this element
-     */
-    public Element setComponent(Component component) {
-        if (component == null) {
-            throw new IllegalArgumentException("Component must not be null");
-        }
-
-        if (getComponent().isPresent()) {
-            throw new IllegalStateException(
-                    "A component is already attached to this element");
-        }
-        stateProvider.setComponent(getNode(), component);
-
-        return this;
-    }
-
-    /**
      * Gets the component this element has been mapped to, if any.
      *
      * @return an optional component, or an empty optional if no component has
@@ -1405,6 +1433,24 @@ public class Element implements Serializable {
      */
     public Optional<Component> getComponent() {
         return stateProvider.getComponent(getNode());
+    }
+
+    private String validateAttribute(String attribute, Object value) {
+        if (attribute == null) {
+            throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
+        }
+
+        String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
+        if (!ElementUtil.isValidAttributeName(lowerCaseAttribute)) {
+            throw new IllegalArgumentException(String.format(
+                    "Attribute \"%s\" is not a valid attribute name",
+                    lowerCaseAttribute));
+        }
+
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
+        return lowerCaseAttribute;
     }
 
     private static void verifyEventType(String eventType) {
