@@ -44,7 +44,8 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<gwt.version>2.8.0.snapshot20160216</gwt.version>
+		<gwt.version>2.8.0.snapshot20160419</gwt.version>
+		<jsinterop.version>1.0.0.snapshot20160419</jsinterop.version>
 		<sonar.java.source>8</sonar.java.source>
 		<sonar.analysis.mode>preview</sonar.analysis.mode>
 		<sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
@@ -55,8 +56,12 @@
 
 	<repositories>
 		<repository>
-			<id>hummingbird-internal-snapshots</id>
-			<url>http://vaadin.com/download/internal/hummingbird/hummingbird-6fbd67/</url>
+			<id>hummingbird</id>
+			<url>https://repo.vaadin.com/nexus/content/repositories/hummingbird/</url>
+		</repository>
+		<repository>
+			<id>hummingbird-snapshots</id>
+			<url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -76,8 +81,12 @@
 
 	<pluginRepositories>
 		<pluginRepository>
-			<id>hummingbird-internal-snapshots</id>
-			<url>http://vaadin.com/download/internal/hummingbird/hummingbird-6fbd67</url>
+			<id>hummingbird</id>
+			<url>https://repo.vaadin.com/nexus/content/repositories/hummingbird/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>hummingbird-snapshots</id>
+			<url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -90,6 +99,13 @@
 				<groupId>com.google.gwt</groupId>
 				<artifactId>gwt</artifactId>
 				<version>${gwt.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.google.jsinterop</groupId>
+				<artifactId>jsinterop</artifactId>
+				<version>${jsinterop.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

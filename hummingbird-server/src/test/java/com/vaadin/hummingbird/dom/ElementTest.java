@@ -954,11 +954,11 @@ public class ElementTest {
                     "Double is the only accepted numeric type");
         }
 
-        if (value instanceof Serializable) {
+        if (value instanceof JsonValue) {
+            element.setPropertyJson("property", (JsonValue) value);
+        } else if (value instanceof Serializable) {
             BasicElementStateProvider.get().setProperty(element.getNode(),
                     "property", (Serializable) value, true);
-        } else if (value instanceof JsonValue) {
-            element.setPropertyJson("property", (JsonValue) value);
         } else if (value == null) {
             element.setProperty("property", null);
         } else {
