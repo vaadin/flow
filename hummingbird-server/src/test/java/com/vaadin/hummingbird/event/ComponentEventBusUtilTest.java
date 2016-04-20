@@ -15,43 +15,33 @@
  */
 package com.vaadin.hummingbird.event;
 
-import java.util.Optional;
-
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.util.ReflectionCache;
+import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentTest.TestComponent;
 
 public class ComponentEventBusUtilTest {
     @Test
     public void domEvent_constructorCached() {
-        EventDataCache cache = ComponentEventBusUtil.cache;
+        ReflectionCache<ComponentEvent, ?> cache = ComponentEventBusUtil.cache;
         TestComponent component = new TestComponent();
         cache.clear();
-        assertEmpty(cache.getEventConstructor(MappedToDomEvent.class));
+        Assert.assertFalse(cache.contains(MappedToDomEvent.class));
         component.addListener(MappedToDomEvent.class, e -> {
         });
-        assertPresent(cache.getEventConstructor(MappedToDomEvent.class));
+        Assert.assertTrue(cache.contains(MappedToDomEvent.class));
     }
 
     @Test
     public void domEvent_dataExpressionCached() {
         TestComponent component = new TestComponent();
-        EventDataCache cache = ComponentEventBusUtil.cache;
+        ReflectionCache<ComponentEvent, ?> cache = ComponentEventBusUtil.cache;
         cache.clear();
-        assertEmpty(cache.getDataExpressions(MappedToDomEvent.class));
+        Assert.assertFalse(cache.contains(MappedToDomEvent.class));
         component.addListener(MappedToDomEvent.class, e -> {
         });
-        assertPresent(cache.getDataExpressions(MappedToDomEvent.class));
-    }
-
-    private void assertEmpty(Optional<?> optional) {
-        Assert.assertEquals("Optional should be empty but is " + optional,
-                Optional.empty(), optional);
-    }
-
-    private void assertPresent(Optional<?> optional) {
-        Assert.assertTrue("Value should be present but optional is " + optional,
-                optional.isPresent());
+        Assert.assertTrue(cache.contains(MappedToDomEvent.class));
     }
 }
