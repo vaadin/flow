@@ -24,8 +24,6 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
-import elemental.json.JsonValue;
-
 /**
  * Handles storing and retrieval of the state information for an element using a
  * state node.
@@ -232,18 +230,6 @@ public interface ElementStateProvider extends Serializable {
      */
     void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange);
-
-    /**
-     * Sets the given property to the given JSON value.
-     *
-     * @param node
-     *            the node containing the data
-     * @param name
-     *            the property name, not <code>null</code>
-     * @param value
-     *            the property value, not <code>null</code>
-     */
-    void setJsonProperty(StateNode node, String name, JsonValue value);
 
     /**
      * Removes the given property if it has been set.
