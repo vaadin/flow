@@ -32,7 +32,15 @@ import com.vaadin.ui.UI;
 public class RouterTest {
 
     public static class RouterTestUI extends UI {
-        Router router = new Router();
+        final Router router;
+
+        public RouterTestUI() {
+            this(new Router());
+        }
+
+        public RouterTestUI(Router router) {
+            this.router = router;
+        }
 
         @Override
         public Optional<Router> getRouter() {

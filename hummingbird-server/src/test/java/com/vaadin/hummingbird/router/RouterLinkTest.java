@@ -15,11 +15,16 @@
  */
 package com.vaadin.hummingbird.router;
 
+import javax.servlet.ServletException;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.router.RouterTest.RouterTestUI;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
+import com.vaadin.server.MockServletConfig;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.ApplicationConstants;
 
 public class RouterLinkTest {
@@ -126,6 +131,39 @@ public class RouterLinkTest {
 
         Assert.assertEquals("show/changed",
                 link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void invalidRouteWhenAttaching() {
+        RouterTestUI ui = new RouterTestUI();
+        ui.getRouter().get()
+                .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink("Show something", TestView.class);
+
+        try {
+            ui.add(link);
+            Assert.fail("Should thrown when attaching");
+        } catch (IllegalArgumentException expected) {
+            // All is fine
+        }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRouteWhenConstructing() throws ServletException {
+        VaadinServlet servlet = new VaadinServlet();
+        servlet.init(new MockServletConfig());
+
+        try {
+            VaadinService.setCurrent(servlet.getService());
+
+            servlet.getService().getRouter()
+                    .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+            new RouterLink("Show something", TestView.class);
+        } finally {
+            VaadinService.setCurrent(null);
+        }
     }
 
 }
