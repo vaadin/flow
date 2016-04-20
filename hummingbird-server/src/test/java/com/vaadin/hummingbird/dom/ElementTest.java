@@ -22,6 +22,7 @@ import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.NullOwner;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.ListSpliceChange;
@@ -47,7 +48,7 @@ public class ElementTest {
     @Test
     public void createElementWithTag() {
         Element e = ElementFactory.createDiv();
-        Assert.assertEquals("div", e.getTag());
+        Assert.assertEquals(Tag.DIV, e.getTag());
         Assert.assertFalse(e.hasAttribute("is"));
         Assert.assertFalse(e.isTextNode());
     }
@@ -253,7 +254,7 @@ public class ElementTest {
 
     @Test
     public void setGetAttributeValueCaseSensitive() {
-        Element e = new Element("span");
+        Element e = new Element(Tag.SPAN);
         e.setAttribute("foo", "bAr");
         Assert.assertEquals("bAr", e.getAttribute("foo"));
         e.setAttribute("foo", "BAR");
@@ -262,7 +263,7 @@ public class ElementTest {
 
     @Test
     public void setGetAttributeNameCaseInsensitive() {
-        Element e = new Element("span");
+        Element e = new Element(Tag.SPAN);
         e.setAttribute("foo", "bar");
         e.setAttribute("FOO", "baz");
 
@@ -272,14 +273,14 @@ public class ElementTest {
 
     @Test
     public void hasAttributeNamesCaseInsensitive() {
-        Element e = new Element("span");
+        Element e = new Element(Tag.SPAN);
         e.setAttribute("fooo", "bar");
         Assert.assertTrue(e.hasAttribute("fOoO"));
     }
 
     @Test
     public void getAttributeNamesLowerCase() {
-        Element e = new Element("span");
+        Element e = new Element(Tag.SPAN);
         e.setAttribute("FOO", "bar");
         e.setAttribute("Baz", "bar");
 
@@ -724,7 +725,7 @@ public class ElementTest {
     @Test
     public void notEqualsString() {
         Element e = ElementFactory.createDiv();
-        Assert.assertFalse(e.equals("div"));
+        Assert.assertFalse(e.equals(Tag.DIV));
     }
 
     @Test
@@ -1092,7 +1093,7 @@ public class ElementTest {
 
     @Test
     public void testSetEmptyClassAttribute() {
-        Element element = new Element("div");
+        Element element = new Element(Tag.DIV);
 
         // Get instance right away to see that changes are live
         Set<String> classList = element.getClassList();
@@ -1104,7 +1105,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testAddEmptyClassname() {
-        Element element = new Element("div");
+        Element element = new Element(Tag.DIV);
 
         // Get instance right away to see that changes are live
         Set<String> classList = element.getClassList();
@@ -1180,7 +1181,7 @@ public class ElementTest {
 
     @Test
     public void classListSetAdd() {
-        Element e = new Element("div");
+        Element e = new Element(Tag.DIV);
         Assert.assertTrue(e.getClassList().set("foo", true));
         Assert.assertEquals("foo", e.getAttribute("class"));
         Assert.assertFalse(e.getClassList().set("foo", true));
@@ -1189,7 +1190,7 @@ public class ElementTest {
 
     @Test
     public void classListSetRemove() {
-        Element e = new Element("div");
+        Element e = new Element(Tag.DIV);
         e.setAttribute("class", "foo bar");
         Assert.assertTrue(e.getClassList().set("foo", false));
         Assert.assertEquals("bar", e.getAttribute("class"));
