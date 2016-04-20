@@ -1,0 +1,103 @@
+= Creating a Component using Elements
+:toc:
+
+=== Creating a TextField Component
+
+You can create a simple TextField component based on an `<input>` element as follows:
+
+[source,java]
+----
+@Tag("input")
+public class TextField extends Component {
+
+  public TextField(String value) {
+    getElement().setProperty("value",value);
+    getElement().synchronizeProperty("value", "change");
+  }
+}
+----
+The Component class will automatically create its root element based on the `@Tag` annotation, which can then be accessed using `getElement()`. The root element in the text field is in this example used to set up synchronization of the value from the browser to the server when the user changes its value. It is also used to set the initial value of the field.
+
+To make the component easier to use, you can add an API for getting and setting the value:
+
+[source,java]
+----
+  public String getValue() {
+    return getElement().getProperty("value");
+  }
+  public void setValue(String value) {
+    getElement().setProperty("value", value);
+  }
+----
+
+=== Creating a TextField Component With a Label
+
+You can create a TextField component with support for a label using the following DOM structure:
+[source,html]
+----
+<div>
+  <label>
+  <input>
+----
+
+The component class looks like:
+
+[source,java]
+----
+@Tag("div")
+public class TextFieldWithLabel extends Component {
+
+  Element labelElement = new Element("label");
+  Element inputElement = new Element("input");
+
+  public TextFieldWithLabel() {
+    inputElement.synchronizeProperty("value", "change");
+    getElement().appendChild(labelElement,inputElement);
+  }
+}
+----
+
+In addition to what was done for `<input>` based text field, a label element is created, and both the input and the label elements are appended to the root element.
+
+You can add API for setting the value of the input and the text of the label, using the corresponding elements:
+
+[source,java]
+----
+  public String getLabel() {
+    return labelElement.getOwnTextContent();
+  }
+  public void setLabel(String label) {
+    labelElement.setTextContent(label);
+  }
+  public String getValue() {
+    return inputElement.getProperty("value");
+  }
+  public void setValue(String value) {
+    inputElement.setProperty("value", value);
+  }
+----
+
+To make it even more convenient to use, the API can be made fluent by making the setters return the component itself:
+
+[source,java]
+----
+  public TextFieldWithLabel setLabel(String label) {
+    labelElement.setTextContent(label);
+    return this;
+  }
+  public TextFieldWithLabel setValue(String value) {
+    inputElement.setProperty("value", value);
+    return this;
+  }
+----
+
+Now the component can be used as
+[source,java]
+----
+new TextFieldWithLabel()
+    .setLabel("Zip code")
+    .setValue("12345");
+----
+
+[NOTE]
+Fluent API does not work well when you create a new component by extending the component which has fluent API.

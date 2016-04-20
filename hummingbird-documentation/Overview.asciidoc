@@ -26,6 +26,8 @@ These tutorials show how the different features are used.
 ** <<tutorial-event-listener#,Listening to User Events>>
 ** <<tutorial-user-input#,Retrieving User Input>>
 ** <<tutorial-dynamic-styling#,Dynamic styling>>
+* Component API
+** <<tutorial-component-basic#,Creating a Component using Elements>>
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
@@ -53,11 +55,18 @@ Elements on the server are implemented as flyweight instances.
 This means that you cannot compare elements using `==` and `!=`.
 Instead, `element.equals(otherElement)` should be used to check whether two instances refer to the same DOM element in the browser.
 
-=== Element hierarchy
+=== Element Hierarchy
 
 A web application is structured as a tree of elements with the root being the element of the `UI` instance. An element can be added as a child of another element using methods such as `element.appendChild(Element)` for adding an element to the end of a parent's child list or `element.insertChild(int, Element)` for adding to any position in the child list.
 
 The element hierarchy can be navigated upwards using `element.getParent()` and downwards using `element.getChildCount()` and `element.getChild(int)`.
+
+=== Component Hierarchy
+The component hierarchy provides an higher level abstraction on top of the element hierarchy. A component consists of a root element and can optionally contain any number of child elements. Components can be added inside other components using methods such as `UI.add(Component)`, provided the parent component supports child components.
+
+Composite is a special kind of component which does not have a root element of its own but instead encapsulates another component. The main use case for a composite is to combine existing components into new components while hiding the original component API.
+
+The component hierarchy can be navigated upwards using `component.getParent()` and downwards using `component.getChildren()`. The component hierarchy is constructed based on the element hierarchy, so they are always in sync.
 
 == History API
 
