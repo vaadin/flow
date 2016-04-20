@@ -34,8 +34,6 @@ import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.util.SerializableJson;
 import com.vaadin.shared.util.UniqueSerializable;
 
-import elemental.json.JsonValue;
-
 /**
  * A state node namespace that structures data as a map.
  *
@@ -86,19 +84,6 @@ public abstract class MapNamespace extends Namespace {
      */
     protected void put(String key, Serializable value, boolean emitChange) {
         doPut(key, value, emitChange);
-    }
-
-    /**
-     * Stores a JSON value with the given key, replacing any value previously
-     * stored with the same key.
-     *
-     * @param key
-     *            the key to use
-     * @param value
-     *            the value to store
-     */
-    protected void putJson(String key, JsonValue value) {
-        doPut(key, value, true);
     }
 
     // Internal method to avoid exposing non-serializable setter

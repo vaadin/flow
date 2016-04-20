@@ -77,7 +77,7 @@ public class ElementListenersNamespace extends MapNamespace {
             assert !listeners.containsKey(eventType);
 
             listeners.put(eventType, new ArrayList<>());
-            putJson(eventType, Json.createArray());
+            put(eventType, Json.createArray());
         }
 
         listeners.get(eventType).add(listener);
@@ -91,7 +91,7 @@ public class ElementListenersNamespace extends MapNamespace {
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
                 // Send full new event data to the client if the set changed
 
-                putJson(eventType, eventData.stream().map(Json::create)
+                put(eventType, eventData.stream().map(Json::create)
                         .collect(JsonUtil.asArray()));
             }
         }
