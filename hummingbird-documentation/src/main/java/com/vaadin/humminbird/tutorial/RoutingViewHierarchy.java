@@ -20,12 +20,13 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.ui.Component;
 
 @CodeFor("tutorial-routing-view-hierarchy.asciidoc")
 public class RoutingViewHierarchy {
@@ -68,43 +69,33 @@ public class RoutingViewHierarchy {
 
     }
 
-    public class MainLayout implements HasChildView {
+    public class MainLayout extends Div implements HasChildView {
 
-        private Element childContainer;
-        private Element root;
+        private Div childContainer;
 
         public MainLayout() {
             // Initialize the main layout DOM
-            root = ElementFactory.createDiv();
             //@formatter:off
-            Element header = ElementFactory.createDiv("This header will always be shown");
+            Div header = new Div();
+            header.setText("This header will always be shown");
             //@formatter:on
-            childContainer = ElementFactory.createDiv();
-            root.appendChild(header, childContainer);
-        }
 
-        @Override
-        public Element getElement() {
-            return root; // The element for this view
+            childContainer = new Div();
+            add(header, childContainer);
         }
 
         @Override
         public void setChildView(View childView) {
-            childContainer.setChild(0, childView.getElement());
+            childContainer.removeAll();
+            childContainer.add((Component) childView);
         }
     }
 
-    public class CompanyView implements View {
-
-        private Element element;
+    public class CompanyView extends Div implements View {
 
         public CompanyView() {
-            element = ElementFactory.createDiv("This is the home view");
-        }
-
-        @Override
-        public Element getElement() {
-            return element;
+            super();
+            setText("This is the home view");
         }
 
     }

@@ -18,19 +18,20 @@ public class HelloWorldUI extends UI {
 }
 ----
 
-The main purpose of the init method is to populate the UI with elements. For the Hello world application you only need one element containing the "Hello world" text:
+The main purpose of the init method is to populate the UI with components. For the Hello world application you only need one component containing the "Hello world" text:
 [source,java]
 ----
-Element div = ElementFactory.createDiv("Hello world");
+Div div = new Div();
+div.setText("Hello world");
 ----
 
 [TIP]
-`ElementFactory` contains helper methods for creating commonly used elements. You can also use `new Element(tagName)` to create any element.
+The `com.vaadin.hummingbird.html` package contains a number of commonly used components. You can also extend `HtmlComponent` to create any custom component.
 
-You also need to attach the element to the root element of the UI, which represents the `<body>` tag on the page:
+You also need to attach the component to the UI component, which represents the `<body>` tag on the page:
 [source,java]
 ----
-getElement().appendChild(div);
+add(div);
 ----
 
 You will thus end up with this `HelloWorldUI` class:
@@ -41,8 +42,9 @@ public class HelloWorldUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        Element div = ElementFactory.createDiv("Hello world");
-        getElement().appendChild(div);
+        Div div = new Div();
+        div.setText("Hello world");
+        add(div);
     }
 }
 ----

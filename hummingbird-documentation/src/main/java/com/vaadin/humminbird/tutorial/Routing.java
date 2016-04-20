@@ -19,13 +19,12 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.ui.UI;
 
 @CodeFor("tutorial-routing.asciidoc")
 public class Routing {
@@ -44,18 +43,12 @@ public class Routing {
 
     }
 
-    public class HomeView implements View {
-
-        private Element element;
+    public class HomeView extends Div implements View {
 
         public HomeView() {
-            element = ElementFactory.createDiv("This is the home view");
+            setText("This is the home view");
         }
 
-        @Override
-        public Element getElement() {
-            return element;
-        }
     }
 
     public class CompanyView extends HomeView {
@@ -63,9 +56,9 @@ public class Routing {
     }
 
     void navigation() {
-        Element button = ElementFactory.createButton("Navigate to company");
-        button.addEventListener("click", e -> {
-            UI.getCurrent().navigateTo("company");
+        Button button = new Button("Navigate to company");
+        button.addClickListener(e -> {
+            button.getUI().ifPresent(ui -> ui.navigateTo("company"));
         });
 
     }
