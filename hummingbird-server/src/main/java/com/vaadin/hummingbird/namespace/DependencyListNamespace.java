@@ -32,7 +32,8 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  * @since
  */
-public class DependencyListNamespace extends JsonListNamespace {
+public class DependencyListNamespace
+        extends SerializableListNamespace<JsonObject> {
 
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";

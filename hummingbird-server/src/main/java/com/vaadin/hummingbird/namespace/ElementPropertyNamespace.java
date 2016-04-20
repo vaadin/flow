@@ -20,8 +20,6 @@ import java.io.Serializable;
 
 import com.vaadin.hummingbird.StateNode;
 
-import elemental.json.JsonValue;
-
 /**
  * Namespace for element property values.
  *
@@ -49,17 +47,4 @@ public class ElementPropertyNamespace extends AbstractPropertyNamespace {
 
         super.setProperty(name, value, emitChange);
     }
-
-    /**
-     * Sets a property to the given JSON value.
-     *
-     * @param name
-     *            the property name
-     * @param value
-     *            the JSON value
-     */
-    public void setJsonProperty(String name, JsonValue value) {
-        putJson(name, value);
-    }
-
 }

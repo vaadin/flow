@@ -20,6 +20,8 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 
+import elemental.json.JsonValue;
+
 /**
  * Abstract namespace to be used as a parent for namespaces which supports
  * setting properties in a map.
@@ -53,8 +55,7 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
     public void setProperty(String name, Serializable value,
             boolean emitChange) {
         assert name != null;
-        assert value == null || value instanceof String
-                || value instanceof Boolean || value instanceof Double;
+        assert isValidValueType(value);
 
         put(name, value, emitChange);
     }
@@ -109,4 +110,33 @@ public abstract class AbstractPropertyNamespace extends MapNamespace {
     public Stream<String> getPropertyNames() {
         return keySet().stream();
     }
+
+    /**
+     * Checks if the given value is of a supported type.
+     * 
+     * @param value
+     *            the value to check, may be null
+     * @return <code>true</code> if the type is supported, <code>false</code>
+     *         otherwise
+     */
+    public static boolean isValidValueType(Serializable value) {
+        if (value == null) {
+            return true;
+        }
+        if (value instanceof String) {
+            return true;
+        }
+        if (value instanceof Boolean) {
+            return true;
+        }
+        if (value instanceof Double) {
+            return true;
+        }
+        if (value instanceof JsonValue) {
+            return true;
+        }
+
+        return false;
+    }
+
 }

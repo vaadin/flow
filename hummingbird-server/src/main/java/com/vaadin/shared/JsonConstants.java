@@ -144,7 +144,7 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used for data related to
-     * {@link Page#executeJavaScript(String, Object...)} in UIDL messages.
+     * {@link Page#executeJavaScript(String, Serializable...)} in UIDL messages.
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
 
