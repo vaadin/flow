@@ -113,6 +113,11 @@
 						<artifactId>gwt-codeserver</artifactId>
 						<version>${gwt.version}</version>
 					</dependency>
+					<dependency>
+						<groupId>com.google.jsinterop</groupId>
+						<artifactId>jsinterop-annotations</artifactId>
+						<version>${jsinterop.version}</version>
+					</dependency>
 				</dependencies>
 
 				<executions>
