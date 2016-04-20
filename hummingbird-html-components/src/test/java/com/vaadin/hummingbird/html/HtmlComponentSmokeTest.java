@@ -45,9 +45,9 @@ public class HtmlComponentSmokeTest {
     private static final Map<Class<? extends HtmlComponent>, Supplier<HtmlComponent>> customConstructors = new HashMap<>();
     static {
         customConstructors.put(HtmlComponent.class,
-                () -> new HtmlComponent("div"));
+                () -> new HtmlComponent(Tag.DIV));
         customConstructors.put(HtmlContainer.class,
-                () -> new HtmlContainer("div"));
+                () -> new HtmlContainer(Tag.DIV));
     }
 
     private static final Map<Class<?>, Object> testValues = new HashMap<>();

@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.html.event.ChangeNotifier;
  * @since
  * @author Vaadin Ltd
  */
-@Tag("input")
+@Tag(Tag.INPUT)
 public class Input extends HtmlComponent implements ChangeNotifier {
 
     /**

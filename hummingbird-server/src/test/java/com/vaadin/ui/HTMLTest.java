@@ -21,6 +21,7 @@ import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 
 public class HTMLTest {
@@ -60,14 +61,14 @@ public class HTMLTest {
     @Test
     public void simpleHtml() {
         Html html = new Html("<span>hello</span>");
-        Assert.assertEquals("span", html.getElement().getTag());
+        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
         Assert.assertEquals("hello", html.getInnerHtml());
     }
 
     @Test
     public void rootAttributes() {
         Html html = new Html("<span foo='bar'>hello</span>");
-        Assert.assertEquals("span", html.getElement().getTag());
+        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
         Assert.assertEquals(1, html.getElement().getAttributeNames().count());
         Assert.assertEquals("bar", html.getElement().getAttribute("foo"));
         Assert.assertEquals("hello", html.getInnerHtml());
@@ -78,7 +79,7 @@ public class HTMLTest {
         Html html = new Html(
                 "<span class='foo' style='color: red'>hello</span>");
         Element element = html.getElement();
-        Assert.assertEquals("span", element.getTag());
+        Assert.assertEquals(Tag.SPAN, element.getTag());
 
         // Styles are ignored until Element.setAttribute("style") works
         Assert.assertEquals(1, element.getAttributeNames().count());
@@ -109,7 +110,7 @@ public class HTMLTest {
                 + "" //
                 + "";
         Html html = new Html(input);
-        Assert.assertEquals("span", html.getElement().getTag());
+        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
         String expectedInnerHtml = input.replaceAll("^[ ]*<span>", "")
                 .replaceAll("</span>[ ]*$", "");
         Assert.assertEquals(expectedInnerHtml, html.getInnerHtml());
