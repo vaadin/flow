@@ -734,7 +734,7 @@ public class UI extends Component
      * @return an optional router, or an empty {@code Optional} if this UI was
      *         initialized without a router
      */
-    protected Optional<Router> getRouter() {
+    public Optional<Router> getRouter() {
         return Optional.ofNullable(router);
     }
 

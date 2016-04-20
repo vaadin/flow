@@ -23,6 +23,7 @@ import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
+import com.vaadin.hummingbird.router.RouterLink;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
 
@@ -61,5 +62,11 @@ public class Routing {
             button.getUI().ifPresent(ui -> ui.navigateTo("company"));
         });
 
+    }
+
+    void routerLink() {
+        Div menu = new Div();
+        menu.add(new RouterLink("Home", HomeView.class));
+        menu.add(new RouterLink("Company", CompanyView.class));
     }
 }
