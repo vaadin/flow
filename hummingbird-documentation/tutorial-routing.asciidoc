@@ -41,9 +41,20 @@ public class HomeView extends Div implements View {
 
 == Navigating Between Views
 
-To navigate between views you can use standard `<a href="company">` type links but these will cause a page reload. By adding a `routerlink` attribute to the link, you tell the framework that it should handle navigation without reloads, e.g. `<a routerlink href="company">Go to the company page</a>`. This way navigation only triggers a server visit to fetch the contents of the new view.
+You can use the `RouterLink` component to create links that lead to views in the application.
 
-Using Java you can create router links using the helper method `ElementFactory.createRouterLink(String href, String textContent)`.
+[source,java]
+----
+Div menu = new Div();
+menu.add(new RouterLink("Home", HomeView.class));
+menu.add(new RouterLink("Company", CompanyView.class));
+----
+
+It is also possible to navigate with normal `<a href="company">` type links but these will cause a page reload.
+Navigation with `RouterLink` instead fetches the contents of the new view, which is updated in place without reloading the page.
+
+[TIP]
+By adding a `routerlink` attribute to a regular link, you tell the framework that it should handle navigation without reloads, e.g. `<a routerlink href="company">Go to the company page</a>`.
 
 To trigger navigation from the server side, use `UI.navigateTo(String)`, where the string parameter is the location to navigate to, e.g. to navigate to the `company` view when clicking a button:
 
