@@ -15,12 +15,7 @@
  */
 package com.vaadin.hummingbird.dom;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.EventObject;
-
-import com.vaadin.hummingbird.util.SerializableJson;
 
 import elemental.json.JsonObject;
 
@@ -32,8 +27,7 @@ import elemental.json.JsonObject;
  */
 public class DomEvent extends EventObject {
 
-    // Effectively final, but written by readObject
-    private transient JsonObject eventData;
+    private final JsonObject eventData;
 
     private final String eventType;
 
@@ -84,18 +78,4 @@ public class DomEvent extends EventObject {
         return eventData;
     }
 
-    private void readObject(ObjectInputStream stream)
-            throws IOException, ClassNotFoundException {
-        stream.defaultReadObject();
-
-        SerializableJson serializableEventData = (SerializableJson) stream
-                .readObject();
-        eventData = (JsonObject) serializableEventData.getValue();
-    }
-
-    private void writeObject(ObjectOutputStream stream) throws IOException {
-        stream.defaultWriteObject();
-
-        stream.writeObject(new SerializableJson(eventData));
-    }
 }
