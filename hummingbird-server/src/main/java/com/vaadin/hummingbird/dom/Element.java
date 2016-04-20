@@ -917,14 +917,12 @@ public class Element implements Serializable {
      */
     // Distinct name so setProperty("foo", null) is not ambiguous
     public Element setPropertyJson(String name, JsonValue value) {
-        verifySetPropertyName(name);
         if (value == null) {
             throw new IllegalArgumentException(
-                    "Json.createNull() should be used instead of null for JSON values");
+                    "Json.createNull() must be used instead of null for JSON values");
         }
 
-        stateProvider.setJsonProperty(getNode(), name, value);
-
+        setRawProperty(name, value);
         return this;
     }
 

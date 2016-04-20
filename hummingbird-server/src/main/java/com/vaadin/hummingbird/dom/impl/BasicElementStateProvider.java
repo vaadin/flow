@@ -293,18 +293,10 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert name != null;
 
         assert value == null || value instanceof String
-                || value instanceof Boolean || value instanceof Double;
+                || value instanceof Boolean || value instanceof Double
+                || value instanceof JsonValue;
 
         getPropertyNamespace(node).setProperty(name, value, emitChange);
-    }
-
-    @Override
-    public void setJsonProperty(StateNode node, String name, JsonValue value) {
-        assert node != null;
-        assert name != null;
-        assert value != null;
-
-        getPropertyNamespace(node).setJsonProperty(name, value);
     }
 
     @Override

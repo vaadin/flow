@@ -36,8 +36,6 @@ import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
-import elemental.json.JsonValue;
-
 /**
  * Handles storing and retrieval of the state information for an element defined
  * in a template node.
@@ -238,11 +236,6 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
-    }
-
-    @Override
-    public void setJsonProperty(StateNode node, String name, JsonValue value) {
         throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 
