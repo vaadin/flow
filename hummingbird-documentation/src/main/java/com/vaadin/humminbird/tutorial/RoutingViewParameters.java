@@ -19,8 +19,7 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
@@ -43,17 +42,10 @@ public class RoutingViewParameters {
         }
     }
 
-    public class ProductView implements View {
-
-        private Element element;
+    public class ProductView extends Div implements View {
 
         public ProductView() {
-            element = ElementFactory.createDiv("This is the home view");
-        }
-
-        @Override
-        public Element getElement() {
-            return element;
+            setText("This is the home view");
         }
 
         @Override

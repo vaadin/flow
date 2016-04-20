@@ -19,7 +19,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.UUID;
+
+import javax.servlet.ServletContext;
 
 /**
  * Represents dynamically generated data.
@@ -35,15 +38,28 @@ public class StreamResource implements Serializable {
 
     private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
 
-    private final String fileName;
+    private static final DefaultResolver DEFAULT_RESOLVER = new DefaultResolver();
 
-    private String contentType = DEFAULT_CONTENT_TYPE;
+    private final String fileName;
 
     private long cacheTime = 0L;
 
     private final StreamResourceWriter writer;
 
     private final String id = UUID.randomUUID().toString();
+
+    private ContentTypeResolver resolver = DEFAULT_RESOLVER;
+
+    private static class DefaultResolver implements ContentTypeResolver {
+
+        @Override
+        public String apply(StreamResource resource, ServletContext context) {
+            return Optional
+                    .ofNullable(context.getMimeType(resource.getFileName()))
+                    .orElse(DEFAULT_CONTENT_TYPE);
+        }
+
+    }
 
     private static class Pipe implements StreamResourceWriter {
 
@@ -144,15 +160,6 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Returns the content type of the resource.
-     * 
-     * @return resource content type
-     */
-    public String getContentType() {
-        return contentType;
-    }
-
-    /**
      * Gets the length of cache expiration time. This gives the possibility to
      * cache the resource. "Cache-Control" HTTP header will be set based on this
      * value.
@@ -179,24 +186,16 @@ public class StreamResource implements Serializable {
     }
 
     /**
-     * Set content type for the resource.
-     * 
-     * @param contentType
-     *            resource content type
-     */
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    /**
      * Set cache time in millis. Zero or negative value disables the caching of
      * this stream.
      * 
      * @param cacheTime
      *            cache time
+     * @return this resource
      */
-    public void setCacheTime(long cacheTime) {
+    public StreamResource setCacheTime(long cacheTime) {
         this.cacheTime = cacheTime;
+        return this;
     }
 
     /**
@@ -209,6 +208,53 @@ public class StreamResource implements Serializable {
      */
     public StreamResourceWriter getWriter() {
         return writer;
+    }
+
+    /**
+     * Sets the resolver which is used to lookup the content type of the
+     * resource.
+     * <p>
+     * By default a resolver based on servletContext.getMimeType() is used.
+     * 
+     * @param resolver
+     *            content type resolver, not <code>null</code>
+     * @return this resource
+     */
+    public StreamResource setContentTypeResolver(ContentTypeResolver resolver) {
+        if (resolver == null) {
+            throw new IllegalArgumentException("Resolver cannot be null");
+        }
+        this.resolver = resolver;
+        return this;
+    }
+
+    /**
+     * Set content type for the resource.
+     * <p>
+     * This is a shorthand for
+     * {@link #setContentTypeResolver(ContentTypeResolver)} with resolver which
+     * always returns {@code contentType}
+     *
+     * @param contentType
+     *            resource content type, not <code>null</code>
+     * @return this resource
+     */
+    public StreamResource setContentType(String contentType) {
+        if (resolver == null) {
+            throw new IllegalArgumentException("Content type cannot be null");
+        }
+        setContentTypeResolver((resource, context) -> contentType);
+        return this;
+    }
+
+    /**
+     * Gets the resolver which is used to lookup the content type of the
+     * resource.
+     * 
+     * @return content type resolver
+     */
+    public ContentTypeResolver getContentTypeResolver() {
+        return resolver;
     }
 
     /**
