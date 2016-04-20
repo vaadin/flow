@@ -121,7 +121,17 @@
 					<excludedGroups>${test.excludegroup}</excludedGroups>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<configuration>
+					<instructions>
+						<!-- Server must be able to read VAADIN/client/compile.properties -->
+						<Import-Package>*,META-INF.resources.VAADIN.client;version=${project.osgi.version}</Import-Package>
+					</instructions>
+				</configuration>
 
+			</plugin>
 		</plugins>
 	</build>
 
