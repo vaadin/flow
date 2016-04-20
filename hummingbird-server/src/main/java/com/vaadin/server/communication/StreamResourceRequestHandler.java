@@ -81,7 +81,7 @@ public class StreamResourceRequestHandler implements RequestHandler {
             StreamResource streamResource = resource.get();
             ServletContext context = ((VaadinServletRequest) request)
                     .getServletContext();
-            response.setContentType(streamResource.getResolver()
+            response.setContentType(streamResource.getContentTypeResolver()
                     .apply(streamResource, context));
             response.setCacheTime(streamResource.getCacheTime());
             writer = streamResource.getWriter();

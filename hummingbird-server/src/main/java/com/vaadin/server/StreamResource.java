@@ -220,11 +220,30 @@ public class StreamResource implements Serializable {
      *            content type resolver, not <code>null</code>
      * @return this resource
      */
-    public StreamResource setResolver(ContentTypeResolver resolver) {
+    public StreamResource setContentTypeResolver(ContentTypeResolver resolver) {
         if (resolver == null) {
             throw new IllegalArgumentException("Resolver cannot be null");
         }
         this.resolver = resolver;
+        return this;
+    }
+
+    /**
+     * Set content type for the resource.
+     * <p>
+     * This is a shorthand for
+     * {@link #setContentTypeResolver(ContentTypeResolver)} with resolver which
+     * always returns {@code contentType}
+     *
+     * @param contentType
+     *            resource content type, not <code>null</code>
+     * @return this resource
+     */
+    public StreamResource setContentType(String contentType) {
+        if (resolver == null) {
+            throw new IllegalArgumentException("Content type cannot be null");
+        }
+        setContentTypeResolver((resource, context) -> contentType);
         return this;
     }
 
@@ -234,7 +253,7 @@ public class StreamResource implements Serializable {
      * 
      * @return content type resolver
      */
-    public ContentTypeResolver getResolver() {
+    public ContentTypeResolver getContentTypeResolver() {
         return resolver;
     }
 
