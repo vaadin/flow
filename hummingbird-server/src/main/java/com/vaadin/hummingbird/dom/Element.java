@@ -684,7 +684,10 @@ public class Element implements Serializable {
 
         for (int i = 0, insertIndex = index; i < children.length; i++, insertIndex++) {
             Element child = children[i];
-
+            if (child == null) {
+                throw new IllegalArgumentException(
+                        "Element to insert must not be null");
+            }
             if (equals(child.getParent())) {
                 int childIndex = indexOfChild(child);
                 if (childIndex == insertIndex) {

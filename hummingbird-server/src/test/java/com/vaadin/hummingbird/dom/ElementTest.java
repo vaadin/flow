@@ -307,9 +307,15 @@ public class ElementTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void insertNullChild() {
+    public void insertWithNullParameter() {
         Element parent = ElementFactory.createDiv();
         parent.insertChild(0, (Element[]) null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void insertNullChild() {
+        Element parent = ElementFactory.createDiv();
+        parent.insertChild(0, new Element[] { null });
     }
 
     @Test
