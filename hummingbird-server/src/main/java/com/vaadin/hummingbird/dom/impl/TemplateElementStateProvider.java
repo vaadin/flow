@@ -30,11 +30,13 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.TemplateNamespace;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Template;
 
 /**
  * Handles storing and retrieval of the state information for an element defined
@@ -293,7 +295,17 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void setComponent(StateNode node, Component component) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        assert node != null;
+        assert component != null;
+
+        if (!(component instanceof Template)) {
+            throw new IllegalArgumentException(
+                    "Component for template element must extend "
+                            + Template.class.getName());
+        }
+
+        node.getNamespace(ComponentMappingNamespace.class)
+                .setComponent(component);
     }
 
     @Override
