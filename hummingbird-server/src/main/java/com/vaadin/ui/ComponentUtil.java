@@ -70,18 +70,18 @@ public interface ComponentUtil {
      *            composite or a nested composite
      * @return the parent of the component, never <code>null</code>
      */
-    static Component getParentUsingComposite(Composite composite,
+    static Component getParentUsingComposite(Composite<?> composite,
             Component component) {
         // If this is the component inside a composite or a nested
         // composite, we need to traverse the composite hierarchy to find
         // the parent
-        Composite compositeAncestor = composite;
+        Composite<?> compositeAncestor = composite;
         while (true) {
             Component compositeChild = compositeAncestor.getContent();
             if (compositeChild == component) {
                 return compositeAncestor;
             }
-            compositeAncestor = (Composite) compositeAncestor.getContent();
+            compositeAncestor = (Composite<?>) compositeAncestor.getContent();
         }
 
     }
