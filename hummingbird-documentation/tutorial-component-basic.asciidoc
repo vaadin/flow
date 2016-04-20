@@ -1,0 +1,35 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Creating a Simple Component Using Elements
+
+There are multiple ways you can create a component. This tutorial uses the `Element` API and a single DOM element. For other component tutorials, see:
+
+* <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>.
+
+
+You can create a simple TextField component based on an `<input>` element as follows:
+
+[source,java]
+----
+@Tag("input")
+public class TextField extends Component {
+
+  public TextField(String value) {
+    getElement().setProperty("value",value);
+    getElement().synchronizeProperty("value", "change");
+  }
+}
+----
+
+The Component class will automatically create its root element based on the `@Tag` annotation, which can then be accessed using `getElement()`. The root element in the text field is in this example used to set up synchronization of the value from the browser to the server when the user changes its value. It is also used to set the initial value of the field.
+
+To make the component easier to use, you can add an API for getting and setting the value:
+
+[source,java]
+----
+  public String getValue() {
+    return getElement().getProperty("value");
+  }
+  public void setValue(String value) {
+    getElement().setProperty("value", value);
+  }
+----
