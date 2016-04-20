@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.util.JsonUtil;
@@ -50,7 +52,7 @@ public class ExecJavaScriptView extends AbstractDivView {
     }
 
     private Button createJsButton(String text, String id, String script,
-            Object... arguments) {
+            Serializable... arguments) {
         Button button = new Button(text, e -> UI.getCurrent().getPage()
                 .executeJavaScript(script, arguments));
 

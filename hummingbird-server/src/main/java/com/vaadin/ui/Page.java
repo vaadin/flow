@@ -16,7 +16,6 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
@@ -155,7 +154,7 @@ public class Page implements Serializable {
      * @return a callback for canceling the execution if not yet sent to browser
      */
     public ExecutionCanceler executeJavaScript(String expression,
-            Object... parameters) {
+            Serializable... parameters) {
         /*
          * To ensure attached elements are actually attached, the parameters
          * won't be serialized until the phase the UIDL message is created. To
@@ -168,7 +167,7 @@ public class Page implements Serializable {
         }
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                Arrays.asList(parameters));
+                parameters);
 
         return ui.getInternals().addJavaScriptInvocation(invocation);
     }
