@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.dom;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.shared.ApplicationConstants;
 
 /**
@@ -31,7 +32,7 @@ public interface ElementFactory {
      * @return an {@code &lt;a>} element.
      */
     static Element createAnchor() {
-        return new Element("a");
+        return new Element(Tag.A);
     }
 
     /**
@@ -81,7 +82,7 @@ public interface ElementFactory {
      * @return a {@code &lt;br>} element.
      */
     static Element createBr() {
-        return new Element("br");
+        return new Element(Tag.BR);
     }
 
     /**
@@ -90,7 +91,7 @@ public interface ElementFactory {
      * @return a {@code &lt;button>} element.
      */
     static Element createButton() {
-        return new Element("button");
+        return new Element(Tag.BUTTON);
     }
 
     /**
@@ -110,7 +111,7 @@ public interface ElementFactory {
      * @return a {@code &lt;div>} element.
      */
     static Element createDiv() {
-        return new Element("div");
+        return new Element(Tag.DIV);
     }
 
     /**
@@ -130,7 +131,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h1>} element.
      */
     static Element createHeading1() {
-        return new Element("h1");
+        return new Element(Tag.H1);
     }
 
     /**
@@ -139,7 +140,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h2>} element.
      */
     static Element createHeading2() {
-        return new Element("h2");
+        return new Element(Tag.H2);
     }
 
     /**
@@ -148,7 +149,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h3>} element.
      */
     static Element createHeading3() {
-        return new Element("h3");
+        return new Element(Tag.H3);
     }
 
     /**
@@ -157,7 +158,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h4>} element.
      */
     static Element createHeading4() {
-        return new Element("h4");
+        return new Element(Tag.H4);
     }
 
     /**
@@ -166,7 +167,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h5>} element.
      */
     static Element createHeading5() {
-        return new Element("h5");
+        return new Element(Tag.H5);
     }
 
     /**
@@ -175,7 +176,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h6>} element.
      */
     static Element createHeading6() {
-        return new Element("h6");
+        return new Element(Tag.H6);
     }
 
     /**
@@ -250,7 +251,7 @@ public interface ElementFactory {
      * @return an {@code &lt;hr>} element.
      */
     static Element createHr() {
-        return new Element("hr");
+        return new Element(Tag.HR);
     }
 
     /**
@@ -259,7 +260,7 @@ public interface ElementFactory {
      * @return an {@code &lt;input>} element.
      */
     static Element createInput() {
-        return new Element("input");
+        return new Element(Tag.INPUT);
     }
 
     /**
@@ -270,7 +271,7 @@ public interface ElementFactory {
      * @return an {@code &lt;input>} element
      */
     static Element createInput(String type) {
-        return new Element("input").setAttribute("type", type);
+        return new Element(Tag.INPUT).setAttribute("type", type);
     }
 
     /**
@@ -279,7 +280,7 @@ public interface ElementFactory {
      * @return an {@code &lt;li>} element.
      */
     static Element createListItem() {
-        return new Element("li");
+        return new Element(Tag.LI);
     }
 
     /**
@@ -299,7 +300,7 @@ public interface ElementFactory {
      * @return an {@code &lt;option>} element.
      */
     static Element createOption() {
-        return new Element("option");
+        return new Element(Tag.OPTION);
     }
 
     /**
@@ -319,7 +320,7 @@ public interface ElementFactory {
      * @return a {@code &lt;p>} element.
      */
     static Element createParagraph() {
-        return new Element("p");
+        return new Element(Tag.P);
     }
 
     /**
@@ -330,7 +331,7 @@ public interface ElementFactory {
      * @return a {@code &lt;p>} element.
      */
     static Element createParagraph(String textContent) {
-        return new Element("p").setTextContent(textContent);
+        return new Element(Tag.P).setTextContent(textContent);
     }
 
     /**
@@ -339,7 +340,7 @@ public interface ElementFactory {
      * @return a {@code &lt;pre>} element.
      */
     static Element createPreformatted() {
-        return new Element("pre");
+        return new Element(Tag.PRE);
     }
 
     /**
@@ -359,7 +360,7 @@ public interface ElementFactory {
      * @return a {@code &lt;select>} element.
      */
     static Element createSelect() {
-        return new Element("select");
+        return new Element(Tag.SELECT);
     }
 
     /**
@@ -368,7 +369,7 @@ public interface ElementFactory {
      * @return a {@code &lt;span>} element.
      */
     static Element createSpan() {
-        return new Element("span");
+        return new Element(Tag.SPAN);
     }
 
     /**
@@ -388,7 +389,7 @@ public interface ElementFactory {
      * @return a {@code &lt;textarea>} element.
      */
     static Element createTextarea() {
-        return new Element("textarea");
+        return new Element(Tag.TEXTAREA);
     }
 
     /**
@@ -397,7 +398,7 @@ public interface ElementFactory {
      * @return a {@code &lt;ul>} element.
      */
     static Element createUnorderedList() {
-        return new Element("ul");
+        return new Element(Tag.UL);
     }
 
     /**
@@ -406,7 +407,7 @@ public interface ElementFactory {
      * @return a {@code &lt;strong>} element.
      */
     static Element createStrong() {
-        return new Element("strong");
+        return new Element(Tag.STRONG);
     }
 
     /**
@@ -426,7 +427,7 @@ public interface ElementFactory {
      * @return an {@code &lt;em>} element.
      */
     static Element createEmphasis() {
-        return new Element("em");
+        return new Element(Tag.EM);
     }
 
     /**

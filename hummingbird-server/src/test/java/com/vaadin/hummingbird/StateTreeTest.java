@@ -28,6 +28,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.NodeAttachChange;
@@ -217,7 +218,7 @@ public class StateTreeTest {
         root.getNamespace(ElementDataNamespace.class).setTag("body");
         StateNode child = new StateNode(namespaces);
         root.getNamespace(ElementChildrenNamespace.class).add(0, child);
-        child.getNamespace(ElementDataNamespace.class).setTag("div");
+        child.getNamespace(ElementDataNamespace.class).setTag(Tag.DIV);
 
         byte[] serialized = SerializationUtils.serialize(tree);
         StateTree d1 = (StateTree) SerializationUtils.deserialize(serialized);
