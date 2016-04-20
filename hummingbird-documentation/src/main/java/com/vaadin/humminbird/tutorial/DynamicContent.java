@@ -37,21 +37,16 @@ public class DynamicContent {
         image.getStyle().set("display", "block");
 
         Button button = new Button("Generate Image");
+        //@formatter:off - custom line wrapping
         button.addClickListener(event -> {
-            StreamResource resource = createResource(name);
+            StreamResource resource = new StreamResource("image.svg",
+                    () -> getImageInputStream(name));
             image.setAttribute("data", resource);
         });
+        //@formatter:on
 
         UI.getCurrent().getElement().appendChild(name.getElement(), image,
                 button.getElement());
-    }
-
-    private StreamResource createResource(Input name) {
-        //@formatter:off - custom line wrapping
-        StreamResource resource = new StreamResource("image", () -> getImageInputStream(name));
-        //@formatter:on
-        resource.setContentType("image/svg+xml");
-        return resource;
     }
 
     private InputStream getImageInputStream(Input name) {

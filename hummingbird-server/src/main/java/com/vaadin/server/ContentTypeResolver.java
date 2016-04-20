@@ -13,21 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.server;
 
-import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.html.Div;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+import java.io.Serializable;
+import java.util.function.BiFunction;
 
-@CodeFor("tutorial-hello-world.asciidoc")
-public class HelloWorldUI extends UI {
+import javax.servlet.ServletContext;
 
-    @Override
-    protected void init(VaadinRequest request) {
-        // Called whenever a user opens the page
-        Div div = new Div();
-        div.setText("Hello world");
-        add(div);
-    }
+/**
+ * Content type resolver.
+ * <p>
+ * Allows to get content type for the given {@link StreamResource} instance
+ * using the current {@link ServletContext}.
+ * 
+ * @author Vaadin Ltd
+ *
+ */
+public interface ContentTypeResolver extends
+        BiFunction<StreamResource, ServletContext, String>, Serializable {
+
 }
