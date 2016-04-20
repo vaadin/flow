@@ -30,11 +30,13 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.hummingbird.namespace.TemplateNamespace;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Template;
 
 import elemental.json.JsonValue;
 
@@ -300,7 +302,13 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void setComponent(StateNode node, Component component) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        assert node != null;
+        assert component != null;
+
+        assert component instanceof Template;
+
+        node.getNamespace(ComponentMappingNamespace.class)
+                .setComponent(component);
     }
 
     @Override
