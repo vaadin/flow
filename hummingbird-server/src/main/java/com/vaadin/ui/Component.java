@@ -264,4 +264,21 @@ public abstract class Component implements HasElement, Serializable,
         return getElement().getAttribute("id");
     }
 
+    /**
+     * Called when the component is attached to a UI.
+     * <p>
+     * The default implementation does nothing.
+     */
+    protected void onAttach() {
+        // NOOP by default
+    }
+
+    /**
+     * Called when the component is detached from a UI.
+     * <p>
+     * The default implementation does nothing.
+     */
+    protected void onDetach() {
+        // NOOP by default
+    }
 }
