@@ -131,7 +131,7 @@ public class ApplicationConnection {
                 return vi;
             }
         }
-    
+
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
             var pd = [
@@ -142,10 +142,10 @@ public class ApplicationConnection {
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-    
+
         client.initializing = false;
-    
-        $wnd.vaadin.clients[applicationId] = client;
+
+        $wnd.hummingbird.clients[applicationId] = client;
     }-*/;
 
     private JavaScriptObject getVersionInfo() {
