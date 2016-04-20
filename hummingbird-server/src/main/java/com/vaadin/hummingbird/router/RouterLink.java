@@ -17,17 +17,19 @@ package com.vaadin.hummingbird.router;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.router.RouteLocation.RouteSegmentWalker;
 import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
-import com.vaadin.ui.HasText;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.HasText;
 import com.vaadin.ui.UI;
 
 /**
@@ -60,7 +62,7 @@ public class RouterLink extends Component
      * This is a shorthand for
      * {@link #RouterLink(Router, String, Class, String...)} which uses
      * implicitly available {@link Router} instance from the current {@link UI}.
-     * 
+     *
      * @see #RouterLink(Router, String, Class, String...)
      *
      * @param text
@@ -131,7 +133,7 @@ public class RouterLink extends Component
      * This is a shorthand for {@link #setRoute(Router, Class, String...)}
      * method which uses implicitly available {@link Router} instance from the
      * current {@link UI}.
-     * 
+     *
      * @see #setRoute(Router, Class, String...)
      *
      * @param viewType
@@ -215,49 +217,39 @@ public class RouterLink extends Component
         assert route != null;
         assert parameters != null;
 
-        int paramPos = 0;
+        Iterator<String> parametersIterator = Arrays.asList(parameters)
+                .iterator();
         RouteLocation location = new RouteLocation(new Location(route));
         List<String> urlSegments = new ArrayList<>(
                 location.getSegments().size());
 
-        while (true) {
-            String segment;
-            if (location.startsWithPlaceholder()) {
-                if (paramPos >= parameters.length) {
+        location.walkSegments(new RouteSegmentWalker() {
+            @Override
+            public void acceptPlaceholder(String placeholderName) {
+                if (!parametersIterator.hasNext()) {
                     throw new IllegalArgumentException(
                             route + " has more placeholders than the number of given parameters: "
                                     + Arrays.toString(parameters));
                 }
-                segment = parameters[paramPos++];
-            } else if (location.startsWithWildcard()) {
-                if (location.getSegments().size() != 1) {
-                    throw new IllegalArgumentException(
-                            route + " wildcard is not at the end of the route");
-                }
+                urlSegments.add(parametersIterator.next());
+            }
 
-                if (paramPos == parameters.length) {
-                    // Optional to provide a value for a wildcard
-                    segment = "";
+            @Override
+            public void acceptWildcard() {
+                if (parametersIterator.hasNext()) {
+                    urlSegments.add(parametersIterator.next());
                 } else {
-                    segment = parameters[paramPos++];
+                    urlSegments.add("");
                 }
-            } else {
-                segment = location.getFirstSegment();
             }
 
-            assert segment != null;
-            urlSegments.add(segment);
-
-            Optional<RouteLocation> maybeSubLocation = location
-                    .getRouteSubLocation();
-            if (maybeSubLocation.isPresent()) {
-                location = maybeSubLocation.get();
-            } else {
-                break;
+            @Override
+            public void acceptSegment(String segment) {
+                urlSegments.add(segment);
             }
-        }
+        });
 
-        if (paramPos != parameters.length) {
+        if (parametersIterator.hasNext()) {
             throw new IllegalArgumentException(
                     route + " has fewer placeholders than the number of given parameters: "
                             + Arrays.toString(parameters));
