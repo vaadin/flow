@@ -15,26 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.TemplateNamespace;
-import com.vaadin.hummingbird.template.TemplateNode;
-import com.vaadin.hummingbird.template.TemplateParser;
+import com.vaadin.hummingbird.router.View;
+import com.vaadin.ui.Template;
 
-public class BasicTemplateView extends AbstractDivView {
-
-    private static final TemplateNode templateNode = TemplateParser
-            .parse("<div id=bar>baz<input></div>");
-
-    @Override
-    protected void onShow() {
-        StateNode stateNode = new StateNode(TemplateNamespace.class);
-        stateNode.getNamespace(TemplateNamespace.class)
-                .setRootTemplate(templateNode);
-
-        Element templateElement = Element.get(stateNode);
-
-        getElement().appendChild(templateElement);
-    }
+public class BasicTemplateView extends Template implements View {
 
 }

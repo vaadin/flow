@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -38,6 +41,26 @@ public class TemplateParser {
     }
 
     /**
+     * Parses the template from the given input stream to a tree of template
+     * nodes.
+     *
+     * @param templateStream
+     *            the input stream containing the template to parse, not
+     *            <code>null</code>
+     * @return the template node at the root of the parsed template tree
+     */
+    public static TemplateNode parse(InputStream templateStream) {
+        assert templateStream != null;
+        try {
+            Document document = Jsoup.parse(templateStream, null, "");
+
+            return parse(document);
+        } catch (IOException e) {
+            throw new TemplateParseException("Error reading template data", e);
+        }
+    }
+
+    /**
      * Parses the given template string to a tree of template nodes.
      *
      * @param templateString
@@ -47,7 +70,12 @@ public class TemplateParser {
     public static TemplateNode parse(String templateString) {
         assert templateString != null;
 
-        Document bodyFragment = Jsoup.parseBodyFragment(templateString);
+        Document document = Jsoup.parseBodyFragment(templateString);
+
+        return parse(document);
+    }
+
+    private static TemplateNode parse(Document bodyFragment) {
         Elements children = bodyFragment.body().children();
 
         int childNodeSize = children.size();
