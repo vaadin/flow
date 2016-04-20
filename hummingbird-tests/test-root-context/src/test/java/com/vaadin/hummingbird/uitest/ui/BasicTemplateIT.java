@@ -1,3 +1,4 @@
+package com.vaadin.hummingbird.uitest.ui;
 /*
  * Copyright 2000-2016 Vaadin Ltd.
  *
@@ -13,21 +14,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
 
-import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.html.Div;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
-@CodeFor("tutorial-hello-world.asciidoc")
-public class HelloWorldUI extends UI {
+import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-    @Override
-    protected void init(VaadinRequest request) {
-        // Called whenever a user opens the page
-        Div div = new Div();
-        div.setText("Hello world");
-        add(div);
+public class BasicTemplateIT extends PhantomJSTest {
+    @Test
+    public void testBasicTemplate() {
+        open();
+
+        WebElement element = findElement(By.id("bar"));
+
+        Assert.assertEquals("baz", element.getText());
+        Assert.assertTrue(isElementPresent(By.cssSelector("#bar input")));
     }
 }

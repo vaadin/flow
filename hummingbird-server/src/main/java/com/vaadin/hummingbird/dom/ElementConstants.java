@@ -13,21 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.hummingbird.dom;
 
-import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.html.Div;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+/**
+ * Constants for common element attribute, property, style names.
+ *
+ * @author Vaadin Ltd
+ * @since
+ */
+public class ElementConstants {
 
-@CodeFor("tutorial-hello-world.asciidoc")
-public class HelloWorldUI extends UI {
+    /**
+     * The style property for width.
+     */
+    public static final String STYLE_WIDTH = "width";
+    /**
+     * The style property for height.
+     */
+    public static final String STYLE_HEIGHT = "height";
 
-    @Override
-    protected void init(VaadinRequest request) {
-        // Called whenever a user opens the page
-        Div div = new Div();
-        div.setText("Hello world");
-        add(div);
+    private ElementConstants() {
+        // Constants only
     }
+
 }

@@ -13,21 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.client.hummingbird.template;
 
-import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.html.Div;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.UI;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
 
-@CodeFor("tutorial-hello-world.asciidoc")
-public class HelloWorldUI extends UI {
+@JsType(isNative = true)
+public interface TestTemplateNode extends TemplateNode {
+    @JsProperty
+    public void setType(String type);
 
-    @Override
-    protected void init(VaadinRequest request) {
-        // Called whenever a user opens the page
-        Div div = new Div();
-        div.setText("Hello world");
-        add(div);
-    }
+    @JsProperty
+    public void setChildren(double[] children);
 }
