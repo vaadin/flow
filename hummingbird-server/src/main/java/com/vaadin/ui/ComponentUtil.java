@@ -173,29 +173,43 @@ public interface ComponentUtil {
     }
 
     /**
-     * Fires the {@link AttachEvent} for the given component.
+     * Handles triggering the {@link Component#onAttach() onAttach} method and
+     * firing the {@link AttachEvent} for the given component when it has been
+     * attached to a UI.
      *
      * @param component
-     *            the component to fire the attach event for
+     *            the component attached to a UI
      */
-    static void fireComponentAttachEvent(Component component) {
+    static void onComponentAttach(Component component) {
         if (component instanceof Composite) {
-            fireComponentAttachEvent(((Composite<?>) component).getContent());
+            onComponentAttach(((Composite<?>) component).getContent());
         }
-        component.fireEvent(new AttachEvent(component));
+
+        component.onAttach();
+
+        if (component.hasListener(AttachEvent.class)) {
+            component.getEventBus().fireEvent(new AttachEvent(component));
+        }
     }
 
     /**
-     * Fires the {@link DetachEvent} for the given component.
+     * Handles triggering the {@link Component#onDetach() onDetach} method and
+     * firing the {@link DetachEvent} for the given component right before it is
+     * detached from a UI.
      *
      * @param component
-     *            the component to fire the detach event for
+     *            the component detached from a UI
      */
-    static void fireComponentDetachEvent(Component component) {
+    static void onComponentDetach(Component component) {
         if (component instanceof Composite) {
-            fireComponentDetachEvent(((Composite<?>) component).getContent());
+            onComponentDetach(((Composite<?>) component).getContent());
         }
-        component.fireEvent(new DetachEvent(component));
+
+        component.onDetach();
+
+        if (component.hasListener(DetachEvent.class)) {
+            component.getEventBus().fireEvent(new DetachEvent(component));
+        }
     }
 
 }
