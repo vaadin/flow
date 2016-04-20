@@ -1,0 +1,77 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Creating a Component Based on Many Elements
+
+There are multiple ways you can create a component. This tutorial uses the `Element` API and multiple DOM elements. For other component tutorials, see:
+
+* <<tutorial-basic-composite#,Creating a Simple Component Using Elements>>.
+
+You can create a TextField component with support for a label using the following DOM structure:
+
+[source,html]
+----
+<div>
+  <label>
+  <input>
+----
+
+The component class looks like:
+
+[source,java]
+----
+@Tag("div")
+public class TextField extends Component {
+
+  Element labelElement = new Element("label");
+  Element inputElement = new Element("input");
+
+  public TextField() {
+    inputElement.synchronizeProperty("value", "change");
+    getElement().appendChild(labelElement,inputElement);
+  }
+}
+----
+
+The DOM structure is set up by marking the root element as a `<div>` using `@Tag("div")` and creating and appending a label and an input element to the root element. Value synchronization is set up using the input element, like in <<tutorial-basic-composite#,the basic component tutorial>>.
+
+You can add API for setting the value of the input and the text of the label, using the corresponding elements:
+
+[source,java]
+----
+  public String getLabel() {
+    return labelElement.getOwnTextContent();
+  }
+  public void setLabel(String label) {
+    labelElement.setTextContent(label);
+  }
+  public String getValue() {
+    return inputElement.getProperty("value");
+  }
+  public void setValue(String value) {
+    inputElement.setProperty("value", value);
+  }
+----
+
+To make it even more convenient to use, the API can be made fluent by making the setters return the component itself:
+
+[source,java]
+----
+  public TextField setLabel(String label) {
+    labelElement.setTextContent(label);
+    return this;
+  }
+  public TextField setValue(String value) {
+    inputElement.setProperty("value", value);
+    return this;
+  }
+----
+
+Now the component can be used as
+[source,java]
+----
+new TextField()
+    .setLabel("Zip code")
+    .setValue("12345");
+----
+
+[NOTE]
+A fluent API does not work well for a component that extends another component which has a fluent API.
