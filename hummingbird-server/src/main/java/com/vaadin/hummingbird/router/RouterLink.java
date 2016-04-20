@@ -169,19 +169,32 @@ public class RouterLink extends Component implements HasText, HasComponents {
                 location.getSegments().size());
 
         while (true) {
-            if (location.startsWithPlaceholder()
-                    || location.startsWithWildcard()) {
+            String segment;
+            if (location.startsWithPlaceholder()) {
                 if (paramPos >= parameters.length) {
                     throw new IllegalArgumentException(
                             route + " has more placeholders than the number of given parameters: "
                                     + Arrays.toString(parameters));
                 }
-                String parameter = parameters[paramPos++];
-                assert parameter != null;
-                urlSegments.add(parameter);
+                segment = parameters[paramPos++];
+            } else if (location.startsWithWildcard()) {
+                if (location.getSegments().size() != 1) {
+                    throw new IllegalArgumentException(
+                            route + " wildcard is not at the end of the route");
+                }
+
+                if (paramPos == parameters.length) {
+                    // Optional to provide a value for a wildcard
+                    segment = "";
+                } else {
+                    segment = parameters[paramPos++];
+                }
             } else {
-                urlSegments.add(location.getFirstSegment());
+                segment = location.getFirstSegment();
             }
+
+            assert segment != null;
+            urlSegments.add(segment);
 
             Optional<RouteLocation> maybeSubLocation = location
                     .getRouteSubLocation();
