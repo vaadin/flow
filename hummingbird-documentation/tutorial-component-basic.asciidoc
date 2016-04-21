@@ -5,6 +5,7 @@ There are multiple ways you can create a component. This tutorial uses the `Elem
 
 * <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>.
 * <<tutorial-component-composite#,Creating a Component Using Existing Components>>
+* <<tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
 
 You can create a simple TextField component based on an `<input>` element as follows:
 
