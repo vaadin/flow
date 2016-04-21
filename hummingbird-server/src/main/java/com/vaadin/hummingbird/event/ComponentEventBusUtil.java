@@ -65,7 +65,7 @@ public class ComponentEventBusUtil {
      *         order
      */
     public static LinkedHashMap<String, Class<?>> getEventDataExpressions(
-            Class<? extends ComponentEvent> eventType) {
+            Class<? extends ComponentEvent<?>> eventType) {
         return cache.getDataExpressions(eventType)
                 .orElseGet(() -> cache.setDataExpressions(eventType,
                         findEventDataExpressions(eventType)));
@@ -83,9 +83,9 @@ public class ComponentEventBusUtil {
      *         component event constructor parameters
      */
     private static LinkedHashMap<String, Class<?>> findEventDataExpressions(
-            Class<? extends ComponentEvent> eventType) {
+            Class<? extends ComponentEvent<?>> eventType) {
         LinkedHashMap<String, Class<?>> eventDataExpressions = new LinkedHashMap<>();
-        Constructor<? extends ComponentEvent> c = getEventConstructor(
+        Constructor<? extends ComponentEvent<?>> c = getEventConstructor(
                 eventType);
         // Parameter 0 is always "Component source"
         // Parameter 1 is always "boolean fromClient"
@@ -118,7 +118,7 @@ public class ComponentEventBusUtil {
      * @throws IllegalArgumentException
      *             if no suitable constructor was found
      */
-    public static <T extends ComponentEvent> Constructor<T> getEventConstructor(
+    public static <T extends ComponentEvent<?>> Constructor<T> getEventConstructor(
             Class<T> eventType) {
         return cache.getEventConstructor(eventType)
                 .orElseGet(() -> cache.setEventConstructor(eventType,
@@ -144,7 +144,7 @@ public class ComponentEventBusUtil {
      *             if no suitable constructor was found
      */
     @SuppressWarnings("unchecked")
-    private static <T extends ComponentEvent> Constructor<T> findEventConstructor(
+    private static <T extends ComponentEvent<?>> Constructor<T> findEventConstructor(
             Class<T> eventType) {
         List<Constructor<T>> constructors = new ArrayList<>();
         for (Constructor<?> c : eventType.getConstructors()) {
@@ -227,7 +227,7 @@ public class ComponentEventBusUtil {
      *         optional if no mapping is defined
      */
     public static Optional<String> getDomEventType(
-            Class<? extends ComponentEvent> eventType) {
+            Class<? extends ComponentEvent<?>> eventType) {
         com.vaadin.annotations.DomEvent domEvent = eventType
                 .getAnnotation(com.vaadin.annotations.DomEvent.class);
         if (domEvent == null) {

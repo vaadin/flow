@@ -20,7 +20,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
 @DomEvent("dom-event")
-public class MappedToDomNoDataEvent extends ComponentEvent {
+public class MappedToDomNoDataEvent extends ComponentEvent<Component> {
 
     public MappedToDomNoDataEvent(Component source, boolean fromClient) {
         super(source, fromClient);

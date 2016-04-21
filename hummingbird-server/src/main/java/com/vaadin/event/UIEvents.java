@@ -39,7 +39,7 @@ public interface UIEvents {
      * @author Vaadin Ltd
      */
     @DomEvent(PollEvent.DOM_EVENT_NAME)
-    public static class PollEvent extends ComponentEvent {
+    public static class PollEvent extends ComponentEvent<UI> {
         public static final String DOM_EVENT_NAME = "ui-poll";
 
         /**
@@ -56,15 +56,6 @@ public interface UIEvents {
             super(ui, fromClient);
         }
 
-        /**
-         * Get the {@link UI} instance that received the poll request.
-         *
-         * @return the {@link UI} that received the poll request. Never
-         *         <code>null</code>.
-         */
-        public UI getUI() {
-            return (UI) getSource();
-        }
     }
 
     /**

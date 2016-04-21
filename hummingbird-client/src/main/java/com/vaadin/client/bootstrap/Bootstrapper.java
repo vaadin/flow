@@ -166,7 +166,7 @@ public class Bootstrapper implements EntryPoint {
 
     private static native boolean isDebugAvailable()
     /*-{
-        if($wnd.vaadin.debug) {
+        if($wnd.hummingbird.debug) {
             return true;
         } else {
             return false;
@@ -183,12 +183,12 @@ public class Bootstrapper implements EntryPoint {
      */
     private static native JsoConfiguration getJsoConfiguration(String appId)
     /*-{
-        return $wnd.vaadin.getApp(appId);
+        return $wnd.hummingbird.getApp(appId);
      }-*/;
 
     private static native boolean vaadinBootstrapLoaded()
     /*-{
-         return $wnd.vaadin != null;
+         return $wnd.hummingbird != null;
      }-*/;
 
     /**
@@ -202,7 +202,7 @@ public class Bootstrapper implements EntryPoint {
     public static native void registerCallback(String widgetsetName)
     /*-{
         var callbackHandler = $entry(@com.vaadin.client.bootstrap.Bootstrapper::startApplication(Ljava/lang/String;));
-        $wnd.vaadin.registerWidgetset(widgetsetName, callbackHandler);
+        $wnd.hummingbird.registerWidgetset(widgetsetName, callbackHandler);
     }-*/;
 
 }

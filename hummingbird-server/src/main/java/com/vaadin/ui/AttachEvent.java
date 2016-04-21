@@ -21,7 +21,7 @@ package com.vaadin.ui;
  * When a hierarchy of components is being attached, this event is fired
  * child-first.
  */
-public class AttachEvent extends ComponentEvent {
+public class AttachEvent extends ComponentEvent<Component> {
 
     /**
      * Creates a new attach event with the given component as source.

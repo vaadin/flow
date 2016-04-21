@@ -39,6 +39,6 @@ public interface ComponentEventNotifier extends Serializable {
      *            the listener to add, not <code>null</code>
      * @return a handle that can be used for removing the listener
      */
-    <T extends ComponentEvent> EventRegistrationHandle addListener(
+    <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
             Class<T> eventType, Consumer<T> listener);
 }

@@ -36,7 +36,7 @@ import elemental.json.JsonObject;
 
 public class ComponentEventBusTest {
 
-    private static class EventTracker<T extends ComponentEvent>
+    private static class EventTracker<T extends ComponentEvent<?>>
             implements Consumer<T> {
         private AtomicInteger eventHandlerCalled = new AtomicInteger(0);
         private AtomicReference<T> eventObject = new AtomicReference<>(null);

@@ -199,7 +199,7 @@ public abstract class Component implements HasElement, Serializable,
     }
 
     @Override
-    public <T extends ComponentEvent> EventRegistrationHandle addListener(
+    public <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
             Class<T> eventType, Consumer<T> listener) {
 
         return getEventBus().addListener(eventType, listener);
@@ -214,6 +214,7 @@ public abstract class Component implements HasElement, Serializable,
      * @return <code>true</code> if at least one listener is registered,
      *         <code>false</code> otherwise
      */
+    @SuppressWarnings("rawtypes")
     protected boolean hasListener(Class<? extends ComponentEvent> eventType) {
         return eventBus != null && eventBus.hasListener(eventType);
     }
@@ -224,7 +225,7 @@ public abstract class Component implements HasElement, Serializable,
      * @param componentEvent
      *            the event to fire
      */
-    protected void fireEvent(ComponentEvent componentEvent) {
+    protected void fireEvent(ComponentEvent<?> componentEvent) {
         if (hasListener(componentEvent.getClass())) {
             getEventBus().fireEvent(componentEvent);
         }

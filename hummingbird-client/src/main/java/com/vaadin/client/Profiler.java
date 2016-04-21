@@ -608,7 +608,7 @@ public class Profiler {
 
     private static native JsArray<GwtStatsEvent> getGwtStatsEvents()
     /*-{
-        return $wnd.vaadin.gwtStatsEvents || [];
+        return $wnd.hummingbird.gwtStatsEvents || [];
     }-*/;
 
     /**
@@ -618,11 +618,11 @@ public class Profiler {
     private static native void ensureLogger()
     /*-{
         if (typeof $wnd.__gwtStatsEvent != 'function') {
-            if (typeof $wnd.vaadin.gwtStatsEvents != 'object') {
-                $wnd.vaadin.gwtStatsEvents = [];
+            if (typeof $wnd.hummingbird.gwtStatsEvents != 'object') {
+                $wnd.hummingbird.gwtStatsEvents = [];
             }
             $wnd.__gwtStatsEvent = function(event) {
-                $wnd.vaadin.gwtStatsEvents.push(event);
+                $wnd.hummingbird.gwtStatsEvents.push(event);
                 return true;
             }
         }
@@ -634,8 +634,8 @@ public class Profiler {
      */
     private static native void ensureNoLogger()
     /*-{
-        if (typeof $wnd.vaadin.gwtStatsEvents == 'object') {
-            delete $wnd.vaadin.gwtStatsEvents;
+        if (typeof $wnd.hummingbird.gwtStatsEvents == 'object') {
+            delete $wnd.hummingbird.gwtStatsEvents;
             if (typeof $wnd.__gwtStatsEvent == 'function') {
                 $wnd.__gwtStatsEvent = function() { return true; };
             }
@@ -644,7 +644,7 @@ public class Profiler {
 
     private static native JsArray<GwtStatsEvent> clearEventsList()
     /*-{
-        $wnd.vaadin.gwtStatsEvents = [];
+        $wnd.hummingbird.gwtStatsEvents = [];
     }-*/;
 
     /**

@@ -22,7 +22,6 @@ import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Hr;
 import com.vaadin.hummingbird.html.Input;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.Text;
@@ -32,10 +31,10 @@ public class CompositeView extends AbstractDivView {
     public static final String SERVER_INPUT_ID = "serverInput";
     public static final String SERVER_INPUT_BUTTON_ID = "serverInputButton";
 
-    public static class NameField extends Composite {
+    public static class NameField extends Composite<Input> {
 
         @DomEvent("change")
-        public static class NameChangeEvent extends ComponentEvent {
+        public static class NameChangeEvent extends ComponentEvent<NameField> {
             public NameChangeEvent(NameField source, boolean fromClient) {
                 super(source, fromClient);
             }
@@ -44,7 +43,7 @@ public class CompositeView extends AbstractDivView {
         private Input input = new Input();
 
         @Override
-        protected Component initContent() {
+        protected Input initContent() {
             input.setPlaceholder("Enter your name");
             return input;
         }
