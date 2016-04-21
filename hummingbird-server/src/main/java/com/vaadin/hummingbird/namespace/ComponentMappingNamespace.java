@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentUtil;
 
 /**
  * A server side only namespace for mapping a node to a component.
@@ -79,6 +80,16 @@ public class ComponentMappingNamespace extends Namespace {
     @Override
     public void forEachChild(Consumer<StateNode> action) {
         // Server side only namespace
+    }
+
+    @Override
+    public void onAttach() {
+        getComponent().ifPresent(ComponentUtil::fireComponentAttachEvent);
+    }
+
+    @Override
+    public void onDetach() {
+        getComponent().ifPresent(ComponentUtil::fireComponentDetachEvent);
     }
 
 }

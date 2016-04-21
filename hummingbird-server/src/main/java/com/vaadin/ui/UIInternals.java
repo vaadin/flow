@@ -15,12 +15,8 @@
  */
 package com.vaadin.ui;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,7 +39,6 @@ import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.TemplateNode;
-import com.vaadin.hummingbird.util.SerializableJson;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -61,13 +56,13 @@ import com.vaadin.ui.Page.ExecutionCanceler;
 public class UIInternals implements Serializable {
 
     /**
-     * A {@link Page#executeJavaScript(String, Object...)} invocation that has
-     * not yet been sent to the client.
+     * A {@link Page#executeJavaScript(String, Serializable...)} invocation that
+     * has not yet been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
 
         private final String expression;
-        private transient List<Object> parameters;
+        private ArrayList<Serializable> parameters = new ArrayList<>();
 
         /**
          * Creates a new invocation.
@@ -78,9 +73,11 @@ public class UIInternals implements Serializable {
          *            a list of parameters to use when invoking the script
          */
         public JavaScriptInvocation(String expression,
-                List<Object> parameters) {
+                Serializable... parameters) {
             this.expression = expression;
-            this.parameters = parameters;
+            for (int i = 0; i < parameters.length; i++) {
+                this.parameters.add(parameters[i]);
+            }
         }
 
         /**
@@ -101,21 +98,6 @@ public class UIInternals implements Serializable {
             return Collections.unmodifiableList(parameters);
         }
 
-        @SuppressWarnings("unchecked")
-        private void readObject(ObjectInputStream stream)
-                throws IOException, ClassNotFoundException {
-            stream.defaultReadObject();
-
-            parameters = (List<Object>) stream.readObject();
-            SerializableJson.unwrapList(parameters);
-        }
-
-        private void writeObject(ObjectOutputStream stream) throws IOException {
-            stream.defaultWriteObject();
-
-            stream.writeObject(
-                    SerializableJson.createSerializableList(parameters));
-        }
     }
 
     /**
@@ -464,9 +446,8 @@ public class UIInternals implements Serializable {
      */
     public void setTitle(String title) {
         assert title != null;
-
         JavaScriptInvocation invocation = new JavaScriptInvocation(
-                "document.title = $0", Arrays.asList(title));
+                "document.title = $0", title);
 
         pendingTitleUpdateCanceler = addJavaScriptInvocation(invocation);
 

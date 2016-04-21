@@ -49,8 +49,8 @@ public class VaadinSessionTest {
     /**
      * Event fired before a connector is detached from the application.
      */
-    public static class DetachEvent extends EventObject {
-        public DetachEvent(UI source) {
+    public static class UIDetachEvent extends EventObject {
+        public UIDetachEvent(UI source) {
             super(source);
         }
     }
@@ -192,7 +192,7 @@ public class VaadinSessionTest {
             throws InterruptedException {
 
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
-        ui.addDetachListener(e -> {
+        ui.addUIDetachListener(e -> {
             detachCalled.set(true);
             Assert.assertEquals(ui, UI.getCurrent());
             Assert.assertEquals(session, VaadinSession.getCurrent());
@@ -215,7 +215,7 @@ public class VaadinSessionTest {
     @Category(SlowTests.class)
     public void threadLocalsAfterSessionDestroy() throws InterruptedException {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
-        ui.addDetachListener(e -> {
+        ui.addUIDetachListener(e -> {
             detachCalled.set(true);
             Assert.assertEquals(ui, UI.getCurrent());
             Assert.assertEquals(session, VaadinSession.getCurrent());
@@ -256,16 +256,16 @@ public class VaadinSessionTest {
     // Can't define as an anonymous class since it would have a reference to
     // VaadinSessionTest.this which isn't serializable
     private static class MockUI extends UI {
-        private Consumer<DetachEvent> detachListener;
+        private Consumer<UIDetachEvent> detachListener;
 
-        public void addDetachListener(Consumer<DetachEvent> l) {
+        public void addUIDetachListener(Consumer<UIDetachEvent> l) {
             detachListener = l;
         }
 
         @Override
         public void detach() {
             super.detach();
-            detachListener.accept(new DetachEvent(this));
+            detachListener.accept(new UIDetachEvent(this));
         }
 
         @Override

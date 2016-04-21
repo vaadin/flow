@@ -232,12 +232,12 @@ public class MapNamespaceTest
         namespace.put("boolean", Boolean.TRUE);
         namespace.put("number", Double.valueOf(5));
 
-        namespace.putJson("jsonString", Json.create("bar"));
-        namespace.putJson("jsonNull", Json.createNull());
-        namespace.putJson("jsonBoolean", Json.create(true));
-        namespace.putJson("jsonNumber", Json.create(5));
-        namespace.putJson("jsonObject", Json.createObject());
-        namespace.putJson("jsonArray", Json.createArray());
+        namespace.put("jsonString", Json.create("bar"));
+        namespace.put("jsonNull", Json.createNull());
+        namespace.put("jsonBoolean", Json.create(true));
+        namespace.put("jsonNumber", Json.create(5));
+        namespace.put("jsonObject", Json.createObject());
+        namespace.put("jsonArray", Json.createArray());
 
         Map<String, Object> values = new HashMap<>();
         namespace.keySet().forEach(key -> values.put(key, namespace.get(key)));

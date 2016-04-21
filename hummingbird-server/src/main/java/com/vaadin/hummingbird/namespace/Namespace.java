@@ -99,9 +99,23 @@ public abstract class Namespace implements Serializable {
 
     /**
      * Passes each child node instance to the given consumer.
-     * 
+     *
      * @param action
      *            the consumer that accepts each child
      */
     public abstract void forEachChild(Consumer<StateNode> action);
+
+    /**
+     * Called when the state node has been attached to the state tree.
+     */
+    public void onAttach() {
+        // NOOP by default
+    }
+
+    /**
+     * Called when the state node has been detached from the state tree.
+     */
+    public void onDetach() {
+        // NOOP by default
+    }
 }
