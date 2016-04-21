@@ -84,12 +84,12 @@ public class ComponentMappingNamespace extends Namespace {
 
     @Override
     public void onAttach() {
-        getComponent().ifPresent(ComponentUtil::fireComponentAttachEvent);
+        getComponent().ifPresent(ComponentUtil::onComponentAttach);
     }
 
     @Override
     public void onDetach() {
-        getComponent().ifPresent(ComponentUtil::fireComponentDetachEvent);
+        getComponent().ifPresent(ComponentUtil::onComponentDetach);
     }
 
 }

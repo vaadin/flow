@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +32,7 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.event.ComponentEventBus;
+import com.vaadin.tests.util.TestUtil;
 
 public class ComponentTest {
 
@@ -533,6 +535,48 @@ public class ComponentTest {
         ui.remove(testComponent);
 
         testComponent.assertDetachEvents(1);
+    }
+
+    @Test
+    public void testOnAttachOnDetachAndEventsOrder() {
+        List<String> triggered = new ArrayList<>();
+        Component customComponent = new Component(new Element("div")) {
+            @Override
+            protected void onAttach() {
+                triggered.add("onAttach");
+            }
+
+            @Override
+            protected void onDetach() {
+                triggered.add("onDetach");
+            }
+        };
+        customComponent
+                .addAttachListener(event -> triggered.add("attachEvent"));
+        customComponent
+                .addDetachListener(event -> triggered.add("detachEvent"));
+
+        UI ui = new UI();
+        ui.add(customComponent);
+
+        TestUtil.assertArrays(triggered.toArray(),
+                new String[] { "onAttach", "attachEvent" });
+
+        triggered.clear();
+        ui.remove(customComponent);
+
+        TestUtil.assertArrays(triggered.toArray(),
+                new String[] { "onDetach", "detachEvent" });
+
+        TestComponentContainer container = new TestComponentContainer();
+
+        ui.add(customComponent, container);
+        triggered.clear();
+
+        container.add(customComponent);
+
+        TestUtil.assertArrays(triggered.toArray(), new String[] { "onDetach",
+                "detachEvent", "onAttach", "attachEvent" });
     }
 
 }
