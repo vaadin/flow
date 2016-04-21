@@ -21,7 +21,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
 @DomEvent("dom-event")
-public class MappedToDomInvalidEventData extends ComponentEvent {
+public class MappedToDomInvalidEventData extends ComponentEvent<Component> {
 
     public MappedToDomInvalidEventData(Component source, boolean fromClient,
             @EventData("") int strangeServerSideParam) {

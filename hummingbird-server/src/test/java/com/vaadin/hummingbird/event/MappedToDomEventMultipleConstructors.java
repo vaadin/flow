@@ -21,7 +21,8 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
 @DomEvent("dom-event")
-public class MappedToDomEventMultipleConstructors extends ComponentEvent {
+public class MappedToDomEventMultipleConstructors
+        extends ComponentEvent<Component> {
 
     public MappedToDomEventMultipleConstructors(Component source,
             boolean fromClient, @EventData("someParam") int someParam) {
