@@ -40,7 +40,8 @@ public abstract class AbstractBasicElementComponentIT extends PhantomJSTest {
         Assert.assertEquals("hello", helloElement.getAttribute("class"));
 
         helloElement.click();
-
+        // Workaround for https://dev.vaadin.com/ticket/19753
+        testBench().waitForVaadin();
         Assert.assertEquals("Stop touching me!", helloElement.getText());
         Assert.assertEquals("", helloElement.getAttribute("class"));
 
