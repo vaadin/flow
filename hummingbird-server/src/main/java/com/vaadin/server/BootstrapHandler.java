@@ -63,9 +63,9 @@ import elemental.json.impl.JsonUtil;
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
-            + "vaadin.gwtStatsEvents = [];"
+            + "hummingbird.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
-            + "vaadin.gwtStatsEvents.push(event); " + "return true;};};";
+            + "hummingbird.gwtStatsEvents.push(event); " + "return true;};};";
 
     private static final String TYPE_TEXT_JAVASCRIPT = "text/javascript";
     private static final String CONTENT_ATTRIBUTE = "content";
