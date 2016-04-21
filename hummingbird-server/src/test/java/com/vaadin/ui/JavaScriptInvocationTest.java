@@ -15,8 +15,6 @@
  */
 package com.vaadin.ui;
 
-import java.util.Arrays;
-
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -30,8 +28,7 @@ public class JavaScriptInvocationTest {
     @Test
     public void testSerializable() {
         JavaScriptInvocation invocation = new UIInternals.JavaScriptInvocation(
-                "expression",
-                Arrays.asList("string", Json.create("jsonString")));
+                "expression", "string", Json.create("jsonString"));
 
         JavaScriptInvocation deserialized = SerializationUtils
                 .deserialize(SerializationUtils.serialize(invocation));

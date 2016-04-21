@@ -26,8 +26,9 @@ import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
 /**
- * Processes the result of {@link Page#executeJavaScript(String, Object...)} on
- * the client.
+ * Processes the result of
+ * {@link Page#executeJavaScript(String, java.io.Serializable...)} on the
+ * client.
  *
  * @since
  * @author Vaadin Ltd
