@@ -16,11 +16,10 @@
 package com.vaadin.hummingbird.html;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.hummingbird.dom.ClassList;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasSize;
+import com.vaadin.ui.HasStyle;
 
 /**
  * Base class for a {@link Component} that represents a single built-in HTML
@@ -29,7 +28,8 @@ import com.vaadin.ui.HasSize;
  * @since
  * @author Vaadin Ltd
  */
-public class HtmlComponent extends Component implements HasSize {
+public class HtmlComponent extends Component
+        implements HasSize, HasStyle {
 
     /**
      * Creates a component with the element type based on the {@link Tag}
@@ -76,78 +76,6 @@ public class HtmlComponent extends Component implements HasSize {
     }
 
     /**
-     * Adds a CSS class name to this component.
-     *
-     * @param className
-     *            the CSS class name to add, not <code>null</code>
-     */
-    public void addClassName(String className) {
-        getClassList().add(className);
-    }
-
-    /**
-     * Removes a CSS class name from this component.
-     *
-     * @param className
-     *            the CSS class name to remove, not <code>null</code>
-     * @return <code>true</code> if the class name was removed,
-     *         <code>false</code> if the class list didn't contain the class
-     *         name
-     */
-    public boolean removeClassName(String className) {
-        return getClassList().remove(className);
-    }
-
-    /**
-     * Sets the CSS class names of this component. This method overwrites any
-     * previous set class names.
-     *
-     * @param className
-     *            a space-separated string of class names to set, or
-     *            <code>null</code> to remove all class names
-     */
-    public void setClassName(String className) {
-        setAttribute("class", className);
-    }
-
-    /**
-     * Gets the CSS class names used for this component.
-     *
-     * @return a space-separated string of class names, or <code>null</code> if
-     *         there are no class names
-     */
-    public String getClassName() {
-        return getAttribute("class");
-    }
-
-    /**
-     * Sets or removes the given class name for this component.
-     *
-     * @param className
-     *            the class name to set or remove, not <code>null</code>
-     * @param set
-     *            <code>true</code> to set the class name, <code>false</code> to
-     *            remove it
-     */
-    public void setClassName(String className, boolean set) {
-        getClassList().set(className, set);
-    }
-
-    private ClassList getClassList() {
-        return getElement().getClassList();
-    }
-
-    /**
-     * Gets the style instance for managing inline styles for the element of
-     * this component.
-     *
-     * @return the style object for the element, not <code>null</code>
-     */
-    public Style getStyle() {
-        return getElement().getStyle();
-    }
-
-    /**
      * Sets or removes the given attribute for this component.
      *
      * @param name
@@ -178,4 +106,5 @@ public class HtmlComponent extends Component implements HasSize {
         assert name != null;
         return getElement().getAttribute(name);
     }
+
 }
