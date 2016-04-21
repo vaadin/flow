@@ -4,7 +4,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 There are multiple ways you can create a component. This tutorial uses the `Element` API and a single DOM element. For other component tutorials, see:
 
 * <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>.
-
+* <<tutorial-component-composite#,Creating a Component Using Existing Components>>
 
 You can create a simple TextField component based on an `<input>` element as follows:
 
