@@ -17,8 +17,11 @@ package com.vaadin.hummingbird.router;
 
 import javax.servlet.ServletException;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.router.RouterTest.RouterTestUI;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
@@ -26,8 +29,20 @@ import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.util.CurrentInstance;
 
 public class RouterLinkTest {
+
+    @Before
+    public void setUp() {
+        Assert.assertNull(CurrentInstance.get(VaadinService.class));
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.set(VaadinService.class, null);
+    }
+
     @Test
     public void buildUrlWithoutParameters() {
         String url = RouterLink.buildUrl("foo/bar");
@@ -104,8 +119,10 @@ public class RouterLinkTest {
     }
 
     @Test
-    public void createRouterLink() {
-        RouterTestUI ui = new RouterTestUI();
+    public void createRouterLink_implicitCurrentVaadinServiceRouter() {
+        // This method sets mock VaadinService instance which returns
+        // Router from the UI.
+        RouterTestUI ui = createUI();
         ui.getRouter().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
@@ -115,17 +132,50 @@ public class RouterLinkTest {
         Assert.assertTrue(link.getElement()
                 .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
 
-        Assert.assertFalse(link.getElement().hasAttribute("href"));
-
-        ui.add(link);
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
 
         Assert.assertEquals("show/something",
                 link.getElement().getAttribute("href"));
     }
 
     @Test
-    public void createReconfigureRouterLink() {
-        RouterTestUI ui = new RouterTestUI();
+    public void setRoute_attachedLink() {
+        RouterTestUI ui = new RouterTestUI(new Router());
+        ui.getRouter().get()
+                .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink();
+
+        ui.add(link);
+        link.setRoute(TestView.class, "foo");
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("show/foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_explicitRouter() {
+        Router router = new Router();
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink(router, "Show something",
+                TestView.class, "something");
+        Assert.assertEquals("Show something", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("show/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createReconfigureRouterLink_implicitCurrentVaadinServiceRouter() {
+        // This method sets mock VaadinService instance which returns
+        // Router from the UI.
+        RouterTestUI ui = createUI();
         ui.getRouter().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
@@ -133,8 +183,6 @@ public class RouterLinkTest {
                 "something");
 
         link.setRoute(TestView.class, "other");
-
-        ui.add(link);
 
         Assert.assertEquals("show/other",
                 link.getElement().getAttribute("href"));
@@ -145,17 +193,73 @@ public class RouterLinkTest {
                 link.getElement().getAttribute("href"));
     }
 
+    @Test
+    public void createReconfigureRouterLink_explicitRouter() {
+        Router router = new Router();
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink(router, "Show something",
+                TestView.class, "something");
+
+        link.setRoute(router, TestView.class, "other");
+
+        Assert.assertEquals("show/other",
+                link.getElement().getAttribute("href"));
+
+        link.setRoute(router, TestView.class, "changed");
+
+        Assert.assertEquals("show/changed",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void reconfigureRouterLink_attachedLink() {
+        Router router = new Router();
+        RouterTestUI ui = new RouterTestUI(router);
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink();
+        ui.add(link);
+
+        link.setRoute(TestView.class, "other");
+
+        Assert.assertEquals("show/other",
+                link.getElement().getAttribute("href"));
+
+        link.setRoute(router, TestView.class, "changed");
+
+        Assert.assertEquals("show/changed",
+                link.getElement().getAttribute("href"));
+    }
+
     @Test(expected = IllegalArgumentException.class)
-    public void invalidRouteWhenAttachingWithoutCurrentService() {
-        RouterTestUI ui = new RouterTestUI();
+    public void invalidRoute_implicitCurrentVaadinServiceRouter() {
+        // This method sets mock VaadinService instance which returns
+        // Router from the UI.
+        RouterTestUI ui = createUI();
         ui.getRouter().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
-        Assert.assertNull("Some test is leaking thread locals",
-                VaadinService.getCurrent());
+        new RouterLink("Show something", TestView.class);
+    }
 
-        RouterLink link = new RouterLink("Show something", TestView.class);
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRoute_explicitRouter() {
+        Router router = new Router();
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        new RouterLink(router, "Show something", TestView.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRoute_attachedLink() {
+        Router router = new Router();
+        RouterTestUI ui = new RouterTestUI(router);
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink();
         ui.add(link);
+        link.setRoute(TestView.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -173,6 +277,14 @@ public class RouterLinkTest {
         } finally {
             VaadinService.setCurrent(null);
         }
+    }
+
+    private RouterTestUI createUI() {
+        RouterTestUI ui = new RouterTestUI();
+        VaadinService service = Mockito.mock(VaadinService.class);
+        Mockito.when(service.getRouter()).thenReturn(ui.getRouter().get());
+        CurrentInstance.set(VaadinService.class, service);
+        return ui;
     }
 
 }
