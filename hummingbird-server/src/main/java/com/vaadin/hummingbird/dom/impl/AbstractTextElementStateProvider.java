@@ -31,8 +31,6 @@ import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
-import elemental.json.JsonValue;
-
 /**
  * Abstract element state provider for text nodes. Operations that are not
  * applicable for text nodes throw {@link UnsupportedOperationException}.
@@ -123,11 +121,6 @@ public abstract class AbstractTextElementStateProvider
     @Override
     public void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setJsonProperty(StateNode node, String name, JsonValue value) {
         throw new UnsupportedOperationException();
     }
 

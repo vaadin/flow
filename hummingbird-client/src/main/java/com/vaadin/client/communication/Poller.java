@@ -18,7 +18,7 @@ package com.vaadin.client.communication;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.Registry;
 import com.vaadin.client.hummingbird.StateTree;
-import com.vaadin.ui.UI;
+import com.vaadin.event.UIEvents.PollEvent;
 
 /**
  * Handles polling the server with a given interval.
@@ -74,7 +74,7 @@ public class Poller {
                 public void run() {
                     StateTree stateTree = registry.getStateTree();
                     stateTree.sendEventToServer(stateTree.getRootNode(),
-                            UI.POLL_DOM_EVENT_NAME, null);
+                            PollEvent.DOM_EVENT_NAME, null);
                 }
             };
             pollTimer.scheduleRepeating(interval);
