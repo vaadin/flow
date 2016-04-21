@@ -28,6 +28,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasText;
+import com.vaadin.ui.UI;
 
 /**
  * A link that handles navigation internally using {@link Router} instead of
@@ -57,6 +58,12 @@ public class RouterLink extends Component implements HasText, HasComponents {
      * provided parameters are used to populate placeholder and wildcard slots
      * in the route, starting from the beginning of the route. The number of
      * parameters must match the number of slots in the route.
+     * <p>
+     * This is a shorthand for
+     * {@link #RouterLink(Router, String, Class, String...)} which uses
+     * implicitly available {@link Router} instance from the current {@link UI}.
+     * 
+     * @see #RouterLink(Router, String, Class, String...)
      *
      * @param text
      *            the link text
@@ -73,11 +80,61 @@ public class RouterLink extends Component implements HasText, HasComponents {
     }
 
     /**
+     * Creates a new router link to the given view with the given text. The
+     * provided parameters are used to populate placeholder and wildcard slots
+     * in the route, starting from the beginning of the route. The number of
+     * parameters must match the number of slots in the route.
+     *
+     * @param router
+     *            the router used for navigating
+     * @param text
+     *            the link text
+     * @param viewType
+     *            the view type to find a route for, not <code>null</code>
+     * @param parameters
+     *            the parameter values to set in the route
+     */
+    public RouterLink(Router router, String text,
+            Class<? extends View> viewType, String... parameters) {
+        this();
+        setText(text);
+        setRoute(router, viewType, parameters);
+    }
+
+    /**
      * Sets the target of this link. The provided parameters are used to
      * populate placeholder and wildcard slots in the route of the provided
      * view, starting from the beginning of the route. The number of parameters
      * must match the number of slots in the route. There must be exactly one
      * route configured for the view type.
+     *
+     * @param router
+     *            the router used for navigating, not {@code null}
+     * @param viewType
+     *            the view type to find a route for, not <code>null</code>
+     * @param parameters
+     *            the parameter values to set in the route
+     */
+    public void setRoute(Router router, Class<? extends View> viewType,
+            String... parameters) {
+        if (router == null) {
+            throw new IllegalArgumentException("Router must not be null");
+        }
+        updateHref(router, viewType, parameters);
+    }
+
+    /**
+     * Sets the target of this link. The provided parameters are used to
+     * populate placeholder and wildcard slots in the route of the provided
+     * view, starting from the beginning of the route. The number of parameters
+     * must match the number of slots in the route. There must be exactly one
+     * route configured for the view type.
+     * <p>
+     * This is a shorthand for {@link #setRoute(Router, Class, String...)}
+     * method which uses implicitly available {@link Router} instance from the
+     * current {@link UI}.
+     * 
+     * @see #setRoute(Router, Class, String...)
      *
      * @param viewType
      *            the view type to find a route for, not <code>null</code>
@@ -85,42 +142,31 @@ public class RouterLink extends Component implements HasText, HasComponents {
      *            the parameter values to set in the route
      */
     public void setRoute(Class<? extends View> viewType, String... parameters) {
+        Optional<Router> router = Optional.empty();
         if (getElement().getNode().isAttached()) {
-            updateHref(viewType, parameters);
-        } else {
-            VaadinService currentService = VaadinService.getCurrent();
-            if (currentService != null) {
-                // Use the service to validate the mapping so that we can
-                // provide early feedback if there's a problem.
-                buildUrl(currentService.getRouter(), viewType, parameters);
+            StateTree tree = (StateTree) getElement().getNode().getOwner();
+            router = tree.getUI().getRouter();
+            if (!router.isPresent()) {
+                throw new IllegalArgumentException(
+                        "RouterLink cannot be used if Router is not used");
             }
-
-            if (attachHandle != null) {
-                attachHandle.remove();
-            }
-
-            attachHandle = getElement().addAttachListener(e -> {
-                attachHandle.remove();
-                attachHandle = null;
-                updateHref(viewType, parameters);
-            });
         }
+        if (!router.isPresent()) {
+            router = Optional
+                    .ofNullable(VaadinService.getCurrent().getRouter());
+        }
+        if (!router.isPresent()) {
+            throw new IllegalStateException(
+                    "Implicit router instance is not available. "
+                            + "Use overloaded method with explicit router parameter.");
+        }
+        updateHref(router.get(), viewType, parameters);
     }
 
-    private void updateHref(Class<? extends View> viewType,
+    private void updateHref(Router router, Class<? extends View> viewType,
             String... parameters) {
-        assert getElement().getNode().isAttached();
-
-        StateTree tree = (StateTree) getElement().getNode().getOwner();
-
-        Optional<Router> router = tree.getUI().getRouter();
-
-        if (!router.isPresent()) {
-            throw new IllegalArgumentException(
-                    "RouterLink cannot be used if Router is not used");
-        }
-
-        String url = buildUrl(router.get(), viewType, parameters);
+        assert router != null;
+        String url = buildUrl(router, viewType, parameters);
 
         getElement().setAttribute("href", url);
     }
