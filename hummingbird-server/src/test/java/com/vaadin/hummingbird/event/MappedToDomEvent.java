@@ -6,7 +6,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
 @DomEvent("dom-event")
-public class MappedToDomEvent extends ComponentEvent {
+public class MappedToDomEvent extends ComponentEvent<Component> {
 
     private int someData;
     private String moreData;

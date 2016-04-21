@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.event;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
-public class ServerNoDataEvent extends ComponentEvent {
+public class ServerNoDataEvent extends ComponentEvent<Component> {
 
     public ServerNoDataEvent(Component source, boolean fromClient) {
         super(source, fromClient);

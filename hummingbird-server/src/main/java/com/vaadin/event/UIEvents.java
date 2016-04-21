@@ -39,7 +39,7 @@ public interface UIEvents {
      * @author Vaadin Ltd
      */
     @DomEvent(PollEvent.DOM_EVENT_NAME)
-    public static class PollEvent extends ComponentEvent {
+    public static class PollEvent extends ComponentEvent<UI> {
         public static final String DOM_EVENT_NAME = "ui-poll";
 
         /**
@@ -63,7 +63,7 @@ public interface UIEvents {
          *         <code>null</code>.
          */
         public UI getUI() {
-            return (UI) getSource();
+            return getSource();
         }
     }
 

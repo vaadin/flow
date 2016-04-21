@@ -107,12 +107,12 @@ public class ComponentTest {
         }
 
         @Override
-        public void fireEvent(ComponentEvent componentEvent) {
+        public void fireEvent(ComponentEvent<?> componentEvent) {
             super.fireEvent(componentEvent);
         }
 
         @Override
-        public <T extends ComponentEvent> EventRegistrationHandle addListener(
+        public <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
                 Class<T> eventType, Consumer<T> listener) {
             return super.addListener(eventType, listener);
         }

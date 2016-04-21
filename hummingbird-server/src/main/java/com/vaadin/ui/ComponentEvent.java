@@ -23,11 +23,14 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
  * An event whose source is a {@link Component}.
  * <p>
  * Typically used together with {@link ComponentEventBus}.
+ * 
+ * @param <T>
+ *            the event source type
  *
  * @author Vaadin Ltd
  * @since
  */
-public class ComponentEvent extends EventObject {
+public class ComponentEvent<T extends Component> extends EventObject {
 
     private boolean fromClient = false;
 
@@ -41,14 +44,15 @@ public class ComponentEvent extends EventObject {
      *            <code>true</code> if the event originated from the client
      *            side, <code>false</code> otherwise
      */
-    public ComponentEvent(Component source, boolean fromClient) {
+    public ComponentEvent(T source, boolean fromClient) {
         super(source);
         this.fromClient = fromClient;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Component getSource() {
-        return (Component) super.getSource();
+    public T getSource() {
+        return (T) super.getSource();
     }
 
     /**

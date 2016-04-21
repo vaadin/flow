@@ -20,7 +20,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
 @DomEvent("dom-event")
-public class InvalidMappedToDomEvent extends ComponentEvent {
+public class InvalidMappedToDomEvent extends ComponentEvent<Component> {
 
     public InvalidMappedToDomEvent(Component source) {
         super(source, true);
