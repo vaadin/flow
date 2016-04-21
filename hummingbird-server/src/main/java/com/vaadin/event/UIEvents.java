@@ -15,12 +15,12 @@
  */
 package com.vaadin.event;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.EventObject;
+import java.util.function.Consumer;
 
+import com.vaadin.annotations.DomEvent;
+import com.vaadin.ui.ComponentEvent;
+import com.vaadin.ui.HasElement;
 import com.vaadin.ui.UI;
-import com.vaadin.util.ReflectTools;
 
 /**
  * A class that contains events, listeners and handlers specific to the
@@ -32,41 +32,28 @@ import com.vaadin.util.ReflectTools;
 public interface UIEvents {
 
     /**
-     * A {@link PollListener} receives and handles {@link PollEvent PollEvents}
-     * fired by {@link PollNotifier PollNotifiers}.
-     *
-     * @since 7.2
-     * @author Vaadin Ltd
-     */
-    public interface PollListener extends Serializable {
-        Method POLL_METHOD = ReflectTools.findMethod(PollListener.class, "poll",
-                PollEvent.class);
-
-        /**
-         * A poll request has been received by the server.
-         *
-         * @param event
-         *            poll event
-         */
-        void poll(PollEvent event);
-    }
-
-    /**
      * An event that is fired whenever a client polls the server for
      * asynchronous UI updates.
      *
      * @since 7.2
      * @author Vaadin Ltd
      */
-    public static class PollEvent extends EventObject {
+    @DomEvent(PollEvent.DOM_EVENT_NAME)
+    public static class PollEvent extends ComponentEvent {
+        public static final String DOM_EVENT_NAME = "ui-poll";
+
         /**
-         * Creates a poll event for the given UI.
+         * Creates a new event using the given source and indicator whether the
+         * event originated from the client side or the server side.
          *
          * @param ui
-         *            the UI where the poll event occurred
+         *            the source UI
+         * @param fromClient
+         *            <code>true</code> if the event originated from the client
+         *            side, <code>false</code> otherwise
          */
-        public PollEvent(UI ui) {
-            super(ui);
+        public PollEvent(UI ui, boolean fromClient) {
+            super(ui, fromClient);
         }
 
         /**
@@ -75,11 +62,7 @@ public interface UIEvents {
          * @return the {@link UI} that received the poll request. Never
          *         <code>null</code>.
          */
-        UI getUI() {
-            /*
-             * This cast is safe to make, since this class' constructor
-             * constrains the source to be a UI instance.
-             */
+        public UI getUI() {
             return (UI) getSource();
         }
     }
@@ -95,7 +78,7 @@ public interface UIEvents {
      * @since 7.2
      * @see UI#setPollInterval(int)
      */
-    public interface PollNotifier extends Serializable {
+    public interface PollNotifier extends HasElement {
         /**
          * Add a poll listener.
          * <p>
@@ -103,20 +86,10 @@ public interface UIEvents {
          * asynchronous UI updates.
          *
          * @see UI#setPollInterval(int)
-         * @see #removePollListener(PollListener)
          * @param listener
-         *            the {@link PollListener} to add
+         *            the listener to add
          */
-        void addPollListener(PollListener listener);
-
-        /**
-         * Remove a poll listener.
-         *
-         * @see #addPollListener(PollListener)
-         * @param listener
-         *            the listener to be removed
-         */
-        void removePollListener(PollListener listener);
+        void addPollListener(Consumer<PollEvent> listener);
     }
 
 }
