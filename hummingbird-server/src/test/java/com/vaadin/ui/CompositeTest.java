@@ -74,6 +74,11 @@ public class CompositeTest {
         // That's all
     }
 
+    public class CompositeWithComposite
+            extends Composite<CompositeWithVariableType<TestComponent>> {
+        // That's all
+    }
+
     public class CompositeWithVariableType<C extends Component>
             extends Composite<C> {
         // That's all
@@ -154,6 +159,26 @@ public class CompositeTest {
     public void getChildren_layoutInComposite() {
         ComponentTest.assertChildren(layoutInsideComposite,
                 componentInsideLayoutInsideComposite);
+    }
+
+    @Test
+    public void automaticCompositeContentType() {
+        CompositeWithGenericType instance = new CompositeWithGenericType();
+
+        Assert.assertEquals(TestComponent.class,
+                instance.getContent().getClass());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void compositeContentTypeWithVariableTypeParameter() {
+        CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
+        composite.getContent();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void genericCompositeContentType() {
+        CompositeWithComposite composite = new CompositeWithComposite();
+        composite.getContent();
     }
 
     // layoutWithSingleComponentComposite (TestLayout)
