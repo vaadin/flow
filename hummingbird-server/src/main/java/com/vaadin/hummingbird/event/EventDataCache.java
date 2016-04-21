@@ -31,8 +31,8 @@ import com.vaadin.ui.ComponentEvent;
  */
 public class EventDataCache {
 
-    private ConcurrentHashMap<Class<? extends ComponentEvent>, LinkedHashMap<String, Class<?>>> dataExpressions = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<Class<? extends ComponentEvent>, Constructor<?>> eventConstructors = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Class<? extends ComponentEvent<?>>, LinkedHashMap<String, Class<?>>> dataExpressions = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Class<? extends ComponentEvent<?>>, Constructor<?>> eventConstructors = new ConcurrentHashMap<>();
 
     /**
      * Gets the cached data expressions for the given event type.
@@ -43,7 +43,7 @@ public class EventDataCache {
      *         if no data expressions have been cached for the given event type
      */
     public Optional<LinkedHashMap<String, Class<?>>> getDataExpressions(
-            Class<? extends ComponentEvent> eventType) {
+            Class<? extends ComponentEvent<?>> eventType) {
         return Optional.ofNullable(dataExpressions.get(eventType));
     }
 
@@ -57,7 +57,7 @@ public class EventDataCache {
      * @return the stored data expressions
      */
     public LinkedHashMap<String, Class<?>> setDataExpressions(
-            Class<? extends ComponentEvent> eventType,
+            Class<? extends ComponentEvent<?>> eventType,
             LinkedHashMap<String, Class<?>> expressions) {
         dataExpressions.put(eventType, expressions);
         return expressions;
@@ -73,7 +73,7 @@ public class EventDataCache {
      *         given event type
      */
     @SuppressWarnings("unchecked")
-    public <T extends ComponentEvent> Optional<Constructor<T>> getEventConstructor(
+    public <T extends ComponentEvent<?>> Optional<Constructor<T>> getEventConstructor(
             Class<T> eventType) {
         return Optional
                 .ofNullable((Constructor<T>) eventConstructors.get(eventType));
@@ -89,7 +89,7 @@ public class EventDataCache {
      *            the DOM event constructor to store
      * @return the stored DOM event constructor
      */
-    public <T extends ComponentEvent> Constructor<T> setEventConstructor(
+    public <T extends ComponentEvent<?>> Constructor<T> setEventConstructor(
             Class<T> eventType, Constructor<T> constructor) {
         eventConstructors.put(eventType, constructor);
         return constructor;

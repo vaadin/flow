@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
-public class ServerEvent extends ComponentEvent {
+public class ServerEvent extends ComponentEvent<Component> {
 
     private BigDecimal someValue;
 

@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.html.event;
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.hummingbird.html.HtmlComponent;
+import com.vaadin.ui.ComponentEvent;
 
 /**
  * Event fired when a component is clicked.
@@ -26,7 +27,7 @@ import com.vaadin.hummingbird.html.HtmlComponent;
  * @author Vaadin Ltd
  */
 @DomEvent("click")
-public class ClickEvent extends HtmlComponentEvent {
+public class ClickEvent extends ComponentEvent<HtmlComponent> {
 
     private final int screenX;
     private final int screenY;

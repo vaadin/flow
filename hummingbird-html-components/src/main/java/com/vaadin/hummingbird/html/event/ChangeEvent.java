@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.html.event;
 
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.hummingbird.html.HtmlComponent;
+import com.vaadin.ui.ComponentEvent;
 
 /**
  * Event fired when the value of a component has changed. The new value can be
@@ -29,7 +30,7 @@ import com.vaadin.hummingbird.html.HtmlComponent;
  * @author Vaadin Ltd
  */
 @DomEvent("change")
-public class ChangeEvent extends HtmlComponentEvent {
+public class ChangeEvent extends ComponentEvent<HtmlComponent> {
     /**
      * Creates a new change event.
      *
