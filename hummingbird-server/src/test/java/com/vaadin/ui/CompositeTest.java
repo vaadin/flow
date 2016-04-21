@@ -1,6 +1,7 @@
 package com.vaadin.ui;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -160,7 +161,7 @@ public class CompositeTest {
     // --- layoutInsideComposite (TestLayout) content for compositeWithComponent
     // ---- componentInsideLayoutInsideComposite (TestComponent)
     @Test
-    public void attachEvent_compositeHierarchy_correctOrder() {
+    public void attachDetachEvents_compositeHierarchy_correctOrder() {
         UI ui = new UI();
 
         ArrayList<Component> attached = new ArrayList<Component>();
@@ -218,6 +219,85 @@ public class CompositeTest {
                 new Component[] { componentInsideLayoutInsideComposite,
                         layoutInsideComposite, compositeWithComponent,
                         layoutWithSingleComponentComposite });
+    }
+
+    @Test
+    public void testOnAttachOnDetachAndEventsOrder() {
+        List<Integer> triggered = new ArrayList<>();
+
+        Component component = new Component(new Element("div")) {
+            @Override
+            protected void onAttach() {
+                triggered.add(1);
+            }
+
+            @Override
+            protected void onDetach() {
+                triggered.add(-1);
+            }
+        };
+        component.addAttachListener(event -> triggered.add(2));
+        component.addDetachListener(event -> triggered.add(-2));
+
+        Composite compositeInsideComposite = new Composite() {
+            @Override
+            protected Component initContent() {
+                return component;
+            };
+
+            @Override
+            protected void onAttach() {
+                triggered.add(3);
+            }
+
+            @Override
+            protected void onDetach() {
+                triggered.add(-3);
+            }
+        };
+        compositeInsideComposite.addAttachListener(event -> triggered.add(4));
+        compositeInsideComposite.addDetachListener(event -> triggered.add(-4));
+
+        Composite composite = new Composite() {
+            @Override
+            protected Component initContent() {
+                return compositeInsideComposite;
+            }
+
+            @Override
+            protected void onAttach() {
+                triggered.add(5);
+            }
+
+            @Override
+            protected void onDetach() {
+                triggered.add(-5);
+            }
+        };
+        composite.addAttachListener(event -> triggered.add(6));
+        composite.addDetachListener(event -> triggered.add(-6));
+
+        UI ui = new UI();
+        ui.add(composite);
+
+        TestUtil.assertArrays(triggered.toArray(),
+                new Integer[] { 1, 2, 3, 4, 5, 6 });
+        triggered.clear();
+
+        ui.remove(composite);
+
+        TestUtil.assertArrays(triggered.toArray(),
+                new Integer[] { -1, -2, -3, -4, -5, -6 });
+
+        TestLayout container = createTestLayout();
+        ui.add(container, composite);
+
+        triggered.clear();
+
+        container.addComponent(composite);
+
+        TestUtil.assertArrays(triggered.toArray(),
+                new Integer[] { -1, -2, -3, -4, -5, -6, 1, 2, 3, 4, 5, 6 });
     }
 
     public static void assertElementChildren(Element parent,
