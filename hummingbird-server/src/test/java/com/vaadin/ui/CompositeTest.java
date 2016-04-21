@@ -1,15 +1,26 @@
 package com.vaadin.ui;
 
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.ComponentTest.TestComponent;
+import com.vaadin.ui.ComponentTest.TracksAttachDetach;
 import com.vaadin.ui.CompositeNestedTest.TestLayout;
 
 public class CompositeTest {
+
+    // layoutWithSingleComponentComposite (TestLayout)
+    // - compositeWithComponent (CompositeWithComponent)
+    // --- layoutInsideComposite (TestLayout) content for compositeWithComponent
+    // ---- componentInsideLayoutInsideComposite (TestComponent)
 
     TestLayout layoutWithSingleComponentComposite;
     CompositeWithComponent compositeWithComponent;
@@ -31,7 +42,11 @@ public class CompositeTest {
         };
     }
 
-    public class CompositeWithComponent extends Composite<Component> {
+    public class CompositeWithComponent extends Composite<Component>
+            implements TracksAttachDetach {
+
+        private AtomicInteger attachEvents = new AtomicInteger();
+        private AtomicInteger detachEvents = new AtomicInteger();
 
         @Override
         protected Component initContent() {
@@ -41,6 +56,17 @@ public class CompositeTest {
                     .addComponent(componentInsideLayoutInsideComposite);
             return layoutInsideComposite;
         }
+
+        @Override
+        public AtomicInteger getAttachEvents() {
+            return attachEvents;
+        }
+
+        @Override
+        public AtomicInteger getDetachEvents() {
+            return detachEvents;
+        }
+
     }
 
     public class CompositeWithGenericType extends Composite<TestComponent> {
@@ -68,6 +94,11 @@ public class CompositeTest {
             }
         };
         layoutWithSingleComponentComposite.addComponent(compositeWithComponent);
+
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite).track();
+        compositeWithComponent.track();
+        layoutInsideComposite.track();
+        layoutWithSingleComponentComposite.track();
     }
 
     @Test
@@ -124,18 +155,69 @@ public class CompositeTest {
                 componentInsideLayoutInsideComposite);
     }
 
+    // layoutWithSingleComponentComposite (TestLayout)
+    // - compositeWithComponent (CompositeWithComponent)
+    // --- layoutInsideComposite (TestLayout) content for compositeWithComponent
+    // ---- componentInsideLayoutInsideComposite (TestComponent)
     @Test
-    public void automaticCompositeContentType() {
-        CompositeWithGenericType instance = new CompositeWithGenericType();
+    public void attachEvent_compositeHierarchy_correctOrder() {
+        UI ui = new UI();
 
-        Assert.assertEquals(TestComponent.class,
-                instance.getContent().getClass());
-    }
+        ArrayList<Component> attached = new ArrayList<Component>();
+        ArrayList<Component> detached = new ArrayList<Component>();
 
-    @Test(expected = IllegalStateException.class)
-    public void compositeContentTypeWithVariableTypeParameter() {
-        CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
-        composite.getContent();
+        Consumer<AttachEvent> attachListener = event -> attached
+                .add(event.getSource());
+        Consumer<DetachEvent> detachListener = event -> detached
+                .add(event.getSource());
+
+        layoutInsideComposite.addAttachListener(attachListener);
+        layoutWithSingleComponentComposite.addAttachListener(attachListener);
+        compositeWithComponent.addAttachListener(attachListener);
+        componentInsideLayoutInsideComposite.addAttachListener(attachListener);
+
+        layoutInsideComposite.addDetachListener(detachListener);
+        layoutWithSingleComponentComposite.addDetachListener(detachListener);
+        compositeWithComponent.addDetachListener(detachListener);
+        componentInsideLayoutInsideComposite.addDetachListener(detachListener);
+
+        layoutInsideComposite.assertAttachEvents(0);
+        layoutWithSingleComponentComposite.assertAttachEvents(0);
+        compositeWithComponent.assertAttachEvents(0);
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite)
+                .assertAttachEvents(0);
+
+        ui.add(layoutWithSingleComponentComposite);
+
+        layoutInsideComposite.assertAttachEvents(1);
+        layoutWithSingleComponentComposite.assertAttachEvents(1);
+        compositeWithComponent.assertAttachEvents(1);
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite)
+                .assertAttachEvents(1);
+
+        TestUtil.assertArrays(attached.toArray(),
+                new Component[] { componentInsideLayoutInsideComposite,
+                        layoutInsideComposite, compositeWithComponent,
+                        layoutWithSingleComponentComposite });
+
+        layoutInsideComposite.assertDetachEvents(0);
+        layoutWithSingleComponentComposite.assertDetachEvents(0);
+        compositeWithComponent.assertDetachEvents(0);
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite)
+                .assertDetachEvents(0);
+
+        ui.removeAll();
+
+        layoutInsideComposite.assertDetachEvents(1);
+        layoutWithSingleComponentComposite.assertDetachEvents(1);
+        compositeWithComponent.assertDetachEvents(1);
+        ((TracksAttachDetach) componentInsideLayoutInsideComposite)
+                .assertDetachEvents(1);
+
+        TestUtil.assertArrays(detached.toArray(),
+                new Component[] { componentInsideLayoutInsideComposite,
+                        layoutInsideComposite, compositeWithComponent,
+                        layoutWithSingleComponentComposite });
     }
 
     public static void assertElementChildren(Element parent,

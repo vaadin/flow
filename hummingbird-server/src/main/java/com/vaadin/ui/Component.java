@@ -40,8 +40,8 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
  * @author Vaadin Ltd
  * @since
  */
-public abstract class Component
-        implements HasElement, Serializable, ComponentEventNotifier {
+public abstract class Component implements HasElement, Serializable,
+        ComponentEventNotifier, AttachNotifier, DetachNotifier {
 
     private Element element;
 
