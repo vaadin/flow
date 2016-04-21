@@ -104,7 +104,7 @@ public class RouterLinkTest {
     }
 
     @Test
-    public void createRouterLink() {
+    public void createRouterLink_implicitRouter() {
         RouterTestUI ui = new RouterTestUI();
         ui.getRouter().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
@@ -115,16 +115,47 @@ public class RouterLinkTest {
         Assert.assertTrue(link.getElement()
                 .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
 
-        Assert.assertFalse(link.getElement().hasAttribute("href"));
-
-        ui.add(link);
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
 
         Assert.assertEquals("show/something",
                 link.getElement().getAttribute("href"));
     }
 
     @Test
-    public void createReconfigureRouterLink() {
+    public void setRoute_attachedLink() {
+        RouterTestUI ui = new RouterTestUI(new Router());
+        ui.getRouter().get()
+                .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink();
+
+        ui.add(link);
+        link.setRoute(TestView.class, "foo");
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("show/foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_explicitRouter() {
+        Router router = new Router();
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink(router, "Show something",
+                TestView.class, "something");
+        Assert.assertEquals("Show something", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("show/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createReconfigureRouterLink_implicitRouter() {
         RouterTestUI ui = new RouterTestUI();
         ui.getRouter().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
@@ -133,8 +164,6 @@ public class RouterLinkTest {
                 "something");
 
         link.setRoute(TestView.class, "other");
-
-        ui.add(link);
 
         Assert.assertEquals("show/other",
                 link.getElement().getAttribute("href"));
@@ -145,17 +174,71 @@ public class RouterLinkTest {
                 link.getElement().getAttribute("href"));
     }
 
+    @Test
+    public void createReconfigureRouterLink_explicitRouter() {
+        Router router = new Router();
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink(router, "Show something",
+                TestView.class, "something");
+
+        link.setRoute(router, TestView.class, "other");
+
+        Assert.assertEquals("show/other",
+                link.getElement().getAttribute("href"));
+
+        link.setRoute(router, TestView.class, "changed");
+
+        Assert.assertEquals("show/changed",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void reconfigureRouterLink_attachedLink() {
+        Router router = new Router();
+        RouterTestUI ui = new RouterTestUI(router);
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink();
+        ui.add(link);
+
+        link.setRoute(TestView.class, "other");
+
+        Assert.assertEquals("show/other",
+                link.getElement().getAttribute("href"));
+
+        link.setRoute(router, TestView.class, "changed");
+
+        Assert.assertEquals("show/changed",
+                link.getElement().getAttribute("href"));
+    }
+
     @Test(expected = IllegalArgumentException.class)
-    public void invalidRouteWhenAttachingWithoutCurrentService() {
+    public void invalidRoute_implicitRouter() {
         RouterTestUI ui = new RouterTestUI();
         ui.getRouter().get()
                 .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
 
-        Assert.assertNull("Some test is leaking thread locals",
-                VaadinService.getCurrent());
+        new RouterLink("Show something", TestView.class);
+    }
 
-        RouterLink link = new RouterLink("Show something", TestView.class);
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRoute_explicitRouter() {
+        Router router = new Router();
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        new RouterLink("Show something", TestView.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void invalidRoute_attachedLink() {
+        Router router = new Router();
+        RouterTestUI ui = new RouterTestUI(router);
+        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+
+        RouterLink link = new RouterLink();
         ui.add(link);
+        link.setRoute(TestView.class);
     }
 
     @Test(expected = IllegalArgumentException.class)

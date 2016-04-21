@@ -26,8 +26,10 @@ import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinService;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.UI;
+import com.vaadin.util.CurrentInstance;
 
 public class RouterTest {
 
@@ -36,6 +38,9 @@ public class RouterTest {
 
         public RouterTestUI() {
             this(new Router());
+            VaadinService service = Mockito.mock(VaadinService.class);
+            Mockito.when(service.getRouter()).thenReturn(router);
+            CurrentInstance.set(VaadinService.class, service);
         }
 
         public RouterTestUI(Router router) {
