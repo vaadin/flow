@@ -51,12 +51,12 @@ public class ComponentEventBus implements Serializable {
 
     private static class ComponentEventData implements Serializable {
         private EventRegistrationHandle domEventRemover = null;
-        private ArrayList<Consumer<? extends ComponentEvent>> listeners = new ArrayList<>(
+        private ArrayList<Consumer<? extends ComponentEvent<?>>> listeners = new ArrayList<>(
                 1);
     }
 
     // Package private to enable testing only
-    HashMap<Class<? extends ComponentEvent>, ComponentEventData> componentEventData = new HashMap<>();
+    HashMap<Class<? extends ComponentEvent<?>>, ComponentEventData> componentEventData = new HashMap<>();
 
     private Component component;
 
@@ -80,11 +80,11 @@ public class ComponentEventBus implements Serializable {
      *            the listener to call when the event occurs
      * @return an object which can be used to remove the event listener
      */
-    public <T extends ComponentEvent> EventRegistrationHandle addListener(
+    public <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
             Class<T> eventType, Consumer<T> listener) {
         addDomTriggerIfNeeded(eventType);
 
-        List<Consumer<? extends ComponentEvent>> listeners = componentEventData
+        List<Consumer<? extends ComponentEvent<?>>> listeners = componentEventData
                 .computeIfAbsent(eventType,
                         t -> new ComponentEventData()).listeners;
         listeners.add(listener);
@@ -132,7 +132,7 @@ public class ComponentEventBus implements Serializable {
      *            the type of event
      */
     private void addDomTriggerIfNeeded(
-            Class<? extends ComponentEvent> eventType) {
+            Class<? extends ComponentEvent<?>> eventType) {
         boolean alreadyRegistered = hasListener(eventType);
         if (alreadyRegistered) {
             return;
@@ -152,7 +152,7 @@ public class ComponentEventBus implements Serializable {
      * @param domEventType
      *            the DOM event type
      */
-    private void addDomTrigger(Class<? extends ComponentEvent> eventType,
+    private void addDomTrigger(Class<? extends ComponentEvent<?>> eventType,
             String domEventType) {
         assert eventType != null;
         assert !componentEventData.containsKey(eventType)
@@ -188,7 +188,7 @@ public class ComponentEventBus implements Serializable {
      *         component event constructor
      */
     private List<Object> createEventDataObjects(DomEvent domEvent,
-            Class<? extends ComponentEvent> eventType) {
+            Class<? extends ComponentEvent<?>> eventType) {
         List<Object> eventDataObjects = new ArrayList<>();
 
         LinkedHashMap<String, Class<?>> expressions = ComponentEventBusUtil
@@ -217,13 +217,13 @@ public class ComponentEventBus implements Serializable {
      * @param listener
      *            the listener to remove
      */
-    private <T extends ComponentEvent> void removeListener(Class<T> eventType,
-            Consumer<T> listener) {
+    private <T extends ComponentEvent<?>> void removeListener(
+            Class<T> eventType, Consumer<T> listener) {
         assert eventType != null;
         assert listener != null;
         assert hasListener(eventType);
 
-        List<Consumer<? extends ComponentEvent>> listeners = componentEventData
+        List<Consumer<? extends ComponentEvent<?>>> listeners = componentEventData
                 .get(eventType).listeners;
         if (listeners == null) {
             throw new IllegalArgumentException(
@@ -250,8 +250,8 @@ public class ComponentEventBus implements Serializable {
      * @param domEventType
      *            the DOM event type for the component event type
      */
-    private void unregisterDomEvent(Class<? extends ComponentEvent> eventType,
-            String domEventType) {
+    private void unregisterDomEvent(
+            Class<? extends ComponentEvent<?>> eventType, String domEventType) {
         assert eventType != null;
         assert domEventType != null && !domEventType.isEmpty();
 
@@ -278,7 +278,7 @@ public class ComponentEventBus implements Serializable {
      * @param domEvent
      *            the DOM event
      */
-    private void handleDomEvent(Class<? extends ComponentEvent> eventType,
+    private void handleDomEvent(Class<? extends ComponentEvent<?>> eventType,
             DomEvent domEvent) {
         ComponentEvent e = createEventForDomEvent(eventType, domEvent,
                 component);
@@ -296,7 +296,7 @@ public class ComponentEventBus implements Serializable {
      *            The component which is the source of the event
      * @return an event object of type <code>eventType</code>
      */
-    private <T extends ComponentEvent> T createEventForDomEvent(
+    private <T extends ComponentEvent<?>> T createEventForDomEvent(
             Class<T> eventType, DomEvent domEvent, Component source) {
         try {
             Constructor<T> c = ComponentEventBusUtil
