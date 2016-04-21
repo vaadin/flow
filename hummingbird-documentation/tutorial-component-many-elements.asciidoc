@@ -5,6 +5,7 @@ There are multiple ways you can create a component. This tutorial uses the `Elem
 
 * <<tutorial-component-basic#,Creating A Simple Component Using the Element API>>.
 * <<tutorial-component-composite#,Creating a Component Using Existing Components>>
+* <<tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
 
 You can create a TextField component with support for a label using the following DOM structure:
 

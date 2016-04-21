@@ -5,6 +5,7 @@ There are multiple ways you can create a component. This tutorial uses a `Compos
 
 * <<tutorial-component-basic#,Creating A Simple Component Using the Element API>>.
 * <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>.
+* <<tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
 
 
 A TextField can be created by combining the existing HTML components `Div`, `Label` and `Input` into the following hierarchy:
