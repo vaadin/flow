@@ -27,6 +27,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasText;
+import com.vaadin.ui.StylableComponent;
 import com.vaadin.ui.UI;
 
 /**
@@ -40,7 +41,8 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  */
 @Tag("a")
-public class RouterLink extends Component implements HasText, HasComponents {
+public class RouterLink extends Component
+        implements HasText, HasComponents, StylableComponent {
 
     /**
      * Creates a new empty router link.
