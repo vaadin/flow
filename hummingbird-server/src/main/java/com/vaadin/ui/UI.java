@@ -17,22 +17,19 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.util.EventObject;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.event.EventRouter;
 import com.vaadin.event.UIEvents.PollEvent;
-import com.vaadin.event.UIEvents.PollListener;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
@@ -75,8 +72,6 @@ import com.vaadin.util.CurrentInstance;
 public class UI extends Component
         implements Serializable, PollNotifier, HasComponents {
 
-    public static final String POLL_DOM_EVENT_NAME = "ui-poll";
-
     /**
      * The id of this UI, used to find the server side instance of the UI form
      * which a request originates. A negative value indicates that the UI id has
@@ -91,10 +86,6 @@ public class UI extends Component
     private PushConfiguration pushConfiguration;
 
     private Locale locale = Locale.getDefault();
-
-    private EventRouter eventRouter;
-
-    private EventRegistrationHandle domPollListener = null;
 
     private final UIInternals internals = new UIInternals(this);
 
@@ -497,41 +488,9 @@ public class UI extends Component
                 .getPollInterval();
     }
 
-    /**
-     * Returns the event router instance, which is created on the first call to
-     * this method.
-     *
-     * @return the event router for UI
-     */
-    private EventRouter getEventRouter() {
-        if (eventRouter == null) {
-            eventRouter = new EventRouter();
-        }
-        return eventRouter;
-    }
-
-    private void fireEvent(EventObject event) {
-        getEventRouter().fireEvent(event);
-    }
-
     @Override
-    public void addPollListener(PollListener listener) {
-        if (domPollListener == null) {
-            domPollListener = getElement().addEventListener(POLL_DOM_EVENT_NAME,
-                    e -> fireEvent(new PollEvent(UI.this)));
-        }
-
-        getEventRouter().addListener(PollEvent.class, listener,
-                PollListener.POLL_METHOD);
-    }
-
-    @Override
-    public void removePollListener(PollListener listener) {
-        getEventRouter().removeListener(PollEvent.class, listener);
-        if (!getEventRouter().hasListeners(PollEvent.class)) {
-            domPollListener.remove();
-            domPollListener = null;
-        }
+    public void addPollListener(Consumer<PollEvent> listener) {
+        getEventBus().addListener(PollEvent.class, listener);
     }
 
     /**

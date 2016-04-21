@@ -34,10 +34,12 @@ public class UidlWriterTest {
     public void testEncodeExecuteJavaScript() {
         Element element = ElementFactory.createDiv();
 
-        List<JavaScriptInvocation> executeJavaScriptList = Arrays.asList(
-                new JavaScriptInvocation("$0.focus()", Arrays.asList(element)),
-                new JavaScriptInvocation("console.log($0, $1)",
-                        Arrays.asList("Lives remaining:", Integer.valueOf(3))));
+        JavaScriptInvocation invocation1 = new JavaScriptInvocation(
+                "$0.focus()", element);
+        JavaScriptInvocation invocation2 = new JavaScriptInvocation(
+                "console.log($0, $1)", "Lives remaining:", Integer.valueOf(3));
+        List<JavaScriptInvocation> executeJavaScriptList = Arrays
+                .asList(invocation1, invocation2);
 
         JsonArray json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);
