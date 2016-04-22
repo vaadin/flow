@@ -1,0 +1,68 @@
+= Creating a Component with External Dependencies
+
+Sometimes the content of a component depends on resources that are not available
+during the construction of the component. You can postpone the content creation
+until the component is attached to the `UI` by overriding the `onAttach()` method
+from `Component`.
+
+[source,java]
+----
+@Tag("div")
+public class UserNameLabel extends Component {
+
+  @Override
+  protected void onAttach() {
+    // user name can be stored to session after login
+    String userName = (String) getUI().get().getSession().getAttribute("username");
+    getElement().setTextContent("Hello " + userName + ", welcome back!");
+  }
+}
+----
+
+The `onAttach` method is invoked by the framework when the `Component` has been
+attached to the `UI`. Its counterpart, the `onDetach` method is invoked right
+before the component is detached from the `UI`. They are good places to reserve
+and release any resources used by the component.
+
+[source,java]
+----
+@Tag("div")
+public class ShoppingCartSummaryLabel extends Component {
+
+  @Override
+  protected void onAttach() {
+    ShopEventBus eventBus = getUI().get().getSession().getAttribute(ShopEventBus.class);
+    // registering to event bus for updates from other components
+    eventBus.register(this::onCartSummaryUpdate);
+  }
+
+  @Override
+  protected void onDetach() {
+    ShopEventBus eventBus = getUI().get().getSession().getAttribute(ShopEventBus.class);
+    // after detaching don't need any updates
+    eventBus.unregister(this::onCartSummaryUpdate);
+  }
+
+  private void onCartSummaryUpdate(EventObject event) {
+    // update cart summary ...
+  }
+}
+----
+
+[NOTE]
+The `getUI()` method returning a `Optional<UI>` works the following way:
+before `onAttach` and after `onDetach` invocations it is empty; during and
+between `onAttach` and `onDetach` invocations it returns the UI instance.
+
+[NOTE]
+The default implementations of `onAttach` and `onDetach` methods in `Component`
+class are empty, so you don't need to call `super.onAttach()` or `super.onDetach()`
+from your overridden methods. However, when extending other component implementations,
+you might need to that.
+
+[TIP]
+If you are interested in knowing when another component gets attached or detached,
+you can use the `Component.addAttachListener` and `Component.addDetachListener`.
+The corresponding events are fired after the `onAttach` and `onDetach` methods
+are invoked. The `getUI()` method for the component will return the UI instance
+during both events.
