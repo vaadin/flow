@@ -121,7 +121,7 @@ public class UI extends Component
      * </p>
      *
      * @return the parent application of the component or <code>null</code>.
-     * @see #attach()
+     * @see #onAttach()
      */
     public VaadinSession getSession() {
         return internals.getSession();
