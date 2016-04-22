@@ -45,6 +45,22 @@ public class Label extends HtmlContainer {
     }
 
     /**
+     * Creates a new label with the given text content.
+     * 
+     * @see #setClassName(String)
+     *
+     * @param text
+     *            the text content
+     * @param className
+     *            a space-separated string of class names
+     */
+    public Label(String text, String className) {
+        this();
+        setText(text);
+        setClassName(className);
+    }
+
+    /**
      * Sets the component that this label describes. The component (or its id)
      * should be defined in case the described component is not an ancestor of
      * the label.
