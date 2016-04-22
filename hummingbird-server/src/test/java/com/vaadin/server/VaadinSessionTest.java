@@ -263,9 +263,11 @@ public class VaadinSessionTest {
         }
 
         @Override
-        public void detach() {
-            super.detach();
-            detachListener.accept(new UIDetachEvent(this));
+        public void onDetach() {
+            if (detachListener != null) {
+                detachListener.accept(new UIDetachEvent(this));
+            }
+
         }
 
         @Override

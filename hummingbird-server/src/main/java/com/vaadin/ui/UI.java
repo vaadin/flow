@@ -296,7 +296,8 @@ public class UI extends Component
      * called.
      *
      */
-    public void attach() {
+    @Override
+    protected void onAttach() {
     }
 
     /**
@@ -312,7 +313,8 @@ public class UI extends Component
      * methods of any children that would be communicated to the client are
      * silently ignored.
      */
-    public void detach() {
+    @Override
+    protected void onDetach() {
     }
 
     /**

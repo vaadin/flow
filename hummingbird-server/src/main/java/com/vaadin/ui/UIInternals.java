@@ -312,7 +312,7 @@ public class UIInternals implements Serializable {
         } else {
             if (session == null) {
                 try {
-                    ui.detach();
+                    ComponentUtil.onComponentDetach(ui);
                 } catch (Exception e) {
                     getLogger().log(Level.WARNING,
                             "Error while detaching UI from session", e);
@@ -326,7 +326,7 @@ public class UIInternals implements Serializable {
         }
 
         if (session != null) {
-            ui.attach();
+            ComponentUtil.onComponentAttach(ui);
         }
     }
 

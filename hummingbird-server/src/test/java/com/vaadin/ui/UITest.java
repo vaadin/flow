@@ -1,5 +1,8 @@
 package com.vaadin.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
@@ -153,5 +156,28 @@ public class UITest {
         UI ui = new UI();
         Text text = new Text("foo");
         ui.remove(text);
+    }
+
+    @Test
+    public void setSession_attachEventIsFired() {
+        UI ui = new UI();
+        List<AttachEvent> events = new ArrayList<>();
+        ui.addAttachListener(events::add);
+        initUI(ui, "");
+
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals(ui, events.get(0).getSource());
+    }
+
+    @Test
+    public void unsetSession_dettachEventIsFired() {
+        UI ui = new UI();
+        List<DetachEvent> events = new ArrayList<>();
+        ui.addDetachListener(events::add);
+        initUI(ui, "");
+
+        ui.getSession().access(() -> ui.getInternals().setSession(null));
+        Assert.assertEquals(1, events.size());
+        Assert.assertEquals(ui, events.get(0).getSource());
     }
 }
