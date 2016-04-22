@@ -117,7 +117,7 @@ public class UI extends Component
      * standard workaround is to use {@link VaadinSession#getCurrent()} to
      * retrieve the application instance that the current request relates to.
      * Another way is to move the problematic initialization to
-     * {@link #attach()}, as described in the documentation of the method.
+     * {@link #onAttach()}, as described in the documentation of the method.
      * </p>
      *
      * @return the parent application of the component or <code>null</code>.
@@ -240,7 +240,7 @@ public class UI extends Component
     }
 
     /**
-     * Marks this UI to be {@link #detach() detached} from the session at the
+     * Marks this UI to be {@link #onDetach() detached} from the session at the
      * end of the current request, or the next request if there is no current
      * request (if called from a background thread, for instance.)
      * <p>
@@ -253,7 +253,7 @@ public class UI extends Component
      * <p>
      * Note that this method is strictly for users to explicitly signal the
      * framework that the UI should be detached. Overriding it is not a reliable
-     * way to catch UIs that are to be detached. Instead, {@code UI.detach()}
+     * way to catch UIs that are to be detached. Instead, {@code UI.onDetach()}
      * should be overridden.
      */
     public void close() {
@@ -296,7 +296,8 @@ public class UI extends Component
      * called.
      *
      */
-    public void attach() {
+    @Override
+    protected void onAttach() {
     }
 
     /**
@@ -312,7 +313,8 @@ public class UI extends Component
      * methods of any children that would be communicated to the client are
      * silently ignored.
      */
-    public void detach() {
+    @Override
+    protected void onDetach() {
     }
 
     /**
