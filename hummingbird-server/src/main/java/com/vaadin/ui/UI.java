@@ -297,6 +297,7 @@ public class UI extends Component
      *
      */
     public void attach() {
+        ComponentUtil.onComponentAttach(this);
     }
 
     /**
@@ -313,6 +314,7 @@ public class UI extends Component
      * silently ignored.
      */
     public void detach() {
+        ComponentUtil.onComponentDetach(this);
     }
 
     /**
