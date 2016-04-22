@@ -97,8 +97,7 @@ public class ClientServerCounterUI extends UI {
     }
 
     @Override
-    public void detach() {
-        super.detach();
+    protected void onDetach() {
         timer.cancel();
     }
 

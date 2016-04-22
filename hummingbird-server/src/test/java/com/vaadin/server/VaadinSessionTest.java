@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +61,7 @@ public class VaadinSessionTest {
     private HttpSession mockHttpSession;
     private WrappedSession mockWrappedSession;
     private VaadinServletRequest vaadinRequest;
-    private MockUI ui;
+    private UI ui;
     private Lock httpSessionLock;
 
     @Before
@@ -113,7 +112,7 @@ public class VaadinSessionTest {
         session = new VaadinSession(mockService);
         mockService.storeSession(session, mockWrappedSession);
 
-        ui = new MockUI();
+        ui = new UI();
         vaadinRequest = new VaadinServletRequest(
                 EasyMock.createMock(HttpServletRequest.class), mockService) {
             @Override
@@ -192,7 +191,7 @@ public class VaadinSessionTest {
             throws InterruptedException {
 
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
-        ui.addUIDetachListener(e -> {
+        ui.addDetachListener(e -> {
             detachCalled.set(true);
             Assert.assertEquals(ui, UI.getCurrent());
             Assert.assertEquals(session, VaadinSession.getCurrent());
@@ -215,7 +214,7 @@ public class VaadinSessionTest {
     @Category(SlowTests.class)
     public void threadLocalsAfterSessionDestroy() throws InterruptedException {
         final AtomicBoolean detachCalled = new AtomicBoolean(false);
-        ui.addUIDetachListener(e -> {
+        ui.addDetachListener(e -> {
             detachCalled.set(true);
             Assert.assertEquals(ui, UI.getCurrent());
             Assert.assertEquals(session, VaadinSession.getCurrent());
@@ -251,27 +250,6 @@ public class VaadinSessionTest {
                 "'valueUnbound' method may not call 'close' "
                         + "method for closing session",
                 1, vaadinSession.getCloseCount());
-    }
-
-    // Can't define as an anonymous class since it would have a reference to
-    // VaadinSessionTest.this which isn't serializable
-    private static class MockUI extends UI {
-        private Consumer<UIDetachEvent> detachListener;
-
-        public void addUIDetachListener(Consumer<UIDetachEvent> l) {
-            detachListener = l;
-        }
-
-        @Override
-        public void detach() {
-            super.detach();
-            detachListener.accept(new UIDetachEvent(this));
-        }
-
-        @Override
-        protected void init(VaadinRequest request) {
-        }
-
     }
 
     private static class SerializationPushConnection
