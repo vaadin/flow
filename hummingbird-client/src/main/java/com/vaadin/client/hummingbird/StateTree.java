@@ -202,8 +202,6 @@ public class StateTree {
                     NodeFeatures.LOADING_INDICATOR_CONFIGURATION,
                     "loadingIndicatorConfiguration");
             nodeFeatureDebugName.set(NodeFeatures.CLASS_LIST, "classList");
-            nodeFeatureDebugName.set(NodeFeatures.DEPENDENCY_LIST,
-                    "dependencyList");
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE, "template");
