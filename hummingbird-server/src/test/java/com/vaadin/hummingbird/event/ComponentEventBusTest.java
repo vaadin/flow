@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.event;
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -37,12 +36,12 @@ import elemental.json.JsonObject;
 public class ComponentEventBusTest {
 
     private static class EventTracker<T extends ComponentEvent<?>>
-            implements Consumer<T> {
+            implements ComponentEventListener<T> {
         private AtomicInteger eventHandlerCalled = new AtomicInteger(0);
         private AtomicReference<T> eventObject = new AtomicReference<>(null);
 
         @Override
-        public void accept(T e) {
+        public void onComponentEvent(T e) {
             eventHandlerCalled.incrementAndGet();
             Assert.assertNull(
                     "Event object must be explicitly set to null before firing an event",

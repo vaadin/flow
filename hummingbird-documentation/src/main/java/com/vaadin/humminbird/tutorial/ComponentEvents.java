@@ -15,13 +15,12 @@
  */
 package com.vaadin.humminbird.tutorial;
 
-import java.util.function.Consumer;
-
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.Tag;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
@@ -39,7 +38,7 @@ public class ComponentEvents {
     @Tag("input")
     public class TextField extends Component {
         public EventRegistrationHandle addChangeListener(
-                Consumer<ChangeEvent> listener) {
+                ComponentEventListener<ChangeEvent> listener) {
             return addListener(ChangeEvent.class, listener);
         }
 

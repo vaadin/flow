@@ -15,9 +15,8 @@
  */
 package com.vaadin.hummingbird.html.event;
 
-import java.util.function.Consumer;
-
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.ui.ComponentEventNotifier;
 
 /**
@@ -36,7 +35,7 @@ public interface ClickNotifier extends ComponentEventNotifier {
      * @return a handle that can be used for removing the listener
      */
     default EventRegistrationHandle addClickListener(
-            Consumer<ClickEvent> listener) {
+            ComponentEventListener<ClickEvent> listener) {
         return addListener(ClickEvent.class, listener);
     }
 }

@@ -15,9 +15,8 @@
  */
 package com.vaadin.hummingbird.html;
 
-import java.util.function.Consumer;
-
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.hummingbird.html.event.ClickEvent;
 import com.vaadin.hummingbird.html.event.ClickNotifier;
 
@@ -54,7 +53,8 @@ public class Button extends HtmlContainer implements ClickNotifier {
      * @param clickListener
      *            the click listener
      */
-    public Button(String text, Consumer<ClickEvent> clickListener) {
+    public Button(String text,
+            ComponentEventListener<ClickEvent> clickListener) {
         this(text);
         addClickListener(clickListener);
     }

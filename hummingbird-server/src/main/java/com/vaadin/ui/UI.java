@@ -22,7 +22,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +29,7 @@ import com.vaadin.event.UIEvents.PollEvent;
 import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.hummingbird.namespace.ElementDataNamespace;
 import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
 import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
@@ -491,7 +491,7 @@ public class UI extends Component
     }
 
     @Override
-    public void addPollListener(Consumer<PollEvent> listener) {
+    public void addPollListener(ComponentEventListener<PollEvent> listener) {
         getEventBus().addListener(PollEvent.class, listener);
     }
 

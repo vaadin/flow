@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.DomEvent;
@@ -51,7 +50,7 @@ public class ComponentEventBus implements Serializable {
 
     private static class ComponentEventData implements Serializable {
         private EventRegistrationHandle domEventRemover = null;
-        private ArrayList<Consumer<? extends ComponentEvent<?>>> listeners = new ArrayList<>(
+        private ArrayList<ComponentEventListener<? extends ComponentEvent<?>>> listeners = new ArrayList<>(
                 1);
     }
 
@@ -81,10 +80,10 @@ public class ComponentEventBus implements Serializable {
      * @return an object which can be used to remove the event listener
      */
     public <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
-            Class<T> eventType, Consumer<T> listener) {
+            Class<T> eventType, ComponentEventListener<T> listener) {
         addDomTriggerIfNeeded(eventType);
 
-        List<Consumer<? extends ComponentEvent<?>>> listeners = componentEventData
+        List<ComponentEventListener<? extends ComponentEvent<?>>> listeners = componentEventData
                 .computeIfAbsent(eventType,
                         t -> new ComponentEventData()).listeners;
         listeners.add(listener);
@@ -119,9 +118,9 @@ public class ComponentEventBus implements Serializable {
         if (!hasListener(eventType)) {
             return;
         }
-        List<Consumer<ComponentEvent>> listeners = (List) componentEventData
+        List<ComponentEventListener<ComponentEvent>> listeners = (List) componentEventData
                 .get(event.getClass()).listeners;
-        new ArrayList<>(listeners).forEach(l -> l.accept(event));
+        new ArrayList<>(listeners).forEach(l -> l.onComponentEvent(event));
     }
 
     /**
@@ -210,7 +209,7 @@ public class ComponentEventBus implements Serializable {
      * Removes the given listener for the given event type.
      * <p>
      * Called through the {@link EventRegistrationHandle} returned by
-     * {@link #addListener(Class, Consumer)}.
+     * {@link #addListener(Class, ComponentEventListener)}.
      *
      * @param eventType
      *            the component event type
@@ -218,12 +217,12 @@ public class ComponentEventBus implements Serializable {
      *            the listener to remove
      */
     private <T extends ComponentEvent<?>> void removeListener(
-            Class<T> eventType, Consumer<T> listener) {
+            Class<T> eventType, ComponentEventListener<T> listener) {
         assert eventType != null;
         assert listener != null;
         assert hasListener(eventType);
 
-        List<Consumer<? extends ComponentEvent<?>>> listeners = componentEventData
+        List<ComponentEventListener<? extends ComponentEvent<?>>> listeners = componentEventData
                 .get(eventType).listeners;
         if (listeners == null) {
             throw new IllegalArgumentException(

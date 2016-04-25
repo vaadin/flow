@@ -29,7 +29,7 @@ You don't need to implement a separate method for removing an event listener. In
 @Tag("input")
 public class TextField extends Component {
     public EventRegistrationHandle addChangeListener(
-            Consumer<ChangeEvent> listener) {
+            ComponentEventListener<ChangeEvent> listener) {
         return addListener(ChangeEvent.class, listener);
     }
 

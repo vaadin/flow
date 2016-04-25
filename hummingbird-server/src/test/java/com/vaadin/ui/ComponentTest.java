@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -32,6 +31,7 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.event.ComponentEventBus;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.tests.util.TestUtil;
 
 public class ComponentTest {
@@ -113,7 +113,7 @@ public class ComponentTest {
 
         @Override
         public <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
-                Class<T> eventType, Consumer<T> listener) {
+                Class<T> eventType, ComponentEventListener<T> listener) {
             return super.addListener(eventType, listener);
         }
 
