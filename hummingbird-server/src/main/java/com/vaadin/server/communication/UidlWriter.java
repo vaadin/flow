@@ -35,6 +35,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
@@ -102,6 +103,12 @@ public class UidlWriter implements Serializable {
 
         encodeChanges(ui, stateChanges, templates);
 
+        DependencyList dependencyList = ui.getInternals().getDependencyList();
+        JsonArray pendingDeps = dependencyList.getPendingSendToClient();
+        if (pendingDeps.length() != 0) {
+            response.put(DependencyList.DEPENDENCY_KEY, pendingDeps);
+            dependencyList.clearPendingSendToClient();
+        }
         if (stateChanges.length() != 0) {
             response.put("changes", stateChanges);
         }

@@ -24,11 +24,10 @@ import org.junit.Test;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.client.hummingbird.collection.JsCollections;
-import com.vaadin.hummingbird.nodefeature.DependencyList;
-import com.vaadin.hummingbird.shared.NodeFeatures;
+import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class DependencyLoaderTest {
@@ -64,13 +63,15 @@ public class DependencyLoaderTest {
     public void loadStylesheet() {
         String TEST_URL = "http://foo.bar/baz";
         MockDependencyLoader loader = new MockDependencyLoader(registry);
-        DependencyLoader.bind(loader, rootNode);
 
         JsonObject styleDep = Json.createObject();
-        styleDep.put(DependencyList.KEY_TYPE,
-                DependencyList.TYPE_STYLESHEET);
+        styleDep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_STYLESHEET);
         styleDep.put(DependencyList.KEY_URL, TEST_URL);
-        rootNode.getList(NodeFeatures.DEPENDENCY_LIST).add(0, styleDep);
+
+        JsonArray deps = Json.createArray();
+        deps.set(0, styleDep);
+        loader.loadDependencies(deps);
+
         Assert.assertArrayEquals(new String[] { TEST_URL },
                 loader.loadingStyles.toArray());
     }
@@ -80,13 +81,15 @@ public class DependencyLoaderTest {
         String TEST_URL = "http://foo.bar/baz.js";
 
         MockDependencyLoader loader = new MockDependencyLoader(registry);
-        DependencyLoader.bind(loader, rootNode);
 
         JsonObject styleDep = Json.createObject();
-        styleDep.put(DependencyList.KEY_TYPE,
-                DependencyList.TYPE_JAVASCRIPT);
+        styleDep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_JAVASCRIPT);
         styleDep.put(DependencyList.KEY_URL, TEST_URL);
-        rootNode.getList(NodeFeatures.DEPENDENCY_LIST).add(0, styleDep);
+
+        JsonArray deps = Json.createArray();
+        deps.set(0, styleDep);
+        loader.loadDependencies(deps);
+
         Assert.assertArrayEquals(new String[] { TEST_URL },
                 loader.loadingScripts.toArray());
     }
@@ -98,25 +101,22 @@ public class DependencyLoaderTest {
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
         MockDependencyLoader loader = new MockDependencyLoader(registry);
-        DependencyLoader.bind(loader, rootNode);
 
-        JsArray<JsonObject> add = JsCollections.array();
+        JsonArray deps = Json.createArray();
         JsonObject dep = Json.createObject();
-        dep.put(DependencyList.KEY_TYPE,
-                DependencyList.TYPE_JAVASCRIPT);
+        dep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_JAVASCRIPT);
         dep.put(DependencyList.KEY_URL, TEST_JS_URL);
-        add.push(dep);
+        deps.set(0, dep);
         dep = Json.createObject();
-        dep.put(DependencyList.KEY_TYPE,
-                DependencyList.TYPE_JAVASCRIPT);
+        dep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_JAVASCRIPT);
         dep.put(DependencyList.KEY_URL, TEST_JS_URL2);
-        add.push(dep);
+        deps.set(1, dep);
         dep = Json.createObject();
-        dep.put(DependencyList.KEY_TYPE,
-                DependencyList.TYPE_STYLESHEET);
+        dep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_STYLESHEET);
         dep.put(DependencyList.KEY_URL, TEST_CSS_URL);
-        add.push(dep);
-        rootNode.getList(NodeFeatures.DEPENDENCY_LIST).splice(0, 0, add);
+        deps.set(2, dep);
+
+        loader.loadDependencies(deps);
 
         Assert.assertArrayEquals(new String[] { TEST_JS_URL, TEST_JS_URL2 },
                 loader.loadingScripts.toArray());

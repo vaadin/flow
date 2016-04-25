@@ -13,16 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.nodefeature;
+package com.vaadin.ui;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.vaadin.hummingbird.StateNode;
-import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Dependency.Type;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -31,26 +31,24 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  */
-public class DependencyList extends SerializableNodeList<JsonObject> {
+public class DependencyList implements Serializable {
 
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
     public static final String TYPE_STYLESHEET = "css";
     public static final String TYPE_JAVASCRIPT = "js";
+    public static final String DEPENDENCY_KEY = "deps";
     /**
      * Contains all added URLs to be able to do fast enough duplication
      * detection.
      */
     private Set<String> urlCache = new HashSet<>();
+    private JsonArray pendingSendToClient = Json.createArray();
 
     /**
-     * Creates a new list for the given node.
-     *
-     * @param node
-     *            the node that the list belongs to
+     * Creates a new instance.
      */
-    protected DependencyList(StateNode node) {
-        super(node);
+    protected DependencyList() {
     }
 
     /**
@@ -74,12 +72,28 @@ public class DependencyList extends SerializableNodeList<JsonObject> {
         jsonObject.put(KEY_URL, dependency.getUrl());
         jsonObject.put(KEY_TYPE, getType(dependency));
 
-        super.add(jsonObject);
+        pendingSendToClient.set(pendingSendToClient.length(), jsonObject);
         urlCache.add(dependency.getUrl());
     }
 
     private boolean containsUrl(String url) {
         return urlCache.contains(url);
+    }
+
+    /**
+     * Returns a list of dependencies which should be sent to the client.
+     *
+     * @return a list containing the dependencies which should be sent
+     */
+    public JsonArray getPendingSendToClient() {
+        return pendingSendToClient;
+    }
+
+    /**
+     * Clears the list of dependencies which should be sent to the client
+     */
+    public void clearPendingSendToClient() {
+        pendingSendToClient = Json.createArray();
     }
 
     /**
