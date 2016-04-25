@@ -22,19 +22,18 @@ import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Dependency.Type;
+import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
 public class DependencyListTest {
+    private MockUI ui = new MockUI();
+    private DependencyList deps = ui.getInternals().getDependencyList();
 
     @Test
     public void addAbsoluteStyleSheetDependency() {
-        MockUI ui = new MockUI();
-        DependencyList list = ui.getInternals().getStateTree().getRootNode()
-                .getFeature(DependencyList.class);
-
-        Assert.assertEquals(0, list.size());
+        Assert.assertEquals(0, deps.getPendingSendToClient().length());
 
         ui.getPage().addStyleSheet("/styleSheetUrl");
 
@@ -43,18 +42,14 @@ public class DependencyListTest {
                 DependencyList.TYPE_STYLESHEET);
         expectedStyleSheetJson.put(DependencyList.KEY_URL, "/styleSheetUrl");
 
-        Assert.assertEquals(1, list.size());
-        Assert.assertTrue(
-                JsonUtil.jsonEquals(expectedStyleSheetJson, list.get(0)));
+        Assert.assertEquals(1, deps.getPendingSendToClient().length());
+        Assert.assertTrue(JsonUtil.jsonEquals(expectedStyleSheetJson,
+                deps.getPendingSendToClient().get(0)));
     }
 
     @Test
     public void addRelativeStyleSheetDependency() {
-        MockUI ui = new MockUI();
-        DependencyList list = ui.getInternals().getStateTree().getRootNode()
-                .getFeature(DependencyList.class);
-
-        Assert.assertEquals(0, list.size());
+        Assert.assertEquals(0, deps.getPendingSendToClient().length());
 
         ui.getPage().addStyleSheet("styleSheetUrl");
 
@@ -63,18 +58,14 @@ public class DependencyListTest {
                 DependencyList.TYPE_STYLESHEET);
         expectedStyleSheetJson.put(DependencyList.KEY_URL, "styleSheetUrl");
 
-        Assert.assertEquals(1, list.size());
-        Assert.assertTrue(
-                JsonUtil.jsonEquals(expectedStyleSheetJson, list.get(0)));
+        Assert.assertEquals(1, deps.getPendingSendToClient().length());
+        Assert.assertTrue(JsonUtil.jsonEquals(expectedStyleSheetJson,
+                deps.getPendingSendToClient().get(0)));
     }
 
     @Test
     public void addAbsoluteJavaScriptDependency() {
-        MockUI ui = new MockUI();
-        DependencyList list = ui.getInternals().getStateTree().getRootNode()
-                .getFeature(DependencyList.class);
-
-        Assert.assertEquals(0, list.size());
+        Assert.assertEquals(0, deps.getPendingSendToClient().length());
         ui.getPage().addJavaScript("/jsUrl");
 
         JsonObject expectedJsJson = Json.createObject();
@@ -82,18 +73,15 @@ public class DependencyListTest {
                 DependencyList.TYPE_JAVASCRIPT);
         expectedJsJson.put(DependencyList.KEY_URL, "/jsUrl");
 
-        Assert.assertEquals(1, list.size());
-        Assert.assertTrue(JsonUtil.jsonEquals(expectedJsJson, list.get(0)));
+        Assert.assertEquals(1, deps.getPendingSendToClient().length());
+        Assert.assertTrue(JsonUtil.jsonEquals(expectedJsJson,
+                deps.getPendingSendToClient().get(0)));
 
     }
 
     @Test
     public void addRelativeJavaScriptDependency() {
-        MockUI ui = new MockUI();
-        DependencyList list = ui.getInternals().getStateTree().getRootNode()
-                .getFeature(DependencyList.class);
-
-        Assert.assertEquals(0, list.size());
+        Assert.assertEquals(0, deps.getPendingSendToClient().length());
         ui.getPage().addJavaScript("jsUrl");
 
         JsonObject expectedJsJson = Json.createObject();
@@ -101,8 +89,9 @@ public class DependencyListTest {
                 DependencyList.TYPE_JAVASCRIPT);
         expectedJsJson.put(DependencyList.KEY_URL, "jsUrl");
 
-        Assert.assertEquals(1, list.size());
-        Assert.assertTrue(JsonUtil.jsonEquals(expectedJsJson, list.get(0)));
+        Assert.assertEquals(1, deps.getPendingSendToClient().length());
+        Assert.assertTrue(JsonUtil.jsonEquals(expectedJsJson,
+                deps.getPendingSendToClient().get(0)));
     }
 
     @Test
@@ -124,44 +113,37 @@ public class DependencyListTest {
     }
 
     private void assertUrlUnchanged(String url) {
-        MockUI ui = new MockUI();
-        DependencyList list = ui.getInternals().getStateTree().getRootNode()
-                .getFeature(DependencyList.class);
-        list.add(new Dependency(Type.JAVASCRIPT, url));
-        Assert.assertEquals(url, list.get(0).getString(DependencyList.KEY_URL));
+        deps.add(new Dependency(Type.JAVASCRIPT, url));
+        Assert.assertEquals(url,
+                ((JsonObject) deps.getPendingSendToClient().get(0))
+                        .getString(DependencyList.KEY_URL));
+        deps.clearPendingSendToClient();
     }
 
     private void assertUrlPrefixed(String url) {
-        MockUI ui = new MockUI();
-        DependencyList list = ui.getInternals().getStateTree().getRootNode()
-                .getFeature(DependencyList.class);
-        list.add(new Dependency(Type.JAVASCRIPT, url));
-        Assert.assertEquals(url, list.get(0).getString(DependencyList.KEY_URL));
+        deps.add(new Dependency(Type.JAVASCRIPT, url));
+        Assert.assertEquals(url,
+                ((JsonObject) deps.getPendingSendToClient().get(0))
+                        .getString(DependencyList.KEY_URL));
+        deps.clearPendingSendToClient();
     }
 
     @Test
     public void urlAddedOnlyOnce() {
-        MockUI ui = new MockUI();
-        DependencyList list = ui.getInternals().getStateTree().getRootNode()
-                .getFeature(DependencyList.class);
-        list.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
-        list.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
-        Assert.assertEquals(1, list.size());
-        list.collectChanges(c -> {
-        });
+        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
+        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
+        Assert.assertEquals(1, deps.getPendingSendToClient().length());
+        deps.clearPendingSendToClient();
 
-        list.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
-        Assert.assertEquals(1, list.size());
+        deps.add(new Dependency(Type.JAVASCRIPT, "foo/bar.js"));
+        Assert.assertEquals(0, deps.getPendingSendToClient().length());
     }
 
     @Test
     public void addDependencyPerformance() {
         long start = System.currentTimeMillis();
-        MockUI ui = new MockUI();
-        DependencyList list = ui.getInternals().getStateTree().getRootNode()
-                .getFeature(DependencyList.class);
         for (int i = 0; i < 10000; i++) {
-            list.add(new Dependency(Type.JAVASCRIPT, "foo" + i + "/bar.js"));
+            deps.add(new Dependency(Type.JAVASCRIPT, "foo" + i + "/bar.js"));
         }
         long time = System.currentTimeMillis() - start;
 
