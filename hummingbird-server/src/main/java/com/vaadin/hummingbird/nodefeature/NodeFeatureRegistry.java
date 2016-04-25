@@ -60,7 +60,6 @@ public class NodeFeatureRegistry {
         registerFeature(LoadingIndicatorConfigurationMap.class,
                 LoadingIndicatorConfigurationMap::new);
         registerFeature(ElementClassList.class, ElementClassList::new);
-        registerFeature(DependencyList.class, DependencyList::new);
         registerFeature(ElementStylePropertyMap.class,
                 ElementStylePropertyMap::new);
         registerFeature(SynchronizedPropertiesList.class,

@@ -76,7 +76,6 @@ public class NodeFeatureTest {
         expectedIds.put(LoadingIndicatorConfigurationMap.class,
                 NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
         expectedIds.put(ElementClassList.class, NodeFeatures.CLASS_LIST);
-        expectedIds.put(DependencyList.class, NodeFeatures.DEPENDENCY_LIST);
         expectedIds.put(ElementStylePropertyMap.class,
                 NodeFeatures.ELEMENT_STYLE_PROPERTIES);
         expectedIds.put(SynchronizedPropertiesList.class,

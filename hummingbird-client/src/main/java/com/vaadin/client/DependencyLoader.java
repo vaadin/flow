@@ -17,14 +17,11 @@ package com.vaadin.client;
 
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
-import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
-import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
-import com.vaadin.client.hummingbird.nodefeature.NodeList;
-import com.vaadin.hummingbird.nodefeature.DependencyList;
-import com.vaadin.hummingbird.shared.NodeFeatures;
+import com.vaadin.ui.DependencyList;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -191,28 +188,17 @@ public class DependencyLoader {
     }
 
     /**
-     * Binds the given dependency loader to the dependency list in the given
-     * node.
+     * Triggers loading of the given dependencies.
      *
-     * @param dependencyLoader
-     *            the dependency loader instance
-     * @param node
-     *            the node containing the dependency list
+     * @param deps
+     *            the dependencies to load.
      */
-    public static void bind(DependencyLoader dependencyLoader, StateNode node) {
-        NodeList dependencyList = node.getList(NodeFeatures.DEPENDENCY_LIST);
-        dependencyList.addSpliceListener(dependencyLoader::onDependencySplice);
-    }
-
-    private void onDependencySplice(ListSpliceEvent event) {
-        assert event.getRemove().isEmpty();
-
+    public void loadDependencies(JsonArray deps) {
         JsArray<String> scripts = JsCollections.array();
         JsArray<String> stylesheets = JsCollections.array();
 
-        JsArray<?> added = event.getAdd();
-        for (int i = 0; i < added.length(); i++) {
-            JsonObject dependencyJson = (JsonObject) added.get(i);
+        for (int i = 0; i < deps.length(); i++) {
+            JsonObject dependencyJson = (JsonObject) deps.get(i);
             String type = dependencyJson.getString(DependencyList.KEY_TYPE);
             String url = dependencyJson.getString(DependencyList.KEY_URL);
             if (DependencyList.TYPE_STYLESHEET.equals(type)) {
