@@ -16,7 +16,6 @@
 package com.vaadin.hummingbird.shared;
 
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
-import com.vaadin.hummingbird.nodefeature.DependencyList;
 import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.nodefeature.ElementClassList;
@@ -96,10 +95,6 @@ public class NodeFeatures {
      * Id for {@link ElementClassList}.
      */
     public static final int CLASS_LIST = 11;
-    /**
-     * Id for {@link DependencyList}.
-     */
-    public static final int DEPENDENCY_LIST = 12;
     /**
      * Id for {@link ElementStylePropertyMap}.
      */

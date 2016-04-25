@@ -19,7 +19,6 @@ import java.io.Serializable;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.nodefeature.DependencyList;
 import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
@@ -126,8 +125,7 @@ public class Page implements Serializable {
     private void addDependency(Dependency dependency) {
         assert dependency != null;
 
-        DependencyList dependencyList = ui.getInternals().getStateTree()
-                .getRootNode().getFeature(DependencyList.class);
+        DependencyList dependencyList = ui.getInternals().getDependencyList();
 
         dependencyList.add(dependency);
     }

@@ -38,7 +38,9 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.template.TemplateRegistry;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.ui.DependencyList;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -292,18 +294,15 @@ public class MessageHandler {
                     .getString(ApplicationConstants.UIDL_SECURITY_TOKEN_ID);
         }
 
-        Console.log("Handling resource dependencies");
-        if (valueMap.containsKey("scriptDependencies")) {
-            registry.getDependencyLoader().loadScriptDependencies(
-                    valueMap.getJSStringArray("scriptDependencies"));
-        }
-        if (valueMap.containsKey("styleDependencies")) {
-            registry.getDependencyLoader().loadStyleDependencies(
-                    valueMap.getJSStringArray("styleDependencies"));
+        Console.log("Handling dependencies");
+        if (valueMap.containsKey(DependencyList.DEPENDENCY_KEY)) {
+            JsonArray deps = ((JsonObject) valueMap.cast())
+                    .getArray(DependencyList.DEPENDENCY_KEY);
+            registry.getDependencyLoader().loadDependencies(deps);
         }
 
         /*
-         * Hook for e.g. TestBench to get details about server peformance
+         * Hook for e.g. TestBench to get details about server performance
          */
         if (valueMap.containsKey("timings")) {
             serverTimingInfo = valueMap.getValueMap("timings");

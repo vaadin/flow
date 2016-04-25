@@ -15,8 +15,13 @@
  */
 package com.vaadin.hummingbird.contexttest.ui;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -37,9 +42,10 @@ public class DependencyUI extends UI {
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
+        StreamResourceRegistration foo = getSession().getResourceRegistry()
+                .registerResource(getJsResource());
         jsOrder.addEventListener("click", e -> {
-            getPage().addJavaScript(
-                    "context://test-files/js/element-appender.js");
+            getPage().addJavaScript(foo.getResourceUri().toString());
         });
         Element allBlue = ElementFactory
                 .createButton("Load 'everything blue' stylesheet")
@@ -50,6 +56,25 @@ public class DependencyUI extends UI {
 
         });
         getElement().appendChild(jsOrder, allBlue, ElementFactory.createHr());
+    }
+
+    private StreamResource getJsResource() {
+        StreamResource jsRes = new StreamResource("element-appender.js", () -> {
+            String js = "var div = document.createElement('div');"
+                    + "div.id = 'appended-element';"
+                    + "div.textContent = 'Added by script';"
+                    + "document.body.appendChild(div, null);";
+
+            // Wait to ensure that client side will stop until the javascript is
+            // loaded
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e1) {
+            }
+            return new ByteArrayInputStream(
+                    js.getBytes(StandardCharsets.UTF_8));
+        });
+        return jsRes;
     }
 
     protected String getServletToContextPath(String url) {
