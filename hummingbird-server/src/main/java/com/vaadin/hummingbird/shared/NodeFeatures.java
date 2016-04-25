@@ -16,7 +16,6 @@
 package com.vaadin.hummingbird.shared;
 
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
-import com.vaadin.hummingbird.nodefeature.DependencyList;
 import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.nodefeature.ElementClassList;
@@ -96,45 +95,37 @@ public class NodeFeatures {
      */
     public static final int CLASS_LIST = 11;
     /**
-     * Id for {@link DependencyList}.
-     */
-    public static final int DEPENDENCY_LIST = 12;
-    /**
      * Id for {@link ElementStylePropertyMap}.
      */
-    public static final int ELEMENT_STYLE_PROPERTIES = 13;
+    public static final int ELEMENT_STYLE_PROPERTIES = 12;
     /**
      * Id for {@link SynchronizedPropertiesList}.
      */
-    public static final int SYNCHRONIZED_PROPERTIES = 14;
+    public static final int SYNCHRONIZED_PROPERTIES = 13;
     /**
      * Id for {@link SynchronizedPropertyEventsList}.
      */
-    public static final int SYNCHRONIZED_PROPERTY_EVENTS = 15;
+    public static final int SYNCHRONIZED_PROPERTY_EVENTS = 14;
     /**
      * Id for {@link ComponentMapping}.
      */
-    public static final int COMPONENT_MAPPING = 16;
+    public static final int COMPONENT_MAPPING = 15;
     /**
      * Id for {@link TemplateMap}.
      */
-    public static final int TEMPLATE = 17;
-
+    public static final int TEMPLATE = 16;
     /**
      * Id for {@link ModelMap}.
      */
-    public static final int TEMPLATE_MODEL = 18;
-
+    public static final int TEMPLATE_MODEL = 17;
     /**
      * Id for {@link TemplateOverridesMap}.
      */
-    public static final int TEMPLATE_OVERRIDES = 19;
-
+    public static final int TEMPLATE_OVERRIDES = 18;
     /**
      * Id for {@link OverrideElementData}.
      */
-    public static final int OVERRIDE_DATA = 20;
-
+    public static final int OVERRIDE_DATA = 19;
     /**
      * Key for {@link ElementData#getTag()}.
      */
