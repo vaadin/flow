@@ -7,7 +7,7 @@
 	<artifactId>hummingbird-project</artifactId>
 	<name>Hummingbird</name>
 	<packaging>pom</packaging>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 
 	<modules>
 		<module>hummingbird</module>
@@ -71,13 +71,6 @@
 		<repository>
 			<id>vaadin-addons</id>
 			<url>http://maven.vaadin.com/vaadin-addons</url>
-		</repository>
-		<repository>
-			<id>google-snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/google-snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
 		</repository>
 	</repositories>
 
