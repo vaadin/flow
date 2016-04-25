@@ -30,6 +30,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-component-basic#,Creating A Simple Component Using the Element API>>
 ** <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
 ** <<tutorial-component-composite#,Creating a Component Using Existing Components>>
+** <<tutorial-component-events#,Using Events with Components>>
 ** <<tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
