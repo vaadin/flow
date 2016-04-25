@@ -20,6 +20,8 @@ import java.io.Serializable;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.HasElement;
 import com.vaadin.ui.UI;
 
 /**
@@ -29,12 +31,23 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  */
 @FunctionalInterface
-public interface View extends Serializable {
+public interface View extends HasElement, Serializable {
+
     /**
-     * Gets the element to show.
+     * Gets the element which is shown when the user enters the view.
+     * <p>
+     * This methods is used by the framework to update what is shown when the
+     * user navigates between views. The returned element will be attached to
+     * the parent view if there is one. Otherwise it will be attached to the UI
+     * element (the {@literal <body>} tag).
+     * <p>
+     * Typically a view extends {@link Component}, which implements this method.
+     * <p>
+     * The returned element must not change during the lifecycle of the view.
      *
-     * @return the element
+     * @return the root element for the view
      */
+    @Override
     Element getElement();
 
     /**
