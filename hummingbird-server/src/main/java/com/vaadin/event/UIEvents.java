@@ -15,9 +15,8 @@
  */
 package com.vaadin.event;
 
-import java.util.function.Consumer;
-
 import com.vaadin.annotations.DomEvent;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.HasElement;
 import com.vaadin.ui.UI;
@@ -80,7 +79,7 @@ public interface UIEvents {
          * @param listener
          *            the listener to add
          */
-        void addPollListener(Consumer<PollEvent> listener);
+        void addPollListener(ComponentEventListener<PollEvent> listener);
     }
 
 }

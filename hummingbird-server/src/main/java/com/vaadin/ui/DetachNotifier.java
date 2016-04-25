@@ -15,9 +15,8 @@
  */
 package com.vaadin.ui;
 
-import java.util.function.Consumer;
-
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 
 /**
  * Mixin interface for components that support adding detach listeners.
@@ -35,7 +34,7 @@ public interface DetachNotifier extends ComponentEventNotifier {
      * @return a handle that can be used for removing the listener
      */
     default EventRegistrationHandle addDetachListener(
-            Consumer<DetachEvent> listener) {
+            ComponentEventListener<DetachEvent> listener) {
         return addListener(DetachEvent.class, listener);
     }
 }

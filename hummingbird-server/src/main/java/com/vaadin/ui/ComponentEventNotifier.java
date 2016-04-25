@@ -16,9 +16,9 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 
 /**
  * Something that you can add component event listeners to. This interface
@@ -40,5 +40,5 @@ public interface ComponentEventNotifier extends Serializable {
      * @return a handle that can be used for removing the listener
      */
     <T extends ComponentEvent<?>> EventRegistrationHandle addListener(
-            Class<T> eventType, Consumer<T> listener);
+            Class<T> eventType, ComponentEventListener<T> listener);
 }

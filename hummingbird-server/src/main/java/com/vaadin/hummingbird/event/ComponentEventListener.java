@@ -15,12 +15,28 @@
  */
 package com.vaadin.hummingbird.event;
 
-import com.vaadin.hummingbird.dom.EventRegistrationHandle;
-import com.vaadin.ui.ComponentTest.TestComponent;
+import java.io.Serializable;
 
-public class TestComponentWithServerEvent extends TestComponent {
-    public EventRegistrationHandle addServerEventListener(
-            ComponentEventListener<ServerEvent> listener) {
-        return super.addListener(ServerEvent.class, listener);
-    }
+import com.vaadin.ui.ComponentEvent;
+
+/**
+ * Generic listener for component events.
+ * 
+ * @since
+ * @author Vaadin Ltd
+ * 
+ * @param <T>
+ *            component event type
+ */
+@FunctionalInterface
+public interface ComponentEventListener<T extends ComponentEvent<?>>
+        extends Serializable {
+
+    /**
+     * Invoked when a component event has been fired.
+     * 
+     * @param event
+     *            component event
+     */
+    void onComponentEvent(T event);
 }

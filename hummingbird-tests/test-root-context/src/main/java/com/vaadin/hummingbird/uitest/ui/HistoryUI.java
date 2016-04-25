@@ -16,10 +16,10 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.event.ClickEvent;
 import com.vaadin.server.Command;
@@ -106,7 +106,7 @@ public class HistoryUI extends UI {
     }
 
     private static Element createButton(String id,
-            Consumer<ClickEvent> listener) {
+            ComponentEventListener<ClickEvent> listener) {
         Button button = new Button(id, listener);
         button.setId(id);
         return button.getElement();

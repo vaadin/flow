@@ -15,9 +15,8 @@
  */
 package com.vaadin.hummingbird.html.event;
 
-import java.util.function.Consumer;
-
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.ui.ComponentEventNotifier;
 
 /**
@@ -36,7 +35,7 @@ public interface ChangeNotifier extends ComponentEventNotifier {
      * @return a handle that can be used for removing the listener
      */
     default EventRegistrationHandle addChangeListener(
-            Consumer<ChangeEvent> listener) {
+            ComponentEventListener<ChangeEvent> listener) {
         return addListener(ChangeEvent.class, listener);
     }
 }
