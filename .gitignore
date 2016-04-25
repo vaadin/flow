@@ -10,6 +10,8 @@
 /.externalToolBuilders
 /extras
 
+*pom.xml.versionsBackup
+
 **/target
 **/error-screenshots
 # Mac
