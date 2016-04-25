@@ -15,9 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import java.util.function.Consumer;
-
 import com.vaadin.annotations.DomEvent;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Hr;
@@ -58,7 +57,7 @@ public class CompositeView extends AbstractDivView {
         }
 
         public void addNameChangeListener(
-                Consumer<NameChangeEvent> nameChangeListener) {
+                ComponentEventListener<NameChangeEvent> nameChangeListener) {
             addListener(NameChangeEvent.class, nameChangeListener);
         }
 
