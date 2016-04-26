@@ -85,6 +85,7 @@ public class NodeFeatureTest {
                 NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         expectedIds.put(ComponentMapping.class, NodeFeatures.COMPONENT_MAPPING);
         expectedIds.put(TemplateMap.class, NodeFeatures.TEMPLATE);
+        expectedIds.put(ModelMap.class, NodeFeatures.TEMPLATE_MODEL);
 
         Assert.assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());
