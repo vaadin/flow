@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.template;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -37,13 +38,22 @@ public class TextValueBinding implements TemplateBinding {
 
     private final String key;
 
+    /**
+     * Creates a binding with the given key.
+     * <p>
+     * Value for the {@code key} is stored inside a {@link StateNode} directly
+     * (via features) so only {@code key} is required to be able to get a value.
+     *
+     * @param key
+     *            the key of the binding
+     */
     public TextValueBinding(String key) {
         this.key = key;
     }
 
     @Override
     public String getValue(StateNode node) {
-        return node.getFeature(featureType)
+        return node.getFeature(ModelMap.class).getValue(key);
     }
 
     @Override

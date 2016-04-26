@@ -24,6 +24,7 @@ import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -117,6 +118,11 @@ public class NodeFeatures {
      * Id for {@link TemplateMap}.
      */
     public static final int TEMPLATE = 17;
+
+    /**
+     * Id for {@link ModelMap}.
+     */
+    public static final int TEMPLATE_MODEL = 18;
 
     /**
      * Key for {@link ElementData#getTag()}.
