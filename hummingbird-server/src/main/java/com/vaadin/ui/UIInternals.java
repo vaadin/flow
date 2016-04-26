@@ -29,12 +29,12 @@ import java.util.logging.Logger;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
-import com.vaadin.hummingbird.namespace.DependencyListNamespace;
-import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
-import com.vaadin.hummingbird.namespace.Namespace;
-import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
-import com.vaadin.hummingbird.namespace.PushConfigurationMap;
-import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.hummingbird.nodefeature.DependencyList;
+import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.View;
@@ -157,7 +157,7 @@ public class UIInternals implements Serializable {
      */
     public UIInternals(UI ui) {
         this.ui = ui;
-        stateTree = new StateTree(ui, getRootNodeNamespaces());
+        stateTree = new StateTree(ui, getRootNodeFeatures());
     }
 
     /**
@@ -257,22 +257,22 @@ public class UIInternals implements Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    private static Class<? extends Namespace>[] getRootNodeNamespaces() {
-        // Start with all element namespaces
-        ArrayList<Class<? extends Namespace>> namespaces = new ArrayList<>(
-                BasicElementStateProvider.getNamespaces());
+    private static Class<? extends NodeFeature>[] getRootNodeFeatures() {
+        // Start with all element features
+        ArrayList<Class<? extends NodeFeature>> features = new ArrayList<>(
+                BasicElementStateProvider.getFeatures());
 
-        // Then add our own custom namespaces
-        namespaces.add(PushConfigurationMap.class);
-        namespaces.add(PollConfigurationNamespace.class);
-        namespaces.add(ReconnectDialogConfigurationNamespace.class);
-        namespaces.add(LoadingIndicatorConfigurationNamespace.class);
-        namespaces.add(DependencyListNamespace.class);
+        // Then add our own custom features
+        features.add(PushConfigurationMap.class);
+        features.add(PollConfigurationMap.class);
+        features.add(ReconnectDialogConfigurationMap.class);
+        features.add(LoadingIndicatorConfigurationMap.class);
+        features.add(DependencyList.class);
 
         // And return them all
-        assert namespaces.size() == new HashSet<>(namespaces)
+        assert features.size() == new HashSet<>(features)
                 .size() : "There are duplicates";
-        return (Class<? extends Namespace>[]) namespaces
+        return (Class<? extends NodeFeature>[]) features
                 .toArray(new Class<?>[0]);
     }
 

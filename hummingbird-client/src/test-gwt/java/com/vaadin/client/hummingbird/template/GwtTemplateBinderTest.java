@@ -20,7 +20,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -88,8 +88,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .create("div");
         registry.getTemplateRegistry().register(templateId, templateNode);
 
-        stateNode.getMapNamespace(Namespaces.TEMPLATE)
-                .getProperty(Namespaces.ROOT_TEMPLATE_ID)
+        stateNode.getMapNamespace(NodeFeatures.TEMPLATE)
+                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
                 .setValue(Double.valueOf(templateId));
 
         Element element = (Element) TemplateElementBinder

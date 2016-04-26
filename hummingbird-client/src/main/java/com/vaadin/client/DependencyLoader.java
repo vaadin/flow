@@ -22,8 +22,8 @@ import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.namespace.ListNamespace;
 import com.vaadin.client.hummingbird.namespace.ListSpliceEvent;
-import com.vaadin.hummingbird.namespace.DependencyListNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.DependencyList;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.json.JsonObject;
 
@@ -201,7 +201,7 @@ public class DependencyLoader {
      */
     public static void bind(DependencyLoader dependencyLoader, StateNode node) {
         ListNamespace namespace = node
-                .getListNamespace(Namespaces.DEPENDENCY_LIST);
+                .getListNamespace(NodeFeatures.DEPENDENCY_LIST);
         namespace.addSpliceListener(dependencyLoader::onDependencySplice);
     }
 
@@ -215,12 +215,12 @@ public class DependencyLoader {
         for (int i = 0; i < added.length(); i++) {
             JsonObject dependencyJson = (JsonObject) added.get(i);
             String type = dependencyJson
-                    .getString(DependencyListNamespace.KEY_TYPE);
+                    .getString(DependencyList.KEY_TYPE);
             String url = dependencyJson
-                    .getString(DependencyListNamespace.KEY_URL);
-            if (DependencyListNamespace.TYPE_STYLESHEET.equals(type)) {
+                    .getString(DependencyList.KEY_URL);
+            if (DependencyList.TYPE_STYLESHEET.equals(type)) {
                 stylesheets.push(url);
-            } else if (DependencyListNamespace.TYPE_JAVASCRIPT.equals(type)) {
+            } else if (DependencyList.TYPE_JAVASCRIPT.equals(type)) {
                 scripts.push(url);
             } else {
                 Console.error("Unknown dependency type " + type);

@@ -24,8 +24,8 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
-import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 public class PollConfiguratorTest {
 
@@ -54,8 +54,8 @@ public class PollConfiguratorTest {
         Assert.assertEquals(-2, pollerInterval.get());
         Assert.assertEquals(0, pollerSetIntervalCalled.get());
         MapProperty pollIntervalProperty = stateTree.getRootNode()
-                .getMapNamespace(Namespaces.POLL_CONFIGURATION)
-                .getProperty(PollConfigurationNamespace.POLL_INTERVAL_KEY);
+                .getMapNamespace(NodeFeatures.POLL_CONFIGURATION)
+                .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
 
         pollIntervalProperty.setValue(100.0);
         Assert.assertEquals(100, pollerInterval.get());

@@ -15,18 +15,18 @@
  */
 package com.vaadin.client.communication;
 
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_MODAL_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_MODAL_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_MODAL_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_MODAL_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -41,7 +41,7 @@ import com.vaadin.client.UILifecycle;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 public class ReconnectDialogConfigurationTest
         extends AbstractConfigurationTest {
@@ -96,7 +96,7 @@ public class ReconnectDialogConfigurationTest
     @Override
     protected MapProperty getProperty(String key) {
         return stateTree.getRootNode()
-                .getMapNamespace(Namespaces.RECONNECT_DIALOG_CONFIGURATION)
+                .getMapNamespace(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
                 .getProperty(key);
     }
 

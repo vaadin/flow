@@ -19,14 +19,14 @@ import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.hummingbird.namespace.TextNodeNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.TextNodeMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Text;
 
 /**
- * Binds {@link TextNodeNamespace} data to a text node in the DOM.
+ * Binds {@link TextNodeMap} data to a text node in the DOM.
  *
  * @since
  * @author Vaadin Ltd
@@ -44,10 +44,10 @@ public class TextElementBinder {
      *            the DOM text node
      */
     public TextElementBinder(StateNode node, Text text) {
-        assert node.hasNamespace(Namespaces.TEXT_NODE);
+        assert node.hasNamespace(NodeFeatures.TEXT_NODE);
 
-        MapNamespace textNamespace = node.getMapNamespace(Namespaces.TEXT_NODE);
-        MapProperty textProperty = textNamespace.getProperty(Namespaces.TEXT);
+        MapNamespace textNamespace = node.getMapNamespace(NodeFeatures.TEXT_NODE);
+        MapProperty textProperty = textNamespace.getProperty(NodeFeatures.TEXT);
 
         computation = Reactive.runWhenDepedenciesChange(
                 () -> text.setData((String) textProperty.getValue()));

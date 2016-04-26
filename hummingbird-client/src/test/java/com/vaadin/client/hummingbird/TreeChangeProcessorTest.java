@@ -196,7 +196,7 @@ public class TreeChangeProcessorTest {
     private static JsonObject mapBaseChange(int node, int ns, String type,
             String key) {
         JsonObject json = baseChange(node, type);
-        json.put(JsonConstants.CHANGE_NAMESPACE, ns);
+        json.put(JsonConstants.CHANGE_FEATURE, ns);
         json.put(JsonConstants.CHANGE_MAP_KEY, key);
         return json;
     }
@@ -236,7 +236,7 @@ public class TreeChangeProcessorTest {
             int remove) {
         JsonObject json = baseChange(node, JsonConstants.CHANGE_TYPE_SPLICE);
 
-        json.put(JsonConstants.CHANGE_NAMESPACE, ns);
+        json.put(JsonConstants.CHANGE_FEATURE, ns);
         json.put(JsonConstants.CHANGE_SPLICE_INDEX, index);
         if (remove > 0) {
             json.put(JsonConstants.CHANGE_SPLICE_REMOVE, remove);

@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.TemplateNamespace;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.TextTemplateNode;
 import com.vaadin.ui.Component;
 
@@ -48,7 +48,7 @@ public class TemplateTextElementStateProvider
 
     @Override
     public boolean supports(StateNode node) {
-        return node.hasNamespace(TemplateNamespace.class);
+        return node.hasFeature(TemplateMap.class);
     }
 
     @Override

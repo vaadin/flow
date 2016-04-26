@@ -32,10 +32,10 @@ import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
-import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
-import com.vaadin.hummingbird.namespace.ElementDataNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
-import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
+import com.vaadin.hummingbird.nodefeature.ElementData;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.ui.UI;
 
 public class StateNodeTest {
@@ -44,7 +44,7 @@ public class StateNodeTest {
         private int i = -1;
 
         public TestStateNode() {
-            super(ElementChildrenNamespace.class);
+            super(ElementChildrenList.class);
         }
 
         public void setData(int data) {
@@ -84,27 +84,26 @@ public class StateNodeTest {
     }
 
     @Test
-    public void nodeContainsDefinedNamespaces() {
-        StateNode node = new StateNode(ElementDataNamespace.class);
+    public void nodeContainsDefinedFeatures() {
+        StateNode node = new StateNode(ElementData.class);
 
-        Assert.assertTrue("Should have namespace defined in constructor",
-                node.hasNamespace(ElementDataNamespace.class));
+        Assert.assertTrue("Should have feature defined in constructor",
+                node.hasFeature(ElementData.class));
 
-        ElementDataNamespace namespace = node
-                .getNamespace(ElementDataNamespace.class);
+        ElementData feature = node.getFeature(ElementData.class);
 
-        Assert.assertNotNull("Existing namespace should also be available",
-                namespace);
+        Assert.assertNotNull("Existing feature should also be available",
+                feature);
 
         Assert.assertFalse(
-                "Should not have namespace that wasn't defined in constructor",
-                node.hasNamespace(ElementPropertyNamespace.class));
+                "Should not have a feature that wasn't defined in constructor",
+                node.hasFeature(ElementPropertyMap.class));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void getMissingNamespaceThrows() {
-        StateNode node = new StateNode(ElementDataNamespace.class);
-        node.getNamespace(ElementPropertyNamespace.class);
+    public void getMissingFeatureThrows() {
+        StateNode node = new StateNode(ElementData.class);
+        node.getFeature(ElementPropertyMap.class);
     }
 
     @Test
@@ -346,13 +345,13 @@ public class StateNodeTest {
     }
 
     public static StateNode createParentNode(String toString) {
-        return createTestNode(toString, ElementChildrenNamespace.class);
+        return createTestNode(toString, ElementChildrenList.class);
     }
 
     @SafeVarargs
     public static StateNode createTestNode(String toString,
-            Class<? extends Namespace>... namespaces) {
-        return new StateNode(namespaces) {
+            Class<? extends NodeFeature>... features) {
+        return new StateNode(features) {
             @Override
             public String toString() {
                 if (toString != null) {
@@ -369,15 +368,15 @@ public class StateNodeTest {
             // Remove child
             parent = child.getParent();
 
-            ElementChildrenNamespace children = parent
-                    .getNamespace(ElementChildrenNamespace.class);
+            ElementChildrenList children = parent
+                    .getFeature(ElementChildrenList.class);
             children.remove(children.indexOf(child));
         } else {
             // Add child
             assert child.getParent() == null;
 
-            ElementChildrenNamespace children = parent
-                    .getNamespace(ElementChildrenNamespace.class);
+            ElementChildrenList children = parent
+                    .getFeature(ElementChildrenList.class);
             children.add(children.size(), child);
         }
     }
@@ -393,7 +392,7 @@ public class StateNodeTest {
         for (int i = 0; i < depth; i++) {
             TestStateNode child = new TestStateNode();
             child.setData(i);
-            node.getNamespace(ElementChildrenNamespace.class).add(0, child);
+            node.getFeature(ElementChildrenList.class).add(0, child);
             node = child;
         }
         return node;
@@ -406,7 +405,7 @@ public class StateNodeTest {
 
     private StateTree createStateTree() {
         StateTree stateTree = new StateTree(new UI(),
-                ElementChildrenNamespace.class);
+                ElementChildrenList.class);
         return stateTree;
     }
 }

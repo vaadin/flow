@@ -32,17 +32,17 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.hummingbird.namespace.ClassListNamespace;
-import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
-import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
-import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
-import com.vaadin.hummingbird.namespace.ElementDataNamespace;
-import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
-import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
-import com.vaadin.hummingbird.namespace.Namespace;
-import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
-import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
+import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
+import com.vaadin.hummingbird.nodefeature.ElementClassList;
+import com.vaadin.hummingbird.nodefeature.ElementData;
+import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
+import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
@@ -64,14 +64,12 @@ public class BasicElementStateProvider implements ElementStateProvider {
     private static BasicElementStateProvider instance = new BasicElementStateProvider();
 
     @SuppressWarnings("unchecked")
-    private static Class<? extends Namespace>[] namespaces = new Class[] {
-            ElementDataNamespace.class, ElementAttributeNamespace.class,
-            ElementChildrenNamespace.class, ElementPropertyNamespace.class,
-            ElementListenersNamespace.class, ClassListNamespace.class,
-            ElementStylePropertyNamespace.class,
-            SynchronizedPropertiesNamespace.class,
-            SynchronizedPropertyEventsNamespace.class,
-            ComponentMappingNamespace.class };
+    private static Class<? extends NodeFeature>[] features = new Class[] {
+            ElementData.class, ElementAttributeMap.class,
+            ElementChildrenList.class, ElementPropertyMap.class,
+            ElementListenerMap.class, ElementClassList.class,
+            ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
+            SynchronizedPropertyEventsList.class, ComponentMapping.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -95,21 +93,21 @@ public class BasicElementStateProvider implements ElementStateProvider {
      */
     public static StateNode createStateNode(String tag) {
         assert ElementUtil.isValidTagName(tag) : "Invalid tag name " + tag;
-        StateNode node = new StateNode(namespaces);
+        StateNode node = new StateNode(features);
 
-        node.getNamespace(ElementDataNamespace.class).setTag(tag);
+        node.getFeature(ElementData.class).setTag(tag);
 
         return node;
     }
 
     @Override
     public boolean supports(StateNode node) {
-        for (Class<? extends Namespace> nsClass : namespaces) {
-            if (!node.hasNamespace(nsClass)) {
+        for (Class<? extends NodeFeature> nsClass : features) {
+            if (!node.hasFeature(nsClass)) {
                 return false;
             }
         }
-        if (node.getNamespace(ElementDataNamespace.class).getTag() == null) {
+        if (node.getFeature(ElementData.class).getTag() == null) {
             return false;
         }
 
@@ -118,50 +116,54 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public String getTag(StateNode node) {
-        return getDataNamespace(node).getTag();
+        return getDataFeature(node).getTag();
     }
 
     /**
-     * Gets the element data namespace for the given node and asserts it is
+     * Gets the element data feature for the given node and asserts it is
      * non-null.
      *
      * @param node
      *            the node
-     * @return the data name space
+     * @return the data feature
      */
-    private static ElementDataNamespace getDataNamespace(StateNode node) {
-        return node.getNamespace(ElementDataNamespace.class);
+    private static ElementData getDataFeature(StateNode node) {
+        return node.getFeature(ElementData.class);
     }
 
     /**
-     * Gets the element attribute namespace for the given node and asserts it is
+     * Gets the element attribute feature for the given node and asserts it is
      * non-null.
      *
      * @param node
      *            the node
-     * @return the data name space
+     * @return the attribute feature
      */
-    private static ElementAttributeNamespace getAttributeNamespace(
-            StateNode node) {
-        return node.getNamespace(ElementAttributeNamespace.class);
+    private static ElementAttributeMap getAttributeFeature(StateNode node) {
+        return node.getFeature(ElementAttributeMap.class);
     }
 
     /**
-     * Gets the children data namespace for the given node and asserts it is
+     * Gets the children data feature for the given node and asserts it is
      * non-null.
      *
      * @param node
      *            the node
-     * @return the children name space
+     * @return the children feature
      */
-    private static ElementChildrenNamespace getChildrenNamespace(
-            StateNode node) {
-        return node.getNamespace(ElementChildrenNamespace.class);
+    private static ElementChildrenList getChildrenFeature(StateNode node) {
+        return node.getFeature(ElementChildrenList.class);
     }
 
-    private static ElementPropertyNamespace getPropertyNamespace(
-            StateNode node) {
-        return node.getNamespace(ElementPropertyNamespace.class);
+    /**
+     * Gets the property feature for the given node and asserts it is non-null.
+     *
+     * @param node
+     *            the node
+     * @return the property feature
+     */
+    private static ElementPropertyMap getPropertyFeature(StateNode node) {
+        return node.getFeature(ElementPropertyMap.class);
     }
 
     @Override
@@ -169,7 +171,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeNamespace(node).set(attribute, value);
+        getAttributeFeature(node).set(attribute, value);
 
     }
 
@@ -178,7 +180,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        return getAttributeNamespace(node).get(attribute);
+        return getAttributeFeature(node).get(attribute);
     }
 
     @Override
@@ -186,7 +188,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        return getAttributeNamespace(node).has(attribute);
+        return getAttributeFeature(node).has(attribute);
     }
 
     @Override
@@ -194,12 +196,12 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeNamespace(node).remove(attribute);
+        getAttributeFeature(node).remove(attribute);
     }
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        return getAttributeNamespace(node).attributes();
+        return getAttributeFeature(node).attributes();
     }
 
     @Override
@@ -214,7 +216,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public int getChildCount(StateNode node) {
-        return getChildrenNamespace(node).size();
+        return getChildrenFeature(node).size();
     }
 
     @Override
@@ -222,7 +224,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert index >= 0;
         assert index < getChildCount(node);
 
-        return Element.get(getChildrenNamespace(node).get(index));
+        return Element.get(getChildrenFeature(node).get(index));
     }
 
     @Override
@@ -230,7 +232,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert index >= 0;
         assert index <= getChildCount(node); // == if adding as last
 
-        getChildrenNamespace(node).add(index, child.getNode());
+        getChildrenFeature(node).add(index, child.getNode());
     }
 
     @Override
@@ -238,22 +240,22 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert index >= 0;
         assert index < getChildCount(node);
 
-        getChildrenNamespace(node).remove(index);
+        getChildrenFeature(node).remove(index);
     }
 
     @Override
     public void removeAllChildren(StateNode node) {
-        getChildrenNamespace(node).clear();
+        getChildrenFeature(node).clear();
     }
 
     @Override
     public void removeChild(StateNode node, Element child) {
-        ElementChildrenNamespace childrenNamespace = getChildrenNamespace(node);
-        int pos = childrenNamespace.indexOf(child.getNode());
+        ElementChildrenList childrenFeature = getChildrenFeature(node);
+        int pos = childrenFeature.indexOf(child.getNode());
         if (pos == -1) {
             throw new IllegalArgumentException("Not in the list");
         }
-        childrenNamespace.remove(pos);
+        childrenFeature.remove(pos);
 
     }
 
@@ -261,19 +263,19 @@ public class BasicElementStateProvider implements ElementStateProvider {
     public EventRegistrationHandle addEventListener(StateNode node,
             String eventType, DomEventListener listener,
             String[] eventDataExpressions) {
-        ElementListenersNamespace listeners = node
-                .getNamespace(ElementListenersNamespace.class);
+        ElementListenerMap listeners = node
+                .getFeature(ElementListenerMap.class);
 
         return listeners.add(eventType, listener, eventDataExpressions);
     }
 
     /**
-     * Gets all the namespaces used by an element node.
+     * Gets all the features used by an element node.
      *
-     * @return an unmodifiable collection of namespace classes
+     * @return an unmodifiable collection of feature classes
      */
-    public static Collection<Class<? extends Namespace>> getNamespaces() {
-        return Collections.unmodifiableCollection(Arrays.asList(namespaces));
+    public static Collection<Class<? extends NodeFeature>> getFeatures() {
+        return Collections.unmodifiableCollection(Arrays.asList(features));
     }
 
     @Override
@@ -281,7 +283,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert node != null;
         assert name != null;
 
-        return getPropertyNamespace(node).getProperty(name);
+        return getPropertyFeature(node).getProperty(name);
     }
 
     @Override
@@ -290,7 +292,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyNamespace(node).setProperty(name, value, emitChange);
+        getPropertyFeature(node).setProperty(name, value, emitChange);
     }
 
     @Override
@@ -298,7 +300,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyNamespace(node).removeProperty(name);
+        getPropertyFeature(node).removeProperty(name);
     }
 
     @Override
@@ -306,14 +308,14 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert node != null;
         assert name != null;
 
-        return getPropertyNamespace(node).hasProperty(name);
+        return getPropertyFeature(node).hasProperty(name);
     }
 
     @Override
     public Stream<String> getPropertyNames(StateNode node) {
         assert node != null;
 
-        return getPropertyNamespace(node).getPropertyNames();
+        return getPropertyFeature(node).getPropertyNames();
     }
 
     @Override
@@ -333,24 +335,23 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public ClassList getClassList(StateNode node) {
-        return node.getNamespace(ClassListNamespace.class).getClassList();
+        return node.getFeature(ElementClassList.class).getClassList();
     }
 
     @Override
     public Style getStyle(StateNode node) {
-        return node.getNamespace(ElementStylePropertyNamespace.class)
-                .getStyle();
+        return node.getFeature(ElementStylePropertyMap.class).getStyle();
     }
 
     @Override
     public Set<String> getSynchronizedProperties(StateNode node) {
-        return node.getNamespace(SynchronizedPropertiesNamespace.class)
+        return node.getFeature(SynchronizedPropertiesList.class)
                 .getSynchronizedProperties();
     }
 
     @Override
     public Set<String> getSynchronizedPropertyEvents(StateNode node) {
-        return node.getNamespace(SynchronizedPropertyEventsNamespace.class)
+        return node.getFeature(SynchronizedPropertyEventsList.class)
                 .getSynchronizedPropertyEvents();
     }
 
@@ -358,15 +359,13 @@ public class BasicElementStateProvider implements ElementStateProvider {
     public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
-        node.getNamespace(ComponentMappingNamespace.class)
-                .setComponent(component);
+        node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-        return node.getNamespace(ComponentMappingNamespace.class)
-                .getComponent();
+        return node.getFeature(ComponentMapping.class).getComponent();
     }
 
     @Override
@@ -375,7 +374,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert node != null;
         assert attribute != null;
         assert resource != null;
-        getAttributeNamespace(node).setResource(attribute, resource);
+        getAttributeFeature(node).setResource(attribute, resource);
     }
 
 }

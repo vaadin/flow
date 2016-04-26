@@ -23,7 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.namespace.TemplateNamespace;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.StaticBinding;
 import com.vaadin.hummingbird.template.TemplateNode;
@@ -127,8 +127,8 @@ public class TemplateElementStateProviderTest {
     private static Element createElement(TemplateNodeBuilder builder) {
         TemplateNode templateNode = builder.build(null);
 
-        StateNode stateNode = new StateNode(TemplateNamespace.class);
-        stateNode.getNamespace(TemplateNamespace.class)
+        StateNode stateNode = new StateNode(TemplateMap.class);
+        stateNode.getFeature(TemplateMap.class)
                 .setRootTemplate(templateNode);
 
         return Element.get(stateNode);

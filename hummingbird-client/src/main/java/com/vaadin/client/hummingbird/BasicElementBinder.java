@@ -31,7 +31,7 @@ import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.template.TemplateElementBinder;
 import com.vaadin.client.hummingbird.util.NativeFunction;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
@@ -100,11 +100,11 @@ public class BasicElementBinder {
         assert nsTag == null
                 || element.getTagName().toLowerCase().equals(nsTag);
 
-        listeners.push(bindMap(Namespaces.ELEMENT_PROPERTIES, propertyBindings,
+        listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES, propertyBindings,
                 this::updateProperty));
-        listeners.push(bindMap(Namespaces.ELEMENT_STYLE_PROPERTIES,
+        listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                 stylePropertyBindings, this::updateStyleProperty));
-        listeners.push(bindMap(Namespaces.ELEMENT_ATTRIBUTES, attributeBindings,
+        listeners.push(bindMap(NodeFeatures.ELEMENT_ATTRIBUTES, attributeBindings,
                 this::updateAttribute));
 
         listeners.push(bindSynchronizedPropertyEvents());
@@ -124,13 +124,13 @@ public class BasicElementBinder {
         synchronizeEventTypesChanged();
 
         ListNamespace namespace = node
-                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTY_EVENTS);
+                .getListNamespace(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         return namespace.addSpliceListener(e -> synchronizeEventTypesChanged());
     }
 
     private void synchronizeEventTypesChanged() {
         ListNamespace namespace = node
-                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTY_EVENTS);
+                .getListNamespace(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
 
         // Remove all old listeners and add new ones
         synchronizedPropertyEventListeners.forEach(EventRemover::remove);
@@ -145,7 +145,7 @@ public class BasicElementBinder {
     }
 
     private EventRemover bindClassList() {
-        ListNamespace namespace = node.getListNamespace(Namespaces.CLASS_LIST);
+        ListNamespace namespace = node.getListNamespace(NodeFeatures.CLASS_LIST);
 
         for (int i = 0; i < namespace.length(); i++) {
             element.getClassList().add((String) namespace.get(i));
@@ -167,8 +167,8 @@ public class BasicElementBinder {
     }
 
     private static String getTag(StateNode node) {
-        return (String) node.getMapNamespace(Namespaces.ELEMENT_DATA)
-                .getProperty(Namespaces.TAG).getValue();
+        return (String) node.getMapNamespace(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).getValue();
     }
 
     private EventRemover bindDomEventListeners() {
@@ -181,7 +181,7 @@ public class BasicElementBinder {
     }
 
     private MapNamespace getDomEventListenerNamespace() {
-        return node.getMapNamespace(Namespaces.ELEMENT_LISTENERS);
+        return node.getMapNamespace(NodeFeatures.ELEMENT_LISTENERS);
     }
 
     private void bindEventHandlerProperty(MapProperty eventHandlerProperty) {
@@ -332,7 +332,7 @@ public class BasicElementBinder {
 
     private void handlePropertySyncDomEvent(Event event) {
         ListNamespace namespace = node
-                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTIES);
+                .getListNamespace(NodeFeatures.SYNCHRONIZED_PROPERTIES);
         for (int i = 0; i < namespace.length(); i++) {
             syncPropertyIfNeeded(namespace.get(i).toString());
         }
@@ -354,7 +354,7 @@ public class BasicElementBinder {
         Object treeValue = null;
 
         MapProperty treeProperty = node
-                .getMapNamespace(Namespaces.ELEMENT_PROPERTIES)
+                .getMapNamespace(NodeFeatures.ELEMENT_PROPERTIES)
                 .getProperty(propertyName);
         if (treeProperty.hasValue()) {
             treeValue = treeProperty.getValue();
@@ -371,7 +371,7 @@ public class BasicElementBinder {
 
     private EventRemover bindChildren() {
         ListNamespace children = node
-                .getListNamespace(Namespaces.ELEMENT_CHILDREN);
+                .getListNamespace(NodeFeatures.ELEMENT_CHILDREN);
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
@@ -431,9 +431,9 @@ public class BasicElementBinder {
     }
 
     private static Node createDomNode(StateNode node) {
-        if (node.hasNamespace(Namespaces.TEXT_NODE)) {
+        if (node.hasNamespace(NodeFeatures.TEXT_NODE)) {
             return TextElementBinder.createAndBind(node);
-        } else if (node.hasNamespace(Namespaces.TEMPLATE)) {
+        } else if (node.hasNamespace(NodeFeatures.TEMPLATE)) {
             return TemplateElementBinder.createAndBind(node);
         }
 

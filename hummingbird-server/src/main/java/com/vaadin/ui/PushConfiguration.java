@@ -19,7 +19,7 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.util.Collection;
 
-import com.vaadin.hummingbird.namespace.PushConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.shared.communication.PushMode;
@@ -181,7 +181,7 @@ class PushConfigurationImpl implements PushConfiguration {
 
     private PushConfigurationMap getPushConfigurationMap() {
         return ui.getInternals().getStateTree().getRootNode()
-                .getNamespace(PushConfigurationMap.class);
+                .getFeature(PushConfigurationMap.class);
     }
 
     @Override

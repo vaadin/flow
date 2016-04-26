@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
@@ -163,14 +163,14 @@ public abstract class AbstractTextElementStateProvider
     public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
-        node.getNamespace(ComponentMappingNamespace.class)
+        node.getFeature(ComponentMapping.class)
                 .setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-        return node.getNamespace(ComponentMappingNamespace.class)
+        return node.getFeature(ComponentMapping.class)
                 .getComponent();
     }
 

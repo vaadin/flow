@@ -19,8 +19,8 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 /**
  * Tracks the reconnect dialog configuration stored in the root node and
@@ -62,7 +62,7 @@ public class ReconnectDialogConfiguration {
 
     private MapProperty getProperty(String key) {
         MapNamespace namespace = registry.getStateTree().getRootNode()
-                .getMapNamespace(Namespaces.RECONNECT_DIALOG_CONFIGURATION);
+                .getMapNamespace(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION);
         return namespace.getProperty(key);
     }
 
@@ -74,9 +74,9 @@ public class ReconnectDialogConfiguration {
      */
     public boolean isDialogModal() {
         return getProperty(
-                ReconnectDialogConfigurationNamespace.DIALOG_MODAL_KEY)
+                ReconnectDialogConfigurationMap.DIALOG_MODAL_KEY)
                         .getValueOrDefault(
-                                ReconnectDialogConfigurationNamespace.DIALOG_MODAL_DEFAULT);
+                                ReconnectDialogConfigurationMap.DIALOG_MODAL_DEFAULT);
     }
 
     /**
@@ -86,9 +86,9 @@ public class ReconnectDialogConfiguration {
      */
     public String getDialogText() {
         return getProperty(
-                ReconnectDialogConfigurationNamespace.DIALOG_TEXT_KEY)
+                ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY)
                         .getValueOrDefault(
-                                ReconnectDialogConfigurationNamespace.DIALOG_TEXT_DEFAULT);
+                                ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT);
     }
 
     /**
@@ -100,9 +100,9 @@ public class ReconnectDialogConfiguration {
      */
     public String getDialogTextGaveUp() {
         return getProperty(
-                ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_KEY)
+                ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY)
                         .getValueOrDefault(
-                                ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_DEFAULT);
+                                ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT);
     }
 
     /**
@@ -113,9 +113,9 @@ public class ReconnectDialogConfiguration {
      */
     public int getReconnectAttempts() {
         return getProperty(
-                ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_KEY)
+                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY)
                         .getValueOrDefault(
-                                ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_DEFAULT);
+                                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
     }
 
     /**
@@ -125,9 +125,9 @@ public class ReconnectDialogConfiguration {
      */
     public int getReconnectInterval() {
         return getProperty(
-                ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_KEY)
+                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY)
                         .getValueOrDefault(
-                                ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_DEFAULT);
+                                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
     }
 
     /**
@@ -138,9 +138,9 @@ public class ReconnectDialogConfiguration {
      */
     public int getDialogGracePeriod() {
         return getProperty(
-                ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_KEY)
+                ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_KEY)
                         .getValueOrDefault(
-                                ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_DEFAULT);
+                                ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT);
     }
 
 }

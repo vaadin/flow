@@ -23,8 +23,8 @@ import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
 import com.vaadin.client.hummingbird.namespace.MapPropertyChangeEvent;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.hummingbird.namespace.PushConfigurationMap;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 /**
  * Provides the push configuration stored in the root node with an easier to use
@@ -85,7 +85,7 @@ public class PushConfiguration {
 
     private MapNamespace getConfigurationNamespace() {
         return registry.getStateTree().getRootNode()
-                .getMapNamespace(Namespaces.UI_PUSHCONFIGURATION);
+                .getMapNamespace(NodeFeatures.UI_PUSHCONFIGURATION);
     }
 
     /**
@@ -128,7 +128,7 @@ public class PushConfiguration {
                 .getProperty(PushConfigurationMap.PARAMETERS_KEY);
         StateNode parametersNode = (StateNode) p.getValue();
         MapNamespace parametersMap = parametersNode
-                .getMapNamespace(Namespaces.UI_PUSHCONFIGURATION_PARAMETERS);
+                .getMapNamespace(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
 
         JsMap<String, String> parameters = JsCollections.map();
         parametersMap.forEachProperty((property, key) -> {

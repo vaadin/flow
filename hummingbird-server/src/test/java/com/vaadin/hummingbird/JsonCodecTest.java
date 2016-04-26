@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
+import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.ui.UI;
 
@@ -105,8 +105,8 @@ public class JsonCodecTest {
         Element element = ElementFactory.createDiv();
 
         StateTree tree = new StateTree(new UI(),
-                ElementChildrenNamespace.class);
-        tree.getRootNode().getNamespace(ElementChildrenNamespace.class).add(0,
+                ElementChildrenList.class);
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
                 element.getNode());
 
         JsonValue json = JsonCodec.encodeWithTypeInfo(element);

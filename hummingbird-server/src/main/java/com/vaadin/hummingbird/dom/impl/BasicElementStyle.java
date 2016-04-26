@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
+import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
 
 /**
  * Implementation of {@link Style} for {@link BasicElementStateProvider}.
@@ -29,16 +29,16 @@ import com.vaadin.hummingbird.namespace.ElementStylePropertyNamespace;
  */
 public class BasicElementStyle implements Style {
 
-    private ElementStylePropertyNamespace namespace;
+    private ElementStylePropertyMap propertyMap;
 
     /**
-     * Creates an instance connected to the given namespace.
+     * Creates an instance connected to the given map.
      *
-     * @param namespace
-     *            the namespace where the data is stored
+     * @param propertyMap
+     *            the feature where the data is stored
      */
-    public BasicElementStyle(ElementStylePropertyNamespace namespace) {
-        this.namespace = namespace;
+    public BasicElementStyle(ElementStylePropertyMap propertyMap) {
+        this.propertyMap = propertyMap;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class BasicElementStyle implements Style {
         String trimmedValue = value.trim();
         ElementUtil.validateStylePropertyValue(trimmedValue);
 
-        namespace.setProperty(name, trimmedValue, true);
+        propertyMap.setProperty(name, trimmedValue, true);
         return this;
     }
 
@@ -59,13 +59,13 @@ public class BasicElementStyle implements Style {
     public Style remove(String name) {
         ElementUtil.validateStylePropertyName(name);
 
-        namespace.removeProperty(name);
+        propertyMap.removeProperty(name);
         return this;
     }
 
     @Override
     public Style clear() {
-        namespace.removeAllProperties();
+        propertyMap.removeAllProperties();
         return this;
     }
 
@@ -73,16 +73,16 @@ public class BasicElementStyle implements Style {
     public String get(String name) {
         ElementUtil.validateStylePropertyName(name);
 
-        return (String) namespace.getProperty(name);
+        return (String) propertyMap.getProperty(name);
     }
 
     @Override
     public Stream<String> getNames() {
-        return namespace.getPropertyNames();
+        return propertyMap.getPropertyNames();
     }
 
     @Override
     public boolean has(String name) {
-        return namespace.hasProperty(name);
+        return propertyMap.hasProperty(name);
     }
 }

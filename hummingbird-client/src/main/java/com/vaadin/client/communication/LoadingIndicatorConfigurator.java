@@ -21,8 +21,8 @@ import com.vaadin.client.LoadingIndicator;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.namespace.MapNamespace;
 import com.vaadin.client.hummingbird.namespace.MapProperty;
-import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 /**
  * Observes the loading indicator configuration stored in the given node and
@@ -49,20 +49,20 @@ public class LoadingIndicatorConfigurator {
     public static void observe(StateNode node,
             LoadingIndicator loadingIndicator) {
         MapNamespace namespace = node
-                .getMapNamespace(Namespaces.LOADING_INDICATOR_CONFIGURATION);
+                .getMapNamespace(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
 
         bindInteger(namespace,
-                LoadingIndicatorConfigurationNamespace.FIRST_DELAY_KEY,
+                LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY,
                 loadingIndicator::setFirstDelay,
-                LoadingIndicatorConfigurationNamespace.FIRST_DELAY_DEFAULT);
+                LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT);
         bindInteger(namespace,
-                LoadingIndicatorConfigurationNamespace.SECOND_DELAY_KEY,
+                LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY,
                 loadingIndicator::setSecondDelay,
-                LoadingIndicatorConfigurationNamespace.SECOND_DELAY_DEFAULT);
+                LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT);
         bindInteger(namespace,
-                LoadingIndicatorConfigurationNamespace.THIRD_DELAY_KEY,
+                LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY,
                 loadingIndicator::setThirdDelay,
-                LoadingIndicatorConfigurationNamespace.THIRD_DELAY_DEFAULT);
+                LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT);
     }
 
     /**

@@ -19,28 +19,28 @@ package com.vaadin.hummingbird.change;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
-import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
-import com.vaadin.hummingbird.namespace.MapNamespace;
-import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.hummingbird.nodefeature.AbstractNodeFeatureTest;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
+import com.vaadin.hummingbird.nodefeature.NodeMap;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
 public class MapRemoveChangeTest {
-    private MapNamespace namespace = AbstractNamespaceTest
-            .createNamespace(ElementPropertyNamespace.class);
+    private NodeMap feature = AbstractNodeFeatureTest
+            .createFeature(ElementPropertyMap.class);
 
     @Test
     public void testJson() {
-        MapRemoveChange change = new MapRemoveChange(namespace, "some");
+        MapRemoveChange change = new MapRemoveChange(feature, "some");
 
         JsonObject json = change.toJson();
 
         Assert.assertEquals(change.getNode().getId(),
                 (int) json.getNumber(JsonConstants.CHANGE_NODE));
-        Assert.assertEquals(NamespaceRegistry.getId(namespace.getClass()),
-                (int) json.getNumber(JsonConstants.CHANGE_NAMESPACE));
+        Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
+                (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
         Assert.assertEquals(JsonConstants.CHANGE_TYPE_REMOVE,
                 json.getString(JsonConstants.CHANGE_TYPE));
         Assert.assertEquals("some",

@@ -139,7 +139,7 @@ public class TreeChangeProcessor {
     }
 
     private static MapProperty findProperty(JsonObject change, StateNode node) {
-        int nsId = (int) change.getNumber(JsonConstants.CHANGE_NAMESPACE);
+        int nsId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
         MapNamespace namespace = node.getMapNamespace(nsId);
         String key = change.getString(JsonConstants.CHANGE_MAP_KEY);
 
@@ -147,7 +147,7 @@ public class TreeChangeProcessor {
     }
 
     private static void processSpliceChange(JsonObject change, StateNode node) {
-        int nsId = (int) change.getNumber(JsonConstants.CHANGE_NAMESPACE);
+        int nsId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
 
         ListNamespace namespace = node.getListNamespace(nsId);
 

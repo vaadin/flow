@@ -26,8 +26,8 @@ import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
+import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
@@ -400,7 +400,7 @@ public class ServerRpcHandler implements Serializable {
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
         Serializable value = JsonCodec.decodeWithoutTypeInfo(
                 invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
-        node.getNamespace(ElementPropertyNamespace.class).setProperty(property,
+        node.getFeature(ElementPropertyMap.class).setProperty(property,
                 value, false);
 
     }
@@ -449,7 +449,7 @@ public class ServerRpcHandler implements Serializable {
 
         DomEvent event = new DomEvent(Element.get(node), eventType, eventData);
 
-        node.getNamespace(ElementListenersNamespace.class).fireEvent(event);
+        node.getFeature(ElementListenerMap.class).fireEvent(event);
     }
 
     protected String getMessage(Reader reader) throws IOException {

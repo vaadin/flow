@@ -18,7 +18,7 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.Registry;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.json.JsonObject;
 
@@ -179,32 +179,32 @@ public class StateTree {
     public String getNamespaceDebugName(int id) {
         if (namespaceDebugName == null) {
             namespaceDebugName = JsCollections.map();
-            namespaceDebugName.set(Namespaces.ELEMENT_DATA, "elementData");
-            namespaceDebugName.set(Namespaces.ELEMENT_PROPERTIES,
+            namespaceDebugName.set(NodeFeatures.ELEMENT_DATA, "elementData");
+            namespaceDebugName.set(NodeFeatures.ELEMENT_PROPERTIES,
                     "elementProperties");
-            namespaceDebugName.set(Namespaces.ELEMENT_ATTRIBUTES,
+            namespaceDebugName.set(NodeFeatures.ELEMENT_ATTRIBUTES,
                     "elementAttributes");
-            namespaceDebugName.set(Namespaces.ELEMENT_CHILDREN,
+            namespaceDebugName.set(NodeFeatures.ELEMENT_CHILDREN,
                     "elementChildren");
-            namespaceDebugName.set(Namespaces.ELEMENT_LISTENERS,
+            namespaceDebugName.set(NodeFeatures.ELEMENT_LISTENERS,
                     "elementListeners");
-            namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION,
+            namespaceDebugName.set(NodeFeatures.UI_PUSHCONFIGURATION,
                     "pushConfiguration");
-            namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION_PARAMETERS,
+            namespaceDebugName.set(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS,
                     "pushConfigurationParameters");
-            namespaceDebugName.set(Namespaces.TEXT_NODE, "textNode");
-            namespaceDebugName.set(Namespaces.POLL_CONFIGURATION,
+            namespaceDebugName.set(NodeFeatures.TEXT_NODE, "textNode");
+            namespaceDebugName.set(NodeFeatures.POLL_CONFIGURATION,
                     "pollConfiguration");
-            namespaceDebugName.set(Namespaces.RECONNECT_DIALOG_CONFIGURATION,
+            namespaceDebugName.set(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION,
                     "reconnectDialogConfiguration");
-            namespaceDebugName.set(Namespaces.LOADING_INDICATOR_CONFIGURATION,
+            namespaceDebugName.set(NodeFeatures.LOADING_INDICATOR_CONFIGURATION,
                     "loadingIndicatorConfiguration");
-            namespaceDebugName.set(Namespaces.CLASS_LIST, "classList");
-            namespaceDebugName.set(Namespaces.DEPENDENCY_LIST,
+            namespaceDebugName.set(NodeFeatures.CLASS_LIST, "classList");
+            namespaceDebugName.set(NodeFeatures.DEPENDENCY_LIST,
                     "dependencyList");
-            namespaceDebugName.set(Namespaces.ELEMENT_STYLE_PROPERTIES,
+            namespaceDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
-            namespaceDebugName.set(Namespaces.TEMPLATE, "template");
+            namespaceDebugName.set(NodeFeatures.TEMPLATE, "template");
         }
         if (namespaceDebugName.has(id)) {
             return namespaceDebugName.get(id);

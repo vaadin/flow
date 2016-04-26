@@ -32,7 +32,7 @@ public class GwtTreeChangeProcessorTest extends ClientEngineTestBase {
         JsonObject change = Json.createObject();
         change.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_SPLICE);
         change.put(JsonConstants.CHANGE_NODE, root.getId());
-        change.put(JsonConstants.CHANGE_NAMESPACE, nsId);
+        change.put(JsonConstants.CHANGE_FEATURE, nsId);
         change.put(JsonConstants.CHANGE_SPLICE_INDEX, 0);
         JsonArray add = Json.createArray();
         add.set(0, "value");

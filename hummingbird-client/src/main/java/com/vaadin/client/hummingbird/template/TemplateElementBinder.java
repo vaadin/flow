@@ -18,7 +18,7 @@ package com.vaadin.client.hummingbird.template;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.StaticBinding;
 
 import elemental.client.Browser;
@@ -49,10 +49,10 @@ public class TemplateElementBinder {
     public static Node createAndBind(StateNode stateNode) {
         assert stateNode != null;
 
-        assert stateNode.hasNamespace(Namespaces.TEMPLATE);
+        assert stateNode.hasNamespace(NodeFeatures.TEMPLATE);
 
-        int templateId = stateNode.getMapNamespace(Namespaces.TEMPLATE)
-                .getProperty(Namespaces.ROOT_TEMPLATE_ID).getValueOrDefault(-1);
+        int templateId = stateNode.getMapNamespace(NodeFeatures.TEMPLATE)
+                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID).getValueOrDefault(-1);
 
         return createAndBind(stateNode, templateId);
     }

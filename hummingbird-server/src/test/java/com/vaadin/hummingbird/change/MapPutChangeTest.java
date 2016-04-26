@@ -21,10 +21,10 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
-import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
-import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
-import com.vaadin.hummingbird.namespace.MapNamespace;
-import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.hummingbird.nodefeature.AbstractNodeFeatureTest;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
+import com.vaadin.hummingbird.nodefeature.NodeMap;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -33,19 +33,19 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public class MapPutChangeTest {
-    private MapNamespace namespace = AbstractNamespaceTest
-            .createNamespace(ElementPropertyNamespace.class);
+    private NodeMap feature = AbstractNodeFeatureTest
+            .createFeature(ElementPropertyMap.class);
 
     @Test
     public void testJson() {
-        MapPutChange change = new MapPutChange(namespace, "some", "string");
+        MapPutChange change = new MapPutChange(feature, "some", "string");
 
         JsonObject json = change.toJson();
 
         Assert.assertEquals(change.getNode().getId(),
                 (int) json.getNumber(JsonConstants.CHANGE_NODE));
-        Assert.assertEquals(NamespaceRegistry.getId(namespace.getClass()),
-                (int) json.getNumber(JsonConstants.CHANGE_NAMESPACE));
+        Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
+                (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
         Assert.assertEquals(JsonConstants.CHANGE_TYPE_PUT,
                 json.getString(JsonConstants.CHANGE_TYPE));
         Assert.assertEquals("some",
@@ -77,7 +77,7 @@ public class MapPutChangeTest {
     @Test
     public void testNodeValueType() {
         StateNode value = StateNodeTest.createEmptyNode("value");
-        MapPutChange change = new MapPutChange(namespace, "myKey", value);
+        MapPutChange change = new MapPutChange(feature, "myKey", value);
 
         JsonObject json = change.toJson();
         Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_PUT_VALUE));
@@ -88,7 +88,7 @@ public class MapPutChangeTest {
     }
 
     private JsonValue getValue(Object input) {
-        MapPutChange change = new MapPutChange(namespace, "myKey", input);
+        MapPutChange change = new MapPutChange(feature, "myKey", input);
         JsonObject json = change.toJson();
         return json.get(JsonConstants.CHANGE_PUT_VALUE);
     }
