@@ -21,6 +21,7 @@ import java.io.InputStream;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
@@ -37,7 +38,7 @@ import com.vaadin.hummingbird.template.TemplateParser;
  */
 public abstract class Template extends Component {
     private final StateNode stateNode = new StateNode(TemplateMap.class,
-            ComponentMapping.class);
+            ComponentMapping.class, ModelMap.class);
 
     /**
      * Creates a new template.
@@ -45,15 +46,43 @@ public abstract class Template extends Component {
     public Template() {
         // Will set element later
         super(null);
-        String templateFileName = getClass().getSimpleName() + ".html";
 
-        try (InputStream templateContentStream = getClass()
-                .getResourceAsStream(templateFileName)) {
+        setTemplateElement(getClass().getSimpleName() + ".html");
+    }
 
-            if (templateContentStream == null) {
-                throw new IllegalArgumentException(
-                        templateFileName + " not found on the classpath");
-            }
+    /**
+     * Creates a new template using {@code templateFileName} as the template
+     * file name.
+     */
+    protected Template(String templateFileName) {
+        // Will set element later
+        super(null);
+
+        setTemplateElement(templateFileName);
+    }
+
+    /**
+     * Creates a new template using {@code inputStream} as a template content.
+     */
+    protected Template(InputStream inputStream) {
+        // Will set element later
+        super(null);
+
+        setTemplateElement(inputStream);
+    }
+
+    private void setTemplateElement(String templateFileName) {
+        InputStream templateContentStream = getClass()
+                .getResourceAsStream(templateFileName);
+        if (templateContentStream == null) {
+            throw new IllegalArgumentException(
+                    templateFileName + " not found on the classpath");
+        }
+        setTemplateElement(templateContentStream);
+    }
+
+    private void setTemplateElement(InputStream inputStream) {
+        try (InputStream templateContentStream = inputStream) {
 
             TemplateNode templateRoot = TemplateParser
                     .parse(templateContentStream);
