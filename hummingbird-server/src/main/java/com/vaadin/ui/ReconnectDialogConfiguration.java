@@ -18,7 +18,7 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 
 /**
  * Provides methods for configuring the reconnect dialog.
@@ -32,7 +32,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * the server connection.
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationNamespace#DIALOG_TEXT_DEFAULT}
+     * {@value ReconnectDialogConfigurationMap#DIALOG_TEXT_DEFAULT}
      *
      * @return the text to show in the reconnect dialog
      */
@@ -52,7 +52,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * reconnect ({@link #getReconnectAttempts()} reached).
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationNamespace#DIALOG_TEXT_GAVE_UP_DEFAULT}
+     * {@value ReconnectDialogConfigurationMap#DIALOG_TEXT_GAVE_UP_DEFAULT}
      *
      * @return the text to show in the reconnect dialog after giving up
      */
@@ -72,7 +72,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * up.
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationNamespace#RECONNECT_ATTEMPTS_DEFAULT}
+     * {@value ReconnectDialogConfigurationMap#RECONNECT_ATTEMPTS_DEFAULT}
      *
      * @return the number of times to try to reconnect
      */
@@ -91,7 +91,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * Gets the interval (in milliseconds) between reconnect attempts.
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationNamespace#RECONNECT_INTERVAL_DEFAULT}
+     * {@value ReconnectDialogConfigurationMap#RECONNECT_INTERVAL_DEFAULT}
      *
      * @return the interval (in ms) between reconnect attempts
      */
@@ -110,7 +110,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * and showing the dialog.
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationNamespace#DIALOG_GRACE_PERIOD_DEFAULT}
+     * {@value ReconnectDialogConfigurationMap#DIALOG_GRACE_PERIOD_DEFAULT}
      *
      * @return the time to wait before showing a dialog
      */
@@ -142,7 +142,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * Checks the modality of the dialog.
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationNamespace#DIALOG_MODAL_DEFAULT}
+     * {@value ReconnectDialogConfigurationMap#DIALOG_MODAL_DEFAULT}
      *
      * @see #setDialogModal(boolean)
      * @return true if the dialog is modal, false otherwise

@@ -25,8 +25,8 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
-import com.vaadin.hummingbird.namespace.DependencyListNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.DependencyList;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -67,10 +67,10 @@ public class DependencyLoaderTest {
         DependencyLoader.bind(loader, rootNode);
 
         JsonObject styleDep = Json.createObject();
-        styleDep.put(DependencyListNamespace.KEY_TYPE,
-                DependencyListNamespace.TYPE_STYLESHEET);
-        styleDep.put(DependencyListNamespace.KEY_URL, TEST_URL);
-        rootNode.getListNamespace(Namespaces.DEPENDENCY_LIST).add(0, styleDep);
+        styleDep.put(DependencyList.KEY_TYPE,
+                DependencyList.TYPE_STYLESHEET);
+        styleDep.put(DependencyList.KEY_URL, TEST_URL);
+        rootNode.getList(NodeFeatures.DEPENDENCY_LIST).add(0, styleDep);
         Assert.assertArrayEquals(new String[] { TEST_URL },
                 loader.loadingStyles.toArray());
     }
@@ -83,10 +83,10 @@ public class DependencyLoaderTest {
         DependencyLoader.bind(loader, rootNode);
 
         JsonObject styleDep = Json.createObject();
-        styleDep.put(DependencyListNamespace.KEY_TYPE,
-                DependencyListNamespace.TYPE_JAVASCRIPT);
-        styleDep.put(DependencyListNamespace.KEY_URL, TEST_URL);
-        rootNode.getListNamespace(Namespaces.DEPENDENCY_LIST).add(0, styleDep);
+        styleDep.put(DependencyList.KEY_TYPE,
+                DependencyList.TYPE_JAVASCRIPT);
+        styleDep.put(DependencyList.KEY_URL, TEST_URL);
+        rootNode.getList(NodeFeatures.DEPENDENCY_LIST).add(0, styleDep);
         Assert.assertArrayEquals(new String[] { TEST_URL },
                 loader.loadingScripts.toArray());
     }
@@ -102,21 +102,21 @@ public class DependencyLoaderTest {
 
         JsArray<JsonObject> add = JsCollections.array();
         JsonObject dep = Json.createObject();
-        dep.put(DependencyListNamespace.KEY_TYPE,
-                DependencyListNamespace.TYPE_JAVASCRIPT);
-        dep.put(DependencyListNamespace.KEY_URL, TEST_JS_URL);
+        dep.put(DependencyList.KEY_TYPE,
+                DependencyList.TYPE_JAVASCRIPT);
+        dep.put(DependencyList.KEY_URL, TEST_JS_URL);
         add.push(dep);
         dep = Json.createObject();
-        dep.put(DependencyListNamespace.KEY_TYPE,
-                DependencyListNamespace.TYPE_JAVASCRIPT);
-        dep.put(DependencyListNamespace.KEY_URL, TEST_JS_URL2);
+        dep.put(DependencyList.KEY_TYPE,
+                DependencyList.TYPE_JAVASCRIPT);
+        dep.put(DependencyList.KEY_URL, TEST_JS_URL2);
         add.push(dep);
         dep = Json.createObject();
-        dep.put(DependencyListNamespace.KEY_TYPE,
-                DependencyListNamespace.TYPE_STYLESHEET);
-        dep.put(DependencyListNamespace.KEY_URL, TEST_CSS_URL);
+        dep.put(DependencyList.KEY_TYPE,
+                DependencyList.TYPE_STYLESHEET);
+        dep.put(DependencyList.KEY_URL, TEST_CSS_URL);
         add.push(dep);
-        rootNode.getListNamespace(Namespaces.DEPENDENCY_LIST).splice(0, 0, add);
+        rootNode.getList(NodeFeatures.DEPENDENCY_LIST).splice(0, 0, add);
 
         Assert.assertArrayEquals(new String[] { TEST_JS_URL, TEST_JS_URL2 },
                 loader.loadingScripts.toArray());

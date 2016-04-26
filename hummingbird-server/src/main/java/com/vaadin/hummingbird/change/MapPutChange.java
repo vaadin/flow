@@ -18,19 +18,19 @@ package com.vaadin.hummingbird.change;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.namespace.MapNamespace;
+import com.vaadin.hummingbird.nodefeature.NodeMap;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Change describing a changed value in a map namespace.
+ * Change describing a changed value in a map feature.
  *
  * @since
  * @author Vaadin Ltd
  */
-public class MapPutChange extends NamespaceChange {
+public class MapPutChange extends NodeFeatureChange {
 
     private final String key;
     private final Object value;
@@ -38,15 +38,15 @@ public class MapPutChange extends NamespaceChange {
     /**
      * Creates a new put change.
      *
-     * @param namespace
-     *            the changed namespace
+     * @param map
+     *            the changed map
      * @param key
      *            the key of the changed value
      * @param value
      *            the new value
      */
-    public MapPutChange(MapNamespace namespace, String key, Object value) {
-        super(namespace);
+    public MapPutChange(NodeMap map, String key, Object value) {
+        super(map);
         this.key = key;
         this.value = value;
     }

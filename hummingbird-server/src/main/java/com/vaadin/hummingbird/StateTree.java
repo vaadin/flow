@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.change.NodeChange;
-import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.ui.UI;
 
 /**
@@ -35,8 +35,8 @@ import com.vaadin.ui.UI;
 public class StateTree implements NodeOwner {
 
     private final class RootNode extends StateNode {
-        private RootNode(Class<? extends Namespace>[] namespaces) {
-            super(namespaces);
+        private RootNode(Class<? extends NodeFeature>[] features) {
+            super(features);
 
             // Bootstrap
             setTree(StateTree.this);
@@ -68,17 +68,17 @@ public class StateTree implements NodeOwner {
     private final UI ui;
 
     /**
-     * Creates a new state tree with a set of namespaces defined for the root
+     * Creates a new state tree with a set of features defined for the root
      * node.
      *
-     * @param namespaces
-     *            the namespaces of the root node
+     * @param features
+     *            the features of the root node
      * @param ui
      *            the UI that this tree belongs to
      */
     @SafeVarargs
-    public StateTree(UI ui, Class<? extends Namespace>... namespaces) {
-        rootNode = new RootNode(namespaces);
+    public StateTree(UI ui, Class<? extends NodeFeature>... features) {
+        rootNode = new RootNode(features);
         this.ui = ui;
     }
 
@@ -190,7 +190,7 @@ public class StateTree implements NodeOwner {
 
     /**
      * Gets the {@link UI} that this tree belongs to.
-     * 
+     *
      * @return the UI that this tree belongs to
      */
     public UI getUI() {

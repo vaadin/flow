@@ -17,9 +17,9 @@ package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
-import com.vaadin.client.hummingbird.namespace.ListNamespace;
-import com.vaadin.client.hummingbird.namespace.MapNamespace;
-import com.vaadin.client.hummingbird.namespace.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.util.ClientJsonCodec;
 import com.vaadin.shared.JsonConstants;
 
@@ -139,17 +139,17 @@ public class TreeChangeProcessor {
     }
 
     private static MapProperty findProperty(JsonObject change, StateNode node) {
-        int nsId = (int) change.getNumber(JsonConstants.CHANGE_NAMESPACE);
-        MapNamespace namespace = node.getMapNamespace(nsId);
+        int nsId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
+        NodeMap map = node.getMap(nsId);
         String key = change.getString(JsonConstants.CHANGE_MAP_KEY);
 
-        return namespace.getProperty(key);
+        return map.getProperty(key);
     }
 
     private static void processSpliceChange(JsonObject change, StateNode node) {
-        int nsId = (int) change.getNumber(JsonConstants.CHANGE_NAMESPACE);
+        int nsId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
 
-        ListNamespace namespace = node.getListNamespace(nsId);
+        NodeList list = node.getList(nsId);
 
         int index = (int) change.getNumber(JsonConstants.CHANGE_SPLICE_INDEX);
         int remove;
@@ -165,7 +165,7 @@ public class TreeChangeProcessor {
 
             JsArray<Object> add = ClientJsonCodec.jsonArrayAsJsArray(addJson);
 
-            namespace.splice(index, remove, add);
+            list.splice(index, remove, add);
         } else if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES)) {
             JsonArray addNodes = change
                     .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
@@ -182,9 +182,9 @@ public class TreeChangeProcessor {
                 add.set(i, child);
             }
 
-            namespace.splice(index, remove, add);
+            list.splice(index, remove, add);
         } else {
-            namespace.splice(index, remove);
+            list.splice(index, remove);
         }
     }
 }

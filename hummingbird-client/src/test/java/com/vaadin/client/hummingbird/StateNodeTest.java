@@ -22,52 +22,52 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.client.hummingbird.namespace.AbstractNamespace;
-import com.vaadin.client.hummingbird.namespace.ListNamespace;
-import com.vaadin.client.hummingbird.namespace.MapNamespace;
+import com.vaadin.client.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 
 public class StateNodeTest {
     private StateNode node = new StateNode(1, new StateTree(null));
 
     @Test
-    public void testDefaultNoNamespaces() {
-        node.forEachNamespace((ns, id) -> Assert.fail());
+    public void testDefaultNoFeatures() {
+        node.forEachFeature((ns, id) -> Assert.fail());
     }
 
     @Test
-    public void testGetListNamespace() {
-        ListNamespace namespace = node.getListNamespace(1);
+    public void testGetListFeature() {
+        NodeList list = node.getList(1);
 
-        Assert.assertEquals(1, namespace.getId());
+        Assert.assertEquals(1, list.getId());
 
-        List<AbstractNamespace> namespaces = collectNamespaces();
+        List<NodeFeature> features = collectFeatures();
 
-        Assert.assertEquals(Arrays.asList(namespace), namespaces);
+        Assert.assertEquals(Arrays.asList(list), features);
 
-        ListNamespace anotherNamespace = node.getListNamespace(1);
+        NodeList anotherList = node.getList(1);
 
-        Assert.assertSame(anotherNamespace, namespace);
-        Assert.assertEquals(namespaces, collectNamespaces());
+        Assert.assertSame(anotherList, list);
+        Assert.assertEquals(features, collectFeatures());
     }
 
-    private List<AbstractNamespace> collectNamespaces() {
-        List<AbstractNamespace> namespaces = new ArrayList<>();
-        node.forEachNamespace((ns, id) -> namespaces.add(ns));
-        return namespaces;
+    private List<NodeFeature> collectFeatures() {
+        List<NodeFeature> features = new ArrayList<>();
+        node.forEachFeature((ns, id) -> features.add(ns));
+        return features;
     }
 
     @Test
-    public void testGetMapNamespace() {
-        MapNamespace namespace = node.getMapNamespace(1);
+    public void testGetMapFeature() {
+        NodeMap map = node.getMap(1);
 
-        Assert.assertEquals(1, namespace.getId());
+        Assert.assertEquals(1, map.getId());
 
-        List<AbstractNamespace> namespaces = collectNamespaces();
+        List<NodeFeature> features = collectFeatures();
 
-        Assert.assertEquals(Arrays.asList(namespace), namespaces);
+        Assert.assertEquals(Arrays.asList(map), features);
 
-        MapNamespace anotherNamespace = node.getMapNamespace(1);
+        NodeMap anotherMap = node.getMap(1);
 
-        Assert.assertSame(anotherNamespace, namespace);
+        Assert.assertSame(anotherMap, map);
     }
 }

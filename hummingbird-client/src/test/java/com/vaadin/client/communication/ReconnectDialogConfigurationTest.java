@@ -15,18 +15,18 @@
  */
 package com.vaadin.client.communication;
 
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_GRACE_PERIOD_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_MODAL_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_MODAL_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_GAVE_UP_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.DIALOG_TEXT_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_ATTEMPTS_KEY;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_DEFAULT;
-import static com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace.RECONNECT_INTERVAL_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_GRACE_PERIOD_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_MODAL_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_MODAL_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT;
+import static com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -39,15 +39,15 @@ import org.mockito.stubbing.Answer;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.hummingbird.StateTree;
-import com.vaadin.client.hummingbird.namespace.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 public class ReconnectDialogConfigurationTest
         extends AbstractConfigurationTest {
 
     private StateTree stateTree;
-    private ReconnectDialogConfiguration namespace;
+    private ReconnectDialogConfiguration configuration;
     private AtomicInteger configurationUpdatedCalled = new AtomicInteger(0);
 
     {
@@ -57,7 +57,7 @@ public class ReconnectDialogConfigurationTest
                 stateTree = new StateTree(this);
                 set(StateTree.class, stateTree);
                 // Binds to the root node
-                namespace = new ReconnectDialogConfiguration(this);
+                configuration = new ReconnectDialogConfiguration(this);
                 ConnectionStateHandler connectionStateHandler = Mockito
                         .mock(ConnectionStateHandler.class);
                 Mockito.doAnswer(new Answer<Void>() {
@@ -66,8 +66,8 @@ public class ReconnectDialogConfigurationTest
                             throws Throwable {
                         // Read some values to be able to test that the
                         // reactive computation works properly
-                        namespace.isDialogModal();
-                        namespace.getDialogText();
+                        configuration.isDialogModal();
+                        configuration.getDialogText();
                         configurationUpdatedCalled.incrementAndGet();
                         return null;
                     }
@@ -81,53 +81,54 @@ public class ReconnectDialogConfigurationTest
 
     @Test
     public void defaults() {
-        Assert.assertEquals(DIALOG_TEXT_DEFAULT, namespace.getDialogText());
+        Assert.assertEquals(DIALOG_TEXT_DEFAULT, configuration.getDialogText());
         Assert.assertEquals(DIALOG_TEXT_GAVE_UP_DEFAULT,
-                namespace.getDialogTextGaveUp());
+                configuration.getDialogTextGaveUp());
         Assert.assertEquals(RECONNECT_ATTEMPTS_DEFAULT,
-                namespace.getReconnectAttempts());
+                configuration.getReconnectAttempts());
         Assert.assertEquals(RECONNECT_INTERVAL_DEFAULT,
-                namespace.getReconnectInterval());
+                configuration.getReconnectInterval());
         Assert.assertEquals(DIALOG_GRACE_PERIOD_DEFAULT,
-                namespace.getDialogGracePeriod());
-        Assert.assertEquals(DIALOG_MODAL_DEFAULT, namespace.isDialogModal());
+                configuration.getDialogGracePeriod());
+        Assert.assertEquals(DIALOG_MODAL_DEFAULT,
+                configuration.isDialogModal());
     }
 
     @Override
     protected MapProperty getProperty(String key) {
         return stateTree.getRootNode()
-                .getMapNamespace(Namespaces.RECONNECT_DIALOG_CONFIGURATION)
+                .getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
                 .getProperty(key);
     }
 
     @Test
     public void setGetDialogText() {
-        testString(DIALOG_TEXT_KEY, namespace::getDialogText);
+        testString(DIALOG_TEXT_KEY, configuration::getDialogText);
     }
 
     @Test
     public void setGetDialogTextGaveUp() {
-        testString(DIALOG_TEXT_GAVE_UP_KEY, namespace::getDialogTextGaveUp);
+        testString(DIALOG_TEXT_GAVE_UP_KEY, configuration::getDialogTextGaveUp);
     }
 
     @Test
     public void setGetDialogGracePeriod() {
-        testInt(DIALOG_GRACE_PERIOD_KEY, namespace::getDialogGracePeriod);
+        testInt(DIALOG_GRACE_PERIOD_KEY, configuration::getDialogGracePeriod);
     }
 
     @Test
     public void setGetReconnectAttempts() {
-        testInt(RECONNECT_ATTEMPTS_KEY, namespace::getReconnectAttempts);
+        testInt(RECONNECT_ATTEMPTS_KEY, configuration::getReconnectAttempts);
     }
 
     @Test
     public void setGetReconnectInterval() {
-        testInt(RECONNECT_INTERVAL_KEY, namespace::getReconnectInterval);
+        testInt(RECONNECT_INTERVAL_KEY, configuration::getReconnectInterval);
     }
 
     @Test
     public void setGetDialogModal() {
-        testBoolean(DIALOG_MODAL_KEY, namespace::isDialogModal);
+        testBoolean(DIALOG_MODAL_KEY, configuration::isDialogModal);
     }
 
     @Test

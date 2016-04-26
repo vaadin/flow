@@ -21,17 +21,16 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
-import com.vaadin.client.hummingbird.namespace.ListNamespace;
-import com.vaadin.client.hummingbird.namespace.MapNamespace;
-import com.vaadin.client.hummingbird.namespace.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.template.TemplateRegistry;
 import com.vaadin.client.hummingbird.template.TestElementTemplateNode;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
-import elemental.dom.NodeList;
 import elemental.events.Event;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
@@ -74,12 +73,12 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
     private StateNode node;
 
-    private MapNamespace properties;
-    private MapNamespace attributes;
-    private MapNamespace elementData;
-    private ListNamespace children;
-    private ListNamespace synchronizedPropertyNamespace;
-    private ListNamespace synchronizedPropertyEventsNamespace;
+    private NodeMap properties;
+    private NodeMap attributes;
+    private NodeMap elementData;
+    private NodeList children;
+    private NodeList synchronizedPropertyList;
+    private NodeList synchronizedPropertyEventsList;
 
     private MapProperty titleProperty;
     private MapProperty idAttribute;
@@ -95,14 +94,14 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         tree = new CollectingStateTree();
 
         node = tree.getRootNode();
-        properties = node.getMapNamespace(Namespaces.ELEMENT_PROPERTIES);
-        attributes = node.getMapNamespace(Namespaces.ELEMENT_ATTRIBUTES);
-        elementData = node.getMapNamespace(Namespaces.ELEMENT_DATA);
-        children = node.getListNamespace(Namespaces.ELEMENT_CHILDREN);
-        synchronizedPropertyNamespace = node
-                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTIES);
-        synchronizedPropertyEventsNamespace = node
-                .getListNamespace(Namespaces.SYNCHRONIZED_PROPERTY_EVENTS);
+        properties = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        attributes = node.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+        elementData = node.getMap(NodeFeatures.ELEMENT_DATA);
+        children = node.getList(NodeFeatures.ELEMENT_CHILDREN);
+        synchronizedPropertyList = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
+        synchronizedPropertyEventsList = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
 
         titleProperty = properties.getProperty("title");
         idAttribute = attributes.getProperty("id");
@@ -214,7 +213,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testBindWrongTagThrows() {
-        elementData.getProperty(Namespaces.TAG).setValue("span");
+        elementData.getProperty(NodeFeatures.TAG).setValue("span");
 
         try {
             BasicElementBinder.bind(node, element);
@@ -224,7 +223,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testBindRightTagOk() {
-        elementData.getProperty(Namespaces.TAG).setValue("div");
+        elementData.getProperty(NodeFeatures.TAG).setValue("div");
 
         BasicElementBinder.bind(node, element);
     }
@@ -274,11 +273,11 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     private StateNode createChildNode(String id) {
         StateNode childNode = new StateNode(nextId++, node.getTree());
 
-        childNode.getMapNamespace(Namespaces.ELEMENT_DATA)
-                .getProperty(Namespaces.TAG).setValue("span");
+        childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).setValue("span");
         if (id != null) {
-            childNode.getMapNamespace(Namespaces.ELEMENT_ATTRIBUTES)
-                    .getProperty("id").setValue(id);
+            childNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES).getProperty("id")
+                    .setValue(id);
         }
 
         return childNode;
@@ -337,7 +336,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         children.splice(0, 1);
         Reactive.flush();
 
-        NodeList childNodes = element.getChildNodes();
+        elemental.dom.NodeList childNodes = element.getChildNodes();
 
         assertEquals(1, childNodes.length());
 
@@ -383,8 +382,8 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         children.add(0, childNode);
 
-        childNode.getMapNamespace(Namespaces.ELEMENT_DATA)
-                .getProperty(Namespaces.TAG).setValue("span");
+        childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).setValue("span");
 
         // Should not throw
         Reactive.flush();
@@ -400,7 +399,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         String numberExpression = "event.button";
         String stringExpression = "element.tagName";
 
-        node.getMapNamespace(Namespaces.ELEMENT_LISTENERS).getProperty("click")
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("click")
                 .setValue(JsCollections.array(booleanExpression,
                         numberExpression, stringExpression));
         Reactive.flush();
@@ -425,8 +424,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testRemovedEventNotFired() {
         BasicElementBinder.bind(node, element);
 
-        MapProperty clickEvent = node
-                .getMapNamespace(Namespaces.ELEMENT_LISTENERS)
+        MapProperty clickEvent = node.getMap(NodeFeatures.ELEMENT_LISTENERS)
                 .getProperty("click");
         clickEvent.setValue(Double.valueOf(1));
 
@@ -445,13 +443,12 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         BasicElementBinder.bind(node, element);
 
         StateNode textNode = new StateNode(nextId++, node.getTree());
-        MapProperty textProperty = textNode
-                .getMapNamespace(Namespaces.TEXT_NODE)
-                .getProperty(Namespaces.TEXT);
+        MapProperty textProperty = textNode.getMap(NodeFeatures.TEXT_NODE)
+                .getProperty(NodeFeatures.TEXT);
 
         textProperty.setValue("foo");
 
-        node.getListNamespace(Namespaces.ELEMENT_CHILDREN).add(0, textNode);
+        node.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, textNode);
         Reactive.flush();
 
         assertEquals("foo", element.getTextContent());
@@ -467,15 +464,15 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         BasicElementBinder.bind(node, element);
 
         StateNode textNode = new StateNode(nextId++, node.getTree());
-        textNode.getMapNamespace(Namespaces.TEXT_NODE)
-                .getProperty(Namespaces.TEXT).setValue("foo");
+        textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeFeatures.TEXT)
+                .setValue("foo");
 
-        node.getListNamespace(Namespaces.ELEMENT_CHILDREN).add(0, textNode);
+        node.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, textNode);
         Reactive.flush();
 
         assertEquals(1, element.getChildNodes().getLength());
 
-        node.getListNamespace(Namespaces.ELEMENT_CHILDREN).splice(0, 1);
+        node.getList(NodeFeatures.ELEMENT_CHILDREN).splice(0, 1);
 
         Reactive.flush();
 
@@ -483,7 +480,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testAddClassesBeforeBind() {
-        node.getListNamespace(Namespaces.CLASS_LIST).add(0, "foo");
+        node.getList(NodeFeatures.CLASS_LIST).add(0, "foo");
 
         BasicElementBinder.bind(node, element);
 
@@ -493,7 +490,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testAddClassesAfterBind() {
         BasicElementBinder.bind(node, element);
 
-        node.getListNamespace(Namespaces.CLASS_LIST).add(0, "foo");
+        node.getList(NodeFeatures.CLASS_LIST).add(0, "foo");
 
         assertEquals("foo", element.getClassName());
     }
@@ -501,12 +498,12 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testRemoveClasses() {
         BasicElementBinder.bind(node, element);
 
-        node.getListNamespace(Namespaces.CLASS_LIST).splice(0, 0,
+        node.getList(NodeFeatures.CLASS_LIST).splice(0, 0,
                 JsCollections.array("one", "two", "three"));
 
         assertEquals("one two three", element.getClassName());
 
-        node.getListNamespace(Namespaces.CLASS_LIST).splice(1, 1);
+        node.getList(NodeFeatures.CLASS_LIST).splice(1, 1);
 
         assertEquals("one three", element.getClassName());
     }
@@ -514,18 +511,18 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testAddClassesAfterUnbind() {
         BasicElementBinder binder = BasicElementBinder.bind(node, element);
 
-        node.getListNamespace(Namespaces.CLASS_LIST).add(0, "foo");
+        node.getList(NodeFeatures.CLASS_LIST).add(0, "foo");
 
         binder.remove();
 
-        node.getListNamespace(Namespaces.CLASS_LIST).add(0, "bar");
+        node.getList(NodeFeatures.CLASS_LIST).add(0, "bar");
 
         assertEquals("foo", element.getClassName());
     }
 
     public void testAddStylesBeforeBind() {
-        node.getMapNamespace(Namespaces.ELEMENT_STYLE_PROPERTIES)
-                .getProperty("color").setValue("green");
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
+                .setValue("green");
 
         Reactive.flush();
         BasicElementBinder.bind(node, element);
@@ -536,8 +533,8 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
     public void testAddStylesAfterBind() {
         BasicElementBinder.bind(node, element);
-        node.getMapNamespace(Namespaces.ELEMENT_STYLE_PROPERTIES)
-                .getProperty("color").setValue("green");
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
+                .setValue("green");
 
         Reactive.flush();
         assertEquals("green", element.getStyle().getColor());
@@ -546,8 +543,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testRemoveStyles() {
         BasicElementBinder.bind(node, element);
 
-        MapNamespace styleMap = node
-                .getMapNamespace(Namespaces.ELEMENT_STYLE_PROPERTIES);
+        NodeMap styleMap = node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES);
         styleMap.getProperty("background").setValue("blue");
         styleMap.getProperty("color").setValue("white");
 
@@ -564,8 +560,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testAddStylesAfterUnbind() {
         BasicElementBinder binder = BasicElementBinder.bind(node, element);
 
-        MapNamespace styleMap = node
-                .getMapNamespace(Namespaces.ELEMENT_STYLE_PROPERTIES);
+        NodeMap styleMap = node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES);
 
         styleMap.getProperty("color").setValue("red");
         Reactive.flush();
@@ -580,18 +575,17 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     private void setSyncEvents(String... eventTypes) {
-        synchronizedPropertyEventsNamespace.splice(0,
-                synchronizedPropertyEventsNamespace.length());
+        synchronizedPropertyEventsList.splice(0,
+                synchronizedPropertyEventsList.length());
         for (int i = 0; i < eventTypes.length; i++) {
-            synchronizedPropertyEventsNamespace.add(i, eventTypes[i]);
+            synchronizedPropertyEventsList.add(i, eventTypes[i]);
         }
     }
 
     private void setSyncProperties(String... properties) {
-        synchronizedPropertyNamespace.splice(0,
-                synchronizedPropertyNamespace.length());
+        synchronizedPropertyList.splice(0, synchronizedPropertyList.length());
         for (int i = 0; i < properties.length; i++) {
-            synchronizedPropertyNamespace.add(i, properties[i]);
+            synchronizedPropertyList.add(i, properties[i]);
         }
     }
 
@@ -655,8 +649,8 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertSynchronized("offsetWidth");
         tree.clearSynchronizedProperties();
 
-        synchronizedPropertyEventsNamespace.splice(0,
-                synchronizedPropertyEventsNamespace.length());
+        synchronizedPropertyEventsList.splice(0,
+                synchronizedPropertyEventsList.length());
         dispatchEvent("event2");
         assertSynchronized();
 
@@ -737,14 +731,14 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         StateTree stateTree = new StateTree(registry);
 
         StateNode templateStateNode = new StateNode(345, stateTree);
-        templateStateNode.getMapNamespace(Namespaces.TEMPLATE)
-                .getProperty(Namespaces.ROOT_TEMPLATE_ID)
+        templateStateNode.getMap(NodeFeatures.TEMPLATE)
+                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
                 .setValue(Double.valueOf(templateId));
 
         StateNode parentElementNode = new StateNode(94, stateTree);
-        parentElementNode.getMapNamespace(Namespaces.ELEMENT_DATA)
-                .getProperty(Namespaces.TAG).setValue("div");
-        parentElementNode.getListNamespace(Namespaces.ELEMENT_CHILDREN).add(0,
+        parentElementNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).setValue("div");
+        parentElementNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0,
                 templateStateNode);
 
         Element element = Browser.getDocument().createElement("div");

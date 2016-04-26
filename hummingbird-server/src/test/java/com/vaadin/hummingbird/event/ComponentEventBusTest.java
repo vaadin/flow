@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
-import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
+import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.ComponentTest.TestComponent;
@@ -91,7 +91,7 @@ public class ComponentEventBusTest {
     private void fireDomEvent(Component component, String domEvent,
             JsonObject eventData) {
         Element e = component.getElement();
-        e.getNode().getNamespace(ElementListenersNamespace.class)
+        e.getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new com.vaadin.hummingbird.dom.DomEvent(e, domEvent,
                         eventData));
 

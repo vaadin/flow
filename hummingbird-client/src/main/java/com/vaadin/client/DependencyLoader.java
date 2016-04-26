@@ -20,10 +20,10 @@ import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
-import com.vaadin.client.hummingbird.namespace.ListNamespace;
-import com.vaadin.client.hummingbird.namespace.ListSpliceEvent;
-import com.vaadin.hummingbird.namespace.DependencyListNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
+import com.vaadin.hummingbird.nodefeature.DependencyList;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.json.JsonObject;
 
@@ -191,18 +191,17 @@ public class DependencyLoader {
     }
 
     /**
-     * Binds the given dependency loader to the dependency list namespace in the
-     * given node.
+     * Binds the given dependency loader to the dependency list in the given
+     * node.
      *
      * @param dependencyLoader
      *            the dependency loader instance
      * @param node
-     *            the node containing the dependency list namespace
+     *            the node containing the dependency list
      */
     public static void bind(DependencyLoader dependencyLoader, StateNode node) {
-        ListNamespace namespace = node
-                .getListNamespace(Namespaces.DEPENDENCY_LIST);
-        namespace.addSpliceListener(dependencyLoader::onDependencySplice);
+        NodeList dependencyList = node.getList(NodeFeatures.DEPENDENCY_LIST);
+        dependencyList.addSpliceListener(dependencyLoader::onDependencySplice);
     }
 
     private void onDependencySplice(ListSpliceEvent event) {
@@ -214,13 +213,11 @@ public class DependencyLoader {
         JsArray<?> added = event.getAdd();
         for (int i = 0; i < added.length(); i++) {
             JsonObject dependencyJson = (JsonObject) added.get(i);
-            String type = dependencyJson
-                    .getString(DependencyListNamespace.KEY_TYPE);
-            String url = dependencyJson
-                    .getString(DependencyListNamespace.KEY_URL);
-            if (DependencyListNamespace.TYPE_STYLESHEET.equals(type)) {
+            String type = dependencyJson.getString(DependencyList.KEY_TYPE);
+            String url = dependencyJson.getString(DependencyList.KEY_URL);
+            if (DependencyList.TYPE_STYLESHEET.equals(type)) {
                 stylesheets.push(url);
-            } else if (DependencyListNamespace.TYPE_JAVASCRIPT.equals(type)) {
+            } else if (DependencyList.TYPE_JAVASCRIPT.equals(type)) {
                 scripts.push(url);
             } else {
                 Console.error("Unknown dependency type " + type);

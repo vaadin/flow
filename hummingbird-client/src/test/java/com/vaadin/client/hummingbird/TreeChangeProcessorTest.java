@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.client.hummingbird.namespace.ListNamespace;
-import com.vaadin.client.hummingbird.namespace.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.shared.JsonConstants;
 
@@ -45,7 +45,7 @@ public class TreeChangeProcessorTest {
 
         TreeChangeProcessor.processChange(tree, change);
 
-        Object value = tree.getRootNode().getMapNamespace(ns).getProperty(myKey)
+        Object value = tree.getRootNode().getMap(ns).getProperty(myKey)
                 .getValue();
 
         Assert.assertEquals(myValue, value);
@@ -53,7 +53,7 @@ public class TreeChangeProcessorTest {
 
     @Test
     public void testMapRemoveChange() {
-        MapProperty property = tree.getRootNode().getMapNamespace(ns)
+        MapProperty property = tree.getRootNode().getMap(ns)
                 .getProperty(myKey);
         property.setValue(myValue);
 
@@ -66,7 +66,7 @@ public class TreeChangeProcessorTest {
 
     @Test
     public void testMapReAdd() {
-        MapProperty property = tree.getRootNode().getMapNamespace(ns)
+        MapProperty property = tree.getRootNode().getMap(ns)
                 .getProperty(myKey);
         property.setValue(myValue);
 
@@ -93,7 +93,7 @@ public class TreeChangeProcessorTest {
 
         TreeChangeProcessor.processChange(tree, change);
 
-        Object value = tree.getRootNode().getMapNamespace(ns).getProperty(myKey)
+        Object value = tree.getRootNode().getMap(ns).getProperty(myKey)
                 .getValue();
 
         Assert.assertSame(child, value);
@@ -106,7 +106,7 @@ public class TreeChangeProcessorTest {
 
         TreeChangeProcessor.processChange(tree, change);
 
-        ListNamespace list = tree.getRootNode().getListNamespace(ns);
+        NodeList list = tree.getRootNode().getList(ns);
 
         Assert.assertEquals(2, list.length());
         Assert.assertEquals("foo", list.get(0));
@@ -139,7 +139,7 @@ public class TreeChangeProcessorTest {
 
         TreeChangeProcessor.processChange(tree, change);
 
-        ListNamespace list = tree.getRootNode().getListNamespace(ns);
+        NodeList list = tree.getRootNode().getList(ns);
 
         Assert.assertEquals(1, list.length());
         Assert.assertSame(child, list.get(0));
@@ -157,7 +157,7 @@ public class TreeChangeProcessorTest {
         // Basically ok if we get this far without exception, but verifying
         // value as well just to be on the safe side
 
-        Object value = tree.getNode(nodeId).getMapNamespace(ns)
+        Object value = tree.getNode(nodeId).getMap(ns)
                 .getProperty(myKey).getValue();
         Assert.assertEquals(myValue, value);
     }
@@ -196,7 +196,7 @@ public class TreeChangeProcessorTest {
     private static JsonObject mapBaseChange(int node, int ns, String type,
             String key) {
         JsonObject json = baseChange(node, type);
-        json.put(JsonConstants.CHANGE_NAMESPACE, ns);
+        json.put(JsonConstants.CHANGE_FEATURE, ns);
         json.put(JsonConstants.CHANGE_MAP_KEY, key);
         return json;
     }
@@ -236,7 +236,7 @@ public class TreeChangeProcessorTest {
             int remove) {
         JsonObject json = baseChange(node, JsonConstants.CHANGE_TYPE_SPLICE);
 
-        json.put(JsonConstants.CHANGE_NAMESPACE, ns);
+        json.put(JsonConstants.CHANGE_FEATURE, ns);
         json.put(JsonConstants.CHANGE_SPLICE_INDEX, index);
         if (remove > 0) {
             json.put(JsonConstants.CHANGE_SPLICE_REMOVE, remove);

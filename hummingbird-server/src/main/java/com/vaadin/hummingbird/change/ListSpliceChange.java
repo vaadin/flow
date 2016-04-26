@@ -21,7 +21,7 @@ import java.util.function.Function;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.namespace.ListNamespace;
+import com.vaadin.hummingbird.nodefeature.NodeList;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.shared.JsonConstants;
 
@@ -31,12 +31,12 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * Change describing a splice operation on a list namespace.
+ * Change describing a splice operation on a list node feature.
  *
  * @since
  * @author Vaadin Ltd
  */
-public class ListSpliceChange extends NamespaceChange {
+public class ListSpliceChange extends NodeFeatureChange {
     private final int index;
     private final int removeCount;
     private final List<?> newItems;
@@ -45,8 +45,8 @@ public class ListSpliceChange extends NamespaceChange {
     /**
      * Creates a new splice change.
      *
-     * @param namespace
-     *            the changed namespace
+     * @param list
+     *            the changed list
      * @param nodeValues
      *            true if the values are {@link StateNode}s, false otherwise
      * @param index
@@ -56,9 +56,9 @@ public class ListSpliceChange extends NamespaceChange {
      * @param newItems
      *            a list of new items
      */
-    public ListSpliceChange(ListNamespace<?> namespace, boolean nodeValues,
-            int index, int removeCount, List<?> newItems) {
-        super(namespace);
+    public ListSpliceChange(NodeList<?> list, boolean nodeValues, int index,
+            int removeCount, List<?> newItems) {
+        super(list);
         this.index = index;
         this.removeCount = removeCount;
         this.newItems = newItems;
@@ -85,8 +85,8 @@ public class ListSpliceChange extends NamespaceChange {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Class<? extends ListNamespace<?>> getNamespace() {
-        return (Class<? extends ListNamespace<?>>) super.getNamespace();
+    public Class<? extends NodeList<?>> getFeature() {
+        return (Class<? extends NodeList<?>>) super.getFeature();
     }
 
     /**

@@ -19,12 +19,12 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
-import com.vaadin.client.hummingbird.namespace.MapNamespace;
-import com.vaadin.client.hummingbird.namespace.MapProperty;
-import com.vaadin.client.hummingbird.namespace.MapPropertyChangeEvent;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.MapPropertyChangeEvent;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.hummingbird.namespace.PushConfigurationMap;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 /**
  * Provides the push configuration stored in the root node with an easier to use
@@ -52,7 +52,7 @@ public class PushConfiguration {
     }
 
     private void setupListener() {
-        getConfigurationNamespace()
+        getConfigurationMap()
                 .getProperty(PushConfigurationMap.PUSHMODE_KEY)
                 .addChangeListener(this::onPushModeChange);
     }
@@ -83,9 +83,9 @@ public class PushConfiguration {
         }
     }
 
-    private MapNamespace getConfigurationNamespace() {
+    private NodeMap getConfigurationMap() {
         return registry.getStateTree().getRootNode()
-                .getMapNamespace(Namespaces.UI_PUSHCONFIGURATION);
+                .getMap(NodeFeatures.UI_PUSHCONFIGURATION);
     }
 
     /**
@@ -95,9 +95,9 @@ public class PushConfiguration {
      *         configured
      */
     public String getPushUrl() {
-        if (getConfigurationNamespace()
+        if (getConfigurationMap()
                 .hasPropertyValue(PushConfigurationMap.PUSH_URL_KEY)) {
-            return (String) getConfigurationNamespace()
+            return (String) getConfigurationMap()
                     .getProperty(PushConfigurationMap.PUSH_URL_KEY).getValue();
         }
 
@@ -112,7 +112,7 @@ public class PushConfiguration {
      */
     public boolean isAlwaysXhrToServer() {
         // The only possible value is "true"
-        return (getConfigurationNamespace().hasPropertyValue(
+        return (getConfigurationMap().hasPropertyValue(
                 PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
     }
 
@@ -124,11 +124,11 @@ public class PushConfiguration {
      * @return a map of all parameters configured on the server
      */
     public JsMap<String, String> getParameters() {
-        MapProperty p = getConfigurationNamespace()
+        MapProperty p = getConfigurationMap()
                 .getProperty(PushConfigurationMap.PARAMETERS_KEY);
         StateNode parametersNode = (StateNode) p.getValue();
-        MapNamespace parametersMap = parametersNode
-                .getMapNamespace(Namespaces.UI_PUSHCONFIGURATION_PARAMETERS);
+        NodeMap parametersMap = parametersNode
+                .getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
 
         JsMap<String, String> parameters = JsCollections.map();
         parametersMap.forEachProperty((property, key) -> {
@@ -144,7 +144,7 @@ public class PushConfiguration {
      * @return true if push is enabled, false otherwise
      */
     public boolean isPushEnabled() {
-        return isPushEnabled(getConfigurationNamespace()
+        return isPushEnabled(getConfigurationMap()
                 .getProperty(PushConfigurationMap.PUSHMODE_KEY).getValue());
     }
 

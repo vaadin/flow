@@ -30,10 +30,10 @@ import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.event.ComponentEventListener;
-import com.vaadin.hummingbird.namespace.ElementDataNamespace;
-import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
-import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
-import com.vaadin.hummingbird.namespace.ReconnectDialogConfigurationNamespace;
+import com.vaadin.hummingbird.nodefeature.ElementData;
+import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.View;
@@ -98,7 +98,7 @@ public class UI extends Component
      */
     public UI() {
         super(null);
-        getNode().getNamespace(ElementDataNamespace.class).setTag("body");
+        getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
     }
@@ -475,7 +475,7 @@ public class UI extends Component
      *            or -1 to disable polling
      */
     public void setPollInterval(int intervalInMillis) {
-        getNode().getNamespace(PollConfigurationNamespace.class)
+        getNode().getFeature(PollConfigurationMap.class)
                 .setPollInterval(intervalInMillis);
     }
 
@@ -486,7 +486,7 @@ public class UI extends Component
      *         polling is disabled
      */
     public int getPollInterval() {
-        return getNode().getNamespace(PollConfigurationNamespace.class)
+        return getNode().getFeature(PollConfigurationMap.class)
                 .getPollInterval();
     }
 
@@ -502,7 +502,7 @@ public class UI extends Component
      */
     public LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
         return getNode()
-                .getNamespace(LoadingIndicatorConfigurationNamespace.class);
+                .getFeature(LoadingIndicatorConfigurationMap.class);
     }
 
     /**
@@ -579,7 +579,7 @@ public class UI extends Component
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
         return getNode()
-                .getNamespace(ReconnectDialogConfigurationNamespace.class);
+                .getFeature(ReconnectDialogConfigurationMap.class);
     }
 
     private static Logger getLogger() {

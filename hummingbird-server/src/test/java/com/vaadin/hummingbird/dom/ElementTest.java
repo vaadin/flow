@@ -27,12 +27,12 @@ import com.vaadin.hummingbird.NullOwner;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.ListSpliceChange;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
-import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
-import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
-import com.vaadin.hummingbird.namespace.ElementListenersNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
-import com.vaadin.hummingbird.namespace.SynchronizedPropertiesNamespace;
-import com.vaadin.hummingbird.namespace.SynchronizedPropertyEventsNamespace;
+import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
+import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
+import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
+import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -85,7 +85,7 @@ public class ElementTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void getElementFromInvalidNode() {
-        StateNode node = new StateNode(ElementPropertyNamespace.class);
+        StateNode node = new StateNode(ElementPropertyMap.class);
         Element.get(node);
     }
 
@@ -679,7 +679,7 @@ public class ElementTest {
         Element child1 = new Element("child1");
         parent.appendChild(child1);
 
-        parent.getNode().getNamespace(ElementChildrenNamespace.class)
+        parent.getNode().getFeature(ElementChildrenList.class)
                 .collectChanges(e -> {
                     // Remove the "append" change
                 });
@@ -687,7 +687,7 @@ public class ElementTest {
         parent.setChild(0, child1);
 
         AtomicInteger changesCausedBySetChild = new AtomicInteger(0);
-        parent.getNode().getNamespace(ElementChildrenNamespace.class)
+        parent.getNode().getFeature(ElementChildrenList.class)
                 .collectChanges(change -> {
                     changesCausedBySetChild.incrementAndGet();
                 });
@@ -736,7 +736,7 @@ public class ElementTest {
 
         e.addEventListener("click", myListener);
         Assert.assertEquals(0, listenerCalls.get());
-        e.getNode().getNamespace(ElementListenersNamespace.class)
+        e.getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(new DomEvent(e, "click", Json.createObject()));
         Assert.assertEquals(1, listenerCalls.get());
     }
@@ -1087,7 +1087,7 @@ public class ElementTest {
         Assert.assertTrue(classList.contains("bar"));
 
         Assert.assertNull("class should not be stored as a regular attribute",
-                element.getNode().getNamespace(ElementAttributeNamespace.class)
+                element.getNode().getFeature(ElementAttributeMap.class)
                         .get("class"));
     }
 
@@ -1396,7 +1396,7 @@ public class ElementTest {
     }
 
     private void fireEvent(Element element, String eventType) {
-        element.getNode().getNamespace(ElementListenersNamespace.class)
+        element.getNode().getFeature(ElementListenerMap.class)
                 .fireEvent(
                         new DomEvent(element, eventType, Json.createObject()));
 
@@ -1442,7 +1442,7 @@ public class ElementTest {
                 e.getSynchronizedProperties().toArray());
 
         AtomicInteger i = new AtomicInteger(0);
-        e.getNode().getNamespace(SynchronizedPropertiesNamespace.class)
+        e.getNode().getFeature(SynchronizedPropertiesList.class)
                 .collectChanges(change -> i.addAndGet(
                         ((ListSpliceChange) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
@@ -1492,7 +1492,7 @@ public class ElementTest {
                 e.getSynchronizedPropertyEvents().toArray());
 
         AtomicInteger i = new AtomicInteger(0);
-        e.getNode().getNamespace(SynchronizedPropertyEventsNamespace.class)
+        e.getNode().getFeature(SynchronizedPropertyEventsList.class)
                 .collectChanges(change -> i.addAndGet(
                         ((ListSpliceChange) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());

@@ -1,7 +1,7 @@
 package com.vaadin.hummingbird.uitest.ui.push;
 
 import com.vaadin.annotations.Push;
-import com.vaadin.hummingbird.namespace.PushConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.shared.ui.ui.Transport;
 

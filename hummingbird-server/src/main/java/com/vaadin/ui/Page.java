@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.DependencyListNamespace;
+import com.vaadin.hummingbird.nodefeature.DependencyList;
 import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
@@ -126,10 +126,10 @@ public class Page implements Serializable {
     private void addDependency(Dependency dependency) {
         assert dependency != null;
 
-        DependencyListNamespace namespace = ui.getInternals().getStateTree()
-                .getRootNode().getNamespace(DependencyListNamespace.class);
+        DependencyList dependencyList = ui.getInternals().getStateTree()
+                .getRootNode().getFeature(DependencyList.class);
 
-        namespace.add(dependency);
+        dependencyList.add(dependency);
     }
 
     /**
