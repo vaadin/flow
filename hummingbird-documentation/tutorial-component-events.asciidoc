@@ -2,7 +2,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 = Using Events with Components
 
 Your component class can provide an event handling API using the event bus provided by the `Component` base class.
-The event bus supports event classes extending `ComponentEvent`, and the listeners are of the type `java.util.function.Consumer<EventType>`.
+The event bus supports event classes extending `ComponentEvent`, and the listeners are of the type `ComponentEventListener<EventType>`.
 
 == Defining an Event
 
@@ -20,7 +20,7 @@ public class ChangeEvent extends ComponentEvent<TextField> {
 }
 ----
 
-Event listeners are of the type `java.util.function.Consumer<EventType>`, so you don't need to create a separate interface for your event type.
+Event listeners are of the generic type `ComponentEventListener<EventType>`, so you don't need to create a separate interface for your event type.
 
 You don't need to implement a separate method for removing an event listener. Instead, the method for adding a listener returns a handle that can be used for removing the listener.
 
