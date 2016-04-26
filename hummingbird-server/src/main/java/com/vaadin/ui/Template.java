@@ -20,8 +20,8 @@ import java.io.InputStream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
-import com.vaadin.hummingbird.namespace.TemplateNamespace;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
 import com.vaadin.hummingbird.template.TemplateParser;
@@ -36,8 +36,8 @@ import com.vaadin.hummingbird.template.TemplateParser;
  * @author Vaadin Ltd
  */
 public abstract class Template extends Component {
-    private final StateNode stateNode = new StateNode(TemplateNamespace.class,
-            ComponentMappingNamespace.class);
+    private final StateNode stateNode = new StateNode(TemplateMap.class,
+            ComponentMapping.class);
 
     /**
      * Creates a new template.
@@ -58,7 +58,7 @@ public abstract class Template extends Component {
             TemplateNode templateRoot = TemplateParser
                     .parse(templateContentStream);
 
-            stateNode.getNamespace(TemplateNamespace.class)
+            stateNode.getFeature(TemplateMap.class)
                     .setRootTemplate(templateRoot);
 
             Element rootElement = Element.get(stateNode);

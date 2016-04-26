@@ -23,32 +23,32 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
-import com.vaadin.hummingbird.namespace.AbstractNamespaceTest;
-import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
-import com.vaadin.hummingbird.namespace.ListNamespace;
-import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.hummingbird.nodefeature.AbstractNodeFeatureTest;
+import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
+import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
+import com.vaadin.hummingbird.nodefeature.NodeList;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class ListChangeTest {
-    private ListNamespace<?> namespace = AbstractNamespaceTest
-            .createNamespace(ElementChildrenNamespace.class);
+    private NodeList<?> feature = AbstractNodeFeatureTest
+            .createFeature(ElementChildrenList.class);
 
     @Test
     public void testBasicJson() {
         StateNode child1 = StateNodeTest.createEmptyNode("child1");
         StateNode child2 = StateNodeTest.createEmptyNode("child2");
-        ListSpliceChange change = new ListSpliceChange(namespace, true, 0, 1,
+        ListSpliceChange change = new ListSpliceChange(feature, true, 0, 1,
                 Arrays.asList(child1, child2));
 
         JsonObject json = change.toJson();
 
         Assert.assertEquals(change.getNode().getId(),
                 (int) json.getNumber(JsonConstants.CHANGE_NODE));
-        Assert.assertEquals(NamespaceRegistry.getId(namespace.getClass()),
-                (int) json.getNumber(JsonConstants.CHANGE_NAMESPACE));
+        Assert.assertEquals(NodeFeatureRegistry.getId(feature.getClass()),
+                (int) json.getNumber(JsonConstants.CHANGE_FEATURE));
         Assert.assertEquals(JsonConstants.CHANGE_TYPE_SPLICE,
                 json.getString(JsonConstants.CHANGE_TYPE));
         Assert.assertEquals(0,
@@ -66,7 +66,7 @@ public class ListChangeTest {
 
     @Test
     public void testZeroRemoveNotInJson() {
-        ListSpliceChange change = new ListSpliceChange(namespace, false, 1, 0,
+        ListSpliceChange change = new ListSpliceChange(feature, false, 1, 0,
                 Arrays.asList());
 
         JsonObject json = change.toJson();
@@ -76,7 +76,7 @@ public class ListChangeTest {
 
     @Test
     public void testEmptyAddNotInJson() {
-        ListSpliceChange change = new ListSpliceChange(namespace, false, 1, 0,
+        ListSpliceChange change = new ListSpliceChange(feature, false, 1, 0,
                 Arrays.asList());
 
         JsonObject json = change.toJson();

@@ -19,8 +19,8 @@ import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
-import com.vaadin.hummingbird.namespace.TextNodeNamespace;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 import com.vaadin.ui.Component;
 
 /**
@@ -48,9 +48,9 @@ public class BasicTextElementStateProvider
     public static StateNode createStateNode(String text) {
         assert text != null;
 
-        StateNode node = new StateNode(TextNodeNamespace.class,
-                ComponentMappingNamespace.class);
-        node.getNamespace(TextNodeNamespace.class).setText(text);
+        StateNode node = new StateNode(TextNodeMap.class,
+                ComponentMapping.class);
+        node.getFeature(TextNodeMap.class).setText(text);
 
         return node;
     }
@@ -66,14 +66,14 @@ public class BasicTextElementStateProvider
 
     @Override
     public boolean supports(StateNode node) {
-        return node.hasNamespace(TextNodeNamespace.class);
+        return node.hasFeature(TextNodeMap.class);
     }
 
     @Override
     public String getTextContent(StateNode node) {
         assert node != null;
 
-        return node.getNamespace(TextNodeNamespace.class).getText();
+        return node.getFeature(TextNodeMap.class).getText();
     }
 
     @Override
@@ -81,7 +81,7 @@ public class BasicTextElementStateProvider
         assert node != null;
         assert textContent != null;
 
-        node.getNamespace(TextNodeNamespace.class).setText(textContent);
+        node.getFeature(TextNodeMap.class).setText(textContent);
     }
 
     @Override
@@ -93,14 +93,14 @@ public class BasicTextElementStateProvider
     public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
-        node.getNamespace(ComponentMappingNamespace.class)
+        node.getFeature(ComponentMapping.class)
                 .setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-        return node.getNamespace(ComponentMappingNamespace.class)
+        return node.getFeature(ComponentMapping.class)
                 .getComponent();
     }
 

@@ -30,8 +30,8 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.hummingbird.namespace.ComponentMappingNamespace;
-import com.vaadin.hummingbird.namespace.TemplateNamespace;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
@@ -120,7 +120,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public boolean supports(StateNode node) {
-        return node.hasNamespace(TemplateNamespace.class);
+        return node.hasFeature(TemplateMap.class);
     }
 
     @Override
@@ -304,7 +304,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                             + Template.class.getName());
         }
 
-        node.getNamespace(ComponentMappingNamespace.class)
+        node.getFeature(ComponentMapping.class)
                 .setComponent(component);
     }
 

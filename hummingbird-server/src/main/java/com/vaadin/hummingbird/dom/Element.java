@@ -32,9 +32,9 @@ import java.util.stream.Stream;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
-import com.vaadin.hummingbird.namespace.ElementDataNamespace;
-import com.vaadin.hummingbird.namespace.TemplateNamespace;
-import com.vaadin.hummingbird.namespace.TextNodeNamespace;
+import com.vaadin.hummingbird.nodefeature.ElementData;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
@@ -246,13 +246,13 @@ public class Element implements Serializable {
     public static Element get(StateNode node) {
         assert node != null;
 
-        if (node.hasNamespace(TextNodeNamespace.class)) {
+        if (node.hasFeature(TextNodeMap.class)) {
             return get(node, BasicTextElementStateProvider.get());
-        } else if (node.hasNamespace(ElementDataNamespace.class)) {
+        } else if (node.hasFeature(ElementData.class)) {
             return get(node, BasicElementStateProvider.get());
-        } else if (node.hasNamespace(TemplateNamespace.class)) {
+        } else if (node.hasFeature(TemplateMap.class)) {
             TemplateNode rootTemplate = node
-                    .getNamespace(TemplateNamespace.class).getRootTemplate();
+                    .getFeature(TemplateMap.class).getRootTemplate();
             return get(node, rootTemplate.getStateProvider());
         } else {
             throw new IllegalArgumentException(

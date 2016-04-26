@@ -18,7 +18,7 @@ package com.vaadin.client.hummingbird;
 import com.vaadin.client.Registry;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.json.JsonObject;
 
@@ -36,7 +36,7 @@ public class StateTree {
 
     private final Registry registry;
 
-    private JsMap<Integer, String> namespaceDebugName;
+    private JsMap<Integer, String> nodeFeatureDebugName;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -173,43 +173,46 @@ public class StateTree {
      * Returns a human readable string for the name space with the given id.
      *
      * @param id
-     *            the namespace id
-     * @return a human readable string describing the namespace
+     *            the node feature id
+     * @return a human readable string describing the node feature
      */
-    public String getNamespaceDebugName(int id) {
-        if (namespaceDebugName == null) {
-            namespaceDebugName = JsCollections.map();
-            namespaceDebugName.set(Namespaces.ELEMENT_DATA, "elementData");
-            namespaceDebugName.set(Namespaces.ELEMENT_PROPERTIES,
+    public String getFeatureDebugName(int id) {
+        if (nodeFeatureDebugName == null) {
+            nodeFeatureDebugName = JsCollections.map();
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_DATA, "elementData");
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_PROPERTIES,
                     "elementProperties");
-            namespaceDebugName.set(Namespaces.ELEMENT_ATTRIBUTES,
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_ATTRIBUTES,
                     "elementAttributes");
-            namespaceDebugName.set(Namespaces.ELEMENT_CHILDREN,
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_CHILDREN,
                     "elementChildren");
-            namespaceDebugName.set(Namespaces.ELEMENT_LISTENERS,
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_LISTENERS,
                     "elementListeners");
-            namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION,
+            nodeFeatureDebugName.set(NodeFeatures.UI_PUSHCONFIGURATION,
                     "pushConfiguration");
-            namespaceDebugName.set(Namespaces.UI_PUSHCONFIGURATION_PARAMETERS,
+            nodeFeatureDebugName.set(
+                    NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS,
                     "pushConfigurationParameters");
-            namespaceDebugName.set(Namespaces.TEXT_NODE, "textNode");
-            namespaceDebugName.set(Namespaces.POLL_CONFIGURATION,
+            nodeFeatureDebugName.set(NodeFeatures.TEXT_NODE, "textNode");
+            nodeFeatureDebugName.set(NodeFeatures.POLL_CONFIGURATION,
                     "pollConfiguration");
-            namespaceDebugName.set(Namespaces.RECONNECT_DIALOG_CONFIGURATION,
+            nodeFeatureDebugName.set(
+                    NodeFeatures.RECONNECT_DIALOG_CONFIGURATION,
                     "reconnectDialogConfiguration");
-            namespaceDebugName.set(Namespaces.LOADING_INDICATOR_CONFIGURATION,
+            nodeFeatureDebugName.set(
+                    NodeFeatures.LOADING_INDICATOR_CONFIGURATION,
                     "loadingIndicatorConfiguration");
-            namespaceDebugName.set(Namespaces.CLASS_LIST, "classList");
-            namespaceDebugName.set(Namespaces.DEPENDENCY_LIST,
+            nodeFeatureDebugName.set(NodeFeatures.CLASS_LIST, "classList");
+            nodeFeatureDebugName.set(NodeFeatures.DEPENDENCY_LIST,
                     "dependencyList");
-            namespaceDebugName.set(Namespaces.ELEMENT_STYLE_PROPERTIES,
+            nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
-            namespaceDebugName.set(Namespaces.TEMPLATE, "template");
+            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE, "template");
         }
-        if (namespaceDebugName.has(id)) {
-            return namespaceDebugName.get(id);
+        if (nodeFeatureDebugName.has(id)) {
+            return nodeFeatureDebugName.get(id);
         } else {
-            return "Unknown namespace: " + id;
+            return "Unknown node feature: " + id;
         }
     }
 

@@ -16,31 +16,31 @@
 
 package com.vaadin.hummingbird.change;
 
-import com.vaadin.hummingbird.namespace.MapNamespace;
+import com.vaadin.hummingbird.nodefeature.NodeMap;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
 /**
- * Change describing a value removed from a map namespace.
+ * Change describing a value removed from a map.
  *
  * @since
  * @author Vaadin Ltd
  */
-public class MapRemoveChange extends NamespaceChange {
+public class MapRemoveChange extends NodeFeatureChange {
 
     private final String key;
 
     /**
      * Creates a new remove change.
      *
-     * @param namespace
-     *            the changed namespace
+     * @param map
+     *            the changed map
      * @param key
      *            the removed key
      */
-    public MapRemoveChange(MapNamespace namespace, String key) {
-        super(namespace);
+    public MapRemoveChange(NodeMap map, String key) {
+        super(map);
 
         this.key = key;
     }

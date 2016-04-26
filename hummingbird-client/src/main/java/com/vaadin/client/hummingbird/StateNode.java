@@ -19,10 +19,10 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
+import com.vaadin.client.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.collection.JsSet;
-import com.vaadin.client.hummingbird.namespace.AbstractNamespace;
-import com.vaadin.client.hummingbird.namespace.ListNamespace;
-import com.vaadin.client.hummingbird.namespace.MapNamespace;
 
 import elemental.dom.Node;
 import elemental.events.EventRemover;
@@ -41,8 +41,7 @@ public class StateNode {
 
     private boolean unregistered = false;
 
-    private final JsMap<Double, AbstractNamespace> namespaces = JsCollections
-            .map();
+    private final JsMap<Double, NodeFeature> features = JsCollections.map();
 
     private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections
             .set();
@@ -81,83 +80,83 @@ public class StateNode {
     }
 
     /**
-     * Gets the list namespace with the given id. Creates a new namespace if one
+     * Gets the node list with the given id. Creates a new node list if one
      * doesn't already exist.
      *
      * @param id
-     *            the id of the namespace
-     * @return the list namespace with the given id
+     *            the id of the list
+     * @return the list with the given id
      */
-    public ListNamespace getListNamespace(int id) {
+    public NodeList getList(int id) {
         Double key = Double.valueOf(id);
-        AbstractNamespace namespace = namespaces.get(key);
-        if (namespace == null) {
-            namespace = new ListNamespace(id, this);
-            namespaces.set(key, namespace);
+        NodeFeature feature = features.get(key);
+        if (feature == null) {
+            feature = new NodeList(id, this);
+            features.set(key, feature);
         }
 
-        assert namespace instanceof ListNamespace;
+        assert feature instanceof NodeList;
 
-        return (ListNamespace) namespace;
+        return (NodeList) feature;
     }
 
     /**
-     * Gets the map namespace with the given id. Creates a new namespace if one
-     * doesn't already exist.
+     * Gets the node map with the given id. Creates a new map if one doesn't
+     * already exist.
      *
      * @param id
-     *            the id of the namespace
-     * @return the map namespace with the given id
+     *            the id of the map
+     * @return the map with the given id
      */
-    public MapNamespace getMapNamespace(int id) {
+    public NodeMap getMap(int id) {
         Double key = Double.valueOf(id);
-        AbstractNamespace namespace = namespaces.get(key);
-        if (namespace == null) {
-            namespace = new MapNamespace(id, this);
-            namespaces.set(key, namespace);
+        NodeFeature feature = features.get(key);
+        if (feature == null) {
+            feature = new NodeMap(id, this);
+            features.set(key, feature);
         }
 
-        assert namespace instanceof MapNamespace;
+        assert feature instanceof NodeMap;
 
-        return (MapNamespace) namespace;
+        return (NodeMap) feature;
     }
 
     /**
-     * Checks whether this node has a namespace with the given id.
+     * Checks whether this node has a feature with the given id.
      *
      * @param id
-     *            the id of the namespace
-     * @return <code>true</code> if this node has the given namespace; otherwise
+     *            the id of the feature
+     * @return <code>true</code> if this node has the given feature; otherwise
      *         <code>false</code>
      */
-    public boolean hasNamespace(int id) {
-        return namespaces.has(Double.valueOf(id));
+    public boolean hasFeature(int id) {
+        return features.has(Double.valueOf(id));
     }
 
     /**
-     * Iterates all namespaces in this node.
+     * Iterates all features in this node.
      *
      * @param callback
-     *            the callback to invoke for each namespace
+     *            the callback to invoke for each feature
      */
-    public void forEachNamespace(
-            ForEachCallback<Double, AbstractNamespace> callback) {
-        namespaces.forEach(callback);
+    public void forEachFeature(ForEachCallback<Double, NodeFeature> callback) {
+        features.forEach(callback);
     }
 
     /**
-     * Gets a JSON object representing the contents of this namespace. Only
-     * intended for debugging purposes.
+     * Gets a JSON object representing the contents of this node. Only intended
+     * for debugging purposes.
      *
      * @return a JSON representation
      */
     public JsonObject getDebugJson() {
         JsonObject object = WidgetUtil.createJsonObjectWithoutPrototype();
 
-        forEachNamespace((ns, nsId) -> {
-            JsonValue json = ns.getDebugJson();
+        forEachFeature((feature, featureId) -> {
+            JsonValue json = feature.getDebugJson();
             if (json != null) {
-                object.put(tree.getNamespaceDebugName(nsId.intValue()), json);
+                object.put(tree.getFeatureDebugName(featureId.intValue()),
+                        json);
             }
         });
 

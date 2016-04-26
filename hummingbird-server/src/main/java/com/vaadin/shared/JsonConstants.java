@@ -68,9 +68,9 @@ public class JsonConstants implements Serializable {
     public static final String CHANGE_TYPE_REMOVE = "remove";
 
     /**
-     * Key holding the namespace of a change.
+     * Key holding the feature of a change.
      */
-    public static final String CHANGE_NAMESPACE = "ns";
+    public static final String CHANGE_FEATURE = "feat";
 
     /**
      * Key holding the map key of the change.

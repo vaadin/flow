@@ -34,17 +34,16 @@ import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
-import com.vaadin.hummingbird.namespace.ElementAttributeNamespace;
-import com.vaadin.hummingbird.namespace.ElementChildrenNamespace;
-import com.vaadin.hummingbird.namespace.ElementDataNamespace;
-import com.vaadin.hummingbird.namespace.ElementPropertyNamespace;
-import com.vaadin.hummingbird.namespace.Namespace;
+import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
+import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
+import com.vaadin.hummingbird.nodefeature.ElementData;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.UI;
 
 public class StateTreeTest {
-    private StateTree tree = new StateTree(new UI(),
-            ElementChildrenNamespace.class);
+    private StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
     @Test
     public void testRootNodeState() {
@@ -94,7 +93,7 @@ public class StateTreeTest {
         StateNodeTest.setParent(node, null);
 
         StateTree anotherTree = new StateTree(new UI(),
-                ElementChildrenNamespace.class);
+                ElementChildrenList.class);
 
         StateNodeTest.setParent(node, anotherTree.getRootNode());
     }
@@ -166,10 +165,10 @@ public class StateTreeTest {
     @Test
     public void allValuesAfterReattach() {
         StateNode node1 = tree.getRootNode();
-        StateNode node2 = new StateNode(ElementDataNamespace.class);
+        StateNode node2 = new StateNode(ElementData.class);
 
         StateNodeTest.setParent(node2, node1);
-        node2.getNamespace(ElementDataNamespace.class).setTag("foo");
+        node2.getFeature(ElementData.class).setTag("foo");
         collectChangesExceptChildrenAdd();
 
         StateNodeTest.setParent(node2, null);
@@ -185,8 +184,7 @@ public class StateTreeTest {
                 changes.get(1) instanceof MapPutChange);
 
         MapPutChange nodeChange = (MapPutChange) changes.get(1);
-        Assert.assertEquals(ElementDataNamespace.class,
-                nodeChange.getNamespace());
+        Assert.assertEquals(ElementData.class, nodeChange.getFeature());
         Assert.assertEquals("tag", nodeChange.getKey());
         Assert.assertEquals("foo", nodeChange.getValue());
     }
@@ -196,7 +194,7 @@ public class StateTreeTest {
         tree.collectChanges(change -> {
             if (change instanceof ListSpliceChange
                     && ((ListSpliceChange) change)
-                            .getNamespace() == ElementChildrenNamespace.class) {
+                            .getFeature() == ElementChildrenList.class) {
                 return;
             } else {
                 changes.add(change);
@@ -208,17 +206,16 @@ public class StateTreeTest {
     @Test
     public void testSerializable() {
         @SuppressWarnings("unchecked")
-        Class<? extends Namespace>[] namespaces = new Class[] {
-                ElementChildrenNamespace.class, ElementDataNamespace.class,
-                ElementAttributeNamespace.class,
-                ElementPropertyNamespace.class };
-        StateTree tree = new StateTree(new UI(), namespaces);
+        Class<? extends NodeFeature>[] features = new Class[] {
+                ElementChildrenList.class, ElementData.class,
+                ElementAttributeMap.class, ElementPropertyMap.class };
+        StateTree tree = new StateTree(new UI(), features);
 
         StateNode root = tree.getRootNode();
-        root.getNamespace(ElementDataNamespace.class).setTag("body");
-        StateNode child = new StateNode(namespaces);
-        root.getNamespace(ElementChildrenNamespace.class).add(0, child);
-        child.getNamespace(ElementDataNamespace.class).setTag(Tag.DIV);
+        root.getFeature(ElementData.class).setTag("body");
+        StateNode child = new StateNode(features);
+        root.getFeature(ElementChildrenList.class).add(0, child);
+        child.getFeature(ElementData.class).setTag(Tag.DIV);
 
         byte[] serialized = SerializationUtils.serialize(tree);
         StateTree d1 = (StateTree) SerializationUtils.deserialize(serialized);
@@ -228,13 +225,13 @@ public class StateTreeTest {
 
     @Test
     public void reattachedNodeRetainsId() throws InterruptedException {
-        StateNode child = new StateNode(ElementChildrenNamespace.class);
-        StateNode grandChild = new StateNode(ElementChildrenNamespace.class);
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNode grandChild = new StateNode(ElementChildrenList.class);
 
-        child.getNamespace(ElementChildrenNamespace.class).add(0, grandChild);
+        child.getFeature(ElementChildrenList.class).add(0, grandChild);
 
-        ElementChildrenNamespace children = tree.getRootNode()
-                .getNamespace(ElementChildrenNamespace.class);
+        ElementChildrenList children = tree.getRootNode()
+                .getFeature(ElementChildrenList.class);
         children.add(0, child);
 
         int childId = child.getId();
@@ -268,13 +265,13 @@ public class StateTreeTest {
 
     @Test
     public void detachedNodeGarbageCollected() throws InterruptedException {
-        StateNode child = new StateNode(ElementChildrenNamespace.class);
-        StateNode grandChild = new StateNode(ElementChildrenNamespace.class);
+        StateNode child = new StateNode(ElementChildrenList.class);
+        StateNode grandChild = new StateNode(ElementChildrenList.class);
 
-        child.getNamespace(ElementChildrenNamespace.class).add(0, grandChild);
+        child.getFeature(ElementChildrenList.class).add(0, grandChild);
 
-        ElementChildrenNamespace children = tree.getRootNode()
-                .getNamespace(ElementChildrenNamespace.class);
+        ElementChildrenList children = tree.getRootNode()
+                .getFeature(ElementChildrenList.class);
         children.add(0, child);
 
         WeakReference<StateNode> childRef = new WeakReference<>(child);

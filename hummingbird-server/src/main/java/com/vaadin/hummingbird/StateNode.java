@@ -28,21 +28,21 @@ import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
-import com.vaadin.hummingbird.namespace.Namespace;
-import com.vaadin.hummingbird.namespace.NamespaceRegistry;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
 import com.vaadin.server.Command;
 
 /**
  * A node in the state tree that is synchronized with the client-side. Data
- * stored in nodes is structured into different namespaces to provide isolation.
- * The namespaces available for a node are defined when the node is created.
+ * stored in nodes is structured into different features to provide isolation.
+ * The features available for a node are defined when the node is created.
  *
  * @see StateTree
  * @since
  * @author Vaadin Ltd
  */
 public class StateNode implements Serializable {
-    private final Map<Class<? extends Namespace>, Namespace> namespaces = new HashMap<>();
+    private final Map<Class<? extends NodeFeature>, NodeFeature> features = new HashMap<>();
 
     private ArrayList<Command> attachListeners;
 
@@ -58,16 +58,16 @@ public class StateNode implements Serializable {
     private boolean wasAttached = isAttached();
 
     /**
-     * Creates a state node with the given namespace types.
+     * Creates a state node with the given feature types.
      *
-     * @param namespaces
-     *            a collection of namespace classes that the node should support
+     * @param featureTypes
+     *            a collection of feature classes that the node should support
      */
     @SafeVarargs
-    public StateNode(Class<? extends Namespace>... namespaces) {
-        for (Class<? extends Namespace> namespaceType : namespaces) {
-            Namespace namespace = NamespaceRegistry.create(namespaceType, this);
-            this.namespaces.put(namespaceType, namespace);
+    public StateNode(Class<? extends NodeFeature>... featureTypes) {
+        for (Class<? extends NodeFeature> featureType : featureTypes) {
+            NodeFeature feature = NodeFeatureRegistry.create(featureType, this);
+            features.put(featureType, feature);
         }
 
     }
@@ -172,7 +172,7 @@ public class StateNode implements Serializable {
     }
 
     private void forEachChild(Consumer<StateNode> action) {
-        namespaces.values().forEach(n -> n.forEachChild(action));
+        features.values().forEach(n -> n.forEachChild(action));
     }
 
     /**
@@ -187,39 +187,39 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Gets the namespace of the given type. This method throws
+     * Gets the feature of the given type. This method throws
      * {@link IllegalStateException} if this node does not contain the desired
-     * namespace. Use {@link #hasNamespace(Class)} to check whether a node
-     * contains a specific namespace.
+     * feature. Use {@link #hasFeature(Class)} to check whether a node contains
+     * a specific feature.
      *
-     * @param namespaceType
-     *            the desired namespace type, not <code>null</code>
-     * @return a namespace instance, not <code>null</code>
+     * @param featureType
+     *            the desired feature type, not <code>null</code>
+     * @return a feature instance, not <code>null</code>
      */
-    public <T extends Namespace> T getNamespace(Class<T> namespaceType) {
-        assert namespaceType != null;
+    public <T extends NodeFeature> T getFeature(Class<T> featureType) {
+        assert featureType != null;
 
-        Namespace namespace = namespaces.get(namespaceType);
-        if (namespace == null) {
+        NodeFeature feature = features.get(featureType);
+        if (feature == null) {
             throw new IllegalStateException(
-                    "Node does not have the namespace " + namespaceType);
+                    "Node does not have the feature " + featureType);
         }
 
-        return namespaceType.cast(namespace);
+        return featureType.cast(feature);
     }
 
     /**
-     * Checks whether this node contains a namespace.
+     * Checks whether this node contains a feature.
      *
-     * @param namespaceType
-     *            the namespace type to check for
-     * @return <code>true</code> if this node contains the namespace; otherwise
+     * @param featureType
+     *            the feature type to check for
+     * @return <code>true</code> if this node contains the feature; otherwise
      *         <code>false</code>
      */
-    public boolean hasNamespace(Class<? extends Namespace> namespaceType) {
-        assert namespaceType != null;
+    public boolean hasFeature(Class<? extends NodeFeature> featureType) {
+        assert featureType != null;
 
-        return namespaces.containsKey(namespaceType);
+        return features.containsKey(featureType);
     }
 
     /**
@@ -270,7 +270,7 @@ public class StateNode implements Serializable {
                 collector.accept(new NodeAttachChange(this));
 
                 // Make all changes show up as if the node was recently attached
-                namespaces.values().forEach(Namespace::resetChanges);
+                features.values().forEach(NodeFeature::resetChanges);
             } else {
                 collector.accept(new NodeDetachChange(this));
             }
@@ -279,7 +279,7 @@ public class StateNode implements Serializable {
         }
 
         if (isAttached) {
-            namespaces.values().forEach(n -> n.collectChanges(collector));
+            features.values().forEach(n -> n.collectChanges(collector));
         }
     }
 
@@ -439,7 +439,7 @@ public class StateNode implements Serializable {
             copy.forEach(Command::execute);
         }
 
-        namespaces.values().forEach(Namespace::onAttach);
+        features.values().forEach(NodeFeature::onAttach);
     }
 
     private void fireDetachListeners() {
@@ -449,6 +449,6 @@ public class StateNode implements Serializable {
             copy.forEach(Command::execute);
         }
 
-        namespaces.values().forEach(Namespace::onDetach);
+        features.values().forEach(NodeFeature::onDetach);
     }
 }

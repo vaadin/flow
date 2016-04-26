@@ -16,10 +16,10 @@
 package com.vaadin.client.communication;
 
 import com.vaadin.client.hummingbird.StateNode;
-import com.vaadin.client.hummingbird.namespace.MapNamespace;
-import com.vaadin.client.hummingbird.namespace.MapProperty;
-import com.vaadin.hummingbird.namespace.PollConfigurationNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
+import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 /**
  * Observes the poll configuration stored in the given node and configures
@@ -44,10 +44,10 @@ public class PollConfigurator {
      *            the poller to configure
      */
     public static void observe(StateNode node, Poller poller) {
-        MapNamespace namespace = node
-                .getMapNamespace(Namespaces.POLL_CONFIGURATION);
-        MapProperty pollIntervalProperty = namespace
-                .getProperty(PollConfigurationNamespace.POLL_INTERVAL_KEY);
+        NodeMap configurationMap = node
+                .getMap(NodeFeatures.POLL_CONFIGURATION);
+        MapProperty pollIntervalProperty = configurationMap
+                .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
         pollIntervalProperty.addChangeListener(e -> {
             int interval = (int) (double) e.getNewValue();
             poller.setInterval(interval);

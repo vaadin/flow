@@ -19,10 +19,10 @@ import java.util.function.Consumer;
 
 import com.vaadin.client.LoadingIndicator;
 import com.vaadin.client.hummingbird.StateNode;
-import com.vaadin.client.hummingbird.namespace.MapNamespace;
-import com.vaadin.client.hummingbird.namespace.MapProperty;
-import com.vaadin.hummingbird.namespace.LoadingIndicatorConfigurationNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
+import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 
 /**
  * Observes the loading indicator configuration stored in the given node and
@@ -48,29 +48,27 @@ public class LoadingIndicatorConfigurator {
      */
     public static void observe(StateNode node,
             LoadingIndicator loadingIndicator) {
-        MapNamespace namespace = node
-                .getMapNamespace(Namespaces.LOADING_INDICATOR_CONFIGURATION);
+        NodeMap configMap = node
+                .getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
 
-        bindInteger(namespace,
-                LoadingIndicatorConfigurationNamespace.FIRST_DELAY_KEY,
+        bindInteger(configMap, LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY,
                 loadingIndicator::setFirstDelay,
-                LoadingIndicatorConfigurationNamespace.FIRST_DELAY_DEFAULT);
-        bindInteger(namespace,
-                LoadingIndicatorConfigurationNamespace.SECOND_DELAY_KEY,
+                LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT);
+        bindInteger(configMap,
+                LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY,
                 loadingIndicator::setSecondDelay,
-                LoadingIndicatorConfigurationNamespace.SECOND_DELAY_DEFAULT);
-        bindInteger(namespace,
-                LoadingIndicatorConfigurationNamespace.THIRD_DELAY_KEY,
+                LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT);
+        bindInteger(configMap, LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY,
                 loadingIndicator::setThirdDelay,
-                LoadingIndicatorConfigurationNamespace.THIRD_DELAY_DEFAULT);
+                LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT);
     }
 
     /**
      * Binds change events for the property identified by the given key in the
-     * given namespace to the given setter.
+     * given feature to the given setter.
      *
-     * @param namespace
-     *            the namespace containing the property
+     * @param map
+     *            the map containing the property
      * @param key
      *            the key of the property
      * @param setter
@@ -78,11 +76,11 @@ public class LoadingIndicatorConfigurator {
      * @param defaultValue
      *            the value to use if the property value is removed
      */
-    private static void bindInteger(MapNamespace namespace, String key,
+    private static void bindInteger(NodeMap map, String key,
             Consumer<Integer> setter, int defaultValue) {
-        MapProperty property = namespace.getProperty(key);
+        MapProperty property = map.getProperty(key);
         property.addChangeListener(e -> setter
-                .accept((int) e.getSource().getValueOrDefault(defaultValue)));
+                .accept(e.getSource().getValueOrDefault(defaultValue)));
     }
 
 }

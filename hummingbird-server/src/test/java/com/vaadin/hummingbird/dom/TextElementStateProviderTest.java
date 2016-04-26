@@ -18,12 +18,12 @@ package com.vaadin.hummingbird.dom;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.namespace.TextNodeNamespace;
+import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 
 public class TextElementStateProviderTest {
     private Element element = Element.createText("foo");
-    private TextNodeNamespace namespace = element.getNode()
-            .getNamespace(TextNodeNamespace.class);
+    private TextNodeMap feature = element.getNode()
+            .getFeature(TextNodeMap.class);
 
     @Test
     public void testBlankNode() {
@@ -31,12 +31,12 @@ public class TextElementStateProviderTest {
 
         Assert.assertEquals("foo", element.getTextContent());
 
-        Assert.assertEquals("foo", namespace.getText());
+        Assert.assertEquals("foo", feature.getText());
     }
 
     @Test
-    public void testElementReadsNamespace() {
-        namespace.setText("bar");
+    public void testElementReadsFeature() {
+        feature.setText("bar");
 
         Assert.assertEquals("bar", element.getTextContent());
     }
@@ -46,7 +46,7 @@ public class TextElementStateProviderTest {
         element.setTextContent("bar");
 
         Assert.assertEquals("bar", element.getTextContent());
-        Assert.assertEquals("bar", namespace.getText());
+        Assert.assertEquals("bar", feature.getText());
     }
 
     @Test(expected = UnsupportedOperationException.class)

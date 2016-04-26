@@ -16,7 +16,7 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.ClientEngineTestBase;
-import com.vaadin.client.hummingbird.namespace.ListNamespace;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -32,7 +32,7 @@ public class GwtTreeChangeProcessorTest extends ClientEngineTestBase {
         JsonObject change = Json.createObject();
         change.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_SPLICE);
         change.put(JsonConstants.CHANGE_NODE, root.getId());
-        change.put(JsonConstants.CHANGE_NAMESPACE, nsId);
+        change.put(JsonConstants.CHANGE_FEATURE, nsId);
         change.put(JsonConstants.CHANGE_SPLICE_INDEX, 0);
         JsonArray add = Json.createArray();
         add.set(0, "value");
@@ -40,9 +40,9 @@ public class GwtTreeChangeProcessorTest extends ClientEngineTestBase {
 
         TreeChangeProcessor.processChange(tree, change);
 
-        ListNamespace namespace = root.getListNamespace(nsId);
+        NodeList list = root.getList(nsId);
 
-        assertEquals(1, namespace.length());
-        assertEquals("value", namespace.get(0));
+        assertEquals(1, list.length());
+        assertEquals("value", list.get(0));
     }
 }

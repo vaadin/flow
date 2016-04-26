@@ -26,8 +26,8 @@ import java.util.stream.Stream;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.change.MapPutChange;
-import com.vaadin.hummingbird.namespace.TemplateNamespace;
-import com.vaadin.hummingbird.shared.Namespaces;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.server.SystemMessages;
@@ -176,8 +176,8 @@ public class UidlWriter implements Serializable {
             // Ensure new templates are sent to the client
             if (change instanceof MapPutChange) {
                 MapPutChange put = (MapPutChange) change;
-                if (put.getNamespace() == TemplateNamespace.class
-                        && put.getKey().equals(Namespaces.ROOT_TEMPLATE_ID)) {
+                if (put.getFeature() == TemplateMap.class
+                        && put.getKey().equals(NodeFeatures.ROOT_TEMPLATE_ID)) {
                     Integer id = (Integer) put.getValue();
                     TemplateNode templateNode = TemplateNode.get(id.intValue());
                     templateEncoder.accept(templateNode);

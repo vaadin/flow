@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 
 import org.junit.Assert;
 
-import com.vaadin.client.hummingbird.namespace.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 
 public abstract class AbstractConfigurationTest {
 
