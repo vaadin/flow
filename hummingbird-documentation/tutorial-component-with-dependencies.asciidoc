@@ -55,10 +55,10 @@ before `onAttach` and after `onDetach` invocations it is empty; during and
 between `onAttach` and `onDetach` invocations it returns the UI instance.
 
 [NOTE]
-The default implementations of `onAttach` and `onDetach` methods in `Component`
+The default implementations of the `onAttach` and `onDetach` methods in the `Component`
 class are empty, so you don't need to call `super.onAttach()` or `super.onDetach()`
 from your overridden methods. However, when extending other component implementations,
-you might need to that.
+you might need to do that.
 
 [TIP]
 If you are interested in knowing when another component gets attached or detached,

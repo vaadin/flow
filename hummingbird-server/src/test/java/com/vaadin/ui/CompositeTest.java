@@ -3,7 +3,6 @@ package com.vaadin.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -11,6 +10,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.ComponentTest.TracksAttachDetach;
@@ -192,9 +192,9 @@ public class CompositeTest {
         ArrayList<Component> attached = new ArrayList<Component>();
         ArrayList<Component> detached = new ArrayList<Component>();
 
-        Consumer<AttachEvent> attachListener = event -> attached
+        ComponentEventListener<AttachEvent> attachListener = event -> attached
                 .add(event.getSource());
-        Consumer<DetachEvent> detachListener = event -> detached
+        ComponentEventListener<DetachEvent> detachListener = event -> detached
                 .add(event.getSource());
 
         layoutInsideComposite.addAttachListener(attachListener);

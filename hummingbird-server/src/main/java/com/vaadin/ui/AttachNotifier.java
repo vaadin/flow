@@ -15,9 +15,8 @@
  */
 package com.vaadin.ui;
 
-import java.util.function.Consumer;
-
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.event.ComponentEventListener;
 
 /**
  * Mixin interface for components that support adding attach listeners.
@@ -35,7 +34,7 @@ public interface AttachNotifier extends ComponentEventNotifier {
      * @return a handle that can be used for removing the listener
      */
     default EventRegistrationHandle addAttachListener(
-            Consumer<AttachEvent> listener) {
+            ComponentEventListener<AttachEvent> listener) {
         return addListener(AttachEvent.class, listener);
     }
 }
