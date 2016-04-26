@@ -69,6 +69,7 @@ public class NodeFeatureRegistry {
                 SynchronizedPropertyEventsList::new);
         registerFeature(ComponentMapping.class, ComponentMapping::new);
         registerFeature(TemplateMap.class, TemplateMap::new);
+        registerFeature(ModelMap.class, ModelMap::new);
     }
 
     private NodeFeatureRegistry() {
