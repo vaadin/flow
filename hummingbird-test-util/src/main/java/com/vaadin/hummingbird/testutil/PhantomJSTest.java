@@ -17,10 +17,10 @@ package com.vaadin.hummingbird.testutil;
 
 import org.junit.Before;
 import org.junit.Rule;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.testbench.ScreenshotOnFailureRule;
+import com.vaadin.testbench.TestBenchDriverProxy;
 
 /**
  * Base class for testbench tests for PhantomJS.
@@ -40,8 +40,9 @@ public class PhantomJSTest extends AbstractTestBenchTest {
     @Before
     public void setupDriver() {
         DesiredCapabilities cap = DesiredCapabilities.phantomjs();
-        PhantomJSDriver phantomJSDriver = new PhantomJSDriver(cap);
-        setDriver(phantomJSDriver);
+        FixedPhantomJSDriver driver = new FixedPhantomJSDriver(cap);
+        setDriver(driver);
+        driver.setTestBenchDriverProxy((TestBenchDriverProxy) getDriver());
     }
 
 }
