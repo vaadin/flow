@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
@@ -32,6 +33,7 @@ import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
@@ -191,35 +193,71 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public int getChildCount(StateNode node) {
-        return templateNode.getChildCount();
+        int templateChildCount = templateNode.getChildCount();
+        if (templateChildCount == 0) {
+            // No children according to the template, could still have an
+            // override node with children
+            StateNode overrideNode = getOverrideNode(node);
+            if (overrideNode != null) {
+                return BasicElementStateProvider.get()
+                        .getChildCount(overrideNode);
+            }
+        }
+
+        return templateChildCount;
     }
 
     @Override
     public Element getChild(StateNode node, int index) {
-        // Simple initial implementation since template elements can't yet have
-        // non-template children
+        int templateChildCount = templateNode.getChildCount();
+        if (templateChildCount == 0) {
+            // No children according to the template, could still have an
+            // override node with children
+            StateNode overrideNode = getOverrideNode(node);
+            if (overrideNode != null) {
+                return BasicElementStateProvider.get().getChild(overrideNode,
+                        index);
+            }
+        }
+
         TemplateNode childTemplate = templateNode.getChild(index);
         return Element.get(node, childTemplate.getStateProvider());
     }
 
     @Override
     public void insertChild(StateNode node, int index, Element child) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        modifyChildren(node, (provider, overrideNode) -> provider
+                .insertChild(overrideNode, index, child));
     }
 
     @Override
     public void removeChild(StateNode node, int index) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        modifyChildren(node, (provider, overrideNode) -> provider
+                .removeChild(overrideNode, index));
     }
 
     @Override
     public void removeChild(StateNode node, Element child) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        modifyChildren(node, (provider, overrideNode) -> provider
+                .removeChild(overrideNode, child));
     }
 
     @Override
     public void removeAllChildren(StateNode node) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        modifyChildren(node, (provider, overrideNode) -> provider
+                .removeAllChildren(overrideNode));
+    }
+
+    private void modifyChildren(StateNode node,
+            BiConsumer<BasicElementStateProvider, StateNode> modifier) {
+        if (templateNode.getChildCount() != 0) {
+            throw new IllegalStateException(
+                    "Can't add or remove children when there are children defined by the template.");
+        }
+
+        StateNode overrideNode = getOrCreateOverrideNode(node);
+
+        modifier.accept(BasicElementStateProvider.get(), overrideNode);
     }
 
     @Override
@@ -304,13 +342,22 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                             + Template.class.getName());
         }
 
-        node.getFeature(ComponentMapping.class)
-                .setComponent(component);
+        node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         return Optional.empty();
+    }
+
+    private StateNode getOverrideNode(StateNode node) {
+        return node.getFeature(TemplateOverridesMap.class).get(templateNode,
+                false);
+    }
+
+    private StateNode getOrCreateOverrideNode(StateNode node) {
+        return node.getFeature(TemplateOverridesMap.class).get(templateNode,
+                true);
     }
 
 }

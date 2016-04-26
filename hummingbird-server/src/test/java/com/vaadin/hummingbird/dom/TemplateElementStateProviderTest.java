@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.dom;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -24,10 +25,12 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.StaticBinding;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
+import com.vaadin.hummingbird.template.TemplateParser;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
 
 public class TemplateElementStateProviderTest {
@@ -124,12 +127,113 @@ public class TemplateElementStateProviderTest {
         Assert.assertEquals(element, child.getParent());
     }
 
-    private static Element createElement(TemplateNodeBuilder builder) {
-        TemplateNode templateNode = builder.build(null);
+    @Test
+    public void testAppendOverrideChild() {
+        Element child = ElementFactory.createAnchor();
 
-        StateNode stateNode = new StateNode(TemplateMap.class);
-        stateNode.getFeature(TemplateMap.class)
-                .setRootTemplate(templateNode);
+        Element parent = createElement("<div></div>");
+
+        parent.appendChild(child);
+
+        List<Element> children = parent.getChildren()
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(1, children.size());
+
+        Assert.assertEquals(child, children.get(0));
+
+        Assert.assertEquals(parent, child.getParent());
+    }
+
+    @Test
+    public void testRemoveOverrideChildByIndex() {
+        Element child = ElementFactory.createAnchor();
+
+        Element parent = createElement("<div></div>");
+
+        parent.appendChild(child);
+
+        parent.removeChild(0);
+
+        Assert.assertEquals(0, parent.getChildCount());
+        Assert.assertFalse(parent.getChildren().findFirst().isPresent());
+    }
+
+    @Test
+    public void testRemoveOverrideChildByInstance() {
+        Element child = new Element("a");
+
+        Element parent = createElement("<div></div>");
+
+        parent.appendChild(child);
+
+        parent.removeChild(child);
+
+        Assert.assertEquals(0, parent.getChildCount());
+        Assert.assertFalse(parent.getChildren().findFirst().isPresent());
+    }
+
+    @Test
+    public void testRemoveAllOverrideChildren() {
+        Element child = ElementFactory.createAnchor();
+
+        Element parent = createElement("<div></div>");
+
+        parent.appendChild(child);
+
+        parent.removeAllChildren();
+
+        Assert.assertEquals(0, parent.getChildCount());
+        Assert.assertFalse(parent.getChildren().findFirst().isPresent());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAppendWithTemplateChildren() {
+        Element parent = createElement("<div><span></span></div>");
+
+        parent.appendChild(new Element("div"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testAppendWithTemplateText() {
+        Element parent = createElement("<div>Text</div>");
+
+        parent.appendChild(new Element("div"));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRemoveByIndexWithTemplateChildren() {
+        Element parent = createElement("<div><span></span></div>");
+
+        parent.removeChild(0);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRemoveByInstanceWithTemplateChildren() {
+        Element parent = createElement("<div><span></span></div>");
+
+        parent.removeChild(parent.getChild(0));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testRemoveAllWithTemplateChildren() {
+        Element parent = createElement("<div><span></span></div>");
+
+        parent.removeAllChildren();
+    }
+
+    private static Element createElement(String template) {
+        return createElement(TemplateParser.parse(template));
+    }
+
+    private static Element createElement(TemplateNodeBuilder builder) {
+        return createElement(builder.build(null));
+    }
+
+    private static Element createElement(TemplateNode templateNode) {
+        StateNode stateNode = new StateNode(TemplateMap.class,
+                TemplateOverridesMap.class);
+        stateNode.getFeature(TemplateMap.class).setRootTemplate(templateNode);
 
         return Element.get(stateNode);
     }
