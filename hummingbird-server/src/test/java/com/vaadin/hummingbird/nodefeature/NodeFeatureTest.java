@@ -86,6 +86,9 @@ public class NodeFeatureTest {
         expectedIds.put(ComponentMapping.class, NodeFeatures.COMPONENT_MAPPING);
         expectedIds.put(TemplateMap.class, NodeFeatures.TEMPLATE);
         expectedIds.put(ModelMap.class, NodeFeatures.TEMPLATE_MODEL);
+        expectedIds.put(TemplateOverridesMap.class,
+                NodeFeatures.TEMPLATE_OVERRIDES);
+        expectedIds.put(OverrideElementData.class, NodeFeatures.OVERRIDE_DATA);
 
         Assert.assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());

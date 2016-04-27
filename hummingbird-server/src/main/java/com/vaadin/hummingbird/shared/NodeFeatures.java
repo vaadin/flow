@@ -25,6 +25,7 @@ import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -32,6 +33,7 @@ import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 
 /**
@@ -123,6 +125,16 @@ public class NodeFeatures {
      * Id for {@link ModelMap}.
      */
     public static final int TEMPLATE_MODEL = 18;
+
+    /**
+     * Id for {@link TemplateOverridesMap}.
+     */
+    public static final int TEMPLATE_OVERRIDES = 19;
+
+    /**
+     * Id for {@link OverrideElementData}.
+     */
+    public static final int OVERRIDE_DATA = 20;
 
     /**
      * Key for {@link ElementData#getTag()}.
