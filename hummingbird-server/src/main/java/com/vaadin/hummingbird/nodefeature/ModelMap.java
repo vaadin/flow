@@ -31,15 +31,16 @@ public class ModelMap extends NodeMap {
      * @param node
      *            the node that the feature belongs to
      */
-    ModelMap(StateNode node) {
+    public ModelMap(StateNode node) {
         super(node);
     }
 
     /**
-     * Sets the {@code value} for the specified {@code value}.
+     * Sets the {@code value} for the specified {@code key}.
      *
      * @param key
-     *            key with which the specified value is to be associated
+     *            key with which the specified value is to be associated, not
+     *            {@code null}
      * @param value
      *            value to be associated with the specified key
      */
