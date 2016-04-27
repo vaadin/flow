@@ -19,10 +19,10 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
+import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
-import com.vaadin.client.hummingbird.collection.JsSet;
 
 import elemental.dom.Node;
 import elemental.events.EventRemover;
@@ -195,6 +195,8 @@ public class StateNode {
         JsSet<NodeUnregisterListener> copy = JsCollections
                 .set(unregisterListeners);
         copy.forEach(l -> l.onUnregister(event));
+        // Don't refer to the listeners which won't be ever used again
+        unregisterListeners.clear();
     }
 
     /**

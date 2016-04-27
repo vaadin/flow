@@ -20,6 +20,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
@@ -76,7 +77,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     public void testTemplateText() {
         TestTextTemplate templateNode = TestTextTemplate
-                .create(TestStaticBinding.create("text"));
+                .create(TestBinding.createStatic("text"));
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
         assertEquals("text", domNode.getTextContent());
@@ -96,5 +97,25 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .createAndBind(stateNode);
 
         assertEquals("DIV", element.getTagName());
+    }
+
+    public void testTextValueTemplate() {
+        TestTextTemplate templateNode = TestTextTemplate
+                .create(TestBinding.createTextValueBinding("key"));
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        map.getProperty("key").setValue("foo");
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        assertEquals("foo", domNode.getTextContent());
+    }
+
+    public void testTextNoValueTemplate() {
+        TestTextTemplate templateNode = TestTextTemplate
+                .create(TestBinding.createTextValueBinding("key"));
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        assertEquals("", domNode.getTextContent());
     }
 }

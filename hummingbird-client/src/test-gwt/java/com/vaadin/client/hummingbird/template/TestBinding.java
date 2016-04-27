@@ -24,7 +24,7 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 @JsType(isNative = true)
-public interface TestStaticBinding extends Binding {
+public interface TestBinding extends Binding {
     @JsProperty
     void setType(String type);
 
@@ -32,10 +32,20 @@ public interface TestStaticBinding extends Binding {
     void setValue(String value);
 
     @JsOverlay
-    public static TestStaticBinding create(String value) {
-        TestStaticBinding binding = WidgetUtil
+    public static TestBinding createStatic(String value) {
+        return createBinding("static", value);
+    }
+
+    @JsOverlay
+    public static TestBinding createTextValueBinding(String value) {
+        return createBinding("text", value);
+    }
+
+    @JsOverlay
+    public static TestBinding createBinding(String type, String value) {
+        TestBinding binding = WidgetUtil
                 .crazyJsCast(JavaScriptObject.createObject());
-        binding.setType("static");
+        binding.setType(type);
         binding.setValue(value);
 
         return binding;

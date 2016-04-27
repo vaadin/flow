@@ -15,11 +15,18 @@
  */
 package com.vaadin.client.hummingbird.template;
 
+import java.util.Optional;
+
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
+import com.vaadin.client.hummingbird.reactive.Computation;
+import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.StaticBinding;
+import com.vaadin.hummingbird.template.TextValueBinding;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -52,7 +59,8 @@ public class TemplateElementBinder {
         assert stateNode.hasFeature(NodeFeatures.TEMPLATE);
 
         int templateId = stateNode.getMap(NodeFeatures.TEMPLATE)
-                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID).getValueOrDefault(-1);
+                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
+                .getValueOrDefault(-1);
 
         return createAndBind(stateNode, templateId);
     }
@@ -96,8 +104,25 @@ public class TemplateElementBinder {
 
     private static Node createAndBindText(StateNode stateNode,
             TextTemplateNode templateNode) {
-        String text = getBindingValue(templateNode.getTextBinding());
+        Binding binding = templateNode.getTextBinding();
+        String text;
+        if (binding.getType().equals(TextValueBinding.TYPE)) {
+            Computation computation = Reactive.runWhenDepedenciesChange(
+                    () -> updateTextTemplateValue(stateNode, binding));
+            stateNode.addUnregisterListener(event -> computation.stop());
+            return updateTextTemplateValue(stateNode, binding);
+        } else {
+            text = getBindingValue(stateNode, binding);
+            return Browser.getDocument().createTextNode(text);
+        }
+    }
 
+    private static Node updateTextTemplateValue(StateNode node,
+            Binding binding) {
+        NodeMap map = node.getMap(NodeFeatures.TEMPLATE_MODEL);
+        String text = Optional.of(binding.getValue()).map(Object::toString)
+                .map(map::getProperty).map(MapProperty::getValue)
+                .map(Object::toString).orElse("");
         return Browser.getDocument().createTextNode(text);
     }
 
@@ -111,7 +136,7 @@ public class TemplateElementBinder {
             for (String name : properties.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
                 WidgetUtil.setJsProperty(element, name,
-                        getBindingValue(binding));
+                        getBindingValue(stateNode, binding));
             }
         }
 
@@ -129,7 +154,7 @@ public class TemplateElementBinder {
         return element;
     }
 
-    private static String getBindingValue(Binding binding) {
+    private static String getBindingValue(StateNode node, Binding binding) {
         assert binding != null;
 
         // Nothing to "bind" yet with only static bindings
