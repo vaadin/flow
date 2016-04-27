@@ -20,6 +20,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
+import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
@@ -96,5 +97,49 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .createAndBind(stateNode);
 
         assertEquals("DIV", element.getTagName());
+    }
+
+    public void testBindOverrideNodeWhenCreated() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.setId(Double.valueOf(83));
+
+        StateNode overrideNode = new StateNode(1, tree);
+        overrideNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("id")
+                .setValue("override");
+
+        stateNode.getMap(NodeFeatures.TEMPLATE_OVERRIDES)
+                .getProperty(templateNode.getId().toString())
+                .setValue(overrideNode);
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, templateNode);
+
+        Reactive.flush();
+
+        assertEquals("override", element.getId());
+    }
+
+    public void testBindOverrideNodeAfterCreated() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.setId(Double.valueOf(83));
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, templateNode);
+
+        Reactive.flush();
+
+        StateNode overrideNode = new StateNode(1, tree);
+        overrideNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("id")
+                .setValue("override");
+
+        stateNode.getMap(NodeFeatures.TEMPLATE_OVERRIDES)
+                .getProperty(templateNode.getId().toString())
+                .setValue(overrideNode);
+
+        Reactive.flush();
+
+        assertEquals("override", element.getId());
     }
 }

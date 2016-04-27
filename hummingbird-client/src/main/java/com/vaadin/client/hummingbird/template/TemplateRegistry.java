@@ -63,6 +63,9 @@ public class TemplateRegistry {
     public void register(int id, TemplateNode templateNode) {
         assert templateNode != null;
 
+        assert templateNode.getId() == null;
+        templateNode.setId(Double.valueOf(id));
+
         Double key = Double.valueOf(id);
         assert !instanceMap.has(key);
 
@@ -92,6 +95,7 @@ public class TemplateRegistry {
         TemplateNode templateNode = instanceMap.get(Double.valueOf(id));
 
         assert templateNode != null;
+        assert Double.valueOf(id).equals(templateNode.getId());
 
         return templateNode;
     }

@@ -50,4 +50,10 @@ public interface TemplateNode {
      */
     @JsProperty
     JsArray<Double> getChildren();
+
+    @JsProperty
+    Double getId();
+
+    @JsProperty
+    void setId(Double id);
 }
