@@ -26,10 +26,10 @@ import com.vaadin.hummingbird.StateNode;
 public class ModelMap extends NodeMap {
 
     /**
-     * Sets the {@code value} for the specified {@code value}.
+     * Creates an instance of this node feature.
      *
-     * @param key
-     *            key with which the specified value is to be associated
+     * @param node
+     *            the node that the feature belongs to
      */
     public ModelMap(StateNode node) {
         super(node);
