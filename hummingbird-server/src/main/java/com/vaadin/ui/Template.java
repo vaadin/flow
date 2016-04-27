@@ -23,6 +23,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
 import com.vaadin.hummingbird.template.TemplateParser;
@@ -38,7 +39,7 @@ import com.vaadin.hummingbird.template.TemplateParser;
  */
 public abstract class Template extends Component {
     private final StateNode stateNode = new StateNode(TemplateMap.class,
-            ComponentMapping.class, ModelMap.class);
+            TemplateOverridesMap.class, ComponentMapping.class, ModelMap.class);
 
     /**
      * Creates a new template.
