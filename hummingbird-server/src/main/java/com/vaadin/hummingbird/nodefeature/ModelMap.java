@@ -45,6 +45,7 @@ public class ModelMap extends NodeMap {
      *            value to be associated with the specified key
      */
     public void setValue(String key, String value) {
+        assert key != null;
         put(key, value);
     }
 

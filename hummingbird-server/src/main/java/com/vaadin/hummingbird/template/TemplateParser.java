@@ -109,8 +109,14 @@ public class TemplateParser {
     private static TextTemplateBuilder createTextBuilder(TextNode node) {
         String text = node.text();
 
-        // No special bindings to support for now
-        return new TextTemplateBuilder(new StaticBinding(text));
+        if (text.startsWith("{{") && text.endsWith("}}")) {
+            String key = text.substring(2);
+            key = key.substring(0, key.length() - 2);
+            return new TextTemplateBuilder(new TextValueBinding(key));
+        } else {
+            // No special bindings to support for now
+            return new TextTemplateBuilder(new StaticBinding(text));
+        }
     }
 
     private static ElementTemplateBuilder createElementBuilder(

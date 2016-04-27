@@ -18,6 +18,9 @@ package com.vaadin.hummingbird.template;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
+
 public class TemplateParserTest {
     @Test
     public void parseBasicTemplate() {
@@ -40,6 +43,32 @@ public class TemplateParserTest {
         Assert.assertEquals("input", inputChild.getTag());
         Assert.assertEquals(0, inputChild.getPropertyNames().count());
         Assert.assertEquals(0, inputChild.getChildCount());
+    }
+
+    @Test
+    public void parseParameterizedTextTemplate() {
+        ElementTemplateNode rootNode = (ElementTemplateNode) TemplateParser
+                .parse("<div id='foo'>{{bar}}<input></div>");
+
+        Assert.assertEquals("div", rootNode.getTag());
+
+        Assert.assertEquals(1, rootNode.getPropertyNames().count());
+        Assert.assertEquals("foo",
+                rootNode.getPropertyBinding("id").get().getValue(null));
+
+        Assert.assertEquals(2, rootNode.getChildCount());
+
+        TextTemplateNode textChild = (TextTemplateNode) rootNode.getChild(0);
+        TemplateBinding binding = textChild.getTextBinding();
+
+        StateNode node = new StateNode(ModelMap.class);
+
+        Assert.assertNull(binding.getValue(node));
+
+        String value = "someValue";
+        node.getFeature(ModelMap.class).setValue("bar", value);
+
+        Assert.assertEquals(value, binding.getValue(node));
     }
 
     @Test(expected = TemplateParseException.class)
