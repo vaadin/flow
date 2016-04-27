@@ -50,4 +50,23 @@ public interface TemplateNode {
      */
     @JsProperty
     JsArray<Double> getChildren();
+
+    /**
+     * Gets the id that this template node has in its {@link TemplateRegistry}.
+     * 
+     * @return the template node id, or <code>null</code> if this node has not
+     *         been registered
+     */
+    @JsProperty
+    Double getId();
+
+    /**
+     * Sets the id of this template node. The id is set by
+     * {@link TemplateRegistry#register(int, TemplateNode)}.
+     *
+     * @param id
+     *            the id of the template node, not <code>null</code>
+     */
+    @JsProperty
+    void setId(Double id);
 }
