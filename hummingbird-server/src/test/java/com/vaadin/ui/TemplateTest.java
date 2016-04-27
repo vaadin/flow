@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
@@ -35,8 +36,17 @@ public class TemplateTest {
     private static class TestTemplate extends Template {
         TestTemplate() {
             super(new ByteArrayInputStream(
-                    "<div></div>".getBytes(StandardCharsets.UTF_8)));
+                    "<div>foo</div>".getBytes(StandardCharsets.UTF_8)));
         }
+    }
+
+    @Test
+    public void inputStreamInConstructor() {
+        Template template = new TestTemplate();
+        Element element = template.getElement();
+
+        Assert.assertEquals("div", element.getTag());
+        Assert.assertEquals("foo", element.getTextContent());
     }
 
     @Test

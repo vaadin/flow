@@ -31,7 +31,7 @@ public class ModelMap extends NodeMap {
      * @param node
      *            the node that the feature belongs to
      */
-    ModelMap(StateNode node) {
+    public ModelMap(StateNode node) {
         super(node);
     }
 
@@ -45,7 +45,6 @@ public class ModelMap extends NodeMap {
      *            value to be associated with the specified key
      */
     public void setValue(String key, String value) {
-        assert key != null;
         put(key, value);
     }
 
@@ -53,7 +52,7 @@ public class ModelMap extends NodeMap {
      * Gets the value corresponding to the given key.
      * 
      * @param key
-     *            the key to get a value for, not {@code null}
+     *            the key to get a value for
      * @return the value corresponding to the key; <code>null</code> if there is
      *         no value stored, or if <code>null</code> is stored as a value
      */
