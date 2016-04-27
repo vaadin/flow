@@ -16,14 +16,17 @@
 package com.vaadin.client.hummingbird.template;
 
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.StaticBinding;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.events.EventRemover;
 import elemental.json.JsonObject;
 
 /**
@@ -52,7 +55,8 @@ public class TemplateElementBinder {
         assert stateNode.hasFeature(NodeFeatures.TEMPLATE);
 
         int templateId = stateNode.getMap(NodeFeatures.TEMPLATE)
-                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID).getValueOrDefault(-1);
+                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
+                .getValueOrDefault(-1);
 
         return createAndBind(stateNode, templateId);
     }
@@ -126,7 +130,35 @@ public class TemplateElementBinder {
             }
         }
 
+        MapProperty overrideProperty = stateNode
+                .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
+                .getProperty(String.valueOf(templateNode.getId()));
+        if (overrideProperty.hasValue()) {
+            /*
+             * Bind right away. We don't need to listen to property value
+             * changes since the value will never change once it has been set.
+             */
+            bindOverrideNode(element, overrideProperty);
+        } else {
+            /*
+             * React in case an override nodes appears later on.
+             */
+            EventRemover remover = overrideProperty.addChangeListener(
+                    e -> bindOverrideNode(element, overrideProperty));
+            stateNode.addUnregisterListener(e -> remover.remove());
+        }
+
         return element;
+    }
+
+    private static void bindOverrideNode(Element element,
+            MapProperty overrideProperty) {
+        StateNode overrideNode = (StateNode) overrideProperty.getValue();
+
+        BasicElementBinder bind = BasicElementBinder.bind(overrideNode,
+                element);
+
+        overrideNode.addUnregisterListener(e -> bind.remove());
     }
 
     private static String getBindingValue(Binding binding) {
