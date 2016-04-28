@@ -1,0 +1,52 @@
+= Using Components with Templates
+
+You can use an HTML snippet as a template for your component instead of creating 
+a component from scratch via populating its hierarchy using other components.
+To create such component you need to extend `Template` class and define an HTML
+snippet in the file with the same name as the component class name and the `.html` file extension.
+The file should be in the same package of the class.
+
+So here is an example of a template component whose root element will be populated using
+a `div` element defined below in the html file.
+
+[source,java]
+----
+public class MainPage extends Template {
+
+    public void setContent(Component content) {
+        Element contentContainer = getElement().getChildren() .filter(
+                element -> "content".equals(element.getAttribute("id"))).
+                findFirst().get();
+        contentContainer.removeAllChildren();
+        contentContainer.appendChild(content.getElement());
+    }
+}
+----
+
+Here is the content of the `Main.html` file which has a placeholder `div` element 
+with `"content"` identifier. The latter element is used in the java code above to set a `Component` 
+as a child for it.  
+
+[source,html]
+----
+<div>
+    <div id="header">Main page</div>
+    <div id="content"></div>
+    <hr>
+    <div id="footer">
+        <a href="mailto:someone@example.com?Subject=Hello%20again" target="_top">Send Mail</a>
+    </div>
+</div>
+----
+
+Now you can set any `Component` as a content for the `MainPage` class:
+
+[source,java]
+----
+MainPage page = new MainPage();
+page.setContent(new Label("Hello!"));
+----
+
+[TIP] An HTML snippet must represent a single root HTML element.
+[TIP] Use can use only empty elements to modify their content. So in the example above the `"content"` is eligible for modification but the `"header"` isn't. 
+
