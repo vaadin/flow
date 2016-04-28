@@ -123,10 +123,10 @@ public class TemplateElementBinder {
 
     private static void updateTextTemplateValue(Text domNode, StateNode node,
             Binding binding) {
-        NodeMap map = node.getMap(NodeFeatures.TEMPLATE_MODEL);
-        String text = Optional.ofNullable(binding.getValue())
-                .map(Object::toString).map(map::getProperty)
-                .map(MapProperty::getValue).map(Object::toString).orElse("");
+        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
+        String key = binding.getValue();
+        assert key != null;
+        String text = model.getProperty(key).getValueOrDefault("");
         domNode.setTextContent(text);
     }
 
@@ -206,8 +206,7 @@ public class TemplateElementBinder {
 
     private static String getStaticBindingValue(Binding binding) {
         assert binding != null;
-        return Optional.ofNullable(binding.getValue()).map(Object::toString)
-                .orElse("");
+        return Optional.ofNullable(binding.getValue()).orElse("");
     }
 
 }
