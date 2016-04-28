@@ -22,7 +22,6 @@ import elemental.client.Browser;
 /**
  * Helper class for using window.console
  *
- * @since
  * @author Vaadin Ltd
  */
 public class Console {

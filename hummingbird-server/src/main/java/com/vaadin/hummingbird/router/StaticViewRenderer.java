@@ -23,7 +23,6 @@ import java.util.List;
  * An {@link ViewRenderer} where the view types are decided at construction
  * time.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class StaticViewRenderer extends ViewRenderer {

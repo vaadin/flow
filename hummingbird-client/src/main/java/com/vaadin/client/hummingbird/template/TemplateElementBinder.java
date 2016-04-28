@@ -39,7 +39,6 @@ import elemental.json.JsonObject;
 /**
  * Binds a template node and a state node to an element instance.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TemplateElementBinder {

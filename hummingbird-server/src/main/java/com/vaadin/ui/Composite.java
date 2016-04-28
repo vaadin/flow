@@ -41,7 +41,6 @@ import com.vaadin.hummingbird.dom.ElementUtil;
  * @author Vaadin Ltd
  * @param <T>
  *            the type of the content
- * @since
  */
 public abstract class Composite<T extends Component> extends Component {
 

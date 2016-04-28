@@ -33,7 +33,6 @@ import com.vaadin.ui.Page;
  * {@link Router#reconfigure(RouterConfigurator)} method. This also means that
  * you should never need to create your own configuration instances.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class RouterConfiguration

@@ -23,7 +23,6 @@ import com.vaadin.hummingbird.html.event.ClickNotifier;
 /**
  * Component representing a <code>&lt;button&gt;</code> element.
  *
- * @since
  * @author Vaadin Ltd
  */
 @Tag(Tag.BUTTON)

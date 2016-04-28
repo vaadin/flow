@@ -27,7 +27,6 @@ import com.vaadin.ui.ComponentUtil;
  * A server side only node feature for mapping a node to a component.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class ComponentMapping extends NodeFeature {
 

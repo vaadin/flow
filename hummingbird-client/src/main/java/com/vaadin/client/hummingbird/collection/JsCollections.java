@@ -28,7 +28,6 @@ import jsinterop.annotations.JsFunction;
  * Factory for JavaScript collection implementations with support for
  * alternative JRE implementations.
  *
- * @since
  * @author Vaadin Ltd
  */
 @SuppressWarnings("deprecation")

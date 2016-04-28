@@ -23,7 +23,6 @@ import com.vaadin.ui.ComponentEvent;
 /**
  * Event fired when a component is clicked.
  *
- * @since
  * @author Vaadin Ltd
  */
 @DomEvent("click")

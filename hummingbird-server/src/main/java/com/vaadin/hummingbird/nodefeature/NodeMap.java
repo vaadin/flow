@@ -32,7 +32,6 @@ import com.vaadin.shared.util.UniqueSerializable;
 /**
  * A state node feature that structures data as a map.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class NodeMap extends NodeFeature {

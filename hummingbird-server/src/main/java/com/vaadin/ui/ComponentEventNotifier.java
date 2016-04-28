@@ -26,7 +26,6 @@ import com.vaadin.hummingbird.event.ComponentEventListener;
  * can use in a default implementation for adding a listener for a specific
  * event type.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface ComponentEventNotifier extends Serializable {

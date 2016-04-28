@@ -21,7 +21,6 @@ import java.util.HashMap;
 /**
  * The {@link Attributes} class represents a set of attributes.
  * 
- * @since
  * @author Vaadin Ltd
  *
  */

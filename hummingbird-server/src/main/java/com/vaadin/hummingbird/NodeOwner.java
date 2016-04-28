@@ -22,7 +22,6 @@ import java.io.Serializable;
  * Abstract root of a state node tree. A node always belongs to one specific
  * owner. The owner keeps track of metadata for its nodes.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface NodeOwner extends Serializable {

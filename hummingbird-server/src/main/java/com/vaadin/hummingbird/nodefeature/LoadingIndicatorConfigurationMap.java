@@ -22,7 +22,6 @@ import com.vaadin.ui.LoadingIndicatorConfiguration;
  * Map for storing configuration for the loading indicator.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class LoadingIndicatorConfigurationMap extends NodeMap
         implements LoadingIndicatorConfiguration {

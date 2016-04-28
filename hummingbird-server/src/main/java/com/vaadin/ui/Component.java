@@ -38,7 +38,6 @@ import com.vaadin.hummingbird.event.ComponentEventListener;
  * parent). The root element cannot be changed once it has been set.
  *
  * @author Vaadin Ltd
- * @since
  */
 public abstract class Component implements HasElement, Serializable,
         ComponentEventNotifier, AttachNotifier, DetachNotifier {

@@ -25,7 +25,6 @@ import java.lang.annotation.Target;
  * Marks the tutorial file that should contain code lines from this the
  * annotated class.
  *
- * @since
  * @author Vaadin Ltd
  */
 @Documented

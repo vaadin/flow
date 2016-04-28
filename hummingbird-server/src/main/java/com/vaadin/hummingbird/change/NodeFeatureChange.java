@@ -26,7 +26,6 @@ import elemental.json.JsonObject;
 /**
  * Base class for all node changes related to a feature.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class NodeFeatureChange extends NodeChange {

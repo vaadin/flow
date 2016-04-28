@@ -139,7 +139,6 @@ public interface DeploymentConfiguration extends Serializable {
      *
      * @return the router configurator class name
      *
-     * @since
      */
     String getRouterConfiguratorClassName();
 

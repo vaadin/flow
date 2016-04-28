@@ -28,7 +28,6 @@ import org.jsoup.select.Elements;
 /**
  * Parser for an Angular 2-like template syntax.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TemplateParser {

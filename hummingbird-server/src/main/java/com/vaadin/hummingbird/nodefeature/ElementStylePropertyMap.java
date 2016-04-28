@@ -26,7 +26,6 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStyle;
 /**
  * Map for element style values.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementStylePropertyMap extends AbstractPropertyMap {

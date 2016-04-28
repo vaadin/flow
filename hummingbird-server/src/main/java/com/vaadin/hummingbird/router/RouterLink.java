@@ -37,7 +37,6 @@ import com.vaadin.ui.UI;
  * The <code>href</code> attribute of {@link #getElement()} will only be
  * up-to-date when the component is attached to a UI.
  *
- * @since
  * @author Vaadin Ltd
  */
 @Tag("a")

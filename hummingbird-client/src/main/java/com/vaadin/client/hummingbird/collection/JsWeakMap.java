@@ -21,7 +21,6 @@ import jsinterop.annotations.JsType;
  * Native JS WeakMap interface with an alternative implementation for JRE usage.
  * Use {@link JsCollections#weakMap()} to create an appropriate instance.
  *
- * @since
  * @author Vaadin Ltd
  * @param <K>
  *            the key type

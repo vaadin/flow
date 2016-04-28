@@ -30,7 +30,6 @@ import elemental.json.JsonObject;
  * and included on the client side.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class DependencyList extends SerializableNodeList<JsonObject> {
 

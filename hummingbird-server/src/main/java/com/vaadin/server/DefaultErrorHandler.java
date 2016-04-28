@@ -23,7 +23,6 @@ import java.util.logging.Logger;
  * The default implementation of {@link ErrorHandler}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class DefaultErrorHandler implements ErrorHandler {
     @Override

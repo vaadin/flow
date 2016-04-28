@@ -31,7 +31,6 @@ import elemental.json.JsonObject;
 /**
  * A template AST node representing a regular element.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementTemplateNode extends TemplateNode {

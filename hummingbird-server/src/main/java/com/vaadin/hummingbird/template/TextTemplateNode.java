@@ -23,7 +23,6 @@ import elemental.json.JsonObject;
 /**
  * A template AST node representing a text node.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TextTemplateNode extends TemplateNode {

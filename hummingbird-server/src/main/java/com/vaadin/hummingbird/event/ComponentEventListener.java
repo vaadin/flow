@@ -22,7 +22,6 @@ import com.vaadin.ui.ComponentEvent;
 /**
  * Generic listener for component events.
  * 
- * @since
  * @author Vaadin Ltd
  * 
  * @param <T>

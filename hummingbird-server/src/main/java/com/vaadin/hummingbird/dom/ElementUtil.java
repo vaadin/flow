@@ -27,7 +27,6 @@ import com.vaadin.ui.Composite;
  * Provides utility methods for {@link Element}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class ElementUtil {
 

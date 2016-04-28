@@ -22,7 +22,6 @@ import com.vaadin.ui.Component;
 /**
  * Component representing a <code>&lt;div&gt;</code> element.
  *
- * @since
  * @author Vaadin Ltd
  */
 @Tag(Tag.DIV)

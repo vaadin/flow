@@ -28,7 +28,6 @@ import elemental.events.EventRemover;
  * global flush. A computation is also scheduled to for an initial
  * "recomputation" when it is created.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class Computation implements ReactiveChangeListener {

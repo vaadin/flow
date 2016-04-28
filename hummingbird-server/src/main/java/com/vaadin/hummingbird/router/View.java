@@ -27,7 +27,6 @@ import com.vaadin.ui.UI;
 /**
  * A view that can be shown in a {@link UI} or {@link HasChildView}.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

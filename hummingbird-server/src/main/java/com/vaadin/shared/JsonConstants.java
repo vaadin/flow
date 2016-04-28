@@ -23,7 +23,6 @@ import com.vaadin.ui.Page;
  * A utility class providing constants for JSON related features.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class JsonConstants implements Serializable {
 

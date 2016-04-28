@@ -21,7 +21,6 @@ import java.util.Set;
  * Representation of the class names for an {@link Element}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface ClassList extends Set<String> {
 

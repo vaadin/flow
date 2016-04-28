@@ -49,8 +49,9 @@ public class TextValueBindingTest {
         JsonObject object = (JsonObject) json;
 
         Assert.assertEquals(TextValueBinding.TYPE,
-                object.get("type").asString());
-        Assert.assertEquals("foo", object.get("key").asString());
+                object.get(TemplateBinding.TYPE_PROPERTY).asString());
+        Assert.assertEquals("foo",
+                object.get(TemplateBinding.VALUE_PROPERTY).asString());
     }
 
 }

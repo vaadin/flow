@@ -25,7 +25,6 @@ import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
  * Class managing the lifecycle of a UI.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class UILifecycle {
 

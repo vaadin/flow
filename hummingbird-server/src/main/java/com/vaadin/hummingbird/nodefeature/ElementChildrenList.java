@@ -21,7 +21,6 @@ import com.vaadin.hummingbird.StateNode;
 /**
  * List of nodes describing the child elements of an element.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementChildrenList extends StateNodeNodeList {

@@ -19,7 +19,6 @@ package com.vaadin.client;
  * A generic command interface meant to be used for passing lambdas around.
  *
  * @author Vaadin Ltd
- * @since
  */
 @FunctionalInterface
 public interface Command {

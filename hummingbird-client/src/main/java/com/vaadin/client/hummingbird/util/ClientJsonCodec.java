@@ -30,7 +30,6 @@ import elemental.json.JsonValue;
 /**
  * Static helpers for encoding and decoding JSON.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ClientJsonCodec {

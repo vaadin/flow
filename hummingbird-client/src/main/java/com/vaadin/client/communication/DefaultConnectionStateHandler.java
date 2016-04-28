@@ -488,7 +488,6 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     /**
      * Called when a communication error occurs and we cannot recover from it.
      *
-     * @since
      * @param details
      * @param statusCode
      */

@@ -25,7 +25,6 @@ import elemental.events.EventRemover;
  * A reactive value typically uses a {@link ReactiveEventRouter} for keeping
  * track of listeners and firing events.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface ReactiveValue {

@@ -50,7 +50,6 @@ import elemental.json.JsonValue;
  * as attributes.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class Element implements Serializable {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";

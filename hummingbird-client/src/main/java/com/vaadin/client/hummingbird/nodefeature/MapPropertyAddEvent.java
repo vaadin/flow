@@ -20,7 +20,6 @@ import com.vaadin.client.hummingbird.reactive.ReactiveChangeEvent;
 /**
  * Event fired when a property is added to a {@link NodeMap}.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class MapPropertyAddEvent extends ReactiveChangeEvent {

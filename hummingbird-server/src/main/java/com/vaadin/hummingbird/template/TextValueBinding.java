@@ -15,21 +15,17 @@
  */
 package com.vaadin.hummingbird.template;
 
-import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
  * A template binding that produces dynamic text value for a text node.
  *
- * @since
  * @author Vaadin Ltd
  */
-public class TextValueBinding implements TemplateBinding {
+public class TextValueBinding extends AbstractTemplateBinding {
 
     /**
      * Type identifier used for text bindings in JSON messages.
@@ -58,12 +54,7 @@ public class TextValueBinding implements TemplateBinding {
 
     @Override
     public JsonValue toJson() {
-        JsonObject json = Json.createObject();
-
-        json.put("type", TYPE);
-        json.put("key", JsonCodec.encodeWithoutTypeInfo(key));
-
-        return json;
+        return makeJsonObject(TYPE, key);
     }
 
 }

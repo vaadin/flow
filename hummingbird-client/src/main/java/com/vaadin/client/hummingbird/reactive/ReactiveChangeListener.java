@@ -20,7 +20,6 @@ package com.vaadin.client.hummingbird.reactive;
  *
  * @see ReactiveValue#addReactiveChangeListener(ReactiveChangeListener)
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

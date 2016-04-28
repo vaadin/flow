@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird;
 /**
  * A listener that will be notified when a state node is unregistered.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

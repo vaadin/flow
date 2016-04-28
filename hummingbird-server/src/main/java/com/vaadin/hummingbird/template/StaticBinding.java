@@ -15,20 +15,16 @@
  */
 package com.vaadin.hummingbird.template;
 
-import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
  * A template binding that always produces the same value.
  *
- * @since
  * @author Vaadin Ltd
  */
-public class StaticBinding implements TemplateBinding {
+public class StaticBinding extends AbstractTemplateBinding {
     /**
      * Type identifier used for static bindings in JSON messages.
      */
@@ -53,11 +49,6 @@ public class StaticBinding implements TemplateBinding {
 
     @Override
     public JsonValue toJson() {
-        JsonObject json = Json.createObject();
-
-        json.put("type", TYPE);
-        json.put("value", JsonCodec.encodeWithoutTypeInfo(value));
-
-        return json;
+        return makeJsonObject(TYPE, value);
     }
 }

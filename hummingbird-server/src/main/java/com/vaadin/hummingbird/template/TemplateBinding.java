@@ -26,10 +26,14 @@ import elemental.json.JsonValue;
  * binding can be used e.g. as the value of an element attribute or as the text
  * in a text node.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface TemplateBinding extends Serializable {
+
+    String TYPE_PROPERTY = "type";
+
+    String VALUE_PROPERTY = "value";
+
     /**
      * Produces a value for the given state node.
      *

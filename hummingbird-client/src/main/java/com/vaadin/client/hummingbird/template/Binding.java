@@ -25,7 +25,6 @@ import jsinterop.annotations.JsType;
  * the server. The properties are based on the output of
  * {@link TemplateBinding#toJson()}.
  *
- * @since
  * @author Vaadin Ltd
  */
 @JsType(isNative = true)

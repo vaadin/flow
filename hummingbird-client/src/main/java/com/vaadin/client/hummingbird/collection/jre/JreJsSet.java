@@ -27,7 +27,6 @@ import com.vaadin.client.hummingbird.collection.JsSet;
  *
  *
  * @deprecated Should only be used for testing.
- * @since
  * @author Vaadin Ltd
  * @param <V>
  *            the value type

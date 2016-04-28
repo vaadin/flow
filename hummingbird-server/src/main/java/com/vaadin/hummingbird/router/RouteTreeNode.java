@@ -24,7 +24,6 @@ import java.util.Map;
  * using {@link RouterConfiguration#setRoute(String, NavigationHandler)}. Each
  * node in the tree corresponds to the options for a specific path.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class RouteTreeNode implements Serializable {

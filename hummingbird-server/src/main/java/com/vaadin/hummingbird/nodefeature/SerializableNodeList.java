@@ -28,7 +28,6 @@ import com.vaadin.hummingbird.StateNode;
  * @param <T>
  *            the type of Serializable objects this list contains
  * @author Vaadin Ltd
- * @since
  */
 public abstract class SerializableNodeList<T extends Serializable>
         extends NodeList<T> {

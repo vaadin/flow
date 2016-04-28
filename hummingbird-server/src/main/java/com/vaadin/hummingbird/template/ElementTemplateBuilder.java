@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 /**
  * Builder for element template nodes.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementTemplateBuilder implements TemplateNodeBuilder {

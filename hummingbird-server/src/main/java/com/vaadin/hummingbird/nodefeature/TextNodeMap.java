@@ -21,7 +21,6 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
 /**
  * Map holding the data of a text node.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TextNodeMap extends NodeMap {

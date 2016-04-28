@@ -28,7 +28,6 @@ import elemental.dom.Text;
 /**
  * Binds {@link TextNodeMap} data to a text node in the DOM.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TextElementBinder {

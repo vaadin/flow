@@ -29,7 +29,6 @@ import com.vaadin.ui.UI;
 /**
  * The state tree that is synchronized with the client-side.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class StateTree implements NodeOwner {

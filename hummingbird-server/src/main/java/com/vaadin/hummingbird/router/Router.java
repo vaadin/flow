@@ -27,7 +27,6 @@ import com.vaadin.ui.UI;
  * The router takes care of serving content when the user navigates within a
  * site or an application.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class Router implements Serializable {

@@ -204,7 +204,6 @@ public class ServerRpcHandler implements Serializable {
      * the expected one.
      *
      * @author Vaadin Ltd
-     * @since
      */
     public static class InvalidUIDLSecurityKeyException
             extends GeneralSecurityException {
