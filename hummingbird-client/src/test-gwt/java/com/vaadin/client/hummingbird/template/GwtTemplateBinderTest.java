@@ -21,6 +21,7 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
@@ -36,17 +37,30 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private StateTree tree = new StateTree(registry);
     private StateNode stateNode = new StateNode(0, tree);
 
-    public void testTemplateAttributes() {
+    public void testTemplateProperties() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        templateNode.addProperty("attr1", "value1");
-        templateNode.addProperty("attr2", "value2");
+        templateNode.addProperty("prop1", "value1");
+        templateNode.addProperty("prop2", "value2");
 
         Element element = (Element) TemplateElementBinder
                 .createAndBind(stateNode, templateNode);
 
-        assertEquals("value1", WidgetUtil.getJsProperty(element, "attr1"));
-        assertEquals("value2", WidgetUtil.getJsProperty(element, "attr2"));
+        assertEquals("value1", WidgetUtil.getJsProperty(element, "prop1"));
+        assertEquals("value2", WidgetUtil.getJsProperty(element, "prop2"));
+    }
+
+    public void testTemplateAttributes() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addAttribute("attr1", "value1");
+        templateNode.addAttribute("attr2", "value2");
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, templateNode);
+
+        assertEquals("value1", element.getAttribute("attr1"));
+        assertEquals("value2", element.getAttribute("attr2"));
     }
 
     public void testTemplateTag() {
@@ -78,7 +92,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     public void testTemplateText() {
         TestTextTemplate templateNode = TestTextTemplate
-                .create(TestStaticBinding.create("text"));
+                .create(TestBinding.createStatic("text"));
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
         assertEquals("text", domNode.getTextContent());
@@ -98,6 +112,63 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .createAndBind(stateNode);
 
         assertEquals("DIV", element.getTagName());
+    }
+
+    public void testTextValueTemplate() {
+        TestTextTemplate templateNode = TestTextTemplate
+                .create(TestBinding.createTextValueBinding("key"));
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        map.getProperty("key").setValue("foo");
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        Reactive.flush();
+
+        assertEquals("foo", domNode.getTextContent());
+    }
+
+    public void testUpdateTextValueTemplate() {
+        TestTextTemplate templateNode = TestTextTemplate
+                .create(TestBinding.createTextValueBinding("key"));
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        map.getProperty("key").setValue("foo");
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        Reactive.flush();
+
+        map.getProperty("key").setValue("bar");
+
+        Reactive.flush();
+
+        assertEquals("bar", domNode.getTextContent());
+    }
+
+    public void testUnregister_updateIsNotDone() {
+        TestTextTemplate templateNode = TestTextTemplate
+                .create(TestBinding.createTextValueBinding("key"));
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        map.getProperty("key").setValue("foo");
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        assertEquals("", domNode.getTextContent());
+
+        stateNode.unregister();
+
+        Reactive.flush();
+        assertEquals("", domNode.getTextContent());
+    }
+
+    public void testTextNoValueTemplate() {
+        TestTextTemplate templateNode = TestTextTemplate
+                .create(TestBinding.createTextValueBinding("key"));
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        Reactive.flush();
+
+        assertEquals("", domNode.getTextContent());
     }
 
     public void testBindOverrideNodeWhenCreated() {

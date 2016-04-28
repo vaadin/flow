@@ -44,5 +44,5 @@ public interface Binding {
      * @return the binding value
      */
     @JsProperty
-    Object getValue();
+    String getValue();
 }

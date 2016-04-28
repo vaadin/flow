@@ -27,7 +27,8 @@ public class RootContextUI extends DependencyUI {
     /**
      * The main servlet for the application.
      */
-    @WebServlet(urlPatterns = { "" }, name = "UIServlet", asyncSupported = true)
+    @WebServlet(urlPatterns = {
+            "/*" }, name = "UIServlet", asyncSupported = true)
     @VaadinServletConfiguration(ui = RootContextUI.class, productionMode = false)
     public static class Servlet extends VaadinServlet {
     }

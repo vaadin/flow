@@ -15,17 +15,24 @@
  */
 package com.vaadin.client.hummingbird.template;
 
+import java.util.Optional;
+
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
+import com.vaadin.client.hummingbird.reactive.Computation;
+import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.StaticBinding;
+import com.vaadin.hummingbird.template.TextValueBinding;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.dom.Text;
 import elemental.events.EventRemover;
 import elemental.json.JsonObject;
 
@@ -99,9 +106,28 @@ public class TemplateElementBinder {
 
     private static Node createAndBindText(StateNode stateNode,
             TextTemplateNode templateNode) {
-        String text = getBindingValue(templateNode.getTextBinding());
+        Binding binding = templateNode.getTextBinding();
+        if (binding.getType().equals(TextValueBinding.TYPE)) {
+            Text node = Browser.getDocument().createTextNode("");
+            Computation computation = Reactive.runWhenDepedenciesChange(
+                    () -> updateTextTemplateValue(node, stateNode, binding));
+            stateNode.addUnregisterListener(event -> computation.stop());
+            return node;
+        } else {
+            // Nothing to "bind" yet with only static bindings
+            assert binding.getType().equals(StaticBinding.TYPE);
+            return Browser.getDocument()
+                    .createTextNode(getStaticBindingValue(binding));
+        }
+    }
 
-        return Browser.getDocument().createTextNode(text);
+    private static void updateTextTemplateValue(Text domNode, StateNode node,
+            Binding binding) {
+        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
+        String key = binding.getValue();
+        assert key != null;
+        String text = model.getProperty(key).getValueOrDefault("");
+        domNode.setTextContent(text);
     }
 
     private static Node createAndBindElement(StateNode stateNode,
@@ -114,7 +140,15 @@ public class TemplateElementBinder {
             for (String name : properties.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
                 WidgetUtil.setJsProperty(element, name,
-                        getBindingValue(binding));
+                        getStaticBindingValue(binding));
+            }
+        }
+
+        JsonObject attributes = templateNode.getAttributes();
+        if (attributes != null) {
+            for (String name : attributes.keys()) {
+                Binding binding = WidgetUtil.crazyJsCast(attributes.get(name));
+                element.setAttribute(name, getStaticBindingValue(binding));
             }
         }
 
@@ -170,18 +204,9 @@ public class TemplateElementBinder {
         overrideNode.addUnregisterListener(e -> bind.remove());
     }
 
-    private static String getBindingValue(Binding binding) {
+    private static String getStaticBindingValue(Binding binding) {
         assert binding != null;
-
-        // Nothing to "bind" yet with only static bindings
-        assert binding.getType().equals(StaticBinding.TYPE);
-
-        Object value = binding.getValue();
-        if (value == null) {
-            return "";
-        } else {
-            return String.valueOf(value);
-        }
+        return Optional.ofNullable(binding.getValue()).orElse("");
     }
 
 }

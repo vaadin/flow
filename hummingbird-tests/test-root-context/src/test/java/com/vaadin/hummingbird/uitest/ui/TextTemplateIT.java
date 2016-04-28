@@ -1,4 +1,3 @@
-package com.vaadin.hummingbird.uitest.ui;
 /*
  * Copyright 2000-2016 Vaadin Ltd.
  *
@@ -14,30 +13,41 @@ package com.vaadin.hummingbird.uitest.ui;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.hummingbird.uitest.ui;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-public class BasicTemplateIT extends PhantomJSTest {
-    @Test
-    public void testBasicTemplate() {
+/**
+ * @author Vaadin Ltd
+ *
+ */
+public class TextTemplateIT extends PhantomJSTest {
+
+    @Before
+    public void setUp() {
         open();
+    }
 
-        WebElement bar = findElement(By.className("bar"));
+    @Test
+    public void initialText() {
+        WebElement textDiv = findElement(By.id("text"));
 
-        Assert.assertEquals("baz", bar.getText());
-        Assert.assertTrue(isElementPresent(By.cssSelector(".bar input")));
+        Assert.assertEquals("Foo", textDiv.getText());
+    }
 
-        WebElement containerButton = findElement(
-                By.cssSelector("#container > button"));
+    @Test
+    public void updateText() {
+        WebElement button = findElement(By.cssSelector("button"));
+        button.click();
 
-        // Click button to remove it
-        containerButton.click();
-        Assert.assertFalse(
-                isElementPresent(By.cssSelector("#container > button")));
+        WebElement textDiv = findElement(By.id("text"));
+
+        Assert.assertEquals("Bar", textDiv.getText());
     }
 }

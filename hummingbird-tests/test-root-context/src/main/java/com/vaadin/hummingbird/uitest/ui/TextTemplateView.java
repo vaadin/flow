@@ -15,21 +15,27 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.ui.Template;
 
-public class BasicTemplateView extends Template implements View {
-    public BasicTemplateView() {
-        // Child 0 is whitespace, child 1 is bar, child 2 is more whitespace
-        Element container = getElement().getChild(3);
-        assert "container".equals(container.getAttribute("id"));
+/**
+ * @author Vaadin Ltd
+ *
+ */
+public class TextTemplateView extends Div implements View {
 
-        Element button = ElementFactory
-                .createButton("Element added to template (click to remove)");
-        button.addEventListener("click", e -> button.removeFromParent());
+    public TextTemplateView() {
+        Button button = new Button();
+        TextTemplate text = new TextTemplate();
+        setName(text, "Foo");
+        button.addClickListener(event -> setName(text, "Bar"));
+        add(button, text);
+    }
 
-        container.appendChild(button);
+    private void setName(TextTemplate template, String name) {
+        template.getElement().getNode().getFeature(ModelMap.class)
+                .setValue("name", name);
     }
 }

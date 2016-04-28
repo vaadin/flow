@@ -66,6 +66,21 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    public void testElementAttributes() {
+        ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
+                .setAttribute("a1", new StaticBinding("v1"))
+                .setAttribute("a2", new StaticBinding("v2"));
+
+        Element element = createElement(builder);
+
+        Assert.assertEquals("v1", element.getAttribute("a1"));
+        Assert.assertEquals("v2", element.getAttribute("a2"));
+
+        Assert.assertEquals(new HashSet<>(Arrays.asList("a1", "a2")),
+                element.getAttributeNames().collect(Collectors.toSet()));
+    }
+
+    @Test
     public void testTemplateInBasicElement() {
         Element templateElement = createElement(
                 new ElementTemplateBuilder("template"));

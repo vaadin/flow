@@ -32,7 +32,10 @@ public interface TestElementTemplateNode
     public void setTag(String tag);
 
     @JsProperty
-    public void setProperties(JsonObject attributes);
+    public void setProperties(JsonObject properties);
+
+    @JsProperty
+    public void setAttributes(JsonObject attributes);
 
     @JsOverlay
     public static TestElementTemplateNode create(String tag) {
@@ -51,6 +54,16 @@ public interface TestElementTemplateNode
             properties = Json.createObject();
             setProperties(properties);
         }
-        properties.put(name, TestStaticBinding.create(staticValue).asJson());
+        properties.put(name, TestBinding.createStatic(staticValue).asJson());
+    }
+
+    @JsOverlay
+    public default void addAttribute(String name, String staticValue) {
+        JsonObject attributes = getAttributes();
+        if (attributes == null) {
+            attributes = Json.createObject();
+            setAttributes(attributes);
+        }
+        attributes.put(name, TestBinding.createStatic(staticValue).asJson());
     }
 }

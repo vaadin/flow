@@ -29,6 +29,11 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 public interface TemplateBinding extends Serializable {
+
+    String TYPE_PROPERTY = "type";
+
+    String VALUE_PROPERTY = "value";
+
     /**
      * Produces a value for the given state node.
      *
