@@ -13,20 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.humminbird.tutorial.component;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.ui.Page;
-import com.vaadin.ui.UI;
+import com.vaadin.ui.Component;
 
-@CodeFor("tutorial-execute-javascript.asciidoc")
-public class ExecuteJavaScript {
-    public static void logElementSize(String name, Element element) {
-        Page page = UI.getCurrent().getPage();
+@CodeFor("tutorial-component-basic.asciidoc")
+public class ComponentBasic {
 
-        page.executeJavaScript(
-                "console.log($0 + ' size:', $1.offsetWidth, $1.offsetHeight)",
-                name, element);
+    @Tag("input")
+    public class TextField extends Component {
+
+        public TextField(String value) {
+            getElement().setProperty("value", value);
+            getElement().synchronizeProperty("value", "change");
+        }
+
+        public String getValue() {
+            return getElement().getProperty("value");
+        }
+
+        public void setValue(String value) {
+            getElement().setProperty("value", value);
+        }
     }
+
 }

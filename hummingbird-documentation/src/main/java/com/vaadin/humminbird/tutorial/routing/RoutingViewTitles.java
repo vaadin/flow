@@ -1,4 +1,4 @@
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.humminbird.tutorial.routing;
 
 import com.vaadin.annotations.Title;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;

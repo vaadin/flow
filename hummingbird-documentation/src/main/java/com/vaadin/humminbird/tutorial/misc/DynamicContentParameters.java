@@ -13,21 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+package com.vaadin.humminbird.tutorial.misc;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Input;
-import com.vaadin.server.StreamResource;
 import com.vaadin.ui.UI;
 
 @CodeFor("tutorial-dynamic-content.asciidoc")
-public class DynamicContent {
+public class DynamicContentParameters {
 
     void tutorialCode() {
         Input name = new Input();
@@ -37,29 +32,13 @@ public class DynamicContent {
         image.getStyle().set("display", "block");
 
         Button button = new Button("Generate Image");
-        //@formatter:off - custom line wrapping
         button.addClickListener(event -> {
-            StreamResource resource = new StreamResource("image.svg",
-                    () -> getImageInputStream(name));
-            image.setAttribute("data", resource);
+            String url = "image?name=" + name.getValue();
+            image.setAttribute("data", url);
         });
-        //@formatter:on
 
         UI.getCurrent().getElement().appendChild(name.getElement(), image,
                 button.getElement());
     }
 
-    private InputStream getImageInputStream(Input name) {
-        String value = name.getValue();
-        if (value == null) {
-            value = "";
-        }
-        String svg = "<?xml version='1.0' encoding='UTF-8' standalone='no'?>"
-                + "<svg  xmlns='http://www.w3.org/2000/svg' "
-                + "xmlns:xlink='http://www.w3.org/1999/xlink'>"
-                + "<rect x='10' y='10' height='100' width='100' "
-                + "style=' fill: #90C3D4'/><text x='30' y='30' fill='red'>"
-                + value + "</text>" + "</svg>";
-        return new ByteArrayInputStream(svg.getBytes(StandardCharsets.UTF_8));
-    }
 }
