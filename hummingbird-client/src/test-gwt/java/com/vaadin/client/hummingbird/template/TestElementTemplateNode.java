@@ -54,7 +54,7 @@ public interface TestElementTemplateNode
             properties = Json.createObject();
             setProperties(properties);
         }
-        properties.put(name, TestStaticBinding.create(staticValue).asJson());
+        properties.put(name, TestBinding.createStatic(staticValue).asJson());
     }
 
     @JsOverlay
@@ -64,6 +64,6 @@ public interface TestElementTemplateNode
             attributes = Json.createObject();
             setAttributes(attributes);
         }
-        attributes.put(name, TestStaticBinding.create(staticValue).asJson());
+        attributes.put(name, TestBinding.createStatic(staticValue).asJson());
     }
 }
