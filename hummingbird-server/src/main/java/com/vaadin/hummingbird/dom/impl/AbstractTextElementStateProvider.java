@@ -57,12 +57,12 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public String getAttribute(StateNode node, String attribute) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
     public boolean hasAttribute(StateNode node, String attribute) {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     @Override
@@ -72,7 +72,7 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        throw new UnsupportedOperationException();
+        return Stream.empty();
     }
 
     @Override
@@ -114,7 +114,7 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public Object getProperty(StateNode node, String name) {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
@@ -130,22 +130,22 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public boolean hasProperty(StateNode node, String name) {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     @Override
     public Stream<String> getPropertyNames(StateNode node) {
-        throw new UnsupportedOperationException();
+        return Stream.empty();
     }
 
     @Override
     public ClassList getClassList(StateNode node) {
-        throw new UnsupportedOperationException();
+        return new ImmutableEmptyClassList();
     }
 
     @Override
     public Style getStyle(StateNode node) {
-        throw new UnsupportedOperationException();
+        return new ImmutableEmptyStyle();
     }
 
     @Override
@@ -162,15 +162,13 @@ public abstract class AbstractTextElementStateProvider
     public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
-        node.getFeature(ComponentMapping.class)
-                .setComponent(component);
+        node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-        return node.getFeature(ComponentMapping.class)
-                .getComponent();
+        return node.getFeature(ComponentMapping.class).getComponent();
     }
 
     @Override
