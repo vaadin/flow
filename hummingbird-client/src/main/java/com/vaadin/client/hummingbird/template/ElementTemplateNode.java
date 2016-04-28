@@ -47,4 +47,13 @@ public interface ElementTemplateNode extends TemplateNode {
      */
     @JsProperty
     JsonObject getProperties();
+
+    /**
+     * Gets a map of attribute bindings, as a JSON object.
+     *
+     * @see Binding
+     * @return a JSON object mapping attribute names to bindings.
+     */
+    @JsProperty
+    JsonObject getAttributes();
 }

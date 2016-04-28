@@ -125,9 +125,19 @@ public class TemplateParser {
                 element.tagName());
 
         element.attributes().forEach(attr -> {
-            // No special bindings to support for now
-            builder.setProperty(attr.getKey(),
-                    new StaticBinding(attr.getValue()));
+            String name = attr.getKey();
+
+            if (name.startsWith("(") || name.startsWith("[")) {
+                throw new TemplateParseException(
+                        "Dynamic binding support has not yet been implemented");
+            } else {
+                /*
+                 * Regular attribute names in the template, i.e. name not
+                 * starting with [ or (, are used as static attributes on the
+                 * target element.
+                 */
+                builder.setAttribute(name, new StaticBinding(attr.getValue()));
+            }
         });
 
         element.childNodes().stream().map(TemplateParser::createBuilder)

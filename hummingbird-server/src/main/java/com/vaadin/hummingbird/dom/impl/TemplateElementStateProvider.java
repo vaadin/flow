@@ -143,12 +143,13 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public String getAttribute(StateNode node, String attribute) {
-        return null;
+        return templateNode.getAttributeBinding(attribute)
+                .map(binding -> binding.getValue(node, "")).orElse(null);
     }
 
     @Override
     public boolean hasAttribute(StateNode node, String attribute) {
-        return false;
+        return templateNode.getAttributeBinding(attribute).isPresent();
     }
 
     @Override
@@ -158,7 +159,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        return Stream.empty();
+        return templateNode.getAttributeNames();
     }
 
     @Override
