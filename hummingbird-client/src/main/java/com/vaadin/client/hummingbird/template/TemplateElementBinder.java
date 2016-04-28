@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird.template;
 import java.util.Optional;
 
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
@@ -31,6 +32,8 @@ import com.vaadin.hummingbird.template.TextValueBinding;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.dom.Text;
+import elemental.events.EventRemover;
 import elemental.json.JsonObject;
 
 /**
@@ -105,25 +108,27 @@ public class TemplateElementBinder {
     private static Node createAndBindText(StateNode stateNode,
             TextTemplateNode templateNode) {
         Binding binding = templateNode.getTextBinding();
-        String text;
         if (binding.getType().equals(TextValueBinding.TYPE)) {
+            Text node = Browser.getDocument().createTextNode("");
             Computation computation = Reactive.runWhenDepedenciesChange(
-                    () -> updateTextTemplateValue(stateNode, binding));
+                    () -> updateTextTemplateValue(node, stateNode, binding));
             stateNode.addUnregisterListener(event -> computation.stop());
-            return updateTextTemplateValue(stateNode, binding);
+            return node;
         } else {
-            text = getBindingValue(stateNode, binding);
-            return Browser.getDocument().createTextNode(text);
+            // Nothing to "bind" yet with only static bindings
+            assert binding.getType().equals(StaticBinding.TYPE);
+            return Browser.getDocument()
+                    .createTextNode(getStaticBindingValue(binding));
         }
     }
 
-    private static Node updateTextTemplateValue(StateNode node,
+    private static void updateTextTemplateValue(Text domNode, StateNode node,
             Binding binding) {
         NodeMap map = node.getMap(NodeFeatures.TEMPLATE_MODEL);
-        String text = Optional.of(binding.getValue()).map(Object::toString)
-                .map(map::getProperty).map(MapProperty::getValue)
-                .map(Object::toString).orElse("");
-        return Browser.getDocument().createTextNode(text);
+        String text = Optional.ofNullable(binding.getValue())
+                .map(Object::toString).map(map::getProperty)
+                .map(MapProperty::getValue).map(Object::toString).orElse("");
+        domNode.setTextContent(text);
     }
 
     private static Node createAndBindElement(StateNode stateNode,
@@ -136,7 +141,7 @@ public class TemplateElementBinder {
             for (String name : properties.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
                 WidgetUtil.setJsProperty(element, name,
-                        getBindingValue(stateNode, binding));
+                        getStaticBindingValue(binding));
             }
         }
 
@@ -151,14 +156,49 @@ public class TemplateElementBinder {
             }
         }
 
+        MapProperty overrideProperty = stateNode
+                .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
+                .getProperty(String.valueOf(templateNode.getId()));
+        if (overrideProperty.hasValue()) {
+            /*
+             * Bind right away. We don't need to listen to property value
+             * changes since the value will never change once it has been set.
+             */
+            bindOverrideNode(element, overrideProperty);
+        } else {
+            /*
+             * React in case an override nodes appears later on.
+             */
+            EventRemover remover = overrideProperty.addChangeListener(
+                    e -> bindOverrideNode(element, overrideProperty));
+
+            /*
+             * Should preferably remove the change listener immediately when the
+             * first event is fired, but Java makes it so difficult to reference
+             * the remover from inside the event handler.
+             */
+            stateNode.addUnregisterListener(e -> remover.remove());
+        }
+
         return element;
     }
 
-    private static String getBindingValue(StateNode node, Binding binding) {
-        assert binding != null;
+    private static void bindOverrideNode(Element element,
+            MapProperty overrideProperty) {
+        StateNode overrideNode = (StateNode) overrideProperty.getValue();
 
-        // Nothing to "bind" yet with only static bindings
-        assert binding.getType().equals(StaticBinding.TYPE);
+        /*
+         * bind checks that the we haven't already bound the same state node
+         * previously
+         */
+        BasicElementBinder bind = BasicElementBinder.bind(overrideNode,
+                element);
+
+        overrideNode.addUnregisterListener(e -> bind.remove());
+    }
+
+    private static String getStaticBindingValue(Binding binding) {
+        assert binding != null;
 
         Object value = binding.getValue();
         if (value == null) {

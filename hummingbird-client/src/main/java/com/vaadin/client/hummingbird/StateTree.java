@@ -208,6 +208,12 @@ public class StateTree {
             nodeFeatureDebugName.set(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                     "elementStyleProperties");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE, "template");
+            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS,
+                    "synchronizedPropertyEvents");
+            nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_OVERRIDES,
+                    "templateOverrides");
+            nodeFeatureDebugName.set(NodeFeatures.OVERRIDE_DATA,
+                    "overideNodeData");
         }
         if (nodeFeatureDebugName.has(id)) {
             return nodeFeatureDebugName.get(id);
