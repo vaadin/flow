@@ -31,6 +31,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
 
     private final String tag;
     private final Map<String, TemplateBinding> properties = new HashMap<>();
+    private final Map<String, TemplateBinding> attributes = new HashMap<>();
     private final List<TemplateNodeBuilder> children = new ArrayList<>();
 
     /**
@@ -46,7 +47,8 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
 
     @Override
     public ElementTemplateNode build(TemplateNode parent) {
-        return new ElementTemplateNode(parent, tag, properties, children);
+        return new ElementTemplateNode(parent, tag, properties, attributes,
+                children);
     }
 
     /**
@@ -73,9 +75,30 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
         assert name != null;
         assert binding != null;
         assert !properties.containsKey(
-                name) : "There is already an property named " + name;
+                name) : "There is already a property named " + name;
 
         properties.put(name, binding);
+        return this;
+    }
+
+    /**
+     * Adds an attribute binding to this builder.
+     *
+     * @param name
+     *            the name of the attribute, not <code>null</code>
+     * @param binding
+     *            the binding that will provide the attribute value, not
+     *            <code>null</code>
+     * @return this element template builder
+     */
+    public ElementTemplateBuilder setAttribute(String name,
+            TemplateBinding binding) {
+        assert name != null;
+        assert binding != null;
+        assert !attributes.containsKey(
+                name) : "There is already an attribute named " + name;
+
+        attributes.put(name, binding);
         return this;
     }
 
@@ -87,6 +110,16 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
      */
     public Map<String, TemplateBinding> getProperties() {
         return Collections.unmodifiableMap(properties);
+    }
+
+    /**
+     * Gets the attribute bindings that have been defined using
+     * {@link #setAttribute(String, TemplateBinding)}.
+     *
+     * @return a map of attribute bindings, not <code>null</code>
+     */
+    public Map<String, TemplateBinding> getAttributes() {
+        return Collections.unmodifiableMap(attributes);
     }
 
     /**

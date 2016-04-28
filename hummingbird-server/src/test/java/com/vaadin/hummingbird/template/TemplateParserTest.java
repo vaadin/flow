@@ -29,9 +29,9 @@ public class TemplateParserTest {
 
         Assert.assertEquals("div", rootNode.getTag());
 
-        Assert.assertEquals(1, rootNode.getPropertyNames().count());
+        Assert.assertEquals(1, rootNode.getAttributeNames().count());
         Assert.assertEquals("bar",
-                rootNode.getPropertyBinding("id").get().getValue(null));
+                rootNode.getAttributeBinding("id").get().getValue(null));
 
         Assert.assertEquals(2, rootNode.getChildCount());
 
@@ -41,7 +41,7 @@ public class TemplateParserTest {
         ElementTemplateNode inputChild = (ElementTemplateNode) rootNode
                 .getChild(1);
         Assert.assertEquals("input", inputChild.getTag());
-        Assert.assertEquals(0, inputChild.getPropertyNames().count());
+        Assert.assertEquals(0, inputChild.getAttributeNames().count());
         Assert.assertEquals(0, inputChild.getChildCount());
     }
 
@@ -52,9 +52,9 @@ public class TemplateParserTest {
 
         Assert.assertEquals("div", rootNode.getTag());
 
-        Assert.assertEquals(1, rootNode.getPropertyNames().count());
+        Assert.assertEquals(1, rootNode.getAttributeNames().count());
         Assert.assertEquals("foo",
-                rootNode.getPropertyBinding("id").get().getValue(null));
+                rootNode.getAttributeBinding("id").get().getValue(null));
 
         Assert.assertEquals(2, rootNode.getChildCount());
 

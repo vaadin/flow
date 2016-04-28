@@ -27,10 +27,10 @@ public class BasicTemplateIT extends PhantomJSTest {
     public void testBasicTemplate() {
         open();
 
-        WebElement bar = findElement(By.id("bar"));
+        WebElement bar = findElement(By.className("bar"));
 
         Assert.assertEquals("baz", bar.getText());
-        Assert.assertTrue(isElementPresent(By.cssSelector("#bar input")));
+        Assert.assertTrue(isElementPresent(By.cssSelector(".bar input")));
 
         WebElement containerButton = findElement(
                 By.cssSelector("#container > button"));
