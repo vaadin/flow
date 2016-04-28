@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird;
 
+import java.util.Objects;
+
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.URIResolver;
@@ -62,45 +64,92 @@ public class RouterLinkHandler {
             return;
         }
 
-        String href = getRouterLinkHref(clickEvent);
-        if (href != null) {
-            String baseURI = ((Element) clickEvent.getCurrentTarget())
-                    .getOwnerDocument().getBaseURI();
-
-            // verify that the link is actually for this application
-            if (!href.startsWith(baseURI)) {
-                // ain't nobody going to see this log
-                Console.warn("Should not use "
-                        + ApplicationConstants.ROUTER_LINK_ATTRIBUTE
-                        + " attribute for an external link.");
-                return;
-            }
-
-            Browser.getWindow().getHistory().pushState(null, null, href);
-
-            clickEvent.preventDefault();
-
-            String location = URIResolver.getBaseRelativeUri(baseURI, href);
-            sendServerNavigationEvent(registry, location, null);
+        String href = getLinkHref(clickEvent);
+        if (href == null) {
+            return;
         }
+
+        String baseURI = ((Element) clickEvent.getCurrentTarget())
+                .getOwnerDocument().getBaseURI();
+
+        // verify that the link is actually for this application
+        if (!href.startsWith(baseURI)) {
+            // ain't nobody going to see this log
+            Console.warn("Should not use "
+                    + ApplicationConstants.ROUTER_LINK_ATTRIBUTE
+                    + " attribute for an external link.");
+            return;
+        }
+
+        String location = URIResolver.getBaseRelativeUri(baseURI, href);
+
+        if (location.contains("#")) {
+            // make sure fragment event gets fired after response
+            new FragmentHandler(registry,
+                    Browser.getWindow().getLocation().getHref(), href);
+
+            // don't send hash to server
+            location = location.split("#", 2)[0];
+        }
+
+        clickEvent.preventDefault();
+        Browser.getWindow().getHistory().pushState(null, null, href);
+        sendServerNavigationEvent(registry, location, null);
     }
 
     /**
-     * Gets the target of a router link, if a router link was found between the
-     * click target and the event listener.
+     * Gets the link href for the given event. If the event target or the link
+     * href is not a valid routerlink, <code>null</code> will be returned
+     * instead.
+     *
+     * @param clickEvent
+     *            the click event for the link
+     * @return the link href or <code>null</code> there is no valid href
+     */
+    private static String getLinkHref(Event clickEvent) {
+        AnchorElement anchor = getRouterLink(clickEvent);
+        if (anchor == null) {
+            return null;
+        }
+        String href = anchor.getHref();
+        if (href == null || isInsidePageNavigation(anchor)) {
+            return null;
+        }
+        return href;
+    }
+
+    /**
+     * Checks whether the given anchor links within the current page.
+     *
+     * @param anchor
+     *            the link to check
+     * @return <code>true</code> if links inside current page,
+     *         <code>false</code> if not
+     */
+    private static boolean isInsidePageNavigation(AnchorElement anchor) {
+        String currentPath = Browser.getWindow().getLocation().getPathname();
+        String path = anchor.getPathname();
+        String hash = anchor.getHash(); // is always at least empty, never null
+
+        return Objects.equals(currentPath, path) && !hash.isEmpty();
+    }
+
+    /**
+     * Gets the anchor element, if a router link was found between the click
+     * target and the event listener.
      *
      * @param clickEvent
      *            the click event
-     * @return the target (href) of the link if a link was found, null otherwise
+     * @return the target anchor if found, <code>null</code> otherwise
      */
-    private static String getRouterLinkHref(Event clickEvent) {
+    private static AnchorElement getRouterLink(Event clickEvent) {
         assert "click".equals(clickEvent.getType());
 
         Element target = (Element) clickEvent.getTarget();
         EventTarget eventListenerElement = clickEvent.getCurrentTarget();
         while (target != eventListenerElement) {
             if (isRouterLinkAnchorElement(target)) {
-                return ((AnchorElement) target).getHref();
+                return (AnchorElement) target;
             }
             target = target.getParentElement();
         }
@@ -113,7 +162,8 @@ public class RouterLinkHandler {
      *
      * @param target
      *            the element to check
-     * @return true if the element is a routerlink, false otherwise
+     * @return <code>true</code> if the element is a routerlink,
+     *         <code>false</code> otherwise
      */
     private static boolean isRouterLinkAnchorElement(Element target) {
         return "a".equalsIgnoreCase(target.getTagName()) && target
