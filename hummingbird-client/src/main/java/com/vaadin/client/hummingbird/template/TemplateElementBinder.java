@@ -123,9 +123,9 @@ public class TemplateElementBinder {
 
     private static void updateTextTemplateValue(Text domNode, StateNode node,
             Binding binding) {
-        NodeMap map = node.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
         String text = Optional.ofNullable(binding.getValue())
-                .map(Object::toString).map(map::getProperty)
+                .map(Object::toString).map(model::getProperty)
                 .map(MapProperty::getValue).map(Object::toString).orElse("");
         domNode.setTextContent(text);
     }
