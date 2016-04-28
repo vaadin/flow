@@ -53,6 +53,11 @@ private void onHistoryStateChange(HistoryStateChangeEvent event) {
     event.getLocation(); // returns "home"
 }
 ----
+[NOTE]
+The server side history state change event is not fired if only the
+https://developer.mozilla.org/en-US/docs/Web/Events/hashchange[hash] has changed.
+The hash part is also always stripped from the location sent to server. Hash is
+a browser feature you should never need it on server side.
 
 ==== Changing history
 
