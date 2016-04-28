@@ -53,7 +53,7 @@ public class ApplicationConnection {
         PollConfigurator.observe(rootNode, new Poller(registry));
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
 
-        PopStateBinder.bind(registry);
+        new PopStateHandler(registry).bind();
 
         Element body = Browser.getDocument().getBody();
 
