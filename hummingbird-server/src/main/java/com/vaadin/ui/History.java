@@ -38,7 +38,9 @@ public class History implements Serializable {
      * <p>
      * This happens when <code>PopStateEvent</code> is fired in the browser, or
      * when routing has been triggered by user clicking a link marked with
-     * attribute {@value ApplicationConstants#ROUTER_LINK_ATTRIBUTE} .
+     * attribute {@value ApplicationConstants#ROUTER_LINK_ATTRIBUTE}.
+     * <p>
+     * Note that this event is not fired when only the hash has changed!
      */
     public static class HistoryStateChangeEvent extends EventObject {
         private final String location;
