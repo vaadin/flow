@@ -51,7 +51,6 @@ import com.vaadin.ui.Page.ExecutionCanceler;
  * framework.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class UIInternals implements Serializable {
 

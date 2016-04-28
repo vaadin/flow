@@ -21,7 +21,6 @@ import com.vaadin.client.hummingbird.reactive.ReactiveChangeEvent;
 /**
  * Event fired when the structure of a {@link NodeList} changes.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ListSpliceEvent extends ReactiveChangeEvent {

@@ -27,7 +27,6 @@ import com.vaadin.client.hummingbird.collection.JsWeakMap;
  *
  *
  * @deprecated Should only be used for testing.
- * @since
  * @author Vaadin Ltd
  * @param <K>
  *            the key type

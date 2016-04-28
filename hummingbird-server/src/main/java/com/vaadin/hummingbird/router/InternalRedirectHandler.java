@@ -21,7 +21,6 @@ import com.vaadin.ui.UI;
  * Handles navigation by redirecting the user to some location in the
  * application.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class InternalRedirectHandler implements NavigationHandler {

@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird.reactive;
 /**
  * Listens to invalidate events fired by a computation.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

@@ -27,7 +27,6 @@ import com.vaadin.ui.ComponentEvent;
  * types.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class EventDataCache {
 

@@ -30,7 +30,6 @@ import elemental.json.JsonValue;
  * {@link Page#executeJavaScript(String, java.io.Serializable...)} on the
  * client.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ExecuteJavaScriptProcessor {

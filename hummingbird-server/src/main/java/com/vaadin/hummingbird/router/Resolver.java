@@ -20,7 +20,6 @@ import java.io.Serializable;
 /**
  * Resolves the details in a navigation event to find a handler for the event.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

@@ -5,7 +5,6 @@ package com.vaadin.hummingbird.testcategory;
  * {@code @Category(PushTests.class)}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface PushTests {
 

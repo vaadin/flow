@@ -36,7 +36,6 @@ import com.vaadin.client.hummingbird.template.TemplateRegistry;
  * be looked up based on their class.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class Registry {
 

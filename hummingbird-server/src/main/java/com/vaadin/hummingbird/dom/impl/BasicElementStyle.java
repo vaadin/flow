@@ -25,7 +25,6 @@ import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
  * Implementation of {@link Style} for {@link BasicElementStateProvider}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class BasicElementStyle implements Style {
 

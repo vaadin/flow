@@ -24,7 +24,6 @@ import elemental.json.JsonObject;
 /**
  * Change describing that a node has been detached.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NodeDetachChange extends NodeChange {

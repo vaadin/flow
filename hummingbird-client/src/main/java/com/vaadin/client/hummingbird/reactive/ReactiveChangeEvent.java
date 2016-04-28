@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird.reactive;
 /**
  * Event fired when a reactive value has changed.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class ReactiveChangeEvent {

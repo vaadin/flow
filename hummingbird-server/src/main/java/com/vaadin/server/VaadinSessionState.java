@@ -20,7 +20,6 @@ import com.vaadin.ui.UI;
 /**
  * The lifecycle state of a VaadinSession.
  *
- * @since
  * @author Vaadin Ltd
  */
 public enum VaadinSessionState {

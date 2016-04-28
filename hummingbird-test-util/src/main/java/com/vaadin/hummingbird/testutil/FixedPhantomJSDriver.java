@@ -30,7 +30,6 @@ import com.vaadin.testbench.TestBenchDriverProxy;
  * Workaround for https://dev.vaadin.com/ticket/19753
  *
  * @author Vaadin Ltd
- * @since
  */
 public class FixedPhantomJSDriver extends PhantomJSDriver {
 

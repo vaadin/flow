@@ -22,7 +22,6 @@ import elemental.client.Browser;
 /**
  * Helper for binding <code>popstate</code> events to the server.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class PopStateBinder {

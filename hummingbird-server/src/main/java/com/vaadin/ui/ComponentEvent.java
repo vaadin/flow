@@ -28,7 +28,6 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
  *            the event source type
  *
  * @author Vaadin Ltd
- * @since
  */
 public class ComponentEvent<T extends Component> extends EventObject {
 

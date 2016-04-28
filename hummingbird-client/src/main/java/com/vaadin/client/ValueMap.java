@@ -22,7 +22,6 @@ import com.vaadin.client.hummingbird.collection.JsArray;
  * Old abstraction for a UIDL JSON message.
  *
  * @author Vaadin Ltd
- * @since
  */
 public final class ValueMap extends JavaScriptObject {
     /**

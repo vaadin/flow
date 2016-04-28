@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird.nodefeature;
 /**
  * Listener notified when a property is added to a {@link NodeMap}.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

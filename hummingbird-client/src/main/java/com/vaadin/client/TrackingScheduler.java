@@ -22,7 +22,6 @@ import com.google.gwt.core.client.impl.SchedulerImpl;
  * queued or currently being executed.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class TrackingScheduler extends SchedulerImpl {
 

@@ -28,7 +28,6 @@ import com.vaadin.hummingbird.dom.Element;
  * {@link #getElement()}. Override all methods in this interface if the
  * components should be added to some other element.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface HasComponents extends HasElement {

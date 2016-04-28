@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird.nodefeature;
 /**
  * Listener notified when the structure of a node list changes.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

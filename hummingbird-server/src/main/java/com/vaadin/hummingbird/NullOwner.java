@@ -22,7 +22,6 @@ package com.vaadin.hummingbird;
  * <code>null</code> pointer to avoid cluttering implementations with null
  * checks.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NullOwner implements NodeOwner {

@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.template;
 /**
  * Builder for text template nodes.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TextTemplateBuilder implements TemplateNodeBuilder {

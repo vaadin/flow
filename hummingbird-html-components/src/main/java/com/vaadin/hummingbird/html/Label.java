@@ -21,7 +21,6 @@ import com.vaadin.ui.Component;
 /**
  * Component representing a <code>&lt;label&gt;</code> element.
  *
- * @since
  * @author Vaadin Ltd
  */
 @Tag(Tag.LABEL)

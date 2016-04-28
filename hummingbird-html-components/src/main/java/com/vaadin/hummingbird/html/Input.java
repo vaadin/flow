@@ -24,7 +24,6 @@ import com.vaadin.hummingbird.html.event.ChangeNotifier;
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
  *
- * @since
  * @author Vaadin Ltd
  */
 @Tag(Tag.INPUT)

@@ -22,7 +22,6 @@ import com.vaadin.hummingbird.template.TemplateNode;
 /**
  * Map for nodes used as template roots.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TemplateMap extends NodeMap {

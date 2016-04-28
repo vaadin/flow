@@ -50,7 +50,6 @@ import com.vaadin.util.CurrentInstance;
  * of most requests to that.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class VaadinServlet extends HttpServlet implements Constants {
 

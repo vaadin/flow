@@ -39,7 +39,6 @@ import elemental.json.JsonValue;
  * added (properties are never removed). It is not invalidated when the value of
  * a property changes since the property is a reactive values of its own.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NodeMap extends NodeFeature implements ReactiveValue {

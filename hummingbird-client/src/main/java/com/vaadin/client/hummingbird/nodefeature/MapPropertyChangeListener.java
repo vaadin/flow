@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird.nodefeature;
 /**
  * Listener notified when the value of a {@link MapProperty} changes.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

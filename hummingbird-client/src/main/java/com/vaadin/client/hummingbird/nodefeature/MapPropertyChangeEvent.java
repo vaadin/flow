@@ -20,7 +20,6 @@ import com.vaadin.client.hummingbird.reactive.ReactiveChangeEvent;
 /**
  * Event fired when the value of a map property changes.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class MapPropertyChangeEvent extends ReactiveChangeEvent {

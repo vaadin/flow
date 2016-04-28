@@ -32,7 +32,6 @@ import com.vaadin.server.VaadinSession;
 /**
  * Map for element attribute values.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementAttributeMap extends NodeMap {

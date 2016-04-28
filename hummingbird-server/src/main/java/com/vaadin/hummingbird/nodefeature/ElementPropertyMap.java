@@ -23,7 +23,6 @@ import com.vaadin.hummingbird.StateNode;
 /**
  * Map for element property values.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementPropertyMap extends AbstractPropertyMap {

@@ -41,7 +41,6 @@ import com.vaadin.shared.ApplicationConstants;
  * alone static file server.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class StaticFileServer implements Serializable {
 

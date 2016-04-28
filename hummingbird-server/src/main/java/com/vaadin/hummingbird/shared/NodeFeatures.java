@@ -40,7 +40,6 @@ import com.vaadin.hummingbird.nodefeature.TextNodeMap;
  * Registry of node feature id numbers and map keys shared between server and
  * client.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NodeFeatures {

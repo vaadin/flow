@@ -44,7 +44,6 @@ import com.vaadin.hummingbird.dom.Element;
  * instance to encapsulate another fragment.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class Html extends Component {
 

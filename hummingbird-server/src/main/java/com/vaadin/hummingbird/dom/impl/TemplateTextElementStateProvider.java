@@ -27,7 +27,6 @@ import com.vaadin.ui.Component;
  * Handles storing and retrieval of the state information for a text node
  * defined in a template.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TemplateTextElementStateProvider

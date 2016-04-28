@@ -26,7 +26,6 @@ import com.vaadin.ui.ComponentEvent;
  * This event is specifically intended to the used for the <code>change</code>
  * event in the DOM API.
  *
- * @since
  * @author Vaadin Ltd
  */
 @DomEvent("change")

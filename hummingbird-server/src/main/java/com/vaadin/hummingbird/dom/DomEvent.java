@@ -22,7 +22,6 @@ import elemental.json.JsonObject;
 /**
  * Server-side representation of a DOM event fired in the browser.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class DomEvent extends EventObject {

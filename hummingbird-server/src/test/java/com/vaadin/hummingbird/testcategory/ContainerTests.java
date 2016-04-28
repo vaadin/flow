@@ -6,7 +6,6 @@ package com.vaadin.hummingbird.testcategory;
  * default to speed up testing.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface ContainerTests {
 

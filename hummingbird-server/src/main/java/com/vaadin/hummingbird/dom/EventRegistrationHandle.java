@@ -20,7 +20,6 @@ import java.io.Serializable;
 /**
  * Handle used for removing an added event listener.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

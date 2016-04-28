@@ -30,7 +30,6 @@ import elemental.json.JsonObject;
 /**
  * A node in the AST parsed from a template file. A template node is immutable.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class TemplateNode implements Serializable {

@@ -25,7 +25,6 @@ import elemental.json.JsonValue;
 /**
  * Registry of template nodes received from the server.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TemplateRegistry {

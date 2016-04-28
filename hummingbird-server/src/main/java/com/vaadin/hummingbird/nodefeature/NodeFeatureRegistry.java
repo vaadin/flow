@@ -25,7 +25,6 @@ import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfiguration
 /**
  * A registry of node features that are available based on type.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NodeFeatureRegistry {

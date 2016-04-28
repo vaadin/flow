@@ -26,7 +26,6 @@ import com.vaadin.hummingbird.change.NodeChange;
  * A node feature represents a group of related values and functionality in a
  * state node.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class NodeFeature implements Serializable {

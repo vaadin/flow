@@ -35,7 +35,6 @@ import com.vaadin.ui.Component;
  * Abstract element state provider for text nodes. Operations that are not
  * applicable for text nodes throw {@link UnsupportedOperationException}.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class AbstractTextElementStateProvider

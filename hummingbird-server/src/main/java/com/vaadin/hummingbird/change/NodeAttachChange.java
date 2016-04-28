@@ -24,7 +24,6 @@ import elemental.json.JsonObject;
 /**
  * Change describing that a node has been attached.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NodeAttachChange extends NodeChange {

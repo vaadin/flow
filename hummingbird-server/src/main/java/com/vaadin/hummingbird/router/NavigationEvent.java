@@ -22,7 +22,6 @@ import com.vaadin.ui.UI;
 /**
  * Event object with data related to navigation.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NavigationEvent extends EventObject {

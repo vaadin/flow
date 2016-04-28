@@ -33,7 +33,6 @@ import elemental.json.JsonValue;
 /**
  * Change describing a splice operation on a list node feature.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ListSpliceChange extends NodeFeatureChange {

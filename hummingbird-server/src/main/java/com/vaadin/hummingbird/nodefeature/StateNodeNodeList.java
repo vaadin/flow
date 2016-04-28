@@ -23,7 +23,6 @@ import com.vaadin.hummingbird.StateNode;
  * A list which contains {@link StateNode}s.
  *
  * @author Vaadin Ltd
- * @since
  */
 public abstract class StateNodeNodeList extends NodeList<StateNode> {
 

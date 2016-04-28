@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.router;
 /**
  * Callback interface for updating the configuration for a {@link Router}.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

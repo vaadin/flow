@@ -27,7 +27,6 @@ import elemental.json.JsonObject;
 /**
  * Base class describing a change to a state node.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class NodeChange implements Serializable {

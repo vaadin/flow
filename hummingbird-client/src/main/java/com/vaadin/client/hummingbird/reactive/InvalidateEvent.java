@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird.reactive;
 /**
  * Event fired when a computation is invalidated.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class InvalidateEvent {

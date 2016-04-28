@@ -25,7 +25,6 @@ import jsinterop.annotations.JsType;
 /**
  * JsInterop wrapper for interacting with the JavaScript Function type.
  *
- * @since
  * @author Vaadin Ltd
  */
 @JsType(isNative = true, name = "Function", namespace = JsPackage.GLOBAL)

@@ -21,7 +21,6 @@ import com.vaadin.ui.UI;
 /**
  * A navigation handler that shows an error to the user.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ErrorNavigationHandler implements NavigationHandler {

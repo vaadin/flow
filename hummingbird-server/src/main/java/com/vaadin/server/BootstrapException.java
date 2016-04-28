@@ -20,7 +20,6 @@ package com.vaadin.server;
  * A Vaadin internal runtime exception thrown when the writing of the bootstrap
  * page in {@link BootstrapHandler} fails for some reason.
  *
- * @since
  */
 public class BootstrapException extends RuntimeException {
 

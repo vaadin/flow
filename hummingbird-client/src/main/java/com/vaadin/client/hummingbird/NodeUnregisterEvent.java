@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird;
 /**
  * Event fired when a state node is unregistered.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NodeUnregisterEvent {

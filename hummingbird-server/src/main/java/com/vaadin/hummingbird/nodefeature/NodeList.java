@@ -38,7 +38,6 @@ import com.vaadin.hummingbird.change.NodeChange;
  * Should not be used directly, use one of the extending classes instead, which
  * provide a type safe API while ensuring the list is {@link Serializable}.
  *
- * @since
  * @author Vaadin Ltd
  * @param <T>
  *            the type of the items in the list

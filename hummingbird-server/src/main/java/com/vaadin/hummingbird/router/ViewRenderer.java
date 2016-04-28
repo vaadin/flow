@@ -32,7 +32,6 @@ import com.vaadin.ui.UI;
  * Handles navigation events by rendering a view of a specific type in the
  * target UI. The view can optionally be nested in a chain of parent views.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class ViewRenderer implements NavigationHandler {

@@ -6,7 +6,6 @@ package com.vaadin.hummingbird.testcategory;
  * test suite.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface SlowTests {
 
