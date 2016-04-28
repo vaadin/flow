@@ -16,7 +16,16 @@ public class RouterLinkUI extends UI {
                 .setAttribute("id", "location");
 
         bodyElement.appendChild(location, new Element("p"));
-        bodyElement.appendChild(
+
+        addLinks();
+
+        getPage().getHistory().setHistoryStateChangeHandler(e -> {
+            location.setTextContent(e.getLocation());
+        });
+    }
+
+    protected void addLinks() {
+        getElement().appendChild(
                 // inside servlet mapping
                 ElementFactory.createDiv("inside this servlet"),
                 ElementFactory.createRouterLink("", "empty"), new Element("p"),
@@ -34,9 +43,6 @@ public class RouterLinkUI extends UI {
                 // external
                 ElementFactory.createDiv("external"),
                 createRouterLink("http://google.com"));
-
-        getPage().getHistory().setHistoryStateChangeHandler(
-                e -> location.setTextContent(e.getLocation()));
     }
 
     private Element createRouterLink(String target) {
