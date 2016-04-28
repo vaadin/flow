@@ -13,27 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.humminbird.tutorial.misc;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-user-input.asciidoc")
-public abstract class UserInput extends UI {
+@CodeFor("tutorial-execute-javascript.asciidoc")
+public class ExecuteJavaScript {
+    public static void logElementSize(String name, Element element) {
+        Page page = UI.getCurrent().getPage();
 
-    void tutorialCode() {
-        Element textInput = ElementFactory.createInput();
-        textInput.setAttribute("placeholder", "Please enter your name");
-
-        textInput.synchronizeProperty("value", "change");
-
-        Element button = ElementFactory.createDiv();
-        button.addEventListener("click", e -> {
-            String responseText = "Hello " + textInput.getProperty("value");
-            Element response = ElementFactory.createDiv(responseText);
-            getElement().appendChild(response);
-        });
+        page.executeJavaScript(
+                "console.log($0 + ' size:', $1.offsetWidth, $1.offsetHeight)",
+                name, element);
     }
 }
