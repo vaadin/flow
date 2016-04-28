@@ -32,7 +32,6 @@ import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
  * response handling ends.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class RequestResponseTracker {
 

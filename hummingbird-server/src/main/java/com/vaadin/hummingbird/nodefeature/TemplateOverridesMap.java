@@ -24,7 +24,6 @@ import com.vaadin.hummingbird.template.TemplateNode;
  * the {@link OverrideElementData} feature as well as regular element features
  * such as {@link ElementChildrenList}.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TemplateOverridesMap extends NodeMap {

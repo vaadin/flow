@@ -24,7 +24,6 @@ import com.google.web.bindery.event.shared.Event;
  * @see RequestResponseTracker#startRequest()
  *
  * @author Vaadin Ltd
- * @since
  */
 public class RequestStartingEvent extends Event<RequestStartingEvent.Handler> {
 

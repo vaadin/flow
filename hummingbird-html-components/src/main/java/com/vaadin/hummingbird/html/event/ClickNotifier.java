@@ -23,7 +23,6 @@ import com.vaadin.ui.ComponentEventNotifier;
  * Mixin interface for components that support adding click listeners to the
  * their root elements.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface ClickNotifier extends ComponentEventNotifier {

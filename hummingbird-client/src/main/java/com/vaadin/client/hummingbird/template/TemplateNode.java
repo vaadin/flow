@@ -27,7 +27,6 @@ import jsinterop.annotations.JsType;
  * {@link com.vaadin.hummingbird.template.TemplateNode#toJson(java.util.function.Consumer)}
  * on the server.
  *
- * @since
  * @author Vaadin Ltd
  */
 @JsType(isNative = true)

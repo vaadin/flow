@@ -25,7 +25,6 @@ import com.vaadin.hummingbird.dom.ElementConstants;
  * {@link Element#getStyle()}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface HasSize extends HasElement {
 

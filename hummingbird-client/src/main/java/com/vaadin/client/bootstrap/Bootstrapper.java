@@ -38,7 +38,6 @@ import elemental.client.Browser;
  * Acts as the GWT entry point.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class Bootstrapper implements EntryPoint {
 

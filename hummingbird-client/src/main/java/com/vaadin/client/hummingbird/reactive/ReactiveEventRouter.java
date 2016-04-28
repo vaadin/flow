@@ -27,7 +27,6 @@ import elemental.events.EventRemover;
  * both types of listeners, as well as to event collectors registered using
  * {@link Reactive#addEventCollector(ReactiveChangeListener)}.
  *
- * @since
  * @author Vaadin Ltd
  * @param <L>
  *            the listener type of this router

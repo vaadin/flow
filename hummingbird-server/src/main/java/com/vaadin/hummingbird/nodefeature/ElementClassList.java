@@ -21,7 +21,6 @@ import com.vaadin.hummingbird.dom.ClassList;
 /**
  * Handles CSS class names for an element.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementClassList extends SerializableNodeList<String> {

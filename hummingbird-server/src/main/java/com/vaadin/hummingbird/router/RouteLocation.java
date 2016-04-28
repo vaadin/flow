@@ -21,7 +21,6 @@ import java.util.Optional;
  * Location with support for the syntax used in route definitions used with e.g.
  * {@link RouterConfiguration#setRoute(String, Class, Class)}.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class RouteLocation extends Location {

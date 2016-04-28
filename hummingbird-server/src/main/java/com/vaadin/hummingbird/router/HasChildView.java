@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.router;
 /**
  * A {@link View} that has a slot for a child view.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface HasChildView extends View {

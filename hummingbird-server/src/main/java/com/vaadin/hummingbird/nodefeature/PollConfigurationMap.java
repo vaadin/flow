@@ -22,7 +22,6 @@ import com.vaadin.ui.UI;
  * A node map for storing configuration for polling.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class PollConfigurationMap extends NodeMap {
 

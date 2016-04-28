@@ -26,7 +26,6 @@ import com.vaadin.ui.UI;
  * Event passed to {@link View#onLocationChange(LocationChangeEvent)} when the
  * context in which a view will be used changes.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class LocationChangeEvent extends EventObject {

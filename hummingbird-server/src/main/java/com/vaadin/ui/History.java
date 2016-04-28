@@ -29,7 +29,6 @@ import elemental.json.JsonValue;
  * documentation on MDN</a> for detailed information on how the API works in the
  * browser.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class History implements Serializable {

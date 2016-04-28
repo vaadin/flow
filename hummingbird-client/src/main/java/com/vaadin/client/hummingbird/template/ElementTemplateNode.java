@@ -26,7 +26,6 @@ import jsinterop.annotations.JsType;
  * {@link com.vaadin.hummingbird.template.ElementTemplateNode#populateJson(JsonObject)}
  * on the server.
  *
- * @since
  * @author Vaadin Ltd
  */
 @JsType(isNative = true)

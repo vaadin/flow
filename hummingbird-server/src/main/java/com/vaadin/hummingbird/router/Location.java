@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
  * Represents a relative URL made up of path segments, but lacking e.g. the
  * hostname and query string that can also be present in URLs.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class Location implements Serializable {

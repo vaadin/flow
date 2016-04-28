@@ -20,7 +20,6 @@ import com.vaadin.annotations.Tag;
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
  *
- * @since
  * @author Vaadin Ltd
  */
 @Tag(Tag.A)

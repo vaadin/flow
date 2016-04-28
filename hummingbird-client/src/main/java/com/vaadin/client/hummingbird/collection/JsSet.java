@@ -24,7 +24,6 @@ import jsinterop.annotations.JsType;
  * Native JS Set interface with an alternative implementation for JRE usage. Use
  * {@link JsCollections#set()} to create an appropriate instance.
  *
- * @since
  * @author Vaadin Ltd
  * @param <V>
  *            the value type

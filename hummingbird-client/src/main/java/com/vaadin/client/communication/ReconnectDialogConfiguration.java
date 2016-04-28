@@ -30,7 +30,6 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
  * part of the configuration changes.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class ReconnectDialogConfiguration {
 

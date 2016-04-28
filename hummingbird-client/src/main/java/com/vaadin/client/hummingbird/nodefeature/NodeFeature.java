@@ -24,7 +24,6 @@ import elemental.json.JsonValue;
  * Holder of the actual data in a state node. The state node data is isolated
  * into different features of related data.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class NodeFeature {

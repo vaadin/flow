@@ -36,7 +36,6 @@ import elemental.json.JsonValue;
  * describes the event types for which listeners are present. The values
  * associated with the keys are currently not used.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementListenerMap extends NodeMap {

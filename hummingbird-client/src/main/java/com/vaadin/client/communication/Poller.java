@@ -24,7 +24,6 @@ import com.vaadin.event.UIEvents.PollEvent;
  * Handles polling the server with a given interval.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class Poller {
 

@@ -33,7 +33,6 @@ import com.vaadin.util.ReflectTools;
  * Static helpers and caching functionality for {@link ComponentEventBus}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class ComponentEventBusUtil {
 

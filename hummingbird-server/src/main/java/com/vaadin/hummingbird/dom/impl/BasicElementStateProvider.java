@@ -57,7 +57,6 @@ import com.vaadin.ui.Component;
  * an implementation detail which can change.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class BasicElementStateProvider implements ElementStateProvider {
 

@@ -26,7 +26,6 @@ import elemental.json.JsonValue;
 /**
  * A template binding that produces dynamic text value for a text node.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TextValueBinding implements TemplateBinding {

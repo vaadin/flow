@@ -704,7 +704,6 @@ public class Profiler {
      * Returns a string, suitable for output to the user, containing the number
      * of milliseconds which have elapsed since the given reference time.
      *
-     * @since
      * @param reference
      *            the reference time, as returned by
      *            {@link #getRelativeTimeMillis()}

@@ -19,7 +19,6 @@ package com.vaadin.hummingbird.dom;
  * Constants for common element attribute, property, style names.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class ElementConstants {
 

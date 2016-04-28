@@ -34,7 +34,6 @@ import com.vaadin.hummingbird.template.TemplateParser;
  * the same package of the class, and the name should be the same as the class
  * name, but with the <code>.html</code> file extension.
  *
- * @since
  * @author Vaadin Ltd
  */
 public abstract class Template extends Component {

@@ -29,7 +29,6 @@ import jsinterop.annotations.JsType;
  * Native JS Array interface with an alternative implementation for JRE usage.
  * Use {@link JsCollections#array()} to create an appropriate instance.
  *
- * @since
  * @author Vaadin Ltd
  * @param <T>
  *            the type of the array items

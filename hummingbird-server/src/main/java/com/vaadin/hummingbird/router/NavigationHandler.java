@@ -30,7 +30,6 @@ import com.vaadin.ui.UI;
  * to use without synchronization since the associated {@link VaadinSession} and
  * everything related to it will be locked.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

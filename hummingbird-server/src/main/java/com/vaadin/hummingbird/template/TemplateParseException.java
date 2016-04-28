@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.template;
 /**
  * Exception thrown when there's a problem parsing a template.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TemplateParseException extends RuntimeException {

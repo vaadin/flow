@@ -167,7 +167,6 @@ public interface PushConfiguration extends Serializable {
  * The one and only implementation of {@link PushConfiguration}.
  *
  * @author Vaadin Ltd
- * @since
  */
 class PushConfigurationImpl implements PushConfiguration {
     private UI ui;

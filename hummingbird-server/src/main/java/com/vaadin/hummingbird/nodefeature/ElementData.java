@@ -22,7 +22,6 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
 /**
  * Map of basic element information.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ElementData extends NodeMap {

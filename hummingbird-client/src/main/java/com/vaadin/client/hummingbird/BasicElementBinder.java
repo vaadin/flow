@@ -48,7 +48,6 @@ import jsinterop.annotations.JsFunction;
 /**
  * Binds element related state node features to an element instance.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class BasicElementBinder {

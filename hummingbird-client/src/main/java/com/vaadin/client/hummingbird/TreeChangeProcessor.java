@@ -30,7 +30,6 @@ import elemental.json.JsonValue;
 /**
  * Updates a state tree based on changes in JSON format.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TreeChangeProcessor {

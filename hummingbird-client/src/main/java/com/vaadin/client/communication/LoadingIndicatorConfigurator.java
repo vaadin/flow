@@ -29,7 +29,6 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
  * configures the loading indicator accordingly.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class LoadingIndicatorConfigurator {
 

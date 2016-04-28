@@ -27,7 +27,6 @@ import elemental.json.JsonValue;
  * properties in a map.
  *
  * @author Vaadin Ltd
- * @since
  */
 public abstract class AbstractPropertyMap extends NodeMap {
 

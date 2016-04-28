@@ -32,7 +32,6 @@ import elemental.json.JsonValue;
 /**
  * A client-side representation of a server-side state node.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class StateNode {

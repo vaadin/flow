@@ -85,7 +85,6 @@ public class WidgetUtil {
      * the Java compiler accept the fact. The regular crazy cast doesn't work
      * for JSOs since the generics still makes the compiler insert a JSO check.
      *
-     * @since
      * @param value
      *            anything
      * @return the same stuff
@@ -99,7 +98,6 @@ public class WidgetUtil {
     /**
      * Converts a JSON value to a formatted string.
      *
-     * @since
      *
      * @param json
      *            the JSON value to stringify
@@ -129,7 +127,6 @@ public class WidgetUtil {
     /**
      * Assigns a value as JavaScript property of an object.
      *
-     * @since
      *
      * @param object
      *            the target object
@@ -147,7 +144,6 @@ public class WidgetUtil {
     /**
      * Retrieves the value of a JavaScript property.
      *
-     * @since
      *
      * @param object
      *            the target object
@@ -215,7 +211,6 @@ public class WidgetUtil {
      * Not having any prototype is only relevant for objects that are displayed
      * through the browser console.
      *
-     * @since
      *
      * @return a new json object
      */

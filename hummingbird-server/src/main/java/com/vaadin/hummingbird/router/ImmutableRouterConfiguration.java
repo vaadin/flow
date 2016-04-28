@@ -25,7 +25,6 @@ import com.vaadin.ui.Page;
  * {@link Router#reconfigure(RouterConfigurator)} to update the configuration
  * used by a {@link Router}.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface ImmutableRouterConfiguration {

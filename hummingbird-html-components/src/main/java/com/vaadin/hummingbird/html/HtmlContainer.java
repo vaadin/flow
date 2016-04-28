@@ -24,7 +24,6 @@ import com.vaadin.ui.HasText;
  * Base class for a {@link Component} that represents a single built-in HTML
  * element that can contain child components or text.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class HtmlContainer extends HtmlComponent

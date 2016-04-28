@@ -26,7 +26,6 @@ import com.vaadin.client.hummingbird.collection.JsCollections.ForEachCallback;
 /**
  * JRE implementation of {@link JsArray}, should only be used for testing.
  *
- * @since
  * @author Vaadin Ltd
  * @param <T>
  *            item type

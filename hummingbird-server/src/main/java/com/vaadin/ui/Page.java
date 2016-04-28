@@ -28,7 +28,6 @@ import com.vaadin.ui.UIInternals.JavaScriptInvocation;
  * connected to.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class Page implements Serializable {
 

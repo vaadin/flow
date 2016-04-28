@@ -25,7 +25,6 @@ import com.vaadin.hummingbird.dom.ElementUtil;
  * Utility methods for {@link Component}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface ComponentUtil {
 

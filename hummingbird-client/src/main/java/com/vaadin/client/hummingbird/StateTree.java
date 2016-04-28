@@ -25,7 +25,6 @@ import elemental.json.JsonObject;
 /**
  * A client-side representation of a server-side state tree.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class StateTree {

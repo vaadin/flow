@@ -21,7 +21,6 @@ import com.vaadin.hummingbird.event.ComponentEventListener;
 /**
  * Mixin interface for components that support adding detach listeners.
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface DetachNotifier extends ComponentEventNotifier {

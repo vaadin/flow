@@ -38,7 +38,6 @@ import com.vaadin.server.Command;
  * The features available for a node are defined when the node is created.
  *
  * @see StateTree
- * @since
  * @author Vaadin Ltd
  */
 public class StateNode implements Serializable {

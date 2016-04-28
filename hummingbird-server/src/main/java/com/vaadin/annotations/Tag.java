@@ -28,7 +28,6 @@ import com.vaadin.ui.Component;
  * Defines the tag to use for the root element for a component created using the
  * default {@link Component} constructor.
  *
- * @since
  * @author Vaadin Ltd
  */
 @Retention(RetentionPolicy.RUNTIME)

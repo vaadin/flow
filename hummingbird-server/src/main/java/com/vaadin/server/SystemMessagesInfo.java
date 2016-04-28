@@ -23,7 +23,6 @@ import java.util.Locale;
  * defining what {@link SystemMessages} to use.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class SystemMessagesInfo implements Serializable {
 

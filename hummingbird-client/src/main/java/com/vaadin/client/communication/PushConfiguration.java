@@ -34,7 +34,6 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
  * {@link MessageSender}.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class PushConfiguration {
 

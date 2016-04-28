@@ -20,7 +20,6 @@ package com.vaadin.client.hummingbird.reactive;
  *
  * @see Reactive#addFlushListener(FlushListener)
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

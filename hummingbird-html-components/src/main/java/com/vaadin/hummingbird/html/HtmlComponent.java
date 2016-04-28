@@ -25,7 +25,6 @@ import com.vaadin.ui.HasStyle;
  * Base class for a {@link Component} that represents a single built-in HTML
  * element.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class HtmlComponent extends Component

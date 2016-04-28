@@ -21,7 +21,6 @@ import com.vaadin.hummingbird.dom.Element;
  * A component which encapsulates the given text in a text node.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class Text extends Component {
 

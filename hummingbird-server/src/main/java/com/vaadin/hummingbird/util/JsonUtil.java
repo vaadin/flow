@@ -38,7 +38,6 @@ import elemental.json.JsonValue;
 /**
  * Helpers for using <code>elemental.json</code>.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class JsonUtil {
@@ -46,7 +45,6 @@ public class JsonUtil {
     /**
      * Collects a stream of JSON values to a JSON array.
      *
-     * @since
      * @author Vaadin Ltd
      */
     private static final class JsonArrayCollector

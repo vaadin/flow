@@ -23,7 +23,6 @@ package com.vaadin.ui;
  * should be added to some other element.
  *
  *
- * @since
  * @author Vaadin Ltd
  */
 public interface HasText extends HasElement {

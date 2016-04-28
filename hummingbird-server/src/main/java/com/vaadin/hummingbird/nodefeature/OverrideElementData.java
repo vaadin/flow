@@ -25,7 +25,6 @@ import com.vaadin.hummingbird.template.TemplateNode;
  * data is in the same feature type as used for regular elements, such as
  * {@link ElementChildrenList}.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class OverrideElementData extends NodeMap {

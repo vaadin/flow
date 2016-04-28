@@ -44,7 +44,6 @@ import com.vaadin.ui.Template;
  * Handles storing and retrieval of the state information for an element defined
  * in a template node.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class TemplateElementStateProvider implements ElementStateProvider {

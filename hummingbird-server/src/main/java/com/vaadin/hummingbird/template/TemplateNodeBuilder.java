@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.template;
 /**
  * Mutable builder for immutable template nodes.
  *
- * @since
  * @author Vaadin Ltd
  */
 @FunctionalInterface

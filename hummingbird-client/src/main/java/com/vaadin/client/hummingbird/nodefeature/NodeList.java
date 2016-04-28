@@ -40,7 +40,6 @@ import elemental.json.JsonValue;
  * contents of an item is updated since all items are expected to be either
  * immutable or reactive values of their own.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class NodeList extends NodeFeature implements ReactiveValue {

@@ -23,7 +23,6 @@ import com.vaadin.hummingbird.StateNode;
  * List of synchronized property events for an element.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class SynchronizedPropertyEventsList
         extends SerializableNodeList<String> {

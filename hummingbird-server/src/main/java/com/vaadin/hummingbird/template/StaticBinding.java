@@ -25,7 +25,6 @@ import elemental.json.JsonValue;
 /**
  * A template binding that always produces the same value.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class StaticBinding implements TemplateBinding {

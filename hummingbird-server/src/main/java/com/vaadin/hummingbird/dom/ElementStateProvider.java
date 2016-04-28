@@ -29,7 +29,6 @@ import com.vaadin.ui.Component;
  * state node.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface ElementStateProvider extends Serializable {
 

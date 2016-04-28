@@ -26,7 +26,6 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
  * polling accordingly.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class PollConfigurator {
 
