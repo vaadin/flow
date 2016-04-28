@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
-import com.vaadin.hummingbird.nodefeature.DependencyList;
 import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
@@ -147,6 +146,8 @@ public class UIInternals implements Serializable {
      * The Vaadin session to which the related UI belongs.
      */
     private volatile VaadinSession session;
+
+    private DependencyList dependencyList = new DependencyList();
 
     /**
      * Creates a new instance for the given UI.
@@ -266,7 +267,6 @@ public class UIInternals implements Serializable {
         features.add(PollConfigurationMap.class);
         features.add(ReconnectDialogConfigurationMap.class);
         features.add(LoadingIndicatorConfigurationMap.class);
-        features.add(DependencyList.class);
 
         // And return them all
         assert features.size() == new HashSet<>(features)
@@ -626,5 +626,14 @@ public class UIInternals implements Serializable {
         assert !isTemplateSent(node);
 
         sentTemplateIds.add(Integer.valueOf(node.getId()));
+    }
+
+    /**
+     * Returns the helper which handles loading of dependencies (css, js).
+     *
+     * @return the dependency list helper
+     */
+    public DependencyList getDependencyList() {
+        return dependencyList;
     }
 }

@@ -171,17 +171,6 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("", domNode.getTextContent());
     }
 
-    public void testTextValueNullTemplateKey() {
-        TestTextTemplate templateNode = TestTextTemplate
-                .create(TestBinding.createTextValueBinding(null));
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
-
-        Reactive.flush();
-
-        assertEquals("", domNode.getTextContent());
-    }
-
     public void testBindOverrideNodeWhenCreated() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
