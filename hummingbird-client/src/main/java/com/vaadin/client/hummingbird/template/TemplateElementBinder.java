@@ -144,6 +144,14 @@ public class TemplateElementBinder {
             }
         }
 
+        JsonObject attributes = templateNode.getAttributes();
+        if (attributes != null) {
+            for (String name : attributes.keys()) {
+                Binding binding = WidgetUtil.crazyJsCast(attributes.get(name));
+                element.setAttribute(name, getStaticBindingValue(binding));
+            }
+        }
+
         JsArray<Double> children = templateNode.getChildren();
         if (children != null) {
             for (int i = 0; i < children.length(); i++) {

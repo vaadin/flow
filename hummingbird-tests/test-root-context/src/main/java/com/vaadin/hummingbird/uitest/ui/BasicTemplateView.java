@@ -24,7 +24,7 @@ public class BasicTemplateView extends Template implements View {
     public BasicTemplateView() {
         // Child 0 is whitespace, child 1 is bar, child 2 is more whitespace
         Element container = getElement().getChild(3);
-        assert "container".equals(container.getProperty("id"));
+        assert "container".equals(container.getAttribute("id"));
 
         Element button = ElementFactory
                 .createButton("Element added to template (click to remove)");

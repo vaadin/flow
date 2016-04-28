@@ -21,9 +21,11 @@ import org.junit.Test;
 public class TemplateBuilderTest {
     @Test
     public void testBasicTemplate() {
-        // <div foo="bar">baz</div>
+        // <div baz="lorem" foo="bar">baz</div> where baz is an attribute and
+        // foo a property
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
                 .setProperty("foo", new StaticBinding("bar"))
+                .setAttribute("baz", new StaticBinding("lorem"))
                 .addChild(new TextTemplateBuilder(new StaticBinding("baz")));
 
         ElementTemplateNode node = builder.build(null);
@@ -35,6 +37,11 @@ public class TemplateBuilderTest {
                 node.getPropertyNames().toArray());
         Assert.assertEquals("bar",
                 node.getPropertyBinding("foo").get().getValue(null));
+
+        Assert.assertArrayEquals(new String[] { "baz" },
+                node.getAttributeNames().toArray());
+        Assert.assertEquals("lorem",
+                node.getAttributeBinding("baz").get().getValue(null));
 
         Assert.assertEquals(1, node.getChildCount());
 

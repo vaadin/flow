@@ -37,17 +37,30 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private StateTree tree = new StateTree(registry);
     private StateNode stateNode = new StateNode(0, tree);
 
-    public void testTemplateAttributes() {
+    public void testTemplateProperties() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        templateNode.addProperty("attr1", "value1");
-        templateNode.addProperty("attr2", "value2");
+        templateNode.addProperty("prop1", "value1");
+        templateNode.addProperty("prop2", "value2");
 
         Element element = (Element) TemplateElementBinder
                 .createAndBind(stateNode, templateNode);
 
-        assertEquals("value1", WidgetUtil.getJsProperty(element, "attr1"));
-        assertEquals("value2", WidgetUtil.getJsProperty(element, "attr2"));
+        assertEquals("value1", WidgetUtil.getJsProperty(element, "prop1"));
+        assertEquals("value2", WidgetUtil.getJsProperty(element, "prop2"));
+    }
+
+    public void testTemplateAttributes() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addAttribute("attr1", "value1");
+        templateNode.addAttribute("attr2", "value2");
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, templateNode);
+
+        assertEquals("value1", element.getAttribute("attr1"));
+        assertEquals("value2", element.getAttribute("attr2"));
     }
 
     public void testTemplateTag() {
