@@ -1396,9 +1396,8 @@ public class ElementTest {
     }
 
     private void fireEvent(Element element, String eventType) {
-        element.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(
-                        new DomEvent(element, eventType, Json.createObject()));
+        element.getNode().getFeature(ElementListenerMap.class).fireEvent(
+                new DomEvent(element, eventType, Json.createObject()));
 
     }
 
@@ -2370,5 +2369,4 @@ public class ElementTest {
                 e -> Assert.fail("Child should not be detached"));
         parent.insertChild(0, child);
     }
-
 }
