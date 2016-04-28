@@ -44,6 +44,7 @@ public class ElementTemplateNode extends TemplateNode {
     private final ArrayList<TemplateNode> children;
 
     private final HashMap<String, TemplateBinding> properties;
+    private final HashMap<String, TemplateBinding> attributes;
 
     /**
      * Creates a new template node.
@@ -56,11 +57,15 @@ public class ElementTemplateNode extends TemplateNode {
      * @param properties
      *            a map of property bindings for this node, not
      *            <code>null</code>
+     * @param attributes
+     *            a map of attribute bindings for this node, not
+     *            <code>null</code>
      * @param childBuilders
      *            a list of template builders for child nodes
      */
     public ElementTemplateNode(TemplateNode parent, String tag,
             Map<String, TemplateBinding> properties,
+            Map<String, TemplateBinding> attributes,
             List<TemplateNodeBuilder> childBuilders) {
         super(parent);
         assert tag != null;
@@ -69,8 +74,9 @@ public class ElementTemplateNode extends TemplateNode {
 
         this.tag = tag;
 
-        // Defensive copy
+        // Defensive copies
         this.properties = new HashMap<>(properties);
+        this.attributes = new HashMap<>(attributes);
 
         children = new ArrayList<>(childBuilders.size());
         childBuilders.stream().map(childBuilder -> childBuilder.build(this))
@@ -96,15 +102,36 @@ public class ElementTemplateNode extends TemplateNode {
     }
 
     /**
+     * Gets all the attribute names defined for this element.
+     *
+     * @return the attribute names
+     */
+    public Stream<String> getAttributeNames() {
+        return attributes.keySet().stream();
+    }
+
+    /**
      * Gets the property binding for the given name.
      *
      * @param name
      *            the property name
-     * @return an optional template binding for the proeprty, empty if there is
-     *         no attribute with the given name
+     * @return an optional template binding for the property, empty if there is
+     *         no property with the given name
      */
     public Optional<TemplateBinding> getPropertyBinding(String name) {
         return Optional.ofNullable(properties.get(name));
+    }
+
+    /**
+     * Gets the attribute binding for the given name.
+     *
+     * @param name
+     *            the attribute name
+     * @return an optional template binding for the attribute, empty if there is
+     *         no attribute with the given name
+     */
+    public Optional<TemplateBinding> getAttributeBinding(String name) {
+        return Optional.ofNullable(attributes.get(name));
     }
 
     @Override
@@ -135,6 +162,15 @@ public class ElementTemplateNode extends TemplateNode {
                     binding.toJson()));
 
             json.put("properties", propertiesJson);
+        }
+
+        if (!attributes.isEmpty()) {
+            JsonObject attributesJson = Json.createObject();
+
+            attributes.forEach((name, binding) -> attributesJson.put(name,
+                    binding.toJson()));
+
+            json.put("attributes", attributesJson);
         }
 
         // Super class takes care of the children
