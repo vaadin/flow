@@ -64,6 +64,6 @@ public interface TestElementTemplateNode
             attributes = Json.createObject();
             setAttributes(attributes);
         }
-        attributes.put(name, TestStaticBinding.create(staticValue).asJson());
+        attributes.put(name, TestBinding.createStatic(staticValue).asJson());
     }
 }
