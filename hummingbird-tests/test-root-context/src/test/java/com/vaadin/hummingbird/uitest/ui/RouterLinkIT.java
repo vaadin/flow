@@ -19,8 +19,7 @@ public class RouterLinkIT extends PhantomJSTest {
 
         testInsideServlet("./foobar", "foobar");
         testInsideServlet("./foobar?what=not", "foobar?what=not");
-        testInsideServlet("./foobar?what=not#fragment",
-                "foobar?what=not#fragment");
+        testInsideServlet("./foobar?what=not#fragment", "foobar?what=not");
 
         testInsideServlet("/run/baz", "baz");
 
