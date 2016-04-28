@@ -206,13 +206,8 @@ public class TemplateElementBinder {
 
     private static String getStaticBindingValue(Binding binding) {
         assert binding != null;
-
-        Object value = binding.getValue();
-        if (value == null) {
-            return "";
-        } else {
-            return String.valueOf(value);
-        }
+        return Optional.ofNullable(binding.getValue()).map(Object::toString)
+                .orElse("");
     }
 
 }

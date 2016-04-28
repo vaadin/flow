@@ -34,9 +34,11 @@ public abstract class AbstractTemplateBinding implements TemplateBinding {
      * method.
      * <p>
      * Two properties are set into json object:
+     * <ul>
      * <li>TemplateBinding.TYPE which represents the unique type of the binding
      * <li>TemplateBinding.VALUE_PROPERTY which represents a value of the
      * binding
+     * </ul>
      * <p>
      * The properties correspond to the client side generic Binding class which
      * has two methods
