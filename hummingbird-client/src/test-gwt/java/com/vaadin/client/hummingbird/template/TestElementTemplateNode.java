@@ -15,9 +15,6 @@
  */
 package com.vaadin.client.hummingbird.template;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.vaadin.client.WidgetUtil;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import jsinterop.annotations.JsOverlay;
@@ -39,9 +36,8 @@ public interface TestElementTemplateNode
 
     @JsOverlay
     public static TestElementTemplateNode create(String tag) {
-        TestElementTemplateNode templateNode = WidgetUtil
-                .crazyJsCast(JavaScriptObject.createObject());
-        templateNode.setType("element");
+        TestElementTemplateNode templateNode = TestTemplateNode
+                .create("element");
         templateNode.setTag(tag);
 
         return templateNode;

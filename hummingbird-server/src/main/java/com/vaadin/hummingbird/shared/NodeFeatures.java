@@ -25,6 +25,7 @@ import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
+import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -126,6 +127,11 @@ public class NodeFeatures {
      * Id for {@link OverrideElementData}.
      */
     public static final int OVERRIDE_DATA = 19;
+    /**
+     * Id for {@link ParentGeneratorHolder}.
+     */
+    public static final int PARENT_GENERATOR = 20;
+
     /**
      * Key for {@link ElementData#getTag()}.
      */

@@ -88,6 +88,8 @@ public class NodeFeatureTest {
         expectedIds.put(TemplateOverridesMap.class,
                 NodeFeatures.TEMPLATE_OVERRIDES);
         expectedIds.put(OverrideElementData.class, NodeFeatures.OVERRIDE_DATA);
+        expectedIds.put(ParentGeneratorHolder.class,
+                NodeFeatures.PARENT_GENERATOR);
 
         Assert.assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());
