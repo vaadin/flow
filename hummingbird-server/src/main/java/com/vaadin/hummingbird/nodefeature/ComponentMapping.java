@@ -16,10 +16,8 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 
@@ -28,7 +26,7 @@ import com.vaadin.ui.ComponentUtil;
  *
  * @author Vaadin Ltd
  */
-public class ComponentMapping extends NodeFeature {
+public class ComponentMapping extends ServerSideFeature {
 
     private Component component = null;
 
@@ -64,21 +62,6 @@ public class ComponentMapping extends NodeFeature {
      */
     public Optional<Component> getComponent() {
         return Optional.ofNullable(component);
-    }
-
-    @Override
-    public void collectChanges(Consumer<NodeChange> collector) {
-        // Server side only feature
-    }
-
-    @Override
-    public void resetChanges() {
-        // Server side only feature
-    }
-
-    @Override
-    public void forEachChild(Consumer<StateNode> action) {
-        // Server side only feature
     }
 
     @Override

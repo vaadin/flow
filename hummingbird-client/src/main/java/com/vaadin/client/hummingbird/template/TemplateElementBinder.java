@@ -17,6 +17,7 @@ package com.vaadin.client.hummingbird.template;
 
 import java.util.Optional;
 
+import com.vaadin.client.Command;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
@@ -25,11 +26,13 @@ import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.StaticBinding;
 import com.vaadin.hummingbird.template.TextValueBinding;
 
 import elemental.client.Browser;
+import elemental.dom.Comment;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.Text;
@@ -98,9 +101,58 @@ public class TemplateElementBinder {
         case com.vaadin.hummingbird.template.TextTemplateNode.TYPE:
             return createAndBindText(stateNode,
                     (TextTemplateNode) templateNode);
+        case com.vaadin.hummingbird.template.ChildSlotNode.TYPE:
+            return createAndBindChildSot(stateNode);
         default:
             throw new IllegalArgumentException(
                     "Unsupported template type: " + templateNode.getType());
+        }
+    }
+
+    private static Node createAndBindChildSot(StateNode stateNode) {
+        // Anchor to put in the DOM to know where to insert the actual content
+        Comment anchor = Browser.getDocument().createComment(" @child@ ");
+
+        Computation computation = Reactive
+                .runWhenDepedenciesChange(new Command() {
+                    private StateNode childNode;
+
+                    @Override
+                    public void execute() {
+                        final StateNode oldChildNode = childNode;
+                        final StateNode newChildNode = (StateNode) stateNode
+                                .getMap(NodeFeatures.TEMPLATE)
+                                .getProperty(TemplateMap.CHILD_SLOT_CONTENT)
+                                .getValue();
+                        childNode = newChildNode;
+
+                        // Do the actual work separately so that this
+                        // computation doesn't depend on the values used for
+                        // binding
+                        Reactive.addFlushListener(() -> updateChildSlot(anchor,
+                                oldChildNode, newChildNode));
+                    }
+                });
+        stateNode.addUnregisterListener(e -> computation.stop());
+
+        return anchor;
+    }
+
+    private static void updateChildSlot(Comment anchor, StateNode oldChildNode,
+            StateNode newChildNode) {
+        Element parent = anchor.getParentElement();
+
+        if (oldChildNode != null) {
+            Node oldChild = oldChildNode.getDomNode();
+            assert oldChild.getParentElement() == parent;
+
+            parent.removeChild(oldChild);
+        }
+
+        if (newChildNode != null) {
+            Node newChild = BasicElementBinder.createDomNode(newChildNode);
+
+            parent.insertBefore(newChild, anchor.getNextSibling());
         }
     }
 

@@ -22,11 +22,11 @@ import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
+import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
-import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.template.TemplateElementBinder;
@@ -427,7 +427,18 @@ public class BasicElementBinder {
         }
     }
 
-    private static Node createDomNode(StateNode node) {
+    /**
+     * Creates and binds a DOM node for the given state node. For state nodes
+     * based on templates, the root element of the template is returned.
+     *
+     * @param node
+     *            the state node for which to create a DOM node, not
+     *            <code>null</code>
+     * @return the DOM node, not <code>null</code>
+     */
+    public static Node createDomNode(StateNode node) {
+        assert node != null;
+
         if (node.hasFeature(NodeFeatures.TEXT_NODE)) {
             return TextElementBinder.createAndBind(node);
         } else if (node.hasFeature(NodeFeatures.TEMPLATE)) {

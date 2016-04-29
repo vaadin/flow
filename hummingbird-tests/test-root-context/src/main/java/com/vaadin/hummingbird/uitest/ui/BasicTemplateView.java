@@ -17,6 +17,8 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Template;
 
@@ -31,5 +33,16 @@ public class BasicTemplateView extends Template implements View {
         button.addEventListener("click", e -> button.removeFromParent());
 
         container.appendChild(button);
+
+        Button childSlotContent = new Button(
+                "Child slot content (click to remove)");
+        childSlotContent.addClassName("childSlotContent");
+
+        // Will introduce a nicer API in a separate patch
+        childSlotContent.addClickListener(e -> {
+            getElement().getNode().getFeature(TemplateMap.class).setChild(null);
+        });
+        getElement().getNode().getFeature(TemplateMap.class)
+                .setChild(childSlotContent.getElement().getNode());
     }
 }

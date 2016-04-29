@@ -70,6 +70,8 @@ public class NodeFeatureRegistry {
         registerFeature(ModelMap.class, ModelMap::new);
         registerFeature(TemplateOverridesMap.class, TemplateOverridesMap::new);
         registerFeature(OverrideElementData.class, OverrideElementData::new);
+        registerFeature(ParentGeneratorHolder.class,
+                ParentGeneratorHolder::new);
     }
 
     private NodeFeatureRegistry() {

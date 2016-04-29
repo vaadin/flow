@@ -71,11 +71,7 @@ public abstract class TemplateNode implements Serializable {
     private static ElementStateProvider createStateProvider(TemplateNode node) {
         assert node != null;
 
-        ElementStateProvider provider = node.createStateProvider();
-
-        assert provider != null;
-
-        return provider;
+        return node.createStateProvider();
     }
 
     /**
@@ -149,6 +145,8 @@ public abstract class TemplateNode implements Serializable {
      * @return the element state provider, not <code>null</code>
      */
     public ElementStateProvider getStateProvider() {
+        assert stateProvider != null : "This node is not an element in itself";
+
         return stateProvider;
     }
 

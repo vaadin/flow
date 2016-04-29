@@ -15,6 +15,10 @@
  */
 package com.vaadin.client.hummingbird.template;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.WidgetUtil;
+
+import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
@@ -25,4 +29,14 @@ public interface TestTemplateNode extends TemplateNode {
 
     @JsProperty
     public void setChildren(double[] children);
+
+    @SuppressWarnings("unchecked")
+    @JsOverlay
+    public static <T extends TestTemplateNode> T create(String type) {
+        TestTemplateNode templateNode = WidgetUtil
+                .crazyJsCast(JavaScriptObject.createObject());
+        templateNode.setType(type);
+
+        return (T) templateNode;
+    }
 }
