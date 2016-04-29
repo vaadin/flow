@@ -13,32 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.humminbird.tutorial.element;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.html.Button;
-import com.vaadin.hummingbird.html.Input;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.UI;
 
-@CodeFor("tutorial-dynamic-content.asciidoc")
-public class DynamicContentParameters {
+@CodeFor("tutorial-user-input.asciidoc")
+public abstract class UserInput extends UI {
 
     void tutorialCode() {
-        Input name = new Input();
+        Element textInput = ElementFactory.createInput();
+        textInput.setAttribute("placeholder", "Please enter your name");
 
-        Element image = new Element("object");
-        image.setAttribute("type", "image/svg+xml");
-        image.getStyle().set("display", "block");
+        textInput.synchronizeProperty("value", "change");
 
-        Button button = new Button("Generate Image");
-        button.addClickListener(event -> {
-            String url = "image?name=" + name.getValue();
-            image.setAttribute("data", url);
+        Element button = ElementFactory.createDiv();
+        button.addEventListener("click", e -> {
+            String responseText = "Hello " + textInput.getProperty("value");
+            Element response = ElementFactory.createDiv(responseText);
+            getElement().appendChild(response);
         });
-
-        UI.getCurrent().getElement().appendChild(name.getElement(), image,
-                button.getElement());
     }
-
 }

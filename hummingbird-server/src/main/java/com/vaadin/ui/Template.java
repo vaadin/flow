@@ -21,10 +21,8 @@ import java.io.InputStream;
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.nodefeature.ComponentMapping;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
-import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
 import com.vaadin.hummingbird.template.TemplateParser;
@@ -49,8 +47,8 @@ import com.vaadin.hummingbird.template.TemplateParser;
  * @author Vaadin Ltd
  */
 public abstract class Template extends Component {
-    private final StateNode stateNode = new StateNode(TemplateMap.class,
-            TemplateOverridesMap.class, ComponentMapping.class, ModelMap.class);
+    private final StateNode stateNode = TemplateElementStateProvider
+            .createNode();
 
     /**
      * Creates a new template.

@@ -1,4 +1,4 @@
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.humminbird.tutorial.component;
 
 import java.util.EventObject;
 import java.util.function.Consumer;

@@ -24,8 +24,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
-import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.StaticBinding;
 import com.vaadin.hummingbird.template.TemplateNode;
@@ -237,6 +237,126 @@ public class TemplateElementStateProviderTest {
         parent.removeAllChildren();
     }
 
+    @Test
+    public void emptyChildSlot() {
+        Element parent = createElement("<div>@child@</div>");
+
+        Assert.assertEquals(0, parent.getChildCount());
+    }
+
+    @Test
+    public void populatedChildSlot() {
+        Element div = createElement("<div><span>@child@</span></div>");
+
+        Element span = div.getChild(0);
+
+        Element child = ElementFactory.createSpan("child");
+
+        div.getNode().getFeature(TemplateMap.class).setChild(child.getNode());
+
+        Assert.assertEquals(1, span.getChildCount());
+        Assert.assertEquals(child, span.getChild(0));
+
+        Assert.assertEquals(span, child.getParent());
+    }
+
+    @Test
+    public void emptyChildSlotOrder() {
+        Element parent = createElement(
+                "<div><before></before>@child@<after></after></div>");
+
+        Assert.assertEquals(2, parent.getChildCount());
+
+        Assert.assertEquals(Arrays.asList("before", "after"),
+                parent.getChildren().map(Element::getTag)
+                        .collect(Collectors.toList()));
+    }
+
+    @Test
+    public void populatedChildSlotOrder() {
+        Element parent = createElement(
+                "<div><before></before>@child@<after></after></div>");
+        Element child = new Element("child");
+
+        parent.getNode().getFeature(TemplateMap.class)
+                .setChild(child.getNode());
+
+        Assert.assertEquals(3, parent.getChildCount());
+
+        Assert.assertEquals(Arrays.asList("before", "child", "after"),
+                parent.getChildren().map(Element::getTag)
+                        .collect(Collectors.toList()));
+    }
+
+    public void clearChildSlot_resetChild() {
+        Element parent = createElement("<div>@child@</div>");
+        Element child = ElementFactory.createSpan("child");
+
+        TemplateMap templateMap = parent.getNode()
+                .getFeature(TemplateMap.class);
+        templateMap.setChild(child.getNode());
+
+        Assert.assertEquals(1, parent.getChildCount());
+
+        templateMap.setChild(null);
+
+        Assert.assertEquals(0, parent.getChildCount());
+        Assert.assertEquals(0, parent.getChildren().count());
+        Assert.assertNull(child.getParent());
+    }
+
+    // Currently not implemented, but we might want to support this at some
+    // point
+    @Test(expected = IllegalStateException.class)
+    public void clearChildSlot_removeElement() {
+        Element parent = createElement("<div>@child@</div>");
+        Element child = ElementFactory.createSpan("child");
+
+        parent.getNode().getFeature(TemplateMap.class)
+                .setChild(child.getNode());
+
+        child.removeFromParent();
+    }
+
+    @Test
+    public void textInChildSlot() {
+        Element parent = createElement("<div>@child@</div>");
+        Element child = Element.createText("The text");
+
+        parent.getNode().getFeature(TemplateMap.class)
+                .setChild(child.getNode());
+
+        Assert.assertEquals(1, parent.getChildCount());
+        Assert.assertEquals(1, parent.getChildren().count());
+        Assert.assertEquals(parent, child.getParent());
+
+        Assert.assertEquals("The text", parent.getTextContent());
+    }
+
+    @Test
+    public void templateInChildSlot() {
+        Element parent = createElement("<div>@child@</div>");
+        Element child = createElement("<span>The text</span>");
+
+        parent.getNode().getFeature(TemplateMap.class)
+                .setChild(child.getNode());
+
+        Assert.assertEquals(1, parent.getChildCount());
+        Assert.assertEquals(1, parent.getChildren().count());
+        Assert.assertEquals(parent, child.getParent());
+
+        Assert.assertEquals("The text", parent.getTextContent());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void setChildWithoutSlot() {
+        Element parent = createElement("<div>No child slot here</div>");
+        Element child = ElementFactory.createDiv("child");
+
+        parent.getNode().getFeature(TemplateMap.class)
+                .setChild(child.getNode());
+    }
+
     private static Element createElement(String template) {
         return createElement(TemplateParser.parse(template));
     }
@@ -246,8 +366,7 @@ public class TemplateElementStateProviderTest {
     }
 
     private static Element createElement(TemplateNode templateNode) {
-        StateNode stateNode = new StateNode(TemplateMap.class,
-                TemplateOverridesMap.class);
+        StateNode stateNode = TemplateElementStateProvider.createNode();
         stateNode.getFeature(TemplateMap.class).setRootTemplate(templateNode);
 
         return Element.get(stateNode);

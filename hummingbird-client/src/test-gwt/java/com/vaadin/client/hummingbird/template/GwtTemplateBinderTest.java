@@ -23,7 +23,9 @@ import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
+import com.vaadin.hummingbird.template.ChildSlotNode;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -251,5 +253,97 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals("override", element.getId());
+    }
+
+    public void testChildSlot() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        TestTemplateNode childSlot = TestTemplateNode
+                .create(ChildSlotNode.TYPE);
+
+        int childId = 67;
+        registry.getTemplateRegistry().register(childId, childSlot);
+
+        templateNode.setChildren(new double[] { childId });
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, templateNode);
+
+        Reactive.flush();
+
+        assertEquals(1, element.getChildNodes().getLength());
+        assertEquals(Node.COMMENT_NODE,
+                element.getChildNodes().item(0).getNodeType());
+
+        StateNode childContentNode = new StateNode(79, stateNode.getTree());
+        childContentNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).setValue("span");
+
+        stateNode.getMap(NodeFeatures.TEMPLATE)
+                .getProperty(TemplateMap.CHILD_SLOT_CONTENT)
+                .setValue(childContentNode);
+
+        Reactive.flush();
+
+        assertEquals(2, element.getChildNodes().getLength());
+        assertEquals(Node.COMMENT_NODE,
+                element.getChildNodes().item(0).getNodeType());
+        assertEquals(Node.ELEMENT_NODE,
+                element.getChildNodes().item(1).getNodeType());
+        assertEquals("SPAN", element.getLastElementChild().getTagName());
+
+        stateNode.getMap(NodeFeatures.TEMPLATE)
+                .getProperty(TemplateMap.CHILD_SLOT_CONTENT).setValue(null);
+
+        Reactive.flush();
+
+        assertEquals(1, element.getChildNodes().getLength());
+        assertEquals(Node.COMMENT_NODE,
+                element.getChildNodes().item(0).getNodeType());
+    }
+
+    public void testChildSlotAfterUnregister() {
+        StateNode childContentNode = new StateNode(79, stateNode.getTree());
+
+        // Must register so that we can fire an unregister event later on
+        tree.registerNode(stateNode);
+        tree.registerNode(childContentNode);
+
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        TestTemplateNode childSlot = TestTemplateNode
+                .create(ChildSlotNode.TYPE);
+
+        int childId = 67;
+        registry.getTemplateRegistry().register(childId, childSlot);
+
+        templateNode.setChildren(new double[] { childId });
+
+        childContentNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).setValue("span");
+
+        stateNode.getMap(NodeFeatures.TEMPLATE)
+                .getProperty(TemplateMap.CHILD_SLOT_CONTENT)
+                .setValue(childContentNode);
+
+        Reactive.flush();
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, templateNode);
+
+        assertEquals(1, element.getChildNodes().getLength());
+
+        tree.unregisterNode(stateNode);
+        tree.unregisterNode(childContentNode);
+
+        Reactive.flush();
+
+        stateNode.getMap(NodeFeatures.TEMPLATE)
+                .getProperty(TemplateMap.CHILD_SLOT_CONTENT).setValue(null);
+
+        Reactive.flush();
+
+        // Emptying child slot should have not effect when node is unregistered
+        assertEquals(1, element.getChildNodes().getLength());
     }
 }
