@@ -1,0 +1,36 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+== Using a Template as a Parent View
+
+For general info about parent views, see <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>.
+
+A `Template` class can be used as a parent view by using `@child@` in the position where the child view should be displayed.
+
+[source,java]
+----
+public class MainLayout extends Template {
+    // Nothing needed here
+}
+----
+
+[source,html]
+----
+<div>
+  <h1>Site title</h1>
+  <div class="menu">...</div>
+  @child@
+</div>
+----
+
+You can then register `MainLayout` as the parent view in your `RouterConfiguration`.
+
+[source,java]
+----
+public class MyRouterConfigurator implements RouterConfigurator {
+    @Override
+    public void configure(RouterConfiguration configuration) {
+        configuration.setRoute("", HomeView.class, MainLayout.class);
+        configuration.setRoute("company", CompanyView.class, MainLayout.class);
+    }
+}
+----
