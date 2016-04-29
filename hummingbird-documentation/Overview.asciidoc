@@ -37,6 +37,7 @@ These tutorials show how the different features are used.
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
+** <<tutorial-routing-template-parent#,Using a Template as a Parent View>>
 ** <<tutorial-routing-view-parameters#,Using View Parameters>>
 ** <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
 * Misc
