@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
@@ -38,6 +39,32 @@ public class TemplateTest {
             super(new ByteArrayInputStream(
                     "<div>foo</div>".getBytes(StandardCharsets.UTF_8)));
         }
+    }
+
+    private static class NullTemplate extends Template {
+        NullTemplate() {
+            super((String) null);
+        }
+    }
+
+    @HtmlTemplate("samePackage.html")
+    private static class AnnotatedRelativePathTemplate extends Template {
+
+    }
+
+    @HtmlTemplate("/com/htmlSnippet.html")
+    private static class AnnotatedAbsolutePathTemplate extends Template {
+
+    }
+
+    @HtmlTemplate("/root.html")
+    private static class AnnotatedRootPathTemplate extends Template {
+
+    }
+
+    private static class InheritedAnnotationTemplate
+            extends AnnotatedAbsolutePathTemplate {
+
     }
 
     @Test
@@ -59,4 +86,35 @@ public class TemplateTest {
         Assert.assertNotNull(node.getFeature(ModelMap.class));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void nullTemplate() {
+        new NullTemplate();
+    }
+
+    @Test
+    public void htmlAnnotation_htmlFileInSamePackage() {
+        AnnotatedRelativePathTemplate template = new AnnotatedRelativePathTemplate();
+        Assert.assertEquals("same_package",
+                template.getElement().getAttribute("id"));
+    }
+
+    @Test
+    public void htmlAnnotation_htmlFileInDifferentPackage() {
+        AnnotatedAbsolutePathTemplate template = new AnnotatedAbsolutePathTemplate();
+        Assert.assertEquals("absolute",
+                template.getElement().getAttribute("id"));
+    }
+
+    @Test
+    public void htmlAnnotation_htmlFileInRootPackage() {
+        AnnotatedRootPathTemplate template = new AnnotatedRootPathTemplate();
+        Assert.assertEquals("root", template.getElement().getAttribute("id"));
+    }
+
+    @Test
+    public void htmlAnnotation_inherited() {
+        InheritedAnnotationTemplate template = new InheritedAnnotationTemplate();
+        Assert.assertEquals("absolute",
+                template.getElement().getAttribute("id"));
+    }
 }

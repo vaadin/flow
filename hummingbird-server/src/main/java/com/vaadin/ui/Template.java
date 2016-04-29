@@ -18,6 +18,7 @@ package com.vaadin.ui;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
@@ -30,9 +31,20 @@ import com.vaadin.hummingbird.template.TemplateParser;
 
 /**
  * Component for declaratively defined element structures. The structure of a
- * template is loaded from an .html file on the classpath. The file should be in
- * the same package of the class, and the name should be the same as the class
- * name, but with the <code>.html</code> file extension.
+ * template is loaded from an .html file on the classpath.
+ * <p>
+ * There are two options to specify the HTML file:
+ * <ul>
+ * <li>By default the HTML file should be in the same package of the class, and
+ * the name should be the same as the class name, but with the
+ * <code>.html</code> file extension.
+ * <li>Annotate your subclass with {@link HtmlTemplate} annotation with the HTML
+ * file path as a value. The path can be either relative (without leading "/")
+ * or absolute. In the first case the path is considered as a relative for the
+ * class package.
+ * </ul>
+ * 
+ * @see HtmlTemplate
  *
  * @author Vaadin Ltd
  */
@@ -47,12 +59,20 @@ public abstract class Template extends Component {
         // Will set element later
         super(null);
 
-        setTemplateElement(getClass().getSimpleName() + ".html");
+        HtmlTemplate annotation = getClass().getAnnotation(HtmlTemplate.class);
+        if (annotation == null) {
+            setTemplateElement(getClass().getSimpleName() + ".html");
+        } else {
+            setTemplateElement(annotation.value());
+        }
     }
 
     /**
      * Creates a new template using {@code templateFileName} as the template
      * file name.
+     * 
+     * @param templateFileName
+     *            the template file name, not {@code null}
      */
     protected Template(String templateFileName) {
         // Will set element later
@@ -63,6 +83,10 @@ public abstract class Template extends Component {
 
     /**
      * Creates a new template using {@code inputStream} as a template content.
+     * 
+     * @param inputStream
+     *            the HTML snippet input stream
+     * 
      */
     protected Template(InputStream inputStream) {
         // Will set element later
@@ -72,6 +96,10 @@ public abstract class Template extends Component {
     }
 
     private void setTemplateElement(String templateFileName) {
+        if (templateFileName == null) {
+            throw new IllegalArgumentException(
+                    "HTML template file name cannot be null");
+        }
         InputStream templateContentStream = getClass()
                 .getResourceAsStream(templateFileName);
         if (templateContentStream == null) {
