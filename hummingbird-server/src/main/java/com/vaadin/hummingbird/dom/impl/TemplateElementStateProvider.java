@@ -16,9 +16,7 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
-import java.util.AbstractSet;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -47,63 +45,6 @@ import com.vaadin.ui.Template;
  * @author Vaadin Ltd
  */
 public class TemplateElementStateProvider implements ElementStateProvider {
-
-    private static class ImmutableEmptyStyle implements Style {
-        @Override
-        public String get(String name) {
-            return null;
-        }
-
-        @Override
-        public Style set(String name, String value) {
-            throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
-        }
-
-        @Override
-        public Style remove(String name) {
-            throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
-        }
-
-        @Override
-        public Style clear() {
-            throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
-        }
-
-        @Override
-        public boolean has(String name) {
-            return false;
-        }
-
-        @Override
-        public Stream<String> getNames() {
-            return Stream.empty();
-        }
-    }
-
-    private static class ImmutableEmptyClassList extends AbstractSet<String>
-            implements ClassList {
-
-        @Override
-        public boolean add(String e) {
-            throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
-        }
-
-        @Override
-        public boolean set(String className, boolean set) {
-            throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
-        }
-
-        @Override
-        public Iterator<String> iterator() {
-            return Collections.<String> emptySet().iterator();
-        }
-
-        @Override
-        public int size() {
-            return 0;
-        }
-
-    }
 
     private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
     private ElementTemplateNode templateNode;
