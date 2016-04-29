@@ -1,10 +1,9 @@
 = Adding Components to a Template
 
-You can use an HTML snippet as a template for your component instead of creating 
-a component from scratch via populating its hierarchy using other components.
+You can add child components to templates using the Element API.
 
 Here is the content of the HTML template file which has a placeholder `div` element 
-with `"content"` identifier. The latter element is used in the java code above to set a `Component` 
+with a `"content"` identifier. This element is used in the java code below to set a `Component` 
 as a child for it. 
 [source,html]
 ----
@@ -18,8 +17,7 @@ as a child for it.
 </div>
 ----
 
-This is an example of a template component whose root element will be populated using
-a `div` element defined below in the html file.
+You can implement the method that sets a `Component` as the content for your template component. 
 
 [source,java]
 ----

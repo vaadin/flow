@@ -50,38 +50,40 @@ public class TextElementStateProviderTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testElementProperties() {
-        element.getPropertyNames();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void testGetUndefinedProperty() {
-        element.getProperty("foo");
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void testHasUndefinedProperty() {
-        element.hasProperty("foo");
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
     public void setSetUndefinedPropertyThrows() {
         element.setProperty("foo", "bar");
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testAttributes() {
-        element.getAttributeNames();
+    @Test
+    public void textNodeHasAttribute() {
+        Assert.assertFalse(Element.createText("foo").hasAttribute("bar"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testGetUndefinedAttribute() {
-        element.getAttribute("foo");
+    @Test
+    public void textNodeGetAttribute() {
+        Assert.assertNull(Element.createText("foo").getAttribute("bar"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void testHasUndefinedAttribute() {
-        element.hasAttribute("foo");
+    @Test
+    public void textNodeGetAttributeNames() {
+        Assert.assertEquals(0,
+                Element.createText("foo").getAttributeNames().count());
+    }
+
+    @Test
+    public void textNodeHasProperty() {
+        Assert.assertFalse(Element.createText("foo").hasProperty("bar"));
+    }
+
+    @Test
+    public void textNodeGetProperty() {
+        Assert.assertNull(Element.createText("foo").getProperty("bar"));
+    }
+
+    @Test
+    public void textNodeGetPropertyNames() {
+        Assert.assertEquals(0,
+                Element.createText("foo").getPropertyNames().count());
     }
 
     @Test(expected = UnsupportedOperationException.class)
