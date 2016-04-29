@@ -39,5 +39,12 @@ public class BasicTemplateIT extends PhantomJSTest {
         containerButton.click();
         Assert.assertFalse(
                 isElementPresent(By.cssSelector("#container > button")));
+
+        WebElement childSlotContent = findElement(
+                By.className("childSlotContent"));
+
+        // Click button to remove it
+        childSlotContent.click();
+        Assert.assertFalse(isElementPresent(By.className(".childSlotContent")));
     }
 }

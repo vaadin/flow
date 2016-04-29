@@ -20,6 +20,7 @@ import java.util.Optional;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 import com.vaadin.ui.Component;
 
@@ -48,7 +49,7 @@ public class BasicTextElementStateProvider
         assert text != null;
 
         StateNode node = new StateNode(TextNodeMap.class,
-                ComponentMapping.class);
+                ComponentMapping.class, ParentGeneratorHolder.class);
         node.getFeature(TextNodeMap.class).setText(text);
 
         return node;
@@ -92,15 +93,13 @@ public class BasicTextElementStateProvider
     public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
-        node.getFeature(ComponentMapping.class)
-                .setComponent(component);
+        node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
         assert node != null;
-        return node.getFeature(ComponentMapping.class)
-                .getComponent();
+        return node.getFeature(ComponentMapping.class).getComponent();
     }
 
 }

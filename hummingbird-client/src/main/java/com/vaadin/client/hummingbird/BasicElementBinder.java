@@ -22,14 +22,13 @@ import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
+import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
-import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
-import com.vaadin.client.hummingbird.template.TemplateElementBinder;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
@@ -373,7 +372,7 @@ public class BasicElementBinder {
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
 
-            Node child = createDomNode(childNode);
+            Node child = ElementBinder.createAndBind(childNode);
 
             element.appendChild(child);
         }
@@ -418,7 +417,8 @@ public class BasicElementBinder {
 
             for (int i = 0; i < add.length(); i++) {
                 Object newChildObject = add.get(i);
-                Node childNode = createDomNode((StateNode) newChildObject);
+                Node childNode = ElementBinder
+                        .createAndBind((StateNode) newChildObject);
 
                 element.insertBefore(childNode, beforeRef);
 
@@ -427,17 +427,18 @@ public class BasicElementBinder {
         }
     }
 
-    private static Node createDomNode(StateNode node) {
-        if (node.hasFeature(NodeFeatures.TEXT_NODE)) {
-            return TextElementBinder.createAndBind(node);
-        } else if (node.hasFeature(NodeFeatures.TEMPLATE)) {
-            return TemplateElementBinder.createAndBind(node);
-        }
-
+    /**
+     * Creates and binds a DOM node for the given state node.
+     *
+     * @param node
+     *            the state node for which to create a DOM node, not
+     *            <code>null</code>
+     * @return the DOM node, not <code>null</code>
+     */
+    public static Node createAndBind(StateNode node) {
         String tag = getTag(node);
 
         assert tag != null : "New child must have a tag";
-        // ...or a template, but that's not yet implemented
 
         Element childElement = Browser.getDocument().createElement(tag);
 

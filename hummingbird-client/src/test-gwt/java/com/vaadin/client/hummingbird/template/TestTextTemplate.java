@@ -15,9 +15,6 @@
  */
 package com.vaadin.client.hummingbird.template;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.vaadin.client.WidgetUtil;
-
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -29,9 +26,7 @@ public interface TestTextTemplate extends TestTemplateNode, TextTemplateNode {
 
     @JsOverlay
     public static TestTextTemplate create(Binding binding) {
-        TestTextTemplate template = WidgetUtil
-                .crazyJsCast(JavaScriptObject.createObject());
-        template.setType("text");
+        TestTextTemplate template = TestTemplateNode.create("text");
         template.setTextBinding(binding);
         return template;
     }

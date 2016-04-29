@@ -36,6 +36,7 @@ import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
+import com.vaadin.hummingbird.template.SingleElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
@@ -253,13 +254,16 @@ public class Element implements Serializable {
         } else if (node.hasFeature(TemplateMap.class)) {
             TemplateNode rootTemplate = node.getFeature(TemplateMap.class)
                     .getRootTemplate();
-            return get(node, rootTemplate.getStateProvider());
+            assert rootTemplate instanceof SingleElementTemplateNode;
+            return rootTemplate.getElement(0, node);
         } else if (node.hasFeature(OverrideElementData.class)) {
             // provided node is an override: get real state node + template node
             StateNode templateStateNode = node.getParent();
             TemplateNode templateNode = node
                     .getFeature(OverrideElementData.class).getTemplateNode();
-            return get(templateStateNode, templateNode.getStateProvider());
+
+            assert templateNode instanceof SingleElementTemplateNode;
+            return templateNode.getElement(0, templateStateNode);
         } else {
             throw new IllegalArgumentException(
                     "Node is not valid as an element");

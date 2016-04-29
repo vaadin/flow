@@ -30,9 +30,13 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
+import com.vaadin.hummingbird.template.SingleElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
@@ -45,6 +49,11 @@ import com.vaadin.ui.Template;
  * @author Vaadin Ltd
  */
 public class TemplateElementStateProvider implements ElementStateProvider {
+    @SuppressWarnings("unchecked")
+    private static Class<? extends NodeFeature>[] features = new Class[] {
+            TemplateMap.class, TemplateOverridesMap.class,
+            ComponentMapping.class, ModelMap.class,
+            ParentGeneratorHolder.class };
 
     private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
     private ElementTemplateNode templateNode;
@@ -121,15 +130,10 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         assert node != null;
         assert templateNode != null;
 
-        return templateNode.getParent()
-                .map(parent -> Element.get(node, parent.getStateProvider()))
-                .orElseGet(() -> {
-                    StateNode parentNode = node.getParent();
-                    if (parentNode == null) {
-                        return null;
-                    }
-                    return Element.get(parentNode);
-                });
+        return templateNode.getParent().map(parent -> {
+            assert parent instanceof SingleElementTemplateNode;
+            return parent.getElement(0, node);
+        }).orElseGet(() -> BasicElementStateProvider.get().getParent(node));
     }
 
     @Override
@@ -145,7 +149,12 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             }
         }
 
-        return templateChildCount;
+        int elementChildCount = 0;
+        for (int i = 0; i < templateChildCount; i++) {
+            TemplateNode templateChild = templateNode.getChild(i);
+            elementChildCount += templateChild.getGeneratedElementCount(node);
+        }
+        return elementChildCount;
     }
 
     @Override
@@ -161,8 +170,20 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             }
         }
 
-        TemplateNode childTemplate = templateNode.getChild(index);
-        return Element.get(node, childTemplate.getStateProvider());
+        int currentChildIndex = 0;
+        for (int i = 0; i < templateChildCount; i++) {
+            TemplateNode templateChild = templateNode.getChild(i);
+            int generateCount = templateChild.getGeneratedElementCount(node);
+
+            int indexInChild = index - currentChildIndex;
+            if (indexInChild < generateCount) {
+                return templateChild.getElement(indexInChild, node);
+            }
+
+            currentChildIndex += generateCount;
+        }
+
+        throw new IndexOutOfBoundsException();
     }
 
     @Override
@@ -301,4 +322,12 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                 true);
     }
 
+    /**
+     * Creates a new state node with all features needed for a template.
+     *
+     * @return a new state node, not <code>null</code>
+     */
+    public static StateNode createNode() {
+        return new StateNode(features);
+    }
 }
