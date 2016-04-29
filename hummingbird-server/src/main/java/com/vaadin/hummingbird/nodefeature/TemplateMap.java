@@ -15,8 +15,11 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.util.Optional;
+
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.shared.NodeFeatures;
+import com.vaadin.hummingbird.template.ChildSlotNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 
 /**
@@ -25,6 +28,11 @@ import com.vaadin.hummingbird.template.TemplateNode;
  * @author Vaadin Ltd
  */
 public class TemplateMap extends NodeMap {
+
+    /**
+     * Key for the state node defining <code>@child@</code> slot contents.
+     */
+    public static final String CHILD_SLOT_CONTENT = "child";
 
     /**
      * Creates a new template map for the given node.
@@ -60,4 +68,53 @@ public class TemplateMap extends NodeMap {
         put(NodeFeatures.ROOT_TEMPLATE_ID,
                 Integer.valueOf(rootTemplate.getId()));
     }
+
+    /**
+     * Sets the root node of the element that occupies the <code>@child@</code>
+     * slot in this template.
+     *
+     * @param child
+     *            the state node of the element to put in the child slot, or
+     *            <code>null</code> to remove the current child
+     */
+    public void setChild(StateNode child) {
+        Optional<ChildSlotNode> maybeSlot = ChildSlotNode
+                .find(getRootTemplate());
+        if (!maybeSlot.isPresent()) {
+            throw new IllegalStateException("Template has no child slot");
+        }
+
+        ChildSlotNode childTemplateNode = maybeSlot.get();
+
+        // Reset bookkeeping for old child
+        getChild().ifPresent(oldChild -> {
+            ParentGeneratorHolder oldParentGeneratorHolder = oldChild
+                    .getFeature(ParentGeneratorHolder.class);
+            assert oldParentGeneratorHolder.getParentGenerator()
+                    .get() == childTemplateNode;
+            oldParentGeneratorHolder.setParentGenerator(null);
+        });
+
+        put(CHILD_SLOT_CONTENT, child);
+
+        // Update bookkeeping for finding the parent of the new child
+        if (child != null) {
+            ParentGeneratorHolder parentGeneratorHolder = child
+                    .getFeature(ParentGeneratorHolder.class);
+            assert !parentGeneratorHolder.getParentGenerator().isPresent();
+            parentGeneratorHolder.setParentGenerator(childTemplateNode);
+        }
+    }
+
+    /**
+     * Sets the root node of the element that occupies the <code>@child@</code>
+     * slot in this template.
+     *
+     * @return an optional state node, or an empty optional if there is not
+     *         child slot content
+     */
+    public Optional<StateNode> getChild() {
+        return Optional.ofNullable((StateNode) get(CHILD_SLOT_CONTENT));
+    }
+
 }

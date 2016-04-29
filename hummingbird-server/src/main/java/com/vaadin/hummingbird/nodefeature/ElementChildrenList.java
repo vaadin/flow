@@ -36,6 +36,11 @@ public class ElementChildrenList extends StateNodeNodeList {
 
     @Override
     public void add(int index, StateNode node) {
+        assert node != null;
+        assert !node.hasFeature(ParentGeneratorHolder.class)
+                || !node.getFeature(ParentGeneratorHolder.class)
+                        .getParentGenerator().isPresent();
+
         super.add(index, node);
     }
 

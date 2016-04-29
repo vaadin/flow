@@ -105,10 +105,13 @@ public class TemplateParser {
         }
     }
 
-    private static TextTemplateBuilder createTextBuilder(TextNode node) {
+    private static TemplateNodeBuilder createTextBuilder(TextNode node) {
         String text = node.text();
+        String trimmedText = text.trim();
 
-        if (text.startsWith("{{") && text.endsWith("}}")) {
+        if (trimmedText.equals("@child@")) {
+            return new ChildSlotBuilder();
+        } else if (text.startsWith("{{") && text.endsWith("}}")) {
             String key = text.substring(2);
             key = key.substring(0, key.length() - 2);
             return new TextTemplateBuilder(new TextValueBinding(key));
