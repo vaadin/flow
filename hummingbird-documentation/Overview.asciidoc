@@ -12,7 +12,7 @@ The heart of Hummingbird will consist of three ways of interacting with the DOM 
 
 These mechanisms are intended to be encapsulated into reusable components with a high-level Java API.
 
-The current version only implements the DOM tree and beginnings of the RPC mechanism.
+The current version provides a complete DOM tree implementation and beginnings of the mechanisms for both templates and RPC.
 
 == Tutorials
 
@@ -32,6 +32,8 @@ These tutorials show how the different features are used.
 ** <<tutorial-component-composite#,Creating a Component Using Existing Components>>
 ** <<tutorial-component-events#,Using Events with Components>>
 ** <<tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
+* Template
+** <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
@@ -71,6 +73,12 @@ The component hierarchy provides an higher level abstraction on top of the eleme
 Composite is a special kind of component which does not have a root element of its own but instead encapsulates another component. The main use case for a composite is to combine existing components into new components while hiding the original component API.
 
 The component hierarchy can be navigated upwards using `component.getParent()` and downwards using `component.getChildren()`. The component hierarchy is constructed based on the element hierarchy, so they are always in sync.
+
+== Templates
+Instead of writing Java code for building the DOM from individual elements, it's also possible to use the `Template` component to define the overall DOM structure in a HTML template file and then use a model to control the contents of the elements.
+
+In addition to giving a clearer overview of the structure of a Component, the template functionality does also help improve performance –
+the same template definition is reused for all component instance using the same template file. This means that less memory is used on the server and less data needs to be sent to the browser.
 
 == History API
 

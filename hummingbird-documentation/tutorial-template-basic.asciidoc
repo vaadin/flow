@@ -1,0 +1,65 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Creating A Simple Component Using the Template API
+
+There are multiple ways you can create a component. This tutorial uses the `Template` API with no additional elements or components. For other component tutorials, see:
+
+* <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>.
+* <<tutorial-component-composite#,Creating a Component Using Existing Components>>
+* <<tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
+
+[WARNING]
+Implementation of the Template API has only just started. The current feature set is still cumbersome to use and very limiting.
+This tutorial will be updated when the functionality is extended.
+
+You can use a template to create a simple greeting component in this way:
+
+[source,html]
+----
+<div>
+  Hello, <span class="greeting-name">{{name}}</span>
+</div>
+----
+
+The template engine will replace `{{name}}` in the HTML with the value of the `name` property defined in the component's model.
+
+[NOTE]
+Updating the model property value will automatically update what is shown in the browser.
+The template engine takes care of only only updating the parts that have only changed for optimal performance.
+
+To use this template and define model values, you also need to create a class that extends `Template` and add an instance of the component to your view.
+
+[source,java]
+----
+public class Greeting extends Template {
+    // This API will be improved
+    private ModelMap model = getElement().getNode().getFeature(ModelMap.class);
+
+    public void setName(String name) {
+        model.setValue("name", name);
+    }
+
+    public String getName() {
+        return model.getValue("name");
+    }
+}
+----
+
+The last thing you need to do is to make sure the name of the template file has the same name as the Java file, except that the file extension should be `.html` instead of `.java`.
+The template file should also be in the same package as the corresponding class.
+
+[TIP]
+With Maven, the template files should by default be located in `src/main/resources`. So if the `Greeting` class is in the `com.example` package, then `Greeting.html` should be in `src/main/resources/com/example/`.
+
+You can use `Greeting` like any other component.
+
+[source,java]
+----
+Greeting greeting = new Greeting();
+greeting.setName("John Doe");
+
+Div layout = new Div();
+layout.add(greeting);
+----
+
+[NOTE]
+The template syntax currently only supports hardcoded attribute values (e.g. `class="greeting-name"`) and using a model value as the text content of an element (`{{modelPropertyName}}`). Other much-needed features will be introduced in upcoming releases.
