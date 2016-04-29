@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 import com.vaadin.ui.Template;
 
 /**
- * Allows to specify a file with an HTML snippet for the {@link Template}.
+ * Allows to map a specific html file for {@link Template}.
  * 
  * @see Template
  * @author Vaadin Ltd

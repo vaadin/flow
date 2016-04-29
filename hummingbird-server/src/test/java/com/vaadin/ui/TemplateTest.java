@@ -52,6 +52,11 @@ public class TemplateTest {
 
     }
 
+    @HtmlTemplate("no-extension")
+    private static class AnnotatedNoExtensionTemplate extends Template {
+
+    }
+
     @HtmlTemplate("/com/htmlSnippet.html")
     private static class AnnotatedAbsolutePathTemplate extends Template {
 
@@ -115,6 +120,13 @@ public class TemplateTest {
     public void htmlAnnotation_inherited() {
         InheritedAnnotationTemplate template = new InheritedAnnotationTemplate();
         Assert.assertEquals("absolute",
+                template.getElement().getAttribute("id"));
+    }
+
+    @Test
+    public void htmlAnnotation_noExtension() {
+        AnnotatedNoExtensionTemplate template = new AnnotatedNoExtensionTemplate();
+        Assert.assertEquals("no-extension",
                 template.getElement().getAttribute("id"));
     }
 }
