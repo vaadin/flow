@@ -22,6 +22,9 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.router.HasChildView;
+import com.vaadin.hummingbird.router.RouterConfiguration;
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
 import com.vaadin.hummingbird.template.TemplateParser;
@@ -31,10 +34,14 @@ import com.vaadin.hummingbird.template.TemplateParser;
  * template is loaded from an .html file on the classpath. The file should be in
  * the same package of the class, and the name should be the same as the class
  * name, but with the <code>.html</code> file extension.
+ * <p>
+ * A template can be used as a {@link HasChildView} in
+ * {@link RouterConfiguration} if the template file contains a
+ * <code>@child@</code> slot.
  *
  * @author Vaadin Ltd
  */
-public abstract class Template extends Component {
+public abstract class Template extends Component implements HasChildView {
     private final StateNode stateNode = TemplateElementStateProvider
             .createNode();
 
@@ -93,6 +100,16 @@ public abstract class Template extends Component {
             setElement(this, rootElement);
         } catch (IOException e) {
             throw new TemplateParseException("Error reading template", e);
+        }
+    }
+
+    @Override
+    public void setChildView(View childView) {
+        TemplateMap templateMap = stateNode.getFeature(TemplateMap.class);
+        if (childView == null) {
+            templateMap.setChild(null);
+        } else {
+            templateMap.setChild(childView.getElement().getNode());
         }
     }
 }
