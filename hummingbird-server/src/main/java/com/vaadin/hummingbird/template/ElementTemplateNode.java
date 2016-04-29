@@ -33,7 +33,7 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  */
-public class ElementTemplateNode extends TemplateNode {
+public class ElementTemplateNode extends SingleElementTemplateNode {
     /**
      * Type value for element template nodes in JSON messages.
      */
