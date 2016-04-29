@@ -25,7 +25,7 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  */
-public class TextTemplateNode extends TemplateNode {
+public class TextTemplateNode extends SingleElementTemplateNode {
     /**
      * Type value for text template nodes in JSON messages.
      */
