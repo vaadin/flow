@@ -13,22 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial;
+package com.vaadin.humminbird.tutorial.routing;
 
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.RouterLink;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.VaadinServlet;
 
-@CodeFor("tutorial-routing.asciidoc")
-public class Routing {
+@CodeFor("tutorial-routing-view-parameters.asciidoc")
+public class RoutingViewParameters {
+
+    private interface Product {
+        String getId();
+
+        String getName();
+    }
 
     @WebServlet(urlPatterns = "/*", name = "MyServlet", asyncSupported = true)
     @VaadinServletConfiguration(routerConfigurator = MyRouterConfigurator.class, productionMode = false)
@@ -38,35 +44,37 @@ public class Routing {
     public static class MyRouterConfigurator implements RouterConfigurator {
         @Override
         public void configure(RouterConfiguration configuration) {
-            configuration.setRoute("", HomeView.class);
-            configuration.setRoute("company", CompanyView.class);
+            configuration.setRoute("product/{id}", ProductView.class);
+            configuration.setRoute("docs/*", DocsView.class);
         }
-
     }
 
-    public class HomeView extends Div implements View {
+    public class ProductView extends Div implements View {
 
-        public HomeView() {
+        public ProductView() {
             setText("This is the home view");
         }
 
+        @Override
+        public void onLocationChange(LocationChangeEvent locationChangeEvent) {
+            String productId = locationChangeEvent.getPathParameter("id");
+            System.out.println(productId);
+        }
+
     }
 
-    public class CompanyView extends HomeView {
-
-    }
-
-    void navigation() {
-        Button button = new Button("Navigate to company");
-        button.addClickListener(e -> {
-            button.getUI().ifPresent(ui -> ui.navigateTo("company"));
-        });
+    public class DocsView extends ProductView {
+        @Override
+        public void onLocationChange(LocationChangeEvent locationChangeEvent) {
+            String docsSubPage = locationChangeEvent.getPathWildcard();
+            System.out.println(docsSubPage);
+        }
 
     }
 
     void routerLink() {
-        Div menu = new Div();
-        menu.add(new RouterLink("Home", HomeView.class));
-        menu.add(new RouterLink("Company", CompanyView.class));
+        Product product = null;
+
+        new RouterLink(product.getName(), ProductView.class, product.getId());
     }
 }

@@ -32,6 +32,8 @@ These tutorials show how the different features are used.
 ** <<tutorial-component-composite#,Creating a Component Using Existing Components>>
 ** <<tutorial-component-events#,Using Events with Components>>
 ** <<tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
+* Templates
+** <<tutorial-template-components#,Using Components with Templates>>
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
