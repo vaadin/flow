@@ -38,35 +38,35 @@ public class ModelValueBinding extends AbstractTemplateBinding {
      */
     public static final String PROPERTY = "property";
 
-    public static final String DEFAULT_VALUE = "default_value";
+    public static final String DEFAULT_VALUE = "defaultValue";
 
     private final String type;
 
     private final String key;
 
-    private final String value;
+    private final String defaultValue;
 
     /**
      * Creates a binding with the given {@code type}, {@code key} and default
-     * {@code value}.
+     * {@code defaultValue}.
      * <p>
      * Value for the {@code key} is stored inside a {@link StateNode} directly
      * (via features) so only {@code key} is used to retrieve a dynamic value
-     * from the node. The {@code value} defines default value which is used if
-     * model doesn't provide dynamic value (the value has not been set
+     * from the node. The {@code defaultValue} defines default value which is
+     * used if model doesn't provide dynamic value (the value has not been set
      * explicitly).
      *
      * @param type
      *            the type of the binding, not null
      * @param key
      *            the key of the binding, not null
-     * @param value
+     * @param defaultValue
      *            the default value of the binding
      */
-    public ModelValueBinding(String type, String key, String value) {
+    public ModelValueBinding(String type, String key, String defaultValue) {
         this.type = type;
         this.key = key;
-        this.value = value;
+        this.defaultValue = defaultValue;
     }
 
     @Override
@@ -75,14 +75,14 @@ public class ModelValueBinding extends AbstractTemplateBinding {
         if (feature.hasValue(key)) {
             return feature.getValue(key);
         } else {
-            return value;
+            return defaultValue;
         }
     }
 
     @Override
     public JsonValue toJson() {
         JsonObject object = makeJsonObject(type, key);
-        object.put(DEFAULT_VALUE, value);
+        object.put(DEFAULT_VALUE, defaultValue);
         return object;
     }
 
