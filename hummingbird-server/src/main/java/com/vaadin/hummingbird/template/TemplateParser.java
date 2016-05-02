@@ -114,7 +114,8 @@ public class TemplateParser {
         } else if (text.startsWith("{{") && text.endsWith("}}")) {
             String key = text.substring(2);
             key = key.substring(0, key.length() - 2);
-            return new TextTemplateBuilder(new TextValueBinding(key));
+            return new TextTemplateBuilder(
+                    new ModelValueBinding(ModelValueBinding.TEXT, key));
         } else {
             // No special bindings to support for now
             return new TextTemplateBuilder(new StaticBinding(text));
