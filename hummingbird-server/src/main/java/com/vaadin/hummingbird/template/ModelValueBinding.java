@@ -21,29 +21,38 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import elemental.json.JsonValue;
 
 /**
- * A template binding that produces dynamic text value for a text node.
+ * A template binding that produces dynamic value for some key.
+ * <p>
+ * The key can represent e.g. property/text value/attribute.
  *
  * @author Vaadin Ltd
  */
-public class TextValueBinding extends AbstractTemplateBinding {
+public class ModelValueBinding extends AbstractTemplateBinding {
 
     /**
      * Type identifier used for text bindings in JSON messages.
      */
-    public static final String TYPE = "text";
+    public static final String TEXT = "text";
 
     private final String key;
+    private final String type;
 
     /**
      * Creates a binding with the given key.
      * <p>
      * Value for the {@code key} is stored inside a {@link StateNode} directly
      * (via features) so only {@code key} is required to be able to get a value.
+     * <p>
+     * The {@code type} is a unique identifier for the binding which is used on
+     * the client side how to handle the binding instance.
      *
+     * @param type
+     *            the type of the binding
      * @param key
      *            the key of the binding
      */
-    public TextValueBinding(String key) {
+    public ModelValueBinding(String type, String key) {
+        this.type = type;
         this.key = key;
     }
 
@@ -54,7 +63,7 @@ public class TextValueBinding extends AbstractTemplateBinding {
 
     @Override
     public JsonValue toJson() {
-        return makeJsonObject(TYPE, key);
+        return makeJsonObject(type, key);
     }
 
 }
