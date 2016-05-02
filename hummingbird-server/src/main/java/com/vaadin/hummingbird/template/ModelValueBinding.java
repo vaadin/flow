@@ -38,7 +38,7 @@ public class ModelValueBinding extends AbstractTemplateBinding {
      */
     public static final String PROPERTY = "property";
 
-    public static final String DEFAULT_VALUE = "default_value";
+    public static final String DEFAULT_VALUE = "defaultValue";
 
     private final String type;
 
