@@ -2,178 +2,263 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.vaadin</groupId>
-		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.5-SNAPSHOT</version>
-	</parent>
-	<artifactId>hummingbird-tests</artifactId>
-	<name>Hummingbird tests</name>
-	<description>Test modules for Hummingbird</description>
+
+	<groupId>com.vaadin</groupId>
+	<artifactId>hummingbird-project</artifactId>
+	<name>Hummingbird</name>
 	<packaging>pom</packaging>
+	<version>0.0.5-SNAPSHOT</version>
 
 	<modules>
-		<module>test-resources</module>
-		<module>test-root-context</module>
-		<module>test-subcontext</module>
+		<module>hummingbird</module>
+		<module>hummingbird-server</module>
+		<module>hummingbird-push</module>
+		<module>hummingbird-client</module>
+		<module>hummingbird-html-components</module>
+		<module>hummingbird-documentation</module>
+		<module>hummingbird-test-util</module>
+		<module>hummingbird-tests</module>
 	</modules>
 
+	<organization>
+		<name>Vaadin Ltd</name>
+		<url>http://vaadin.com</url>
+	</organization>
+	<url>http://vaadin.com</url>
+	<licenses>
+		<license>
+			<name>Apache License Version 2.0</name>
+			<distribution>repo</distribution>
+			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
+		</license>
+	</licenses>
+	<inceptionYear>2000</inceptionYear>
+	<scm>
+		<connection>scm:https:https://github.com/vaadin/hummingbird.git</connection>
+		<developerConnection>scm:git:git@github.com:vaadin/hummingbird.git</developerConnection>
+		<url>https://github.com/vaadin/hummingbird</url>
+	</scm>
+
 	<properties>
-		<jetty.plugin.version>9.2.15.v20160210</jetty.plugin.version>
-		<!-- Don't care about coding style for tests -->
-		<sonar.skip>true</sonar.skip>
-		<maven.deploy.skip>true</maven.deploy.skip>
-		<!-- Used in the tests, should be overridden for each module to support 
-			concurrent running of test modules. -->
-		<server.port>8888</server.port>
-		<server.stop.port>8889</server.stop.port>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<gwt.version>2.8.0.snapshot20160419</gwt.version>
+		<jsinterop.version>1.0.0.snapshot20160419</jsinterop.version>
+		<sonar.java.source>8</sonar.java.source>
+		<sonar.analysis.mode>preview</sonar.analysis.mode>
+		<sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
+		<sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
+		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<failOnMissingWebXml>false</failOnMissingWebXml>
+		<phantomjs.plugin.version>0.7</phantomjs.plugin.version>
+        <phantomjs.version>2.1.1</phantomjs.version>
 	</properties>
 
+	<repositories>
+		<repository>
+			<id>hummingbird</id>
+			<url>https://repo.vaadin.com/nexus/content/repositories/hummingbird/</url>
+		</repository>
+		<repository>
+			<id>hummingbird-snapshots</id>
+			<url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>vaadin-addons</id>
+			<url>http://maven.vaadin.com/vaadin-addons</url>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>hummingbird</id>
+			<url>https://repo.vaadin.com/nexus/content/repositories/hummingbird/</url>
+		</pluginRepository>
+		<pluginRepository>
+			<id>hummingbird-snapshots</id>
+			<url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.google.gwt</groupId>
+				<artifactId>gwt</artifactId>
+				<version>${gwt.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.google.jsinterop</groupId>
+				<artifactId>jsinterop</artifactId>
+				<version>${jsinterop.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.12</version>
+			</dependency>
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-all</artifactId>
+				<version>1.9.5</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.hamcrest</groupId>
+				<artifactId>hamcrest-all</artifactId>
+				<version>1.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.easymock</groupId>
+				<artifactId>easymock</artifactId>
+				<version>3.0</version>
+			</dependency>
+
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.4</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-lang3</artifactId>
+				<version>3.4</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>javax.servlet-api</artifactId>
+				<version>3.1.0</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.portlet</groupId>
+				<artifactId>portlet-api</artifactId>
+				<version>2.0</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+
 	<dependencies>
-		<!-- Project dependencies -->
 		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird</artifactId>
-			<version>0.0.5-SNAPSHOT</version>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-test-util</artifactId>
-			<version>0.0.5-SNAPSHOT</version>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
+
 	<build>
+		<extensions>
+			<!-- Enabling the use of SSH for deployment -->
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh-external</artifactId>
+				<version>2.9</version>
+			</extension>
+		</extensions>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.3</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.7</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.4</version>
 				<executions>
 					<execution>
+						<id>attach-sources</id>
+						<phase>verify</phase>
 						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>jar</goal>
 						</goals>
 					</execution>
 				</executions>
 				<configuration>
-					<!-- export test server port to integration tests -->
-					<systemPropertyVariables>
-						<serverPort>${server.port}</serverPort>
-                        <phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
-                    </systemPropertyVariables>
+					<quiet>true</quiet>
 				</configuration>
-			</plugin>
-			<!-- jetty plugin for those child modules that need it -->
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<version>${jetty.plugin.version}</version>
-				<!-- Jetty execution is mapped in those modules that actually use Jetty -->
-				<configuration>
-					<webAppConfig>
-						<webInfIncludeJarPattern>.*/hummingbird-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
-						<containerIncludeJarPattern>^$</containerIncludeJarPattern>
-					</webAppConfig>
-					<scanIntervalSeconds>-1</scanIntervalSeconds>
-					<httpConnector>
-						<port>${server.port}</port>
-					</httpConnector>
-					<stopPort>${server.stop.port}</stopPort>
-					<stopKey>foo</stopKey>
-					<stopWait>5</stopWait>
-				</configuration>
+
 			</plugin>
 			<plugin>
-              <groupId>com.github.klieber</groupId>
-              <artifactId>phantomjs-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <goals>
-                    <goal>install</goal>
-                  </goals>
-                  <configuration>
-                        <version>${phantomjs.version}</version>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>2.6.1</version>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
 				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.github.klieber
-										</groupId>
-										<artifactId>
-											phantomjs-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.7,)
-										</versionRange>
-										<goals>
-											<goal>install</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.6</version>
 				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>2.6</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>2.17</version>
+				</plugin>
+				<plugin>
+                    <groupId>com.github.klieber</groupId>
+                    <artifactId>phantomjs-maven-plugin</artifactId>
+                    <version>${phantomjs.plugin.version}</version>
+                </plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
-	<profiles>
-		<profile>
-			<id>eclipse</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.eclipse.jetty</groupId>
-						<artifactId>jetty-maven-plugin</artifactId>
-						<version>${jetty.plugin.version}</version>
-						<configuration>
-							<webAppConfig>
-								<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
-								<!-- Configure all project META-INF/resources directories for Jetty 
-									as resource folders as Jetty inside Eclipse is run with "Resolve workspace 
-									artifacts" and this does not create any JARs. Jetty only scans JARs for META-INF/resources 
-									folders -->
-								<resourceBases>
-									<!-- these paths are relative to the project where the profile is 
-										triggered -->
-									<resourceBase>${project.basedir}/../../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../../hummingbird-client/target/classes/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>
-								</resourceBases>
-							</webAppConfig>
-							<!-- force default ports so that running IT tests from IDE work -->
-							<httpConnector>
-								<port>8888</port>
-							</httpConnector>
-							<stopPort>8889</stopPort>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 </project>
