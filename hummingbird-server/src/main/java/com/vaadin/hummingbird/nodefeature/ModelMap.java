@@ -60,4 +60,24 @@ public class ModelMap extends NodeMap {
     public String getValue(String key) {
         return (String) get(key);
     }
+
+    /**
+     * Checks whether a value is stored for the given key.
+     * <p>
+     * If method {@link #setValue(String, String)} has never been called for the
+     * {@code key} then {@code false} is returned. Otherwise (even if it has
+     * been called with {@code null} as a value) it returns {@code true}. It
+     * means that {@link #getValue(String)} may return {@code null} at the same
+     * time when {@link #hasValue(String)} returns {@code true}.
+     * 
+     * @see #setValue(String, String)
+     * 
+     * @param key
+     *            the key to check a value for
+     * @return <code>true</code> if there is a value stored; <code>false</code>
+     *         if no value is stored
+     */
+    public boolean hasValue(String key) {
+        return super.contains(key);
+    }
 }

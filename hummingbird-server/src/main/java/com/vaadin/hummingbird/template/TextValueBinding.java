@@ -41,9 +41,10 @@ public class TextValueBinding extends AbstractTemplateBinding {
      * (via features) so only {@code key} is required to be able to get a value.
      *
      * @param key
-     *            the key of the binding
+     *            the key of the binding, not null
      */
     public TextValueBinding(String key) {
+        assert key != null;
         this.key = key;
     }
 
