@@ -51,7 +51,7 @@ public class Image extends HtmlContainer {
      * @return the image URL
      */
     public String getSrc() {
-        return getAttribute("src");
+        return getAttribute("src", "");
     }
 
     /**
@@ -80,6 +80,6 @@ public class Image extends HtmlContainer {
      * @return the alternate text
      */
     public String getAlt() {
-        return getAttribute("alt");
+        return getAttribute("alt", "");
     }
 }
