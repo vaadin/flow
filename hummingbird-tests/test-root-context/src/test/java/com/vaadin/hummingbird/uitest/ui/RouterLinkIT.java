@@ -19,7 +19,7 @@ public class RouterLinkIT extends PhantomJSTest {
 
         testInsideServlet("./foobar", "foobar");
         testInsideServlet("./foobar?what=not", "foobar?what=not");
-        testInsideServlet("./foobar?what=not#fragment",
+        testInsideServlet("./foobar?what=not#fragment", "foobar?what=not",
                 "foobar?what=not#fragment");
 
         testInsideServlet("/run/baz", "baz");
@@ -54,9 +54,15 @@ public class RouterLinkIT extends PhantomJSTest {
 
     private void testInsideServlet(String linkToTest,
             String pathAfterServletMapping) {
+        testInsideServlet(linkToTest, pathAfterServletMapping,
+                pathAfterServletMapping);
+    }
+
+    private void testInsideServlet(String linkToTest, String popStateLocation,
+            String pathAfterServletMapping) {
         clickLink(linkToTest);
         verifyInsideServletLocation(pathAfterServletMapping);
-        verifyPopStateEvent(pathAfterServletMapping);
+        verifyPopStateEvent(popStateLocation);
         verifySamePage();
     }
 
