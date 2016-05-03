@@ -143,7 +143,14 @@ public class TemplateParser {
         if (name.startsWith("(")) {
             throw new TemplateParseException(
                     "Dynamic binding support has not yet been implemented");
-        } else if (name.startsWith("[") && name.endsWith("]")) {
+        } else if (name.startsWith("[")) {
+            if (!name.endsWith("]")) {
+                StringBuilder msg = new StringBuilder(
+                        "Property binding should be in the form [property].");
+                msg.append(" But the token is '");
+                msg.append(name).append("'.");
+                throw new TemplateParseException(msg.toString());
+            }
             String key = name;
             key = key.substring(1);
             key = key.substring(0, key.length() - 1);
