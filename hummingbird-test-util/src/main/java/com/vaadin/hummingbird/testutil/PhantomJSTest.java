@@ -16,33 +16,18 @@
 package com.vaadin.hummingbird.testutil;
 
 import org.junit.Before;
-import org.junit.Rule;
-import org.openqa.selenium.remote.DesiredCapabilities;
-
-import com.vaadin.testbench.ScreenshotOnFailureRule;
-import com.vaadin.testbench.TestBenchDriverProxy;
 
 /**
- * Base class for testbench tests for PhantomJS.
+ * Base class for TestBench tests for PhantomJS.
  */
-public class PhantomJSTest extends AbstractTestBenchTest {
-
-    /**
-     * The rule used for screenshot failures.
-     */
-    @Rule
-    public ScreenshotOnFailureRule screenshotOnFailure = new ScreenshotOnFailureRule(
-            this, true);
+public class PhantomJSTest extends ViewOrUITest {
 
     /**
      * Setup the PhantomJS driver.
      */
     @Before
     public void setupDriver() {
-        DesiredCapabilities cap = DesiredCapabilities.phantomjs();
-        FixedPhantomJSDriver driver = new FixedPhantomJSDriver(cap);
-        setDriver(driver);
-        driver.setTestBenchDriverProxy((TestBenchDriverProxy) getDriver());
+        setupPhantomJsDriver();
     }
 
 }

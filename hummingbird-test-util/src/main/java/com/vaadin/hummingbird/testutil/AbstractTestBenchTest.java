@@ -16,20 +16,28 @@
 package com.vaadin.hummingbird.testutil;
 
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.junit.Rule;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.ui.UI;
+import com.vaadin.testbench.ScreenshotOnFailureRule;
+import com.vaadin.testbench.TestBenchDriverProxy;
 
 /**
  * Abstract base class for hummingbird TestBench tests, which are based on a
  * {@link View} class.
  */
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
+
+    /**
+     * The rule used for screenshot failures.
+     */
+    @Rule
+    public ScreenshotOnFailureRule screenshotOnFailure = new ScreenshotOnFailureRule(
+            this, true);
 
     /**
      * Default port for test server, possibly overridden with system property.
@@ -81,90 +89,20 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
+     * Gets the absolute path to the test, starting with a "/".
+     *
+     * @return the path to the test, appended to {@link #getRootURL()} for the
+     *         full test URL.
+     */
+    protected abstract String getTestPath();
+
+    /**
      * Returns the URL to the root of the server, e.g. "http://localhost:8888"
      *
      * @return the URL to the root
      */
     protected String getRootURL() {
         return hostnameAndPort;
-    }
-
-    /**
-     * Gets the absolute path to the test (UI, View or servlet), starting with a
-     * "/".
-     *
-     * @return the path to the test, appended to {@link #getRootURL()} for the
-     *         full test URL.
-     */
-    protected String getTestPath() {
-        Class<? extends UI> uiClass = getUIClass();
-        if (uiClass != null) {
-            return "/run/" + uiClass.getName();
-        }
-
-        Class<? extends View> viewClass = getViewClass();
-        if (viewClass != null) {
-            return "/view/" + viewClass.getName();
-        }
-
-        throw new RuntimeException(
-                "Could not find a View or UI class for the test. Ensure "
-                        + getClass().getName().replaceFirst("IT$", "")
-                        + "View/UI exists "
-                        + " or override either getTestPath() or getViewClass()/getUIClass() in your test");
-
-    }
-
-    /**
-     * Returns the UI class the current test is connected to.
-     * <p>
-     * Uses name matching and replaces "IT" with "UI"
-     *
-     * @return the UI class the current test is connected to or null if no UI
-     *         class was found
-     */
-    @SuppressWarnings("unchecked")
-    protected Class<? extends UI> getUIClass() {
-        String uiClassName = getClass().getName().replaceFirst("IT$", "UI");
-        try {
-            Class<?> cls = Class.forName(uiClassName);
-            if (UI.class.isAssignableFrom(cls)) {
-                return (Class<? extends UI>) cls;
-            }
-        } catch (Exception e) {
-            // Here only to please Sonar...
-            getLogger().log(Level.FINE,
-                    "UI for " + getClass().getName() + " not found", e);
-        }
-        return null;
-    }
-
-    private static Logger getLogger() {
-        return Logger.getLogger(AbstractTestBenchTest.class.getName());
-    }
-
-    /**
-     * Returns the View class the current test is connected to.
-     * <p>
-     * Uses name matching and replaces "IT" with "View"
-     *
-     * @return the View class the current test is connected to or null if no
-     *         View class was found
-     */
-    @SuppressWarnings("unchecked")
-    protected Class<? extends View> getViewClass() {
-        String viewClassName = getClass().getName().replaceFirst("IT$", "View");
-        try {
-            Class<?> cls = Class.forName(viewClassName);
-            if (View.class.isAssignableFrom(cls)) {
-                return (Class<? extends View>) cls;
-            }
-        } catch (Exception e) {
-            // Here only to please Sonar...
-            getLogger().log(Level.FINE,
-                    "View for " + getClass().getName() + " not found", e);
-        }
-        return null;
     }
 
     /**
@@ -180,6 +118,16 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      */
     protected Object executeScript(String script, Object... args) {
         return ((JavascriptExecutor) getDriver()).executeScript(script, args);
+    }
+
+    /**
+     * Sets up the test to run using Phantom JS.
+     */
+    protected void setupPhantomJsDriver() {
+        DesiredCapabilities cap = DesiredCapabilities.phantomjs();
+        FixedPhantomJSDriver driver = new FixedPhantomJSDriver(cap);
+        setDriver(driver);
+        driver.setTestBenchDriverProxy((TestBenchDriverProxy) getDriver());
     }
 
 }
