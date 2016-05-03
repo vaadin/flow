@@ -97,6 +97,11 @@ public class TemplateParserTest {
     }
 
     @Test(expected = TemplateParseException.class)
+    public void parseTemplateIncorrectProperty() {
+        TemplateParser.parse("<input [value='foo'></input>");
+    }
+
+    @Test(expected = TemplateParseException.class)
     public void parseEmptyTemplate() {
         TemplateParser.parse("Just some text, no HTML");
     }
