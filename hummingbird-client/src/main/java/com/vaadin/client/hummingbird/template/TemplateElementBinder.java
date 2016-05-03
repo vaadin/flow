@@ -30,7 +30,7 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.StaticBinding;
-import com.vaadin.hummingbird.template.TextValueBinding;
+import com.vaadin.hummingbird.template.ModelValueBinding;
 
 import elemental.client.Browser;
 import elemental.dom.Comment;
@@ -169,7 +169,7 @@ public class TemplateElementBinder {
     private static Node createAndBindText(StateNode stateNode,
             TextTemplateNode templateNode) {
         Binding binding = templateNode.getTextBinding();
-        if (binding.getType().equals(TextValueBinding.TYPE)) {
+        if (binding.getType().equals(ModelValueBinding.TEXT)) {
             Text node = Browser.getDocument().createTextNode("");
             Computation computation = Reactive.runWhenDepedenciesChange(
                     () -> updateTextTemplateValue(node, stateNode, binding));

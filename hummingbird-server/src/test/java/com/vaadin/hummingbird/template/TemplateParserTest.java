@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,6 +71,34 @@ public class TemplateParserTest {
         node.getFeature(ModelMap.class).setValue("bar", value);
 
         Assert.assertEquals(value, binding.getValue(node));
+    }
+
+    @Test
+    public void parseTemplateProperty() {
+        ElementTemplateNode rootNode = (ElementTemplateNode) TemplateParser
+                .parse("<input [value]='foo'></input>");
+
+        Assert.assertEquals("input", rootNode.getTag());
+
+        Assert.assertEquals(0, rootNode.getAttributeNames().count());
+        Assert.assertEquals(1, rootNode.getPropertyNames().count());
+
+        Optional<TemplateBinding> binding = rootNode
+                .getPropertyBinding("value");
+        Assert.assertTrue(binding.isPresent());
+
+        StateNode node = new StateNode(ModelMap.class);
+
+        Assert.assertNull(binding.get().getValue(node));
+
+        node.getFeature(ModelMap.class).setValue("foo", "bar");
+
+        Assert.assertEquals("bar", binding.get().getValue(node));
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseTemplateIncorrectProperty() {
+        TemplateParser.parse("<input [value='foo'></input>");
     }
 
     @Test(expected = TemplateParseException.class)
