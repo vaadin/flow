@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -127,25 +128,39 @@ public class TemplateParser {
         ElementTemplateBuilder builder = new ElementTemplateBuilder(
                 element.tagName());
 
-        element.attributes().forEach(attr -> {
-            String name = attr.getKey();
-
-            if (name.startsWith("(") || name.startsWith("[")) {
-                throw new TemplateParseException(
-                        "Dynamic binding support has not yet been implemented");
-            } else {
-                /*
-                 * Regular attribute names in the template, i.e. name not
-                 * starting with [ or (, are used as static attributes on the
-                 * target element.
-                 */
-                builder.setAttribute(name, new StaticBinding(attr.getValue()));
-            }
-        });
+        element.attributes().forEach(attr -> setBinding(attr, builder));
 
         element.childNodes().stream().map(TemplateParser::createBuilder)
                 .forEach(builder::addChild);
 
         return builder;
+    }
+
+    private static void setBinding(Attribute attribute,
+            ElementTemplateBuilder builder) {
+        String name = attribute.getKey();
+
+        if (name.startsWith("(")) {
+            throw new TemplateParseException(
+                    "Dynamic binding support has not yet been implemented");
+        } else if (name.startsWith("[")) {
+            if (!name.endsWith("]")) {
+                StringBuilder msg = new StringBuilder(
+                        "Property binding should be in the form [property]='value' but template contains '");
+                msg.append(attribute.toString()).append("'.");
+                throw new TemplateParseException(msg.toString());
+            }
+            String key = name;
+            key = key.substring(1);
+            key = key.substring(0, key.length() - 1);
+            builder.setProperty(key, new ModelValueBinding(
+                    ModelValueBinding.PROPERTY, attribute.getValue()));
+        } else {
+            /*
+             * Regular attribute names in the template, i.e. name not starting
+             * with [ or (, are used as static attributes on the target element.
+             */
+            builder.setAttribute(name, new StaticBinding(attribute.getValue()));
+        }
     }
 }
