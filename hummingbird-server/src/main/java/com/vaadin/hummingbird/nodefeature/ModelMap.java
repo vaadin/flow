@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.io.Serializable;
+
 import com.vaadin.hummingbird.StateNode;
 
 /**
@@ -44,7 +46,7 @@ public class ModelMap extends NodeMap {
      * @param value
      *            value to be associated with the specified key
      */
-    public void setValue(String key, String value) {
+    public void setValue(String key, Serializable value) {
         assert key != null;
         put(key, value);
     }
@@ -57,8 +59,8 @@ public class ModelMap extends NodeMap {
      * @return the value corresponding to the key; <code>null</code> if there is
      *         no value stored, or if <code>null</code> is stored as a value
      */
-    public String getValue(String key) {
-        return (String) get(key);
+    public Serializable getValue(String key) {
+        return (Serializable) get(key);
     }
 
     /**

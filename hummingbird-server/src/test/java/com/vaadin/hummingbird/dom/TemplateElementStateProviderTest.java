@@ -25,13 +25,18 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
+import com.vaadin.hummingbird.template.ModelValueBinding;
 import com.vaadin.hummingbird.template.StaticBinding;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TemplateParser;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class TemplateElementStateProviderTest {
     @Test
@@ -51,7 +56,7 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
-    public void testElementProperties() {
+    public void testElementStringProperties() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
                 .setProperty("a1", new StaticBinding("v1"))
                 .setProperty("a2", new StaticBinding("v2"));
@@ -62,6 +67,59 @@ public class TemplateElementStateProviderTest {
         Assert.assertEquals("v2", element.getProperty("a2"));
 
         Assert.assertEquals(new HashSet<>(Arrays.asList("a1", "a2")),
+                element.getPropertyNames().collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void testElementBooleanProperties() {
+        ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
+                .setProperty("a", new ModelValueBinding(
+                        ModelValueBinding.PROPERTY, "key"));
+
+        Element element = createElement(builder);
+
+        StateNode stateNode = element.getNode();
+        stateNode.getFeature(ModelMap.class).setValue("key", Boolean.TRUE);
+
+        Assert.assertEquals(Boolean.TRUE, element.getPropertyRaw("a"));
+
+        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
+                element.getPropertyNames().collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void testElementDoubleProperties() {
+        ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
+                .setProperty("a", new ModelValueBinding(
+                        ModelValueBinding.PROPERTY, "key"));
+
+        Element element = createElement(builder);
+
+        StateNode stateNode = element.getNode();
+        stateNode.getFeature(ModelMap.class).setValue("key", 1.1d);
+
+        Assert.assertEquals(1.1d, element.getPropertyRaw("a"));
+
+        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
+                element.getPropertyNames().collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void testElementJsonProperties() {
+        ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
+                .setProperty("a", new ModelValueBinding(
+                        ModelValueBinding.PROPERTY, "key"));
+
+        Element element = createElement(builder);
+
+        StateNode stateNode = element.getNode();
+        JsonObject json = Json.createObject();
+        json.put("foo", "bar");
+        stateNode.getFeature(ModelMap.class).setValue("key", json);
+
+        Assert.assertEquals(json, element.getPropertyRaw("a"));
+
+        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
                 element.getPropertyNames().collect(Collectors.toSet()));
     }
 

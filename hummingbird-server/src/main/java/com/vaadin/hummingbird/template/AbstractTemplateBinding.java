@@ -56,7 +56,7 @@ public abstract class AbstractTemplateBinding implements TemplateBinding {
      *            TemplateBinding.VALUE_PROPERTY property value
      * @return
      */
-    protected JsonObject makeJsonObject(String type, String value) {
+    protected JsonObject makeJsonObject(String type, Object value) {
         JsonObject json = Json.createObject();
 
         json.put(TYPE_PROPERTY, type);
