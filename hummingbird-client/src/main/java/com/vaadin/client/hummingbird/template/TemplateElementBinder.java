@@ -29,8 +29,8 @@ import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.StaticBinding;
 import com.vaadin.hummingbird.template.ModelValueBinding;
+import com.vaadin.hummingbird.template.StaticBinding;
 
 import elemental.client.Browser;
 import elemental.dom.Comment;
@@ -197,19 +197,14 @@ public class TemplateElementBinder {
         String tag = templateNode.getTag();
         Element element = Browser.getDocument().createElement(tag);
 
-        JsonObject properties = templateNode.getProperties();
-        if (properties != null) {
-            for (String name : properties.keys()) {
-                Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
-                WidgetUtil.setJsProperty(element, name,
-                        getStaticBindingValue(binding));
-            }
-        }
+        bindProperties(templateNode, element);
 
         JsonObject attributes = templateNode.getAttributes();
         if (attributes != null) {
             for (String name : attributes.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(attributes.get(name));
+                // Nothing to "bind" yet with only static bindings
+                assert binding.getType().equals(StaticBinding.TYPE);
                 element.setAttribute(name, getStaticBindingValue(binding));
             }
         }
@@ -250,6 +245,24 @@ public class TemplateElementBinder {
         }
 
         return element;
+    }
+
+    private static void bindProperties(ElementTemplateNode templateNode,
+            Element element) {
+        JsonObject properties = templateNode.getProperties();
+        if (properties != null) {
+            for (String name : properties.keys()) {
+                Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
+                if (ModelValueBinding.PROPERTY.equals(binding.getType())) {
+
+                } else {
+                    // Nothing to "bind" yet with only static bindings
+                    assert binding.getType().equals(StaticBinding.TYPE);
+                    WidgetUtil.setJsProperty(element, name,
+                            getStaticBindingValue(binding));
+                }
+            }
+        }
     }
 
     private static void bindOverrideNode(Element element,
