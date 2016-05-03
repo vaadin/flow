@@ -47,7 +47,8 @@ public class Greeting extends Template {
 The last thing you need to do is to make sure the name of the template file has the same name as the Java file, except that the file extension should be `.html` instead of `.java`.
 The template file should also be in the same package as the corresponding class.
 
-[TIP] You can use `@HtmlTemplate` annotation to specify any HTML file path in the classpath   
+[TIP]
+You can use `@HtmlTemplate` annotation to specify any HTML file path in the classpath
 [TIP]
 With Maven, the template files should by default be located in `src/main/resources`. So if the `Greeting` class is in the `com.example` package, then `Greeting.html` should be in `src/main/resources/com/example/`.
 
