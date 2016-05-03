@@ -89,9 +89,9 @@ public class TemplateParserTest {
 
         StateNode node = new StateNode(ModelMap.class);
 
-        Assert.assertEquals("foo", binding.get().getValue(node));
+        Assert.assertNull(binding.get().getValue(node));
 
-        node.getFeature(ModelMap.class).setValue("value", "bar");
+        node.getFeature(ModelMap.class).setValue("foo", "bar");
 
         Assert.assertEquals("bar", binding.get().getValue(node));
     }

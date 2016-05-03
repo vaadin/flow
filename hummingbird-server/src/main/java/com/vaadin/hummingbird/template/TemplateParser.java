@@ -115,7 +115,8 @@ public class TemplateParser {
         } else if (text.startsWith("{{") && text.endsWith("}}")) {
             String key = text.substring(2);
             key = key.substring(0, key.length() - 2);
-            return new TextTemplateBuilder(new TextValueBinding(key));
+            return new TextTemplateBuilder(
+                    new ModelValueBinding(ModelValueBinding.TEXT, key));
         } else {
             // No special bindings to support for now
             return new TextTemplateBuilder(new StaticBinding(text));
@@ -147,7 +148,7 @@ public class TemplateParser {
             key = key.substring(1);
             key = key.substring(0, key.length() - 1);
             builder.setProperty(key, new ModelValueBinding(
-                    ModelValueBinding.PROPERTY, key, attribute.getValue()));
+                    ModelValueBinding.PROPERTY, attribute.getValue()));
         } else {
             /*
              * Regular attribute names in the template, i.e. name not starting
