@@ -45,12 +45,23 @@ public interface TestElementTemplateNode
 
     @JsOverlay
     public default void addProperty(String name, String staticValue) {
+        doGetProperties().put(name,
+                TestBinding.createStatic(staticValue).asJson());
+    }
+
+    @JsOverlay
+    public default void addProperty(String name, TestBinding binding) {
+        doGetProperties().put(name, binding.asJson());
+    }
+
+    @JsOverlay
+    public default JsonObject doGetProperties() {
         JsonObject properties = getProperties();
         if (properties == null) {
             properties = Json.createObject();
             setProperties(properties);
         }
-        properties.put(name, TestBinding.createStatic(staticValue).asJson());
+        return properties;
     }
 
     @JsOverlay

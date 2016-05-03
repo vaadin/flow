@@ -63,7 +63,7 @@ public class ModelValueBinding extends AbstractTemplateBinding {
     }
 
     @Override
-    public String getValue(StateNode node) {
+    public Object getValue(StateNode node) {
         return node.getFeature(ModelMap.class).getValue(key);
     }
 

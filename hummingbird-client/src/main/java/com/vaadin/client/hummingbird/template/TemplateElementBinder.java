@@ -172,24 +172,23 @@ public class TemplateElementBinder {
         if (binding.getType().equals(ModelValueBinding.TEXT)) {
             Text node = Browser.getDocument().createTextNode("");
             Computation computation = Reactive.runWhenDepedenciesChange(
-                    () -> updateTextTemplateValue(node, stateNode, binding));
+                    () -> node.setTextContent(getModelValue(stateNode, binding)
+                            .getValueOrDefault("")));
             stateNode.addUnregisterListener(event -> computation.stop());
             return node;
         } else {
-            // Nothing to "bind" yet with only static bindings
+            // Only static bindings is known as a final call
             assert binding.getType().equals(StaticBinding.TYPE);
             return Browser.getDocument()
                     .createTextNode(getStaticBindingValue(binding));
         }
     }
 
-    private static void updateTextTemplateValue(Text domNode, StateNode node,
-            Binding binding) {
+    private static MapProperty getModelValue(StateNode node, Binding binding) {
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
         String key = binding.getValue();
         assert key != null;
-        String text = model.getProperty(key).getValueOrDefault("");
-        domNode.setTextContent(text);
+        return model.getProperty(key);
     }
 
     private static Node createAndBindElement(StateNode stateNode,
@@ -197,7 +196,7 @@ public class TemplateElementBinder {
         String tag = templateNode.getTag();
         Element element = Browser.getDocument().createElement(tag);
 
-        bindProperties(templateNode, element);
+        bindProperties(stateNode, templateNode, element);
 
         JsonObject attributes = templateNode.getAttributes();
         if (attributes != null) {
@@ -247,16 +246,21 @@ public class TemplateElementBinder {
         return element;
     }
 
-    private static void bindProperties(ElementTemplateNode templateNode,
-            Element element) {
+    private static void bindProperties(StateNode stateNode,
+            ElementTemplateNode templateNode, Element element) {
         JsonObject properties = templateNode.getProperties();
         if (properties != null) {
             for (String name : properties.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
                 if (ModelValueBinding.PROPERTY.equals(binding.getType())) {
-
+                    Computation computation = Reactive.runWhenDepedenciesChange(
+                            () -> WidgetUtil.setJsProperty(element, name,
+                                    getModelValue(stateNode, binding)
+                                            .getValue()));
+                    stateNode
+                            .addUnregisterListener(event -> computation.stop());
                 } else {
-                    // Nothing to "bind" yet with only static bindings
+                    // Only static bindings is known as a final call
                     assert binding.getType().equals(StaticBinding.TYPE);
                     WidgetUtil.setJsProperty(element, name,
                             getStaticBindingValue(binding));

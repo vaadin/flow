@@ -36,16 +36,23 @@ public interface TemplateBinding extends Serializable {
 
     /**
      * Produces a value for the given state node.
+     * <p>
+     * The type of the value is {@link String}, {@link Double}, {@link Boolean}
+     * or {@link JsonValue}.
      *
      * @param node
      *            the state node for which to produce a value, not
      *            <code>null</code>
      * @return the binding value
      */
-    String getValue(StateNode node);
+    Object getValue(StateNode node);
 
     /**
      * Produces a string value for the given state node.
+     * <p>
+     * The type of the value is {@link String}, {@link Double}, {@link Boolean}
+     * or {@link JsonValue}.
+     *
      *
      * @param node
      *            the state node for which to produce a value, not
@@ -55,8 +62,8 @@ public interface TemplateBinding extends Serializable {
      *            <code>null</code>
      * @return the binding value
      */
-    default String getValue(StateNode node, String defaultValue) {
-        String value = getValue(node);
+    default Object getValue(StateNode node, String defaultValue) {
+        Object value = getValue(node);
         if (value == null) {
             return defaultValue;
         } else {
