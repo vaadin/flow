@@ -28,29 +28,28 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-public class TextValueBindingTest {
+public class ModelValueBindingTest {
 
-    @Test
     public void getValue() {
-        TextValueBinding binding = new TextValueBinding("foo");
+        ModelValueBinding binding = new ModelValueBinding("foo", "bar");
         StateNode node = new StateNode(ModelMap.class);
 
-        node.getFeature(ModelMap.class).setValue("foo", "bar");
+        node.getFeature(ModelMap.class).setValue("bar", "someValue");
 
-        Assert.assertEquals("bar", binding.getValue(node));
+        Assert.assertEquals("someValue", binding.getValue(node));
     }
 
     @Test
     public void toJson() {
-        TextValueBinding binding = new TextValueBinding("foo");
+        ModelValueBinding binding = new ModelValueBinding("foo", "bar");
         JsonValue json = binding.toJson();
 
         Assert.assertTrue(json instanceof JsonObject);
         JsonObject object = (JsonObject) json;
 
-        Assert.assertEquals(TextValueBinding.TYPE,
-                object.get(TemplateBinding.TYPE_PROPERTY).asString());
         Assert.assertEquals("foo",
+                object.get(TemplateBinding.TYPE_PROPERTY).asString());
+        Assert.assertEquals("bar",
                 object.get(TemplateBinding.VALUE_PROPERTY).asString());
     }
 
