@@ -137,4 +137,10 @@ public class TemplateParserTest {
         TemplateParser.parse("<div>@child@<span>@child@</span></div>");
     }
 
+    @Test
+    public void ngForElement() {
+        TemplateParser.parse(
+                "<a class='item' *ngFor='let  item      of list'>{{item}}</a>");
+    }
+
 }

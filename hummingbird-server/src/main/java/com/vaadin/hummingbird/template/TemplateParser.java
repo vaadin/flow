@@ -17,6 +17,9 @@ package com.vaadin.hummingbird.template;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
@@ -123,17 +126,52 @@ public class TemplateParser {
         }
     }
 
-    private static ElementTemplateBuilder createElementBuilder(
-            Element element) {
-        ElementTemplateBuilder builder = new ElementTemplateBuilder(
-                element.tagName());
+    private static TemplateNodeBuilder createElementBuilder(Element element) {
+        boolean isFor = false;
+        Attribute statementAttribute = null;
+        for (Attribute attribute : element.attributes()) {
+            if ("*ngFor".equals(attribute.getKey())) {
+                isFor = true;
+                statementAttribute = attribute;
+                break;
+            }
+        }
+        if (isFor) {
+            element.removeAttr(statementAttribute.getKey());
+            List<String> tokens = getTokens(statementAttribute);
+            if (tokens.size() != 4 || !"let".equals(tokens.get(0))
+                    || !"of".equals(tokens.get(2))) {
+                throw new TemplateParseException(
+                        "The 'ngFor' template is supported only in the form *ngFor='let item of list', but template contains "
+                                + statementAttribute.getValue());
+            }
 
-        element.attributes().forEach(attr -> setBinding(attr, builder));
+            TemplateNodeBuilder subBuilder = TemplateParser
+                    .createBuilder(element);
+            ForTemplateBuilder builder = new ForTemplateBuilder(tokens.get(1),
+                    tokens.get(3), subBuilder);
+            return builder;
+        } else {
+            ElementTemplateBuilder builder = new ElementTemplateBuilder(
+                    element.tagName());
 
-        element.childNodes().stream().map(TemplateParser::createBuilder)
-                .forEach(builder::addChild);
+            element.attributes().forEach(attr -> setBinding(attr, builder));
 
-        return builder;
+            element.childNodes().stream().map(TemplateParser::createBuilder)
+                    .forEach(builder::addChild);
+
+            return builder;
+        }
+    }
+
+    private static List<String> getTokens(Attribute statementAttribute) {
+        List<String> tokens = new ArrayList<>();
+        StringTokenizer tokenizer = new StringTokenizer(
+                statementAttribute.getValue());
+        while (tokenizer.hasMoreTokens()) {
+            tokens.add(tokenizer.nextToken());
+        }
+        return tokens;
     }
 
     private static void setBinding(Attribute attribute,
