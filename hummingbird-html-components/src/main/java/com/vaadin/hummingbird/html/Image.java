@@ -15,7 +15,11 @@
  */
 package com.vaadin.hummingbird.html;
 
+import java.util.Optional;
+
 import com.vaadin.annotations.Tag;
+import com.vaadin.ui.PropertyDescriptor;
+import com.vaadin.ui.PropertyDescriptors;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
@@ -24,6 +28,11 @@ import com.vaadin.annotations.Tag;
  */
 @Tag(Tag.IMG)
 public class Image extends HtmlContainer {
+    private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
+            .attributeWithDefault("src", "");
+
+    private static final PropertyDescriptor<String, Optional<String>> altDescriptor = PropertyDescriptors
+            .optionalAttributeWithDefault("alt", "");
 
     /**
      * Creates a new empty image.
@@ -47,39 +56,40 @@ public class Image extends HtmlContainer {
 
     /**
      * Gets the image URL.
-     * 
+     *
      * @return the image URL
      */
     public String getSrc() {
-        return getAttribute("src", "");
+        return get(srcDescriptor);
     }
 
     /**
      * Sets the image URL.
-     * 
+     *
      * @param src
      *            the image URL
      */
     public void setSrc(String src) {
-        setAttribute("src", src);
+        set(srcDescriptor, src);
     }
 
     /**
      * Sets the alternate text for the image.
-     * 
-     * @param text
+     *
+     * @param alt
      *            the alternate text
      */
-    public void setAlt(String text) {
-        setAttribute("alt", text);
+    public void setAlt(String alt) {
+        set(altDescriptor, alt);
     }
 
     /**
      * Gets the alternate text for the image.
-     * 
-     * @return the alternate text
+     *
+     * @return an optional alternate text, or an empty optional if no alternate
+     *         text has been set
      */
-    public String getAlt() {
-        return getAttribute("alt", "");
+    public Optional<String> getAlt() {
+        return get(altDescriptor);
     }
 }
