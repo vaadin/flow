@@ -47,7 +47,8 @@ import com.vaadin.hummingbird.dom.Element;
  */
 public class Html extends Component {
 
-    private static final String INNER_HTML = "innerHTML";
+    private static final PropertyDescriptor<String, String> innerHtmlDescriptor = PropertyDescriptors
+            .propertyWithDefault("innerHTML", "");
 
     /**
      * Creates an instance based on the HTML fragment read from the stream. The
@@ -131,19 +132,19 @@ public class Html extends Component {
      * Sets the inner HTML, i.e. everything inside the root element.
      *
      * @param innerHtml
-     *            the inner HTML
+     *            the inner HTML, not <code>null</code>
      */
     private void setInnerHtml(String innerHtml) {
-        getElement().setProperty(INNER_HTML, innerHtml);
+        set(innerHtmlDescriptor, innerHtml);
     }
 
     /**
      * Gets the inner HTML, i.e. everything inside the root element.
      *
-     * @return the inner HTML
+     * @return the inner HTML, not <code>null</code>
      */
     public String getInnerHtml() {
-        return getElement().getProperty(INNER_HTML);
+        return get(innerHtmlDescriptor);
     }
 
     private static final Logger getLogger() {

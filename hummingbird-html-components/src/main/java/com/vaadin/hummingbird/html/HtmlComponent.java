@@ -22,6 +22,8 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasSize;
 import com.vaadin.ui.HasStyle;
+import com.vaadin.ui.PropertyDescriptor;
+import com.vaadin.ui.PropertyDescriptors;
 
 /**
  * Base class for a {@link Component} that represents a single built-in HTML
@@ -30,6 +32,8 @@ import com.vaadin.ui.HasStyle;
  * @author Vaadin Ltd
  */
 public class HtmlComponent extends Component implements HasSize, HasStyle {
+    private static final PropertyDescriptor<String, Optional<String>> titleDescriptor = PropertyDescriptors
+            .optionalAttributeWithDefault("title", "");
 
     /**
      * Creates a component with the element type based on the {@link Tag}
@@ -57,11 +61,11 @@ public class HtmlComponent extends Component implements HasSize, HasStyle {
      * value of its own.
      *
      * @param title
-     *            the title value to set, or <code>null</code> to remove any
+     *            the title value to set, or <code>""</code> to remove any
      *            previously set title
      */
     public void setTitle(String title) {
-        setAttribute("title", title);
+        set(titleDescriptor, title);
     }
 
     /**
@@ -69,60 +73,11 @@ public class HtmlComponent extends Component implements HasSize, HasStyle {
      *
      * @see #setTitle(String)
      *
-     * @return the title, or <code>null</code> if no title has been set
-     */
-    public String getTitle() {
-        return getAttribute("title");
-    }
-
-    /**
-     * Sets or removes the given attribute for this component.
+     * @return an optional title, or an empty optional if no title has been set
      *
-     * @param name
-     *            the name of the attribute to set or remove, not
-     *            <code>null</code>
-     * @param value
-     *            the attribute value to set, or <code>null</code> to remove the
-     *            attribute
      */
-    protected void setAttribute(String name, String value) {
-        assert name != null;
-        if (value == null) {
-            getElement().removeAttribute(name);
-        } else {
-            getElement().setAttribute(name, value);
-        }
-    }
-
-    /**
-     * Gets an attribute value from this component.
-     *
-     * @param name
-     *            the name of the attribute, not <code>null</code>
-     * @return the attribute value, or <code>null</code> if the attribute has
-     *         not been set
-     */
-    protected String getAttribute(String name) {
-        assert name != null;
-        return getElement().getAttribute(name);
-    }
-
-    /**
-     * Gets an attribute value from this component.
-     * <p>
-     * Returns {@code defaultValue} if the attribute value is {@code null}.
-     *
-     * @param name
-     *            the name of the attribute, not <code>null</code>
-     * @param defaultValue
-     *            the value to be returned if the value is {@code null}
-     * @return the attribute value, or <code>defaultValue</code> if the
-     *         attribute has not been set
-     */
-    protected String getAttribute(String name, String defaultValue) {
-        assert name != null;
-        return Optional.ofNullable(getElement().getAttribute(name))
-                .orElse(defaultValue);
+    public Optional<String> getTitle() {
+        return get(titleDescriptor);
     }
 
 }
