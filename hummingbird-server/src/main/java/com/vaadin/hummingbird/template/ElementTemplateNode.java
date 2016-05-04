@@ -43,8 +43,8 @@ public class ElementTemplateNode extends SingleElementTemplateNode {
 
     private final ArrayList<TemplateNode> children;
 
-    private final HashMap<String, TemplateBinding> properties;
-    private final HashMap<String, TemplateBinding> attributes;
+    private final HashMap<String, BindingValueProvider> properties;
+    private final HashMap<String, BindingValueProvider> attributes;
 
     /**
      * Creates a new template node.
@@ -64,8 +64,8 @@ public class ElementTemplateNode extends SingleElementTemplateNode {
      *            a list of template builders for child nodes
      */
     public ElementTemplateNode(TemplateNode parent, String tag,
-            Map<String, TemplateBinding> properties,
-            Map<String, TemplateBinding> attributes,
+            Map<String, BindingValueProvider> properties,
+            Map<String, BindingValueProvider> attributes,
             List<TemplateNodeBuilder> childBuilders) {
         super(parent);
         assert tag != null;
@@ -118,7 +118,7 @@ public class ElementTemplateNode extends SingleElementTemplateNode {
      * @return an optional template binding for the property, empty if there is
      *         no property with the given name
      */
-    public Optional<TemplateBinding> getPropertyBinding(String name) {
+    public Optional<BindingValueProvider> getPropertyBinding(String name) {
         return Optional.ofNullable(properties.get(name));
     }
 
@@ -130,7 +130,7 @@ public class ElementTemplateNode extends SingleElementTemplateNode {
      * @return an optional template binding for the attribute, empty if there is
      *         no attribute with the given name
      */
-    public Optional<TemplateBinding> getAttributeBinding(String name) {
+    public Optional<BindingValueProvider> getAttributeBinding(String name) {
         return Optional.ofNullable(attributes.get(name));
     }
 

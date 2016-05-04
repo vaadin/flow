@@ -28,7 +28,7 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  */
-public interface TemplateBinding extends Serializable {
+public interface BindingValueProvider extends Serializable {
 
     String TYPE_PROPERTY = "type";
 

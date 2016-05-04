@@ -121,7 +121,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBinding.PROPERTY, "key"));
+                TestBinding.createBinding(ModelValueBinding.TYPE, "key"));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
         map.getProperty("key").setValue("foo");
@@ -137,7 +137,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBinding.PROPERTY, "key"));
+                TestBinding.createBinding(ModelValueBinding.TYPE, "key"));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
         map.getProperty("key").setValue("foo");
@@ -157,7 +157,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBinding.PROPERTY, "key"));
+                TestBinding.createBinding(ModelValueBinding.TYPE, "key"));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
         map.getProperty("key").setValue("foo");
@@ -176,7 +176,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBinding.PROPERTY, "key"));
+                TestBinding.createBinding(ModelValueBinding.TYPE, "key"));
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
 

@@ -31,7 +31,7 @@ import elemental.json.JsonValue;
 public class ModelValueBindingTest {
 
     public void getValue() {
-        ModelValueBinding binding = new ModelValueBinding("foo", "bar");
+        ModelValueBinding binding = new ModelValueBinding("bar");
         StateNode node = new StateNode(ModelMap.class);
 
         node.getFeature(ModelMap.class).setValue("bar", "someValue");
@@ -41,16 +41,16 @@ public class ModelValueBindingTest {
 
     @Test
     public void toJson() {
-        ModelValueBinding binding = new ModelValueBinding("foo", "bar");
+        ModelValueBinding binding = new ModelValueBinding("bar");
         JsonValue json = binding.toJson();
 
         Assert.assertTrue(json instanceof JsonObject);
         JsonObject object = (JsonObject) json;
 
-        Assert.assertEquals("foo",
-                object.get(TemplateBinding.TYPE_PROPERTY).asString());
+        Assert.assertEquals(ModelValueBinding.TYPE,
+                object.get(BindingValueProvider.TYPE_PROPERTY).asString());
         Assert.assertEquals("bar",
-                object.get(TemplateBinding.VALUE_PROPERTY).asString());
+                object.get(BindingValueProvider.VALUE_PROPERTY).asString());
     }
 
 }

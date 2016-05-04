@@ -15,15 +15,15 @@
  */
 package com.vaadin.client.hummingbird.template;
 
-import com.vaadin.hummingbird.template.TemplateBinding;
+import com.vaadin.hummingbird.template.BindingValueProvider;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * Client-side representation of a generic {@link TemplateBinding} received from
+ * Client-side representation of a generic {@link BindingValueProvider} received from
  * the server. The properties are based on the output of
- * {@link TemplateBinding#toJson()}.
+ * {@link BindingValueProvider#toJson()}.
  *
  * @author Vaadin Ltd
  */

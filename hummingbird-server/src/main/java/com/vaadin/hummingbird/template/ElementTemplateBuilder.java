@@ -30,8 +30,8 @@ import java.util.stream.Stream;
 public class ElementTemplateBuilder implements TemplateNodeBuilder {
 
     private final String tag;
-    private final Map<String, TemplateBinding> properties = new HashMap<>();
-    private final Map<String, TemplateBinding> attributes = new HashMap<>();
+    private final Map<String, BindingValueProvider> properties = new HashMap<>();
+    private final Map<String, BindingValueProvider> attributes = new HashMap<>();
     private final List<TemplateNodeBuilder> children = new ArrayList<>();
 
     /**
@@ -71,7 +71,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
      * @return this element template builder
      */
     public ElementTemplateBuilder setProperty(String name,
-            TemplateBinding binding) {
+            BindingValueProvider binding) {
         assert name != null;
         assert binding != null;
         assert !properties.containsKey(
@@ -92,7 +92,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
      * @return this element template builder
      */
     public ElementTemplateBuilder setAttribute(String name,
-            TemplateBinding binding) {
+            BindingValueProvider binding) {
         assert name != null;
         assert binding != null;
         assert !attributes.containsKey(
@@ -104,21 +104,21 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
 
     /**
      * Gets the property bindings that have been defined using
-     * {@link #setProperty(String, TemplateBinding)}.
+     * {@link #setProperty(String, BindingValueProvider)}.
      *
      * @return a map of property bindings, not <code>null</code>
      */
-    public Map<String, TemplateBinding> getProperties() {
+    public Map<String, BindingValueProvider> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
 
     /**
      * Gets the attribute bindings that have been defined using
-     * {@link #setAttribute(String, TemplateBinding)}.
+     * {@link #setAttribute(String, BindingValueProvider)}.
      *
      * @return a map of attribute bindings, not <code>null</code>
      */
-    public Map<String, TemplateBinding> getAttributes() {
+    public Map<String, BindingValueProvider> getAttributes() {
         return Collections.unmodifiableMap(attributes);
     }
 

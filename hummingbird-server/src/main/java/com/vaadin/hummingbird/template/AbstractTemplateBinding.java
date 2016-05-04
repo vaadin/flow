@@ -27,7 +27,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  *
  */
-public abstract class AbstractTemplateBinding implements TemplateBinding {
+public abstract class AbstractTemplateBinding implements BindingValueProvider {
 
     /**
      * Constructs initial {@link JsonObject} instance for {@link #toJson()}
