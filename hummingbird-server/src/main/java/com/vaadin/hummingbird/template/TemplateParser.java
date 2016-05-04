@@ -17,9 +17,11 @@ package com.vaadin.hummingbird.template;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -90,16 +92,19 @@ public class TemplateParser {
             }
         }
 
-        TemplateNodeBuilder templateBuilder = createBuilder(children.get(0));
-
-        return templateBuilder.build(null);
+        Optional<TemplateNodeBuilder> templateBuilder = createBuilder(
+                children.get(0));
+        assert templateBuilder.isPresent();
+        return templateBuilder.get().build(null);
     }
 
-    private static TemplateNodeBuilder createBuilder(Node node) {
+    private static Optional<TemplateNodeBuilder> createBuilder(Node node) {
         if (node instanceof Element) {
-            return createElementBuilder((Element) node);
+            return Optional.of(createElementBuilder((Element) node));
         } else if (node instanceof TextNode) {
-            return createTextBuilder((TextNode) node);
+            return Optional.of(createTextBuilder((TextNode) node));
+        } else if (node instanceof Comment) {
+            return Optional.empty();
         } else {
             throw new IllegalArgumentException(
                     "Unsupported node type: " + node.getClass().getName());
@@ -131,6 +136,7 @@ public class TemplateParser {
         element.attributes().forEach(attr -> setBinding(attr, builder));
 
         element.childNodes().stream().map(TemplateParser::createBuilder)
+                .filter(Optional::isPresent).map(Optional::get)
                 .forEach(builder::addChild);
 
         return builder;
