@@ -18,6 +18,7 @@
 		<module>hummingbird-documentation</module>
 		<module>hummingbird-test-util</module>
 		<module>hummingbird-tests</module>
+		<module>hummingbird-annotation-processor</module>
 	</modules>
 
 	<organization>

@@ -25,6 +25,13 @@
 			<version>0.0.5-SNAPSHOT</version>
 		</dependency>
 
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>hummingbird-annotation-processor</artifactId>
+			<scope>provided</scope>
+			<optional>true</optional>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- API DEPENDENCIES -->
 
@@ -91,6 +98,7 @@
 			<scope>test</scope>
 		</dependency>
 
+
 		<!-- For manual testing with PostgreSQL (see SQLTestConstants) -->
 		<!-- <dependency> <groupId>postgresql</groupId> <artifactId>postgresql</artifactId> 
 			<version>9.1-901.jdbc3</version> <scope>test</scope> </dependency> -->
@@ -99,6 +107,16 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessors>
+						<annotationProcessor>com.vaadin.hummingbird.processor.ServiceProcessor</annotationProcessor>
+					</annotationProcessors>
+				</configuration>
+	        </plugin>
+		
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
