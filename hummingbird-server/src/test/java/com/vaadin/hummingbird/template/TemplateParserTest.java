@@ -137,4 +137,21 @@ public class TemplateParserTest {
         TemplateParser.parse("<div>@child@<span>@child@</span></div>");
     }
 
+    @Test
+    public void parseTopComment() {
+        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
+                .parse("<!-- comment --><div></div>");
+        Assert.assertEquals(0, node.getChildCount());
+        Assert.assertEquals("div", node.getTag());
+    }
+
+    @Test
+    public void parseInnerComment() {
+        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
+                .parse("<div> <!-- comment --> <input> </div>");
+        Assert.assertEquals(4, node.getChildCount());
+        Assert.assertEquals("div", node.getTag());
+        Assert.assertEquals("input",
+                ((ElementTemplateNode) node.getChild(2)).getTag());
+    }
 }
