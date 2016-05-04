@@ -131,19 +131,19 @@ public class Html extends Component {
      * Sets the inner HTML, i.e. everything inside the root element.
      *
      * @param innerHtml
-     *            the inner HTML
+     *            the inner HTML, not <code>null</code>
      */
     private void setInnerHtml(String innerHtml) {
-        getElement().setProperty(INNER_HTML, innerHtml);
+        setPropertyDefaultEmptyString(INNER_HTML, innerHtml);
     }
 
     /**
      * Gets the inner HTML, i.e. everything inside the root element.
      *
-     * @return the inner HTML
+     * @return the inner HTML, not <code>null</code>
      */
     public String getInnerHtml() {
-        return getElement().getProperty(INNER_HTML);
+        return getPropertyDefaultEmptyString(INNER_HTML);
     }
 
     private static final Logger getLogger() {
