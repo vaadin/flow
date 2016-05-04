@@ -16,10 +16,13 @@
 package com.vaadin.hummingbird.html;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.html.event.ChangeEvent;
 import com.vaadin.hummingbird.html.event.ChangeNotifier;
+import com.vaadin.ui.PropertyDescriptor;
+import com.vaadin.ui.PropertyDescriptors;
 
 /**
  * Component representing an <code>&lt;input&gt;</code> element.
@@ -28,6 +31,15 @@ import com.vaadin.hummingbird.html.event.ChangeNotifier;
  */
 @Tag(Tag.INPUT)
 public class Input extends HtmlComponent implements ChangeNotifier {
+
+    private static final PropertyDescriptor<String, Optional<String>> placeholderDescriptor = PropertyDescriptors
+            .optionalAttributeWithDefault("placeholder", "");
+
+    private static final PropertyDescriptor<String, String> valueDescriptor = PropertyDescriptors
+            .propertyWithDefault("value", "");
+
+    private static final PropertyDescriptor<String, String> typeDescriptor = PropertyDescriptors
+            .attributeWithDefault("type", "text");
 
     /**
      * Creates a new input without any specific type.
@@ -44,7 +56,7 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      *            the placeholder
      */
     public void setPlaceholder(String placeholder) {
-        setAttribute("placeholder", placeholder);
+        set(placeholderDescriptor, placeholder);
     }
 
     /**
@@ -52,20 +64,21 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      *
      * @see #setPlaceholder(String)
      *
-     * @return the placeholder, or <code>null</code> if there is no placeholder
+     * @return an optional placeholder, or an empty optional if no placeholder
+     *         has been set
      */
-    public String getPlaceholder() {
-        return getAttribute("placeholder");
+    public Optional<String> getPlaceholder() {
+        return get(placeholderDescriptor);
     }
 
     /**
      * Gets the value of this component. For textual input components, the value
      * is the text displayed in the component.
      *
-     * @return the the value, or <code>null</code> if no value is set
+     * @return the the value, by default <code>""</code>
      */
     public String getValue() {
-        return getElement().getProperty("value");
+        return get(valueDescriptor);
     }
 
     /**
@@ -75,11 +88,11 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      * This methods fires a {@link ChangeEvent} if the value is changed.
      *
      * @param value
-     *            the value to set, or <code>null</code> to remove the value
+     *            the value to set, not <code>null</code>
      */
     public void setValue(String value) {
         String oldValue = getValue();
-        getElement().setProperty("value", value);
+        set(valueDescriptor, value);
 
         if (!Objects.equals(value, oldValue)) {
             fireEvent(new ChangeEvent(this, false));
@@ -94,18 +107,18 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      *      Overview of supported type values</a>
      *
      * @param type
-     *            the type, or <code>null</code> use the default type
+     *            the type, not <code>null</code>
      */
     public void setType(String type) {
-        setAttribute("type", type);
+        set(typeDescriptor, type);
     }
 
     /**
      * Gets the type of this input.
      *
-     * @return the input type, or <code>null</code> if no input type is defined.
+     * @return the input type, by default "text"
      */
     public String getType() {
-        return getAttribute("type");
+        return get(typeDescriptor);
     }
 }
