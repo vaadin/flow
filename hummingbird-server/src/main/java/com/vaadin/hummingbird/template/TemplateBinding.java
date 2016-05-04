@@ -48,7 +48,7 @@ public interface TemplateBinding extends Serializable {
     Object getValue(StateNode node);
 
     /**
-     * Produces a string value for the given state node.
+     * Produces a value for the given state node.
      * <p>
      * The type of the value is {@link String}, {@link Double}, {@link Boolean}
      * or {@link JsonValue}.

@@ -171,9 +171,10 @@ public class TemplateElementBinder {
         Binding binding = templateNode.getTextBinding();
         if (binding.getType().equals(ModelValueBinding.TEXT)) {
             Text node = Browser.getDocument().createTextNode("");
-            Computation computation = Reactive.runWhenDepedenciesChange(
-                    () -> node.setTextContent(getModelValue(stateNode, binding)
-                            .getValueOrDefault("")));
+            Computation computation = Reactive
+                    .runWhenDepedenciesChange(() -> node
+                            .setTextContent(getModelProperty(stateNode, binding)
+                                    .getValueOrDefault("")));
             stateNode.addUnregisterListener(event -> computation.stop());
             return node;
         } else {
@@ -184,7 +185,8 @@ public class TemplateElementBinder {
         }
     }
 
-    private static MapProperty getModelValue(StateNode node, Binding binding) {
+    private static MapProperty getModelProperty(StateNode node,
+            Binding binding) {
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
         String key = binding.getValue();
         assert key != null;
@@ -255,7 +257,7 @@ public class TemplateElementBinder {
                 if (ModelValueBinding.PROPERTY.equals(binding.getType())) {
                     Computation computation = Reactive.runWhenDepedenciesChange(
                             () -> WidgetUtil.setJsProperty(element, name,
-                                    getModelValue(stateNode, binding)
+                                    getModelProperty(stateNode, binding)
                                             .getValue()));
                     stateNode
                             .addUnregisterListener(event -> computation.stop());
