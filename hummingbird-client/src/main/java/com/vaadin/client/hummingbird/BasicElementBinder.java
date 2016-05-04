@@ -113,8 +113,6 @@ public class BasicElementBinder {
         listeners.push(bindDomEventListeners());
 
         listeners.push(bindClassList());
-
-        node.setDomNode(element);
     }
 
     private EventRemover bindSynchronizedPropertyEvents() {

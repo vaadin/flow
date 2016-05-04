@@ -38,15 +38,22 @@ public interface ElementBinder {
     static Node createAndBind(StateNode stateNode) {
         assert stateNode != null;
 
+        Node node;
         if (stateNode.hasFeature(NodeFeatures.TEXT_NODE)) {
-            return TextElementBinder.createAndBind(stateNode);
+            node = TextElementBinder.createAndBind(stateNode);
         } else if (stateNode.hasFeature(NodeFeatures.TEMPLATE)) {
-            return TemplateElementBinder.createAndBind(stateNode);
+            node = TemplateElementBinder.createAndBind(stateNode);
         } else if (stateNode.hasFeature(NodeFeatures.ELEMENT_DATA)) {
-            return BasicElementBinder.createAndBind(stateNode);
+            node = BasicElementBinder.createAndBind(stateNode);
         } else {
             throw new IllegalArgumentException(
                     "State node has no suitable feature");
         }
+
+        assert node != null;
+
+        stateNode.setDomNode(node);
+
+        return node;
     }
 }
