@@ -25,6 +25,7 @@ import java.util.Optional;
 import com.vaadin.annotations.EventData;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.util.ReflectionCache;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.util.ReflectTools;
@@ -44,7 +45,18 @@ public class ComponentEventBusUtil {
 
     // Package private to enable testing only
 
-    static EventDataCache cache = new EventDataCache();
+    static ReflectionCache<ComponentEvent<?>, EventTypeInfo> cache = new ReflectionCache<>(
+            EventTypeInfo::new);
+
+    private static class EventTypeInfo {
+        private final LinkedHashMap<String, Class<?>> dataExpressions;
+        private final Constructor<? extends ComponentEvent<?>> eventConstructor;
+
+        public EventTypeInfo(Class<? extends ComponentEvent<?>> type) {
+            eventConstructor = findEventConstructor(type);
+            dataExpressions = findEventDataExpressions(eventConstructor);
+        }
+    }
 
     private ComponentEventBusUtil() {
         // Static methods and static/shared cache only
@@ -65,9 +77,7 @@ public class ComponentEventBusUtil {
      */
     public static LinkedHashMap<String, Class<?>> getEventDataExpressions(
             Class<? extends ComponentEvent<?>> eventType) {
-        return cache.getDataExpressions(eventType)
-                .orElseGet(() -> cache.setDataExpressions(eventType,
-                        findEventDataExpressions(eventType)));
+        return cache.get(eventType).dataExpressions;
     }
 
     /**
@@ -76,27 +86,23 @@ public class ComponentEventBusUtil {
      * ) to Java type, with the same order as the parameters for the event
      * constructor (as returned by {@link #getEventConstructor(Class)}).
      *
-     * @param eventType
-     *            the component event type
      * @return a map of event data expressions, in the order defined by the
      *         component event constructor parameters
      */
     private static LinkedHashMap<String, Class<?>> findEventDataExpressions(
-            Class<? extends ComponentEvent<?>> eventType) {
+            Constructor<? extends ComponentEvent<?>> eventConstructor) {
         LinkedHashMap<String, Class<?>> eventDataExpressions = new LinkedHashMap<>();
-        Constructor<? extends ComponentEvent<?>> c = getEventConstructor(
-                eventType);
         // Parameter 0 is always "Component source"
         // Parameter 1 is always "boolean fromClient"
-        for (int i = 2; i < c.getParameterCount(); i++) {
-            Parameter p = c.getParameters()[i];
+        for (int i = 2; i < eventConstructor.getParameterCount(); i++) {
+            Parameter p = eventConstructor.getParameters()[i];
             EventData eventData = p.getAnnotation(EventData.class);
             if (eventData == null || eventData.value().isEmpty()) {
                 // The parameter foo of the constructor Bar(Foo foo) has no
                 // @DomEvent, or its value is empty."
                 throw new IllegalArgumentException(String.format(
                         "The parameter %s of the constructor %s has no @%s, or the annotation value is empty",
-                        p.getName(), c.toString(),
+                        p.getName(), eventConstructor.toString(),
                         EventData.class.getSimpleName()));
             }
             eventDataExpressions.put(eventData.value(),
@@ -117,11 +123,10 @@ public class ComponentEventBusUtil {
      * @throws IllegalArgumentException
      *             if no suitable constructor was found
      */
+    @SuppressWarnings("unchecked")
     public static <T extends ComponentEvent<?>> Constructor<T> getEventConstructor(
             Class<T> eventType) {
-        return cache.getEventConstructor(eventType)
-                .orElseGet(() -> cache.setEventConstructor(eventType,
-                        findEventConstructor(eventType)));
+        return (Constructor<T>) cache.get(eventType).eventConstructor;
     }
 
     /**
