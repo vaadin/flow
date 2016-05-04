@@ -39,7 +39,7 @@ public class Greeting extends Template {
     }
 
     public String getName() {
-        return model.getValue("name");
+        return (String) model.getValue("name");
     }
 }
 ----

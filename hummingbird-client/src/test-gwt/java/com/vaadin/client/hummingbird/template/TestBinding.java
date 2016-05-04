@@ -17,8 +17,8 @@ package com.vaadin.client.hummingbird.template;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.hummingbird.template.StaticBinding;
-import com.vaadin.hummingbird.template.ModelValueBinding;
+import com.vaadin.hummingbird.template.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 
 import elemental.json.JsonValue;
 import jsinterop.annotations.JsOverlay;
@@ -35,12 +35,12 @@ public interface TestBinding extends Binding {
 
     @JsOverlay
     public static TestBinding createStatic(String value) {
-        return createBinding(StaticBinding.TYPE, value);
+        return createBinding(StaticBindingValueProvider.TYPE, value);
     }
 
     @JsOverlay
     public static TestBinding createTextValueBinding(String value) {
-        return createBinding(ModelValueBinding.TEXT, value);
+        return createBinding(ModelValueBindingProvider.TYPE, value);
     }
 
     @JsOverlay

@@ -52,7 +52,7 @@ public class TemplateTextElementStateProvider
 
     @Override
     public String getTextContent(StateNode node) {
-        return templateNode.getTextBinding().getValue(node, "");
+        return templateNode.getTextBinding().getValue(node, "").toString();
     }
 
     @Override

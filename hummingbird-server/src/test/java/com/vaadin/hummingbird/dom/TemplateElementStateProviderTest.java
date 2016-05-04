@@ -25,13 +25,18 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
-import com.vaadin.hummingbird.template.StaticBinding;
+import com.vaadin.hummingbird.template.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TemplateParser;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class TemplateElementStateProviderTest {
     @Test
@@ -51,10 +56,10 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
-    public void testElementProperties() {
+    public void testElementStringProperties() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .setProperty("a1", new StaticBinding("v1"))
-                .setProperty("a2", new StaticBinding("v2"));
+                .setProperty("a1", new StaticBindingValueProvider("v1"))
+                .setProperty("a2", new StaticBindingValueProvider("v2"));
 
         Element element = createElement(builder);
 
@@ -66,10 +71,60 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    public void testElementBooleanProperties() {
+        ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
+                .setProperty("a", new ModelValueBindingProvider("key"));
+
+        Element element = createElement(builder);
+
+        StateNode stateNode = element.getNode();
+        stateNode.getFeature(ModelMap.class).setValue("key", Boolean.TRUE);
+
+        Assert.assertEquals(Boolean.TRUE, element.getPropertyRaw("a"));
+
+        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
+                element.getPropertyNames().collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void testElementDoubleProperties() {
+        ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
+                .setProperty("a", new ModelValueBindingProvider("key"));
+
+        Element element = createElement(builder);
+
+        StateNode stateNode = element.getNode();
+        stateNode.getFeature(ModelMap.class).setValue("key", 1.1d);
+
+        Assert.assertEquals(1.1d, element.getPropertyRaw("a"));
+
+        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
+                element.getPropertyNames().collect(Collectors.toSet()));
+    }
+
+    @Test
+    public void testElementJsonProperties() {
+        ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
+                .setProperty("a", new ModelValueBindingProvider("key"));
+
+        Element element = createElement(builder);
+
+        StateNode stateNode = element.getNode();
+        JsonObject json = Json.createObject();
+        json.put("foo", "bar");
+        stateNode.getFeature(ModelMap.class).setValue("key", json);
+
+        Assert.assertEquals(json, element.getPropertyRaw("a"));
+
+        Assert.assertEquals(new HashSet<>(Arrays.asList("a")),
+                element.getPropertyNames().collect(Collectors.toSet()));
+    }
+
+    @Test
     public void testElementAttributes() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .setAttribute("a1", new StaticBinding("v1"))
-                .setAttribute("a2", new StaticBinding("v2"));
+                .setAttribute("a1", new StaticBindingValueProvider("v1"))
+                .setAttribute("a2", new StaticBindingValueProvider("v2"));
 
         Element element = createElement(builder);
 
@@ -119,7 +174,7 @@ public class TemplateElementStateProviderTest {
     @Test
     public void testTextNode() {
         TextTemplateBuilder builder = new TextTemplateBuilder(
-                new StaticBinding("Hello"));
+                new StaticBindingValueProvider("Hello"));
 
         Element element = createElement(builder);
 
@@ -130,7 +185,7 @@ public class TemplateElementStateProviderTest {
     @Test
     public void testTextNodeInParent() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .addChild(new TextTemplateBuilder(new StaticBinding("Hello")));
+                .addChild(new TextTemplateBuilder(new StaticBindingValueProvider("Hello")));
 
         Element element = createElement(builder);
 
