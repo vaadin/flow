@@ -36,7 +36,7 @@ import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
-import com.vaadin.hummingbird.template.SingleElementTemplateNode;
+import com.vaadin.hummingbird.template.AbstractElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
@@ -132,7 +132,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         assert templateNode != null;
 
         return templateNode.getParent().map(parent -> {
-            assert parent instanceof SingleElementTemplateNode;
+            assert parent instanceof AbstractElementTemplateNode;
             return parent.getElement(0, node);
         }).orElseGet(() -> BasicElementStateProvider.get().getParent(node));
     }

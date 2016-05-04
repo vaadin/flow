@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.nodefeature;
 import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.template.VariableTemplateNode;
+import com.vaadin.hummingbird.template.AbstractControlTemplateNode;
 
 /**
  * Keeps track of an generator template node that might be needed for finding
@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.template.VariableTemplateNode;
  */
 public class ParentGeneratorHolder extends ServerSideFeature {
 
-    private VariableTemplateNode parentTemplate;
+    private AbstractControlTemplateNode parentTemplate;
 
     /**
      * Creates a new feature for the given node.
@@ -48,7 +48,7 @@ public class ParentGeneratorHolder extends ServerSideFeature {
      *            the parent generator, or <code>null</code> to remove a
      *            previous generator
      */
-    public void setParentGenerator(VariableTemplateNode parentTemplate) {
+    public void setParentGenerator(AbstractControlTemplateNode parentTemplate) {
         this.parentTemplate = parentTemplate;
     }
 
@@ -58,7 +58,7 @@ public class ParentGeneratorHolder extends ServerSideFeature {
      * @return an optional parent generator, or an empty optional if no parent
      *         generator is defined
      */
-    public Optional<VariableTemplateNode> getParentGenerator() {
+    public Optional<AbstractControlTemplateNode> getParentGenerator() {
         return Optional.ofNullable(parentTemplate);
     }
 
