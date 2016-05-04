@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.hummingbird.router.RouteLocation.RouteSegmentVisitor;
 import com.vaadin.ui.UI;
 
 /**
@@ -180,33 +181,45 @@ public abstract class ViewRenderer implements NavigationHandler {
 
         Map<String, String> routePlaceholders = new HashMap<>();
 
-        Optional<Location> maybeCurrentDestination = Optional.of(destination);
-        Optional<RouteLocation> maybeCurrentRouteDefinition = Optional
-                .of(routeDefinition);
+        routeDefinition.visitSegments(new RouteSegmentVisitor() {
+            Optional<Location> maybeCurrentDestination = Optional
+                    .of(destination);
 
-        while (maybeCurrentRouteDefinition.isPresent()) {
-            RouteLocation currentRouteDefinition = maybeCurrentRouteDefinition
-                    .get();
-            Location currentDestination = maybeCurrentDestination.get();
+            private String getNextDestinationSegment() {
+                Location currentDestination = maybeCurrentDestination.get();
+                /*
+                 * This might return an empty optional, but in that case there
+                 * shouldn't be any more calls to any accept method, as long as
+                 * the current destination actually matches the route
+                 * definition.
+                 */
+                maybeCurrentDestination = currentDestination.getSubLocation();
 
-            if (currentRouteDefinition.startsWithPlaceholder()) {
-                String placeholderName = currentRouteDefinition
-                        .getPlaceholderName();
+                return currentDestination.getFirstSegment();
+            }
 
-                String placeholderValue = currentDestination.getFirstSegment();
+            @Override
+            public void acceptWildcard() {
+                // This is always the last step, so not need to advance the
+                // destination
+                routePlaceholders.put("*",
+                        maybeCurrentDestination.get().getPath());
+            }
+
+            @Override
+            public void acceptSegment(String segmentName) {
+                // Just advance the current destination
+                getNextDestinationSegment();
+            }
+
+            @Override
+            public void acceptPlaceholder(String placeholderName) {
+                String placeholderValue = getNextDestinationSegment();
 
                 assert !routePlaceholders.containsKey(placeholderName);
                 routePlaceholders.put(placeholderName, placeholderValue);
-            } else if (currentRouteDefinition.startsWithWildcard()) {
-                assert !routePlaceholders.containsKey("*");
-
-                routePlaceholders.put("*", currentDestination.getPath());
             }
-
-            maybeCurrentDestination = currentDestination.getSubLocation();
-            maybeCurrentRouteDefinition = currentRouteDefinition
-                    .getRouteSubLocation();
-        }
+        });
 
         return routePlaceholders;
     }
