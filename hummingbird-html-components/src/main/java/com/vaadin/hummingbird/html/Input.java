@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.html;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.html.event.ChangeEvent;
@@ -44,7 +45,7 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      *            the placeholder
      */
     public void setPlaceholder(String placeholder) {
-        setAttribute("placeholder", placeholder);
+        setOptionalAttributeDefaultEmptyString("placeholder", placeholder);
     }
 
     /**
@@ -52,20 +53,21 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      *
      * @see #setPlaceholder(String)
      *
-     * @return the placeholder, or <code>null</code> if there is no placeholder
+     * @return an optional placeholder, or an empty optional if no placeholder
+     *         has been set
      */
-    public String getPlaceholder() {
-        return getAttribute("placeholder");
+    public Optional<String> getPlaceholder() {
+        return getOptionalAttributeDefaultEmptyString("placeholder");
     }
 
     /**
      * Gets the value of this component. For textual input components, the value
      * is the text displayed in the component.
      *
-     * @return the the value, or <code>null</code> if no value is set
+     * @return the the value, by default <code>""</code>
      */
     public String getValue() {
-        return getElement().getProperty("value");
+        return getPropertyDefaultEmptyString("value");
     }
 
     /**
@@ -75,11 +77,11 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      * This methods fires a {@link ChangeEvent} if the value is changed.
      *
      * @param value
-     *            the value to set, or <code>null</code> to remove the value
+     *            the value to set, not <code>null</code>
      */
     public void setValue(String value) {
         String oldValue = getValue();
-        getElement().setProperty("value", value);
+        setPropertyDefaultEmptyString("value", value);
 
         if (!Objects.equals(value, oldValue)) {
             fireEvent(new ChangeEvent(this, false));
@@ -94,18 +96,18 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      *      Overview of supported type values</a>
      *
      * @param type
-     *            the type, or <code>null</code> use the default type
+     *            the type, not <code>null</code>
      */
     public void setType(String type) {
-        setAttribute("type", type);
+        setAttributeCustomDefault("type", type, "text");
     }
 
     /**
      * Gets the type of this input.
      *
-     * @return the input type, or <code>null</code> if no input type is defined.
+     * @return the input type, by default "text"
      */
     public String getType() {
-        return getAttribute("type");
+        return getAttributeCustomDefault("type", "text");
     }
 }

@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.html;
 
+import java.util.Optional;
+
 import com.vaadin.annotations.Tag;
 
 /**
@@ -47,39 +49,40 @@ public class Image extends HtmlContainer {
 
     /**
      * Gets the image URL.
-     * 
+     *
      * @return the image URL
      */
     public String getSrc() {
-        return getAttribute("src", "");
+        return getAttributeDefaultEmptyString("src");
     }
 
     /**
      * Sets the image URL.
-     * 
+     *
      * @param src
      *            the image URL
      */
     public void setSrc(String src) {
-        setAttribute("src", src);
+        setAttributeDefaultEmptyString("src", src);
     }
 
     /**
      * Sets the alternate text for the image.
-     * 
-     * @param text
+     *
+     * @param alt
      *            the alternate text
      */
-    public void setAlt(String text) {
-        setAttribute("alt", text);
+    public void setAlt(String alt) {
+        setOptionalAttributeDefaultEmptyString("alt", alt);
     }
 
     /**
      * Gets the alternate text for the image.
-     * 
-     * @return the alternate text
+     *
+     * @return an optional alternate text, or an empty optional if no alternate
+     *         text has been set
      */
-    public String getAlt() {
-        return getAttribute("alt", "");
+    public Optional<String> getAlt() {
+        return getOptionalAttributeDefaultEmptyString("alt");
     }
 }

@@ -250,7 +250,7 @@ public abstract class Component implements HasElement, Serializable,
      *            set id
      */
     public void setId(String id) {
-        getElement().setAttribute("id", id);
+        setOptionalAttributeDefaultEmptyString("id", id);
     }
 
     /**
@@ -258,10 +258,10 @@ public abstract class Component implements HasElement, Serializable,
      *
      * @see #setId(String)
      *
-     * @return the id, or <code>null</code> if no id has been set
+     * @return the id, or <code>""</code> if no id has been set
      */
-    public String getId() {
-        return getElement().getAttribute("id");
+    public Optional<String> getId() {
+        return getOptionalAttributeDefaultEmptyString("id");
     }
 
     /**
@@ -293,4 +293,174 @@ public abstract class Component implements HasElement, Serializable,
     protected void onDetach(DetachEvent detachEvent) {
         // NOOP by default
     }
+
+    /**
+     * Sets or removes the given attribute for this component.
+     *
+     * @param name
+     *            the name of the attribute to set or remove, not
+     *            <code>null</code>
+     * @param value
+     *            the attribute value to set, or <code>""</code> or
+     *            <code>null</code> to remove the attribute
+     */
+    protected void setAttributeDefaultEmptyString(String name, String value) {
+        assert name != null;
+        if (value == null) {
+            throw new IllegalArgumentException(
+                    "The value of the attribute " + name + " cannot be null");
+        }
+        if ("".equals(value)) {
+            getElement().removeAttribute(name);
+        } else {
+            getElement().setAttribute(name, value);
+        }
+    }
+
+    /**
+     * Gets an attribute value from this component or <code>""</code> if the
+     * attribute has not been set.
+     *
+     * @param name
+     *            the name of the attribute, not <code>null</code>
+     * @return the attribute value, or <code>defaultValue</code> if the
+     *         attribute has not been set
+     */
+    protected String getAttributeDefaultEmptyString(String name) {
+        assert name != null;
+        String value = getElement().getAttribute(name);
+        if (value != null) {
+            return value;
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Sets or removes the given attribute for this component.
+     *
+     * @param name
+     *            the name of the attribute to set or remove
+     * @param value
+     *            the attribute value to set, or <code>null</code> or
+     *            <code>""</code> to remove the attribute
+     */
+    protected void setOptionalAttributeDefaultEmptyString(String name,
+            String value) {
+        assert name != null;
+        if (value == null || "".equals(value)) {
+            getElement().removeAttribute(name);
+        } else {
+            getElement().setAttribute(name, value);
+        }
+    }
+
+    /**
+     * Gets an attribute value from this component.
+     *
+     * @param name
+     *            the name of the attribute, not <code>null</code>
+     * @return an optional attribute value, or an empty optional if the
+     *         attribute has not been set
+     */
+    protected Optional<String> getOptionalAttributeDefaultEmptyString(
+            String name) {
+        assert name != null;
+        String value = getElement().getAttribute(name);
+        if ("".equals(value)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(value);
+    }
+
+    /**
+     * Sets or removes the given property for this component.
+     *
+     * @param name
+     *            the name of the property to set or remove, not
+     *            <code>null</code>
+     * @param value
+     *            the property value to set, or <code>""</code> to remove the
+     *            property, not <code>null</code>
+     */
+    protected void setPropertyDefaultEmptyString(String name, String value) {
+        assert name != null;
+        if (value == null) {
+            throw new IllegalArgumentException(
+                    "The value of the property " + name + " cannot be null");
+        } else if ("".equals(value)) {
+            getElement().removeProperty(name);
+        } else {
+            getElement().setProperty(name, value);
+        }
+    }
+
+    /**
+     * Gets an property value from this component or <code>""</code> if the
+     * property has not been set.
+     *
+     * @param name
+     *            the name of the property, not <code>null</code>
+     * @return the property value, or <code>defaultValue</code> if the property
+     *         has not been set
+     */
+    protected String getPropertyDefaultEmptyString(String name) {
+        assert name != null;
+        String value = getElement().getProperty(name);
+        if (value != null) {
+            return value;
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Sets or removes the given attribute for this component.
+     *
+     * @param name
+     *            the name of the attribute to set or remove
+     * @param value
+     *            the attribute value to set, or <code>null</code> to remove the
+     *            attribute
+     * @param defaultValue
+     *            the default value for the attribute
+     */
+    protected void setAttributeCustomDefault(String name, String value,
+            String defaultValue) {
+        assert name != null;
+        assert defaultValue != null : "Use setAttributeDefaultNull when the default is null";
+        assert !"".equals(
+                defaultValue) : "Use setAttributeDefaultEmptyString when the default is an empty string";
+        if (defaultValue.equals(value)) {
+            getElement().removeAttribute(name);
+        } else {
+            getElement().setAttribute(name, value);
+        }
+    }
+
+    /**
+     * Gets an attribute value from this component.
+     *
+     * @param name
+     *            the name of the attribute, not <code>null</code>
+     * @param defaultValue
+     *            the value to return if the attribute has not been set
+     * @return the attribute value, or the default value if the attribute has
+     *         not been set
+     */
+    protected String getAttributeCustomDefault(String name,
+            String defaultValue) {
+        assert name != null;
+        assert defaultValue != null : "Use getAttributeDefaultNull when the default is null";
+        assert !"".equals(
+                defaultValue) : "Use getAttributeDefaultEmptyString when the default is an empty string";
+
+        if (!getElement().hasAttribute(name)) {
+            return defaultValue;
+        } else {
+            return getElement().getAttribute(name);
+        }
+
+    }
+
 }

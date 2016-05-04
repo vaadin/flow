@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.html;
 
+import java.util.Optional;
+
 import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 
@@ -63,12 +65,9 @@ public class Label extends HtmlContainer {
             throw new IllegalArgumentException(
                     "The provided component cannot be null");
         }
-        String forId = forComponent.getId();
-        if (forId == null) {
-            throw new IllegalArgumentException(
-                    "The provided component must have an id");
-        }
-        setFor(forId);
+        setFor(forComponent.getId()
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "The provided component must have an id")));
     }
 
     /**
@@ -80,7 +79,7 @@ public class Label extends HtmlContainer {
      *            there is no value
      */
     public void setFor(String forId) {
-        setAttribute("for", forId);
+        setOptionalAttributeDefaultEmptyString("for", forId);
     }
 
     /**
@@ -88,10 +87,10 @@ public class Label extends HtmlContainer {
      *
      * @see #setFor(String)
      *
-     * @return the id of the described component, or <code>null</code> to remove
-     *         the value
+     * @return an optional id of the described component, or an empty optional
+     *         if the attribute has not been set
      */
-    public String getFor() {
-        return getAttribute("for");
+    public Optional<String> getFor() {
+        return getOptionalAttributeDefaultEmptyString("for");
     }
 }
