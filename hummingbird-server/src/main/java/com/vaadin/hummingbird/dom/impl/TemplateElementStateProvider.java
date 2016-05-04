@@ -93,7 +93,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public String getAttribute(StateNode node, String attribute) {
         return templateNode.getAttributeBinding(attribute)
-                .map(binding -> binding.getValue(node, "")).orElse(null);
+                .map(binding -> binding.getValue(node, ""))
+                .map(Object::toString).orElse(null);
     }
 
     @Override

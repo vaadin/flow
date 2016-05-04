@@ -61,7 +61,7 @@ public class TemplateParserTest {
         Assert.assertEquals(2, rootNode.getChildCount());
 
         TextTemplateNode textChild = (TextTemplateNode) rootNode.getChild(0);
-        TemplateBinding binding = textChild.getTextBinding();
+        BindingValueProvider binding = textChild.getTextBinding();
 
         StateNode node = new StateNode(ModelMap.class);
 
@@ -83,7 +83,7 @@ public class TemplateParserTest {
         Assert.assertEquals(0, rootNode.getAttributeNames().count());
         Assert.assertEquals(1, rootNode.getPropertyNames().count());
 
-        Optional<TemplateBinding> binding = rootNode
+        Optional<BindingValueProvider> binding = rootNode
                 .getPropertyBinding("value");
         Assert.assertTrue(binding.isPresent());
 

@@ -20,11 +20,11 @@ import com.vaadin.hummingbird.StateNode;
 import elemental.json.JsonValue;
 
 /**
- * A template binding that always produces the same value.
+ * A template binding value provider that always produces the same value.
  *
  * @author Vaadin Ltd
  */
-public class StaticBinding extends AbstractTemplateBinding {
+public class StaticBindingValueProvider extends AbstractBindingValueProvider {
     /**
      * Type identifier used for static bindings in JSON messages.
      */
@@ -33,12 +33,12 @@ public class StaticBinding extends AbstractTemplateBinding {
     private final String value;
 
     /**
-     * Creates a binding with the given value.
+     * Creates a binding value provider with the given value.
      *
      * @param value
      *            the value of the binding
      */
-    public StaticBinding(String value) {
+    public StaticBindingValueProvider(String value) {
         this.value = value;
     }
 

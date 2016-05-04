@@ -27,6 +27,7 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.ChildSlotNode;
+import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -117,6 +118,74 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("DIV", element.getTagName());
     }
 
+    public void testPropertyBindingTemplate() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addProperty("prop",
+                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        map.getProperty("key").setValue("foo");
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        Reactive.flush();
+
+        assertEquals("foo", WidgetUtil.getJsProperty(domNode, "prop"));
+    }
+
+    public void testUpdatePropertyBindingTemplate() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addProperty("prop",
+                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        map.getProperty("key").setValue("foo");
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        Reactive.flush();
+
+        map.getProperty("key").setValue("bar");
+
+        Reactive.flush();
+
+        assertEquals("bar", WidgetUtil.getJsProperty(domNode, "prop"));
+    }
+
+    public void testUnregister_propeprtyBindingUpdateIsNotDone() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addProperty("prop",
+                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        map.getProperty("key").setValue("foo");
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        assertEquals(null, WidgetUtil.getJsProperty(domNode, "prop"));
+
+        stateNode.unregister();
+
+        Reactive.flush();
+        assertEquals(null, WidgetUtil.getJsProperty(domNode, "prop"));
+    }
+
+    public void testPropertyBindingNoValueTemplate() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addProperty("prop",
+                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
+        Node domNode = TemplateElementBinder.createAndBind(stateNode,
+                templateNode);
+
+        Reactive.flush();
+
+        assertEquals(null, WidgetUtil.getJsProperty(domNode, "prop"));
+    }
+
     public void testTextValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
@@ -147,7 +216,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("bar", domNode.getTextContent());
     }
 
-    public void testUnregister_updateIsNotDone() {
+    public void testUnregister_textBinsingUpdateIsNotDone() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);

@@ -24,9 +24,9 @@ public class TemplateBuilderTest {
         // <div baz="lorem" foo="bar">baz</div> where baz is an attribute and
         // foo a property
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .setProperty("foo", new StaticBinding("bar"))
-                .setAttribute("baz", new StaticBinding("lorem"))
-                .addChild(new TextTemplateBuilder(new StaticBinding("baz")));
+                .setProperty("foo", new StaticBindingValueProvider("bar"))
+                .setAttribute("baz", new StaticBindingValueProvider("lorem"))
+                .addChild(new TextTemplateBuilder(new StaticBindingValueProvider("baz")));
 
         ElementTemplateNode node = builder.build(null);
 
