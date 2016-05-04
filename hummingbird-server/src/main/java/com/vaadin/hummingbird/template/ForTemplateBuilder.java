@@ -29,7 +29,7 @@ public class ForTemplateBuilder implements TemplateNodeBuilder {
 
     /**
      * @param tagName
-     * @param subBuidler
+     * @param childBuidler
      */
     public ForTemplateBuilder(String loopVariable, String collectionVariable,
             TemplateNodeBuilder childBuidler) {
