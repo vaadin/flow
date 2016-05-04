@@ -15,7 +15,11 @@
  */
 package com.vaadin.hummingbird.html;
 
+import java.util.Optional;
+
 import com.vaadin.annotations.Tag;
+import com.vaadin.ui.PropertyDescriptor;
+import com.vaadin.ui.PropertyDescriptors;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
@@ -24,6 +28,12 @@ import com.vaadin.annotations.Tag;
  */
 @Tag(Tag.A)
 public class Anchor extends HtmlContainer {
+
+    private static final PropertyDescriptor<String, String> hrefDescriptor = PropertyDescriptors
+            .attributeWithDefault("href", "");
+
+    private static final PropertyDescriptor<String, Optional<String>> targetDescriptor = PropertyDescriptors
+            .optionalAttributeWithDefault("target", "");
 
     /**
      * Creates a new empty anchor component.
@@ -52,10 +62,10 @@ public class Anchor extends HtmlContainer {
      * Sets the URL that this anchor links to.
      *
      * @param href
-     *            the href to set, or <code>null</code> to remove the href value
+     *            the href to set, or <code>""</code> to remove the href value
      */
     public void setHref(String href) {
-        setAttribute("href", href);
+        set(hrefDescriptor, href);
     }
 
     /**
@@ -63,10 +73,10 @@ public class Anchor extends HtmlContainer {
      *
      * @see #setHref(String)
      *
-     * @return the href value, or <code>null</code> if no href has been set
+     * @return the href value, or <code>""</code> if no href has been set
      */
     public String getHref() {
-        return getAttribute("href");
+        return get(hrefDescriptor);
     }
 
     /**
@@ -84,11 +94,11 @@ public class Anchor extends HtmlContainer {
      * </ul>
      *
      * @param target
-     *            the target value, or <code>null</code> to remove the current
-     *            target
+     *            the target value, or <code>""</code> to remove the target
+     *            value
      */
     public void setTarget(String target) {
-        setAttribute("target", target);
+        set(targetDescriptor, target);
     }
 
     /**
@@ -96,10 +106,11 @@ public class Anchor extends HtmlContainer {
      *
      * @see #setTarget(String)
      *
-     * @return the target value, or <code>null</code> if no value has been set
+     * @return an optional target, or an empty optional if no target has been
+     *         set
      */
-    public String getTarget() {
-        return getAttribute("target");
+    public Optional<String> getTarget() {
+        return get(targetDescriptor);
     }
 
 }

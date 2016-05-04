@@ -42,6 +42,9 @@ import com.vaadin.hummingbird.event.ComponentEventListener;
 public abstract class Component implements HasElement, Serializable,
         ComponentEventNotifier, AttachNotifier, DetachNotifier {
 
+    private static final PropertyDescriptor<String, Optional<String>> idDescriptor = PropertyDescriptors
+            .optionalAttributeWithDefault("id", "");
+
     private Element element;
 
     private ComponentEventBus eventBus = null;
@@ -250,7 +253,7 @@ public abstract class Component implements HasElement, Serializable,
      *            set id
      */
     public void setId(String id) {
-        getElement().setAttribute("id", id);
+        set(idDescriptor, id);
     }
 
     /**
@@ -258,10 +261,10 @@ public abstract class Component implements HasElement, Serializable,
      *
      * @see #setId(String)
      *
-     * @return the id, or <code>null</code> if no id has been set
+     * @return the id, or <code>""</code> if no id has been set
      */
-    public String getId() {
-        return getElement().getAttribute("id");
+    public Optional<String> getId() {
+        return get(idDescriptor);
     }
 
     /**
@@ -292,5 +295,36 @@ public abstract class Component implements HasElement, Serializable,
      */
     protected void onDetach(DetachEvent detachEvent) {
         // NOOP by default
+    }
+
+    /**
+     * Sets the value of the given component property.
+     *
+     * @see PropertyDescriptor
+     *
+     * @param descriptor
+     *            the descriptor for the property to set, not <code>null</code>
+     * @param value
+     *            the new property value to set
+     */
+    protected <T> void set(PropertyDescriptor<T, ?> descriptor, T value) {
+        assert descriptor != null;
+
+        descriptor.set(this, value);
+    }
+
+    /**
+     * Gets the value of the given component property.
+     *
+     * @see PropertyDescriptor
+     *
+     * @param descriptor
+     *            the descriptor for the property to set, not <code>null</code>
+     * @return the property value
+     */
+    protected <T> T get(PropertyDescriptor<?, T> descriptor) {
+        assert descriptor != null;
+
+        return descriptor.get(this);
     }
 }
