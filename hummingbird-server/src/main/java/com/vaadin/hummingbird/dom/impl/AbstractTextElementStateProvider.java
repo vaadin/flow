@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -140,7 +141,7 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public ClassList getClassList(StateNode node) {
-        return new ImmutableEmptyClassList();
+        return new ImmutableClassList(Collections.emptyList());
     }
 
     @Override
