@@ -16,9 +16,12 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.TextTemplateNode;
 import com.vaadin.ui.Component;
@@ -31,6 +34,11 @@ import com.vaadin.ui.Component;
  */
 public class TemplateTextElementStateProvider
         extends AbstractTextElementStateProvider {
+
+    @SuppressWarnings("unchecked")
+    private static Class<? extends NodeFeature>[] features = new Class[] {
+            TemplateMap.class, ModelMap.class };
+
     private final TextTemplateNode templateNode;
 
     /**
@@ -47,7 +55,7 @@ public class TemplateTextElementStateProvider
 
     @Override
     public boolean supports(StateNode node) {
-        return node.hasFeature(TemplateMap.class);
+        return Stream.of(features).allMatch(node::hasFeature);
     }
 
     @Override

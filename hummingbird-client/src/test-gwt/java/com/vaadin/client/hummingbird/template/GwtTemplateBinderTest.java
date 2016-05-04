@@ -124,7 +124,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         templateNode.addProperty("prop",
                 TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
 
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -140,7 +140,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         templateNode.addProperty("prop",
                 TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
 
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -160,7 +160,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         templateNode.addProperty("prop",
                 TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
 
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -189,7 +189,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testTextValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -202,7 +202,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testUpdateTextValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -219,7 +219,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testUnregister_textBinsingUpdateIsNotDone() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);

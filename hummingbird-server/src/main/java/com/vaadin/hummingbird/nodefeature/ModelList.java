@@ -13,25 +13,41 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.template;
+package com.vaadin.hummingbird.nodefeature;
+
+import com.vaadin.hummingbird.StateNode;
 
 /**
- * A template node that generates a different number of child element depending
- * on state node contents.
+ * List for model values used in data binding in templates.
  *
  * @author Vaadin Ltd
+ *
  */
-public abstract class AbstractControlTemplateNode extends TemplateNode {
+public class ModelList extends StateNodeNodeList {
 
     /**
-     * Creates a new node.
+     * Creates an instance of this node feature.
      *
-     * @param parent
-     *            the parent of the new template node, not null
+     * @param node
+     *            the node that the feature belongs to
      */
-    public AbstractControlTemplateNode(AbstractElementTemplateNode parent) {
-        super(parent);
-        assert parent != null : "A control node can't be the root of a template";
+    public ModelList(StateNode node) {
+        super(node);
+    }
+
+    @Override
+    public int size() {
+        return super.size();
+    }
+
+    @Override
+    public StateNode get(int index) {
+        return super.get(index);
+    }
+
+    @Override
+    public void add(StateNode item) {
+        super.add(item);
     }
 
 }

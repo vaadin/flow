@@ -72,6 +72,7 @@ public class NodeFeatureRegistry {
         registerFeature(OverrideElementData.class, OverrideElementData::new);
         registerFeature(ParentGeneratorHolder.class,
                 ParentGeneratorHolder::new);
+        registerFeature(ModelList.class, ModelList::new);
     }
 
     private NodeFeatureRegistry() {
