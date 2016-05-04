@@ -32,11 +32,10 @@ import com.vaadin.util.CurrentInstance;
  */
 public class FutureAccess extends FutureTask<Void> {
     /**
-     * Snapshot of all non-inheritable current instances at the time this object
-     * was created.
+     * Snapshot of all current instances at the time this object was created.
      */
     private final Map<Class<?>, CurrentInstance> instances = CurrentInstance
-            .getInstances(true);
+            .getInstances();
     private final VaadinSession session;
     private final Command command;
 
