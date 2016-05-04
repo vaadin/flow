@@ -17,7 +17,11 @@ package com.vaadin.hummingbird.template;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.StringTokenizer;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
@@ -37,6 +41,9 @@ public class TemplateParser {
 
     private static final String ROOT_CLARIFICATION = "If the template contains <html> and <body> tags,"
             + " then only the contents of the <body> tag will be used.";
+
+    // Jsoup converts everything to lowercase
+    private static final String NG_FOR = "*ngFor".toLowerCase(Locale.ENGLISH);
 
     private TemplateParser() {
         // Only static methods
@@ -123,22 +130,61 @@ public class TemplateParser {
             return new TextTemplateBuilder(new ModelValueBindingProvider(key));
         } else {
             // No special bindings to support for now
-            return new TextTemplateBuilder(new StaticBindingValueProvider(text));
+            return new TextTemplateBuilder(
+                    new StaticBindingValueProvider(text));
         }
     }
 
-    private static ElementTemplateBuilder createElementBuilder(
-            Element element) {
-        ElementTemplateBuilder builder = new ElementTemplateBuilder(
-                element.tagName());
+    private static TemplateNodeBuilder createElementBuilder(Element element) {
+        if (element.hasAttr(NG_FOR)) {
+            String ngFor = element.attr(NG_FOR);
+            element.removeAttr(NG_FOR);
+            List<String> tokens = parseNgFor(ngFor);
+            if (tokens.size() != 4 || !"let".equals(tokens.get(0))
+                    || !"of".equals(tokens.get(2))) {
+                throw new TemplateParseException(
+                        "The 'ngFor' template is supported only in the form *ngFor='let item of list', but template contains "
+                                + ngFor);
+            }
 
-        element.attributes().forEach(attr -> setBinding(attr, builder));
+            Optional<TemplateNodeBuilder> subBuilder = TemplateParser
+                    .createBuilder(element);
+            if (!subBuilder.isPresent()) {
+                throw new IllegalStateException(
+                        "Sub builder mising for *ngFor element "
+                                + element.html());
+            }
+            if (!(subBuilder.get() instanceof ElementTemplateBuilder)) {
+                throw new IllegalStateException(
+                        "Sub builder for *ngFor element " + element.html()
+                                + " of invalid type: "
+                                + subBuilder.get().getClass().getName());
+            }
 
-        element.childNodes().stream().map(TemplateParser::createBuilder)
-                .filter(Optional::isPresent).map(Optional::get)
-                .forEach(builder::addChild);
+            ForTemplateBuilder builder = new ForTemplateBuilder(tokens.get(1),
+                    tokens.get(3), (ElementTemplateBuilder) subBuilder.get());
+            return builder;
+        } else {
+            ElementTemplateBuilder builder = new ElementTemplateBuilder(
+                    element.tagName());
 
-        return builder;
+            element.attributes().forEach(attr -> setBinding(attr, builder));
+
+            element.childNodes().stream().map(TemplateParser::createBuilder)
+                    .filter(Optional::isPresent).map(Optional::get)
+                    .forEach(builder::addChild);
+
+            return builder;
+        }
+    }
+
+    private static List<String> parseNgFor(String ngFor) {
+        List<String> tokens = new ArrayList<>();
+        StringTokenizer tokenizer = new StringTokenizer(ngFor);
+        while (tokenizer.hasMoreTokens()) {
+            tokens.add(tokenizer.nextToken());
+        }
+        return tokens;
     }
 
     private static void setBinding(Attribute attribute,
@@ -165,7 +211,8 @@ public class TemplateParser {
              * Regular attribute names in the template, i.e. name not starting
              * with [ or (, are used as static attributes on the target element.
              */
-            builder.setAttribute(name, new StaticBindingValueProvider(attribute.getValue()));
+            builder.setAttribute(name,
+                    new StaticBindingValueProvider(attribute.getValue()));
         }
     }
 }

@@ -178,7 +178,7 @@ public class TemplateElementBinder {
 
     private static MapProperty getModelProperty(StateNode node,
             Binding binding) {
-        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
         return model.getProperty(key);

@@ -187,4 +187,14 @@ public abstract class TemplateNode implements Serializable {
      *            the JSON object to add data to, not <code>null</code>
      */
     protected abstract void populateJson(JsonObject json);
+
+    /**
+     * Gets the parent of a child element of this node.
+     *
+     * @param node
+     *            the state node of the child element, not <code>null</code>
+     * @return the parent element, not <code>null</code>
+     */
+    public abstract Element getParentElement(StateNode node);
+
 }

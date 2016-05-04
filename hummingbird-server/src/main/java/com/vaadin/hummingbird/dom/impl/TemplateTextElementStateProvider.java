@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.TextTemplateNode;
 import com.vaadin.ui.Component;
 
@@ -47,7 +47,7 @@ public class TemplateTextElementStateProvider
 
     @Override
     public boolean supports(StateNode node) {
-        return node.hasFeature(TemplateMap.class);
+        return node.hasFeature(ModelMap.class);
     }
 
     @Override

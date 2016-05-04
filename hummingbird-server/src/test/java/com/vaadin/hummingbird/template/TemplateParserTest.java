@@ -154,4 +154,26 @@ public class TemplateParserTest {
         Assert.assertEquals("input",
                 ((ElementTemplateNode) node.getChild(2)).getTag());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ngForElementAsRoot() {
+        TemplateParser.parse(
+                "<a class='item' *ngFor='let  item      of list'>{{item}}</a>");
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void ngForElementMissingCollection() {
+        TemplateParser.parse(
+                "<div><a class='item' *ngFor='let item'>{{item}}</a></div>");
+    }
+
+    @Test
+    public void ngForElement() {
+        TemplateNode node = TemplateParser.parse(
+                "<div><a class='item' *ngFor='let  item      of list'>{{item}}</a></div>");
+        ForTemplateNode forNode = (ForTemplateNode) node.getChild(0);
+        Assert.assertEquals("list", forNode.getCollectionVariable());
+        Assert.assertEquals("item", forNode.getLoopVariable());
+    }
+
 }

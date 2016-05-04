@@ -118,7 +118,7 @@ public class NodeFeatures {
     /**
      * Id for {@link ModelMap}.
      */
-    public static final int TEMPLATE_MODEL = 17;
+    public static final int TEMPLATE_MODELMAP = 17;
     /**
      * Id for {@link TemplateOverridesMap}.
      */
@@ -131,6 +131,10 @@ public class NodeFeatures {
      * Id for {@link ParentGeneratorHolder}.
      */
     public static final int PARENT_GENERATOR = 20;
+    /**
+     * Id for {@link ModelMap}.
+     */
+    public static final int TEMPLATE_MODELLIST = 21;
 
     /**
      * Key for {@link ElementData#getTag()}.
