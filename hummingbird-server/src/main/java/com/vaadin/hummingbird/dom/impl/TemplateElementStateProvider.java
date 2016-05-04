@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
@@ -35,8 +36,8 @@ import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
-import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.AbstractElementTemplateNode;
+import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
@@ -233,7 +234,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public Object getProperty(StateNode node, String name) {
         return templateNode.getPropertyBinding(name)
-                .map(binding -> binding.getValue(node, "")).orElse(null);
+                .map(binding -> binding.getValue(node)).orElse(null);
     }
 
     @Override
@@ -275,7 +276,11 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public ClassList getClassList(StateNode node) {
         // Should eventually be based on [class.foo]=bar in the template
-        return new ImmutableEmptyClassList();
+        String[] attributeClasses = templateNode.getAttributeBinding("class")
+                .map(binding -> binding.getValue(node, "").split("\\s+"))
+                .orElse(new String[0]);
+
+        return new ImmutableClassList(Arrays.asList(attributeClasses));
     }
 
     @Override
