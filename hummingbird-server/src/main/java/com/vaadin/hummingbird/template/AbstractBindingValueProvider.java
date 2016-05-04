@@ -21,13 +21,14 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Abstract template binding implementation which provides method to produce
- * initial JsonObject for {@link #toJson()} method.
+ * Abstract binding value provider implementation which provides method to
+ * produce initial JsonObject for {@link #toJson()} method.
  * 
  * @author Vaadin Ltd
  *
  */
-public abstract class AbstractTemplateBinding implements BindingValueProvider {
+public abstract class AbstractBindingValueProvider
+        implements BindingValueProvider {
 
     /**
      * Constructs initial {@link JsonObject} instance for {@link #toJson()}

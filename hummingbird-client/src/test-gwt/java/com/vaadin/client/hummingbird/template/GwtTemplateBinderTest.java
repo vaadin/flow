@@ -26,7 +26,7 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.ChildSlotNode;
-import com.vaadin.hummingbird.template.ModelValueBinding;
+import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
@@ -121,7 +121,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBinding.TYPE, "key"));
+                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
         map.getProperty("key").setValue("foo");
@@ -137,7 +137,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBinding.TYPE, "key"));
+                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
         map.getProperty("key").setValue("foo");
@@ -157,7 +157,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBinding.TYPE, "key"));
+                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
         map.getProperty("key").setValue("foo");
@@ -176,7 +176,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBinding.TYPE, "key"));
+                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
 

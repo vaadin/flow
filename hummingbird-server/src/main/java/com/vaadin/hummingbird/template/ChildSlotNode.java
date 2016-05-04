@@ -31,7 +31,7 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  */
-public class ChildSlotNode extends VariableTemplateNode {
+public class ChildSlotNode extends AbstractControlTemplateNode {
     /**
      * Type value for child slot template nodes in JSON messages.
      */
@@ -43,7 +43,7 @@ public class ChildSlotNode extends VariableTemplateNode {
      * @param parent
      *            the parent of the new template node, not null
      */
-    public ChildSlotNode(SingleElementTemplateNode parent) {
+    public ChildSlotNode(AbstractElementTemplateNode parent) {
         super(parent);
 
         assert parent != null : "Child slot can't be the root of a template";

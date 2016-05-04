@@ -115,10 +115,10 @@ public class TemplateParser {
         } else if (text.startsWith("{{") && text.endsWith("}}")) {
             String key = text.substring(2);
             key = key.substring(0, key.length() - 2);
-            return new TextTemplateBuilder(new ModelValueBinding(key));
+            return new TextTemplateBuilder(new ModelValueBindingProvider(key));
         } else {
             // No special bindings to support for now
-            return new TextTemplateBuilder(new StaticBinding(text));
+            return new TextTemplateBuilder(new StaticBindingValueProvider(text));
         }
     }
 
@@ -153,13 +153,13 @@ public class TemplateParser {
             key = key.substring(1);
             key = key.substring(0, key.length() - 1);
             builder.setProperty(key,
-                    new ModelValueBinding(attribute.getValue()));
+                    new ModelValueBindingProvider(attribute.getValue()));
         } else {
             /*
              * Regular attribute names in the template, i.e. name not starting
              * with [ or (, are used as static attributes on the target element.
              */
-            builder.setAttribute(name, new StaticBinding(attribute.getValue()));
+            builder.setAttribute(name, new StaticBindingValueProvider(attribute.getValue()));
         }
     }
 }

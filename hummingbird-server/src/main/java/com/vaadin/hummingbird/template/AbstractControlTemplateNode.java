@@ -24,7 +24,7 @@ import com.vaadin.hummingbird.dom.Element;
  *
  * @author Vaadin Ltd
  */
-public abstract class VariableTemplateNode extends TemplateNode {
+public abstract class AbstractControlTemplateNode extends TemplateNode {
 
     /**
      * Creates a new node.
@@ -32,9 +32,9 @@ public abstract class VariableTemplateNode extends TemplateNode {
      * @param parent
      *            the parent of the new template node, not null
      */
-    public VariableTemplateNode(SingleElementTemplateNode parent) {
+    public AbstractControlTemplateNode(AbstractElementTemplateNode parent) {
         super(parent);
-        assert parent != null : "A generator can't be the root of a template";
+        assert parent != null : "A control node can't be the root of a template";
     }
 
     /**
