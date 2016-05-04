@@ -73,8 +73,7 @@ public class TemplateElementStateProviderTest {
     @Test
     public void testElementBooleanProperties() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .setProperty("a", new ModelValueBinding(
-                        ModelValueBinding.PROPERTY, "key"));
+                .setProperty("a", new ModelValueBinding("key"));
 
         Element element = createElement(builder);
 
@@ -90,8 +89,7 @@ public class TemplateElementStateProviderTest {
     @Test
     public void testElementDoubleProperties() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .setProperty("a", new ModelValueBinding(
-                        ModelValueBinding.PROPERTY, "key"));
+                .setProperty("a", new ModelValueBinding("key"));
 
         Element element = createElement(builder);
 
@@ -107,8 +105,7 @@ public class TemplateElementStateProviderTest {
     @Test
     public void testElementJsonProperties() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .setProperty("a", new ModelValueBinding(
-                        ModelValueBinding.PROPERTY, "key"));
+                .setProperty("a", new ModelValueBinding("key"));
 
         Element element = createElement(builder);
 

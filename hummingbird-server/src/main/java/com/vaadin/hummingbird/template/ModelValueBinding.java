@@ -22,9 +22,6 @@ import elemental.json.JsonValue;
 
 /**
  * A template binding that produces dynamic value based on a model.
- * <p>
- * Binding is defined by the type (may be "text", "property", "attribute", etc.)
- * and key (property name, attribute name, etc.)
  *
  * @author Vaadin Ltd
  */
@@ -33,33 +30,23 @@ public class ModelValueBinding extends AbstractTemplateBinding {
     /**
      * Type identifier used for text bindings in JSON messages.
      */
-    public static final String TEXT = "text";
-
-    /**
-     * Type identifier used for property bindings in JSON messages.
-     */
-    public static final String PROPERTY = "property";
-
-    private final String type;
+    public static final String TYPE = "model";
 
     private final String key;
 
     /**
-     * Creates a binding with the given {@code type} and {@code key}.
+     * Creates a binding with the given {@code key}.
      * <p>
      * Value for the {@code key} is stored inside a {@link StateNode} directly
      * (via features) so only {@code key} is used to retrieve a dynamic value
      * from the node.
      *
-     * @param type
-     *            the type of the binding, not null
      * @param key
      *            the key of the binding, not null
      */
-    public ModelValueBinding(String type, String key) {
+    public ModelValueBinding(String key) {
         assert key != null;
         this.key = key;
-        this.type = type;
     }
 
     @Override
@@ -69,7 +56,7 @@ public class ModelValueBinding extends AbstractTemplateBinding {
 
     @Override
     public JsonValue toJson() {
-        return makeJsonObject(type, key);
+        return makeJsonObject(TYPE, key);
     }
 
 }
