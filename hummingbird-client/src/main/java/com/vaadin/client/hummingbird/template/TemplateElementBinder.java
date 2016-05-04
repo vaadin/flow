@@ -29,8 +29,8 @@ import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.StaticBinding;
 import com.vaadin.hummingbird.template.ModelValueBinding;
+import com.vaadin.hummingbird.template.StaticBinding;
 
 import elemental.client.Browser;
 import elemental.dom.Comment;
@@ -113,7 +113,11 @@ public class TemplateElementBinder {
                 .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
                 .getValueOrDefault(-1);
 
-        return createAndBind(stateNode, templateId);
+        Node domNode = createAndBind(stateNode, templateId);
+
+        stateNode.setDomNode(domNode);
+
+        return domNode;
     }
 
     private static Node createAndBind(StateNode stateNode, int templateId) {
