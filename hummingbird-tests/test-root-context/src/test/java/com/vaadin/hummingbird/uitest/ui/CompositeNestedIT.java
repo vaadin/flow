@@ -30,7 +30,7 @@ public class CompositeNestedIT extends PhantomJSTest {
         WebElement name = findElement(By.id(CompositeNestedView.NAME_ID));
         WebElement input = findElement(
                 By.id(CompositeNestedView.NAME_FIELD_ID));
-        Assert.assertEquals("Name on server: null", name.getText());
+        Assert.assertEquals("Name on server:", name.getText());
         input.sendKeys("123");
         findElement(By.xpath("//body")).click(); // Make change event happen
         Assert.assertEquals("Name on server: 123", name.getText());
