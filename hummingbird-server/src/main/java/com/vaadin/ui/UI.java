@@ -220,7 +220,7 @@ public class UI extends Component
      * @see ThreadLocal
      */
     public static void setCurrent(UI ui) {
-        CurrentInstance.setInheritable(UI.class, ui);
+        CurrentInstance.set(UI.class, ui);
     }
 
     /**
@@ -501,8 +501,7 @@ public class UI extends Component
      * @return The instance used for configuring the loading indicator
      */
     public LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
-        return getNode()
-                .getFeature(LoadingIndicatorConfigurationMap.class);
+        return getNode().getFeature(LoadingIndicatorConfigurationMap.class);
     }
 
     /**
@@ -578,8 +577,7 @@ public class UI extends Component
      * @return The instance used for reconnect dialog configuration
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
-        return getNode()
-                .getFeature(ReconnectDialogConfigurationMap.class);
+        return getNode().getFeature(ReconnectDialogConfigurationMap.class);
     }
 
     private static Logger getLogger() {

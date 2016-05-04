@@ -658,7 +658,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession)
-                    throws SessionExpiredException, ServiceException {
+            throws SessionExpiredException, ServiceException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
                 .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
@@ -829,11 +829,9 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Gets the currently used Vaadin service. The current service is
-     * automatically defined when processing requests related to the service and
-     * in threads started at a point when the current service is defined (see
-     * {@link InheritableThreadLocal}). In other cases, (e.g. from background
-     * threads started in some other way), the current service is not
-     * automatically defined.
+     * automatically defined when processing requests related to the service
+     * (see {@link ThreadLocal}). In other cases, (e.g. from background
+     * threads), the current service is not automatically defined.
      *
      * @return the current Vaadin service instance if available, otherwise
      *         <code>null</code>
@@ -880,7 +878,7 @@ public abstract class VaadinService implements Serializable {
      * @param service
      */
     public static void setCurrent(VaadinService service) {
-        CurrentInstance.setInheritable(VaadinService.class, service);
+        CurrentInstance.set(VaadinService.class, service);
     }
 
     /**
@@ -1338,7 +1336,7 @@ public abstract class VaadinService implements Serializable {
 
     private void handleExceptionDuringRequest(VaadinRequest request,
             VaadinResponse response, VaadinSession vaadinSession, Exception t)
-                    throws ServiceException {
+            throws ServiceException {
         if (vaadinSession != null) {
             vaadinSession.lock();
         }
@@ -1744,7 +1742,8 @@ public abstract class VaadinService implements Serializable {
         }
 
         Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
-                .getInstances(false);
+                .getInstances();
+        UI ui = UI.getCurrent();
 
         FutureAccess pendingAccess;
         try {
@@ -1754,6 +1753,9 @@ public abstract class VaadinService implements Serializable {
                     CurrentInstance.clearAll();
                     CurrentInstance.restoreInstances(
                             pendingAccess.getCurrentInstances());
+                    if (ui != null && UI.getCurrent() == null) {
+                        CurrentInstance.setCurrent(ui);
+                    }
                     CurrentInstance.setCurrent(session);
                     pendingAccess.run();
 

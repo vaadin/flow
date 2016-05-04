@@ -36,10 +36,8 @@ import com.vaadin.ui.UI;
 /**
  * Keeps track of various current instances for the current thread. All the
  * instances are automatically cleared after handling a request from the client
- * to avoid leaking memory. The inheritable values are also maintained when
- * execution is moved to another thread, both when a new thread is created and
- * when {@link VaadinSession#access(Command)} or {@link UI#access(Command)} is
- * used.
+ * to avoid leaking memory. The values are also maintained when when
+ * {@link VaadinSession#access(Command)} or {@link UI#access(Command)} is used.
  * <p>
  * Please note that the instances are stored using {@link WeakReference}. This
  * means that the a current instance value may suddenly disappear if there a no
@@ -48,10 +46,8 @@ import com.vaadin.ui.UI;
  * Currently the framework uses the following instances:
  * </p>
  * <p>
- * Inheritable: {@link UI}, {@link VaadinService}, {@link VaadinSession}.
- * </p>
- * <p>
- * Non-inheritable: {@link VaadinRequest}, {@link VaadinResponse}.
+ * {@link VaadinRequest}, {@link VaadinResponse}, {@link UI},
+ * {@link VaadinService}, {@link VaadinSession}.
  * </p>
  *
  * @author Vaadin Ltd
@@ -60,35 +56,14 @@ import com.vaadin.ui.UI;
 public class CurrentInstance implements Serializable {
     private static final Object NULL_OBJECT = new Object();
     private static final CurrentInstance CURRENT_INSTANCE_NULL = new CurrentInstance(
-            NULL_OBJECT, true);
+            NULL_OBJECT);
 
     private final WeakReference<Object> instance;
-    private final boolean inheritable;
 
-    private static InheritableThreadLocal<Map<Class<?>, CurrentInstance>> instances = new InheritableThreadLocal<Map<Class<?>, CurrentInstance>>() {
-        @Override
-        protected Map<Class<?>, CurrentInstance> childValue(
-                Map<Class<?>, CurrentInstance> parentValue) {
-            if (parentValue == null) {
-                return null;
-            }
+    private static final ThreadLocal<Map<Class<?>, CurrentInstance>> instances = new ThreadLocal<>();
 
-            Map<Class<?>, CurrentInstance> value = new HashMap<>();
-
-            // Copy all inheritable values to child map
-            for (Entry<Class<?>, CurrentInstance> e : parentValue.entrySet()) {
-                if (e.getValue().inheritable) {
-                    value.put(e.getKey(), e.getValue());
-                }
-            }
-
-            return value;
-        }
-    };
-
-    private CurrentInstance(Object instance, boolean inheritable) {
+    private CurrentInstance(Object instance) {
         this.instance = new WeakReference<>(instance);
-        this.inheritable = inheritable;
     }
 
     /**
@@ -163,30 +138,23 @@ public class CurrentInstance implements Serializable {
      *            the actual instance
      */
     public static <T> void set(Class<T> type, T instance) {
-        set(type, instance, false);
+        doSet(type, instance);
     }
 
     /**
-     * Sets the current inheritable instance of the given type. A current
-     * instance that is inheritable will be available for child threads and in
-     * code run by {@link VaadinSession#access(Command)} and
-     * {@link UI#access(Command)}.
+     * Sets the current instance of the given type.
      *
-     * @see #set(Class, Object)
-     * @see InheritableThreadLocal
+     * @see #setInheritable(Class, Object)
+     * @see ThreadLocal
      *
      * @param type
      *            the class that should be used when getting the current
      *            instance back
      * @param instance
      *            the actual instance
+     * @return previous CurrentInstance wrapper
      */
-    public static <T> void setInheritable(Class<T> type, T instance) {
-        set(type, instance, true);
-    }
-
-    private static <T> CurrentInstance set(Class<T> type, T instance,
-            boolean inheritable) {
+    private static <T> CurrentInstance doSet(Class<T> type, T instance) {
         Map<Class<?>, CurrentInstance> map = instances.get();
         CurrentInstance previousInstance = null;
         if (instance == null) {
@@ -205,14 +173,7 @@ public class CurrentInstance implements Serializable {
                 instances.set(map);
             }
 
-            previousInstance = map.put(type,
-                    new CurrentInstance(instance, inheritable));
-            if (previousInstance != null) {
-                assert previousInstance.inheritable == inheritable : "Inheritable status mismatch for "
-                        + type + " (previous was "
-                        + previousInstance.inheritable + ", new is "
-                        + inheritable + ")";
-            }
+            previousInstance = map.put(type, new CurrentInstance(instance));
         }
         if (previousInstance == null) {
             previousInstance = CURRENT_INSTANCE_NULL;
@@ -264,7 +225,7 @@ public class CurrentInstance implements Serializable {
                  */
                 v = null;
             }
-            set(c, v, ci.inheritable);
+            set(c, v);
         }
 
         if (removeStale) {
@@ -276,15 +237,9 @@ public class CurrentInstance implements Serializable {
      * Gets the currently set instances so that they can later be restored using
      * {@link #restoreInstances(Map)}.
      *
-     * @since 7.1
-     *
-     * @param onlyInheritable
-     *            <code>true</code> if only the inheritable instances should be
-     *            included; <code>false</code> to get all instances.
      * @return a map containing the current instances
      */
-    public static Map<Class<?>, CurrentInstance> getInstances(
-            boolean onlyInheritable) {
+    public static Map<Class<?>, CurrentInstance> getInstances() {
         Map<Class<?>, CurrentInstance> map = instances.get();
         if (map == null) {
             return Collections.emptyMap();
@@ -296,7 +251,7 @@ public class CurrentInstance implements Serializable {
                 CurrentInstance ci = entry.getValue();
                 if (ci.instance.get() == null) {
                     removeStale = true;
-                } else if (ci.inheritable || !onlyInheritable) {
+                } else {
                     copy.put(c, ci);
                 }
             }
@@ -324,7 +279,7 @@ public class CurrentInstance implements Serializable {
      */
     public static Map<Class<?>, CurrentInstance> setCurrent(UI ui) {
         Map<Class<?>, CurrentInstance> old = setCurrent(ui.getSession());
-        old.put(UI.class, set(UI.class, ui, true));
+        old.put(UI.class, doSet(UI.class, ui));
         return old;
     }
 
@@ -343,12 +298,12 @@ public class CurrentInstance implements Serializable {
     public static Map<Class<?>, CurrentInstance> setCurrent(
             VaadinSession session) {
         Map<Class<?>, CurrentInstance> old = new HashMap<>();
-        old.put(VaadinSession.class, set(VaadinSession.class, session, true));
+        old.put(VaadinSession.class, doSet(VaadinSession.class, session));
         VaadinService service = null;
         if (session != null) {
             service = session.getService();
         }
-        old.put(VaadinService.class, set(VaadinService.class, service, true));
+        old.put(VaadinService.class, doSet(VaadinService.class, service));
         return old;
     }
 
