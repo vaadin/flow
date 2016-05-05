@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
-import com.vaadin.hummingbird.template.TemplateParser;
+import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 /**
  * Component for declaratively defined element structures. The structure of a

@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 public class TemplateParserTest {
     @Test
