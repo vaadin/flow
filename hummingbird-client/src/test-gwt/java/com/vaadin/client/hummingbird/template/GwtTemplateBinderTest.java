@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird.template;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.ElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
@@ -414,5 +415,36 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         // Emptying child slot should have not effect when node is unregistered
         assertEquals(1, element.getChildNodes().getLength());
+    }
+
+    public void testRemoveTemplateFromDom() {
+        int templateNodeId = 1;
+
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("span");
+
+        registry.getTemplateRegistry().register(templateNodeId, templateNode);
+
+        StateNode templateState = new StateNode(1, stateNode.getTree());
+        templateState.getMap(NodeFeatures.TEMPLATE)
+                .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
+                .setValue(Double.valueOf(templateNodeId));
+
+        stateNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).setValue("div");
+        stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, templateState);
+
+        Element element = (Element) ElementBinder.createAndBind(stateNode);
+
+        Reactive.flush();
+
+        assertEquals(1, element.getChildElementCount());
+        assertEquals("SPAN", element.getFirstElementChild().getTagName());
+
+        stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).splice(0, 1);
+
+        Reactive.flush();
+
+        assertEquals(0, element.getChildElementCount());
     }
 }
