@@ -39,6 +39,11 @@ import java.util.ServiceLoader;
 @Inherited
 public @interface ServiceProvider {
 
+    /**
+     * Gets service provider classes.
+     * 
+     * @return service provider classes
+     */
     Class<?>[] value();
 
 }

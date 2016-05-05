@@ -113,7 +113,7 @@ public class ServiceProcessor extends AbstractProcessor {
                 .getBinaryName((TypeElement) elementType);
         List<TypeElement> list = implementations.get(serviceName);
         if (list == null) {
-            list = new ArrayList<TypeElement>();
+            list = new ArrayList<>();
             implementations.put(serviceName, list);
         }
         list.add(implElement);
@@ -218,13 +218,8 @@ public class ServiceProcessor extends AbstractProcessor {
 
     private boolean hasFqn(AnnotationMirror mirror, String fqn) {
         Element annotation = mirror.getAnnotationType().asElement();
-        if (annotation instanceof TypeElement) {
-            if (((TypeElement) annotation).getQualifiedName()
-                    .contentEquals(fqn)) {
-                return true;
-            }
-        }
-        return false;
+        return annotation instanceof TypeElement && ((TypeElement) annotation)
+                .getQualifiedName().contentEquals(fqn);
     }
 
     private void createMetaInfServices(Map<Name, List<TypeElement>> providers) {
@@ -238,7 +233,6 @@ public class ServiceProcessor extends AbstractProcessor {
     private void createMetaInfService(Name service,
             List<TypeElement> providers) {
         String serviceFileName = META_INF_SERVICES + service.toString();
-        BufferedWriter writer = null;
         try {
             FileObject serviceFile = getProcessingEnvironment().getFiler()
                     .createResource(StandardLocation.CLASS_OUTPUT, "",
@@ -246,31 +240,26 @@ public class ServiceProcessor extends AbstractProcessor {
                             providers.toArray(new Element[providers.size()]));
             getProcessingEnvironment().getMessager().printMessage(Kind.NOTE,
                     serviceFile.toUri().toString() + " is generated");
-            writer = new BufferedWriter(new OutputStreamWriter(
-                    serviceFile.openOutputStream(), StandardCharsets.UTF_8));
-            for (TypeElement element : providers) {
-                writer.write(getElements().getBinaryName(element).toString());
-                writer.newLine();
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(serviceFile.openOutputStream(),
+                            StandardCharsets.UTF_8))) {
+                for (TypeElement element : providers) {
+                    writer.write(
+                            getElements().getBinaryName(element).toString());
+                    writer.newLine();
+                }
+                writer.flush();
             }
-            writer.flush();
         } catch (IOException e) {
             String msg = "Unable to generate " + serviceFileName; // NOI18N
-            if (providers != null && !providers.isEmpty()) {
-                getProcessingEnvironment().getMessager()
-                        .printMessage(Kind.ERROR, msg, providers.get(0));
-            } else {
+            if (providers.isEmpty()) {
                 getProcessingEnvironment().getMessager()
                         .printMessage(Kind.ERROR, msg);
-            }
-        } finally {
-            try {
-                if (writer != null) {
-                    writer.close();
-                }
-            } catch (IOException e) {
+            } else {
                 getProcessingEnvironment().getMessager()
-                        .printMessage(Kind.WARNING, e.toString());
+                        .printMessage(Kind.ERROR, msg, providers.get(0));
             }
+            throw new ServiceProcessorException(e);
         }
     }
 
