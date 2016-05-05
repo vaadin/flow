@@ -33,4 +33,14 @@ public class ServiceProcessorException extends RuntimeException {
     public ServiceProcessorException(String message) {
         super(message);
     }
+
+    /**
+     * Creates a new exception with the given error {@code message}.
+     * 
+     * @param cause
+     *            the exception cause
+     */
+    public ServiceProcessorException(Exception cause) {
+        super(cause);
+    }
 }

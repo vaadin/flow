@@ -113,7 +113,7 @@ public class ServiceProcessor extends AbstractProcessor {
                 .getBinaryName((TypeElement) elementType);
         List<TypeElement> list = implementations.get(serviceName);
         if (list == null) {
-            list = new ArrayList<TypeElement>();
+            list = new ArrayList<>();
             implementations.put(serviceName, list);
         }
         list.add(implElement);
@@ -218,13 +218,8 @@ public class ServiceProcessor extends AbstractProcessor {
 
     private boolean hasFqn(AnnotationMirror mirror, String fqn) {
         Element annotation = mirror.getAnnotationType().asElement();
-        if (annotation instanceof TypeElement) {
-            if (((TypeElement) annotation).getQualifiedName()
-                    .contentEquals(fqn)) {
-                return true;
-            }
-        }
-        return false;
+        return annotation instanceof TypeElement && ((TypeElement) annotation)
+                .getQualifiedName().contentEquals(fqn);
     }
 
     private void createMetaInfServices(Map<Name, List<TypeElement>> providers) {
@@ -255,13 +250,14 @@ public class ServiceProcessor extends AbstractProcessor {
             writer.flush();
         } catch (IOException e) {
             String msg = "Unable to generate " + serviceFileName; // NOI18N
-            if (providers != null && !providers.isEmpty()) {
+            if (!providers.isEmpty()) {
                 getProcessingEnvironment().getMessager()
                         .printMessage(Kind.ERROR, msg, providers.get(0));
             } else {
                 getProcessingEnvironment().getMessager()
                         .printMessage(Kind.ERROR, msg);
             }
+            throw new ServiceProcessorException(e);
         } finally {
             try {
                 if (writer != null) {
@@ -270,6 +266,7 @@ public class ServiceProcessor extends AbstractProcessor {
             } catch (IOException e) {
                 getProcessingEnvironment().getMessager()
                         .printMessage(Kind.WARNING, e.toString());
+                throw new ServiceProcessorException(e);
             }
         }
     }
