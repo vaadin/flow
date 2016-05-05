@@ -13,20 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.template;
+package com.vaadin.hummingbird.template.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+
+import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.TemplateNodeBuilder;
+import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
  * Parser for an Angular 2-like template syntax.
@@ -37,6 +45,8 @@ public class TemplateParser {
 
     private static final String ROOT_CLARIFICATION = "If the template contains <html> and <body> tags,"
             + " then only the contents of the <body> tag will be used.";
+
+    private static Collection<TemplateNodeBuilderFactory<?>> FACTORIES = loadFactories();
 
     private TemplateParser() {
         // Only static methods
@@ -77,6 +87,18 @@ public class TemplateParser {
         return parse(document);
     }
 
+    @SuppressWarnings("rawtypes")
+    private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
+        ServiceLoader<TemplateNodeBuilderFactory> loader = ServiceLoader
+                .load(TemplateNodeBuilderFactory.class);
+        Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
+        for (Iterator<TemplateNodeBuilderFactory> iterator = loader
+                .iterator(); iterator.hasNext();) {
+            factories.add(iterator.next());
+        }
+        return factories;
+    }
+
     private static TemplateNode parse(Document bodyFragment) {
         Elements children = bodyFragment.body().children();
 
@@ -98,74 +120,26 @@ public class TemplateParser {
         return templateBuilder.get().build(null);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private static Optional<TemplateNodeBuilder> createBuilder(Node node) {
-        if (node instanceof Element) {
-            return Optional.of(createElementBuilder((Element) node));
-        } else if (node instanceof TextNode) {
-            return Optional.of(createTextBuilder((TextNode) node));
-        } else if (node instanceof Comment) {
+        if (node instanceof Comment) {
             return Optional.empty();
-        } else {
-            throw new IllegalArgumentException(
-                    "Unsupported node type: " + node.getClass().getName());
         }
-    }
-
-    private static TemplateNodeBuilder createTextBuilder(TextNode node) {
-        String text = node.text();
-        String trimmedText = text.trim();
-
-        if ("@child@".equals(trimmedText)) {
-            return new ChildSlotBuilder();
-        } else if (text.startsWith("{{") && text.endsWith("}}")) {
-            String key = text.substring(2);
-            key = key.substring(0, key.length() - 2);
-            return new TextTemplateBuilder(new ModelValueBindingProvider(key));
-        } else {
-            // No special bindings to support for now
-            return new TextTemplateBuilder(new StaticBindingValueProvider(text));
-        }
-    }
-
-    private static ElementTemplateBuilder createElementBuilder(
-            Element element) {
-        ElementTemplateBuilder builder = new ElementTemplateBuilder(
-                element.tagName());
-
-        element.attributes().forEach(attr -> setBinding(attr, builder));
-
-        element.childNodes().stream().map(TemplateParser::createBuilder)
-                .filter(Optional::isPresent).map(Optional::get)
-                .forEach(builder::addChild);
-
-        return builder;
-    }
-
-    private static void setBinding(Attribute attribute,
-            ElementTemplateBuilder builder) {
-        String name = attribute.getKey();
-
-        if (name.startsWith("(")) {
-            throw new TemplateParseException(
-                    "Dynamic binding support has not yet been implemented");
-        } else if (name.startsWith("[")) {
-            if (!name.endsWith("]")) {
-                StringBuilder msg = new StringBuilder(
-                        "Property binding should be in the form [property]='value' but template contains '");
-                msg.append(attribute.toString()).append("'.");
-                throw new TemplateParseException(msg.toString());
+        List<TemplateNodeBuilderFactory<?>> list = FACTORIES.stream()
+                .filter(factory -> factory.isApplicable(node))
+                .collect(Collectors.toList());
+        if (list.isEmpty()) {
+            list = FACTORIES.stream().filter(factory -> factory.isDefault(node))
+                    .collect(Collectors.toList());
+            if (list.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Unsupported node type: " + node.getClass().getName());
             }
-            String key = name;
-            key = key.substring(1);
-            key = key.substring(0, key.length() - 1);
-            builder.setProperty(key,
-                    new ModelValueBindingProvider(attribute.getValue()));
-        } else {
-            /*
-             * Regular attribute names in the template, i.e. name not starting
-             * with [ or (, are used as static attributes on the target element.
-             */
-            builder.setAttribute(name, new StaticBindingValueProvider(attribute.getValue()));
         }
+        assert list.size() == 1;
+        TemplateNodeBuilderFactory factory = list.get(0);
+        Function<Node, Optional<TemplateNodeBuilder>> function = TemplateParser::createBuilder;
+        return Optional.of(factory.createBuilder(node, function));
     }
+
 }
