@@ -13,10 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.event;
+package com.vaadin.client.hummingbird.template;
 
-import com.vaadin.ui.ComponentTest.TestComponent;
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
 
-public class TestComponentWithDomEvent extends TestComponent {
+@JsType(isNative = true)
+public interface TestForTemplateNode extends ForTemplateNode, TestTemplateNode {
+
+    @JsProperty
+    public void setLoopVariable(String variable);
+
+    @JsProperty
+    public void setCollectionVariable(String variable);
 
 }
