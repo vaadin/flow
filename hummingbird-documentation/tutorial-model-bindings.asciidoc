@@ -1,0 +1,31 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Binding Model Data in a Template
+
+At the core of `Template` is the way model values are bound to different parts of the element tree defined by the template.
+To get started with using templates and learn how to define model values, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>.
+
+== Binding Text Content
+
+The value of a model property can be used as the text content of an element using `{{propertyName}}` inside a tag.
+
+[source,html]
+----
+<div>
+  Hello, <span class="greeting-name">{{name}}</span>
+</div>
+----
+
+== Binding Property Values
+
+You can set an element property value based on a model by using the special `[propertyName]="binding"` syntax.
+This example creates an image link where the `linkTarget` property from the model us used as the link target and the `image` property is used as the image URL.
+
+[source,html]
+----
+<a [href]="linkTarget">
+  <img [src]="image">
+</a>
+----
+
+[WARNING]
+`[name]="binding"` defines that the element _property_ named `name` should get it's value from the model property named `binding`, whereas `name="binding"` (i.e. without brackets) defines that the element _attribute_ named `name` should have the value `binding` regardless of any value in the model.
