@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird;
 
+import java.util.function.Function;
+
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
@@ -31,7 +33,11 @@ import elemental.events.EventRemover;
  *
  * @author Vaadin Ltd
  */
-public class ElementBinder {
+public final class ElementBinder {
+
+    private ElementBinder() {
+    }
+
     /**
      * Creates and binds a DOM node for the given state node. For state nodes
      * based on templates, the root element of the template is returned.
@@ -63,16 +69,69 @@ public class ElementBinder {
         return node;
     }
 
+    /**
+     * Uses {@link NodeList} feature of the {@code node} identified by
+     * {@code featureId} to populate list of nodes. Creates the nodes using
+     * {@code nodeFactory} and append them to the {@code parent}.
+     * <p>
+     * This is just a shorthand for
+     * {@link #bindChildren(Element, StateNode, int, Function, Node)} with the
+     * {@code null} value for the last parameter
+     * 
+     * @see #bindChildren(Element, StateNode, int, Function, Node)
+     * 
+     * @param parent
+     *            parent Element, not {@code null}
+     * @param node
+     *            StateNode to ask a feature for, not {@code null}
+     * @param featureId
+     *            feature identifier of the {@code node}, not {@code null}
+     * @param nodeFactory
+     *            node factory which is used to produce an HTML node based on
+     *            child StateNode from the feature NodeList, not {@code null}
+     * @return an event remover that can be used for removing children changes
+     *         listener
+     */
     public static EventRemover bindChildren(Element parent, StateNode node,
-            int featureId) {
+            int featureId, Function<StateNode, Node> nodeFactory) {
+        return bindChildren(parent, node, featureId, nodeFactory, null);
+    }
+
+    /**
+     * Uses {@link NodeList} feature of the {@code node} identified by
+     * {@code featureId} to populate list of nodes. Creates the nodes using
+     * {@code nodeFactory} and append them to the {@code parent}.
+     * <p>
+     * The {@code beforeNode} parameter is used to add children to the
+     * {@code parent} before the {@code beforeNode}. It can be {@code null}.
+     * 
+     * @see #bindChildren(Element, StateNode, int, Function)
+     * 
+     * @param parent
+     *            parent Element, not {@code null}
+     * @param node
+     *            StateNode to ask a feature for, not {@code null}
+     * @param featureId
+     *            feature identifier of the {@code node}, not {@code null}
+     * @param nodeFactory
+     *            node factory which is used to produce an HTML node based on
+     *            child StateNode from the feature NodeList, not {@code null}
+     * @param beforeNode
+     *            node which is used as a bottom line for added children
+     * @return an event remover that can be used for removing children changes
+     *         listener
+     */
+    public static EventRemover bindChildren(Element parent, StateNode node,
+            int featureId, Function<StateNode, Node> nodeFactory,
+            Node beforeNode) {
         NodeList children = node.getList(featureId);
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
 
-            Node child = ElementBinder.createAndBind(childNode);
+            Node child = nodeFactory.apply(childNode);
 
-            parent.appendChild(child);
+            parent.insertBefore(child, beforeNode);
         }
 
         return children.addSpliceListener(e -> {
@@ -81,12 +140,14 @@ public class ElementBinder {
              * The change that gives a child node an element tag name might not
              * yet have been applied at this point.
              */
-            Reactive.addFlushListener(() -> handleChildrenSplice(parent, e));
+            Reactive.addFlushListener(() -> handleChildrenSplice(parent, e,
+                    nodeFactory, beforeNode));
         });
     }
 
     private static void handleChildrenSplice(Element element,
-            ListSpliceEvent event) {
+            ListSpliceEvent event, Function<StateNode, Node> nodeFactory,
+            Node beforeNode) {
         JsArray<?> remove = event.getRemove();
         for (int i = 0; i < remove.length(); i++) {
             StateNode childNode = (StateNode) remove.get(i);
@@ -105,19 +166,15 @@ public class ElementBinder {
             int insertIndex = event.getIndex();
             elemental.dom.NodeList childNodes = element.getChildNodes();
 
-            Node beforeRef;
+            Node beforeRef = beforeNode;
             if (insertIndex < childNodes.length()) {
                 // Insert before the node current at the target index
                 beforeRef = childNodes.item(insertIndex);
-            } else {
-                // Insert at the end
-                beforeRef = null;
             }
 
             for (int i = 0; i < add.length(); i++) {
                 Object newChildObject = add.get(i);
-                Node childNode = ElementBinder
-                        .createAndBind((StateNode) newChildObject);
+                Node childNode = nodeFactory.apply((StateNode) newChildObject);
 
                 element.insertBefore(childNode, beforeRef);
 

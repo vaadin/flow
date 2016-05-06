@@ -25,12 +25,9 @@ import org.junit.Test;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
-import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
-import com.vaadin.hummingbird.nodefeature.TemplateMap;
-import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 
 public class ForElementTemplateNodeTest {
 
@@ -165,13 +162,11 @@ public class ForElementTemplateNodeTest {
     private final StateNode createModel(Element templateRootElement, String key,
             Map<String, String>... map) {
 
-        Class[] classes = new Class[] { TemplateMap.class,
-                TemplateOverridesMap.class, ComponentMapping.class,
-                ModelMap.class, ParentGeneratorHolder.class, ModelList.class };
-        StateNode modelList = new StateNode(classes);
+        StateNode modelList = new StateNode(new Class[] { ModelList.class });
 
         for (Map<String, String> item : map) {
-            StateNode modelItem = new StateNode(classes);
+            StateNode modelItem = TemplateElementStateProvider
+                    .createSubModelNode();
             ModelMap modelItemMap = modelItem.getFeature(ModelMap.class);
             for (String itemKey : item.keySet()) {
                 modelItemMap.setValue(itemKey, item.get(itemKey));
