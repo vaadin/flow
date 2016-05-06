@@ -95,38 +95,44 @@ public class TemplateElementBinder {
 
     private static final class ForTemplateNodeUpdate implements Command {
 
-        private Element initialElement;
-        private Element parent;
+        private Comment anchor;
+        private Node beforeNode;
         private final StateNode stateNode;
         private final ForTemplateNode templateNode;
 
-        ForTemplateNodeUpdate(Element initialElement, StateNode stateNode,
+        ForTemplateNodeUpdate(Comment anchor, StateNode stateNode,
                 ForTemplateNode templateNode) {
-            this.initialElement = initialElement;
+            this.anchor = anchor;
             this.stateNode = stateNode;
             this.templateNode = templateNode;
         }
 
         @Override
         public void execute() {
-            if (parent == null) {
-                parent = initialElement.getParentElement();
-                assert parent != null;
-                initialElement = null;
+            Element parent = anchor.getParentElement();
+            if (beforeNode == null) {
+                beforeNode = anchor.getNextSibling();
             }
-            while (parent.hasChildNodes()) {
-                parent.removeChild(parent.getFirstChild());
+
+            JsArray<Double> children = templateNode.getChildren();
+            assert children.length() == 1;
+            int childId = children.get(0).intValue();
+
+            Node htmlNode = anchor.getNextSibling();
+            while (htmlNode != beforeNode) {
+                parent.removeChild(htmlNode);
+                htmlNode = anchor.getNextSibling();
             }
             NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
             MapProperty property = model
                     .getProperty(templateNode.getCollectionVariable());
             if (property.getValue() != null) {
                 StateNode node = (StateNode) property.getValue();
-                node.addUnregisterListener(
-                        event -> ElementBinder
-                                .bindChildren(parent, node,
-                                        NodeFeatures.TEMPLATE_MODELLIST)
-                                .remove());
+                EventRemover remover = ElementBinder.bindChildren(parent, node,
+                        NodeFeatures.TEMPLATE_MODELLIST,
+                        childNode -> createAndBind(childNode, childId),
+                        beforeNode);
+                node.addUnregisterListener(event -> remover.remove());
             }
         }
     }
@@ -227,25 +233,13 @@ public class TemplateElementBinder {
 
     private static Node createAndBindNgFor(StateNode stateNode,
             ForTemplateNode templateNode) {
-        JsArray<Double> children = templateNode.getChildren();
-        assert children.length() == 1;
-        int childId = children.get(0).intValue();
-        Node child = createAndBind(stateNode, childId);
-        assert child instanceof Element;
-        String tag = ((Element) child).getTagName();
-
-        /*
-         * Create a fake node just to return some node. It will be removed from
-         * its parent and replaced by the nodes created based on the template
-         * model
-         */
-        Element fake = Browser.getDocument().createElement(tag);
+        Comment anchor = Browser.getDocument().createComment(" *ngFor ");
 
         Computation computation = Reactive.runWhenDepedenciesChange(
-                () -> new ForTemplateNodeUpdate(fake, stateNode, templateNode));
+                new ForTemplateNodeUpdate(anchor, stateNode, templateNode));
         stateNode.addUnregisterListener(event -> computation.stop());
 
-        return fake;
+        return anchor;
     }
 
     private static Node createAndBindElement(StateNode stateNode,

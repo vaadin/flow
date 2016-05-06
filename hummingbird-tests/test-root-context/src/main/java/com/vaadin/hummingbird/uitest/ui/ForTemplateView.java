@@ -22,6 +22,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Template;
 
@@ -35,7 +36,7 @@ public class ForTemplateView extends Div implements View {
 
         public ForTemplate() {
             super(new ByteArrayInputStream(
-                    "<div><li *ngFor='let item of items' [value]='value'></div>"
+                    "<ul><div></div><li *ngFor='let item of items' class='a'>{{text}}<input [value]='key'></li><div></div></ul>"
                             .getBytes(StandardCharsets.UTF_8)));
         }
     }
@@ -45,8 +46,19 @@ public class ForTemplateView extends Div implements View {
 
         StateNode modelList = new StateNode(ModelList.class);
 
-        StateNode modelItem1 = new StateNode(classes);
+        StateNode modelItem1 = new StateNode(TemplateOverridesMap.class,
+                ModelMap.class);
+        modelItem1.getFeature(ModelMap.class).setValue("text", "item1");
+        modelItem1.getFeature(ModelMap.class).setValue("key", "text1");
+
+        StateNode modelItem2 = new StateNode(TemplateOverridesMap.class,
+                ModelMap.class);
+        modelItem2.getFeature(ModelMap.class).setValue("text", "item2");
+        modelItem2.getFeature(ModelMap.class).setValue("key", "text2");
+
         modelList.getFeature(ModelList.class).add(modelItem1);
+        modelList.getFeature(ModelList.class).add(modelItem2);
+
         template.getElement().getNode().getFeature(ModelMap.class)
                 .setValue("items", modelList);
         add(template);
