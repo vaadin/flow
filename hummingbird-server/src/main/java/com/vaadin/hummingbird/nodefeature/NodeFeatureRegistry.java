@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -109,6 +111,16 @@ public class NodeFeatureRegistry {
      */
     public static int getId(Class<? extends NodeFeature> nodeFeature) {
         return getData(nodeFeature).id;
+    }
+
+    /**
+     * Gets all registered feature types.
+     *
+     * @return an unmodifiable collection of feature types, not
+     *         <code>null</code>
+     */
+    public static Collection<Class<? extends NodeFeature>> getFeatures() {
+        return Collections.unmodifiableCollection(nodeFeatures.keySet());
     }
 
     private static NodeFeatureData getData(

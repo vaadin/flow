@@ -106,7 +106,7 @@ public class BasicElementBinder {
         listeners.push(bindSynchronizedPropertyEvents());
 
         listeners.push(ElementBinder.bindChildren(element, node,
-                NodeFeatures.ELEMENT_CHILDREN));
+                NodeFeatures.ELEMENT_CHILDREN, ElementBinder::createAndBind));
 
         listeners.push(node.addUnregisterListener(e -> remove()));
 
