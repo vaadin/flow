@@ -29,7 +29,7 @@ import jsinterop.annotations.JsType;
  * @author Vaadin Ltd
  */
 @JsType(isNative = true)
-public interface ForElementTemplateNode extends TemplateNode {
+public interface ForTemplateNode extends TemplateNode {
 
     /**
      * Gets the loop (inner scope) variable name.

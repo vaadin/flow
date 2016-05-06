@@ -98,10 +98,10 @@ public class TemplateElementBinder {
         private Element initialElement;
         private Element parent;
         private final StateNode stateNode;
-        private final ForElementTemplateNode templateNode;
+        private final ForTemplateNode templateNode;
 
         ForTemplateNodeUpdate(Element initialElement, StateNode stateNode,
-                ForElementTemplateNode templateNode) {
+                ForTemplateNode templateNode) {
             this.initialElement = initialElement;
             this.stateNode = stateNode;
             this.templateNode = templateNode;
@@ -109,16 +109,24 @@ public class TemplateElementBinder {
 
         @Override
         public void execute() {
-            if (parent != null) {
-                while (parent.hasChildNodes()) {
-                    parent.removeChild(parent.getFirstChild());
-                }
-                NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
-                MapProperty property = model
-                        .getProperty(templateNode.getCollectionVariable());
-            } else {
+            if (parent == null) {
                 parent = initialElement.getParentElement();
                 assert parent != null;
+                initialElement = null;
+            }
+            while (parent.hasChildNodes()) {
+                parent.removeChild(parent.getFirstChild());
+            }
+            NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            MapProperty property = model
+                    .getProperty(templateNode.getCollectionVariable());
+            if (property.getValue() != null) {
+                StateNode node = (StateNode) property.getValue();
+                node.addUnregisterListener(
+                        event -> ElementBinder
+                                .bindChildren(parent, node,
+                                        NodeFeatures.TEMPLATE_MODELLIST)
+                                .remove());
             }
         }
     }
@@ -175,9 +183,9 @@ public class TemplateElementBinder {
         case com.vaadin.hummingbird.template.ElementTemplateNode.TYPE:
             return createAndBindElement(stateNode,
                     (ElementTemplateNode) templateNode);
-        case /* TODO: ForNode type */"":
+        case com.vaadin.hummingbird.template.ForTemplateNode.TYPE:
             return createAndBindNgFor(stateNode,
-                    (ForElementTemplateNode) templateNode);
+                    (ForTemplateNode) templateNode);
         case com.vaadin.hummingbird.template.TextTemplateNode.TYPE:
             return createAndBindText(stateNode,
                     (TextTemplateNode) templateNode);
@@ -211,14 +219,14 @@ public class TemplateElementBinder {
 
     private static MapProperty getModelProperty(StateNode node,
             Binding binding) {
-        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
         return model.getProperty(key);
     }
 
     private static Node createAndBindNgFor(StateNode stateNode,
-            ForElementTemplateNode templateNode) {
+            ForTemplateNode templateNode) {
         JsArray<Double> children = templateNode.getChildren();
         assert children.length() == 1;
         int childId = children.get(0).intValue();

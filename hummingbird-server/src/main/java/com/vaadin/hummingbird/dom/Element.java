@@ -217,7 +217,8 @@ public class Element implements Serializable {
 
         if (!stateProvider.supports(node)) {
             throw new IllegalArgumentException(
-                    "BasicElementStateProvider does not support the given state node");
+                    stateProvider.getClass().getSimpleName()
+                            + " does not support the given state node");
         }
 
         this.stateProvider = stateProvider;
