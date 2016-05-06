@@ -421,7 +421,7 @@ public class TemplateElementStateProviderTest {
     }
 
     public static Element createElement(TemplateNode templateNode) {
-        StateNode stateNode = TemplateElementStateProvider.createNode();
+        StateNode stateNode = TemplateElementStateProvider.createRootNode();
         stateNode.getFeature(TemplateMap.class).setRootTemplate(templateNode);
 
         return Element.get(stateNode);
