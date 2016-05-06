@@ -95,14 +95,14 @@ public class TemplateElementBinder {
 
     private static final class ForTemplateNodeUpdate implements Command {
 
-        private Element initialElement;
+        private Node initialNode;
         private Element parent;
         private final StateNode stateNode;
         private final ForTemplateNode templateNode;
 
-        ForTemplateNodeUpdate(Element initialElement, StateNode stateNode,
+        ForTemplateNodeUpdate(Node initialElement, StateNode stateNode,
                 ForTemplateNode templateNode) {
-            this.initialElement = initialElement;
+            this.initialNode = initialElement;
             this.stateNode = stateNode;
             this.templateNode = templateNode;
         }
@@ -110,9 +110,9 @@ public class TemplateElementBinder {
         @Override
         public void execute() {
             if (parent == null) {
-                parent = initialElement.getParentElement();
+                parent = initialNode.getParentElement();
                 assert parent != null;
-                initialElement = null;
+                initialNode = null;
             }
             while (parent.hasChildNodes()) {
                 parent.removeChild(parent.getFirstChild());
@@ -122,11 +122,9 @@ public class TemplateElementBinder {
                     .getProperty(templateNode.getCollectionVariable());
             if (property.getValue() != null) {
                 StateNode node = (StateNode) property.getValue();
-                node.addUnregisterListener(
-                        event -> ElementBinder
-                                .bindChildren(parent, node,
-                                        NodeFeatures.TEMPLATE_MODELLIST)
-                                .remove());
+                EventRemover remover = ElementBinder.bindChildren(parent, node,
+                        NodeFeatures.TEMPLATE_MODELLIST);
+                node.addUnregisterListener(event -> remover.remove());
             }
         }
     }
@@ -231,21 +229,13 @@ public class TemplateElementBinder {
         assert children.length() == 1;
         int childId = children.get(0).intValue();
         Node child = createAndBind(stateNode, childId);
-        assert child instanceof Element;
-        String tag = ((Element) child).getTagName();
 
-        /*
-         * Create a fake node just to return some node. It will be removed from
-         * its parent and replaced by the nodes created based on the template
-         * model
-         */
-        Element fake = Browser.getDocument().createElement(tag);
-
-        Computation computation = Reactive.runWhenDepedenciesChange(
-                () -> new ForTemplateNodeUpdate(fake, stateNode, templateNode));
+        Computation computation = Reactive
+                .runWhenDepedenciesChange(() -> new ForTemplateNodeUpdate(child,
+                        stateNode, templateNode));
         stateNode.addUnregisterListener(event -> computation.stop());
 
-        return fake;
+        return child;
     }
 
     private static Node createAndBindElement(StateNode stateNode,
