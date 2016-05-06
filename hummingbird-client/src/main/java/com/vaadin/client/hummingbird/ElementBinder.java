@@ -27,7 +27,7 @@ import elemental.dom.Node;
  */
 public interface ElementBinder {
     /**
-     * Creates and binds a DOM node for the given state node. . For state nodes
+     * Creates and binds a DOM node for the given state node. For state nodes
      * based on templates, the root element of the template is returned.
      *
      * @param stateNode
