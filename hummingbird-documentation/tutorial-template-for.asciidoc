@@ -1,0 +1,92 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Creating Template Contents Dynamically Based on a List of Items
+
+The Template API provides you a way to generate elements based on a list of items
+by iterating them using a `*ngFor` for-loop.
+
+[source,html]
+----
+<table>
+  <tr>
+    <th>Name</th><th>Title</th><th>Email</th>
+  </tr>
+  <tr *ngFor="let employee of employees">
+    <td>{{name}}</td>
+    <td>{{title}}</td>
+    <td>{{email}}</td>
+  </tr>
+</table>
+----
+
+The above template might look like this once populated with a list of employees:
+
+[cols=">s,^m,e",options="header"]
+|==========================
+|Name   |Title     |Email
+|John D |Developer | jd@foo.bar
+|Jane D |Designer  | janed@foo.bar
+|Mike D |Architect | mikey@foo.bar
+|==========================
+
+Note the following things:
+
+* The `*ngFor` attribute marks the element that is generated for each item in a
+list. In the above example the table's rows and everything inside the row element
+`<tr>...</tr>` is created for each item in the list.
+* The value of the `*ngFor` attribute declares the items to loop and the name of
+the loop variable:
+** `let` precedes the name of the loop variable, e.g. _employee_. This
+variable is available for <<tutorial-template-data-binding#,data binding>> inside
+the element tags.
+** `of` precedes the name of the list inside the template model to iterate,
+e.g. _employees_.
+* There can be multiple `*ngFor` for-loops nested.
+
+[NOTE]
+Be careful with naming of the keys used in a template's model. You should try to
+avoid using the same key in multiple times for the same template's model.
+
+== Populating the List of Items
+
+The list of items for the templates model is populated on the server side template
+component. The API is currently very low level, and will be improved in the future,
+e.g. to provide more easy access to the model and allow passing collections and
+beans to it more easily.
+
+[source,java]
+----
+public class EmployeesTable extends Template {
+
+  public void addEmployee(String name, String title, String email) {
+    // create a new item representing an employee in inside the model
+    StateNode employeeItem = new StateNode(ModelMap.class);
+
+    // populate the values for the employee item
+    ModelMap employeeModel = employeeItem.getFeature(ModelMap.class);
+    employeeModel.setValue("name", name);
+    employeeModel.setValue("title", name);
+    employeeModel.setValue("email", name);
+
+    // add the new item to the list of employees
+    getEmployeesList().add(employeeItem);
+  }
+
+  // helper for fetching the employees list from the model
+  private ModelList getEmployeesList() {
+    StateNode employees = (StateNode) getModel().getValue("employees");
+
+    // create the employees list if necessary
+    if (employees == null) {
+      employees = new StateNode(ModelList.class);
+      getModel().setValue("employees", employees);
+    }
+
+    return employees.getFeature(ModelList.class);
+  }
+  
+  // helper for accessing the model of the template
+  private ModelMap getModel() {
+    return getElement().getNode().getFeature(ModelMap.class);
+  }
+}
+----
