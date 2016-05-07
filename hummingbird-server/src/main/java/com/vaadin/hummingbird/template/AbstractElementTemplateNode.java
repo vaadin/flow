@@ -24,19 +24,18 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
  *
  * @author Vaadin Ltd
  */
-public abstract class SingleElementTemplateNode extends TemplateNode {
+public abstract class AbstractElementTemplateNode extends TemplateNode {
 
     private final ElementStateProvider stateProvider;
 
     /**
-     * Creates a new single element template node with the given node as its
-     * parent.
+     * Creates a new element template node with the given node as its parent.
      *
      * @param parent
      *            the parent of the new template node, or null if the node is
      *            the root of a template tree
      */
-    public SingleElementTemplateNode(TemplateNode parent) {
+    public AbstractElementTemplateNode(TemplateNode parent) {
         super(parent);
 
         stateProvider = createStateProvider(this);
@@ -48,7 +47,7 @@ public abstract class SingleElementTemplateNode extends TemplateNode {
      * do in this case even though it's generally a dangerous operation.
      */
     private static ElementStateProvider createStateProvider(
-            SingleElementTemplateNode node) {
+            AbstractElementTemplateNode node) {
         assert node != null;
 
         ElementStateProvider stateProvider = node.createStateProvider();
@@ -80,5 +79,10 @@ public abstract class SingleElementTemplateNode extends TemplateNode {
                     "0 is the only valid element index");
         }
         return Element.get(templateStateNode, stateProvider);
+    }
+
+    @Override
+    public Element getParentElement(StateNode node) {
+        return getElement(0, node);
     }
 }

@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -59,7 +61,7 @@ public class TemplateParserTest {
         Assert.assertEquals(2, rootNode.getChildCount());
 
         TextTemplateNode textChild = (TextTemplateNode) rootNode.getChild(0);
-        TemplateBinding binding = textChild.getTextBinding();
+        BindingValueProvider binding = textChild.getTextBinding();
 
         StateNode node = new StateNode(ModelMap.class);
 
@@ -69,6 +71,34 @@ public class TemplateParserTest {
         node.getFeature(ModelMap.class).setValue("bar", value);
 
         Assert.assertEquals(value, binding.getValue(node));
+    }
+
+    @Test
+    public void parseTemplateProperty() {
+        ElementTemplateNode rootNode = (ElementTemplateNode) TemplateParser
+                .parse("<input [value]='foo'></input>");
+
+        Assert.assertEquals("input", rootNode.getTag());
+
+        Assert.assertEquals(0, rootNode.getAttributeNames().count());
+        Assert.assertEquals(1, rootNode.getPropertyNames().count());
+
+        Optional<BindingValueProvider> binding = rootNode
+                .getPropertyBinding("value");
+        Assert.assertTrue(binding.isPresent());
+
+        StateNode node = new StateNode(ModelMap.class);
+
+        Assert.assertNull(binding.get().getValue(node));
+
+        node.getFeature(ModelMap.class).setValue("foo", "bar");
+
+        Assert.assertEquals("bar", binding.get().getValue(node));
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseTemplateIncorrectProperty() {
+        TemplateParser.parse("<input [value='foo'></input>");
     }
 
     @Test(expected = TemplateParseException.class)
@@ -105,6 +135,45 @@ public class TemplateParserTest {
     @Test(expected = TemplateParseException.class)
     public void multipleChildSlots() {
         TemplateParser.parse("<div>@child@<span>@child@</span></div>");
+    }
+
+    @Test
+    public void parseTopComment() {
+        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
+                .parse("<!-- comment --><div></div>");
+        Assert.assertEquals(0, node.getChildCount());
+        Assert.assertEquals("div", node.getTag());
+    }
+
+    @Test
+    public void parseInnerComment() {
+        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
+                .parse("<div> <!-- comment --> <input> </div>");
+        Assert.assertEquals(4, node.getChildCount());
+        Assert.assertEquals("div", node.getTag());
+        Assert.assertEquals("input",
+                ((ElementTemplateNode) node.getChild(2)).getTag());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ngForElementAsRoot() {
+        TemplateParser.parse(
+                "<a class='item' *ngFor='let  item      of list'>{{item}}</a>");
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void ngForElementMissingCollection() {
+        TemplateParser.parse(
+                "<div><a class='item' *ngFor='let item'>{{item}}</a></div>");
+    }
+
+    @Test
+    public void ngForElement() {
+        TemplateNode node = TemplateParser.parse(
+                "<div><a class='item' *ngFor='let  item      of list'>{{item}}</a></div>");
+        ForTemplateNode forNode = (ForTemplateNode) node.getChild(0);
+        Assert.assertEquals("list", forNode.getCollectionVariable());
+        Assert.assertEquals("item", forNode.getLoopVariable());
     }
 
 }

@@ -17,8 +17,15 @@ package com.vaadin.hummingbird.template;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.StringTokenizer;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
@@ -34,6 +41,9 @@ public class TemplateParser {
 
     private static final String ROOT_CLARIFICATION = "If the template contains <html> and <body> tags,"
             + " then only the contents of the <body> tag will be used.";
+
+    // Jsoup converts everything to lowercase
+    private static final String NG_FOR = "*ngFor".toLowerCase(Locale.ENGLISH);
 
     private TemplateParser() {
         // Only static methods
@@ -89,16 +99,19 @@ public class TemplateParser {
             }
         }
 
-        TemplateNodeBuilder templateBuilder = createBuilder(children.get(0));
-
-        return templateBuilder.build(null);
+        Optional<TemplateNodeBuilder> templateBuilder = createBuilder(
+                children.get(0));
+        assert templateBuilder.isPresent();
+        return templateBuilder.get().build(null);
     }
 
-    private static TemplateNodeBuilder createBuilder(Node node) {
+    private static Optional<TemplateNodeBuilder> createBuilder(Node node) {
         if (node instanceof Element) {
-            return createElementBuilder((Element) node);
+            return Optional.of(createElementBuilder((Element) node));
         } else if (node instanceof TextNode) {
-            return createTextBuilder((TextNode) node);
+            return Optional.of(createTextBuilder((TextNode) node));
+        } else if (node instanceof Comment) {
+            return Optional.empty();
         } else {
             throw new IllegalArgumentException(
                     "Unsupported node type: " + node.getClass().getName());
@@ -114,37 +127,91 @@ public class TemplateParser {
         } else if (text.startsWith("{{") && text.endsWith("}}")) {
             String key = text.substring(2);
             key = key.substring(0, key.length() - 2);
-            return new TextTemplateBuilder(new TextValueBinding(key));
+            return new TextTemplateBuilder(new ModelValueBindingProvider(key));
         } else {
             // No special bindings to support for now
-            return new TextTemplateBuilder(new StaticBinding(text));
+            return new TextTemplateBuilder(
+                    new StaticBindingValueProvider(text));
         }
     }
 
-    private static ElementTemplateBuilder createElementBuilder(
-            Element element) {
-        ElementTemplateBuilder builder = new ElementTemplateBuilder(
-                element.tagName());
-
-        element.attributes().forEach(attr -> {
-            String name = attr.getKey();
-
-            if (name.startsWith("(") || name.startsWith("[")) {
+    private static TemplateNodeBuilder createElementBuilder(Element element) {
+        if (element.hasAttr(NG_FOR)) {
+            String ngFor = element.attr(NG_FOR);
+            element.removeAttr(NG_FOR);
+            List<String> tokens = parseNgFor(ngFor);
+            if (tokens.size() != 4 || !"let".equals(tokens.get(0))
+                    || !"of".equals(tokens.get(2))) {
                 throw new TemplateParseException(
-                        "Dynamic binding support has not yet been implemented");
-            } else {
-                /*
-                 * Regular attribute names in the template, i.e. name not
-                 * starting with [ or (, are used as static attributes on the
-                 * target element.
-                 */
-                builder.setAttribute(name, new StaticBinding(attr.getValue()));
+                        "The 'ngFor' template is supported only in the form *ngFor='let item of list', but template contains "
+                                + ngFor);
             }
-        });
 
-        element.childNodes().stream().map(TemplateParser::createBuilder)
-                .forEach(builder::addChild);
+            Optional<TemplateNodeBuilder> subBuilder = TemplateParser
+                    .createBuilder(element);
+            if (!subBuilder.isPresent()) {
+                throw new IllegalStateException(
+                        "Sub builder mising for *ngFor element "
+                                + element.html());
+            }
+            if (!(subBuilder.get() instanceof ElementTemplateBuilder)) {
+                throw new IllegalStateException(
+                        "Sub builder for *ngFor element " + element.html()
+                                + " of invalid type: "
+                                + subBuilder.get().getClass().getName());
+            }
 
-        return builder;
+            return new ForTemplateBuilder(tokens.get(1), tokens.get(3),
+                    (ElementTemplateBuilder) subBuilder.get());
+        } else {
+            ElementTemplateBuilder builder = new ElementTemplateBuilder(
+                    element.tagName());
+
+            element.attributes().forEach(attr -> setBinding(attr, builder));
+
+            element.childNodes().stream().map(TemplateParser::createBuilder)
+                    .filter(Optional::isPresent).map(Optional::get)
+                    .forEach(builder::addChild);
+
+            return builder;
+        }
+    }
+
+    private static List<String> parseNgFor(String ngFor) {
+        List<String> tokens = new ArrayList<>();
+        StringTokenizer tokenizer = new StringTokenizer(ngFor);
+        while (tokenizer.hasMoreTokens()) {
+            tokens.add(tokenizer.nextToken());
+        }
+        return tokens;
+    }
+
+    private static void setBinding(Attribute attribute,
+            ElementTemplateBuilder builder) {
+        String name = attribute.getKey();
+
+        if (name.startsWith("(")) {
+            throw new TemplateParseException(
+                    "Dynamic binding support has not yet been implemented");
+        } else if (name.startsWith("[")) {
+            if (!name.endsWith("]")) {
+                StringBuilder msg = new StringBuilder(
+                        "Property binding should be in the form [property]='value' but template contains '");
+                msg.append(attribute.toString()).append("'.");
+                throw new TemplateParseException(msg.toString());
+            }
+            String key = name;
+            key = key.substring(1);
+            key = key.substring(0, key.length() - 1);
+            builder.setProperty(key,
+                    new ModelValueBindingProvider(attribute.getValue()));
+        } else {
+            /*
+             * Regular attribute names in the template, i.e. name not starting
+             * with [ or (, are used as static attributes on the target element.
+             */
+            builder.setAttribute(name,
+                    new StaticBindingValueProvider(attribute.getValue()));
+        }
     }
 }

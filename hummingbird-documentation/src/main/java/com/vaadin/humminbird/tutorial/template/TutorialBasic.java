@@ -33,7 +33,7 @@ public class TutorialBasic {
         }
 
         public String getName() {
-            return model.getValue("name");
+            return (String) model.getValue("name");
         }
     }
 

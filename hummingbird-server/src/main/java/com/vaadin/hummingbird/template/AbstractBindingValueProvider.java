@@ -21,13 +21,14 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 /**
- * Abstract template binding implementation which provides method to produce
- * initial JsonObject for {@link #toJson()} method.
+ * Abstract binding value provider implementation which provides method to
+ * produce initial JsonObject for {@link #toJson()} method.
  * 
  * @author Vaadin Ltd
  *
  */
-public abstract class AbstractTemplateBinding implements TemplateBinding {
+public abstract class AbstractBindingValueProvider
+        implements BindingValueProvider {
 
     /**
      * Constructs initial {@link JsonObject} instance for {@link #toJson()}
@@ -56,7 +57,7 @@ public abstract class AbstractTemplateBinding implements TemplateBinding {
      *            TemplateBinding.VALUE_PROPERTY property value
      * @return
      */
-    protected JsonObject makeJsonObject(String type, String value) {
+    protected JsonObject makeJsonObject(String type, Object value) {
         JsonObject json = Json.createObject();
 
         json.put(TYPE_PROPERTY, type);

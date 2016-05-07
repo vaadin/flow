@@ -26,12 +26,12 @@ public class ChildSlotBuilder implements TemplateNodeBuilder {
 
     @Override
     public TemplateNode build(TemplateNode parent) {
-        assert parent instanceof SingleElementTemplateNode : "Child slot parent must be an instance of "
-                + SingleElementTemplateNode.class;
+        assert parent instanceof AbstractElementTemplateNode : "Child slot parent must be an instance of "
+                + AbstractElementTemplateNode.class;
 
         verifyOnlyChildNode(parent);
 
-        return new ChildSlotNode((SingleElementTemplateNode) parent);
+        return new ChildSlotNode((AbstractElementTemplateNode) parent);
     }
 
     private static void verifyOnlyChildNode(TemplateNode parent) {

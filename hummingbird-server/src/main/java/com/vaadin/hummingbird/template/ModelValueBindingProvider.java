@@ -21,34 +21,37 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import elemental.json.JsonValue;
 
 /**
- * A template binding that produces dynamic text value for a text node.
+ * A template binding value provider that produces dynamic value based on a
+ * model.
  *
  * @author Vaadin Ltd
  */
-public class TextValueBinding extends AbstractTemplateBinding {
+public class ModelValueBindingProvider extends AbstractBindingValueProvider {
 
     /**
-     * Type identifier used for text bindings in JSON messages.
+     * Type identifier used for model data bindings in JSON messages.
      */
-    public static final String TYPE = "text";
+    public static final String TYPE = "model";
 
     private final String key;
 
     /**
-     * Creates a binding with the given key.
+     * Creates a binding value provider with the given {@code key}.
      * <p>
      * Value for the {@code key} is stored inside a {@link StateNode} directly
-     * (via features) so only {@code key} is required to be able to get a value.
+     * (via features) so only {@code key} is used to retrieve a dynamic value
+     * from the node.
      *
      * @param key
-     *            the key of the binding
+     *            the key of the binding, not null
      */
-    public TextValueBinding(String key) {
+    public ModelValueBindingProvider(String key) {
+        assert key != null;
         this.key = key;
     }
 
     @Override
-    public String getValue(StateNode node) {
+    public Object getValue(StateNode node) {
         return node.getFeature(ModelMap.class).getValue(key);
     }
 

@@ -44,7 +44,7 @@ import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.hummingbird.template.VariableTemplateNode;
+import com.vaadin.hummingbird.template.AbstractControlTemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
@@ -215,10 +215,10 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
         // Parent finding for all different state providers eventually delegate
         // here, so we can do shared magic here
-        Optional<VariableTemplateNode> parentGenerator = node
+        Optional<AbstractControlTemplateNode> parentGenerator = node
                 .getFeature(ParentGeneratorHolder.class).getParentGenerator();
         if (parentGenerator.isPresent()) {
-            return parentGenerator.get().getParent(node);
+            return parentGenerator.get().getParentElement(node);
         }
 
         return Element.get(parentNode);

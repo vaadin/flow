@@ -22,7 +22,7 @@ package com.vaadin.hummingbird.template;
  */
 public class TextTemplateBuilder implements TemplateNodeBuilder {
 
-    private TemplateBinding binding;
+    private BindingValueProvider binding;
 
     /**
      * Creates a new text template builder.
@@ -30,7 +30,7 @@ public class TextTemplateBuilder implements TemplateNodeBuilder {
      * @param binding
      *            the text content binding
      */
-    public TextTemplateBuilder(TemplateBinding binding) {
+    public TextTemplateBuilder(BindingValueProvider binding) {
         assert binding != null;
 
         this.binding = binding;
@@ -41,7 +41,7 @@ public class TextTemplateBuilder implements TemplateNodeBuilder {
      *
      * @return the text content binding, not <code>null</code>
      */
-    public TemplateBinding getBinding() {
+    public BindingValueProvider getBinding() {
         return binding;
     }
 

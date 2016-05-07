@@ -16,6 +16,7 @@
 package com.vaadin.client.hummingbird.template;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import com.vaadin.client.Command;
 import com.vaadin.client.WidgetUtil;
@@ -29,8 +30,8 @@ import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.StaticBinding;
-import com.vaadin.hummingbird.template.TextValueBinding;
+import com.vaadin.hummingbird.template.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 
 import elemental.client.Browser;
 import elemental.dom.Comment;
@@ -169,27 +170,18 @@ public class TemplateElementBinder {
     private static Node createAndBindText(StateNode stateNode,
             TextTemplateNode templateNode) {
         Binding binding = templateNode.getTextBinding();
-        if (binding.getType().equals(TextValueBinding.TYPE)) {
-            Text node = Browser.getDocument().createTextNode("");
-            Computation computation = Reactive.runWhenDepedenciesChange(
-                    () -> updateTextTemplateValue(node, stateNode, binding));
-            stateNode.addUnregisterListener(event -> computation.stop());
-            return node;
-        } else {
-            // Nothing to "bind" yet with only static bindings
-            assert binding.getType().equals(StaticBinding.TYPE);
-            return Browser.getDocument()
-                    .createTextNode(getStaticBindingValue(binding));
-        }
+        Text node = Browser.getDocument().createTextNode("");
+        bind(stateNode, binding, value -> node
+                .setTextContent(value.map(Object::toString).orElse("")));
+        return node;
     }
 
-    private static void updateTextTemplateValue(Text domNode, StateNode node,
+    private static MapProperty getModelProperty(StateNode node,
             Binding binding) {
-        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
-        String text = model.getProperty(key).getValueOrDefault("");
-        domNode.setTextContent(text);
+        return model.getProperty(key);
     }
 
     private static Node createAndBindElement(StateNode stateNode,
@@ -197,19 +189,14 @@ public class TemplateElementBinder {
         String tag = templateNode.getTag();
         Element element = Browser.getDocument().createElement(tag);
 
-        JsonObject properties = templateNode.getProperties();
-        if (properties != null) {
-            for (String name : properties.keys()) {
-                Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
-                WidgetUtil.setJsProperty(element, name,
-                        getStaticBindingValue(binding));
-            }
-        }
+        bindProperties(stateNode, templateNode, element);
 
         JsonObject attributes = templateNode.getAttributes();
         if (attributes != null) {
             for (String name : attributes.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(attributes.get(name));
+                // Nothing to "bind" yet with only static bindings
+                assert binding.getType().equals(StaticBindingValueProvider.TYPE);
                 element.setAttribute(name, getStaticBindingValue(binding));
             }
         }
@@ -250,6 +237,32 @@ public class TemplateElementBinder {
         }
 
         return element;
+    }
+
+    private static void bindProperties(StateNode stateNode,
+            ElementTemplateNode templateNode, Element element) {
+        JsonObject properties = templateNode.getProperties();
+        if (properties != null) {
+            for (String name : properties.keys()) {
+                Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
+                bind(stateNode, binding, value -> WidgetUtil
+                        .setJsProperty(element, name, value.orElse(null)));
+            }
+        }
+    }
+
+    private static void bind(StateNode stateNode, Binding binding,
+            Consumer<Optional<Object>> setOperation) {
+        if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
+            Computation computation = Reactive.runWhenDepedenciesChange(
+                    () -> setOperation.accept(Optional.ofNullable(
+                            getModelProperty(stateNode, binding).getValue())));
+            stateNode.addUnregisterListener(event -> computation.stop());
+        } else {
+            // Only static bindings is known as a final call
+            assert binding.getType().equals(StaticBindingValueProvider.TYPE);
+            setOperation.accept(Optional.of(getStaticBindingValue(binding)));
+        }
     }
 
     private static void bindOverrideNode(Element element,

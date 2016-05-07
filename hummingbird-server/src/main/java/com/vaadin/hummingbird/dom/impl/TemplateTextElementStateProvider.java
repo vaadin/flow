@@ -19,7 +19,7 @@ import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.TextTemplateNode;
 import com.vaadin.ui.Component;
 
@@ -31,6 +31,7 @@ import com.vaadin.ui.Component;
  */
 public class TemplateTextElementStateProvider
         extends AbstractTextElementStateProvider {
+
     private final TextTemplateNode templateNode;
 
     /**
@@ -47,12 +48,18 @@ public class TemplateTextElementStateProvider
 
     @Override
     public boolean supports(StateNode node) {
-        return node.hasFeature(TemplateMap.class);
+        /*
+         * ModelMap is the only one that is strictly needed. Other features such
+         * as TemplateMap might be present in most cases, but those are not
+         * needed e.g. for a text node inside a *ngFor since it's bound to a sub
+         * model node.
+         */
+        return node.hasFeature(ModelMap.class);
     }
 
     @Override
     public String getTextContent(StateNode node) {
-        return templateNode.getTextBinding().getValue(node, "");
+        return templateNode.getTextBinding().getValue(node, "").toString();
     }
 
     @Override

@@ -25,7 +25,7 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  */
-public class TextTemplateNode extends SingleElementTemplateNode {
+public class TextTemplateNode extends AbstractElementTemplateNode {
     /**
      * Type value for text template nodes in JSON messages.
      */
@@ -36,7 +36,7 @@ public class TextTemplateNode extends SingleElementTemplateNode {
      */
     public static final String BINDING_KEY = "binding";
 
-    private final TemplateBinding textBinding;
+    private final BindingValueProvider textBinding;
 
     /**
      * Creates a new text node with the given content binding.
@@ -47,7 +47,7 @@ public class TextTemplateNode extends SingleElementTemplateNode {
      * @param textBinding
      *            the binding for the text content
      */
-    public TextTemplateNode(TemplateNode parent, TemplateBinding textBinding) {
+    public TextTemplateNode(TemplateNode parent, BindingValueProvider textBinding) {
         super(parent);
         assert textBinding != null;
 
@@ -59,7 +59,7 @@ public class TextTemplateNode extends SingleElementTemplateNode {
      *
      * @return the text content binding, not <code>null</code>
      */
-    public TemplateBinding getTextBinding() {
+    public BindingValueProvider getTextBinding() {
         return textBinding;
     }
 

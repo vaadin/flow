@@ -36,7 +36,6 @@ import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
-import com.vaadin.hummingbird.template.SingleElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
@@ -50,10 +49,19 @@ import com.vaadin.ui.Template;
  */
 public class TemplateElementStateProvider implements ElementStateProvider {
     @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] features = new Class[] {
-            TemplateMap.class, TemplateOverridesMap.class,
-            ComponentMapping.class, ModelMap.class,
+    private static Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
+            TemplateOverridesMap.class, ModelMap.class };
+
+    // Node features only needed for a state node that represents the root of a
+    // template
+    @SuppressWarnings("unchecked")
+    private static Class<? extends NodeFeature>[] rootOnlyFeatures = new Class[] {
+            ComponentMapping.class, TemplateMap.class,
             ParentGeneratorHolder.class };
+
+    private static Class<? extends NodeFeature>[] rootNodeFeatures = Stream
+            .concat(Stream.of(requiredFeatures), Stream.of(rootOnlyFeatures))
+            .toArray(Class[]::new);
 
     private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
     private ElementTemplateNode templateNode;
@@ -71,7 +79,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public boolean supports(StateNode node) {
-        return node.hasFeature(TemplateMap.class);
+        return Stream.of(requiredFeatures).allMatch(node::hasFeature);
     }
 
     @Override
@@ -93,7 +101,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public String getAttribute(StateNode node, String attribute) {
         return templateNode.getAttributeBinding(attribute)
-                .map(binding -> binding.getValue(node, "")).orElse(null);
+                .map(binding -> binding.getValue(node, ""))
+                .map(Object::toString).orElse(null);
     }
 
     @Override
@@ -130,10 +139,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         assert node != null;
         assert templateNode != null;
 
-        return templateNode.getParent().map(parent -> {
-            assert parent instanceof SingleElementTemplateNode;
-            return parent.getElement(0, node);
-        }).orElseGet(() -> BasicElementStateProvider.get().getParent(node));
+        return templateNode.getParent()
+                .map(parent -> parent.getParentElement(node)).orElseGet(
+                        () -> BasicElementStateProvider.get().getParent(node));
     }
 
     @Override
@@ -323,11 +331,22 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     /**
-     * Creates a new state node with all features needed for a template.
+     * Creates a new state node with all features needed for the root node of a
+     * template.
      *
      * @return a new state node, not <code>null</code>
      */
-    public static StateNode createNode() {
-        return new StateNode(features);
+    public static StateNode createRootNode() {
+        return new StateNode(rootNodeFeatures);
+    }
+
+    /**
+     * Creates a new state node with all features needed for a state node use as
+     * a sub model.
+     *
+     * @return a new state node, not <code>null</code>
+     */
+    public static StateNode createSubModelNode() {
+        return new StateNode(requiredFeatures);
     }
 }

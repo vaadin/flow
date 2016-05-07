@@ -52,8 +52,6 @@ public class TextElementBinder {
                 () -> text.setData((String) textProperty.getValue()));
 
         node.addUnregisterListener(e -> remove());
-
-        node.setDomNode(text);
     }
 
     /**

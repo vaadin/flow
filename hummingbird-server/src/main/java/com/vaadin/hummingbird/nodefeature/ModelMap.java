@@ -15,11 +15,13 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.io.Serializable;
+
 import com.vaadin.hummingbird.StateNode;
 
 /**
- * Data model feature for template data binding.
- * 
+ * Map for model values used in data binding in templates.
+ *
  * @author Vaadin Ltd
  *
  */
@@ -44,20 +46,40 @@ public class ModelMap extends NodeMap {
      * @param value
      *            value to be associated with the specified key
      */
-    public void setValue(String key, String value) {
+    public void setValue(String key, Serializable value) {
         assert key != null;
         put(key, value);
     }
 
     /**
      * Gets the value corresponding to the given key.
-     * 
+     *
      * @param key
      *            the key to get a value for
      * @return the value corresponding to the key; <code>null</code> if there is
      *         no value stored, or if <code>null</code> is stored as a value
      */
-    public String getValue(String key) {
-        return (String) get(key);
+    public Serializable getValue(String key) {
+        return (Serializable) get(key);
+    }
+
+    /**
+     * Checks whether a value is stored for the given key.
+     * <p>
+     * If method {@link #setValue(String, Serializable)} has never been called
+     * for the {@code key} then {@code false} is returned. Otherwise (even if it
+     * has been called with {@code null} as a value) it returns {@code true}. It
+     * means that {@link #getValue(String)} may return {@code null} at the same
+     * time when {@link #hasValue(String)} returns {@code true}.
+     *
+     * @see #setValue(String, Serializable)
+     *
+     * @param key
+     *            the key to check a value for
+     * @return <code>true</code> if there is a value stored; <code>false</code>
+     *         if no value is stored
+     */
+    public boolean hasValue(String key) {
+        return super.contains(key);
     }
 }
