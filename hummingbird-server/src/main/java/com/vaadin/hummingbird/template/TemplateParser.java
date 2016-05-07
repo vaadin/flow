@@ -45,6 +45,12 @@ public class TemplateParser {
     // Jsoup converts everything to lowercase
     private static final String NG_FOR = "*ngFor".toLowerCase(Locale.ENGLISH);
 
+    /**
+     * Threadlocal for tracking whether parser is inside a for loop or not. To
+     * be completely removed once scopes are properly implemented.
+     */
+    private static ThreadLocal<String> insideFor = new ThreadLocal<>();
+
     private TemplateParser() {
         // Only static methods
     }
@@ -78,7 +84,6 @@ public class TemplateParser {
      */
     public static TemplateNode parse(String templateString) {
         assert templateString != null;
-
         Document document = Jsoup.parseBodyFragment(templateString);
 
         return parse(document);
@@ -127,7 +132,8 @@ public class TemplateParser {
         } else if (text.startsWith("{{") && text.endsWith("}}")) {
             String key = text.substring(2);
             key = key.substring(0, key.length() - 2);
-            return new TextTemplateBuilder(new ModelValueBindingProvider(key));
+            return new TextTemplateBuilder(new ModelValueBindingProvider(
+                    stripForLoopVariableIfNeeded(key)));
         } else {
             // No special bindings to support for now
             return new TextTemplateBuilder(
@@ -147,8 +153,19 @@ public class TemplateParser {
                                 + ngFor);
             }
 
-            Optional<TemplateNodeBuilder> subBuilder = TemplateParser
-                    .createBuilder(element);
+            String loopVariable = tokens.get(1);
+            if (insideFor.get() != null) {
+                throw new TemplateParseException(
+                        "Nested *ngFor are currently not supported");
+            }
+
+            Optional<TemplateNodeBuilder> subBuilder;
+            try {
+                insideFor.set(loopVariable);
+                subBuilder = TemplateParser.createBuilder(element);
+            } finally {
+                insideFor.remove();
+            }
             if (!subBuilder.isPresent()) {
                 throw new IllegalStateException(
                         "Sub builder mising for *ngFor element "
@@ -161,7 +178,7 @@ public class TemplateParser {
                                 + subBuilder.get().getClass().getName());
             }
 
-            return new ForTemplateBuilder(tokens.get(1), tokens.get(3),
+            return new ForTemplateBuilder(loopVariable, tokens.get(3),
                     (ElementTemplateBuilder) subBuilder.get());
         } else {
             ElementTemplateBuilder builder = new ElementTemplateBuilder(
@@ -203,8 +220,8 @@ public class TemplateParser {
             String key = name;
             key = key.substring(1);
             key = key.substring(0, key.length() - 1);
-            builder.setProperty(key,
-                    new ModelValueBindingProvider(attribute.getValue()));
+            builder.setProperty(key, new ModelValueBindingProvider(
+                    stripForLoopVariableIfNeeded(attribute.getValue())));
         } else {
             /*
              * Regular attribute names in the template, i.e. name not starting
@@ -212,6 +229,32 @@ public class TemplateParser {
              */
             builder.setAttribute(name,
                     new StaticBindingValueProvider(attribute.getValue()));
+        }
+    }
+
+    /**
+     * Ensure the given model key starts with the for loop variable and a dot if
+     * inside a ngFor. Also strips the loop variable prefix so the rest of the
+     * code, which does not know anything about namespacing, works.
+     *
+     * @param modelKey
+     *            the model key to strip the prefix from
+     * @return the original model key if not inside an ngFor or a stripped key
+     *         if inside an ngFor
+     */
+    private static String stripForLoopVariableIfNeeded(String modelKey) {
+        String forLoopVariable = insideFor.get();
+        if (forLoopVariable != null) {
+            if (!modelKey.startsWith(forLoopVariable + ".")) {
+                StringBuilder msg = new StringBuilder(
+                        "Property binding inside a for loop must currently bind to the loop variable, i.e. start with '"
+                                + forLoopVariable + ".'");
+                throw new TemplateParseException(msg.toString());
+            } else {
+                return modelKey.substring(forLoopVariable.length() + 1);
+            }
+        } else {
+            return modelKey;
         }
     }
 }
