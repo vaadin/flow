@@ -88,7 +88,7 @@ public class ForElementTemplateNodeTest {
     @Test
     public void oneChildWithTextBinding() {
         TemplateNode divTemplateNode = TemplateParser.parse(
-                "<div><li *ngFor='let item of items' foo='static'>{{text}}</li></div>");
+                "<div><li *ngFor='let item of items' foo='static'>{{item.text}}</li></div>");
         TemplateNode forTemplateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
 
@@ -104,7 +104,7 @@ public class ForElementTemplateNodeTest {
     @Test
     public void twoChildrenWithTextBinding() {
         TemplateNode divTemplateNode = TemplateParser.parse(
-                "<div><li *ngFor='let item of items' foo='static'>{{text}}</li></div>");
+                "<div><li *ngFor='let item of items' foo='static'>{{item.text}}</li></div>");
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
 
@@ -124,7 +124,7 @@ public class ForElementTemplateNodeTest {
     @Test
     public void oneChildWithPropertyBinding() {
         TemplateNode divTemplateNode = TemplateParser.parse(
-                "<div><li *ngFor='let item of items' [value]='value'></div>");
+                "<div><li *ngFor='let item of items' [value]='item.value'></div>");
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
 
@@ -140,7 +140,7 @@ public class ForElementTemplateNodeTest {
     @Test
     public void twoChildrenWithPropertyBinding() {
         TemplateNode divTemplateNode = TemplateParser.parse(
-                "<div><li *ngFor='let item of items' [value]='value'></div>");
+                "<div><li *ngFor='let item of items' [value]='item.value'></div>");
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
 
@@ -157,7 +157,7 @@ public class ForElementTemplateNodeTest {
                 templateNode.getElement(1, model).getProperty("value"));
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "unchecked" })
     @SafeVarargs
     private final StateNode createModel(Element templateRootElement, String key,
             Map<String, String>... map) {
