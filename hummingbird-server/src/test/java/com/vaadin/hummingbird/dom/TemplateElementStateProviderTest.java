@@ -421,6 +421,18 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    public void templateBoundClassAttribute() {
+        Element element = createElement("<div class='foo bar'></div>");
+
+        Assert.assertEquals("foo bar", element.getAttribute("class"));
+
+        ClassList classList = element.getClassList();
+        Assert.assertEquals(2, classList.size());
+        Assert.assertTrue(classList.contains("foo"));
+        Assert.assertTrue(classList.contains("bar"));
+    }
+
+    @Test
     public void requiredNodeFeatures() {
         @SuppressWarnings("unchecked")
         Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
