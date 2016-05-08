@@ -43,16 +43,16 @@ public final class ElementBinder {
      *            <code>null</code>
      * @return the DOM node, not <code>null</code>
      */
-    public static Node createAndBind(StateNode stateNode) {
+    public static Node createAndBind(StateNode stateNode, VariableScope scope) {
         assert stateNode != null;
 
         Node node;
         if (stateNode.hasFeature(NodeFeatures.TEXT_NODE)) {
-            node = TextElementBinder.createAndBind(stateNode);
+            node = TextElementBinder.createAndBind(stateNode, scope);
         } else if (stateNode.hasFeature(NodeFeatures.TEMPLATE)) {
-            node = TemplateElementBinder.createAndBind(stateNode);
+            node = TemplateElementBinder.createAndBind(stateNode, scope);
         } else if (stateNode.hasFeature(NodeFeatures.ELEMENT_DATA)) {
-            node = BasicElementBinder.createAndBind(stateNode);
+            node = BasicElementBinder.createAndBind(stateNode, scope);
         } else {
             throw new IllegalArgumentException(
                     "State node has no suitable feature");

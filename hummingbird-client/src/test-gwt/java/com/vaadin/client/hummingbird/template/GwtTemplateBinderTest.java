@@ -21,6 +21,7 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
+import com.vaadin.client.hummingbird.VariableScope;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Reactive;
@@ -43,14 +44,25 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private StateTree tree = new StateTree(registry);
     private StateNode stateNode = new StateNode(0, tree);
 
+    private Node createElementTemplate(StateNode stateNode,
+            TemplateNode templateNode) {
+        return TemplateElementBinder.createAndBind(stateNode, templateNode,
+                new VariableScope(stateNode));
+    }
+
+    private Node createElementTemplate(StateNode stateNode) {
+        return TemplateElementBinder.createAndBind(stateNode,
+                new VariableScope(stateNode));
+    }
+
     public void testTemplateProperties() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop1", "value1");
         templateNode.addProperty("prop2", "value2");
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, templateNode);
+        Element element = (Element) createElementTemplate(stateNode,
+                templateNode);
 
         assertEquals("value1", WidgetUtil.getJsProperty(element, "prop1"));
         assertEquals("value2", WidgetUtil.getJsProperty(element, "prop2"));
@@ -62,8 +74,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         templateNode.addAttribute("attr1", "value1");
         templateNode.addAttribute("attr2", "value2");
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, templateNode);
+        Element element = (Element) createElementTemplate(stateNode,
+                templateNode);
 
         assertEquals("value1", element.getAttribute("attr1"));
         assertEquals("value2", element.getAttribute("attr2"));
@@ -73,8 +85,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, templateNode);
+        Element element = (Element) createElementTemplate(stateNode,
+                templateNode);
 
         assertEquals("DIV", element.getTagName());
     }
@@ -89,8 +101,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .create("div");
         parentTemplate.setChildren(new double[] { childId });
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, parentTemplate);
+        Element element = (Element) createElementTemplate(stateNode,
+                parentTemplate);
 
         assertEquals(1, element.getChildElementCount());
         assertEquals("SPAN", element.getFirstElementChild().getTagName());
@@ -99,8 +111,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testTemplateText() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createStatic("text"));
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
         assertEquals("text", domNode.getTextContent());
     }
 
@@ -114,8 +125,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
                 .setValue(Double.valueOf(templateId));
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode);
+        Element element = (Element) createElementTemplate(stateNode);
 
         assertEquals("DIV", element.getTagName());
     }
@@ -128,8 +138,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
 
         Reactive.flush();
 
@@ -144,8 +153,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
 
         Reactive.flush();
 
@@ -164,8 +172,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
 
         assertEquals(null, WidgetUtil.getJsProperty(domNode, "prop"));
 
@@ -180,8 +187,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .create("div");
         templateNode.addProperty("prop", TestBinding
                 .createBinding(ModelValueBindingProvider.TYPE, "key"));
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
 
         Reactive.flush();
 
@@ -193,8 +199,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .create(TestBinding.createTextValueBinding("key"));
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
 
         Reactive.flush();
 
@@ -206,8 +211,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .create(TestBinding.createTextValueBinding("key"));
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
 
         Reactive.flush();
 
@@ -223,8 +227,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .create(TestBinding.createTextValueBinding("key"));
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
 
         assertEquals("", domNode.getTextContent());
 
@@ -237,8 +240,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testTextNoValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
-        Node domNode = TemplateElementBinder.createAndBind(stateNode,
-                templateNode);
+        Node domNode = createElementTemplate(stateNode, templateNode);
 
         Reactive.flush();
 
@@ -258,8 +260,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .getProperty(templateNode.getId().toString())
                 .setValue(overrideNode);
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, templateNode);
+        Element element = (Element) createElementTemplate(stateNode,
+                templateNode);
 
         Reactive.flush();
 
@@ -271,8 +273,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .create("div");
         templateNode.setId(Double.valueOf(83));
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, templateNode);
+        Element element = (Element) createElementTemplate(stateNode,
+                templateNode);
 
         Reactive.flush();
 
@@ -308,8 +310,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .getProperty(templateNode.getId().toString())
                 .setValue(overrideNode);
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, templateNode);
+        Element element = (Element) createElementTemplate(stateNode,
+                templateNode);
 
         Reactive.flush();
 
@@ -338,8 +340,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         templateNode.setChildren(new double[] { childId });
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, templateNode);
+        Element element = (Element) createElementTemplate(stateNode,
+                templateNode);
 
         Reactive.flush();
 
@@ -400,8 +402,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         Reactive.flush();
 
-        Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, templateNode);
+        Element element = (Element) createElementTemplate(stateNode,
+                templateNode);
 
         assertEquals(1, element.getChildNodes().getLength());
 
@@ -436,7 +438,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .getProperty(NodeFeatures.TAG).setValue("div");
         stateNode.getList(NodeFeatures.ELEMENT_CHILDREN).add(0, templateState);
 
-        Element element = (Element) ElementBinder.createAndBind(stateNode);
+        Element element = (Element) ElementBinder.createAndBind(stateNode,
+                new VariableScope(stateNode));
 
         Reactive.flush();
 
@@ -453,8 +456,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testNgFor() {
         TestElementTemplateNode parent = TestElementTemplateNode.create("div");
         String textVar = "text";
+        String loopVar = "item";
         StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
-                "items", textVar);
+                "items", loopVar, loopVar + "." + textVar);
 
         StateNode varNode = new StateNode(2, tree);
         varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
@@ -463,7 +467,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         modelNode.getList(NodeFeatures.TEMPLATE_MODELLIST).add(0, varNode);
 
         Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, parent);
+                .createAndBind(stateNode, parent, new VariableScope(stateNode));
 
         Reactive.flush();
 
@@ -487,8 +491,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testNgFor_unregister_noUpdates() {
         TestElementTemplateNode parent = TestElementTemplateNode.create("div");
         String textVar = "text";
+        String loopVar = "item";
         StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
-                "items", textVar);
+                "items", loopVar, loopVar + "." + textVar);
 
         StateNode varNode = new StateNode(2, tree);
         varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
@@ -499,7 +504,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         modelList.add(0, varNode);
 
         Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, parent);
+                .createAndBind(stateNode, parent, new VariableScope(stateNode));
 
         Reactive.flush();
 
@@ -521,8 +526,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testNgFor_updateModelValues() {
         TestElementTemplateNode parent = TestElementTemplateNode.create("div");
         String textVar = "text";
+        String loopVar = "item";
         StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
-                "items", textVar);
+                "items", loopVar, loopVar + "." + textVar);
 
         StateNode varNode = new StateNode(2, tree);
         varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
@@ -533,7 +539,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         modelList.add(0, varNode);
 
         Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, parent);
+                .createAndBind(stateNode, parent, new VariableScope(stateNode));
 
         Reactive.flush();
 
@@ -575,9 +581,10 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testNgFor_updateModel() {
         TestElementTemplateNode parent = TestElementTemplateNode.create("div");
         String textVar = "text";
+        String loopVar = "item";
         String collectionVar = "items";
         StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
-                collectionVar, textVar);
+                collectionVar, loopVar, loopVar + "." + textVar);
 
         StateNode varNode = new StateNode(2, tree);
         varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
@@ -586,7 +593,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         modelNode.getList(NodeFeatures.TEMPLATE_MODELLIST).add(0, varNode);
 
         Element element = (Element) TemplateElementBinder
-                .createAndBind(stateNode, parent);
+                .createAndBind(stateNode, parent, new VariableScope(stateNode));
 
         Reactive.flush();
 
@@ -624,7 +631,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     private StateNode createNgForModelNode(TestElementTemplateNode parent,
             String firstChildTag, String ngForTag, String lastChildTag,
-            String collectionVar, String textVar) {
+            String collectionVar, String loopVar, String textVar) {
         TestElementTemplateNode child1 = TestElementTemplateNode
                 .create(firstChildTag);
         int child1Id = 57;
@@ -639,6 +646,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode forChild = TestElementTemplateNode
                 .create(ngForTag);
         templateNode.setCollectionVariable(collectionVar);
+        templateNode.setLoopVariable(loopVar);
 
         TestTextTemplate text = TestTextTemplate
                 .create(TestBinding.createTextValueBinding(textVar));

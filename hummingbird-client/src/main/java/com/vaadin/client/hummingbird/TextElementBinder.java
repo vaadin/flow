@@ -42,7 +42,7 @@ public class TextElementBinder {
      * @param text
      *            the DOM text node
      */
-    public TextElementBinder(StateNode node, Text text) {
+    public TextElementBinder(StateNode node, Text text, VariableScope scope) {
         assert node.hasFeature(NodeFeatures.TEXT_NODE);
 
         NodeMap textMap = node.getMap(NodeFeatures.TEXT_NODE);
@@ -68,15 +68,16 @@ public class TextElementBinder {
      *            the state node to bind to
      * @return the new DOM text node
      */
-    public static Text createAndBind(StateNode node) {
+    public static Text createAndBind(StateNode node, VariableScope scope) {
         Text text = Browser.getDocument().createTextNode("");
 
-        bind(node, text);
+        bind(node, text, scope);
 
         return text;
     }
 
-    private static TextElementBinder bind(StateNode node, Text text) {
-        return new TextElementBinder(node, text);
+    private static TextElementBinder bind(StateNode node, Text text,
+            VariableScope scope) {
+        return new TextElementBinder(node, text, scope);
     }
 }

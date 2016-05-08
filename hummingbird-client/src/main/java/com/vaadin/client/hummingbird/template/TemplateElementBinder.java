@@ -23,6 +23,7 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.ElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
+import com.vaadin.client.hummingbird.VariableScope;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
@@ -53,10 +54,13 @@ public class TemplateElementBinder {
         private final StateNode stateNode;
 
         private StateNode childNode;
+        private final VariableScope scope;
 
-        public ChildSlotBinder(Comment anchor, StateNode stateNode) {
+        public ChildSlotBinder(Comment anchor, StateNode stateNode,
+                VariableScope scope) {
             this.anchor = anchor;
             this.stateNode = stateNode;
+            this.scope = scope;
         }
 
         @Override
@@ -86,7 +90,8 @@ public class TemplateElementBinder {
             }
 
             if (newChildNode != null) {
-                Node newChild = ElementBinder.createAndBind(newChildNode);
+                Node newChild = ElementBinder.createAndBind(newChildNode,
+                        scope);
 
                 parent.insertBefore(newChild, anchor.getNextSibling());
             }
@@ -98,13 +103,15 @@ public class TemplateElementBinder {
         private Comment anchor;
         private Node beforeNode;
         private final StateNode stateNode;
-        private final TestForTemplateNode templateNode;
+        private final ForTemplateNode templateNode;
+        private final VariableScope scope;
 
         ForTemplateNodeUpdate(Comment anchor, StateNode stateNode,
-                TestForTemplateNode templateNode) {
+                ForTemplateNode templateNode, VariableScope scope) {
             this.anchor = anchor;
             this.stateNode = stateNode;
             this.templateNode = templateNode;
+            this.scope = scope;
         }
 
         @Override
@@ -131,7 +138,10 @@ public class TemplateElementBinder {
                 StateNode node = (StateNode) property.getValue();
                 ElementBinder.bindChildren(parent, node,
                         NodeFeatures.TEMPLATE_MODELLIST,
-                        childNode -> createAndBind(childNode, childId),
+                        childNode -> createAndBind(childNode, childId,
+                                new VariableScope(
+                                        templateNode.getLoopVariable(),
+                                        childNode, scope)),
                         beforeNode);
             }
         }
@@ -149,7 +159,7 @@ public class TemplateElementBinder {
      *            the state node to bind to, not <code>null</code>
      * @return the created and bound DOM node
      */
-    public static Node createAndBind(StateNode stateNode) {
+    public static Node createAndBind(StateNode stateNode, VariableScope scope) {
         assert stateNode != null;
 
         assert stateNode.hasFeature(NodeFeatures.TEMPLATE);
@@ -158,16 +168,17 @@ public class TemplateElementBinder {
                 .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
                 .getValueOrDefault(-1);
 
-        return createAndBind(stateNode, templateId);
+        return createAndBind(stateNode, templateId, scope);
     }
 
-    private static Node createAndBind(StateNode stateNode, int templateId) {
+    private static Node createAndBind(StateNode stateNode, int templateId,
+            VariableScope scope) {
         assert templateId != -1;
 
         TemplateNode templateNode = stateNode.getTree().getRegistry()
                 .getTemplateRegistry().get(templateId);
 
-        return createAndBind(stateNode, templateNode);
+        return createAndBind(stateNode, templateNode, scope);
     }
 
     /**
@@ -181,73 +192,84 @@ public class TemplateElementBinder {
      * @return the created and bound DOM node
      */
     public static Node createAndBind(StateNode stateNode,
-            TemplateNode templateNode) {
+            TemplateNode templateNode, VariableScope scope) {
         assert stateNode != null;
         assert templateNode != null;
 
         switch (templateNode.getType()) {
         case com.vaadin.hummingbird.template.ElementTemplateNode.TYPE:
             return createAndBindElement(stateNode,
-                    (ElementTemplateNode) templateNode);
+                    (ElementTemplateNode) templateNode, scope);
         case com.vaadin.hummingbird.template.ForTemplateNode.TYPE:
-            return createAndBindNgFor(stateNode,
-                    (TestForTemplateNode) templateNode);
+            return createAndBindNgFor(stateNode, (ForTemplateNode) templateNode,
+                    scope);
         case com.vaadin.hummingbird.template.TextTemplateNode.TYPE:
-            return createAndBindText(stateNode,
-                    (TextTemplateNode) templateNode);
+            return createAndBindText(stateNode, (TextTemplateNode) templateNode,
+                    scope);
         case com.vaadin.hummingbird.template.ChildSlotNode.TYPE:
-            return createAndBindChildSot(stateNode);
+            return createAndBindChildSot(stateNode, scope);
         default:
             throw new IllegalArgumentException(
                     "Unsupported template type: " + templateNode.getType());
         }
     }
 
-    private static Node createAndBindChildSot(StateNode stateNode) {
+    private static Node createAndBindChildSot(StateNode stateNode,
+            VariableScope scope) {
         // Anchor to put in the DOM to know where to insert the actual content
         Comment anchor = Browser.getDocument().createComment(" @child@ ");
 
         Computation computation = Reactive.runWhenDepedenciesChange(
-                new ChildSlotBinder(anchor, stateNode));
+                new ChildSlotBinder(anchor, stateNode, scope));
         stateNode.addUnregisterListener(e -> computation.stop());
 
         return anchor;
     }
 
     private static Node createAndBindText(StateNode stateNode,
-            TextTemplateNode templateNode) {
+            TextTemplateNode templateNode, VariableScope scope) {
         Binding binding = templateNode.getTextBinding();
         Text node = Browser.getDocument().createTextNode("");
-        bind(stateNode, binding, value -> node
-                .setTextContent(value.map(Object::toString).orElse("")));
+        bind(stateNode, binding,
+                value -> node
+                        .setTextContent(value.map(Object::toString).orElse("")),
+                scope);
         return node;
     }
 
-    private static MapProperty getModelProperty(StateNode node,
-            Binding binding) {
-        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+    private static Optional<MapProperty> getModelProperty(Binding binding,
+            VariableScope scope) {
         String key = binding.getValue();
         assert key != null;
-        return model.getProperty(key);
+        int index = key.indexOf(".");
+        Optional<StateNode> var = scope.getCurrent();
+        if (index != -1) {
+            var = scope.getVariable(key.substring(0, index));
+            key = key.substring(index + 1);
+        }
+        String property = key;
+        return var.map(node -> node.getMap(NodeFeatures.TEMPLATE_MODELMAP))
+                .map(map -> map.getProperty(property));
     }
 
     private static Node createAndBindNgFor(StateNode stateNode,
-            TestForTemplateNode templateNode) {
+            ForTemplateNode templateNode, VariableScope scope) {
         Comment anchor = Browser.getDocument().createComment(" *ngFor ");
 
-        Computation computation = Reactive.runWhenDepedenciesChange(
-                new ForTemplateNodeUpdate(anchor, stateNode, templateNode));
+        Computation computation = Reactive
+                .runWhenDepedenciesChange(new ForTemplateNodeUpdate(anchor,
+                        stateNode, templateNode, scope));
         stateNode.addUnregisterListener(event -> computation.stop());
 
         return anchor;
     }
 
     private static Node createAndBindElement(StateNode stateNode,
-            ElementTemplateNode templateNode) {
+            ElementTemplateNode templateNode, VariableScope scope) {
         String tag = templateNode.getTag();
         Element element = Browser.getDocument().createElement(tag);
 
-        bindProperties(stateNode, templateNode, element);
+        bindProperties(stateNode, templateNode, element, scope);
 
         JsonObject attributes = templateNode.getAttributes();
         if (attributes != null) {
@@ -265,7 +287,7 @@ public class TemplateElementBinder {
             for (int i = 0; i < children.length(); i++) {
                 int childTemplateId = children.get(i).intValue();
 
-                Node child = createAndBind(stateNode, childTemplateId);
+                Node child = createAndBind(stateNode, childTemplateId, scope);
 
                 element.appendChild(child);
             }
@@ -279,13 +301,13 @@ public class TemplateElementBinder {
              * Bind right away. We don't need to listen to property value
              * changes since the value will never change once it has been set.
              */
-            bindOverrideNode(element, overrideProperty);
+            bindOverrideNode(element, overrideProperty, scope);
         } else {
             /*
              * React in case an override nodes appears later on.
              */
             EventRemover remover = overrideProperty.addChangeListener(
-                    e -> bindOverrideNode(element, overrideProperty));
+                    e -> bindOverrideNode(element, overrideProperty, scope));
 
             /*
              * Should preferably remove the change listener immediately when the
@@ -299,23 +321,25 @@ public class TemplateElementBinder {
     }
 
     private static void bindProperties(StateNode stateNode,
-            ElementTemplateNode templateNode, Element element) {
+            ElementTemplateNode templateNode, Element element,
+            VariableScope scope) {
         JsonObject properties = templateNode.getProperties();
         if (properties != null) {
             for (String name : properties.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
                 bind(stateNode, binding, value -> WidgetUtil
-                        .setJsProperty(element, name, value.orElse(null)));
+                        .setJsProperty(element, name, value.orElse(null)),
+                        scope);
             }
         }
     }
 
     private static void bind(StateNode stateNode, Binding binding,
-            Consumer<Optional<Object>> setOperation) {
+            Consumer<Optional<Object>> setOperation, VariableScope scope) {
         if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
             Computation computation = Reactive.runWhenDepedenciesChange(
-                    () -> setOperation.accept(Optional.ofNullable(
-                            getModelProperty(stateNode, binding).getValue())));
+                    () -> setOperation.accept(getModelProperty(binding, scope)
+                            .map(MapProperty::getValue)));
             stateNode.addUnregisterListener(event -> computation.stop());
         } else {
             // Only static bindings is known as a final call
@@ -325,15 +349,15 @@ public class TemplateElementBinder {
     }
 
     private static void bindOverrideNode(Element element,
-            MapProperty overrideProperty) {
+            MapProperty overrideProperty, VariableScope scope) {
         StateNode overrideNode = (StateNode) overrideProperty.getValue();
 
         /*
          * bind checks that the we haven't already bound the same state node
          * previously
          */
-        BasicElementBinder bind = BasicElementBinder.bind(overrideNode,
-                element);
+        BasicElementBinder bind = BasicElementBinder.bind(overrideNode, element,
+                scope);
 
         overrideNode.addUnregisterListener(e -> bind.remove());
     }

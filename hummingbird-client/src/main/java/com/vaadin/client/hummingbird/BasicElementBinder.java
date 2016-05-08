@@ -87,8 +87,12 @@ public class BasicElementBinder {
     private final Element element;
     private final StateNode node;
 
-    private BasicElementBinder(StateNode node, Element element) {
+    private final VariableScope scope;
+
+    private BasicElementBinder(StateNode node, Element element,
+            VariableScope scope) {
         assert node.getDomNode() == null;
+        this.scope = scope;
 
         this.node = node;
         this.element = element;
@@ -365,8 +369,9 @@ public class BasicElementBinder {
     }
 
     private EventRemover bindChildren() {
-        return ElementBinder.bindChildren(element, node,
-                NodeFeatures.ELEMENT_CHILDREN, ElementBinder::createAndBind)
+        return ElementBinder
+                .bindChildren(element, node, NodeFeatures.ELEMENT_CHILDREN,
+                        child -> ElementBinder.createAndBind(child, scope))
                 .addSpliceListener(e -> {
                     /*
                      * Handle lazily so we can create the children we need to
@@ -408,7 +413,7 @@ public class BasicElementBinder {
             for (int i = 0; i < add.length(); i++) {
                 Object newChildObject = add.get(i);
                 Node childNode = ElementBinder
-                        .createAndBind((StateNode) newChildObject);
+                        .createAndBind((StateNode) newChildObject, scope);
 
                 element.insertBefore(childNode, beforeRef);
 
@@ -425,14 +430,14 @@ public class BasicElementBinder {
      *            <code>null</code>
      * @return the DOM node, not <code>null</code>
      */
-    public static Node createAndBind(StateNode node) {
+    public static Node createAndBind(StateNode node, VariableScope scope) {
         String tag = getTag(node);
 
         assert tag != null : "New child must have a tag";
 
         Element childElement = Browser.getDocument().createElement(tag);
 
-        BasicElementBinder.bind(node, childElement);
+        BasicElementBinder.bind(node, childElement, scope);
 
         return childElement;
     }
@@ -465,6 +470,21 @@ public class BasicElementBinder {
      * @return a basic element binder
      */
     public static BasicElementBinder bind(StateNode node, Element element) {
-        return new BasicElementBinder(node, element);
+        return new BasicElementBinder(node, element, new VariableScope(node));
+    }
+
+    /**
+     * Binds a state node to an element.
+     *
+     * @param node
+     *            the state node to bind
+     * @param element
+     *            the element to bind to
+     *
+     * @return a basic element binder
+     */
+    public static BasicElementBinder bind(StateNode node, Element element,
+            VariableScope scope) {
+        return new BasicElementBinder(node, element, scope);
     }
 }

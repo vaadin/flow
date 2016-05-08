@@ -50,4 +50,8 @@ public class ModelList extends StateNodeNodeList {
         super.add(item);
     }
 
+    @Override
+    public StateNode remove(int index) {
+        return super.remove(index);
+    }
 }
