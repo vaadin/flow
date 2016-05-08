@@ -98,10 +98,10 @@ public class TemplateElementBinder {
         private Comment anchor;
         private Node beforeNode;
         private final StateNode stateNode;
-        private final TestForTemplateNode templateNode;
+        private final ForTemplateNode templateNode;
 
         ForTemplateNodeUpdate(Comment anchor, StateNode stateNode,
-                TestForTemplateNode templateNode) {
+                ForTemplateNode templateNode) {
             this.anchor = anchor;
             this.stateNode = stateNode;
             this.templateNode = templateNode;

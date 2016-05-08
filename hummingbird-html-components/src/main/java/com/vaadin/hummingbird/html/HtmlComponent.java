@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.html;
 
+import java.util.Optional;
+
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.ui.Component;
@@ -27,8 +29,7 @@ import com.vaadin.ui.HasStyle;
  *
  * @author Vaadin Ltd
  */
-public class HtmlComponent extends Component
-        implements HasSize, HasStyle {
+public class HtmlComponent extends Component implements HasSize, HasStyle {
 
     /**
      * Creates a component with the element type based on the {@link Tag}
@@ -104,6 +105,24 @@ public class HtmlComponent extends Component
     protected String getAttribute(String name) {
         assert name != null;
         return getElement().getAttribute(name);
+    }
+
+    /**
+     * Gets an attribute value from this component.
+     * <p>
+     * Returns {@code defaultValue} if the attribute value is {@code null}.
+     *
+     * @param name
+     *            the name of the attribute, not <code>null</code>
+     * @param defaultValue
+     *            the value to be returned if the value is {@code null}
+     * @return the attribute value, or <code>defaultValue</code> if the
+     *         attribute has not been set
+     */
+    protected String getAttribute(String name, String defaultValue) {
+        assert name != null;
+        return Optional.ofNullable(getElement().getAttribute(name))
+                .orElse(defaultValue);
     }
 
 }
