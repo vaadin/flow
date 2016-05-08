@@ -98,10 +98,10 @@ public class TemplateElementBinder {
         private Comment anchor;
         private Node beforeNode;
         private final StateNode stateNode;
-        private final TestForTemplateNode templateNode;
+        private final ForTemplateNode templateNode;
 
         ForTemplateNodeUpdate(Comment anchor, StateNode stateNode,
-                TestForTemplateNode templateNode) {
+                ForTemplateNode templateNode) {
             this.anchor = anchor;
             this.stateNode = stateNode;
             this.templateNode = templateNode;
@@ -191,7 +191,7 @@ public class TemplateElementBinder {
                     (ElementTemplateNode) templateNode);
         case com.vaadin.hummingbird.template.ForTemplateNode.TYPE:
             return createAndBindNgFor(stateNode,
-                    (TestForTemplateNode) templateNode);
+                    (ForTemplateNode) templateNode);
         case com.vaadin.hummingbird.template.TextTemplateNode.TYPE:
             return createAndBindText(stateNode,
                     (TextTemplateNode) templateNode);
@@ -232,7 +232,7 @@ public class TemplateElementBinder {
     }
 
     private static Node createAndBindNgFor(StateNode stateNode,
-            TestForTemplateNode templateNode) {
+            ForTemplateNode templateNode) {
         Comment anchor = Browser.getDocument().createComment(" *ngFor ");
 
         Computation computation = Reactive.runWhenDepedenciesChange(

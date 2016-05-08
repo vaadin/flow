@@ -16,20 +16,33 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.util.AbstractSet;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 import com.vaadin.hummingbird.dom.ClassList;
 
 /**
- * A class list implementation which is empty and immutable.
+ * A class list implementation which is immutable.
  *
  * @author Vaadin Ltd
  */
-public class ImmutableEmptyClassList extends AbstractSet<String>
+public class ImmutableClassList extends AbstractSet<String>
         implements ClassList {
 
     private static final String CANT_MODIFY_MESSAGE = ImmutableEmptyStyle.CANT_MODIFY_MESSAGE;
+
+    private final Collection<String> values;
+
+    /**
+     * Creates a new immutable class list with the given values.
+     *
+     * @param values
+     *            the values of the class list
+     */
+    public ImmutableClassList(Collection<String> values) {
+        this.values = new ArrayList<>(values);
+    }
 
     @Override
     public boolean add(String e) {
@@ -43,11 +56,11 @@ public class ImmutableEmptyClassList extends AbstractSet<String>
 
     @Override
     public Iterator<String> iterator() {
-        return Collections.<String> emptySet().iterator();
+        return values.iterator();
     }
 
     @Override
     public int size() {
-        return 0;
+        return values.size();
     }
 }

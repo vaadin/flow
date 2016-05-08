@@ -48,11 +48,8 @@ public interface BindingValueProvider extends Serializable {
     Object getValue(StateNode node);
 
     /**
-     * Produces a value for the given state node.
-     * <p>
-     * The type of the value is {@link String}, {@link Double}, {@link Boolean}
-     * or {@link JsonValue}.
-     *
+     * Produces a value for the given state node as a string, or the provided
+     * default value if the produced value is <code>null</code>.
      *
      * @param node
      *            the state node for which to produce a value, not
@@ -62,12 +59,12 @@ public interface BindingValueProvider extends Serializable {
      *            <code>null</code>
      * @return the binding value
      */
-    default Object getValue(StateNode node, String defaultValue) {
+    default String getValue(StateNode node, String defaultValue) {
         Object value = getValue(node);
         if (value == null) {
             return defaultValue;
         } else {
-            return value;
+            return value.toString();
         }
     }
 

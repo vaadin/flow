@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
@@ -36,7 +37,7 @@ public class ForTemplateView extends Div implements View {
 
         public ForTemplate() {
             super(new ByteArrayInputStream(
-                    "<ul><div></div><li *ngFor='let item of items' class='a'>{{text}}<input [value]='key'></li><div></div></ul>"
+                    "<ul><div></div><li *ngFor='let item of items' class='a'>{{item.text}}<input [value]='item.key'></li><div></div></ul>"
                             .getBytes(StandardCharsets.UTF_8)));
         }
     }
@@ -44,23 +45,48 @@ public class ForTemplateView extends Div implements View {
     public ForTemplateView() {
         ForTemplate template = new ForTemplate();
 
-        StateNode modelList = new StateNode(ModelList.class);
+        StateNode modelListNode = new StateNode(ModelList.class);
 
-        StateNode modelItem1 = new StateNode(TemplateOverridesMap.class,
-                ModelMap.class);
-        modelItem1.getFeature(ModelMap.class).setValue("text", "item1");
-        modelItem1.getFeature(ModelMap.class).setValue("key", "text1");
-
-        StateNode modelItem2 = new StateNode(TemplateOverridesMap.class,
-                ModelMap.class);
-        modelItem2.getFeature(ModelMap.class).setValue("text", "item2");
-        modelItem2.getFeature(ModelMap.class).setValue("key", "text2");
-
-        modelList.getFeature(ModelList.class).add(modelItem1);
-        modelList.getFeature(ModelList.class).add(modelItem2);
+        ModelList modelList = modelListNode.getFeature(ModelList.class);
+        modelList.add(createModelItem("item1", "text1"));
+        modelList.add(createModelItem("item2", "text2"));
 
         template.getElement().getNode().getFeature(ModelMap.class)
-                .setValue("items", modelList);
+                .setValue("items", modelListNode);
         add(template);
+
+        add(createButton("Append", "append",
+                () -> modelList.add(createModelItem("appended", "append"))));
+        add(createButton("Update first", "update-first",
+                () -> updateModelItem(modelList.get(0), "Updated first",
+                        "update first")));
+        add(createButton("Update second", "udpate-second",
+                () -> updateModelItem(modelList.get(1), "Updated second",
+                        "update second")));
+        add(createButton("Update last", "update-last",
+                () -> updateModelItem(modelList.get(modelList.size() - 1),
+                        "Updated last", "update last")));
+        add(createButton("Delete first", "delete-first",
+                () -> modelList.remove(0)));
+    }
+
+    private Button createButton(String text, String id, Runnable action) {
+        Button button = new Button(text);
+        button.addClickListener(e -> action.run());
+        button.setId(id);
+        return button;
+    }
+
+    private void updateModelItem(StateNode stateNode, String text, String key) {
+        stateNode.getFeature(ModelMap.class).setValue("text", text);
+        stateNode.getFeature(ModelMap.class).setValue("key", key);
+    }
+
+    private StateNode createModelItem(String text, String key) {
+        StateNode modelItem1 = new StateNode(TemplateOverridesMap.class,
+                ModelMap.class);
+        updateModelItem(modelItem1, text, key);
+        return modelItem1;
+
     }
 }
