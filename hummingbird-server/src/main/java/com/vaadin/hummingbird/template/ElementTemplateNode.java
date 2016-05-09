@@ -61,6 +61,8 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
      * @param attributes
      *            a map of attribute bindings for this node, not
      *            <code>null</code>
+     * @param eventHandlers
+     *            a map of event handlers for this node, not <code>null</code>
      * @param childBuilders
      *            a list of template builders for child nodes
      */
@@ -73,6 +75,7 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
         assert tag != null;
         assert properties != null;
         assert childBuilders != null;
+        assert eventHandlers != null;
 
         this.tag = tag;
 
