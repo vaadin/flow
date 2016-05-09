@@ -60,7 +60,7 @@ public class ForTemplateView extends Div implements View {
         add(createButton("Update first", "update-first",
                 () -> updateModelItem(modelList.get(0), "Updated first",
                         "update first")));
-        add(createButton("Update second", "udpate-second",
+        add(createButton("Update second", "update-second",
                 () -> updateModelItem(modelList.get(1), "Updated second",
                         "update second")));
         add(createButton("Update last", "update-last",
