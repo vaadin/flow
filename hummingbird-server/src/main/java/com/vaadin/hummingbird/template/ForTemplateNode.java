@@ -34,6 +34,15 @@ import elemental.json.JsonObject;
  */
 public class ForTemplateNode extends AbstractControlTemplateNode {
 
+    /**
+     * Type value for ngFor template nodes in JSON messages.
+     */
+    public static final String TYPE = "ngFor";
+
+    public static final String LOOP_VARIABLE = "loopVariable";
+
+    public static final String COLLECTION_VARIABLE = "collectionVariable";
+
     private final AbstractElementTemplateNode childNode;
     private final String loopVariable;
     private final String collectionVariable;
@@ -106,8 +115,9 @@ public class ForTemplateNode extends AbstractControlTemplateNode {
 
     @Override
     protected void populateJson(JsonObject json) {
-        throw new UnsupportedOperationException(
-                "To be implemented when needed");
+        json.put(TemplateNode.KEY_TYPE, TYPE);
+        json.put(LOOP_VARIABLE, getLoopVariable());
+        json.put(COLLECTION_VARIABLE, getCollectionVariable());
     }
 
     /**
