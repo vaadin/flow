@@ -365,7 +365,7 @@ public class BasicElementBinder {
     }
 
     private EventRemover bindChildren() {
-        return ElementBinder.bindChildren(element, node,
+        return ElementBinder.populateChildren(element, node,
                 NodeFeatures.ELEMENT_CHILDREN, ElementBinder::createAndBind)
                 .addSpliceListener(e -> {
                     /*

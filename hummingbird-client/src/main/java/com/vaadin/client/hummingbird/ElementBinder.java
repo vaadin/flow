@@ -71,10 +71,10 @@ public final class ElementBinder {
      * {@code nodeFactory} and append them to the {@code parent}.
      * <p>
      * This is just a shorthand for
-     * {@link #bindChildren(Element, StateNode, int, Function, Node)} with the
+     * {@link #populateChildren(Element, StateNode, int, Function, Node)} with the
      * {@code null} value for the last parameter
      * 
-     * @see #bindChildren(Element, StateNode, int, Function, Node)
+     * @see #populateChildren(Element, StateNode, int, Function, Node)
      * 
      * @param parent
      *            parent Element, not {@code null}
@@ -87,9 +87,9 @@ public final class ElementBinder {
      *            child StateNode from the feature NodeList, not {@code null}
      * @return the bound children list
      */
-    public static NodeList bindChildren(Element parent, StateNode node,
+    public static NodeList populateChildren(Element parent, StateNode node,
             int featureId, Function<StateNode, Node> nodeFactory) {
-        return bindChildren(parent, node, featureId, nodeFactory, null);
+        return populateChildren(parent, node, featureId, nodeFactory, null);
     }
 
     /**
@@ -100,7 +100,7 @@ public final class ElementBinder {
      * The {@code beforeNode} parameter is used to add children to the
      * {@code parent} before the {@code beforeNode}. It can be {@code null}.
      * 
-     * @see #bindChildren(Element, StateNode, int, Function)
+     * @see #populateChildren(Element, StateNode, int, Function)
      * 
      * @param parent
      *            parent Element, not {@code null}
@@ -115,7 +115,7 @@ public final class ElementBinder {
      *            node which is used as a bottom line for added children
      * @return the bound children list
      */
-    public static NodeList bindChildren(Element parent, StateNode node,
+    public static NodeList populateChildren(Element parent, StateNode node,
             int featureId, Function<StateNode, Node> nodeFactory,
             Node beforeNode) {
         NodeList children = node.getList(featureId);

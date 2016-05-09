@@ -129,7 +129,7 @@ public class TemplateElementBinder {
                     .getProperty(templateNode.getCollectionVariable());
             if (property.getValue() != null) {
                 StateNode node = (StateNode) property.getValue();
-                ElementBinder.bindChildren(parent, node,
+                ElementBinder.populateChildren(parent, node,
                         NodeFeatures.TEMPLATE_MODELLIST,
                         childNode -> createAndBind(childNode, childId),
                         beforeNode);
