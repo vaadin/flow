@@ -23,6 +23,7 @@ import java.util.Enumeration;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -70,6 +71,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     @Override
     public void init(javax.servlet.ServletConfig servletConfig)
             throws ServletException {
+        verifyServletVersion(servletConfig);
         CurrentInstance.clearAll();
         super.init(servletConfig);
         Properties initParameters = new Properties();
@@ -109,6 +111,22 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
         servletInitialized();
         CurrentInstance.clearAll();
+
+    }
+
+    private void verifyServletVersion(ServletConfig servletConfig)
+            throws ServletException {
+        try {
+            Method m = javax.servlet.http.HttpServletResponse.class
+                    .getMethod("setContentLengthLong", long.class);
+            if (m != null) {
+                return;
+            }
+
+            throw new ServletException("Servlet 3.1+ is required");
+        } catch (Exception e) {
+            throw new ServletException("Servlet 3.1+ is required", e);
+        }
 
     }
 
