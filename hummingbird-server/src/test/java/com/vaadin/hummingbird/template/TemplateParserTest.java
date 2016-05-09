@@ -185,4 +185,24 @@ public class TemplateParserTest {
                 + "</ul>"); //
     }
 
+    @Test
+    public void parseEventHandler() {
+        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
+                .parse("<button (click)='handle($event)'>");
+        Assert.assertEquals(1, node.getEventNames().count());
+        Optional<String> event = node.getEventNames().findAny();
+        Assert.assertTrue(event.isPresent());
+        Assert.assertEquals("click", event.get());
+
+        Optional<String> eventHandler = node.getEventHandler("click");
+        Assert.assertTrue(eventHandler.isPresent());
+        Assert.assertEquals("handle($event)", eventHandler.get());
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseWrongEventHandler() {
+        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
+                .parse("<button (click='handle($event)'>");
+    }
+
 }
