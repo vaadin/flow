@@ -45,6 +45,7 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
 
     private final HashMap<String, BindingValueProvider> properties;
     private final HashMap<String, BindingValueProvider> attributes;
+    private final HashMap<String, String> eventHandlers;
 
     /**
      * Creates a new template node.
@@ -66,6 +67,7 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
     public ElementTemplateNode(TemplateNode parent, String tag,
             Map<String, BindingValueProvider> properties,
             Map<String, BindingValueProvider> attributes,
+            Map<String, String> eventHandlers,
             List<TemplateNodeBuilder> childBuilders) {
         super(parent);
         assert tag != null;
@@ -77,6 +79,7 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
         // Defensive copies
         this.properties = new HashMap<>(properties);
         this.attributes = new HashMap<>(attributes);
+        this.eventHandlers = new HashMap<>(eventHandlers);
 
         children = new ArrayList<>(childBuilders.size());
         childBuilders.stream().map(childBuilder -> childBuilder.build(this))
@@ -111,6 +114,15 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
     }
 
     /**
+     * Gets all the event names defined for this element.
+     *
+     * @return the event names
+     */
+    public Stream<String> getEventNames() {
+        return eventHandlers.keySet().stream();
+    }
+
+    /**
      * Gets the property binding for the given name.
      *
      * @param name
@@ -132,6 +144,18 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
      */
     public Optional<BindingValueProvider> getAttributeBinding(String name) {
         return Optional.ofNullable(attributes.get(name));
+    }
+
+    /**
+     * Gets the event handler for the given event name.
+     *
+     * @param event
+     *            the event name
+     * @return an optional event handler for the event, empty if there is no
+     *         event with the given name
+     */
+    public Optional<String> getEventHandler(String event) {
+        return Optional.ofNullable(eventHandlers.get(event));
     }
 
     @Override
@@ -171,6 +195,16 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
                     binding.toJson()));
 
             json.put("attributes", attributesJson);
+        }
+
+        if (!eventHandlers.isEmpty()) {
+            JsonObject eventsJson = Json.createObject();
+
+            eventHandlers.forEach(
+                    (event, handler) -> eventsJson.put(event, handler));
+
+            json.put("eventHandlers", eventsJson);
+
         }
 
         // Super class takes care of the children
