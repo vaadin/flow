@@ -158,22 +158,31 @@ public class TemplateParserTest {
     @Test(expected = IllegalArgumentException.class)
     public void ngForElementAsRoot() {
         TemplateParser.parse(
-                "<a class='item' *ngFor='let  item      of list'>{{item}}</a>");
+                "<a class='item' *ngFor='let  item      of list'>{{item.text}}</a>");
     }
 
     @Test(expected = TemplateParseException.class)
     public void ngForElementMissingCollection() {
         TemplateParser.parse(
-                "<div><a class='item' *ngFor='let item'>{{item}}</a></div>");
+                "<div><a class='item' *ngFor='let item'>{{item.text}}</a></div>");
     }
 
     @Test
     public void ngForElement() {
         TemplateNode node = TemplateParser.parse(
-                "<div><a class='item' *ngFor='let  item      of list'>{{item}}</a></div>");
+                "<div><a class='item' *ngFor='let  item      of list'>{{item.text}}</a></div>");
         ForTemplateNode forNode = (ForTemplateNode) node.getChild(0);
         Assert.assertEquals("list", forNode.getCollectionVariable());
         Assert.assertEquals("item", forNode.getLoopVariable());
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void nestedNgForElement() {
+        TemplateParser.parse("<ul>" //
+                + "  <li class='item' *ngFor='let  item      of list'>" //
+                + "    <a  *ngFor='let  link      of item.links' [href]='link.href'>{{link.text}}</a>" //
+                + "  </li>" //
+                + "</ul>"); //
     }
 
 }

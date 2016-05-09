@@ -93,6 +93,50 @@ public class TemplateElementBinder {
         }
     }
 
+    private static final class ForTemplateNodeUpdate implements Command {
+
+        private Comment anchor;
+        private Node beforeNode;
+        private final StateNode stateNode;
+        private final ForTemplateNode templateNode;
+
+        ForTemplateNodeUpdate(Comment anchor, StateNode stateNode,
+                ForTemplateNode templateNode) {
+            this.anchor = anchor;
+            this.stateNode = stateNode;
+            this.templateNode = templateNode;
+        }
+
+        @Override
+        public void execute() {
+            Element parent = anchor.getParentElement();
+            if (beforeNode == null) {
+                beforeNode = anchor.getNextSibling();
+            }
+
+            JsArray<Double> children = templateNode.getChildren();
+            assert children.length() == 1;
+            int childId = children.get(0).intValue();
+
+            Node htmlNode = anchor.getNextSibling();
+            while (htmlNode != beforeNode) {
+                parent.removeChild(htmlNode);
+                htmlNode = anchor.getNextSibling();
+            }
+
+            NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            MapProperty property = model
+                    .getProperty(templateNode.getCollectionVariable());
+            if (property.getValue() != null) {
+                StateNode node = (StateNode) property.getValue();
+                ElementBinder.populateChildren(parent, node,
+                        NodeFeatures.TEMPLATE_MODELLIST,
+                        childNode -> createAndBind(childNode, childId),
+                        beforeNode);
+            }
+        }
+    }
+
     private TemplateElementBinder() {
         // Static methods only
     }
@@ -145,6 +189,9 @@ public class TemplateElementBinder {
         case com.vaadin.hummingbird.template.ElementTemplateNode.TYPE:
             return createAndBindElement(stateNode,
                     (ElementTemplateNode) templateNode);
+        case com.vaadin.hummingbird.template.ForTemplateNode.TYPE:
+            return createAndBindNgFor(stateNode,
+                    (ForTemplateNode) templateNode);
         case com.vaadin.hummingbird.template.TextTemplateNode.TYPE:
             return createAndBindText(stateNode,
                     (TextTemplateNode) templateNode);
@@ -184,6 +231,17 @@ public class TemplateElementBinder {
         return model.getProperty(key);
     }
 
+    private static Node createAndBindNgFor(StateNode stateNode,
+            ForTemplateNode templateNode) {
+        Comment anchor = Browser.getDocument().createComment(" *ngFor ");
+
+        Computation computation = Reactive.runWhenDepedenciesChange(
+                new ForTemplateNodeUpdate(anchor, stateNode, templateNode));
+        stateNode.addUnregisterListener(event -> computation.stop());
+
+        return anchor;
+    }
+
     private static Node createAndBindElement(StateNode stateNode,
             ElementTemplateNode templateNode) {
         String tag = templateNode.getTag();
@@ -196,7 +254,8 @@ public class TemplateElementBinder {
             for (String name : attributes.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(attributes.get(name));
                 // Nothing to "bind" yet with only static bindings
-                assert binding.getType().equals(StaticBindingValueProvider.TYPE);
+                assert binding.getType()
+                        .equals(StaticBindingValueProvider.TYPE);
                 element.setAttribute(name, getStaticBindingValue(binding));
             }
         }
