@@ -24,7 +24,6 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -50,9 +49,6 @@ public class SerializationTest {
                 Constructor<?> ctors[] = viewClass.getDeclaredConstructors();
                 if (Stream.of(ctors)
                         .anyMatch(ctor -> ctor.getParameterCount() > 0)) {
-                    Logger.getLogger(SerializationTest.class.getName())
-                            .warning("View class " + viewClass
-                                    + " doesn't have default constructor");
                     continue;
                 }
                 View view = viewClass.newInstance();
