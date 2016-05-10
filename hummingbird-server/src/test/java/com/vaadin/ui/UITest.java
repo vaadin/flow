@@ -94,8 +94,7 @@ public class UITest {
 
     @Test
     public void testInvalidNavigationTargets() {
-        String[] invalidTargets = { null, "/foo", "http://vaadin.com",
-                "://vaadin.com", "foo/bar/..", "foo/ba%r" };
+        String[] invalidTargets = { null, "/foo", "foo/bar/.." };
         for (String invalidTarget : invalidTargets) {
             UI ui = createAndInitTestUI("");
             try {

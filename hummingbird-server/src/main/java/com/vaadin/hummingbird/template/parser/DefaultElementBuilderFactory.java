@@ -60,13 +60,8 @@ public class DefaultElementBuilderFactory
     }
 
     @Override
-    public boolean isDefault(Node node) {
-        return hasType(node);
-    }
-
-    @Override
     protected boolean canHandle(Element node) {
-        return false;
+        return true;
     }
 
     private void setBinding(Attribute attribute,

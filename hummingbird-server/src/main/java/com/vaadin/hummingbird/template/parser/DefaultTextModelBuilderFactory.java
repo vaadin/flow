@@ -50,12 +50,7 @@ public class DefaultTextModelBuilderFactory
 
     @Override
     protected boolean canHandle(TextNode node) {
-        return false;
-    }
-
-    @Override
-    public boolean isDefault(Node node) {
-        return hasType(node);
+        return true;
     }
 
 }

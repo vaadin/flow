@@ -49,19 +49,6 @@ public interface TemplateNodeBuilderFactory<T extends Node> {
     boolean isApplicable(Node node);
 
     /**
-     * Returns {@code true} if the factory is the default one to handle the
-     * {@code node}.
-     * <p>
-     * If there are not applicable factories to the {@code node} then the
-     * default factory is applied to the {@code node} if available.
-     * 
-     * @param node
-     *            the node to check against of
-     * @return {@code true} if the factory is default for the node
-     */
-    boolean isDefault(Node node);
-
-    /**
      * Returns a template builder for the given {@code node} using
      * {@code builderProducer} as a context to create a builder for other node
      * type.

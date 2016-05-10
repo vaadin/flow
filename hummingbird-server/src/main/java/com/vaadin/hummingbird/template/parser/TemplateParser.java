@@ -45,6 +45,7 @@ public class TemplateParser {
             + " then only the contents of the <body> tag will be used.";
 
     private static final Collection<TemplateNodeBuilderFactory<?>> FACTORIES = loadFactories();
+    private static final Collection<TemplateNodeBuilderFactory<?>> DEFAULT_FACTORIES = loadDefaultFactories();
 
     private TemplateParser() {
         // Only static methods
@@ -89,10 +90,16 @@ public class TemplateParser {
     private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
         Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
         factories.add(new ChildTextNodeBuilderFactory());
-        factories.add(new DefaultTextModelBuilderFactory());
-        factories.add(new DefaultElementBuilderFactory());
         factories.add(new TextModelBuilderFactory());
         factories.add(new ForElementBuilderFactory());
+        return factories;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private static Collection<TemplateNodeBuilderFactory<?>> loadDefaultFactories() {
+        Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
+        factories.add(new DefaultTextModelBuilderFactory());
+        factories.add(new DefaultElementBuilderFactory());
         return factories;
     }
 
@@ -122,12 +129,10 @@ public class TemplateParser {
         if (node instanceof Comment) {
             return Optional.empty();
         }
-        List<TemplateNodeBuilderFactory<?>> list = FACTORIES.stream()
-                .filter(factory -> factory.isApplicable(node))
-                .collect(Collectors.toList());
+        List<TemplateNodeBuilderFactory<?>> list = filterApplicable(FACTORIES,
+                node);
         if (list.isEmpty()) {
-            list = FACTORIES.stream().filter(factory -> factory.isDefault(node))
-                    .collect(Collectors.toList());
+            list = filterApplicable(DEFAULT_FACTORIES, node);
             if (list.isEmpty()) {
                 throw new IllegalArgumentException(
                         "Unsupported node type: " + node.getClass().getName());
@@ -137,6 +142,12 @@ public class TemplateParser {
         TemplateNodeBuilderFactory factory = list.get(0);
         Function<Node, Optional<TemplateNodeBuilder>> function = TemplateParser::createBuilder;
         return Optional.of(factory.createBuilder(node, function));
+    }
+
+    private static List<TemplateNodeBuilderFactory<?>> filterApplicable(
+            Collection<TemplateNodeBuilderFactory<?>> factories, Node node) {
+        return factories.stream().filter(factory -> factory.isApplicable(node))
+                .collect(Collectors.toList());
     }
 
 }

@@ -49,11 +49,6 @@ public abstract class AbstractTemplateBuilderFactory<T extends Node>
                 && canHandle(nodeType.cast(node));
     }
 
-    @Override
-    public boolean isDefault(Node node) {
-        return false;
-    }
-
     /**
      * Returns {@code true} if the factory can handle the {@code node}.
      * 

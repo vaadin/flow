@@ -664,7 +664,7 @@ public class UI extends Component
 
     /**
      * Updates this UI to show the view corresponding to the given location. The
-     * location must be a relative URL without any ".." segments.
+     * location must be a relative path without any ".." segments.
      *
      * @param location
      *            the location to navigate to, not <code>null</code>
