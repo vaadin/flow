@@ -21,8 +21,8 @@ import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
 
 /**
- * Client-side representation of a generic {@link BindingValueProvider} received from
- * the server. The properties are based on the output of
+ * Client-side representation of a generic {@link BindingValueProvider} received
+ * from the server. The properties are based on the output of
  * {@link BindingValueProvider#toJson()}.
  *
  * @author Vaadin Ltd

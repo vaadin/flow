@@ -253,8 +253,7 @@ public class PushHandler {
                     // when using streaming (the client -> server request
                     // instead of the opened push channel)
                     errorResource = ((AtmospherePushConnection) ui
-                            .getInternals().getPushConnection())
-                                    .getResource();
+                            .getInternals().getPushConnection()).getResource();
                 }
 
                 sendNotificationAndDisconnect(errorResource,
@@ -293,8 +292,7 @@ public class PushHandler {
     }
 
     private static AtmospherePushConnection getConnectionForUI(UI ui) {
-        PushConnection pushConnection = ui.getInternals()
-                .getPushConnection();
+        PushConnection pushConnection = ui.getInternals().getPushConnection();
         if (pushConnection instanceof AtmospherePushConnection) {
             return (AtmospherePushConnection) pushConnection;
         } else {
