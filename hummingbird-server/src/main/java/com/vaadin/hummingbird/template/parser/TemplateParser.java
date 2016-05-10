@@ -44,7 +44,7 @@ public class TemplateParser {
     private static final String ROOT_CLARIFICATION = "If the template contains <html> and <body> tags,"
             + " then only the contents of the <body> tag will be used.";
 
-    private static Collection<TemplateNodeBuilderFactory<?>> FACTORIES = loadFactories();
+    private static final Collection<TemplateNodeBuilderFactory<?>> FACTORIES = loadFactories();
 
     private TemplateParser() {
         // Only static methods

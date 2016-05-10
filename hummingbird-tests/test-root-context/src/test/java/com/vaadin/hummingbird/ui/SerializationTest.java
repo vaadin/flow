@@ -45,7 +45,6 @@ public class SerializationTest {
                     getClass().getClassLoader()).getAllViewClasses();
             for (Class<? extends View> viewClass : viewClasses) {
                 View view = viewClass.newInstance();
-                System.out.println("Testing " + view.getClass().getName());
                 view.onLocationChange(new LocationChangeEvent(new Router(), ui,
                         new Location(""), Collections.emptyList(),
                         Collections.emptyMap()));

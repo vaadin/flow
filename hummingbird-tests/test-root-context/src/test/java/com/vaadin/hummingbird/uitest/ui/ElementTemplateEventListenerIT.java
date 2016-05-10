@@ -15,27 +15,31 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.html.Button;
-import com.vaadin.hummingbird.html.Div;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.router.View;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class TextTemplateView extends Div implements View {
+public class ElementTemplateEventListenerIT extends PhantomJSTest {
 
-    public TextTemplateView() {
-        Button button = new Button();
-        InlineTemplate text = new InlineTemplate("<div id='text'>{{name}}</div>");
-        setName(text, "Foo");
-        button.addClickListener(event -> setName(text, "Bar"));
-        add(button, text);
+    @Before
+    public void setUp() {
+        open();
     }
 
-    private void setName(InlineTemplate template, String name) {
-        template.getElement().getNode().getFeature(ModelMap.class)
-                .setValue("name", name);
+    @Test
+    public void handleClickEvent() {
+        Assert.assertFalse(isElementPresent(By.id("foo")));
+        WebElement target = findElement(By.className("target"));
+        target.click();
+
+        Assert.assertTrue(isElementPresent(By.id("foo")));
     }
 }

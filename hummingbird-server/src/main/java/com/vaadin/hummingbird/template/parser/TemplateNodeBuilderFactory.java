@@ -26,13 +26,16 @@ import com.vaadin.hummingbird.template.TemplateNodeBuilder;
  * Strategy to handle a JSOUP node and produce a {@link TemplateNodeBuilder}
  * instance if applicable.
  * 
+ * @param <T>
+ *            the node type which factory is able to handle
+ * 
  * @author Vaadin Ltd
  *
  */
 public interface TemplateNodeBuilderFactory<T extends Node> {
 
     /**
-     * Returns {@code true) if applicable to the {@code node}.
+     * Returns {@code true} if applicable to the {@code node}.
      * <p>
      * Only one factory must be applicable for the {@code node}. The
      * {@link #isDefault(Node)} method is also checked to apply the factory as a
@@ -46,7 +49,7 @@ public interface TemplateNodeBuilderFactory<T extends Node> {
     boolean isApplicable(Node node);
 
     /**
-     * Returns {@code true) if the factory is the default one to handle the
+     * Returns {@code true} if the factory is the default one to handle the
      * {@code node}.
      * <p>
      * If there are not applicable factories to the {@code node} then the
@@ -69,7 +72,7 @@ public interface TemplateNodeBuilderFactory<T extends Node> {
      * @param builderProducer
      *            builder producer as a context to handle nodes that the factory
      *            is not able to handle
-     * @return
+     * @return the template node builder for the {@code node}
      */
     TemplateNodeBuilder createBuilder(T node,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer);
