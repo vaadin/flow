@@ -86,7 +86,14 @@ public class ComponentEventBus implements Serializable {
                 .computeIfAbsent(eventType,
                         t -> new ComponentEventData()).listeners;
         listeners.add(listener);
-        return () -> removeListener(eventType, listener);
+        // This needs to be an anonymous class and not a lambda because of
+        // https://github.com/vaadin/hummingbird/issues/575
+        return new EventRegistrationHandle() {
+            @Override
+            public void remove() {
+                removeListener(eventType, listener);
+            }
+        };
     }
 
     /**
