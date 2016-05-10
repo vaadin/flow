@@ -125,10 +125,13 @@ public class Router implements Serializable {
         }
 
         if (handler == null) {
-            handler = new ErrorNavigationHandler(404);
+            Class<? extends View> errorView = configuration.getErrorView();
+            handler = new StaticViewRenderer(errorView,
+                    configuration.getParentViewsAsList(errorView));
         }
 
         handler.handle(navigationEvent);
+
     }
 
     // Non-private to enable testing

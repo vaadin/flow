@@ -69,7 +69,7 @@ public interface ImmutableRouterConfiguration {
     /**
      * Gets the parent types configured for the given view type.
      * <p>
-     * The returned list includes the parent view as returned by
+     * The returned strean includes the parent view as returned by
      * {@link #getParentView(Class)} and recursively up until a view which does
      * not have a parent view.
      *
@@ -132,4 +132,16 @@ public interface ImmutableRouterConfiguration {
      *         <code>false</code> otherwise
      */
     boolean isConfigured();
+
+    /**
+     * Gets the error view type.
+     * <p>
+     * The error view corresponds to the 404 error page. It is shown when the
+     * user tries to navigate into an undefined route.
+     * <p>
+     * By default returns the {@link DefaultErrorView}.
+     *
+     * @return the error view type
+     */
+    Class<? extends View> getErrorView();
 }
