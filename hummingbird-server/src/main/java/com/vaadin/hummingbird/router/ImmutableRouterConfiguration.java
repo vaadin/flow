@@ -60,10 +60,11 @@ public interface ImmutableRouterConfiguration {
      * @param viewType
      *            the view type for which to find a parent, not
      *            <code>null</code>
-     * @return the parent view type, or <code>null</code> if no parent view has
+     * @return the parent view type, or an empty optional if no parent view has
      *         been set
      */
-    Class<? extends HasChildView> getParentView(Class<? extends View> viewType);
+    Optional<Class<? extends HasChildView>> getParentView(
+            Class<? extends View> viewType);
 
     /**
      * Gets the parent types configured for the given view type.
