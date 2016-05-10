@@ -25,6 +25,7 @@ import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.server.Command;
 import com.vaadin.ui.Template;
 
 /**
@@ -70,9 +71,9 @@ public class ForTemplateView extends Div implements View {
                 () -> modelList.remove(0)));
     }
 
-    private Button createButton(String text, String id, Runnable action) {
+    private Button createButton(String text, String id, Command action) {
         Button button = new Button(text);
-        button.addClickListener(e -> action.run());
+        button.addClickListener(e -> action.execute());
         button.setId(id);
         return button;
     }
