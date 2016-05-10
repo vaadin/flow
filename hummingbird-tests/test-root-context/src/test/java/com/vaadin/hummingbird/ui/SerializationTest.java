@@ -21,10 +21,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,11 +44,6 @@ public class SerializationTest {
             Collection<Class<? extends View>> viewClasses = new ViewClassLocator(
                     getClass().getClassLoader()).getAllViewClasses();
             for (Class<? extends View> viewClass : viewClasses) {
-                Constructor<?> ctors[] = viewClass.getDeclaredConstructors();
-                if (Stream.of(ctors)
-                        .anyMatch(ctor -> ctor.getParameterCount() > 0)) {
-                    continue;
-                }
                 View view = viewClass.newInstance();
                 view.onLocationChange(new LocationChangeEvent(new Router(), ui,
                         new Location(""), Collections.emptyList(),
