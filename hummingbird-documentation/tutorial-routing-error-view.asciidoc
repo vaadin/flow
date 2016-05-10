@@ -1,0 +1,44 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+ifdef::env-atom[:outfilesuffix: .asciidoc]
+
+= Defining an Error View
+For a basic routing tutorial, see <<tutorial-routing#,Defining View Routes and Navigating>>.
+
+When the user navigates to a URL which has not been mapped to any View, you want to tell the user that this URL does not lead to any content. You can register an error view  in your router configuration so that it is shown for all unmapped URLs:
+
+[source,java]
+----
+public class MyRouterConfigurator implements RouterConfigurator {
+    @Override
+    public void configure(RouterConfiguration configuration) {
+        configuration.setErrorView(MyErrorView.class, MainLayout.class);
+    }
+}
+----
+
+Like all other views, the error view can be rendered inside a parent view (`MainLayout` in the above example) or as a standalone view.
+
+A simple error view implementation is:
+
+[source,java]
+----
+public class MyErrorView extends Div implements View {
+  public MyErrorView() {
+    setText("404 - View not found");
+  }
+}
+----
+
+The above implementation also happens to produce the same result as the default error view in the framework.
+
+To get access to the URL the user navigated to, you can override `onLocationChange` in your error view:
+
+[source,java]
+----
+public class MyErrorView extends Div implements View {
+  @Override
+  public void onLocationChange(LocationChangeEvent locationChangeEvent) {
+    setText("The view ''"+locationChangeEvent.getLocation().getPath()+"' cannot be found");
+  }
+}
+----
