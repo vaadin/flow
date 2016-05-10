@@ -208,8 +208,14 @@ public class TemplateParser {
         String name = attribute.getKey();
 
         if (name.startsWith("(")) {
-            throw new TemplateParseException(
-                    "Dynamic binding support has not yet been implemented");
+            if (!name.endsWith(")")) {
+                StringBuilder msg = new StringBuilder(
+                        "Event listener registration should be in the form (click)='...' but template contains '");
+                msg.append(attribute.toString()).append("'.");
+                throw new TemplateParseException(msg.toString());
+            }
+            String key = extractKey(name, 1);
+            builder.addEventHandler(key, attribute.getValue());
         } else if (name.startsWith("[")) {
             if (!name.endsWith("]")) {
                 StringBuilder msg = new StringBuilder(
@@ -217,9 +223,7 @@ public class TemplateParser {
                 msg.append(attribute.toString()).append("'.");
                 throw new TemplateParseException(msg.toString());
             }
-            String key = name;
-            key = key.substring(1);
-            key = key.substring(0, key.length() - 1);
+            String key = extractKey(name, 1);
             builder.setProperty(key, new ModelValueBindingProvider(
                     stripForLoopVariableIfNeeded(attribute.getValue())));
         } else {
@@ -230,6 +234,13 @@ public class TemplateParser {
             builder.setAttribute(name,
                     new StaticBindingValueProvider(attribute.getValue()));
         }
+    }
+
+    private static String extractKey(String attributeName,
+            int enclosingLength) {
+        String key = attributeName;
+        key = key.substring(enclosingLength);
+        return key.substring(0, key.length() - enclosingLength);
     }
 
     /**
