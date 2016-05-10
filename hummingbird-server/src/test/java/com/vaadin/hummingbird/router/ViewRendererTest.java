@@ -95,6 +95,10 @@ public class ViewRendererTest {
         }
     }
 
+    public static class ErrorView extends TestView {
+
+    }
+
     public static class AnotherParentView extends ParentView {
     }
 

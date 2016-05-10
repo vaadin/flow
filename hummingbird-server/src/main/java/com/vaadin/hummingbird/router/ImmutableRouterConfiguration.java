@@ -132,4 +132,15 @@ public interface ImmutableRouterConfiguration {
      *         <code>false</code> otherwise
      */
     boolean isConfigured();
+
+    /**
+     * Gets the error view type.
+     * <p>
+     * The error view corresponds to the 404 error page. It is shown when the
+     * user tries to navigate into an undefined route.
+     *
+     * @return the error view type to show or an empty optional if none has been
+     *         set
+     */
+    Optional<Class<? extends View>> getErrorView();
 }
