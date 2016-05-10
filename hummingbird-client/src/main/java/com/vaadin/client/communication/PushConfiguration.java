@@ -51,8 +51,7 @@ public class PushConfiguration {
     }
 
     private void setupListener() {
-        getConfigurationMap()
-                .getProperty(PushConfigurationMap.PUSHMODE_KEY)
+        getConfigurationMap().getProperty(PushConfigurationMap.PUSHMODE_KEY)
                 .addChangeListener(this::onPushModeChange);
     }
 

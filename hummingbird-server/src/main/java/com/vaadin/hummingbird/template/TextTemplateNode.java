@@ -47,7 +47,8 @@ public class TextTemplateNode extends AbstractElementTemplateNode {
      * @param textBinding
      *            the binding for the text content
      */
-    public TextTemplateNode(TemplateNode parent, BindingValueProvider textBinding) {
+    public TextTemplateNode(TemplateNode parent,
+            BindingValueProvider textBinding) {
         super(parent);
         assert textBinding != null;
 
