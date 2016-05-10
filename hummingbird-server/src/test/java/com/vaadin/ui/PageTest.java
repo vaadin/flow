@@ -75,8 +75,8 @@ public class PageTest {
         Assert.assertEquals(1,
                 ui.getInternals().getPendingJavaScriptInvocations().size());
 
-        Assert.assertEquals(1, ui.getInternals()
-                .dumpPendingJavaScriptInvocations().size());
+        Assert.assertEquals(1,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
 
         Assert.assertEquals(0,
                 ui.getInternals().getPendingJavaScriptInvocations().size());

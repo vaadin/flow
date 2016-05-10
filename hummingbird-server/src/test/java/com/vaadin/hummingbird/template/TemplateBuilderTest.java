@@ -26,7 +26,8 @@ public class TemplateBuilderTest {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
                 .setProperty("foo", new StaticBindingValueProvider("bar"))
                 .setAttribute("baz", new StaticBindingValueProvider("lorem"))
-                .addChild(new TextTemplateBuilder(new StaticBindingValueProvider("baz")));
+                .addChild(new TextTemplateBuilder(
+                        new StaticBindingValueProvider("baz")));
 
         ElementTemplateNode node = builder.build(null);
 

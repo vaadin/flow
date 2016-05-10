@@ -71,8 +71,8 @@ public final class ElementBinder {
      * {@code nodeFactory} and append them to the {@code parent}.
      * <p>
      * This is just a shorthand for
-     * {@link #populateChildren(Element, StateNode, int, Function, Node)} with the
-     * {@code null} value for the last parameter
+     * {@link #populateChildren(Element, StateNode, int, Function, Node)} with
+     * the {@code null} value for the last parameter
      * 
      * @see #populateChildren(Element, StateNode, int, Function, Node)
      * 

@@ -31,8 +31,8 @@ public class BootstrapHandlerTest {
         Assert.assertEquals(overriddenPageTitle,
                 BootstrapHandler.resolvePageTitle(context).get());
 
-        Assert.assertEquals(0, ui.getInternals()
-                .dumpPendingJavaScriptInvocations().size());
+        Assert.assertEquals(0,
+                ui.getInternals().dumpPendingJavaScriptInvocations().size());
     }
 
     @Test
