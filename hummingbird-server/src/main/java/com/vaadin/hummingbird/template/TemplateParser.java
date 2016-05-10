@@ -210,12 +210,12 @@ public class TemplateParser {
         if (name.startsWith("(")) {
             if (!name.endsWith(")")) {
                 StringBuilder msg = new StringBuilder(
-                        "Event listener registration should be in the form (click)='funciton()' but template contains '");
+                        "Event listener registration should be in the form (click)='...' but template contains '");
                 msg.append(attribute.toString()).append("'.");
                 throw new TemplateParseException(msg.toString());
             }
             String key = extractKey(name, 1);
-            builder.setEventHandler(key, attribute.getValue());
+            builder.addEventHandler(key, attribute.getValue());
         } else if (name.startsWith("[")) {
             if (!name.endsWith("]")) {
                 StringBuilder msg = new StringBuilder(

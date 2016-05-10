@@ -79,7 +79,7 @@ public class ViewClassLocator {
         return Logger.getLogger(ViewClassLocator.class.getName());
     }
 
-    Collection<Class<? extends View>> getAllViewClasses() {
+    public Collection<Class<? extends View>> getAllViewClasses() {
         return views.values();
     }
 

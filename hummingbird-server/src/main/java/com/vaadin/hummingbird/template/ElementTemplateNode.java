@@ -150,7 +150,7 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
     }
 
     /**
-     * Gets the event handler for the given event name.
+     * Gets the event handler for the given event name, if present.
      *
      * @param event
      *            the event name

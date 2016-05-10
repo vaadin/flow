@@ -16,7 +16,6 @@
 package com.vaadin.client.hummingbird.template;
 
 import com.vaadin.client.ClientEngineTestBase;
-import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ElementBinder;
@@ -629,8 +628,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testEventHandler() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        templateNode.addEventHandler("click",
-                "window.console.log('sss');$event.target.id='foo';");
+        templateNode.addEventHandler("click", "$event.target.id='foo'");
 
         Element element = (Element) TemplateElementBinder
                 .createAndBind(stateNode, templateNode);
@@ -638,9 +636,11 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .createEvent(Events.MOUSE);
         event.initMouseEvent("click", true, true, Browser.getWindow(), 0, 0, 0,
                 0, 0, false, false, false, false, 0, element);
-        element.addEventListener("click", evt -> Console.log("ccccccccc"),
-                false);
+
+        Browser.getDocument().getBody().appendChild(element);
+
         element.dispatchEvent(event);
+        assertEquals("foo", element.getAttribute("id"));
     }
 
     private StateNode createNgForModelNode(TestElementTemplateNode parent,

@@ -157,7 +157,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
      *            triggered, not <code>null</code>
      * @return this element template builder
      */
-    public ElementTemplateBuilder setEventHandler(String event,
+    public ElementTemplateBuilder addEventHandler(String event,
             String handler) {
         assert event != null;
         assert handler != null;
@@ -167,7 +167,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
 
     /**
      * Gets the event handler that have been defined using
-     * {@link #setEventHandler(String, String)}.
+     * {@link #addEventHandler(String, String)}.
      *
      * @return a map of event handlers, not <code>null</code>
      */
