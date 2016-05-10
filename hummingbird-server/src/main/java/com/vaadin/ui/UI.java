@@ -501,8 +501,7 @@ public class UI extends Component
      * @return The instance used for configuring the loading indicator
      */
     public LoadingIndicatorConfiguration getLoadingIndicatorConfiguration() {
-        return getNode()
-                .getFeature(LoadingIndicatorConfigurationMap.class);
+        return getNode().getFeature(LoadingIndicatorConfigurationMap.class);
     }
 
     /**
@@ -578,8 +577,7 @@ public class UI extends Component
      * @return The instance used for reconnect dialog configuration
      */
     public ReconnectDialogConfiguration getReconnectDialogConfiguration() {
-        return getNode()
-                .getFeature(ReconnectDialogConfigurationMap.class);
+        return getNode().getFeature(ReconnectDialogConfigurationMap.class);
     }
 
     private static Logger getLogger() {
@@ -666,7 +664,7 @@ public class UI extends Component
 
     /**
      * Updates this UI to show the view corresponding to the given location. The
-     * location must be a relative URL without any ".." segments.
+     * location must be a relative path without any ".." segments.
      *
      * @param location
      *            the location to navigate to, not <code>null</code>
