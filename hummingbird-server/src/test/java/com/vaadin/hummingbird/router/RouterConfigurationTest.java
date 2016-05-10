@@ -233,9 +233,9 @@ public class RouterConfigurationTest {
         router.navigate(ui, new Location("route"));
 
         Assert.assertEquals(ParentView.class,
-                router.getConfiguration().getParentView(TestView.class));
-        Assert.assertEquals(AnotherParentView.class,
-                router.getConfiguration().getParentView(ParentView.class));
+                router.getConfiguration().getParentView(TestView.class).get());
+        Assert.assertEquals(AnotherParentView.class, router.getConfiguration()
+                .getParentView(ParentView.class).get());
 
         Assert.assertEquals(Arrays.asList(TestView.class, ParentView.class,
                 AnotherParentView.class), getViewChainTypes(ui));
@@ -254,9 +254,9 @@ public class RouterConfigurationTest {
 
         router.navigate(ui, new Location("route"));
         Assert.assertEquals(ParentView.class,
-                router.getConfiguration().getParentView(TestView.class));
-        Assert.assertEquals(AnotherParentView.class,
-                router.getConfiguration().getParentView(ParentView.class));
+                router.getConfiguration().getParentView(TestView.class).get());
+        Assert.assertEquals(AnotherParentView.class, router.getConfiguration()
+                .getParentView(ParentView.class).get());
         Assert.assertEquals(Arrays.asList(TestView.class, ParentView.class,
                 AnotherParentView.class), getViewChainTypes(ui));
     }
