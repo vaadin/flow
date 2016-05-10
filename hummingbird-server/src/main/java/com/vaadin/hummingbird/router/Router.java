@@ -16,9 +16,13 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
@@ -86,8 +90,20 @@ public class Router implements Serializable {
             navigate(ui, new Location(newLocation));
         });
 
+        try {
+            // Location expects an URL encoded path and getPathInfo
+            // automatically decodes it
+            path = URLEncoder.encode(path, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // This does not really happen
+            getLogger().log(Level.SEVERE, "Unable to URL encode path", e);
+        }
         Location location = new Location(path);
         navigate(ui, location);
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(Router.class.getName());
     }
 
     /**

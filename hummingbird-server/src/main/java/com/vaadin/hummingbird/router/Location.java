@@ -133,7 +133,7 @@ public class Location implements Serializable {
      * shouldn't start with <code>/</code>.
      *
      * @param path
-     *            the path to check, not null
+     *            the URL encoded path to check, not null
      */
     public static void verifyRelativePath(String path) {
         assert path != null;
@@ -156,7 +156,7 @@ public class Location implements Serializable {
                         "Relative path cannot contain .. segments");
             }
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Cannot parse path: ", e);
+            throw new IllegalArgumentException("Cannot parse path: " + path, e);
         }
 
         // All is OK if we get here

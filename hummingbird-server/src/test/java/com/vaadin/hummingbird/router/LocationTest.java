@@ -76,11 +76,29 @@ public class LocationTest {
         new Location(Collections.emptyList());
     }
 
+    @Test
     public void noSubLocation_emptyOptional() {
         Location location = new Location("foo");
         Optional<Location> maybeSubLocation = location.getSubLocation();
 
         Assert.assertFalse(maybeSubLocation.isPresent());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void incorrectlyEncodedLocation() {
+        Location location = new Location("foo bar");
+        Optional<Location> maybeSubLocation = location.getSubLocation();
+
+        Assert.assertFalse(maybeSubLocation.isPresent());
+    }
+
+    @Test
+    public void spaceInLocation() {
+        Location location = new Location("foo+bar");
+        Optional<Location> maybeSubLocation = location.getSubLocation();
+        Assert.assertFalse(maybeSubLocation.isPresent());
+
+        Assert.assertEquals("foo+bar", location.getFirstSegment());
     }
 
 }
