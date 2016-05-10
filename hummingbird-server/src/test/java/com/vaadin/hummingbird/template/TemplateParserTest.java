@@ -154,4 +154,55 @@ public class TemplateParserTest {
         Assert.assertEquals("input",
                 ((ElementTemplateNode) node.getChild(2)).getTag());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void ngForElementAsRoot() {
+        TemplateParser.parse(
+                "<a class='item' *ngFor='let  item      of list'>{{item.text}}</a>");
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void ngForElementMissingCollection() {
+        TemplateParser.parse(
+                "<div><a class='item' *ngFor='let item'>{{item.text}}</a></div>");
+    }
+
+    @Test
+    public void ngForElement() {
+        TemplateNode node = TemplateParser.parse(
+                "<div><a class='item' *ngFor='let  item      of list'>{{item.text}}</a></div>");
+        ForTemplateNode forNode = (ForTemplateNode) node.getChild(0);
+        Assert.assertEquals("list", forNode.getCollectionVariable());
+        Assert.assertEquals("item", forNode.getLoopVariable());
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void nestedNgForElement() {
+        TemplateParser.parse("<ul>" //
+                + "  <li class='item' *ngFor='let  item      of list'>" //
+                + "    <a  *ngFor='let  link      of item.links' [href]='link.href'>{{link.text}}</a>" //
+                + "  </li>" //
+                + "</ul>"); //
+    }
+
+    @Test
+    public void parseEventHandler() {
+        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
+                .parse("<button (click)='handle($event)'>");
+        Assert.assertEquals(1, node.getEventNames().count());
+        Optional<String> event = node.getEventNames().findAny();
+        Assert.assertTrue(event.isPresent());
+        Assert.assertEquals("click", event.get());
+
+        Optional<String> eventHandler = node.getEventHandlerExpression("click");
+        Assert.assertTrue(eventHandler.isPresent());
+        Assert.assertEquals("handle($event)", eventHandler.get());
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseWrongEventHandler() {
+        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
+                .parse("<button (click='handle($event)'>");
+    }
+
 }

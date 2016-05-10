@@ -17,7 +17,11 @@ package com.vaadin.hummingbird.template;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.StringTokenizer;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
@@ -37,6 +41,15 @@ public class TemplateParser {
 
     private static final String ROOT_CLARIFICATION = "If the template contains <html> and <body> tags,"
             + " then only the contents of the <body> tag will be used.";
+
+    // Jsoup converts everything to lowercase
+    private static final String NG_FOR = "*ngFor".toLowerCase(Locale.ENGLISH);
+
+    /**
+     * Threadlocal for tracking whether parser is inside a for loop or not. To
+     * be completely removed once scopes are properly implemented.
+     */
+    private static ThreadLocal<String> insideFor = new ThreadLocal<>();
 
     private TemplateParser() {
         // Only static methods
@@ -71,7 +84,6 @@ public class TemplateParser {
      */
     public static TemplateNode parse(String templateString) {
         assert templateString != null;
-
         Document document = Jsoup.parseBodyFragment(templateString);
 
         return parse(document);
@@ -120,25 +132,75 @@ public class TemplateParser {
         } else if (text.startsWith("{{") && text.endsWith("}}")) {
             String key = text.substring(2);
             key = key.substring(0, key.length() - 2);
-            return new TextTemplateBuilder(new ModelValueBindingProvider(key));
+            return new TextTemplateBuilder(new ModelValueBindingProvider(
+                    stripForLoopVariableIfNeeded(key)));
         } else {
             // No special bindings to support for now
-            return new TextTemplateBuilder(new StaticBindingValueProvider(text));
+            return new TextTemplateBuilder(
+                    new StaticBindingValueProvider(text));
         }
     }
 
-    private static ElementTemplateBuilder createElementBuilder(
-            Element element) {
-        ElementTemplateBuilder builder = new ElementTemplateBuilder(
-                element.tagName());
+    private static TemplateNodeBuilder createElementBuilder(Element element) {
+        if (element.hasAttr(NG_FOR)) {
+            String ngFor = element.attr(NG_FOR);
+            element.removeAttr(NG_FOR);
+            List<String> tokens = parseNgFor(ngFor);
+            if (tokens.size() != 4 || !"let".equals(tokens.get(0))
+                    || !"of".equals(tokens.get(2))) {
+                throw new TemplateParseException(
+                        "The 'ngFor' template is supported only in the form *ngFor='let item of list', but template contains "
+                                + ngFor);
+            }
 
-        element.attributes().forEach(attr -> setBinding(attr, builder));
+            String loopVariable = tokens.get(1);
+            if (insideFor.get() != null) {
+                throw new TemplateParseException(
+                        "Nested *ngFor are currently not supported");
+            }
 
-        element.childNodes().stream().map(TemplateParser::createBuilder)
-                .filter(Optional::isPresent).map(Optional::get)
-                .forEach(builder::addChild);
+            Optional<TemplateNodeBuilder> subBuilder;
+            try {
+                insideFor.set(loopVariable);
+                subBuilder = TemplateParser.createBuilder(element);
+            } finally {
+                insideFor.remove();
+            }
+            if (!subBuilder.isPresent()) {
+                throw new IllegalStateException(
+                        "Sub builder mising for *ngFor element "
+                                + element.html());
+            }
+            if (!(subBuilder.get() instanceof ElementTemplateBuilder)) {
+                throw new IllegalStateException(
+                        "Sub builder for *ngFor element " + element.html()
+                                + " of invalid type: "
+                                + subBuilder.get().getClass().getName());
+            }
 
-        return builder;
+            return new ForTemplateBuilder(loopVariable, tokens.get(3),
+                    (ElementTemplateBuilder) subBuilder.get());
+        } else {
+            ElementTemplateBuilder builder = new ElementTemplateBuilder(
+                    element.tagName());
+
+            element.attributes().forEach(attr -> setBinding(attr, builder));
+
+            element.childNodes().stream().map(TemplateParser::createBuilder)
+                    .filter(Optional::isPresent).map(Optional::get)
+                    .forEach(builder::addChild);
+
+            return builder;
+        }
+    }
+
+    private static List<String> parseNgFor(String ngFor) {
+        List<String> tokens = new ArrayList<>();
+        StringTokenizer tokenizer = new StringTokenizer(ngFor);
+        while (tokenizer.hasMoreTokens()) {
+            tokens.add(tokenizer.nextToken());
+        }
+        return tokens;
     }
 
     private static void setBinding(Attribute attribute,
@@ -146,8 +208,14 @@ public class TemplateParser {
         String name = attribute.getKey();
 
         if (name.startsWith("(")) {
-            throw new TemplateParseException(
-                    "Dynamic binding support has not yet been implemented");
+            if (!name.endsWith(")")) {
+                StringBuilder msg = new StringBuilder(
+                        "Event listener registration should be in the form (click)='...' but template contains '");
+                msg.append(attribute.toString()).append("'.");
+                throw new TemplateParseException(msg.toString());
+            }
+            String key = extractKey(name, 1);
+            builder.addEventHandler(key, attribute.getValue());
         } else if (name.startsWith("[")) {
             if (!name.endsWith("]")) {
                 StringBuilder msg = new StringBuilder(
@@ -155,17 +223,49 @@ public class TemplateParser {
                 msg.append(attribute.toString()).append("'.");
                 throw new TemplateParseException(msg.toString());
             }
-            String key = name;
-            key = key.substring(1);
-            key = key.substring(0, key.length() - 1);
-            builder.setProperty(key,
-                    new ModelValueBindingProvider(attribute.getValue()));
+            String key = extractKey(name, 1);
+            builder.setProperty(key, new ModelValueBindingProvider(
+                    stripForLoopVariableIfNeeded(attribute.getValue())));
         } else {
             /*
              * Regular attribute names in the template, i.e. name not starting
              * with [ or (, are used as static attributes on the target element.
              */
-            builder.setAttribute(name, new StaticBindingValueProvider(attribute.getValue()));
+            builder.setAttribute(name,
+                    new StaticBindingValueProvider(attribute.getValue()));
+        }
+    }
+
+    private static String extractKey(String attributeName,
+            int enclosingLength) {
+        String key = attributeName;
+        key = key.substring(enclosingLength);
+        return key.substring(0, key.length() - enclosingLength);
+    }
+
+    /**
+     * Ensure the given model key starts with the for loop variable and a dot if
+     * inside a ngFor. Also strips the loop variable prefix so the rest of the
+     * code, which does not know anything about namespacing, works.
+     *
+     * @param modelKey
+     *            the model key to strip the prefix from
+     * @return the original model key if not inside an ngFor or a stripped key
+     *         if inside an ngFor
+     */
+    private static String stripForLoopVariableIfNeeded(String modelKey) {
+        String forLoopVariable = insideFor.get();
+        if (forLoopVariable != null) {
+            if (!modelKey.startsWith(forLoopVariable + ".")) {
+                StringBuilder msg = new StringBuilder(
+                        "Property binding inside a for loop must currently bind to the loop variable, i.e. start with '"
+                                + forLoopVariable + ".'");
+                throw new TemplateParseException(msg.toString());
+            } else {
+                return modelKey.substring(forLoopVariable.length() + 1);
+            }
+        } else {
+            return modelKey;
         }
     }
 }

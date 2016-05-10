@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.DomEvent;
+import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.ui.Component;
@@ -168,8 +169,16 @@ public class ComponentEventBus implements Serializable {
                 .getEventDataExpressions(eventType);
         String[] eventData = new String[eventDataExpressions.size()];
         eventDataExpressions.keySet().toArray(eventData);
+
+        // This needs to be an anonymous class and not a lambda because of
+        // https://github.com/vaadin/hummingbird/issues/575
         EventRegistrationHandle remover = element.addEventListener(domEventType,
-                e -> handleDomEvent(eventType, e), eventData);
+                new DomEventListener() {
+                    @Override
+                    public void handleEvent(DomEvent e) {
+                        handleDomEvent(eventType, e);
+                    }
+                }, eventData);
         componentEventData.computeIfAbsent(eventType,
                 t -> new ComponentEventData()).domEventRemover = remover;
     }

@@ -7,7 +7,7 @@
 	<artifactId>hummingbird-project</artifactId>
 	<name>Hummingbird</name>
 	<packaging>pom</packaging>
-	<version>0.0.5-SNAPSHOT</version>
+	<version>0.0.6-SNAPSHOT</version>
 
 	<modules>
 		<module>hummingbird</module>
@@ -54,7 +54,7 @@
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
 		<phantomjs.plugin.version>0.7</phantomjs.plugin.version>
-        <phantomjs.version>2.1.1</phantomjs.version>
+		<phantomjs.version>2.1.1</phantomjs.version>
 	</properties>
 
 	<repositories>
@@ -252,12 +252,17 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
 					<version>2.17</version>
+					<configuration>
+						<parallel>all</parallel>
+						<threadCount>5</threadCount>
+					</configuration>
+
 				</plugin>
 				<plugin>
-                    <groupId>com.github.klieber</groupId>
-                    <artifactId>phantomjs-maven-plugin</artifactId>
-                    <version>${phantomjs.plugin.version}</version>
-                </plugin>
+					<groupId>com.github.klieber</groupId>
+					<artifactId>phantomjs-maven-plugin</artifactId>
+					<version>${phantomjs.plugin.version}</version>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>

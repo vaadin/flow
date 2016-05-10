@@ -80,4 +80,9 @@ public abstract class AbstractElementTemplateNode extends TemplateNode {
         }
         return Element.get(templateStateNode, stateProvider);
     }
+
+    @Override
+    public Element getParentElement(StateNode node) {
+        return getElement(0, node);
+    }
 }

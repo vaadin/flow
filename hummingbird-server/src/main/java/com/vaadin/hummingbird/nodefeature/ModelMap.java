@@ -20,8 +20,8 @@ import java.io.Serializable;
 import com.vaadin.hummingbird.StateNode;
 
 /**
- * Data model feature for template data binding.
- * 
+ * Map for model values used in data binding in templates.
+ *
  * @author Vaadin Ltd
  *
  */
@@ -53,7 +53,7 @@ public class ModelMap extends NodeMap {
 
     /**
      * Gets the value corresponding to the given key.
-     * 
+     *
      * @param key
      *            the key to get a value for
      * @return the value corresponding to the key; <code>null</code> if there is
@@ -71,9 +71,9 @@ public class ModelMap extends NodeMap {
      * has been called with {@code null} as a value) it returns {@code true}. It
      * means that {@link #getValue(String)} may return {@code null} at the same
      * time when {@link #hasValue(String)} returns {@code true}.
-     * 
+     *
      * @see #setValue(String, Serializable)
-     * 
+     *
      * @param key
      *            the key to check a value for
      * @return <code>true</code> if there is a value stored; <code>false</code>

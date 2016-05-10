@@ -27,10 +27,12 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.ChildSlotNode;
+import com.vaadin.hummingbird.template.ForTemplateNode;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
+import elemental.dom.NodeList;
 
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private Registry registry = new Registry() {
@@ -121,10 +123,10 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testPropertyBindingTemplate() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
+        templateNode.addProperty("prop", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, "key"));
 
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -137,10 +139,10 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testUpdatePropertyBindingTemplate() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
+        templateNode.addProperty("prop", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, "key"));
 
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -157,10 +159,10 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testUnregister_propeprtyBindingUpdateIsNotDone() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
+        templateNode.addProperty("prop", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, "key"));
 
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -176,8 +178,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testPropertyBindingNoValueTemplate() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        templateNode.addProperty("prop",
-                TestBinding.createBinding(ModelValueBindingProvider.TYPE, "key"));
+        templateNode.addProperty("prop", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, "key"));
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
 
@@ -189,7 +191,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testTextValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -202,7 +204,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testUpdateTextValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -219,7 +221,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testUnregister_textBinsingUpdateIsNotDone() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));
-        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         map.getProperty("key").setValue("foo");
         Node domNode = TemplateElementBinder.createAndBind(stateNode,
                 templateNode);
@@ -446,5 +448,222 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals(0, element.getChildElementCount());
+    }
+
+    public void testNgFor() {
+        TestElementTemplateNode parent = TestElementTemplateNode.create("div");
+        String textVar = "text";
+        StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
+                "items", textVar);
+
+        StateNode varNode = new StateNode(2, tree);
+        varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("foo");
+
+        modelNode.getList(NodeFeatures.TEMPLATE_MODELLIST).add(0, varNode);
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, parent);
+
+        Reactive.flush();
+
+        assertEquals("DIV", element.getTagName());
+        NodeList childNodes = element.getChildNodes();
+        assertTrue(childNodes.getLength() > 1);
+        assertEquals("DIV", ((Element) childNodes.item(0)).getTagName());
+        assertEquals("SPAN",
+                ((Element) childNodes.item(childNodes.getLength() - 1))
+                        .getTagName());
+
+        Element li = ((Element) childNodes.item(childNodes.getLength() - 2));
+        assertEquals("LI", li.getTagName());
+        assertEquals(4, childNodes.getLength());
+        // comment
+        assertEquals("#comment", childNodes.item(1).getNodeName());
+
+        assertEquals("foo", li.getTextContent());
+    }
+
+    public void testNgFor_unregister_noUpdates() {
+        TestElementTemplateNode parent = TestElementTemplateNode.create("div");
+        String textVar = "text";
+        StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
+                "items", textVar);
+
+        StateNode varNode = new StateNode(2, tree);
+        varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("foo");
+
+        com.vaadin.client.hummingbird.nodefeature.NodeList modelList = modelNode
+                .getList(NodeFeatures.TEMPLATE_MODELLIST);
+        modelList.add(0, varNode);
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, parent);
+
+        Reactive.flush();
+
+        String htmlBeforeUregister = element.getOuterHTML();
+
+        StateNode varNode1 = new StateNode(3, tree);
+        varNode1.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("bar");
+
+        modelList.add(1, varNode);
+
+        stateNode.unregister();
+
+        Reactive.flush();
+
+        assertEquals(htmlBeforeUregister, element.getOuterHTML());
+    }
+
+    public void testNgFor_updateModelValues() {
+        TestElementTemplateNode parent = TestElementTemplateNode.create("div");
+        String textVar = "text";
+        StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
+                "items", textVar);
+
+        StateNode varNode = new StateNode(2, tree);
+        varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("foo");
+
+        com.vaadin.client.hummingbird.nodefeature.NodeList modelList = modelNode
+                .getList(NodeFeatures.TEMPLATE_MODELLIST);
+        modelList.add(0, varNode);
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, parent);
+
+        Reactive.flush();
+
+        StateNode varNode1 = new StateNode(3, tree);
+        varNode1.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("bar");
+
+        StateNode varNode2 = new StateNode(4, tree);
+        varNode2.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("bar1");
+
+        modelList.splice(0, 1);
+        modelList.add(0, varNode1);
+        modelList.add(1, varNode2);
+
+        Reactive.flush();
+
+        assertEquals("DIV", element.getTagName());
+        NodeList childNodes = element.getChildNodes();
+        assertTrue(childNodes.getLength() > 1);
+        assertEquals("DIV", ((Element) childNodes.item(0)).getTagName());
+        assertEquals("SPAN",
+                ((Element) childNodes.item(childNodes.getLength() - 1))
+                        .getTagName());
+
+        Element li = ((Element) childNodes.item(childNodes.getLength() - 3));
+        assertEquals("LI", li.getTagName());
+        assertEquals(5, childNodes.getLength());
+        // comment
+        assertEquals("#comment", childNodes.item(1).getNodeName());
+
+        assertEquals("bar", li.getTextContent());
+
+        li = ((Element) childNodes.item(childNodes.getLength() - 2));
+        assertEquals("LI", li.getTagName());
+        assertEquals("bar1", li.getTextContent());
+    }
+
+    public void testNgFor_updateModel() {
+        TestElementTemplateNode parent = TestElementTemplateNode.create("div");
+        String textVar = "text";
+        String collectionVar = "items";
+        StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
+                collectionVar, textVar);
+
+        StateNode varNode = new StateNode(2, tree);
+        varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("foo");
+
+        modelNode.getList(NodeFeatures.TEMPLATE_MODELLIST).add(0, varNode);
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, parent);
+
+        Reactive.flush();
+
+        NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        MapProperty property = model.getProperty(collectionVar);
+        modelNode = new StateNode(3, tree);
+
+        property.setValue(modelNode);
+
+        varNode = new StateNode(4, tree);
+        varNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("bar");
+
+        modelNode.getList(NodeFeatures.TEMPLATE_MODELLIST).add(0, varNode);
+
+        Reactive.flush();
+
+        assertEquals("DIV", element.getTagName());
+        NodeList childNodes = element.getChildNodes();
+        assertTrue(childNodes.getLength() > 1);
+        assertEquals("DIV", ((Element) childNodes.item(0)).getTagName());
+        assertEquals("SPAN",
+                ((Element) childNodes.item(childNodes.getLength() - 1))
+                        .getTagName());
+
+        Element li = ((Element) childNodes.item(childNodes.getLength() - 2));
+        assertEquals("LI", li.getTagName());
+        assertEquals(4, childNodes.getLength());
+        // comment
+        assertEquals("#comment", childNodes.item(1).getNodeName());
+
+        assertEquals("bar", li.getTextContent());
+    }
+
+    private StateNode createNgForModelNode(TestElementTemplateNode parent,
+            String firstChildTag, String ngForTag, String lastChildTag,
+            String collectionVar, String textVar) {
+        TestElementTemplateNode child1 = TestElementTemplateNode
+                .create(firstChildTag);
+        int child1Id = 57;
+        registry.getTemplateRegistry().register(child1Id, child1);
+
+        TestForTemplateNode templateNode = TestTemplateNode
+                .create(ForTemplateNode.TYPE);
+
+        int templateId = 42;
+        registry.getTemplateRegistry().register(templateId, templateNode);
+
+        TestElementTemplateNode forChild = TestElementTemplateNode
+                .create(ngForTag);
+        templateNode.setCollectionVariable(collectionVar);
+
+        TestTextTemplate text = TestTextTemplate
+                .create(TestBinding.createTextValueBinding(textVar));
+        int textChildId = 85;
+        registry.getTemplateRegistry().register(textChildId, text);
+        forChild.setChildren(new double[] { textChildId });
+
+        int forChildId = 11;
+        registry.getTemplateRegistry().register(forChildId, forChild);
+
+        templateNode.setChildren(new double[] { forChildId });
+
+        TestElementTemplateNode child2 = TestElementTemplateNode
+                .create(lastChildTag);
+        int child2Id = 84;
+        registry.getTemplateRegistry().register(child2Id, child2);
+        parent.setChildren(new double[] { child1Id, templateId, child2Id });
+
+        NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        MapProperty property = model.getProperty(collectionVar);
+        StateNode modelNode = new StateNode(1, tree);
+
+        property.setValue(modelNode);
+
+        return modelNode;
     }
 }

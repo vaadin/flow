@@ -13,10 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.event;
+package com.vaadin.humminbird.tutorial.template;
 
-import com.vaadin.ui.ComponentTest.TestComponent;
+import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 
-public class TestComponentWithDomEvent extends TestComponent {
-
+@CodeFor("tutorial-template-bindings.asciidoc")
+public class Bindings {
+    /*
+     * No java code in the tutorial, but there must be a java file for each
+     * tutorial-*.asciidoc file.
+     */
 }

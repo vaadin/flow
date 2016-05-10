@@ -218,7 +218,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
         Optional<AbstractControlTemplateNode> parentGenerator = node
                 .getFeature(ParentGeneratorHolder.class).getParentGenerator();
         if (parentGenerator.isPresent()) {
-            return parentGenerator.get().getParent(node);
+            return parentGenerator.get().getParentElement(node);
         }
 
         return Element.get(parentNode);

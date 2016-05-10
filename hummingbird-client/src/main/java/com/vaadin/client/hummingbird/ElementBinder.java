@@ -15,9 +15,13 @@
  */
 package com.vaadin.client.hummingbird;
 
+import java.util.function.Function;
+
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.template.TemplateElementBinder;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
+import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
@@ -25,9 +29,13 @@ import elemental.dom.Node;
  *
  * @author Vaadin Ltd
  */
-public interface ElementBinder {
+public final class ElementBinder {
+
+    private ElementBinder() {
+    }
+
     /**
-     * Creates and binds a DOM node for the given state node. . For state nodes
+     * Creates and binds a DOM node for the given state node. For state nodes
      * based on templates, the root element of the template is returned.
      *
      * @param stateNode
@@ -35,7 +43,7 @@ public interface ElementBinder {
      *            <code>null</code>
      * @return the DOM node, not <code>null</code>
      */
-    static Node createAndBind(StateNode stateNode) {
+    public static Node createAndBind(StateNode stateNode) {
         assert stateNode != null;
 
         Node node;
@@ -56,4 +64,70 @@ public interface ElementBinder {
 
         return node;
     }
+
+    /**
+     * Uses {@link NodeList} feature of the {@code node} identified by
+     * {@code featureId} to populate list of nodes. Creates the nodes using
+     * {@code nodeFactory} and append them to the {@code parent}.
+     * <p>
+     * This is just a shorthand for
+     * {@link #populateChildren(Element, StateNode, int, Function, Node)} with the
+     * {@code null} value for the last parameter
+     * 
+     * @see #populateChildren(Element, StateNode, int, Function, Node)
+     * 
+     * @param parent
+     *            parent Element, not {@code null}
+     * @param node
+     *            StateNode to ask a feature for, not {@code null}
+     * @param featureId
+     *            feature identifier of the {@code node}, not {@code null}
+     * @param nodeFactory
+     *            node factory which is used to produce an HTML node based on
+     *            child StateNode from the feature NodeList, not {@code null}
+     * @return the bound children list
+     */
+    public static NodeList populateChildren(Element parent, StateNode node,
+            int featureId, Function<StateNode, Node> nodeFactory) {
+        return populateChildren(parent, node, featureId, nodeFactory, null);
+    }
+
+    /**
+     * Uses {@link NodeList} feature of the {@code node} identified by
+     * {@code featureId} to populate list of nodes. Creates the nodes using
+     * {@code nodeFactory} and append them to the {@code parent}.
+     * <p>
+     * The {@code beforeNode} parameter is used to add children to the
+     * {@code parent} before the {@code beforeNode}. It can be {@code null}.
+     * 
+     * @see #populateChildren(Element, StateNode, int, Function)
+     * 
+     * @param parent
+     *            parent Element, not {@code null}
+     * @param node
+     *            StateNode to ask a feature for, not {@code null}
+     * @param featureId
+     *            feature identifier of the {@code node}, not {@code null}
+     * @param nodeFactory
+     *            node factory which is used to produce an HTML node based on
+     *            child StateNode from the feature NodeList, not {@code null}
+     * @param beforeNode
+     *            node which is used as a bottom line for added children
+     * @return the bound children list
+     */
+    public static NodeList populateChildren(Element parent, StateNode node,
+            int featureId, Function<StateNode, Node> nodeFactory,
+            Node beforeNode) {
+        NodeList children = node.getList(featureId);
+
+        for (int i = 0; i < children.length(); i++) {
+            StateNode childNode = (StateNode) children.get(i);
+
+            Node child = nodeFactory.apply(childNode);
+
+            parent.insertBefore(child, beforeNode);
+        }
+        return children;
+    }
+
 }

@@ -34,7 +34,9 @@ These tutorials show how the different features are used.
 ** <<tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
 * Template API
 ** <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
+** <<tutorial-template-bindings#,Binding Model Data in a Template>>
 ** <<tutorial-template-components#,Adding Components to a Template>>
+** <<tutorial-template-for#,Creating Template Contents Dynamically Based on a List of Items>>
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>

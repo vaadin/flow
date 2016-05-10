@@ -15,9 +15,11 @@
  */
 package com.vaadin.hummingbird.dom;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -25,8 +27,13 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
+import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
@@ -185,7 +192,8 @@ public class TemplateElementStateProviderTest {
     @Test
     public void testTextNodeInParent() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
-                .addChild(new TextTemplateBuilder(new StaticBindingValueProvider("Hello")));
+                .addChild(new TextTemplateBuilder(
+                        new StaticBindingValueProvider("Hello")));
 
         Element element = createElement(builder);
 
@@ -412,6 +420,72 @@ public class TemplateElementStateProviderTest {
                 .setChild(child.getNode());
     }
 
+    @Test
+    public void templateBoundClassAttribute() {
+        Element element = createElement("<div class='foo bar'></div>");
+
+        Assert.assertEquals("foo bar", element.getAttribute("class"));
+
+        ClassList classList = element.getClassList();
+        Assert.assertEquals(2, classList.size());
+        Assert.assertTrue(classList.contains("foo"));
+        Assert.assertTrue(classList.contains("bar"));
+    }
+
+    @Test
+    public void requiredNodeFeatures() {
+        @SuppressWarnings("unchecked")
+        Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
+                ModelMap.class, TemplateOverridesMap.class };
+
+        TemplateElementStateProvider provider = (TemplateElementStateProvider) createElement(
+                "<div></div").getStateProvider();
+
+        // Test that a node with all required features is accepted
+        Assert.assertTrue(provider.supports(new StateNode(requiredFeatures)));
+
+        // Test that removing any feature makes it non-accepted
+        for (int i = 0; i < requiredFeatures.length; i++) {
+            ArrayList<Class<? extends NodeFeature>> list = new ArrayList<>(
+                    Arrays.asList(requiredFeatures));
+            list.remove(i);
+            Assert.assertFalse(provider
+                    .supports(new StateNode(list.toArray(new Class[0]))));
+        }
+    }
+
+    @Test
+    public void rootNodeFeatures() {
+        assertHasFeatures(TemplateElementStateProvider.createRootNode(),
+                ModelMap.class, TemplateOverridesMap.class, TemplateMap.class,
+                ComponentMapping.class, ParentGeneratorHolder.class);
+    }
+
+    @Test
+    public void subModelNodeFeatures() {
+        assertHasFeatures(TemplateElementStateProvider.createSubModelNode(),
+                ModelMap.class, TemplateOverridesMap.class);
+    }
+
+    @SafeVarargs
+    private static void assertHasFeatures(StateNode node,
+            Class<? extends NodeFeature>... features) {
+        Set<Class<? extends NodeFeature>> featureSet = new HashSet<>(
+                Arrays.asList(features));
+
+        for (Class<? extends NodeFeature> feature : NodeFeatureRegistry
+                .getFeatures()) {
+            boolean has = node.hasFeature(feature);
+            if (featureSet.contains(feature)) {
+                Assert.assertTrue("node should have the feature " + feature,
+                        has);
+            } else {
+                Assert.assertFalse("node shouldn't have the feature " + feature,
+                        has);
+            }
+        }
+    }
+
     private static Element createElement(String template) {
         return createElement(TemplateParser.parse(template));
     }
@@ -420,8 +494,8 @@ public class TemplateElementStateProviderTest {
         return createElement(builder.build(null));
     }
 
-    private static Element createElement(TemplateNode templateNode) {
-        StateNode stateNode = TemplateElementStateProvider.createNode();
+    public static Element createElement(TemplateNode templateNode) {
+        StateNode stateNode = TemplateElementStateProvider.createRootNode();
         stateNode.getFeature(TemplateMap.class).setRootTemplate(templateNode);
 
         return Element.get(stateNode);
