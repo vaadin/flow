@@ -16,8 +16,10 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -133,7 +135,7 @@ public class Location implements Serializable {
      * shouldn't start with <code>/</code>.
      *
      * @param path
-     *            the path to check, not null
+     *            the (decoded) path to check, not null
      */
     public static void verifyRelativePath(String path) {
         assert path != null;
@@ -142,7 +144,7 @@ public class Location implements Serializable {
             // Ignore forbidden chars supported in route definitions
             String strippedPath = path.replaceAll("[{}*]", "");
 
-            URI uri = new URI(strippedPath);
+            URI uri = new URI(URLEncoder.encode(strippedPath, "UTF-8"));
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"
@@ -155,8 +157,8 @@ public class Location implements Serializable {
                 throw new IllegalArgumentException(
                         "Relative path cannot contain .. segments");
             }
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Cannot parse path: ", e);
+        } catch (URISyntaxException | UnsupportedEncodingException e) {
+            throw new IllegalArgumentException("Cannot parse path: " + path, e);
         }
 
         // All is OK if we get here
