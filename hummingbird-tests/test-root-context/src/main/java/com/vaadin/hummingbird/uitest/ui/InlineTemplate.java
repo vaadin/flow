@@ -24,7 +24,7 @@ import com.vaadin.ui.Template;
  * @author Vaadin Ltd
  *
  */
-public class TestTemplate extends Template {
+public class InlineTemplate extends Template {
 
     /**
      * Creates a template instance with the given template HTML text.
@@ -35,7 +35,7 @@ public class TestTemplate extends Template {
      * @param templateHtml
      *            the template HTML
      */
-    public TestTemplate(String templateHtml) {
+    public InlineTemplate(String templateHtml) {
         super(new ByteArrayInputStream(
                 templateHtml.getBytes(StandardCharsets.UTF_8)));
     }
