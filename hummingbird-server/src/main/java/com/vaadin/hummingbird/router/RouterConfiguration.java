@@ -56,6 +56,8 @@ public class RouterConfiguration
 
     private PageTitleGenerator pageTitleGenerator;
 
+    private Class<? extends View> errorView;
+
     /**
      * Creates a new empty immutable configuration.
      */
@@ -85,6 +87,8 @@ public class RouterConfiguration
         resolver = original.resolver;
 
         pageTitleGenerator = original.pageTitleGenerator;
+
+        errorView = original.errorView;
 
         routeTreeRoot = new RouteTreeNode(original.routeTreeRoot);
 
@@ -134,18 +138,24 @@ public class RouterConfiguration
     /**
      * Resolves a route based on what has been configured using the various
      * <code>setRoute</code> methods.
+     * <p>
+     * If no route can be resolved and an error view has been set with
+     * {@link #setErrorView(Class)}, then returns a handler for showing the
+     * error view.
      *
      * @param location
      *            the location to resolve, not <code>null</code>
      * @return a navigation handler or handling the route, or <code>null</code>
-     *         if no configured route matched the location
+     *         if no configured route matched the location and error view is not
+     *         set
      */
     @Override
     public NavigationHandler resolveRoute(Location location) {
         assert location != null;
 
         // Start the recursion
-        return resolveRoute(routeTreeRoot, location);
+        return resolveRoute(routeTreeRoot,
+                location);
     }
 
     private static NavigationHandler resolveRoute(RouteTreeNode node,
@@ -316,8 +326,21 @@ public class RouterConfiguration
         return getParentViewsAsList(viewType).stream();
     }
 
-    private ArrayList<Class<? extends HasChildView>> getParentViewsAsList(
+    /**
+     * Gets the parent types configured for the given view type.
+     * <p>
+     * The returned list includes the parent view as returned by
+     * {@link #getParentView(Class)} and recursively up until a view which does
+     * not have a parent view.
+     *
+     * @param viewType
+     *            the view type for which to find the parent views, not
+     *            <code>null</code>
+     * @return a list of parent view types
+     */
+    protected ArrayList<Class<? extends HasChildView>> getParentViewsAsList(
             Class<? extends View> viewType) {
+        assert viewType != null;
         ArrayList<Class<? extends HasChildView>> parentViews = new ArrayList<>();
         Class<? extends View> currentType = viewType;
         while (true) {
@@ -484,5 +507,66 @@ public class RouterConfiguration
     @Override
     public boolean isConfigured() {
         return true;
+    }
+
+    @Override
+    public Class<? extends View> getErrorView() {
+        if (errorView == null) {
+            return DefaultErrorView.class;
+        } else {
+            return errorView;
+        }
+    }
+
+    /**
+     * Sets the error view type to use.
+     * <p>
+     * The error view corresponds to the 404 error page. It is shown when the
+     * user tries to navigate into an undefined route.
+     * <p>
+     * To specify a parent view for the error view, use
+     * {@link #setErrorView(Class, Class)} instead of this method or use
+     * {@link #setParentView(Class, Class)} after calling this method.
+     * <p>
+     * NOTE: if this view type has been registered for a route previously with a
+     * parent view, then the same parent view will be shown when this view is
+     * opened as an error view.
+     *
+     * @param errorView
+     *            the error view type to shown or <code>null</code> to remove
+     *            any previously specified error view
+     */
+    public void setErrorView(Class<? extends View> errorView) {
+        throwIfImmutable();
+
+        this.errorView = errorView;
+    }
+
+    /**
+     * Sets the error view type to use with the given parent view type.
+     * <p>
+     * This method is shorthand for calling {@link #setErrorView(Class)} and
+     * {@link #setParentView(Class, Class)}.
+     * <p>
+     * To specify an error view without a parent view, use
+     * {@link #setErrorView(Class)}.
+     *
+     * @param errorView
+     *            the error view type to shown, not <code>null</code>
+     * @param parentView
+     *            the type of the parent view for the error view, not
+     *            <code>null</code>
+     * @see #setErrorView(Class)
+     */
+    public void setErrorView(Class<? extends View> errorView,
+            Class<? extends HasChildView> parentView) {
+        if (errorView == null) {
+            throw new IllegalArgumentException("errorView cannot be null");
+        }
+        if (parentView == null) {
+            throw new IllegalArgumentException("parentView cannot be null");
+        }
+        setErrorView(errorView);
+        setParentView(errorView, parentView);
     }
 }
