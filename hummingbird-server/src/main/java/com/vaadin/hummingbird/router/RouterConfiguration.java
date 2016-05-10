@@ -303,11 +303,11 @@ public class RouterConfiguration
     }
 
     @Override
-    public Class<? extends HasChildView> getParentView(
+    public Optional<Class<? extends HasChildView>> getParentView(
             Class<? extends View> viewType) {
         assert viewType != null;
 
-        return parentViewTypes.get(viewType);
+        return Optional.ofNullable(parentViewTypes.get(viewType));
     }
 
     @Override
