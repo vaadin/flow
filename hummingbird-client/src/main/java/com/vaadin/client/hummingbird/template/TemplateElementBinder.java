@@ -24,10 +24,12 @@ import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.ElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
@@ -271,6 +273,8 @@ public class TemplateElementBinder {
             }
         }
 
+        registerEventHandlers(stateNode, templateNode, element);
+
         MapProperty overrideProperty = stateNode
                 .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
                 .getProperty(String.valueOf(templateNode.getId()));
@@ -296,6 +300,24 @@ public class TemplateElementBinder {
         }
 
         return element;
+    }
+
+    private static void registerEventHandlers(StateNode stateNode,
+            ElementTemplateNode templateNode, Element element) {
+        JsonObject eventHandlers = templateNode.getEventHandlers();
+        if (eventHandlers != null) {
+            for (String event : eventHandlers.keys()) {
+                String handler = WidgetUtil
+                        .crazyJsCast(eventHandlers.get(event));
+                NativeFunction function = NativeFunction.create("evt",
+                        handler.replace("$event", "evt"));
+                element.addEventListener(event, evt -> {
+                    JsArray<Object> args = JsCollections.array();
+                    args.push(evt);
+                    function.apply(function, args);
+                });
+            }
+        }
     }
 
     private static void bindProperties(StateNode stateNode,

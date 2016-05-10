@@ -16,6 +16,7 @@
 package com.vaadin.client.hummingbird.template;
 
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ElementBinder;
@@ -30,9 +31,12 @@ import com.vaadin.hummingbird.template.ChildSlotNode;
 import com.vaadin.hummingbird.template.ForTemplateNode;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 
+import elemental.client.Browser;
+import elemental.dom.Document.Events;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.NodeList;
+import elemental.events.MouseEvent;
 
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private Registry registry = new Registry() {
@@ -620,6 +624,23 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("#comment", childNodes.item(1).getNodeName());
 
         assertEquals("bar", li.getTextContent());
+    }
+
+    public void testEventHandler() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addEventHandler("click",
+                "window.console.log('sss');$event.target.id='foo';");
+
+        Element element = (Element) TemplateElementBinder
+                .createAndBind(stateNode, templateNode);
+        MouseEvent event = (MouseEvent) Browser.getDocument()
+                .createEvent(Events.MOUSE);
+        event.initMouseEvent("click", true, true, Browser.getWindow(), 0, 0, 0,
+                0, 0, false, false, false, false, 0, element);
+        element.addEventListener("click", evt -> Console.log("ccccccccc"),
+                false);
+        element.dispatchEvent(event);
     }
 
     private StateNode createNgForModelNode(TestElementTemplateNode parent,
