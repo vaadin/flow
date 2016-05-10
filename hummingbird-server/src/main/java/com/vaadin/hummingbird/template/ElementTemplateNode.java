@@ -154,8 +154,8 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
      *
      * @param event
      *            the event name
-     * @return an optional event handler for the event, empty if there is no
-     *         event with the given name
+     * @return an optional event handler expression for the event, empty if
+     *         there is no event with the given name
      */
     public Optional<String> getEventHandlerExpression(String event) {
         return Optional.ofNullable(eventHandlers.get(event));
