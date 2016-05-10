@@ -284,7 +284,7 @@ public class TemplateElementBinder {
             }
         }
 
-        registerEventHandlers(stateNode, templateNode, element);
+        registerEventHandlers(templateNode, element);
 
         MapProperty overrideProperty = stateNode
                 .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
@@ -313,8 +313,8 @@ public class TemplateElementBinder {
         return element;
     }
 
-    private static void registerEventHandlers(StateNode stateNode,
-            ElementTemplateNode templateNode, Element element) {
+    private static void registerEventHandlers(ElementTemplateNode templateNode,
+            Element element) {
         JsonObject eventHandlers = templateNode.getEventHandlers();
         if (eventHandlers != null) {
             for (String event : eventHandlers.keys()) {

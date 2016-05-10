@@ -28,13 +28,13 @@ public class TextTemplateView extends Div implements View {
 
     public TextTemplateView() {
         Button button = new Button();
-        TestTemplate text = new TestTemplate("<div id='text'>{{name}}</div>");
+        InlineTemplate text = new InlineTemplate("<div id='text'>{{name}}</div>");
         setName(text, "Foo");
         button.addClickListener(event -> setName(text, "Bar"));
         add(button, text);
     }
 
-    private void setName(TestTemplate template, String name) {
+    private void setName(InlineTemplate template, String name) {
         template.getElement().getNode().getFeature(ModelMap.class)
                 .setValue("name", name);
     }

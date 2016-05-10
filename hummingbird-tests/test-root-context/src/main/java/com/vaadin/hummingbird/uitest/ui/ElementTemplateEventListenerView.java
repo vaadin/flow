@@ -25,7 +25,7 @@ import com.vaadin.hummingbird.router.View;
 public class ElementTemplateEventListenerView extends Div implements View {
 
     public ElementTemplateEventListenerView() {
-        add(new TestTemplate(
+        add(new InlineTemplate(
                 "<div (click)='$event.target.id=\"foo\"' class='target'>"
                         + "Template element with event listener</div>"));
     }

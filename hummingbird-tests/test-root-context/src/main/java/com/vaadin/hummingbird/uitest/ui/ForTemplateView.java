@@ -31,7 +31,7 @@ import com.vaadin.server.Command;
 public class ForTemplateView extends Div implements View {
 
     public ForTemplateView() {
-        TestTemplate template = new TestTemplate("<ul><div></div>"
+        InlineTemplate template = new InlineTemplate("<ul><div></div>"
                 + "<li *ngFor='let item of items' class='a'>{{item.text}}"
                 + "<input [value]='item.key'></li><div></div></ul>");
 
