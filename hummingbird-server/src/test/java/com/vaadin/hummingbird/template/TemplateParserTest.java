@@ -194,7 +194,7 @@ public class TemplateParserTest {
         Assert.assertTrue(event.isPresent());
         Assert.assertEquals("click", event.get());
 
-        Optional<String> eventHandler = node.getEventHandler("click");
+        Optional<String> eventHandler = node.getEventHandlerExpression("click");
         Assert.assertTrue(eventHandler.isPresent());
         Assert.assertEquals("handle($event)", eventHandler.get());
     }

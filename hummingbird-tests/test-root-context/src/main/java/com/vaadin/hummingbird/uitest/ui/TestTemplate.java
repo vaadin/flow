@@ -15,12 +15,29 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import com.vaadin.ui.Template;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class TextTemplate extends Template {
+public class TestTemplate extends Template {
+
+    /**
+     * Creates a template instance with the given template HTML text.
+     * <p>
+     * Note: super constructor uses the {@code String} parameter as a file path,
+     * not as a content.
+     * 
+     * @param templateHtml
+     *            the template HTML
+     */
+    public TestTemplate(String templateHtml) {
+        super(new ByteArrayInputStream(
+                templateHtml.getBytes(StandardCharsets.UTF_8)));
+    }
 
 }

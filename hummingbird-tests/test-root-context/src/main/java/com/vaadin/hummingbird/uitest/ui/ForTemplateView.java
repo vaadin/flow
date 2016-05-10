@@ -15,9 +15,6 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
-
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
@@ -26,7 +23,6 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.Command;
-import com.vaadin.ui.Template;
 
 /**
  * @author Vaadin Ltd
@@ -34,17 +30,10 @@ import com.vaadin.ui.Template;
  */
 public class ForTemplateView extends Div implements View {
 
-    public static class ForTemplate extends Template {
-
-        public ForTemplate() {
-            super(new ByteArrayInputStream(
-                    "<ul><div></div><li *ngFor='let item of items' class='a'>{{item.text}}<input [value]='item.key'></li><div></div></ul>"
-                            .getBytes(StandardCharsets.UTF_8)));
-        }
-    }
-
     public ForTemplateView() {
-        ForTemplate template = new ForTemplate();
+        TestTemplate template = new TestTemplate("<ul><div></div>"
+                + "<li *ngFor='let item of items' class='a'>{{item.text}}"
+                + "<input [value]='item.key'></li><div></div></ul>");
 
         StateNode modelListNode = new StateNode(ModelList.class);
 
