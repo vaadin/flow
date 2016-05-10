@@ -15,28 +15,19 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.router.View;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class TextTemplateView extends Div implements View {
+public class ElementTemplateEventListenerView extends Div implements View {
 
-    public TextTemplateView() {
-        Button button = new Button();
-        InlineTemplate text = new InlineTemplate(
-                "<div id='text'>{{name}}</div>");
-        setName(text, "Foo");
-        button.addClickListener(event -> setName(text, "Bar"));
-        add(button, text);
+    public ElementTemplateEventListenerView() {
+        add(new InlineTemplate(
+                "<div (click)='$event.target.id=\"foo\"' class='target'>"
+                        + "Template element with event listener</div>"));
     }
 
-    private void setName(InlineTemplate template, String name) {
-        template.getElement().getNode().getFeature(ModelMap.class)
-                .setValue("name", name);
-    }
 }

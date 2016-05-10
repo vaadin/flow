@@ -53,8 +53,7 @@ public class TreeChangeProcessorTest {
 
     @Test
     public void testMapRemoveChange() {
-        MapProperty property = tree.getRootNode().getMap(ns)
-                .getProperty(myKey);
+        MapProperty property = tree.getRootNode().getMap(ns).getProperty(myKey);
         property.setValue(myValue);
 
         JsonObject change = removeChange(rootId, ns, myKey);
@@ -66,8 +65,7 @@ public class TreeChangeProcessorTest {
 
     @Test
     public void testMapReAdd() {
-        MapProperty property = tree.getRootNode().getMap(ns)
-                .getProperty(myKey);
+        MapProperty property = tree.getRootNode().getMap(ns).getProperty(myKey);
         property.setValue(myValue);
 
         JsonObject change = removeChange(rootId, ns, myKey);
@@ -157,8 +155,8 @@ public class TreeChangeProcessorTest {
         // Basically ok if we get this far without exception, but verifying
         // value as well just to be on the safe side
 
-        Object value = tree.getNode(nodeId).getMap(ns)
-                .getProperty(myKey).getValue();
+        Object value = tree.getNode(nodeId).getMap(ns).getProperty(myKey)
+                .getValue();
         Assert.assertEquals(myValue, value);
     }
 

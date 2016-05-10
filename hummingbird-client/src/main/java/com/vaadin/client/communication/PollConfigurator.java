@@ -43,8 +43,7 @@ public class PollConfigurator {
      *            the poller to configure
      */
     public static void observe(StateNode node, Poller poller) {
-        NodeMap configurationMap = node
-                .getMap(NodeFeatures.POLL_CONFIGURATION);
+        NodeMap configurationMap = node.getMap(NodeFeatures.POLL_CONFIGURATION);
         MapProperty pollIntervalProperty = configurationMap
                 .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
         pollIntervalProperty.addChangeListener(e -> {
