@@ -28,6 +28,7 @@ import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
@@ -38,8 +39,10 @@ import elemental.dom.Comment;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.Text;
+import elemental.events.Event;
 import elemental.events.EventRemover;
 import elemental.json.JsonObject;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binds a template node and a state node to an element instance.
@@ -47,6 +50,16 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public class TemplateElementBinder {
+
+    /**
+     * Event handler listener interface.
+     */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    private interface EventHandler {
+        void handle(Event event);
+    }
 
     private static final class ChildSlotBinder implements Command {
         private final Comment anchor;
@@ -271,6 +284,8 @@ public class TemplateElementBinder {
             }
         }
 
+        registerEventHandlers(templateNode, element);
+
         MapProperty overrideProperty = stateNode
                 .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
                 .getProperty(String.valueOf(templateNode.getId()));
@@ -296,6 +311,20 @@ public class TemplateElementBinder {
         }
 
         return element;
+    }
+
+    private static void registerEventHandlers(ElementTemplateNode templateNode,
+            Element element) {
+        JsonObject eventHandlers = templateNode.getEventHandlers();
+        if (eventHandlers != null) {
+            for (String event : eventHandlers.keys()) {
+                String handler = WidgetUtil
+                        .crazyJsCast(eventHandlers.get(event));
+                EventHandler eventHandler = NativeFunction.create("evt",
+                        handler.replace("$event", "evt"));
+                element.addEventListener(event, eventHandler::handle);
+            }
+        }
     }
 
     private static void bindProperties(StateNode stateNode,
