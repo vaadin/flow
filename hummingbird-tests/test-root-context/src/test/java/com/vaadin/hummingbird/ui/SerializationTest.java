@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.router.Location;
@@ -44,10 +45,11 @@ public class SerializationTest {
                     getClass().getClassLoader()).getAllViewClasses();
             for (Class<? extends View> viewClass : viewClasses) {
                 View view = viewClass.newInstance();
+                System.out.println("Testing " + view.getClass().getName());
                 view.onLocationChange(new LocationChangeEvent(new Router(), ui,
                         new Location(""), Collections.emptyList(),
                         Collections.emptyMap()));
-                serializeDeserialize(view);
+                Assert.assertNotNull(serializeDeserialize(view));
             }
         } finally {
             UI.setCurrent(null);
