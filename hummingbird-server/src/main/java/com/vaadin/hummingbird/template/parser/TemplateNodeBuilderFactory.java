@@ -37,11 +37,8 @@ public interface TemplateNodeBuilderFactory<T extends Node> {
     /**
      * Returns {@code true} if applicable to the {@code node}.
      * <p>
-     * Only one factory must be applicable for the {@code node}. The
-     * {@link #isDefault(Node)} method is also checked to apply the factory as a
-     * default strategy in case there are no applicable factories.
+     * Only one factory must be applicable for the {@code node}.
      * 
-     * @see #isDefault(Node)
      * @param node
      *            the node to check against of
      * @return {@code true} if the factory is applicable to the node

@@ -24,7 +24,7 @@ import javax.servlet.annotation.WebServlet;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.router.ErrorNavigationHandler;
+import com.vaadin.hummingbird.router.DefaultErrorView;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.NavigationEvent;
@@ -71,7 +71,8 @@ public class RouterTestServlet extends VaadinServlet {
                                             Layout.class);
                                 }
                             }).orElseGet(() -> {
-                                return new ErrorNavigationHandler(404);
+                                return new StaticViewRenderer(
+                                        DefaultErrorView.class);
                             });
                 }
             });
