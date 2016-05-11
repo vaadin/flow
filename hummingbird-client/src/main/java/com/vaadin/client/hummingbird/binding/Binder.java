@@ -1,0 +1,113 @@
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.client.hummingbird.binding;
+
+import java.util.function.Predicate;
+
+import com.vaadin.client.hummingbird.StateNode;
+import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.template.ChildSlotBindingStrategy;
+import com.vaadin.client.hummingbird.template.ElementTemplateBindingStrategy;
+import com.vaadin.client.hummingbird.template.ForTemplateBindingStrategy;
+import com.vaadin.client.hummingbird.template.TextTemplateBindingStrategy;
+
+import elemental.dom.Node;
+
+/**
+ * @author Vaadin Ltd
+ *
+ */
+public final class Binder {
+
+    private static final JsArray<BindingStrategy<?>> STRATEGIES = loadStrategies();
+
+    private static final BinderContext CONTEXT = new BinderContextImpl();
+
+    private static class BinderContextImpl implements BinderContext {
+
+        @Override
+        public Node createAndBind(StateNode stateNode) {
+            BindingStrategy<?> strategy = getApplicable(stateNode);
+            Node node = strategy.create(stateNode);
+            assert node != null;
+            bind(stateNode, node);
+
+            stateNode.setDomNode(node);
+            return node;
+        }
+
+        @Override
+        public void bind(StateNode stateNode, Node node) {
+            Binder.bind(stateNode, node);
+        }
+
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @Override
+        public <T extends BindingStrategy<?>> JsArray<T> getStrategies(
+                Predicate<BindingStrategy<?>> predicate) {
+            JsArray<T> array = JsCollections.array();
+            Predicate testFunction = predicate;
+            for (int i = 0; i < STRATEGIES.length(); i++) {
+                BindingStrategy strategy = STRATEGIES.get(i);
+                if (testFunction.test(strategy)) {
+                    array.push((T) strategy);
+                }
+            }
+            return array;
+        }
+
+    }
+
+    private Binder() {
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static void bind(StateNode stateNode, Node htmlNode) {
+        BindingStrategy applicable = getApplicable(stateNode);
+        applicable.bind(stateNode, htmlNode, CONTEXT);
+    }
+
+    private static BindingStrategy<?> getApplicable(StateNode node) {
+        BindingStrategy<?> applicable = null;
+        for (int i = 0; i < STRATEGIES.length(); i++) {
+            BindingStrategy<?> strategy = STRATEGIES.get(i);
+            if (strategy.isAppliable(node)) {
+                assert applicable == null : "Found two strategies for the node : "
+                        + applicable.getClass() + ", " + strategy.getClass();
+                applicable = strategy;
+            }
+        }
+        if (applicable == null) {
+            throw new IllegalArgumentException(
+                    "State node has no suitable binder strategy");
+        }
+        return applicable;
+    }
+
+    private static JsArray<BindingStrategy<?>> loadStrategies() {
+        JsArray<BindingStrategy<?>> array = JsCollections.array();
+        array.push(new SimpleElementBindingStrategy());
+        array.push(new TextBindingStrategy());
+        array.push(new ElementTemplateBindingStrategy());
+        array.push(new TextTemplateBindingStrategy());
+        array.push(new ForTemplateBindingStrategy());
+        array.push(new ChildSlotBindingStrategy());
+
+        return array;
+    }
+
+}

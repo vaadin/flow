@@ -1,0 +1,59 @@
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.client.hummingbird.binding;
+
+import com.vaadin.client.hummingbird.StateNode;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
+import com.vaadin.client.hummingbird.reactive.Computation;
+import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.hummingbird.shared.NodeFeatures;
+
+import elemental.client.Browser;
+import elemental.dom.Text;
+
+/**
+ * @author Vaadin Ltd
+ *
+ */
+public class TextBindingStrategy implements BindingStrategy<Text> {
+
+    @Override
+    public Text create(StateNode node) {
+        return Browser.getDocument().createTextNode("");
+    }
+
+    @Override
+    public boolean isAppliable(StateNode node) {
+        return node.hasFeature(NodeFeatures.TEXT_NODE);
+    }
+
+    @Override
+    public void bind(StateNode stateNode, Text htmlNode,
+            BinderContext nodeFactory) {
+        assert stateNode.hasFeature(NodeFeatures.TEXT_NODE);
+
+        NodeMap textMap = stateNode.getMap(NodeFeatures.TEXT_NODE);
+        MapProperty textProperty = textMap.getProperty(NodeFeatures.TEXT);
+
+        Computation computation = Reactive.runWhenDepedenciesChange(
+                () -> htmlNode.setData((String) textProperty.getValue()));
+
+        stateNode.addUnregisterListener(e -> computation.stop());
+
+    }
+
+}

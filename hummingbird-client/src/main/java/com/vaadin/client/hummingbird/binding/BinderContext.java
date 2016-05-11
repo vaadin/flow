@@ -13,57 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.client.hummingbird;
+package com.vaadin.client.hummingbird.binding;
 
 import java.util.function.Function;
+import java.util.function.Predicate;
 
+import com.vaadin.client.hummingbird.StateNode;
+import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
-import com.vaadin.client.hummingbird.template.TemplateElementBinder;
-import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
- * Entry point for creating DOM nodes bound to state nodes.
- *
  * @author Vaadin Ltd
+ *
  */
-public final class ElementBinder {
+public interface BinderContext {
 
-    private ElementBinder() {
-    }
+    Node createAndBind(StateNode node);
 
-    /**
-     * Creates and binds a DOM node for the given state node. For state nodes
-     * based on templates, the root element of the template is returned.
-     *
-     * @param stateNode
-     *            the state node for which to create a DOM node, not
-     *            <code>null</code>
-     * @return the DOM node, not <code>null</code>
-     */
-    public static Node createAndBind(StateNode stateNode) {
-        assert stateNode != null;
+    void bind(StateNode stateNode, Node node);
 
-        Node node;
-        if (stateNode.hasFeature(NodeFeatures.TEXT_NODE)) {
-            node = TextElementBinder.createAndBind(stateNode);
-        } else if (stateNode.hasFeature(NodeFeatures.TEMPLATE)) {
-            node = TemplateElementBinder.createAndBind(stateNode);
-        } else if (stateNode.hasFeature(NodeFeatures.ELEMENT_DATA)) {
-            node = BasicElementBinder.createAndBind(stateNode);
-        } else {
-            throw new IllegalArgumentException(
-                    "State node has no suitable feature");
-        }
-
-        assert node != null;
-
-        stateNode.setDomNode(node);
-
-        return node;
-    }
+    <T extends BindingStrategy<?>> JsArray<T> getStrategies(
+            Predicate<BindingStrategy<?>> predicate);
 
     /**
      * Uses {@link NodeList} feature of the {@code node} identified by
@@ -82,14 +55,15 @@ public final class ElementBinder {
      *            StateNode to ask a feature for, not {@code null}
      * @param featureId
      *            feature identifier of the {@code node}, not {@code null}
-     * @param nodeFactory
-     *            node factory which is used to produce an HTML node based on
-     *            child StateNode from the feature NodeList, not {@code null}
+     * @param factory
+     *            node factory which is used to produce and bind an HTML node
+     *            based on child StateNode from the feature NodeList, not
+     *            {@code null}
      * @return the bound children list
      */
-    public static NodeList populateChildren(Element parent, StateNode node,
-            int featureId, Function<StateNode, Node> nodeFactory) {
-        return populateChildren(parent, node, featureId, nodeFactory, null);
+    default NodeList populateChildren(Element parent, StateNode node,
+            int featureId, Function<StateNode, Node> factory) {
+        return populateChildren(parent, node, featureId, factory, null);
     }
 
     /**
@@ -108,26 +82,25 @@ public final class ElementBinder {
      *            StateNode to ask a feature for, not {@code null}
      * @param featureId
      *            feature identifier of the {@code node}, not {@code null}
-     * @param nodeFactory
-     *            node factory which is used to produce an HTML node based on
-     *            child StateNode from the feature NodeList, not {@code null}
+     * @param factory
+     *            node factory which is used to produce and bind an HTML node
+     *            based on child StateNode from the feature NodeList, not
+     *            {@code null}
      * @param beforeNode
      *            node which is used as a bottom line for added children
      * @return the bound children list
      */
-    public static NodeList populateChildren(Element parent, StateNode node,
-            int featureId, Function<StateNode, Node> nodeFactory,
-            Node beforeNode) {
+    default NodeList populateChildren(Element parent, StateNode node,
+            int featureId, Function<StateNode, Node> factory, Node beforeNode) {
         NodeList children = node.getList(featureId);
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
 
-            Node child = nodeFactory.apply(childNode);
+            Node child = factory.apply(childNode);
 
             parent.insertBefore(child, beforeNode);
         }
         return children;
     }
-
 }
