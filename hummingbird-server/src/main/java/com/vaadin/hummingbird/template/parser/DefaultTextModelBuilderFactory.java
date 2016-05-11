@@ -21,12 +21,13 @@ import java.util.function.Function;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
+import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
 
 /**
- * The factory that is default for JSOP {@link TextNode}s.
+ * The factory that is default for JSOUP {@link TextNode}s.
  * 
  * @author Vaadin Ltd
  *
@@ -44,8 +45,15 @@ public class DefaultTextModelBuilderFactory
     @Override
     public TemplateNodeBuilder createBuilder(TextNode node,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
-        return new TextTemplateBuilder(
-                new StaticBindingValueProvider(node.text()));
+        String text = node.text();
+        if (text.startsWith("{{") && text.endsWith("}}")) {
+            String key = extractKey(text, 2);
+            return new TextTemplateBuilder(new ModelValueBindingProvider(
+                    stripForLoopVariableIfNeeded(key)));
+        } else {
+            return new TextTemplateBuilder(
+                    new StaticBindingValueProvider(node.text()));
+        }
     }
 
     @Override

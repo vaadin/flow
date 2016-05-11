@@ -59,18 +59,6 @@ public abstract class AbstractTemplateBuilderFactory<T extends Node>
     protected abstract boolean canHandle(T node);
 
     /**
-     * Returns {@code true} if the {@code node} has the type that factory is
-     * aware of.
-     * 
-     * @param node
-     *            the node to check against
-     * @return {@code true} if the node has the type that factory is aware of
-     */
-    protected boolean hasType(Node node) {
-        return nodeType.isAssignableFrom(node.getClass());
-    }
-
-    /**
      * Ensure the given model key starts with the for loop variable and a dot if
      * inside a ngFor. Also strips the loop variable prefix so the rest of the
      * code, which does not know anything about namespacing, works.

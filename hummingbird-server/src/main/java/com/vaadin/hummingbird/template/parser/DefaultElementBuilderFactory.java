@@ -29,7 +29,7 @@ import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
- * The factory that is default for JSOP {@link Element}s.
+ * The factory that is default for JSOUP {@link Element}s.
  * 
  * @author Vaadin Ltd
  *
