@@ -39,8 +39,8 @@ import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
-import com.vaadin.hummingbird.template.TemplateParser;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
+import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
