@@ -1,0 +1,140 @@
+package com.vaadin.hummingbird.test.performance;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+
+import com.vaadin.hummingbird.testutil.AbstractTestBenchTest;
+
+import net.lightbody.bmp.BrowserMobProxyServer;
+import net.lightbody.bmp.client.ClientUtil;
+import net.lightbody.bmp.core.har.Har;
+import net.lightbody.bmp.proxy.CaptureType;
+
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+public class HelloWorldIT extends AbstractTestBenchTest {
+
+    private static final long LIMIT_BYTES_PER_SECOND = 300 * 1024;
+    private static final long LATENCY_MS = 40;
+
+    @Override
+    protected String getTestPath() {
+        return HelloWorldUI.PATH;
+    }
+
+    @Test
+    public void timeUntilButtonPresent() throws Exception {
+        BrowserMobProxyServer proxyServer = setupMobProxy(LATENCY_MS,
+                LIMIT_BYTES_PER_SECOND);
+        try {
+            // get the Selenium proxy object and configure it for the driver
+            org.openqa.selenium.Proxy proxy = ClientUtil
+                    .createSeleniumProxy(proxyServer);
+            DesiredCapabilities capabilities = new DesiredCapabilities();
+            capabilities.setCapability(CapabilityType.PROXY, proxy);
+            setupPhantomJsDriver(capabilities);
+
+            // Start recording a new har file
+            proxyServer.newHar("button");
+
+            testBench().disableWaitForVaadin();
+
+            LocalTime start = LocalTime.now();
+            open();
+            AtomicReference<WebElement> buttonHolder = new AtomicReference<WebElement>(
+                    null);
+            waitUntil(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver arg0) {
+
+                    List<WebElement> buttons = driver
+                            .findElements(By.tagName("button"));
+                    if (buttons.isEmpty()) {
+                        return false;
+                    }
+                    buttonHolder.set(buttons.get(0));
+                    return true;
+                }
+            });
+
+            LocalTime end = LocalTime.now();
+            long ms = ChronoUnit.MILLIS.between(start, end);
+
+            String testName = "helloworld-" + LIMIT_BYTES_PER_SECOND + "bps-"
+                    + LATENCY_MS + "ms";
+            printTeamcityStats(testName, ms);
+            writeHar(proxyServer, testName);
+        } finally {
+            proxyServer.stop();
+        }
+    }
+
+    protected static BrowserMobProxyServer setupMobProxy(long latencyMs,
+            long bytesPerSecond) {
+        BrowserMobProxyServer proxyServer = new net.lightbody.bmp.BrowserMobProxyServer();
+        proxyServer.setHarCaptureTypes(CaptureType.REQUEST_HEADERS,
+                CaptureType.RESPONSE_HEADERS);
+
+        proxyServer.setWriteBandwidthLimit(bytesPerSecond);
+        proxyServer.setReadBandwidthLimit(bytesPerSecond);
+        proxyServer.setLatency(latencyMs, TimeUnit.MILLISECONDS);
+
+        proxyServer.start();
+        return proxyServer;
+    }
+
+    @Override
+    protected String getRootURL() {
+        // Can't use localhost or 127.0.0.1 because PhantomJS ignores the proxy
+        // Waiting for https://github.com/ariya/phantomjs/pull/12703 to be
+        // merged...
+        // FIXME
+        String ip = "192.168.99.1";
+        return "http://" + ip + ":" + SERVER_PORT;
+
+    }
+
+    private void writeHar(BrowserMobProxyServer proxyServer, String testName)
+            throws IOException {
+        Har har = proxyServer.getHar();
+        FileOutputStream fos = new FileOutputStream(
+                "target/" + testName + ".har");
+        har.writeTo(fos);
+    }
+
+    public static void printTeamcityStats(String key, long value) {
+        // ##teamcity[buildStatisticValue key=&#39;&lt;valueTypeKey&gt;&#39;
+        // value=&#39;&lt;value&gt;&#39;]
+        System.out.println("##teamcity[buildStatisticValue key='" + key
+                + "' value='" + value + "']");
+
+    }
+
+}
