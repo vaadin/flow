@@ -48,11 +48,11 @@ public class ViewTestServlet extends VaadinServlet {
                                         .getLocation().getFirstSegment()),
                                 ViewTestLayout.class);
                     } catch (ClassNotFoundException e) {
-                        return new StaticViewRenderer(ErrorView.class,
-                                ViewTestLayout.class);
+                        return null;
                     }
                 }
             });
+            configuration.setErrorView(ErrorView.class, ViewTestLayout.class);
 
         }
     }

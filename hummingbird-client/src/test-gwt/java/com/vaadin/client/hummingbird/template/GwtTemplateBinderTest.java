@@ -39,7 +39,7 @@ import elemental.dom.NodeList;
 import elemental.dom.Text;
 import elemental.events.MouseEvent;
 
-public class GwtTemplateBinderTest2 extends ClientEngineTestBase {
+public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     private TemplateRegistry reg = new TemplateRegistry();
     private Registry registry = new Registry() {

@@ -29,6 +29,8 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
+ * Child slot binding strategy. Handles "@child@" node.
+ * 
  * @author Vaadin Ltd
  *
  */

@@ -34,8 +34,12 @@ import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import elemental.dom.Node;
 
 /**
+ * Abstract binding strategy to handle template nodes.
+ * 
  * @author Vaadin Ltd
  *
+ * @param <T>
+ *            an HTML node type which strategy is applicable for
  */
 public abstract class AbstractTemplateStrategy<T extends Node>
         implements BindingStrategy<T> {
@@ -61,18 +65,70 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         bind(stateNode, htmlNode, getTemplateId(stateNode), context);
     }
 
+    /**
+     * Returns {@code true} is the strategy is applicable to the
+     * {@code templateId} having {@code tree} as context.
+     * 
+     * @param tree
+     *            the state tree, not {@code null}
+     * @param templateId
+     *            the template id to check against
+     * @return {@code true} if strategy is applicable
+     */
     protected boolean isApplicable(StateTree tree, int templateId) {
         TemplateNode templateNode = getTemplateNode(tree, templateId);
         return getTemplateType().equals(templateNode.getType());
     }
 
+    /**
+     * Gets template type which strategy handles.
+     * <p>
+     * Only one strategy may handle the given type.
+     * 
+     * @return template type of the strategy
+     */
     protected abstract String getTemplateType();
 
+    /**
+     * Creates an HTML node for the {@code templateId} using the {@code tree} as
+     * a context.
+     * 
+     * @param tree
+     *            the state tree, not {@code null}
+     * @param templateId
+     *            the template id
+     * @return the DOM node, not <code>null</code>
+     */
     protected abstract T create(StateTree tree, int templateId);
 
+    /**
+     * Binds an HTML node to the {@code stateNode} using the {@code templateId}
+     * and {@code context} to create and bind nodes of other types.
+     * 
+     * @param stateNode
+     *            the state node to bind, not {@code null}
+     * @param node
+     *            the DOM node, not <code>null</code>
+     * @param context
+     *            binder context to create and construct HTML nodes of other
+     *            types
+     * @param templateId
+     *            the template id
+     */
     protected abstract void bind(StateNode stateNode, T node, int templateId,
             BinderContext context);
 
+    /**
+     * Binds the {@code statNode} using the given {@code binding} and
+     * {@code setOperation} to set the {@code binding} data to the node.
+     * 
+     * @param stateNode
+     *            the state node, not {@code null}
+     * @param binding
+     *            binding data to set, not {@code null}
+     * @param setOperation
+     *            the operation to set the binding data to the node
+     */
     protected void bind(StateNode stateNode, Binding binding,
             Consumer<Optional<Object>> setOperation) {
         if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
@@ -87,6 +143,15 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         }
     }
 
+    /**
+     * Gets model property from the {@code binding} for the {@code node}.
+     * 
+     * @param node
+     *            the state node, not {@code null}
+     * @param binding
+     *            binding data, not {@code null}
+     * @return map property for the binding
+     */
     protected MapProperty getModelProperty(StateNode node, Binding binding) {
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
@@ -94,16 +159,47 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         return model.getProperty(key);
     }
 
+    /**
+     * Gets static biding value for the {@code binding}.
+     * 
+     * @param binding
+     *            binding data, not {@code null}
+     * @return static binding value
+     */
     protected String getStaticBindingValue(Binding binding) {
         assert binding != null;
         return Optional.ofNullable(binding.getValue()).orElse("");
     }
 
+    /**
+     * Gets template node from the template registry of the {@code tree} by the
+     * {@code templateId}.
+     * 
+     * @param tree
+     *            state tree which owns the template sregistry
+     * @param templateId
+     *            template id
+     * @return template node by the id
+     */
     protected static TemplateNode getTemplateNode(StateTree tree,
             int templateId) {
         return tree.getRegistry().getTemplateRegistry().get(templateId);
     }
 
+    /**
+     * Creates and binds a DOM node for the given state node and
+     * {@code templateId} using binder {@code context}.
+     * 
+     * @param node
+     *            the state node for which to create a DOM node, not
+     *            <code>null</code>
+     * @param templateId
+     *            template id
+     * @param context
+     *            binder context
+     * 
+     * @return the DOM node, not <code>null</code>
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected static Node createAndBind(StateNode node, int templateId,
             BinderContext context) {

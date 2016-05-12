@@ -31,6 +31,8 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
+ * *ngFor template binding strategy.
+ * 
  * @author Vaadin Ltd
  *
  */
