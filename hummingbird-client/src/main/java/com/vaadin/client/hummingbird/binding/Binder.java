@@ -28,6 +28,10 @@ import com.vaadin.client.hummingbird.template.TextTemplateBindingStrategy;
 import elemental.dom.Node;
 
 /**
+ * Entry point for binding Node to state nodes.
+ * <p>
+ * This is the only public API class for external use.
+ * 
  * @author Vaadin Ltd
  *
  */
@@ -75,6 +79,14 @@ public final class Binder {
     private Binder() {
     }
 
+    /**
+     * Bind the {@code htmlNode} to the {@code statNode}.
+     * 
+     * @param stateNode
+     *            the state node
+     * @param htmlNode
+     *            the html node to bind, not {@code null}
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static void bind(StateNode stateNode, Node htmlNode) {
         BindingStrategy applicable = getApplicable(stateNode);

@@ -23,8 +23,8 @@ import com.vaadin.hummingbird.dom.impl.TemplateTextElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
-import com.vaadin.hummingbird.template.TemplateParser;
 import com.vaadin.hummingbird.template.TextTemplateNode;
+import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 public class TextElementStateProviderTest {
     private Element element = Element.createText("foo");
