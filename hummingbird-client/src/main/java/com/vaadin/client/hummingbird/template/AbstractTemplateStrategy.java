@@ -34,6 +34,8 @@ import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import elemental.dom.Node;
 
 /**
+ * Abstract binding strategy to handle template nodes.
+ * 
  * @author Vaadin Ltd
  *
  */
@@ -61,13 +63,40 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         bind(stateNode, htmlNode, getTemplateId(stateNode), context);
     }
 
+    /**
+     * Returns {@code true} is the strategy is applicable to the
+     * {@code templateId} having {@code tree} as context.
+     * 
+     * @param tree
+     *            the state tree, not {@code null}
+     * @param templateId
+     *            the template id to check against
+     * @return {@code true} if strategy is applicable
+     */
     protected boolean isApplicable(StateTree tree, int templateId) {
         TemplateNode templateNode = getTemplateNode(tree, templateId);
         return getTemplateType().equals(templateNode.getType());
     }
 
+    /**
+     * Gets template type which strategy handles.
+     * <p>
+     * Only one strategy may handle the given type.
+     * 
+     * @return template type of the strategy
+     */
     protected abstract String getTemplateType();
 
+    /**
+     * Creates an HTML node for the {@code templateId} using the {@code tree} as
+     * a context.
+     * 
+     * @param tree
+     *            the state tree, not {@code null}
+     * @param templateId
+     *            the template id
+     * @return the DOM node, not <code>null</code>
+     */
     protected abstract T create(StateTree tree, int templateId);
 
     protected abstract void bind(StateNode stateNode, T node, int templateId,

@@ -34,6 +34,8 @@ import elemental.json.JsonObject;
 import jsinterop.annotations.JsFunction;
 
 /**
+ * Element template binding strategy.
+ * 
  * @author Vaadin Ltd
  *
  */

@@ -46,6 +46,8 @@ import elemental.json.JsonValue;
 import jsinterop.annotations.JsFunction;
 
 /**
+ * Binding strategy for a simple (not template) {@link Element} node.
+ * 
  * @author Vaadin Ltd
  *
  */
