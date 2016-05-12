@@ -23,6 +23,8 @@ import elemental.client.Browser;
 import elemental.dom.Text;
 
 /**
+ * Text template binding strategy.
+ * 
  * @author Vaadin Ltd
  *
  */

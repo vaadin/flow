@@ -34,6 +34,8 @@ import elemental.json.JsonObject;
 import jsinterop.annotations.JsFunction;
 
 /**
+ * Element template binding strategy.
+ * 
  * @author Vaadin Ltd
  *
  */
@@ -147,6 +149,7 @@ public class ElementTemplateBindingStrategy
     private void bindOverrideNode(Element element, MapProperty overrideProperty,
             BinderContext context) {
         StateNode overrideNode = (StateNode) overrideProperty.getValue();
+        overrideNode.getMap(NodeFeatures.ELEMENT_DATA);
 
         /*
          * bind checks that the we haven't already bound the same state node

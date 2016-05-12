@@ -26,15 +26,49 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
+ * Binder context which is passed to the {@link BindingStrategy} instances to be
+ * able to create subnodes with the type that they are not applicable.
+ * 
  * @author Vaadin Ltd
  *
  */
 public interface BinderContext {
 
+    /**
+     * Creates and binds a DOM node for the given state node. For state nodes
+     * based on templates, the root element of the template is returned.
+     * 
+     * @param node
+     *            the state node for which to create a DOM node, not
+     *            <code>null</code>
+     * @return the DOM node, not <code>null</code>
+     */
     Node createAndBind(StateNode node);
 
+    /**
+     * Binds a DOM node for the given state node.
+     * 
+     * @param stateNode
+     *            the state node to bind, not {@code null}
+     * @param node
+     *            the DOM node, not <code>null</code>
+     */
     void bind(StateNode stateNode, Node node);
 
+    /**
+     * Gets the strategies with a specific type {@code T} using filtering
+     * {@code predicate}.
+     * <p>
+     * Predicate normally should be based on {@code Class<T>#isInstance()} but
+     * this method is not available in GWT so predicate {@code instanceof T}
+     * should be used. It's the developer responsibility to make sure that the
+     * resulting strategies types are correct to avoid
+     * {@link ClassCastException}.
+     * 
+     * @param predicate
+     *            predicate to filter strategies using type {@code T}.
+     * @return collection of filtered strategies
+     */
     <T extends BindingStrategy<?>> JsArray<T> getStrategies(
             Predicate<BindingStrategy<?>> predicate);
 

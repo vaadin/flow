@@ -43,6 +43,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-routing-template-parent#,Using a Template as a Parent View>>
 ** <<tutorial-routing-view-parameters#,Using View Parameters>>
 ** <<tutorial-routing-view-titles#,Updating Page Title on Navigation>>
+** <<tutorial-routing-error-view#,Defining an Error View>>
 * Misc
 ** <<tutorial-execute-javascript#,Executing JavaScript>>
 ** <<tutorial-history-api#,The History API>>

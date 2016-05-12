@@ -23,9 +23,12 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
+import elemental.dom.Node;
 import elemental.dom.Text;
 
 /**
+ * Binding strategy for simple (not template) text {@link Node}.
+ * 
  * @author Vaadin Ltd
  *
  */
