@@ -18,14 +18,37 @@ package com.vaadin.hummingbird.contexttest.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.HasText;
 import com.vaadin.ui.UI;
 
 public class DependencyUI extends UI {
+
+    @StyleSheet("context://test-files/css/allblueimportant.css")
+    public static class AllBlueImportantComponent extends Div
+            implements HasText {
+
+        public AllBlueImportantComponent() {
+            setText("allblueimportant.css component");
+        }
+
+    }
+
+    @JavaScript("context://test-files/js/body-click-listener.js")
+    public static class JsResourceComponent extends Div implements HasText {
+
+        public JsResourceComponent() {
+            setText("Hello, click the body please");
+            setId("hello");
+        }
+    }
 
     @Override
     protected void init(VaadinRequest request) {
@@ -33,12 +56,7 @@ public class DependencyUI extends UI {
                 "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
         getElement().appendChild(ElementFactory.createHr());
         getPage().addStyleSheet("context://test-files/css/allred.css");
-        getPage().addJavaScript(getServletToContextPath(
-                "test-files/js/body-click-listener.js"));
-        getElement()
-                .appendChild(ElementFactory
-                        .createDiv("Hello, click the body please"))
-                .setAttribute("id", "hello");
+        add(new JsResourceComponent());
 
         Element jsOrder = ElementFactory.createButton("Load js")
                 .setAttribute("id", "loadJs");
@@ -51,8 +69,7 @@ public class DependencyUI extends UI {
                 .createButton("Load 'everything blue' stylesheet")
                 .setAttribute("id", "loadBlue");
         allBlue.addEventListener("click", e -> {
-            getPage().addStyleSheet(
-                    "context://test-files/css/allblueimportant.css");
+            add(new AllBlueImportantComponent());
 
         });
         getElement().appendChild(jsOrder, allBlue, ElementFactory.createHr());
@@ -77,11 +94,4 @@ public class DependencyUI extends UI {
         return jsRes;
     }
 
-    protected String getServletToContextPath(String url) {
-        return url;
-    }
-
-    protected String makeRelativeToContext(String url) {
-        return url;
-    }
 }

@@ -26,7 +26,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
- * List for storing dependencies/files (Javascript, Stylesheets) to be loaded
+ * List for storing dependencies/files (JavaScript, Stylesheets) to be loaded
  * and included on the client side.
  *
  * @author Vaadin Ltd
