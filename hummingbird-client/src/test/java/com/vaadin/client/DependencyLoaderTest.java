@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
-import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
@@ -32,37 +31,47 @@ import elemental.json.JsonObject;
 
 public class DependencyLoaderTest {
 
-    private Registry registry = new Registry();
-    StateTree tree = new StateTree(registry);
-    StateNode rootNode = tree.getRootNode();
-
-    private static class MockDependencyLoader extends DependencyLoader {
+    public static class MockResourceLoader extends ResourceLoader {
         List<String> loadingStyles = new ArrayList<>();
         List<String> loadingScripts = new ArrayList<>();
-
-        public MockDependencyLoader(Registry registry) {
-            super(registry);
-        }
+        List<String> loadingHtml = new ArrayList<>();
 
         @Override
-        public void loadStyleDependencies(JsArray<String> dependencies) {
-            for (int i = 0; i < dependencies.length(); i++) {
-                loadingStyles.add(dependencies.get(i));
-            }
-        }
+        protected void initLoadedResourcesFromDom() {
+        };
 
         @Override
-        public void loadScriptDependencies(JsArray<String> dependencies) {
-            for (int i = 0; i < dependencies.length(); i++) {
-                loadingScripts.add(dependencies.get(i));
-            }
-        }
+        public void loadHtml(String htmlUrl,
+                ResourceLoadListener resourceLoadListener) {
+            loadingHtml.add(htmlUrl);
+        };
+
+        @Override
+        public void loadScript(String scriptUrl,
+                ResourceLoadListener resourceLoadListener) {
+            loadingScripts.add(scriptUrl);
+        };
+
+        @Override
+        public void loadStylesheet(String stylesheetUrl,
+                ResourceLoadListener resourceLoadListener) {
+            loadingStyles.add(stylesheetUrl);
+        };
     }
+
+    private Registry registry = new Registry() {
+        {
+            set(ResourceLoader.class, new MockResourceLoader());
+            set(URIResolver.class, new URIResolver(this));
+        }
+    };
+    StateTree tree = new StateTree(registry);
+    StateNode rootNode = tree.getRootNode();
 
     @Test
     public void loadStylesheet() {
         String TEST_URL = "http://foo.bar/baz";
-        MockDependencyLoader loader = new MockDependencyLoader(registry);
+        DependencyLoader loader = new DependencyLoader(registry);
 
         JsonObject styleDep = Json.createObject();
         styleDep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_STYLESHEET);
@@ -73,14 +82,15 @@ public class DependencyLoaderTest {
         loader.loadDependencies(deps);
 
         Assert.assertArrayEquals(new String[] { TEST_URL },
-                loader.loadingStyles.toArray());
+                ((MockResourceLoader) registry
+                        .getResourceLoader()).loadingStyles.toArray());
     }
 
     @Test
     public void loadScript() {
         String TEST_URL = "http://foo.bar/baz.js";
 
-        MockDependencyLoader loader = new MockDependencyLoader(registry);
+        DependencyLoader loader = new DependencyLoader(registry);
 
         JsonObject styleDep = Json.createObject();
         styleDep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_JAVASCRIPT);
@@ -91,7 +101,27 @@ public class DependencyLoaderTest {
         loader.loadDependencies(deps);
 
         Assert.assertArrayEquals(new String[] { TEST_URL },
-                loader.loadingScripts.toArray());
+                ((MockResourceLoader) registry
+                        .getResourceLoader()).loadingScripts.toArray());
+    }
+
+    @Test
+    public void loadHtml() {
+        String TEST_URL = "http://foo.bar/baz.html";
+
+        DependencyLoader loader = new DependencyLoader(registry);
+
+        JsonObject styleDep = Json.createObject();
+        styleDep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_HTML_IMPORT);
+        styleDep.put(DependencyList.KEY_URL, TEST_URL);
+
+        JsonArray deps = Json.createArray();
+        deps.set(0, styleDep);
+        loader.loadDependencies(deps);
+
+        Assert.assertArrayEquals(new String[] { TEST_URL },
+                ((MockResourceLoader) registry.getResourceLoader()).loadingHtml
+                        .toArray());
     }
 
     @Test
@@ -100,7 +130,7 @@ public class DependencyLoaderTest {
         String TEST_JS_URL2 = "my.js";
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
-        MockDependencyLoader loader = new MockDependencyLoader(registry);
+        DependencyLoader loader = new DependencyLoader(registry);
 
         JsonArray deps = Json.createArray();
         JsonObject dep = Json.createObject();
@@ -117,11 +147,12 @@ public class DependencyLoaderTest {
         deps.set(2, dep);
 
         loader.loadDependencies(deps);
-
+        MockResourceLoader resourceLoader = ((MockResourceLoader) registry
+                .getResourceLoader());
         Assert.assertArrayEquals(new String[] { TEST_JS_URL, TEST_JS_URL2 },
-                loader.loadingScripts.toArray());
+                resourceLoader.loadingScripts.toArray());
         Assert.assertArrayEquals(new String[] { TEST_CSS_URL },
-                loader.loadingStyles.toArray());
+                resourceLoader.loadingStyles.toArray());
     }
 
 }

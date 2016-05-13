@@ -28,7 +28,7 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT;
+        STYLESHEET, JAVASCRIPT, HTML_IMPORT;
     }
 
     private final Type type;
