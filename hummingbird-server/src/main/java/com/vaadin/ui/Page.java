@@ -17,6 +17,8 @@ package com.vaadin.ui;
 
 import java.io.Serializable;
 
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.ui.Dependency.Type;
@@ -85,6 +87,9 @@ public class Page implements Serializable {
      * You can prefix the URL with {@literal context://} to make it relative to
      * the context path or use an absolute URL to refer to files outside the
      * service (servlet) path.
+     * <p>
+     * For component related style sheet dependencies, you should use the
+     * {@link StyleSheet @StyleSheet} annotation.
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
@@ -101,6 +106,9 @@ public class Page implements Serializable {
      * You can prefix the URL with {@literal context://} to make it relative to
      * the context path or use an absolute URL to refer to files outside the
      * service (servlet) path.
+     * <p>
+     * For component related JavaScript dependencies, you should use the
+     * {@link JavaScript @JavaScript} annotation.
      *
      * @param url
      *            the URL to load the JavaScript from, not <code>null</code>
