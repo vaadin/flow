@@ -16,9 +16,11 @@
 package com.vaadin.client.hummingbird.binding;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
+import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
@@ -105,7 +107,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     @Override
     public boolean isAppliable(StateNode node) {
-        return node.hasFeature(NodeFeatures.ELEMENT_DATA);
+        if (node.hasFeature(NodeFeatures.ELEMENT_DATA)
+                || node.hasFeature(NodeFeatures.OVERRIDE_DATA)) {
+            return true;
+        }
+        Optional<StateNode> root = Optional.of(node).map(StateNode::getTree)
+                .map(StateTree::getRootNode);
+        return root.isPresent() && root.get() == node;
     }
 
     @Override
