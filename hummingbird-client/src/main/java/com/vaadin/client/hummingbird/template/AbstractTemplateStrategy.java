@@ -48,8 +48,8 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     public boolean isAppliable(StateNode node) {
         assert node != null;
 
-        boolean isTempalate = node.hasFeature(NodeFeatures.TEMPLATE);
-        if (isTempalate) {
+        boolean isTemplate = node.hasFeature(NodeFeatures.TEMPLATE);
+        if (isTemplate) {
             return isApplicable(node.getTree(), getTemplateId(node));
         }
         return false;
@@ -103,15 +103,15 @@ public abstract class AbstractTemplateStrategy<T extends Node>
 
     /**
      * Binds an HTML node to the {@code stateNode} using the {@code templateId}
-     * and {@code context} to create and bind nodes of other types.
+     * and {@code context} to delegate handling of nodes with the types that the
+     * strategy is not aware of.
      * 
      * @param stateNode
      *            the state node to bind, not {@code null}
      * @param node
      *            the DOM node, not <code>null</code>
      * @param context
-     *            binder context to create and construct HTML nodes of other
-     *            types
+     *            delegation context
      * @param templateId
      *            the template id
      */
@@ -119,27 +119,27 @@ public abstract class AbstractTemplateStrategy<T extends Node>
             BinderContext context);
 
     /**
-     * Binds the {@code statNode} using the given {@code binding} and
-     * {@code setOperation} to set the {@code binding} data to the node.
+     * Binds the {@code stateNode} using the given {@code binding} and
+     * {@code executor} to set the {@code binding} data to the node.
      * 
      * @param stateNode
      *            the state node, not {@code null}
      * @param binding
      *            binding data to set, not {@code null}
-     * @param setOperation
+     * @param executor
      *            the operation to set the binding data to the node
      */
     protected void bind(StateNode stateNode, Binding binding,
-            Consumer<Optional<Object>> setOperation) {
+            Consumer<Optional<Object>> executor) {
         if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
             Computation computation = Reactive.runWhenDepedenciesChange(
-                    () -> setOperation.accept(Optional.ofNullable(
+                    () -> executor.accept(Optional.ofNullable(
                             getModelProperty(stateNode, binding).getValue())));
             stateNode.addUnregisterListener(event -> computation.stop());
         } else {
             // Only static bindings is known as a final call
             assert binding.getType().equals(StaticBindingValueProvider.TYPE);
-            setOperation.accept(Optional.of(getStaticBindingValue(binding)));
+            executor.accept(Optional.of(getStaticBindingValue(binding)));
         }
     }
 

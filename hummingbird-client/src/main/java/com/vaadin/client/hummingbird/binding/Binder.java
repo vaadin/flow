@@ -41,6 +41,19 @@ public final class Binder {
 
     private static final BinderContext CONTEXT = new BinderContextImpl();
 
+    /**
+     * This is the implementation of {@link BinderContext} which is passed to
+     * the {@link BindingStrategy} instances to be able to delegate creation of
+     * subnodes with the type that they are not aware of.
+     * <p>
+     * This is the only factory/binder that may be used inside
+     * {@link BindingStrategy} implementation. So that implementation should not
+     * know anything about external classes/API. Everything that is required by
+     * the {@link BindingStrategy} must be here to avoid uncertainty which
+     * methods are allowed/correct to use in the implementation.
+     *
+     * @see BinderContext
+     */
     private static class BinderContextImpl implements BinderContext {
 
         @Override

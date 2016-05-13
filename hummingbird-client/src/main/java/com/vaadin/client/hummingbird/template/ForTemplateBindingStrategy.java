@@ -38,6 +38,19 @@ import elemental.dom.Node;
  */
 public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
 
+    /**
+     * The command uses {@code anchor} comment node as a placeholder (which has
+     * been created by {@link ForTemplateBindingStrategy#create(StateNode)}
+     * method to populate generated *ngFor elements after it.
+     * <p>
+     * Once something happens (which triggers the command : dependencies update)
+     * the command removes everything after the {@anchor} and before the node
+     * that was immediate {@code anchor} sibling initially. Then it populates
+     * the *ngFor elements using the model {@link StateNode} so that it adds
+     * generated elements between the {@code anchor} and its initial sibling
+     * (@code beforeNode).
+     *
+     */
     private static final class ForTemplateNodeUpdate implements Command {
 
         private Node anchor;

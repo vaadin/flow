@@ -27,7 +27,8 @@ import elemental.dom.Node;
 
 /**
  * Binder context which is passed to the {@link BindingStrategy} instances to be
- * able to create subnodes with the type that they are not applicable.
+ * able to delegate creation of subnodes with the type that they are not aware
+ * of.
  * 
  * @author Vaadin Ltd
  *
