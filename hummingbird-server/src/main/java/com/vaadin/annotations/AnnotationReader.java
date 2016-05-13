@@ -17,11 +17,15 @@
 package com.vaadin.annotations;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
@@ -77,6 +81,36 @@ public class AnnotationReader {
     }
 
     /**
+     * Finds all {@link StyleSheet} annotations on the given {@link Component}
+     * class, its super classes and implemented interfaces.
+     *
+     * @param componentClass
+     *            the component class to search for the annotation
+     * @return a list the style sheet annotations found
+     * @see #getAnnotationFor(Class, Class) for what order the annotations are
+     *      in the list
+     */
+    public static List<StyleSheet> getStyleSheetAnnotations(
+            Class<? extends Component> componentClass) {
+        return getAnnotationsFor(componentClass, StyleSheet.class);
+    }
+
+    /**
+     * Finds all {@link JavaScript} annotations on the given {@link Component}
+     * class, its super classes and implemented interfaces.
+     *
+     * @param componentClass
+     *            the component class to search for the annotation
+     * @return a list the JavaScript annotations found
+     * @see #getAnnotationFor(Class, Class) for what order the annotations are
+     *      in the list
+     */
+    public static List<JavaScript> getJavaScriptAnnotations(
+            Class<? extends Component> componentClass) {
+        return getAnnotationsFor(componentClass, JavaScript.class);
+    }
+
+    /**
      * Helper to get an annotation for a class. If the annotation is not present
      * on the target class, its super classes and implemented interfaces are
      * also searched for the annotation.
@@ -110,5 +144,49 @@ public class AnnotationReader {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Helper to get annotations for a class by searching recursively the class
+     * and all its super classes and implemented interfaces and their parent
+     * interfaces.
+     * <p>
+     * The annotations in the list are ordered top-down according to the class
+     * hierarchy. For each hierarchy level, the annotations from interfaces
+     * implemented at that level are on the list before the annotations of the
+     * class itself.
+     * <p>
+     * NOTE: the list may contain annotations with the same values.
+     *
+     * @param clazz
+     *            the class from which the annotation should be found
+     * @param annotationType
+     *            the annotation type to look for
+     * @return a list containing all the annotations found
+     */
+    public static <T extends Annotation> List<T> getAnnotationsFor(
+            Class<?> clazz, Class<T> annotationType) {
+        if (clazz == null || clazz == Object.class) {
+            return Collections.emptyList();
+        }
+
+        List<T> annotations = new ArrayList<>();
+        // find from super classes
+        annotations.addAll(
+                getAnnotationsFor(clazz.getSuperclass(), annotationType));
+
+        // find from any implemented interfaces
+        for (Class<?> iface : clazz.getInterfaces()) {
+            annotations.addAll(getAnnotationsFor(iface, annotationType));
+        }
+
+        // find from this class
+        for (T annotation : clazz.getAnnotationsByType(annotationType)) {
+            if (annotation != null) {
+                annotations.add(annotation);
+            }
+        }
+
+        return annotations;
     }
 }
