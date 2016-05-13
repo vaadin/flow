@@ -243,19 +243,19 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the Atmosphere Javascript version in use.
+     * Gets the Atmosphere JavaScript version in use.
      *
-     * @return the Atmosphere Javascript version in use
+     * @return the Atmosphere JavaScript version in use
      */
     public String getAtmosphereJSVersion() {
         return atmosphereJSVersion;
     }
 
     /**
-     * Sets the Atmosphere Javascript version in use.
+     * Sets the Atmosphere JavaScript version in use.
      *
      * @param atmosphereJSVersion
-     *            the Atmosphere Javascript version in use
+     *            the Atmosphere JavaScript version in use
      */
     public void setAtmosphereJSVersion(String atmosphereJSVersion) {
         this.atmosphereJSVersion = atmosphereJSVersion;
@@ -308,7 +308,7 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Sets the version info object which is published to Javascript.
+     * Sets the version info object which is published to JavaScript.
      *
      * @param versionInfo
      *            the version info object
@@ -318,7 +318,7 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the version info object which is published to Javascript.
+     * Gets the version info object which is published to JavaScript.
      *
      * @return the version info object
      */

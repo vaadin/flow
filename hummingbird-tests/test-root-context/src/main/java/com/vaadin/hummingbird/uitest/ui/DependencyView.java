@@ -25,7 +25,7 @@ public class DependencyView extends AbstractDivView {
     @Override
     protected void onShow() {
         add(new Text(
-                "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
+                "This test initially loads a stylesheet which makes all text red and a JavaScript which listens to body clicks"));
         add(new Hr());
 
         getPage().addStyleSheet("/test-files/css/allred.css");

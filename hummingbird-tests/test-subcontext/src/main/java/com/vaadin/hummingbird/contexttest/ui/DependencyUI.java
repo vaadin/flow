@@ -30,7 +30,7 @@ public class DependencyUI extends UI {
     @Override
     protected void init(VaadinRequest request) {
         getElement().appendChild(ElementFactory.createDiv(
-                "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
+                "This test initially loads a stylesheet which makes all text red and a JavaScript which listens to body clicks"));
         getElement().appendChild(ElementFactory.createHr());
         getPage().addStyleSheet("context://test-files/css/allred.css");
         getPage().addJavaScript(getServletToContextPath(
@@ -65,7 +65,7 @@ public class DependencyUI extends UI {
                     + "div.textContent = 'Added by script';"
                     + "document.body.appendChild(div, null);";
 
-            // Wait to ensure that client side will stop until the javascript is
+            // Wait to ensure that client side will stop until the JavaScript is
             // loaded
             try {
                 Thread.sleep(1000);
