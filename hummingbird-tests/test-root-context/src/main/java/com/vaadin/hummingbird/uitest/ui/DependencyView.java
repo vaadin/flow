@@ -25,6 +25,9 @@ import com.vaadin.hummingbird.html.Hr;
 import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.ui.AttachEvent;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.Text;
 
 public class DependencyView extends AbstractDivView {
@@ -69,15 +72,17 @@ public class DependencyView extends AbstractDivView {
     }
 
     @Override
-    protected void onAttach() {
-        super.onAttach();
-        htmlImport2 = getUI().get().getSession().getResourceRegistry()
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
+        VaadinSession session = attachEvent.getSession();
+        htmlImport2 = session.getResourceRegistry()
                 .registerResource(new StreamResource("htmlimport2.html",
                         new HTMLImportStreamFactory("HTML import 2", 1000)));
-        htmlImport3 = getUI().get().getSession().getResourceRegistry()
+        htmlImport3 = session.getResourceRegistry()
                 .registerResource(new StreamResource("htmlimport3.html",
                         new HTMLImportStreamFactory("HTML import 3", 0)));
-        jsFile = getUI().get().getSession().getResourceRegistry()
+        jsFile = session.getResourceRegistry()
                 .registerResource(new StreamResource("jsFile.js", () -> {
                     try {
                         Thread.sleep(1500);
@@ -87,10 +92,11 @@ public class DependencyView extends AbstractDivView {
                             "window.postMessage('JS File loaded','*');");
                 }));
 
-        getPage().addStyleSheet("/test-files/css/allred.css");
-        getPage().addJavaScript("/test-files/js/body-click-listener.js");
-        getPage().addJavaScript("/test-files/js/messagehandler.js");
-        getPage().addHtmlImport("/test-files/html/htmlimport1.html");
+        Page page = attachEvent.getUI().getPage();
+        page.addStyleSheet("/test-files/css/allred.css");
+        page.addJavaScript("/test-files/js/body-click-listener.js");
+        page.addJavaScript("/test-files/js/messagehandler.js");
+        page.addHtmlImport("/test-files/html/htmlimport1.html");
     }
 
     public static class HTMLImportStreamFactory implements InputStreamFactory {

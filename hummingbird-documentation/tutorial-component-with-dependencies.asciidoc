@@ -11,7 +11,7 @@ from `Component`.
 public class UserNameLabel extends Component {
 
   @Override
-  protected void onAttach() {
+  protected void onAttach(AttachEvent attachEvent) {
     // user name can be stored to session after login
     String userName = (String) getUI().get().getSession().getAttribute("username");
     getElement().setTextContent("Hello " + userName + ", welcome back!");
@@ -30,15 +30,15 @@ and release any resources used by the component.
 public class ShoppingCartSummaryLabel extends Component {
 
   @Override
-  protected void onAttach() {
-    ShopEventBus eventBus = getUI().get().getSession().getAttribute(ShopEventBus.class);
+  protected void onAttach(AttachEvent attachEvent) {
+    ShopEventBus eventBus = attachEvent.getSession().getAttribute(ShopEventBus.class);
     // registering to event bus for updates from other components
     eventBus.register(this::onCartSummaryUpdate);
   }
 
   @Override
-  protected void onDetach() {
-    ShopEventBus eventBus = getUI().get().getSession().getAttribute(ShopEventBus.class);
+  protected void onDetach(DetachEvent detachEvent) {
+    ShopEventBus eventBus = detachEvent.getSession().getAttribute(ShopEventBus.class);
     // after detaching don't need any updates
     eventBus.unregister(this::onCartSummaryUpdate);
   }
@@ -50,9 +50,8 @@ public class ShoppingCartSummaryLabel extends Component {
 ----
 
 [NOTE]
-The `getUI()` method returning a `Optional<UI>` works the following way:
-before `onAttach` and after `onDetach` invocations it is empty; during and
-between `onAttach` and `onDetach` invocations it returns the UI instance.
+The `getUI()` in `Component` returns an `Optional<UI>` because a component is not always attached. Using the attach or detach event to get the UI or the session is a more convenient way as they are always available.
+
 
 [NOTE]
 The default implementations of the `onAttach` and `onDetach` methods in the `Component`

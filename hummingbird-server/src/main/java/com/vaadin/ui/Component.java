@@ -271,8 +271,11 @@ public abstract class Component implements HasElement, Serializable,
      * <p>
      * This method is invoked before the {@link AttachEvent} is fired for the
      * component.
+     *
+     * @param attachEvent
+     *            the attach event
      */
-    protected void onAttach() {
+    protected void onAttach(AttachEvent attachEvent) {
         // NOOP by default
     }
 
@@ -283,8 +286,11 @@ public abstract class Component implements HasElement, Serializable,
      * <p>
      * This method is invoked before the {@link DetachEvent} is fired for the
      * component.
+     *
+     * @param detachEvent
+     *            the detach event
      */
-    protected void onDetach() {
+    protected void onDetach(DetachEvent detachEvent) {
         // NOOP by default
     }
 }
