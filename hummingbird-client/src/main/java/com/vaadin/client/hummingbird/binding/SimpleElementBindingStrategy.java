@@ -74,6 +74,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private static final JsMap<String, EventDataExpression> expressionCache = JsCollections
             .map();
 
+    /**
+     * Just a context class whose instance is passed as a parameter between the
+     * operations of various kind to be able to access the data like listeners,
+     * node and element which they operate on.
+     * <p>
+     * It's used to avoid having methods with a long numbers of parameters and
+     * because the strategy instance is stateless.
+     *
+     */
     private static class BindingContext {
 
         private final Element element;
@@ -119,9 +128,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     @Override
     public void bind(StateNode stateNode, Element htmlNode,
             BinderContext nodeFactory) {
-        String nsTag = getTag(stateNode);
-        assert nsTag == null
-                || htmlNode.getTagName().toLowerCase().equals(nsTag);
+        assert hasSameTag(stateNode, htmlNode);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
                 nodeFactory);
@@ -159,6 +166,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsMap<String, Computation> computations = JsCollections.map();
         computationsCollection.push(computations);
         return computations;
+    }
+
+    private boolean hasSameTag(StateNode node, Element element) {
+        String nsTag = getTag(node);
+        return nsTag == null || element.getTagName().equalsIgnoreCase(nsTag);
     }
 
     private EventRemover bindMap(int featureId, PropertyUser user,
@@ -247,13 +259,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         for (int i = 0; i < propertyEvents.length(); i++) {
             String eventType = propertyEvents.get(i).toString();
             EventRemover remover = context.element.addEventListener(eventType,
-                    event -> handlePropertySyncDomEvent(event, context), false);
+                    event -> handlePropertySyncDomEvent(context), false);
             context.synchronizedPropertyEventListeners.add(remover);
         }
     }
 
-    private void handlePropertySyncDomEvent(Event event,
-            BindingContext context) {
+    private void handlePropertySyncDomEvent(BindingContext context) {
         NodeList propertiesList = context.node
                 .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
         for (int i = 0; i < propertiesList.length(); i++) {
