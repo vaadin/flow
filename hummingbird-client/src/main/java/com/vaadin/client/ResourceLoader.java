@@ -232,6 +232,51 @@ public class ResourceLoader {
     }
 
     /**
+     * Loads an HTML import and notify a listener when the HTML import is
+     * loaded. Calling this method when the HTML import is currently loading or
+     * already loaded doesn't cause the HTML import to be loaded again, but the
+     * listener will still be notified when appropriate.
+     *
+     *
+     * @param htmlUrl
+     *            url of HTML import to load
+     * @param resourceLoadListener
+     *            listener to notify when the HTML import is loaded
+     */
+    public void loadHtml(final String htmlUrl,
+            final ResourceLoadListener resourceLoadListener) {
+        final String url = WidgetUtil.getAbsoluteUrl(htmlUrl);
+        ResourceLoadEvent event = new ResourceLoadEvent(this, url);
+        if (loadedResources.has(url)) {
+            if (resourceLoadListener != null) {
+                resourceLoadListener.onLoad(event);
+            }
+            return;
+        }
+
+        if (addListener(url, resourceLoadListener, loadListeners)) {
+            LinkElement linkTag = Document.get().createLinkElement();
+            linkTag.setAttribute("rel", "import");
+            linkTag.setAttribute("href", url);
+
+            addOnloadHandler(linkTag, new ResourceLoadListener() {
+                @Override
+                public void onLoad(ResourceLoadEvent event) {
+                    Console.log("Loaded HTML import " + url);
+                    fireLoad(event);
+                }
+
+                @Override
+                public void onError(ResourceLoadEvent event) {
+                    Console.error("Failed to load HTML import " + url);
+                    fireError(event);
+                }
+            }, event);
+            head.appendChild(linkTag);
+        }
+    }
+
+    /**
      * Adds an onload listener to the given element, which should be a link or a
      * script tag. The listener is called whenever loading is complete or an
      * error occurred.
