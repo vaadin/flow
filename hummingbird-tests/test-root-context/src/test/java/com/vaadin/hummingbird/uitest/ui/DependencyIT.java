@@ -47,7 +47,7 @@ public class DependencyIT extends PhantomJSTest {
         String addedBodyText = findElement(By.cssSelector(".body-click-added"))
                 .getText();
         Assert.assertEquals(
-                "Click on body, reported by Javascript click handler",
+                "Click on body, reported by JavaScript click handler",
                 addedBodyText);
 
         // Inject scripts
