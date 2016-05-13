@@ -2,7 +2,9 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
+import com.vaadin.ui.Page;
 
 public class FragmentLinkView extends AbstractDivView {
 
@@ -46,27 +48,26 @@ public class FragmentLinkView extends AbstractDivView {
     }
 
     @Override
-    protected void onAttach() {
-        getUI().get().getPage()
-                .executeJavaScript("var i = 0;"
-                        + "window.addEventListener('hashchange', function(event) {"
-                        + "var x = document.createElement('span');"
-                        + "x.textContent = ' ' + i;" + "i++;"
-                        + "x.class = 'hashchange';"
-                        + "document.getElementById('placeholder').appendChild(x);},"
-                        + " false);");
+    protected void onAttach(AttachEvent attachEvent) {
+        Page page = attachEvent.getUI().getPage();
+        page.executeJavaScript("var i = 0;"
+                + "window.addEventListener('hashchange', function(event) {"
+                + "var x = document.createElement('span');"
+                + "x.textContent = ' ' + i;" + "i++;"
+                + "x.class = 'hashchange';"
+                + "document.getElementById('placeholder').appendChild(x);},"
+                + " false);");
 
-        HistoryStateChangeHandler current = getUI().get().getPage().getHistory()
+        HistoryStateChangeHandler current = page.getHistory()
                 .getHistoryStateChangeHandler();
-        getUI().get().getPage().getHistory()
-                .setHistoryStateChangeHandler(event -> {
-                    if (event.getLocation().equals("override")) {
-                        event.getSource().replaceState(null,
-                                "overridden#Scroll_Target2");
-                    } else {
-                        current.onHistoryStateChange(event);
-                    }
-                });
+        page.getHistory().setHistoryStateChangeHandler(event -> {
+            if (event.getLocation().equals("override")) {
+                event.getSource().replaceState(null,
+                        "overridden#Scroll_Target2");
+            } else {
+                current.onHistoryStateChange(event);
+            }
+        });
     }
 
     private Element createSpacer() {

@@ -25,6 +25,7 @@ import com.vaadin.hummingbird.html.Hr;
 import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Text;
 
 public class DependencyView extends AbstractDivView {
@@ -74,8 +75,8 @@ public class DependencyView extends AbstractDivView {
     }
 
     @Override
-    protected void onAttach() {
-        super.onAttach();
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         htmlImport2 = registerResource("htmlimport2.html",
                 new HTMLImportStreamFactory("HTML import 2", 1000));
         htmlImport3 = registerResource("htmlimport3.html",
