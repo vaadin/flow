@@ -1,3 +1,5 @@
+window.postMessage("read-global-var.js loaded","*");
+
 var log = document.createElement("div");
 log.id = "read-global-var-text";
 log.textContent = "Second script loaded. Global variable (window.globalVar) is: '" + window.globalVar+"'";

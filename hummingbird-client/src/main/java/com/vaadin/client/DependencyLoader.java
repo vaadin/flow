@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import java.util.function.BiConsumer;
+
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -48,52 +50,22 @@ public class DependencyLoader {
     }
 
     /**
-     * Loads the given stylesheets and ensures any callbacks registered using
-     * {@link runWhenDependenciesLoaded(Command)} are run when all dependencies
-     * have been loaded.
+     * Loads the given dependencies using the given loader and ensures any
+     * callbacks registered using {@link runWhenDependenciesLoaded(Command)} are
+     * run when all dependencies have been loaded.
      *
      * @param dependencies
      *            a list of dependency URLs to load, will be translated using
-     *            {@link #translateVaadinUri(String)} before they are loaded
+     *            {@link #translateVaadinUri(String)} before they are loaded,
+     *            not <code>null</code>
      */
-    public void loadStyleDependencies(JsArray<String> dependencies) {
-        // Assuming no reason to interpret in a defined order
-        ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
-            @Override
-            public void onLoad(ResourceLoadEvent event) {
-                endDependencyLoading();
-            }
-
-            @Override
-            public void onError(ResourceLoadEvent event) {
-                Console.error(event.getResourceUrl()
-                        + " could not be loaded, or the load detection failed because the stylesheet is empty.");
-                // The show must go on
-                onLoad(event);
-            }
-        };
-        ResourceLoader loader = ResourceLoader.get();
-        for (int i = 0; i < dependencies.length(); i++) {
-            String url = translateVaadinUri(dependencies.get(i));
-            startDependencyLoading();
-            loader.loadStylesheet(url, resourceLoadListener);
-        }
-    }
-
-    /**
-     * Loads the given scripts and ensures any callbacks registered using
-     * {@link runWhenDependenciesLoaded(Command)} are run when all dependencies
-     * have been loaded.
-     *
-     * @param dependencies
-     *            a list of dependency URLs to load, will be translated using
-     *            {@link #translateVaadinUri(String)} before they are loaded
-     */
-    public void loadScriptDependencies(final JsArray<String> dependencies) {
+    public void loadDependencies(final JsArray<String> dependencies,
+            BiConsumer<String, ResourceLoadListener> resourceLoader) {
+        assert dependencies != null;
+        assert resourceLoader != null;
         if (dependencies.length() == 0) {
             return;
         }
-
         // Listener that loads the next when one is completed
         ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
             @Override
@@ -101,8 +73,8 @@ public class DependencyLoader {
                 if (dependencies.length() != 0) {
                     String url = translateVaadinUri(dependencies.shift());
                     startDependencyLoading();
-                    // Load next in chain (hopefully already preloaded)
-                    event.getResourceLoader().loadScript(url, this);
+                    // Load next in chain
+                    resourceLoader.accept(url, this);
                 }
                 // Call start for next before calling end for current
                 endDependencyLoading();
@@ -116,16 +88,14 @@ public class DependencyLoader {
             }
         };
 
-        ResourceLoader loader = ResourceLoader.get();
-
         // Start chain by loading first
         String url = translateVaadinUri(dependencies.shift());
         startDependencyLoading();
-        loader.loadScript(url, resourceLoadListener);
+        resourceLoader.accept(url, resourceLoadListener);
 
         for (int i = 0; i < dependencies.length(); i++) {
-            String preloadUrl = translateVaadinUri(dependencies.get(i));
-            loader.loadScript(preloadUrl, null);
+            String loadUrl = translateVaadinUri(dependencies.get(i));
+            resourceLoader.accept(loadUrl, null);
         }
     }
 
@@ -190,32 +160,43 @@ public class DependencyLoader {
      * Triggers loading of the given dependencies.
      *
      * @param deps
-     *            the dependencies to load.
+     *            the dependencies to load, not <code>null</code>.
      */
     public void loadDependencies(JsonArray deps) {
-        JsArray<String> scripts = JsCollections.array();
-        JsArray<String> stylesheets = JsCollections.array();
+        assert deps != null;
+
+        ResourceLoader resourceLoader = ResourceLoader.get();
+        loadDependencies(deps, DependencyList.TYPE_STYLESHEET,
+                resourceLoader::loadStylesheet);
+        loadDependencies(deps, DependencyList.TYPE_JAVASCRIPT,
+                resourceLoader::loadScript);
+        loadDependencies(deps, DependencyList.TYPE_HTML_IMPORT,
+                resourceLoader::loadHtml);
+
+        for (int i = 0; i < deps.length(); i++) {
+            Console.error(
+                    "Unknown dependency type " + ((JsonObject) deps.get(i))
+                            .getString(DependencyList.KEY_TYPE));
+        }
+    }
+
+    private void loadDependencies(JsonArray deps, String typeToLoad,
+            BiConsumer<String, ResourceLoadListener> loader) {
+        JsArray<String> toLoad = JsCollections.array();
 
         for (int i = 0; i < deps.length(); i++) {
             JsonObject dependencyJson = (JsonObject) deps.get(i);
             String type = dependencyJson.getString(DependencyList.KEY_TYPE);
-            String url = dependencyJson.getString(DependencyList.KEY_URL);
-            if (DependencyList.TYPE_STYLESHEET.equals(type)) {
-                stylesheets.push(url);
-            } else if (DependencyList.TYPE_JAVASCRIPT.equals(type)) {
-                scripts.push(url);
-            } else {
-                Console.error("Unknown dependency type " + type);
+            if (typeToLoad.equals(type)) {
+                String url = dependencyJson.getString(DependencyList.KEY_URL);
+                toLoad.push(url);
+                deps.remove(i);
+                i--;
             }
         }
 
-        if (!scripts.isEmpty()) {
-            loadScriptDependencies(scripts);
+        if (!toLoad.isEmpty()) {
+            loadDependencies(toLoad, loader);
         }
-        if (!stylesheets.isEmpty()) {
-            loadStyleDependencies(stylesheets);
-        }
-
     }
-
 }
