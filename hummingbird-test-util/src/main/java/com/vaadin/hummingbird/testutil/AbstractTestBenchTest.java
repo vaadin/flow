@@ -107,7 +107,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Executes the given Javascript.
+     * Executes the given JavaScript.
      *
      * @param script
      *            the script to execute
