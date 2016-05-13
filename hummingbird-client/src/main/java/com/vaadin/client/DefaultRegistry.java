@@ -56,6 +56,7 @@ public class DefaultRegistry extends Registry {
         set(ApplicationConfiguration.class, applicationConfiguration);
 
         // Classes with no constructor dependencies
+        set(ResourceLoader.class, new ResourceLoader());
         set(URIResolver.class, new URIResolver(this));
         set(DependencyLoader.class, new DependencyLoader(this));
         set(SystemErrorHandler.class, new SystemErrorHandler(this));

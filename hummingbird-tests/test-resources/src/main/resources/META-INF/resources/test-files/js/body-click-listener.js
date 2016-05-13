@@ -1,3 +1,5 @@
+window.postMessage("Body click listener loaded","*");
+
 document.body.addEventListener("click", function(e) {
 	if (e.target != document.body) {
 		// Ignore clicks on other elements
