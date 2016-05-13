@@ -54,9 +54,11 @@ public class DependencyLoader {
      *
      * @param dependencies
      *            a list of dependency URLs to load, will be translated using
-     *            {@link #translateVaadinUri(String)} before they are loaded
+     *            {@link #translateVaadinUri(String)} before they are loaded,
+     *            not <code>null</code>
      */
     public void loadStyleDependencies(JsArray<String> dependencies) {
+        assert dependencies != null;
         // Assuming no reason to interpret in a defined order
         ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
             @Override
@@ -87,9 +89,11 @@ public class DependencyLoader {
      *
      * @param dependencies
      *            a list of dependency URLs to load, will be translated using
-     *            {@link #translateVaadinUri(String)} before they are loaded
+     *            {@link #translateVaadinUri(String)} before they are loaded,
+     *            not <code>null</code>
      */
     public void loadScriptDependencies(final JsArray<String> dependencies) {
+        assert dependencies != null;
         if (dependencies.length() == 0) {
             return;
         }
@@ -126,6 +130,57 @@ public class DependencyLoader {
         for (int i = 0; i < dependencies.length(); i++) {
             String preloadUrl = translateVaadinUri(dependencies.get(i));
             loader.loadScript(preloadUrl, null);
+        }
+    }
+
+    /**
+     * Loads the given HTML imports and ensures any callbacks registered using
+     * {@link runWhenDependenciesLoaded(Command)} are run when all dependencies
+     * have been loaded.
+     *
+     * @param dependencies
+     *            a list of dependency URLs to load, will be translated using
+     *            {@link #translateVaadinUri(String)} before they are loaded,
+     *            not <code>null</code>
+     */
+    public void loadHtmlDependencies(final JsArray<String> dependencies) {
+        assert dependencies != null;
+        if (dependencies.length() == 0) {
+            return;
+        }
+
+        // Listener that loads the next when one is completed
+        ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
+            @Override
+            public void onLoad(ResourceLoadEvent event) {
+                if (dependencies.length() != 0) {
+                    String url = translateVaadinUri(dependencies.shift());
+                    startDependencyLoading();
+                    // Load next in chain (hopefully already preloaded)
+                    event.getResourceLoader().loadHtml(url, this);
+                }
+                // Call start for next before calling end for current
+                endDependencyLoading();
+            }
+
+            @Override
+            public void onError(ResourceLoadEvent event) {
+                Console.error(event.getResourceUrl() + " could not be loaded.");
+                // The show must go on
+                onLoad(event);
+            }
+        };
+
+        ResourceLoader loader = ResourceLoader.get();
+
+        // Start chain by loading first
+        String url = translateVaadinUri(dependencies.shift());
+        startDependencyLoading();
+        loader.loadHtml(url, resourceLoadListener);
+
+        for (int i = 0; i < dependencies.length(); i++) {
+            String loadUrl = translateVaadinUri(dependencies.get(i));
+            loader.loadHtml(loadUrl, null);
         }
     }
 
@@ -190,11 +245,14 @@ public class DependencyLoader {
      * Triggers loading of the given dependencies.
      *
      * @param deps
-     *            the dependencies to load.
+     *            the dependencies to load, not <code>null</code>.
      */
     public void loadDependencies(JsonArray deps) {
+        assert deps != null;
+
         JsArray<String> scripts = JsCollections.array();
         JsArray<String> stylesheets = JsCollections.array();
+        JsArray<String> htmls = JsCollections.array();
 
         for (int i = 0; i < deps.length(); i++) {
             JsonObject dependencyJson = (JsonObject) deps.get(i);
@@ -204,6 +262,8 @@ public class DependencyLoader {
                 stylesheets.push(url);
             } else if (DependencyList.TYPE_JAVASCRIPT.equals(type)) {
                 scripts.push(url);
+            } else if (DependencyList.TYPE_HTML_IMPORT.equals(type)) {
+                htmls.push(url);
             } else {
                 Console.error("Unknown dependency type " + type);
             }
@@ -214,6 +274,9 @@ public class DependencyLoader {
         }
         if (!stylesheets.isEmpty()) {
             loadStyleDependencies(stylesheets);
+        }
+        if (!htmls.isEmpty()) {
+            loadHtmlDependencies(htmls);
         }
 
     }
