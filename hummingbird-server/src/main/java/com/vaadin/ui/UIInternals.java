@@ -329,7 +329,7 @@ public class UIInternals implements Serializable {
         }
 
         if (session != null) {
-            ComponentUtil.onComponentAttach(ui);
+            ComponentUtil.onComponentAttach(ui, true);
         }
     }
 
