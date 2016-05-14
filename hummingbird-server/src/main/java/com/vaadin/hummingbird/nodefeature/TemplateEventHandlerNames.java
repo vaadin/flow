@@ -28,7 +28,7 @@ import com.vaadin.ui.Component;
 /**
  * Template meta data information: list of template methods annotated with @
  * {@link EventHandler}.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -50,7 +50,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
     }
 
     @Override
-    public void onAttach() {
+    public void onAttach(boolean initialAttach) {
         if (!isInfoCollected) {
             collectEventHandlerMethods(getComponent());
         }
