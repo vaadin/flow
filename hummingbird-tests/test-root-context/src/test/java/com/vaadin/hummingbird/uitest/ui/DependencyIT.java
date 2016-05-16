@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -56,6 +59,35 @@ public class DependencyIT extends PhantomJSTest {
         Assert.assertEquals(
                 "Second script loaded. Global variable (window.globalVar) is: 'Set by set-global-var.js'",
                 addedJsText);
+    }
+
+    @Test
+    public void htmlInjection() {
+        open();
+        // Initial HTML import logs a message on the page
+        findElement(By.cssSelector("body")).click();
+
+        List<String> messages = getMessages();
+        Assert.assertEquals("Messagehandler initialized in HTML import 1",
+                messages.get(messages.size() - 1));
+
+        // Inject html
+        findElementById("loadHtml").click();
+        messages = getMessages();
+
+        Assert.assertEquals("HTML import 2 loaded",
+                messages.get(messages.size() - 2));
+        Assert.assertEquals("HTML import 3 loaded",
+                messages.get(messages.size() - 1));
+    }
+
+    private List<String> getMessages() {
+        List<WebElement> elements = findElements(By.className("message"));
+        List<String> messages = new ArrayList<>();
+        for (WebElement element : elements) {
+            messages.add(element.getText());
+        }
+        return messages;
     }
 
     protected WebElement findElementById(String id) {

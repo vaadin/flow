@@ -45,7 +45,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         implements BindingStrategy<T> {
 
     @Override
-    public boolean isAppliable(StateNode node) {
+    public boolean isApplicable(StateNode node) {
         assert node != null;
 
         boolean isTemplate = node.hasFeature(NodeFeatures.TEMPLATE);

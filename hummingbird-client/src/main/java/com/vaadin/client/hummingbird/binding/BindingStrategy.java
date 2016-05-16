@@ -28,7 +28,7 @@ import elemental.dom.Node;
  * {@link Node} based on the {@link StateNode} instance and bind it.
  * 
  * @param <T>
- *            an HTML node type which strategy is applicable for
+ *            a DOM node type which strategy is applicable for
  * 
  * @author Vaadin Ltd
  *
@@ -36,7 +36,7 @@ import elemental.dom.Node;
 public interface BindingStrategy<T extends Node> {
 
     /**
-     * Creates an HTML node for the {@code node}.
+     * Creates a DOM node for the {@code node}.
      * 
      * @param node
      *            the state node for which to create a DOM node, not
@@ -53,21 +53,21 @@ public interface BindingStrategy<T extends Node> {
      * @return {@code true} if the strategy is applicable to the node
      * 
      */
-    boolean isAppliable(StateNode node);
+    boolean isApplicable(StateNode node);
 
     /**
-     * Binds an HTML node to the {@code stateNode} using {@code context} to
-     * create and bind nodes of other types.
+     * Binds a DOM node to the {@code stateNode} using {@code context} to create
+     * and bind nodes of other types.
      * 
      * @param stateNode
      *            the state node to bind, not {@code null}
-     * @param htmlNode
+     * @param domNode
      *            the DOM node, not <code>null</code>
      * @param context
      *            binder context to create and construct HTML nodes of other
      *            types
      */
-    void bind(StateNode stateNode, T htmlNode, BinderContext context);
+    void bind(StateNode stateNode, T domNode, BinderContext context);
 
     /**
      * Gets the tag value from the {@link NodeFeatures#ELEMENT_DATA} feature for
