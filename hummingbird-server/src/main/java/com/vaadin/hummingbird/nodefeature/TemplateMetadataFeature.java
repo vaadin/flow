@@ -69,7 +69,7 @@ public class TemplateMetadataFeature extends SerializableNodeList<String> {
         }
         Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> method
-                        .getAnnotation(EventHandler.class) != null)
+                        .isAnnotationPresent(EventHandler.class))
                 .forEach(method -> addEventHandlerMethod(method, methods));
         collectEventHandlerMethods(clazz.getSuperclass(), methods);
     }
@@ -94,7 +94,7 @@ public class TemplateMetadataFeature extends SerializableNodeList<String> {
         if (method.getParameterCount() != 0) {
             // not supported now
             StringBuilder builder = new StringBuilder(
-                    "Event handler methods with parameters are not suuported. Component ");
+                    "Event handler methods with parameters are not supported. Component ");
             builder.append(method.getDeclaringClass());
             builder.append(" has method ").append(method.getName());
             builder.append(" with at least one parameter annotated with ");
@@ -103,7 +103,7 @@ public class TemplateMetadataFeature extends SerializableNodeList<String> {
         }
         if (!void.class.equals(method.getReturnType())) {
             StringBuilder builder = new StringBuilder(
-                    "Non void event handler methods (no return type) are not suuported. Component ");
+                    "Non void event handler methods (no return type) are not supported. Component ");
             builder.append(method.getDeclaringClass());
             builder.append(" has method ").append(method.getName());
             builder.append(" whose return type is not void annotated with ");

@@ -15,10 +15,8 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
-import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +27,7 @@ import org.junit.Test;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
+import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
@@ -38,10 +37,9 @@ import com.vaadin.ui.UI;
  */
 public class TemplateMetadataFeatureTest {
 
-    static class Template1 extends Template {
+    static class Template1 extends InlineTemplate {
         public Template1() {
-            super(new ByteArrayInputStream(
-                    "<div></div>".getBytes(StandardCharsets.UTF_8)));
+            super("<div></div>");
         }
 
         @EventHandler
@@ -50,7 +48,7 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class Template2 extends Template1 {
+    static class TemplateWithMethodParameters extends Template1 {
 
         @EventHandler
         protected void method(String arg) {
@@ -58,7 +56,7 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class Template3 extends Template1 {
+    static class TemplateWithMethodReturnValue extends Template1 {
 
         @EventHandler
         protected int op() {
@@ -66,7 +64,7 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class Template4 extends Template1 {
+    static class ChildTemplateWithMultipleMethods extends Template1 {
 
         @EventHandler
         protected void op() {
@@ -77,7 +75,7 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class Template5 extends Template1 {
+    static class ChildTemplateOverridingMethod extends Template1 {
 
         @Override
         @EventHandler
@@ -86,7 +84,8 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class Template6 extends Template2 {
+    static class ChildTemplateOfIncorrectTemplate
+            extends TemplateWithMethodParameters {
 
         @Override
         @EventHandler
@@ -108,17 +107,13 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test
-    public void attach_metatdataContainsTemplateMethod() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+    public void attach_metadataContainsTemplateMethod() {
+        UI ui = new UI();
 
-        StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
-        stateNode.getFeature(ComponentMapping.class)
-                .setComponent(new Template1());
+        Template template = new Template1();
+        ui.add(template);
 
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-
-        TemplateMetadataFeature feature = stateNode
+        TemplateMetadataFeature feature = template.getElement().getNode()
                 .getFeature(TemplateMetadataFeature.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
@@ -128,45 +123,34 @@ public class TemplateMetadataFeatureTest {
 
     @Test(expected = IllegalStateException.class)
     public void attach_methodHasArg_ExceptionIsThrown() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        UI ui = new UI();
 
-        StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
-        stateNode.getFeature(ComponentMapping.class)
-                .setComponent(new Template2());
-
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
+        Template template = new TemplateWithMethodParameters();
+        ui.add(template);
     }
 
     @Test(expected = IllegalStateException.class)
     public void attach_methodReturnType_ExceptionIsThrown() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        UI ui = new UI();
 
-        StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
-        stateNode.getFeature(ComponentMapping.class)
-                .setComponent(new Template3());
-
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
+        Template template = new TemplateWithMethodReturnValue();
+        ui.add(template);
     }
 
     @Test
-    public void attach_metatdataContainsAllTemplateMethods() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+    public void attach_metadataContainsAllTemplateMethods() {
+        UI ui = new UI();
 
-        StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
-        stateNode.getFeature(ComponentMapping.class)
-                .setComponent(new Template4());
+        Template template = new ChildTemplateWithMultipleMethods();
+        ui.add(template);
 
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-
-        TemplateMetadataFeature feature = stateNode
+        TemplateMetadataFeature feature = template.getElement().getNode()
                 .getFeature(TemplateMetadataFeature.class);
         Assert.assertEquals(3, feature.size());
 
-        HashSet<String> methods = getDeclaredMethods(Template4.class)
-                .collect(Collectors.toCollection(HashSet::new));
+        HashSet<String> methods = getDeclaredMethods(
+                ChildTemplateWithMultipleMethods.class)
+                        .collect(Collectors.toCollection(HashSet::new));
         methods.add(getDeclaredMethods(Template1.class).findFirst().get());
 
         for (int i = 0; i < feature.size(); i++) {
@@ -178,34 +162,27 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test
-    public void attach_metatdataContainsOnlyOneTemplateMethod() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+    public void attach_metadataContainsOnlyOneTemplateMethod() {
+        UI ui = new UI();
 
-        StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
-        stateNode.getFeature(ComponentMapping.class)
-                .setComponent(new Template5());
+        Template template = new ChildTemplateOverridingMethod();
+        ui.add(template);
 
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-
-        TemplateMetadataFeature feature = stateNode
+        TemplateMetadataFeature feature = template.getElement().getNode()
                 .getFeature(TemplateMetadataFeature.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
-                getDeclaredMethods(Template5.class).findFirst().get(),
+                getDeclaredMethods(ChildTemplateOverridingMethod.class)
+                        .findFirst().get(),
                 feature.get(0));
     }
 
     @Test(expected = IllegalStateException.class)
     public void attach_methodReturnTypeInSuperClass_ExceptionIsThrown() {
-        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+        UI ui = new UI();
 
-        StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
-        stateNode.getFeature(ComponentMapping.class)
-                .setComponent(new Template6());
-
-        tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
+        Template template = new ChildTemplateOfIncorrectTemplate();
+        ui.add(template);
     }
 
     @Test(expected = AssertionError.class)
