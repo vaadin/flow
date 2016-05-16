@@ -34,6 +34,7 @@ import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateMetadataFeature;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 
@@ -136,6 +137,11 @@ public class NodeFeatures {
      * Id for {@link ModelList}.
      */
     public static final int TEMPLATE_MODELLIST = 21;
+
+    /**
+     * Id for {@link TemplateMetadataFeature}.
+     */
+    public static final int TEMPLATE_METADATA = 22;
 
     /**
      * Key for {@link ElementData#getTag()}.

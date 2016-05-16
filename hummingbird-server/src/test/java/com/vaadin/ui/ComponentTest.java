@@ -542,12 +542,12 @@ public class ComponentTest {
         List<String> triggered = new ArrayList<>();
         Component customComponent = new Component(new Element("div")) {
             @Override
-            protected void onAttach() {
+            protected void onAttach(AttachEvent attachEvent) {
                 triggered.add("onAttach");
             }
 
             @Override
-            protected void onDetach() {
+            protected void onDetach(DetachEvent detachEvent) {
                 triggered.add("onDetach");
             }
         };

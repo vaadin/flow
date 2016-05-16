@@ -16,12 +16,14 @@
 package com.vaadin.client.hummingbird.template;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.Console;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
@@ -30,6 +32,7 @@ import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.Event;
+import elemental.events.EventListener;
 import elemental.events.EventRemover;
 import elemental.json.JsonObject;
 import jsinterop.annotations.JsFunction;
@@ -50,7 +53,7 @@ public class ElementTemplateBindingStrategy
     @JsFunction
     @SuppressWarnings("unusable-by-js")
     private interface EventHandler {
-        void handle(Event event);
+        void handle(Event event, JavaScriptObject serverProxy);
     }
 
     @Override
@@ -124,13 +127,22 @@ public class ElementTemplateBindingStrategy
     private void registerEventHandlers(StateNode stateNode,
             ElementTemplateNode templateNode, Element element) {
         JsonObject eventHandlers = templateNode.getEventHandlers();
+        Console.log(
+                "vvvvvvv " + stateNode.getList(NodeFeatures.TEMPLATE_METADATA));
         if (eventHandlers != null) {
             for (String event : eventHandlers.keys()) {
                 String handler = WidgetUtil
                         .crazyJsCast(eventHandlers.get(event));
-                EventHandler eventHandler = NativeFunction.create("evt",
-                        handler.replace("$event", "evt"));
-                element.addEventListener(event, eventHandler::handle);
+                EventHandler eventHandler = NativeFunction.create("$event",
+                        "$server", handler);
+                element.addEventListener(event, new EventListener() {
+                    @Override
+                    public void handleEvent(Event evt) {
+                        eventHandler.handle(evt,
+                                createServerProxy(stateNode, stateNode.getList(
+                                        NodeFeatures.TEMPLATE_METADATA)));
+                    }
+                });
             }
         }
     }
@@ -158,17 +170,33 @@ public class ElementTemplateBindingStrategy
         context.bind(overrideNode, element);
     }
 
-    private JavaScriptObject createServerProxy(StateNode node) {
+    private JavaScriptObject createServerProxy(StateNode node, NodeList s) {
+        Console.log("sssxx " + node.getList(NodeFeatures.TEMPLATE_METADATA));
+        Console.log("pppppp " + s.length());
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
-        if (eventHandlerMethods != null) {
-            for (String serverMethodName : eventHandlerMethods) {
-                attachServerProxyMethod(treeUpdater, proxy, nodeId, getId(),
-                        serverMethodName);
+        Console.log("awrgkuh "
+                + (node.getList(NodeFeatures.TEMPLATE_METADATA) == s));
+        if (node.hasFeature(NodeFeatures.TEMPLATE_METADATA)) {
+            Console.log("ddddddddd "
+                    + (node.getList(NodeFeatures.TEMPLATE_METADATA) == s));
+            Console.log("dee "
+                    + node.getList(NodeFeatures.TEMPLATE_METADATA).length());
+            NodeList list = node.getList(NodeFeatures.TEMPLATE_METADATA);
+            for (int i = 0; i < list.length(); i++) {
+                attachServerProxyMethod(proxy, node, list.get(i).toString());
             }
         }
-
         return proxy;
     }
+
+    private static native void attachServerProxyMethod(JavaScriptObject proxy,
+            StateNode node, String methodName)
+    /*-{
+        proxy[methodName] = function() {
+            var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
+            tree.@com.vaadin.client.hummingbird.StateTree::requestCallServerMethod(*)(node, methodName);
+        };
+    }-*/;
 
 }

@@ -108,6 +108,21 @@ public class AnnotationReader {
     }
 
     /**
+     * Finds all {@link HtmlImport} annotations on the given {@link Component}
+     * class, its super classes and implemented interfaces.
+     *
+     * @param componentClass
+     *            the component class to search for the annotation
+     * @return a list the html import annotations found
+     * @see #getAnnotationFor(Class, Class) for what order the annotations are
+     *      in the list
+     */
+    public static List<HtmlImport> getHtmlImportAnnotations(
+            Class<? extends Component> componentClass) {
+        return getAnnotationsFor(componentClass, HtmlImport.class);
+    }
+
+    /**
      * Helper to get an annotation for a class. If the annotation is not present
      * on the target class, its super classes and implemented interfaces are
      * also searched for the annotation.

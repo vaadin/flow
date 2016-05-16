@@ -442,6 +442,25 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("foo", element.getAttribute("id"));
     }
 
+    public void testServerEventHandler() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addEventHandler("click", "$server.operation()");
+
+        stateNode.getList(NodeFeatures.TEMPLATE_METADATA).set(0, "operation");
+
+        Element element = createElement(templateNode);
+        MouseEvent event = (MouseEvent) Browser.getDocument()
+                .createEvent(Events.MOUSE);
+        event.initMouseEvent("click", true, true, Browser.getWindow(), 0, 0, 0,
+                0, 0, false, false, false, false, 0, element);
+
+        Browser.getDocument().getBody().appendChild(element);
+
+        element.dispatchEvent(event);
+        assertEquals("foo", element.getAttribute("id"));
+    }
+
     public void testNgFor() {
         TestElementTemplateNode parent = TestElementTemplateNode.create("div");
         String textVar = "text";

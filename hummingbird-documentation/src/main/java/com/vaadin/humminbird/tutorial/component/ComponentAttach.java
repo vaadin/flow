@@ -5,7 +5,9 @@ import java.util.function.Consumer;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
+import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.DetachEvent;
 
 @CodeFor("tutorial-component-with-dependencies.asciidoc")
 public class ComponentAttach {
@@ -27,10 +29,10 @@ public class ComponentAttach {
     public class UserNameLabel extends Component {
 
         @Override
-        protected void onAttach() {
+        protected void onAttach(AttachEvent attachEvent) {
             // user name can be stored to session after login
             //@formatter:off - custom line wrapping
-            String userName = (String) getUI().get().getSession().getAttribute("username");
+            String userName = (String) attachEvent.getSession().getAttribute("username");
             getElement().setTextContent("Hello " + userName + ", welcome back!");
             //@formatter:on
         }
@@ -40,18 +42,19 @@ public class ComponentAttach {
     public class ShoppingCartSummaryLabel extends Component {
 
         @Override
-        protected void onAttach() {
+        protected void onAttach(AttachEvent attachEvent) {
             //@formatter:off - custom line wrapping
-            ShopEventBus eventBus = getUI().get().getSession().getAttribute(ShopEventBus.class);
+            ShopEventBus eventBus = attachEvent.getSession().getAttribute(ShopEventBus.class);
             //@formatter:on
             // registering to event bus for updates from other components
             eventBus.register(this::onCartSummaryUpdate);
         }
 
         @Override
-        protected void onDetach() {
-            ShopEventBus eventBus = getUI().get().getSession()
-                    .getAttribute(ShopEventBus.class);
+        protected void onDetach(DetachEvent detachEvent) {
+            // @formatter:off
+            ShopEventBus eventBus = detachEvent.getSession().getAttribute(ShopEventBus.class);
+            // @formatter:on
             // after detaching don't need any updates
             eventBus.unregister(this::onCartSummaryUpdate);
         }
