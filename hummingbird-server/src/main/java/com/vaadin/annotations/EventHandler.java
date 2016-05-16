@@ -13,24 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.ui;
+package com.vaadin.annotations;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Event fired after a {@link Component} is attached to the UI.
- * <p>
- * When a hierarchy of components is being attached, this event is fired
- * child-first.
+ * Makes annotated method available as an event handler method which will be
+ * invoked once its client side reference is invoked using notation
+ * "$server.method()".
+ * 
+ * @author Vaadin Ltd
+ *
  */
-public class AttachEvent extends AbstractAttachDetachEvent {
-
-    /**
-     * Creates a new attach event with the given component as source.
-     *
-     * @param source
-     *            the component that was attached
-     */
-    public AttachEvent(Component source) {
-        super(source);
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+@Documented
+public @interface EventHandler {
 
 }

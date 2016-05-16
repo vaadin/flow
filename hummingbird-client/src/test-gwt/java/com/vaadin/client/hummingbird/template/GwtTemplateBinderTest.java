@@ -15,6 +15,9 @@
  */
 package com.vaadin.client.hummingbird.template;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
@@ -41,28 +44,47 @@ import elemental.events.MouseEvent;
 
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
-    private TemplateRegistry reg = new TemplateRegistry();
-    private Registry registry = new Registry() {
-        @Override
-        public TemplateRegistry getTemplateRegistry() {
-            return reg;
-        }
-    };
-    private StateTree tree = new StateTree(registry);
+    private TemplateRegistry reg;
+    private Registry registry;
+    private StateTree tree;
+    private StateNode stateNode;
 
-    /**
-     * This state node is ALWAYS a template !!!
-     */
-    private StateNode stateNode = new StateNode(0, tree) {
+    private Set<String> serverMethods = new HashSet<>();
 
-        @Override
-        public boolean hasFeature(int id) {
-            if (id == NodeFeatures.TEMPLATE) {
-                return true;
+    @Override
+    protected void gwtSetUp() throws Exception {
+        super.gwtSetUp();
+        reg = new TemplateRegistry();
+        registry = new Registry() {
+            @Override
+            public TemplateRegistry getTemplateRegistry() {
+                return reg;
             }
-            return super.hasFeature(id);
-        }
-    };
+        };
+
+        tree = new StateTree(registry) {
+
+            @Override
+            public void requestCallServerMethod(StateNode node,
+                    String methodName) {
+                serverMethods.add(methodName);
+            }
+        };
+
+        /**
+         * This state node is ALWAYS a template !!!
+         */
+        stateNode = new StateNode(0, tree) {
+
+            @Override
+            public boolean hasFeature(int id) {
+                if (id == NodeFeatures.TEMPLATE) {
+                    return true;
+                }
+                return super.hasFeature(id);
+            }
+        };
+    }
 
     public void testTemplateProperties() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
@@ -440,6 +462,28 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         element.dispatchEvent(event);
         assertEquals("foo", element.getAttribute("id"));
+    }
+
+    public void testServerEventHandler() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        String operation = "operation";
+        templateNode.addEventHandler("click", "$server." + operation + "()");
+
+        stateNode.getList(NodeFeatures.TEMPLATE_METADATA).set(0, operation);
+
+        Element element = createElement(templateNode);
+        MouseEvent event = (MouseEvent) Browser.getDocument()
+                .createEvent(Events.MOUSE);
+        event.initMouseEvent("click", true, true, Browser.getWindow(), 0, 0, 0,
+                0, 0, false, false, false, false, 0, element);
+
+        Browser.getDocument().getBody().appendChild(element);
+
+        element.dispatchEvent(event);
+
+        assertEquals(1, serverMethods.size());
+        assertTrue(serverMethods.contains(operation));
     }
 
     public void testNgFor() {

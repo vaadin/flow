@@ -7,6 +7,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.DetachEvent;
 import com.vaadin.ui.UI;
 
 public class ClientServerCounterUI extends UI {
@@ -97,7 +98,7 @@ public class ClientServerCounterUI extends UI {
     }
 
     @Override
-    protected void onDetach() {
+    protected void onDetach(DetachEvent detachEvent) {
         timer.cancel();
     }
 

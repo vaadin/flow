@@ -27,13 +27,13 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
- * Annotation for defining JavaScript dependencies on a {@link Component} class.
- * For adding multiple JavaScript files for a single component, you can use this
+ * Annotation for defining HTML dependencies on a {@link Component} class. For
+ * adding multiple HTML files for a single component, you can use this
  * annotation multiple times.
  * <p>
- * It is guaranteed that the JavaScript files are loaded on the client side
- * before the component is used for the first time in a {@link UI}. Each
- * dependency is sent only once.
+ * It is guaranteed that the HTML files are loaded on the client side before the
+ * component is used for the first time in a {@link UI}. Each dependency is sent
+ * only once.
  * <p>
  * NOTE: while this annotation is not inherited using the
  * {@link Inherited @Inherited} annotation, the annotations of the possible
@@ -45,19 +45,19 @@ import com.vaadin.ui.UI;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Repeatable(InternalContainerAnnotationForJS.class)
-public @interface JavaScript {
+@Repeatable(InternalContainerAnnotationForHtml.class)
+public @interface HtmlImport {
 
     /**
-     * JavaScript file URL to load before using the annotated {@link Component}
-     * in the browser.
+     * HTML file URL to load before using the annotated {@link Component} in the
+     * browser.
      * <p>
      * Relative URLs are interpreted as relative to the service (servlet) path.
      * You can prefix the URL with {@literal context://} to make it relative to
      * the context path or use an absolute URL to refer to files outside the
      * service (servlet) path.
      *
-     * @return a JavaScript file URL
+     * @return a html file URL
      */
     String value();
 }

@@ -22,6 +22,7 @@ import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
@@ -50,7 +51,7 @@ public class ElementTemplateBindingStrategy
     @JsFunction
     @SuppressWarnings("unusable-by-js")
     private interface EventHandler {
-        void handle(Event event);
+        void handle(Event event, JavaScriptObject serverProxy);
     }
 
     @Override
@@ -128,9 +129,10 @@ public class ElementTemplateBindingStrategy
             for (String event : eventHandlers.keys()) {
                 String handler = WidgetUtil
                         .crazyJsCast(eventHandlers.get(event));
-                EventHandler eventHandler = NativeFunction.create("evt",
-                        handler.replace("$event", "evt"));
-                element.addEventListener(event, eventHandler::handle);
+                EventHandler eventHandler = NativeFunction.create("$event",
+                        "$server", handler);
+                element.addEventListener(event, evt -> eventHandler.handle(evt,
+                        createServerProxy(stateNode)));
             }
         }
     }
@@ -161,14 +163,22 @@ public class ElementTemplateBindingStrategy
     private JavaScriptObject createServerProxy(StateNode node) {
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
-        if (eventHandlerMethods != null) {
-            for (String serverMethodName : eventHandlerMethods) {
-                attachServerProxyMethod(treeUpdater, proxy, nodeId, getId(),
-                        serverMethodName);
+        if (node.hasFeature(NodeFeatures.TEMPLATE_METADATA)) {
+            NodeList list = node.getList(NodeFeatures.TEMPLATE_METADATA);
+            for (int i = 0; i < list.length(); i++) {
+                attachServerProxyMethod(proxy, node, list.get(i).toString());
             }
         }
-
         return proxy;
     }
+
+    private static native void attachServerProxyMethod(JavaScriptObject proxy,
+            StateNode node, String methodName)
+    /*-{
+        proxy[methodName] = function() {
+            var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
+            tree.@com.vaadin.client.hummingbird.StateTree::requestCallServerMethod(*)(node, methodName);
+        };
+    }-*/;
 
 }
