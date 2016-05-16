@@ -21,7 +21,7 @@ package com.vaadin.ui;
  * When a hierarchy of components is being detached, this event is fired
  * child-first.
  */
-public class DetachEvent extends ComponentEvent<Component> {
+public class DetachEvent extends AbstractAttachDetachEvent {
 
     /**
      * Creates a new detach event with the given component as source.
@@ -30,7 +30,7 @@ public class DetachEvent extends ComponentEvent<Component> {
      *            the component that was detached
      */
     public DetachEvent(Component source) {
-        super(source, false);
+        super(source);
     }
 
 }
