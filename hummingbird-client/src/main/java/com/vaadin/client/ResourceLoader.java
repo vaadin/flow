@@ -17,11 +17,11 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.Duration;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.HeadElement;
 import com.google.gwt.dom.client.LinkElement;
 import com.google.gwt.dom.client.NodeList;
 import com.google.gwt.dom.client.ScriptElement;
@@ -116,24 +116,33 @@ public class ResourceLoader {
         void onError(ResourceLoadEvent event);
     }
 
-    private static final ResourceLoader INSTANCE = GWT
-            .create(ResourceLoader.class);
-
     private final JsSet<String> loadedResources = JsCollections.set();
 
     private final JsMap<String, JsArray<ResourceLoadListener>> loadListeners = JsCollections
             .map();
 
-    private final Element head;
+    /**
+     * Creates a new resource loader. You should not create you own resource
+     * loader, but instead use {@link Registry#getResourceLoader()} to get an
+     * instance.
+     *
+     * @param initFromDom
+     *            <code>true</code> if currently loaded resources should be
+     *            marked as loaded, <code>false</code> to ignore currently
+     *            loaded resources
+     */
+    public ResourceLoader(boolean initFromDom) {
+        if (initFromDom) {
+            initLoadedResourcesFromDom();
+        }
+    }
 
     /**
-     * Creates a new resource loader. You should generally not create you own
-     * resource loader, but instead use {@link ResourceLoader#get()} to get an
-     * instance.
+     * Populates the resource loader with the scripts currently added to the
+     * page.
      */
-    protected ResourceLoader() {
+    private void initLoadedResourcesFromDom() {
         Document document = Document.get();
-        head = document.getElementsByTagName("head").getItem(0);
 
         // detect already loaded scripts and stylesheets
         NodeList<Element> scripts = document.getElementsByTagName("script");
@@ -150,20 +159,12 @@ public class ResourceLoader {
             LinkElement linkElement = LinkElement.as(links.getItem(i));
             String rel = linkElement.getRel();
             String href = linkElement.getHref();
-            if ("stylesheet".equalsIgnoreCase(rel) && href != null
+            if (("stylesheet".equalsIgnoreCase(rel)
+                    || "import".equalsIgnoreCase(rel)) && href != null
                     && href.length() != 0) {
                 loadedResources.add(href);
             }
         }
-    }
-
-    /**
-     * Returns the default ResourceLoader.
-     *
-     * @return the default ResourceLoader
-     */
-    public static ResourceLoader get() {
-        return INSTANCE;
     }
 
     /**
@@ -227,7 +228,56 @@ public class ResourceLoader {
                     fireError(event);
                 }
             }, event);
-            head.appendChild(scriptTag);
+            getHead().appendChild(scriptTag);
+        }
+    }
+
+    private static HeadElement getHead() {
+        return Document.get().getHead();
+    }
+
+    /**
+     * Loads an HTML import and notify a listener when the HTML import is
+     * loaded. Calling this method when the HTML import is currently loading or
+     * already loaded doesn't cause the HTML import to be loaded again, but the
+     * listener will still be notified when appropriate.
+     *
+     *
+     * @param htmlUrl
+     *            url of HTML import to load
+     * @param resourceLoadListener
+     *            listener to notify when the HTML import is loaded
+     */
+    public void loadHtml(final String htmlUrl,
+            final ResourceLoadListener resourceLoadListener) {
+        final String url = WidgetUtil.getAbsoluteUrl(htmlUrl);
+        ResourceLoadEvent event = new ResourceLoadEvent(this, url);
+        if (loadedResources.has(url)) {
+            if (resourceLoadListener != null) {
+                resourceLoadListener.onLoad(event);
+            }
+            return;
+        }
+
+        if (addListener(url, resourceLoadListener, loadListeners)) {
+            LinkElement linkTag = Document.get().createLinkElement();
+            linkTag.setAttribute("rel", "import");
+            linkTag.setAttribute("href", url);
+
+            addOnloadHandler(linkTag, new ResourceLoadListener() {
+                @Override
+                public void onLoad(ResourceLoadEvent event) {
+                    Console.log("Loaded HTML import " + url);
+                    fireLoad(event);
+                }
+
+                @Override
+                public void onError(ResourceLoadEvent event) {
+                    Console.error("Failed to load HTML import " + url);
+                    fireError(event);
+                }
+            }, event);
+            getHead().appendChild(linkTag);
         }
     }
 
@@ -358,7 +408,7 @@ public class ResourceLoader {
                 }
             }
 
-            head.appendChild(linkElement);
+            getHead().appendChild(linkElement);
         }
     }
 

@@ -723,7 +723,7 @@ public class AtmospherePushConnection implements PushConnection {
             final String pushJs = getVersionedPushJs();
 
             Console.log("Loading " + pushJs);
-            ResourceLoader loader = ResourceLoader.get();
+            ResourceLoader loader = registry.getResourceLoader();
             String pushScriptUrl = registry.getApplicationConfiguration()
                     .getContextRootUrl() + pushJs;
             ResourceLoadListener loadListener = new ResourceLoadListener() {
