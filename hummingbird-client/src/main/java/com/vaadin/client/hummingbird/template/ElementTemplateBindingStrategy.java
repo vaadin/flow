@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.hummingbird.template;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
@@ -93,7 +94,7 @@ public class ElementTemplateBindingStrategy
             }
         }
 
-        registerEventHandlers(templateNode, element);
+        registerEventHandlers(stateNode, templateNode, element);
 
         MapProperty overrideProperty = stateNode
                 .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
@@ -120,8 +121,8 @@ public class ElementTemplateBindingStrategy
         }
     }
 
-    private void registerEventHandlers(ElementTemplateNode templateNode,
-            Element element) {
+    private void registerEventHandlers(StateNode stateNode,
+            ElementTemplateNode templateNode, Element element) {
         JsonObject eventHandlers = templateNode.getEventHandlers();
         if (eventHandlers != null) {
             for (String event : eventHandlers.keys()) {
@@ -155,6 +156,19 @@ public class ElementTemplateBindingStrategy
          * previously
          */
         context.bind(overrideNode, element);
+    }
+
+    private JavaScriptObject createServerProxy(StateNode node) {
+        JavaScriptObject proxy = JavaScriptObject.createObject();
+
+        if (eventHandlerMethods != null) {
+            for (String serverMethodName : eventHandlerMethods) {
+                attachServerProxyMethod(treeUpdater, proxy, nodeId, getId(),
+                        serverMethodName);
+            }
+        }
+
+        return proxy;
     }
 
 }
