@@ -44,7 +44,7 @@ public class AnnotationReader {
      *
      * @param viewWithTitle
      *            the class with the title
-     * @return the title or <code>null</code> if no title specified
+     * @return the page title or an empty optional if no annotation present
      */
     public static Optional<String> getPageTitle(
             Class<? extends View> viewWithTitle) {
@@ -52,32 +52,29 @@ public class AnnotationReader {
     }
 
     /**
-     * Finds the {@link PushMode} to use for a specific UI. If no specific push
-     * mode is required, <code>null</code> is returned.
+     * Finds the {@link PushMode} to use for a specific UI, if defined with a
+     * {@link Push @Push} annotation.
      *
      * @param uiClass
      *            the UI to search for the Push annotation.
-     * @return the push mode to use, or <code>null</code> if no push mode is
-     *         defined
-     *
+     * @return the push mode to use, or an empty optional if no annotation
+     *         present
      */
-    public static PushMode getPushMode(Class<? extends UI> uiClass) {
-        return getAnnotationFor(uiClass, Push.class).map(Push::value)
-                .orElse(null);
+    public static Optional<PushMode> getPushMode(Class<? extends UI> uiClass) {
+        return getAnnotationFor(uiClass, Push.class).map(Push::value);
     }
 
     /**
-     * Finds the {@link Transport} to use for a specific UI. If no transport is
-     * defined, <code>null</code> is returned.
+     * Finds the {@link Transport} to use for a specific UI, if defined with a
+     * {@link Push @Push} annotation.
      *
      * @param uiClass
      *            the UI to search for the Push annotation
-     * @return the transport type to use, or <code>null</code> if no transport
-     *         is defined
+     * @return the transport type to use, or an empty optional if no annotation
+     *         present
      */
-    public static Transport getPushTransport(Class<?> uiClass) {
-        return getAnnotationFor(uiClass, Push.class).map(Push::transport)
-                .orElse(null);
+    public static Optional<Transport> getPushTransport(Class<?> uiClass) {
+        return getAnnotationFor(uiClass, Push.class).map(Push::transport);
     }
 
     /**
