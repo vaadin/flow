@@ -110,6 +110,22 @@ public class Page implements Serializable {
     }
 
     /**
+     * Adds the given HTML import to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * Relative URLs are interpreted as relative to the service (servlet) path.
+     * You can prefix the URL with {@literal context://} to make it relative to
+     * the context path or use an absolute URL to refer to files outside the
+     * service (servlet) path.
+     *
+     * @param url
+     *            the URL to load the HTML import from, not <code>null</code>
+     */
+    public void addHtmlImport(String url) {
+        addDependency(new Dependency(Type.HTML_IMPORT, url));
+    }
+
+    /**
      * Adds the given dependency to the page and ensures that it is loaded
      * successfully.
      *
