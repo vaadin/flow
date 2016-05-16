@@ -131,8 +131,6 @@ public interface BinderContext {
         assert node != null;
         assert parent != null;
         assert factory != null;
-        assert node.hasFeature(featureId) : "State node must have feature "
-                + node.getTree().getFeatureDebugName(featureId);
         NodeList children = node.getList(featureId);
 
         for (int i = 0; i < children.length(); i++) {

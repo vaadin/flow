@@ -66,8 +66,8 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     }
 
     /**
-     * Returns {@code true} whether the strategy is applicable to the
-     * {@code templateId} having {@code tree} as context.
+     * Returns whether this strategy applies to the template node with the given
+     * {@code templateId} inside the state {@code tree}.
      * 
      * @param tree
      *            the state tree, not {@code null}

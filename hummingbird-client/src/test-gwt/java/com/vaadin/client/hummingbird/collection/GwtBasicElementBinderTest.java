@@ -273,9 +273,6 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     private StateNode createChildNode(String id) {
         StateNode childNode = new StateNode(nextId++, node.getTree());
 
-        // node should have "children" feature.
-        childNode.getList(NodeFeatures.ELEMENT_CHILDREN);
-
         childNode.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeFeatures.TAG).setValue("span");
         if (id != null) {
@@ -382,8 +379,6 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         Binder.bind(node, element);
 
         StateNode childNode = new StateNode(nextId++, node.getTree());
-        // node should have "children" feature.
-        childNode.getList(NodeFeatures.ELEMENT_CHILDREN);
 
         children.add(0, childNode);
 
