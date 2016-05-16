@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.5-SNAPSHOT</version>
+		<version>0.0.7-SNAPSHOT</version>
 	</parent>
 	<artifactId>hummingbird-client</artifactId>
 	<name>Hummingbird Client</name>
@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-server</artifactId>
-			<version>0.0.5-SNAPSHOT</version>
+			<version>0.0.7-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

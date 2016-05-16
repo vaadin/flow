@@ -15,21 +15,42 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Hr;
+import com.vaadin.server.InputStreamFactory;
+import com.vaadin.server.StreamResource;
+import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.ui.AttachEvent;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.HasText;
 import com.vaadin.ui.Text;
 
 public class DependencyView extends AbstractDivView {
 
+    private StreamResourceRegistration htmlImport2;
+    private StreamResourceRegistration htmlImport3;
+
+    @Tag("div")
+    @HtmlImport("/test-files/html/htmlimport4.html")
+    static class HtmlComponent extends Component implements HasText {
+
+        public HtmlComponent() {
+            setText("Text component");
+        }
+    }
+
     @Override
     protected void onShow() {
         add(new Text(
-                "This test initially loads a stylesheet which makes all text red and a javascript which listens to body clicks"));
-        add(new Hr());
-
-        getPage().addStyleSheet("/test-files/css/allred.css");
-        getPage().addJavaScript("/test-files/js/body-click-listener.js");
+                "This test initially loads a stylesheet which makes all text red, a JavaScript for logging window messages, a JavaScript for handling body click events and an HTML which sends a window message"),
+                new Hr(), new HtmlComponent(), new Hr());
 
         Div clickBody = new Div();
         clickBody.setText("Hello, click the body please");
@@ -41,12 +62,86 @@ public class DependencyView extends AbstractDivView {
             getPage().addJavaScript("/test-files/js/read-global-var.js");
         });
         jsOrder.setId("loadJs");
+
+        /* HTML imports */
+        Button htmlOrder = new Button("Test HTML order", e -> {
+            getPage().addHtmlImport(htmlImport2.getResourceUri().toString());
+
+            // This failure can only be seen in the browser console
+            getPage().addHtmlImport("/doesnotexist.html");
+
+            // Can't test JS/HTML order because of #765
+            getPage().addHtmlImport(htmlImport3.getResourceUri().toString());
+        });
+        htmlOrder.setId("loadHtml");
+
         Button allBlue = new Button("Load 'everything blue' stylesheet", e -> {
             getPage().addStyleSheet("/test-files/css/allblueimportant.css");
 
         });
         allBlue.setId("loadBlue");
-        add(jsOrder, allBlue, new Hr());
+
+        Div log = new Div();
+        log.setId("log");
+
+        add(jsOrder, htmlOrder, allBlue, new Hr(), log);
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        htmlImport2 = registerResource("htmlimport2.html",
+                new HTMLImportStreamFactory("HTML import 2", 1000));
+        htmlImport3 = registerResource("htmlimport3.html",
+                new HTMLImportStreamFactory("HTML import 3", 0));
+
+        getPage().addStyleSheet("/test-files/css/allred.css");
+        getPage().addJavaScript("/test-files/js/body-click-listener.js");
+        getPage().addHtmlImport("/test-files/html/htmlimport1.html");
+    }
+
+    private StreamResourceRegistration registerResource(String name,
+            InputStreamFactory streamFactory) {
+        return getUI().get().getSession().getResourceRegistry()
+                .registerResource(new StreamResource(name, streamFactory));
+    }
+
+    public static class JSStreamFactory implements InputStreamFactory {
+        private String name;
+        private int delay;
+
+        public JSStreamFactory(String name, int delay) {
+            this.name = name;
+            this.delay = delay;
+        }
+
+        @Override
+        public InputStream createInputStream() {
+            try {
+                Thread.sleep(delay);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+            return stringToStream("window.logMessage('" + name + " loaded');");
+        }
+
+        protected InputStream stringToStream(String jsString) {
+            byte[] bytes = jsString.getBytes(StandardCharsets.UTF_8);
+            return new ByteArrayInputStream(bytes);
+        }
+    }
+
+    public static class HTMLImportStreamFactory extends JSStreamFactory {
+
+        public HTMLImportStreamFactory(String name, int delay) {
+            super(name, delay);
+        }
+
+        @Override
+        protected InputStream stringToStream(String jsString) {
+            return super.stringToStream(
+                    "<script type='text/javascript'>" + jsString + "</script>");
+        }
     }
 
 }

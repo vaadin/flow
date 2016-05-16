@@ -84,6 +84,10 @@ public @interface Tag {
      */
     String HR = "hr";
     /**
+     * Tag for an <code>&lt;img&gt;</code>.
+     */
+    String IMG = "img";
+    /**
      * Tag for an <code>&lt;input&gt;</code>.
      */
     String INPUT = "input";

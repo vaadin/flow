@@ -590,7 +590,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Class providing data from an Atmosphere response Javascript object.
+     * Class providing data from an Atmosphere response JavaScript object.
      */
     public static class AtmosphereResponse extends AbstractJSO {
 
@@ -723,7 +723,7 @@ public class AtmospherePushConnection implements PushConnection {
             final String pushJs = getVersionedPushJs();
 
             Console.log("Loading " + pushJs);
-            ResourceLoader loader = ResourceLoader.get();
+            ResourceLoader loader = registry.getResourceLoader();
             String pushScriptUrl = registry.getApplicationConfiguration()
                     .getContextRootUrl() + pushJs;
             ResourceLoadListener loadListener = new ResourceLoadListener() {

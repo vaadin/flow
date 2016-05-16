@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.server.Command;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
@@ -36,8 +35,7 @@ import com.vaadin.ui.UI;
 /**
  * Keeps track of various current instances for the current thread. All the
  * instances are automatically cleared after handling a request from the client
- * to avoid leaking memory. The values are also maintained when when
- * {@link VaadinSession#access(Command)} or {@link UI#access(Command)} is used.
+ * to avoid leaking memory.
  * <p>
  * Please note that the instances are stored using {@link WeakReference}. This
  * means that the a current instance value may suddenly disappear if there a no
@@ -143,7 +141,6 @@ public class CurrentInstance implements Serializable {
     /**
      * Sets the current instance of the given type.
      *
-     * @see #setInheritable(Class, Object)
      * @see ThreadLocal
      *
      * @param type

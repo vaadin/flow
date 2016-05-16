@@ -84,12 +84,15 @@ public class NodeFeatureTest {
                 NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
         expectedIds.put(ComponentMapping.class, NodeFeatures.COMPONENT_MAPPING);
         expectedIds.put(TemplateMap.class, NodeFeatures.TEMPLATE);
-        expectedIds.put(ModelMap.class, NodeFeatures.TEMPLATE_MODEL);
+        expectedIds.put(ModelMap.class, NodeFeatures.TEMPLATE_MODELMAP);
         expectedIds.put(TemplateOverridesMap.class,
                 NodeFeatures.TEMPLATE_OVERRIDES);
         expectedIds.put(OverrideElementData.class, NodeFeatures.OVERRIDE_DATA);
         expectedIds.put(ParentGeneratorHolder.class,
                 NodeFeatures.PARENT_GENERATOR);
+        expectedIds.put(ModelList.class, NodeFeatures.TEMPLATE_MODELLIST);
+        expectedIds.put(TemplateMetadataFeature.class,
+                NodeFeatures.TEMPLATE_METADATA);
 
         Assert.assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());

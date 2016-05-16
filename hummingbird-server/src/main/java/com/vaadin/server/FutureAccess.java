@@ -15,13 +15,10 @@
  */
 package com.vaadin.server;
 
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.vaadin.util.CurrentInstance;
 
 /**
  * Encapsulates a {@link Command} submitted using
@@ -31,11 +28,6 @@ import com.vaadin.util.CurrentInstance;
  * @author Vaadin Ltd
  */
 public class FutureAccess extends FutureTask<Void> {
-    /**
-     * Snapshot of all current instances at the time this object was created.
-     */
-    private final Map<Class<?>, CurrentInstance> instances = CurrentInstance
-            .getInstances();
     private final VaadinSession session;
     private final Command command;
 
@@ -67,18 +59,6 @@ public class FutureAccess extends FutureTask<Void> {
          */
         VaadinService.verifyNoOtherSessionLocked(session);
         return super.get();
-    }
-
-    /**
-     * Gets the current instance values that should be used when running this
-     * task.
-     *
-     * @see CurrentInstance#restoreInstances(Map)
-     *
-     * @return a map of current instances.
-     */
-    public Map<Class<?>, CurrentInstance> getCurrentInstances() {
-        return instances;
     }
 
     /**

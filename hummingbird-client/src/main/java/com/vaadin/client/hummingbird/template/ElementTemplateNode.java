@@ -55,4 +55,13 @@ public interface ElementTemplateNode extends TemplateNode {
      */
     @JsProperty
     JsonObject getAttributes();
+
+    /**
+     * Gets a map of event handlers, as a JSON object.
+     *
+     * @see Binding
+     * @return a JSON object mapping event names to event handlers.
+     */
+    @JsProperty
+    JsonObject getEventHandlers();
 }

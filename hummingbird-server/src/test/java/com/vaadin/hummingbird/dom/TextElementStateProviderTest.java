@@ -18,7 +18,13 @@ package com.vaadin.hummingbird.dom;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateTextElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
+import com.vaadin.hummingbird.template.TextTemplateNode;
+import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 public class TextElementStateProviderTest {
     private Element element = Element.createText("foo");
@@ -117,5 +123,16 @@ public class TextElementStateProviderTest {
         element.removeFromParent();
         Assert.assertNull(element.getParent());
         Assert.assertEquals(0, parent.getChildCount());
+    }
+
+    @Test
+    public void testSupports() {
+        TemplateTextElementStateProvider provider = new TemplateTextElementStateProvider(
+                (TextTemplateNode) TemplateParser.parse("<div>{{value}}</div>")
+                        .getChild(0));
+
+        Assert.assertTrue(provider.supports(new StateNode(ModelMap.class)));
+        Assert.assertFalse(provider.supports(new StateNode(TemplateMap.class)));
+        Assert.assertFalse(provider.supports(new StateNode()));
     }
 }

@@ -253,8 +253,8 @@ public class ServerRpcHandler implements Serializable {
 
         checkWidgetsetVersion(rpcRequest.getWidgetsetVersion());
 
-        int expectedId = ui.getInternals()
-                .getLastProcessedClientToServerId() + 1;
+        int expectedId = ui.getInternals().getLastProcessedClientToServerId()
+                + 1;
         if (rpcRequest.getClientToServerId() != -1
                 && rpcRequest.getClientToServerId() != expectedId) {
             // Invalid message id, skip RPC processing but force a full
@@ -399,8 +399,8 @@ public class ServerRpcHandler implements Serializable {
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
         Serializable value = JsonCodec.decodeWithoutTypeInfo(
                 invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
-        node.getFeature(ElementPropertyMap.class).setProperty(property,
-                value, false);
+        node.getFeature(ElementPropertyMap.class).setProperty(property, value,
+                false);
 
     }
 

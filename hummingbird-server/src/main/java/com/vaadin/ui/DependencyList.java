@@ -26,8 +26,10 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
- * List for storing dependencies/files (Javascript, Stylesheets) to be loaded
+ * List for storing dependencies/files (JavaScript, Stylesheets) to be loaded
  * and included on the client side.
+ * <p>
+ * Tracks previously sent URLs and doesn't send them again.
  *
  * @author Vaadin Ltd
  */
@@ -37,6 +39,7 @@ public class DependencyList implements Serializable {
     public static final String KEY_TYPE = "type";
     public static final String TYPE_STYLESHEET = "css";
     public static final String TYPE_JAVASCRIPT = "js";
+    public static final String TYPE_HTML_IMPORT = "html";
     public static final String DEPENDENCY_KEY = "deps";
     /**
      * Contains all added URLs to be able to do fast enough duplication
@@ -53,6 +56,8 @@ public class DependencyList implements Serializable {
 
     /**
      * Adds the given dependency to be loaded by the client side.
+     * <p>
+     * Does not send any previously sent dependencies again.
      * <p>
      * Relative URLs are interpreted as relative to the service (servlet) path.
      * You can prefix the URL with {@literal context://} to make it relative to
@@ -108,6 +113,8 @@ public class DependencyList implements Serializable {
             return TYPE_JAVASCRIPT;
         } else if (dependency.getType() == Type.STYLESHEET) {
             return TYPE_STYLESHEET;
+        } else if (dependency.getType() == Type.HTML_IMPORT) {
+            return TYPE_HTML_IMPORT;
         } else {
             throw new IllegalArgumentException(
                     "Unknown dependency type: " + dependency.getType());

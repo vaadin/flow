@@ -3,13 +3,17 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 There are multiple ways you can create a component. This tutorial uses the `Template` API with no additional elements or components. For other component tutorials, see:
 
-* <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>.
+* <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
 * <<tutorial-component-composite#,Creating a Component Using Existing Components>>
 * <<tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
 
+For tutorials about how to use different template features, see:
+
+* <<tutorial-template-bindings#,Binding Model Data in a Template>>
+* <<tutorial-template-for#,Creating Template Contents Dynamically Based on a List of Items>>
+
 [WARNING]
 Implementation of the Template API has only just started. The current feature set is still cumbersome to use and very limiting.
-This tutorial will be updated when the functionality is extended.
 
 You can use a template to create a simple greeting component in this way:
 
@@ -20,13 +24,19 @@ You can use a template to create a simple greeting component in this way:
 </div>
 ----
 
-The template engine will replace `{{name}}` in the HTML with the value of the `name` property defined in the component's model.
+The template engine will replace `{{name}}` in the HTML with the value of the `name` property from the component's model.
 
 [NOTE]
 Updating the model property value will automatically update what is shown in the browser.
-The template engine takes care of only only updating the parts that have only changed for optimal performance.
+The template engine optimizes performance by updating only the changed parts.
 
-To use this template and define model values, you also need to create a class that extends `Template` and add an instance of the component to your view.
+[WARNING]
+The model of a template component should not be confused with domain model objects defined for the application's business logic.
+Data from the domain model might be used in the template model, but they are still separate concepts.
+
+To use this template and set model values, you also need to create a class that extends `Template` and add an instance of the component to your view.
+
+Each instance of a `Template` component has its own model instance that holds values used by different types of bindings in the template file (i.e. the `.html` file).
 
 [source,java]
 ----
@@ -62,6 +72,3 @@ greeting.setName("John Doe");
 Div layout = new Div();
 layout.add(greeting);
 ----
-
-[NOTE]
-The template syntax currently only supports hardcoded attribute values (e.g. `class="greeting-name"`) and using a model value as the text content of an element (`{{modelPropertyName}}`). Other much-needed features will be introduced in upcoming releases.

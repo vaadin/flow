@@ -92,7 +92,7 @@ public class ChildSlotNode extends AbstractControlTemplateNode {
     }
 
     @Override
-    public Element getParent(StateNode node) {
+    public Element getParentElement(StateNode node) {
         TemplateNode parentTemplateNode = getParent().get();
         StateNode templateStateNode = node.getParent();
 

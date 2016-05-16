@@ -15,12 +15,18 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
+import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Template;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class TextTemplate extends Template {
+public class UmlautÅäöView extends Template implements View {
 
+    public UmlautÅäöView() {
+        super(new ByteArrayInputStream(
+                "<div id='content'>Umlaut view: åäöü</div>"
+                        .getBytes(StandardCharsets.UTF_8)));
+
+    }
 }

@@ -28,6 +28,7 @@ import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
@@ -38,8 +39,10 @@ import elemental.dom.Comment;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.Text;
+import elemental.events.Event;
 import elemental.events.EventRemover;
 import elemental.json.JsonObject;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binds a template node and a state node to an element instance.
@@ -47,6 +50,16 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public class TemplateElementBinder {
+
+    /**
+     * Event handler listener interface.
+     */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    private interface EventHandler {
+        void handle(Event event);
+    }
 
     private static final class ChildSlotBinder implements Command {
         private final Comment anchor;
@@ -89,6 +102,50 @@ public class TemplateElementBinder {
                 Node newChild = ElementBinder.createAndBind(newChildNode);
 
                 parent.insertBefore(newChild, anchor.getNextSibling());
+            }
+        }
+    }
+
+    private static final class ForTemplateNodeUpdate implements Command {
+
+        private Comment anchor;
+        private Node beforeNode;
+        private final StateNode stateNode;
+        private final ForTemplateNode templateNode;
+
+        ForTemplateNodeUpdate(Comment anchor, StateNode stateNode,
+                ForTemplateNode templateNode) {
+            this.anchor = anchor;
+            this.stateNode = stateNode;
+            this.templateNode = templateNode;
+        }
+
+        @Override
+        public void execute() {
+            Element parent = anchor.getParentElement();
+            if (beforeNode == null) {
+                beforeNode = anchor.getNextSibling();
+            }
+
+            JsArray<Double> children = templateNode.getChildren();
+            assert children.length() == 1;
+            int childId = children.get(0).intValue();
+
+            Node htmlNode = anchor.getNextSibling();
+            while (htmlNode != beforeNode) {
+                parent.removeChild(htmlNode);
+                htmlNode = anchor.getNextSibling();
+            }
+
+            NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            MapProperty property = model
+                    .getProperty(templateNode.getCollectionVariable());
+            if (property.getValue() != null) {
+                StateNode node = (StateNode) property.getValue();
+                ElementBinder.populateChildren(parent, node,
+                        NodeFeatures.TEMPLATE_MODELLIST,
+                        childNode -> createAndBind(childNode, childId),
+                        beforeNode);
             }
         }
     }
@@ -145,6 +202,9 @@ public class TemplateElementBinder {
         case com.vaadin.hummingbird.template.ElementTemplateNode.TYPE:
             return createAndBindElement(stateNode,
                     (ElementTemplateNode) templateNode);
+        case com.vaadin.hummingbird.template.ForTemplateNode.TYPE:
+            return createAndBindNgFor(stateNode,
+                    (ForTemplateNode) templateNode);
         case com.vaadin.hummingbird.template.TextTemplateNode.TYPE:
             return createAndBindText(stateNode,
                     (TextTemplateNode) templateNode);
@@ -178,10 +238,21 @@ public class TemplateElementBinder {
 
     private static MapProperty getModelProperty(StateNode node,
             Binding binding) {
-        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODEL);
+        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
         return model.getProperty(key);
+    }
+
+    private static Node createAndBindNgFor(StateNode stateNode,
+            ForTemplateNode templateNode) {
+        Comment anchor = Browser.getDocument().createComment(" *ngFor ");
+
+        Computation computation = Reactive.runWhenDepedenciesChange(
+                new ForTemplateNodeUpdate(anchor, stateNode, templateNode));
+        stateNode.addUnregisterListener(event -> computation.stop());
+
+        return anchor;
     }
 
     private static Node createAndBindElement(StateNode stateNode,
@@ -196,7 +267,8 @@ public class TemplateElementBinder {
             for (String name : attributes.keys()) {
                 Binding binding = WidgetUtil.crazyJsCast(attributes.get(name));
                 // Nothing to "bind" yet with only static bindings
-                assert binding.getType().equals(StaticBindingValueProvider.TYPE);
+                assert binding.getType()
+                        .equals(StaticBindingValueProvider.TYPE);
                 element.setAttribute(name, getStaticBindingValue(binding));
             }
         }
@@ -211,6 +283,8 @@ public class TemplateElementBinder {
                 element.appendChild(child);
             }
         }
+
+        registerEventHandlers(templateNode, element);
 
         MapProperty overrideProperty = stateNode
                 .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
@@ -237,6 +311,20 @@ public class TemplateElementBinder {
         }
 
         return element;
+    }
+
+    private static void registerEventHandlers(ElementTemplateNode templateNode,
+            Element element) {
+        JsonObject eventHandlers = templateNode.getEventHandlers();
+        if (eventHandlers != null) {
+            for (String event : eventHandlers.keys()) {
+                String handler = WidgetUtil
+                        .crazyJsCast(eventHandlers.get(event));
+                EventHandler eventHandler = NativeFunction.create("evt",
+                        handler.replace("$event", "evt"));
+                element.addEventListener(event, eventHandler::handle);
+            }
+        }
     }
 
     private static void bindProperties(StateNode stateNode,

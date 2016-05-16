@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.router.ViewRendererTest.AnotherParentView;
 import com.vaadin.hummingbird.router.ViewRendererTest.AnotherTestView;
+import com.vaadin.hummingbird.router.ViewRendererTest.ErrorView;
 import com.vaadin.hummingbird.router.ViewRendererTest.ParentView;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.ui.UI;
@@ -121,6 +122,7 @@ public class RouterConfigurationTest {
     public void testEverythingIsCopied() throws Exception {
         RouterConfiguration original = createConfiguration();
         original.setRoute("foo/bar", TestView.class);
+        original.setErrorView(TestView.class);
 
         RouterConfiguration copy = new RouterConfiguration(original, false);
 
@@ -145,7 +147,9 @@ public class RouterConfigurationTest {
             f.setAccessible(true);
             Object originalValue = f.get(original);
             Object copyValue = f.get(copy);
-            if (Map.class.isAssignableFrom(fieldType)) {
+            if (isSameObjectSharedField(f.getName())) {
+                Assert.assertEquals(originalValue, copyValue);
+            } else if (Map.class.isAssignableFrom(fieldType)) {
                 validateNoSameInstances((Map) originalValue, (Map) copyValue);
             } else {
                 validateNoSameInstances(originalValue, copyValue);
@@ -157,6 +161,10 @@ public class RouterConfigurationTest {
         return NavigationHandler.class.isAssignableFrom(c)
                 || Resolver.class.isAssignableFrom(c)
                 || PageTitleGenerator.class.isAssignableFrom(c);
+    }
+
+    private boolean isSameObjectSharedField(String name) {
+        return name.equals("errorView");
     }
 
     @SuppressWarnings("rawtypes")
@@ -233,9 +241,9 @@ public class RouterConfigurationTest {
         router.navigate(ui, new Location("route"));
 
         Assert.assertEquals(ParentView.class,
-                router.getConfiguration().getParentView(TestView.class));
-        Assert.assertEquals(AnotherParentView.class,
-                router.getConfiguration().getParentView(ParentView.class));
+                router.getConfiguration().getParentView(TestView.class).get());
+        Assert.assertEquals(AnotherParentView.class, router.getConfiguration()
+                .getParentView(ParentView.class).get());
 
         Assert.assertEquals(Arrays.asList(TestView.class, ParentView.class,
                 AnotherParentView.class), getViewChainTypes(ui));
@@ -254,9 +262,9 @@ public class RouterConfigurationTest {
 
         router.navigate(ui, new Location("route"));
         Assert.assertEquals(ParentView.class,
-                router.getConfiguration().getParentView(TestView.class));
-        Assert.assertEquals(AnotherParentView.class,
-                router.getConfiguration().getParentView(ParentView.class));
+                router.getConfiguration().getParentView(TestView.class).get());
+        Assert.assertEquals(AnotherParentView.class, router.getConfiguration()
+                .getParentView(ParentView.class).get());
         Assert.assertEquals(Arrays.asList(TestView.class, ParentView.class,
                 AnotherParentView.class), getViewChainTypes(ui));
     }
@@ -445,12 +453,18 @@ public class RouterConfigurationTest {
 
     @SafeVarargs
     private final void assertParentViews(Router router,
-            Class<TestView> viewType,
+            Class<? extends View> viewType,
             Class<? extends HasChildView>... expected) {
         Assert.assertArrayEquals(expected,
                 router.getConfiguration().getParentViews(viewType)
                         .collect(Collectors.toList()).toArray());
 
+    }
+
+    private void assertErrorView(Router router,
+            Class<? extends View> errorView) {
+        Assert.assertEquals(errorView,
+                router.getConfiguration().getErrorView());
     }
 
     @Test
@@ -485,6 +499,50 @@ public class RouterConfigurationTest {
         Router router = new Router();
         router.reconfigure(conf -> {
             conf.setPageTitleGenerator(null);
+        });
+    }
+
+    @Test
+    public void testSetErrorView() {
+        Router router = new Router();
+        router.reconfigure(conf -> {
+            conf.setErrorView(ErrorView.class);
+        });
+        assertErrorView(router, ErrorView.class);
+    }
+
+    @Test
+    public void testSetErrorViewWithParent() {
+        Router router = new Router();
+        router.reconfigure(conf -> {
+            conf.setErrorView(ErrorView.class, ParentView.class);
+        });
+        assertErrorView(router, ErrorView.class);
+        assertParentViews(router, ErrorView.class, ParentView.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDefaultErrorView() {
+        Router router = new Router();
+        assertErrorView(router, DefaultErrorView.class);
+        router.reconfigure(conf -> {
+            conf.setErrorView(null);
+        });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetErrorView_nullView_throws() {
+        Router router = new Router();
+        router.reconfigure(conf -> {
+            conf.setErrorView(null, ParentView.class);
+        });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetErrorView_nullParentView_throws() {
+        Router router = new Router();
+        router.reconfigure(conf -> {
+            conf.setErrorView(TestView.class, null);
         });
     }
 

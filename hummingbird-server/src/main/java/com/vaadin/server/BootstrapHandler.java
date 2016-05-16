@@ -45,7 +45,6 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
-import com.vaadin.shared.ui.ui.Transport;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -331,6 +330,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                     + "server/es6-collections.js"));
         }
 
+        head.appendElement("script").attr("type", "text/javascript").attr("src",
+                context.getUriResolver()
+                        .resolveVaadinUri("context://"
+                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                + "server/webcomponents-lite.min.js"));
+
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
         }
@@ -554,17 +559,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Initialize some fields for a newly created UI
         ui.getInternals().setSession(session);
 
-        PushMode pushMode = AnnotationReader.getPushMode(uiClass);
-        if (pushMode == null) {
-            pushMode = session.getService().getDeploymentConfiguration()
-                    .getPushMode();
-        }
+        PushMode pushMode = AnnotationReader.getPushMode(uiClass).orElseGet(
+                session.getService().getDeploymentConfiguration()::getPushMode);
         ui.getPushConfiguration().setPushMode(pushMode);
 
-        Transport transport = AnnotationReader.getPushTransport(uiClass);
-        if (transport != null) {
-            ui.getPushConfiguration().setTransport(transport);
-        }
+        AnnotationReader.getPushTransport(uiClass)
+                .ifPresent(ui.getPushConfiguration()::setTransport);
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);

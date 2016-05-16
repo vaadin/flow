@@ -365,24 +365,16 @@ public class BasicElementBinder {
     }
 
     private EventRemover bindChildren() {
-        NodeList children = node.getList(NodeFeatures.ELEMENT_CHILDREN);
-
-        for (int i = 0; i < children.length(); i++) {
-            StateNode childNode = (StateNode) children.get(i);
-
-            Node child = ElementBinder.createAndBind(childNode);
-
-            element.appendChild(child);
-        }
-
-        return children.addSpliceListener(e -> {
-            /*
-             * Handle lazily so we can create the children we need to insert.
-             * The change that gives a child node an element tag name might not
-             * yet have been applied at this point.
-             */
-            Reactive.addFlushListener(() -> handleChildrenSplice(e));
-        });
+        return ElementBinder.populateChildren(element, node,
+                NodeFeatures.ELEMENT_CHILDREN, ElementBinder::createAndBind)
+                .addSpliceListener(e -> {
+                    /*
+                     * Handle lazily so we can create the children we need to
+                     * insert. The change that gives a child node an element tag
+                     * name might not yet have been applied at this point.
+                     */
+                    Reactive.addFlushListener(() -> handleChildrenSplice(e));
+                });
     }
 
     private void handleChildrenSplice(ListSpliceEvent event) {

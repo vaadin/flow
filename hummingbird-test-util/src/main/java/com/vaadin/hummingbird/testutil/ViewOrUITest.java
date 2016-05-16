@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.testutil;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,13 +35,18 @@ public class ViewOrUITest extends AbstractTestBenchTest {
     @Override
     protected String getTestPath() {
         Class<? extends UI> uiClass = getUIClass();
-        if (uiClass != null) {
-            return "/run/" + uiClass.getName();
-        }
+        try {
+            if (uiClass != null) {
+                return "/run/" + URLEncoder.encode(uiClass.getName(), "UTF-8");
+            }
 
-        Class<? extends View> viewClass = getViewClass();
-        if (viewClass != null) {
-            return "/view/" + viewClass.getName();
+            Class<? extends View> viewClass = getViewClass();
+            if (viewClass != null) {
+                return "/view/"
+                        + URLEncoder.encode(viewClass.getName(), "UTF-8");
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
         }
 
         throw new RuntimeException(

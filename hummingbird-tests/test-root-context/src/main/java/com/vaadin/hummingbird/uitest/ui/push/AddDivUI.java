@@ -45,7 +45,7 @@ public class AddDivUI extends UI {
             if (msgId > 500) {
                 throw new RuntimeException("Done");
             }
-        } , delay, delay, TimeUnit.MILLISECONDS);
+        }, delay, delay, TimeUnit.MILLISECONDS);
     }
 
     private void addDiv() {
