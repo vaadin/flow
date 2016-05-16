@@ -21,13 +21,24 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.server.MockVaadinSession;
+import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletService;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.DependencyList;
+import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 public class UidlWriterTest {
     @Test
@@ -53,4 +64,157 @@ public class UidlWriterTest {
 
         Assert.assertTrue(JsonUtil.jsonEquals(expectedJson, json));
     }
+
+    @Tag("div")
+    @JavaScript("super-js")
+    @StyleSheet("super-css")
+    public static class SuperComponent extends Component {
+
+    }
+
+    public static class EmptyClassWithInterface extends SuperComponent
+            implements AnotherComponentInterface {
+
+    }
+
+    @JavaScript("js")
+    @StyleSheet("css")
+    public static class ActualComponent extends EmptyClassWithInterface
+            implements ComponentInterface {
+
+    }
+
+    @JavaScript("child1-js")
+    @JavaScript("child2-js")
+    @StyleSheet("child1-css")
+    @StyleSheet("child2-css")
+    public static class ChildComponent extends ActualComponent
+            implements ChildComponentInterface2 {
+
+    }
+
+    @JavaScript("interface-js")
+    @StyleSheet("interface-css")
+    public static interface ComponentInterface {
+
+    }
+
+    @JavaScript("anotherinterface-js")
+    @StyleSheet("anotherinterface-css")
+    public static interface AnotherComponentInterface {
+
+    }
+
+    @JavaScript("childinterface1-js")
+    @StyleSheet("childinterface1-css")
+    public static interface ChildComponentInterface1 {
+
+    }
+
+    @JavaScript("childinterface2-js")
+    @StyleSheet("childinterface2-css")
+    public static interface ChildComponentInterface2
+            extends ChildComponentInterface1 {
+
+    }
+
+    @Test
+    public void testComponentDependencies() {
+        UI ui = initializeUIForDependenciesTest();
+        UidlWriter uidlWriter = new UidlWriter();
+        addInitialComponentDependencies(ui, uidlWriter);
+
+        // no dependencies should be resent in next response
+        JsonObject response = uidlWriter.createUidl(ui, false);
+        Assert.assertFalse(response.hasKey(DependencyList.DEPENDENCY_KEY));
+    }
+
+    private UI initializeUIForDependenciesTest() {
+        UI ui = new UI();
+        MockVaadinSession session = new MockVaadinSession(
+                new VaadinServletService(new VaadinServlet(),
+                        new MockDeploymentConfiguration()));
+        session.lock();
+        ui.getInternals().setSession(session);
+        return ui;
+    }
+
+    private void addInitialComponentDependencies(UI ui, UidlWriter uidlWriter) {
+        ui.add(new ActualComponent());
+
+        JsonObject response = uidlWriter.createUidl(ui, false);
+        JsonArray dependencies = response
+                .getArray(DependencyList.DEPENDENCY_KEY);
+        Assert.assertEquals(8, dependencies.length());
+
+        // super component's dependencies should be first, then the interfaces
+        // and then the component
+        assertDependency("super-", dependencies.get(0),
+                DependencyList.TYPE_JAVASCRIPT);
+
+        assertDependency("anotherinterface-", dependencies.get(1),
+                DependencyList.TYPE_JAVASCRIPT);
+
+        assertDependency("interface-", dependencies.get(2),
+                DependencyList.TYPE_JAVASCRIPT);
+
+        assertDependency("", dependencies.get(3),
+                DependencyList.TYPE_JAVASCRIPT);
+
+        assertDependency("super-", dependencies.get(4),
+                DependencyList.TYPE_STYLESHEET);
+
+        assertDependency("anotherinterface-", dependencies.get(5),
+                DependencyList.TYPE_STYLESHEET);
+
+        assertDependency("interface-", dependencies.get(6),
+                DependencyList.TYPE_STYLESHEET);
+
+        assertDependency("", dependencies.get(7),
+                DependencyList.TYPE_STYLESHEET);
+
+    }
+
+    @Test
+    public void testComponentInterfaceDependencies() {
+        UI ui = initializeUIForDependenciesTest();
+        UidlWriter uidlWriter = new UidlWriter();
+
+        addInitialComponentDependencies(ui, uidlWriter);
+
+        // test that dependencies only from new child interfaces are added
+        ui.add(new ActualComponent(), new SuperComponent(),
+                new ChildComponent());
+
+        JsonObject response = uidlWriter.createUidl(ui, false);
+        JsonArray dependencies = response
+                .getArray(DependencyList.DEPENDENCY_KEY);
+
+        Assert.assertEquals(8, dependencies.length());
+        assertDependency("childinterface1-", dependencies.getObject(0),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("childinterface2-", dependencies.getObject(1),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("child1-", dependencies.getObject(2),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("child2-", dependencies.getObject(3),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("childinterface1-", dependencies.getObject(4),
+                DependencyList.TYPE_STYLESHEET);
+        assertDependency("childinterface2-", dependencies.getObject(5),
+                DependencyList.TYPE_STYLESHEET);
+        assertDependency("child1-", dependencies.getObject(6),
+                DependencyList.TYPE_STYLESHEET);
+        assertDependency("child2-", dependencies.getObject(7),
+                DependencyList.TYPE_STYLESHEET);
+    }
+
+    private void assertDependency(String level, JsonObject jsonValue,
+            String type) {
+        Assert.assertEquals(level + type,
+                jsonValue.get(DependencyList.KEY_URL).asString());
+        Assert.assertEquals(type,
+                jsonValue.get(DependencyList.KEY_TYPE).asString());
+    }
+
 }
