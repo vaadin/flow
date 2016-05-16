@@ -21,6 +21,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
@@ -68,6 +69,7 @@ public class UidlWriterTest {
     @Tag("div")
     @JavaScript("super-js")
     @StyleSheet("super-css")
+    @HtmlImport("super-html")
     public static class SuperComponent extends Component {
 
     }
@@ -79,6 +81,7 @@ public class UidlWriterTest {
 
     @JavaScript("js")
     @StyleSheet("css")
+    @HtmlImport("html")
     public static class ActualComponent extends EmptyClassWithInterface
             implements ComponentInterface {
 
@@ -88,6 +91,8 @@ public class UidlWriterTest {
     @JavaScript("child2-js")
     @StyleSheet("child1-css")
     @StyleSheet("child2-css")
+    @HtmlImport("child1-html")
+    @HtmlImport("child2-html")
     public static class ChildComponent extends ActualComponent
             implements ChildComponentInterface2 {
 
@@ -95,24 +100,28 @@ public class UidlWriterTest {
 
     @JavaScript("interface-js")
     @StyleSheet("interface-css")
+    @HtmlImport("interface-html")
     public static interface ComponentInterface {
 
     }
 
     @JavaScript("anotherinterface-js")
     @StyleSheet("anotherinterface-css")
+    @HtmlImport("anotherinterface-html")
     public static interface AnotherComponentInterface {
 
     }
 
     @JavaScript("childinterface1-js")
     @StyleSheet("childinterface1-css")
+    @HtmlImport("childinterface1-html")
     public static interface ChildComponentInterface1 {
 
     }
 
     @JavaScript("childinterface2-js")
     @StyleSheet("childinterface2-css")
+    @HtmlImport("childinterface2-html")
     public static interface ChildComponentInterface2
             extends ChildComponentInterface1 {
 
@@ -145,7 +154,7 @@ public class UidlWriterTest {
         JsonObject response = uidlWriter.createUidl(ui, false);
         JsonArray dependencies = response
                 .getArray(DependencyList.DEPENDENCY_KEY);
-        Assert.assertEquals(8, dependencies.length());
+        Assert.assertEquals(12, dependencies.length());
 
         // super component's dependencies should be first, then the interfaces
         // and then the component
@@ -162,17 +171,28 @@ public class UidlWriterTest {
                 DependencyList.TYPE_JAVASCRIPT);
 
         assertDependency("super-", dependencies.get(4),
-                DependencyList.TYPE_STYLESHEET);
+                DependencyList.TYPE_HTML_IMPORT);
 
         assertDependency("anotherinterface-", dependencies.get(5),
-                DependencyList.TYPE_STYLESHEET);
+                DependencyList.TYPE_HTML_IMPORT);
 
         assertDependency("interface-", dependencies.get(6),
-                DependencyList.TYPE_STYLESHEET);
+                DependencyList.TYPE_HTML_IMPORT);
 
         assertDependency("", dependencies.get(7),
+                DependencyList.TYPE_HTML_IMPORT);
+
+        assertDependency("super-", dependencies.get(8),
                 DependencyList.TYPE_STYLESHEET);
 
+        assertDependency("anotherinterface-", dependencies.get(9),
+                DependencyList.TYPE_STYLESHEET);
+
+        assertDependency("interface-", dependencies.get(10),
+                DependencyList.TYPE_STYLESHEET);
+
+        assertDependency("", dependencies.get(11),
+                DependencyList.TYPE_STYLESHEET);
     }
 
     @Test
@@ -190,7 +210,7 @@ public class UidlWriterTest {
         JsonArray dependencies = response
                 .getArray(DependencyList.DEPENDENCY_KEY);
 
-        Assert.assertEquals(8, dependencies.length());
+        Assert.assertEquals(12, dependencies.length());
         assertDependency("childinterface1-", dependencies.getObject(0),
                 DependencyList.TYPE_JAVASCRIPT);
         assertDependency("childinterface2-", dependencies.getObject(1),
@@ -200,12 +220,20 @@ public class UidlWriterTest {
         assertDependency("child2-", dependencies.getObject(3),
                 DependencyList.TYPE_JAVASCRIPT);
         assertDependency("childinterface1-", dependencies.getObject(4),
-                DependencyList.TYPE_STYLESHEET);
+                DependencyList.TYPE_HTML_IMPORT);
         assertDependency("childinterface2-", dependencies.getObject(5),
-                DependencyList.TYPE_STYLESHEET);
+                DependencyList.TYPE_HTML_IMPORT);
         assertDependency("child1-", dependencies.getObject(6),
-                DependencyList.TYPE_STYLESHEET);
+                DependencyList.TYPE_HTML_IMPORT);
         assertDependency("child2-", dependencies.getObject(7),
+                DependencyList.TYPE_HTML_IMPORT);
+        assertDependency("childinterface1-", dependencies.getObject(8),
+                DependencyList.TYPE_STYLESHEET);
+        assertDependency("childinterface2-", dependencies.getObject(9),
+                DependencyList.TYPE_STYLESHEET);
+        assertDependency("child1-", dependencies.getObject(10),
+                DependencyList.TYPE_STYLESHEET);
+        assertDependency("child2-", dependencies.getObject(11),
                 DependencyList.TYPE_STYLESHEET);
     }
 
