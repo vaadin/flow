@@ -69,7 +69,9 @@ public class DependencyIT extends PhantomJSTest {
 
         List<String> messages = getMessages();
         Assert.assertEquals("Messagehandler initialized in HTML import 1",
-                messages.get(messages.size() - 1));
+                messages.get(0));
+        Assert.assertEquals("Messagehandler initialized in HTML import 4",
+                messages.get(1));
 
         // Inject html
         findElementById("loadHtml").click();

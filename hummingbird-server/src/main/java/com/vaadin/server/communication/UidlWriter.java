@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.JsonCodec;
@@ -228,6 +229,10 @@ public class UidlWriter implements Serializable {
         List<JavaScript> javaScripts = AnnotationReader
                 .getJavaScriptAnnotations(component.getClass());
         javaScripts.forEach(js -> page.addJavaScript(js.value()));
+
+        List<HtmlImport> htmlImports = AnnotationReader
+                .getHtmlImportAnnotations(component.getClass());
+        htmlImports.forEach(html -> page.addHtmlImport(html.value()));
 
         List<StyleSheet> styleSheets = AnnotationReader
                 .getStyleSheetAnnotations(component.getClass());
