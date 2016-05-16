@@ -255,10 +255,19 @@ public class Registry {
 
     /**
      * Gets the {@link TemplateRegistry} singleton.
-     * 
+     *
      * @return the {@link TemplateRegistry} singleton
      */
     public TemplateRegistry getTemplateRegistry() {
         return get(TemplateRegistry.class);
+    }
+
+    /**
+     * Gets the {@link ResourceLoader} singleton.
+     *
+     * @return the {@link ResourceLoader} singleton
+     */
+    public ResourceLoader getResourceLoader() {
+        return get(ResourceLoader.class);
     }
 }
