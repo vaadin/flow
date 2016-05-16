@@ -26,9 +26,8 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
- * Binder context which is passed to the {@link BindingStrategy} instances to be
- * able to delegate creation of subnodes with the type that they are not aware
- * of.
+ * Binder context which is passed to the {@link BindingStrategy} instances
+ * enabling them to delegate the creation of any child nodes.
  * 
  * @author Vaadin Ltd
  *
@@ -74,9 +73,10 @@ public interface BinderContext {
             Predicate<BindingStrategy<?>> predicate);
 
     /**
-     * Uses {@link NodeList} feature of the {@code node} identified by
-     * {@code featureId} to populate list of nodes. Creates the nodes using
-     * {@code nodeFactory} and append them to the {@code parent}.
+     * Populates a list of child nodes and appends them into the given element.
+     * The children are fetched from the given {@link StateNode}'s
+     * {@link NodeList}, found with the given featureId. Nodes are created using
+     * the given factory.
      * <p>
      * This is just a shorthand for
      * {@link #populateChildren(Element, StateNode, int, Function, Node)} with
@@ -89,7 +89,7 @@ public interface BinderContext {
      * @param node
      *            StateNode to ask a feature for, not {@code null}
      * @param featureId
-     *            feature identifier of the {@code node}, not {@code null}
+     *            feature identifier of the {@code node}
      * @param factory
      *            node factory which is used to produce and bind an HTML node
      *            based on child StateNode from the feature NodeList, not
@@ -102,9 +102,10 @@ public interface BinderContext {
     }
 
     /**
-     * Uses {@link NodeList} feature of the {@code node} identified by
-     * {@code featureId} to populate list of nodes. Creates the nodes using
-     * {@code nodeFactory} and append them to the {@code parent}.
+     * Populates a list of child nodes and appends them into the given element.
+     * The children are fetched from the given {@link StateNode}'s
+     * {@link NodeList}, found with the given featureId. Nodes are created using
+     * the given factory.
      * <p>
      * The {@code beforeNode} parameter is used to add children to the
      * {@code parent} before the {@code beforeNode}. It can be {@code null}.
@@ -116,7 +117,7 @@ public interface BinderContext {
      * @param node
      *            StateNode to ask a feature for, not {@code null}
      * @param featureId
-     *            feature identifier of the {@code node}, not {@code null}
+     *            feature identifier of the {@code node}
      * @param factory
      *            node factory which is used to produce and bind an HTML node
      *            based on child StateNode from the feature NodeList, not
@@ -127,6 +128,11 @@ public interface BinderContext {
      */
     default NodeList populateChildren(Element parent, StateNode node,
             int featureId, Function<StateNode, Node> factory, Node beforeNode) {
+        assert node != null;
+        assert parent != null;
+        assert factory != null;
+        assert node.hasFeature(featureId) : "State node must have feature "
+                + node.getTree().getFeatureDebugName(featureId);
         NodeList children = node.getList(featureId);
 
         for (int i = 0; i < children.length(); i++) {

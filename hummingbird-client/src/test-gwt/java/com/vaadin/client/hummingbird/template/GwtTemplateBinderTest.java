@@ -325,6 +325,10 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 element.getChildNodes().item(0).getNodeType());
 
         StateNode childContentNode = new StateNode(79, stateNode.getTree());
+
+        // node should have "children" feature.
+        childContentNode.getList(NodeFeatures.ELEMENT_CHILDREN);
+
         childContentNode.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeFeatures.TAG).setValue("span");
 
@@ -691,6 +695,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         StateNode overrideNode = new StateNode(overrideNodeId, tree);
         // make it recognizable as an override element
         overrideNode.getMap(NodeFeatures.OVERRIDE_DATA);
+
+        // node should have "children" feature.
+        overrideNode.getList(NodeFeatures.ELEMENT_CHILDREN);
 
         stateNode.getMap(NodeFeatures.TEMPLATE_OVERRIDES)
                 .getProperty(String.valueOf(mainNodeTemplateId))

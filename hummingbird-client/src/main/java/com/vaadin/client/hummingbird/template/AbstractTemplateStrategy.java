@@ -39,13 +39,13 @@ import elemental.dom.Node;
  * @author Vaadin Ltd
  *
  * @param <T>
- *            an HTML node type which strategy is applicable for
+ *            a DOM node type which strategy is applicable for
  */
 public abstract class AbstractTemplateStrategy<T extends Node>
         implements BindingStrategy<T> {
 
     @Override
-    public boolean isAppliable(StateNode node) {
+    public boolean isApplicable(StateNode node) {
         assert node != null;
 
         boolean isTemplate = node.hasFeature(NodeFeatures.TEMPLATE);
@@ -66,7 +66,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     }
 
     /**
-     * Returns {@code true} is the strategy is applicable to the
+     * Returns {@code true} whether the strategy is applicable to the
      * {@code templateId} having {@code tree} as context.
      * 
      * @param tree
@@ -76,6 +76,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      * @return {@code true} if strategy is applicable
      */
     protected boolean isApplicable(StateTree tree, int templateId) {
+        assert tree != null;
         TemplateNode templateNode = getTemplateNode(tree, templateId);
         return getTemplateType().equals(templateNode.getType());
     }
@@ -90,8 +91,8 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     protected abstract String getTemplateType();
 
     /**
-     * Creates an HTML node for the {@code templateId} using the {@code tree} as
-     * a context.
+     * Creates a DOM node for the {@code templateId} using the {@code tree} as a
+     * context.
      * 
      * @param tree
      *            the state tree, not {@code null}
@@ -102,7 +103,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     protected abstract T create(StateTree tree, int templateId);
 
     /**
-     * Binds an HTML node to the {@code stateNode} using the {@code templateId}
+     * Binds a DOM node to the {@code stateNode} using the {@code templateId}
      * and {@code context} to delegate handling of nodes with the types that the
      * strategy is not aware of.
      * 
@@ -144,7 +145,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     }
 
     /**
-     * Gets model property from the {@code binding} for the {@code node}.
+     * Gets the model property from the {@code node} for the {@code binding}.
      * 
      * @param node
      *            the state node, not {@code null}
@@ -209,9 +210,9 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         for (int i = 0; i < strategies.length(); i++) {
             AbstractTemplateStrategy strategy = strategies.get(i);
             if (strategy.isApplicable(tree, templateId)) {
-                Node htmlNode = strategy.create(tree, templateId);
-                strategy.bind(node, htmlNode, templateId, context);
-                return htmlNode;
+                Node domNode = strategy.create(tree, templateId);
+                strategy.bind(node, domNode, templateId, context);
+                return domNode;
             }
         }
         throw new IllegalArgumentException("Unsupported template type: "

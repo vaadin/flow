@@ -40,7 +40,7 @@ public class TextBindingStrategy implements BindingStrategy<Text> {
     }
 
     @Override
-    public boolean isAppliable(StateNode node) {
+    public boolean isApplicable(StateNode node) {
         return node.hasFeature(NodeFeatures.TEXT_NODE);
     }
 
