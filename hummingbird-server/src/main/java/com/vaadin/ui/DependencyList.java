@@ -37,6 +37,7 @@ public class DependencyList implements Serializable {
     public static final String KEY_TYPE = "type";
     public static final String TYPE_STYLESHEET = "css";
     public static final String TYPE_JAVASCRIPT = "js";
+    public static final String TYPE_HTML_IMPORT = "html";
     public static final String DEPENDENCY_KEY = "deps";
     /**
      * Contains all added URLs to be able to do fast enough duplication
@@ -108,6 +109,8 @@ public class DependencyList implements Serializable {
             return TYPE_JAVASCRIPT;
         } else if (dependency.getType() == Type.STYLESHEET) {
             return TYPE_STYLESHEET;
+        } else if (dependency.getType() == Type.HTML_IMPORT) {
+            return TYPE_HTML_IMPORT;
         } else {
             throw new IllegalArgumentException(
                     "Unknown dependency type: " + dependency.getType());

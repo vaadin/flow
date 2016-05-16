@@ -58,7 +58,7 @@ public final class Binder {
 
         @Override
         public Node createAndBind(StateNode stateNode) {
-            BindingStrategy<?> strategy = getApplicable(stateNode);
+            BindingStrategy<?> strategy = getApplicableStrategy(stateNode);
             Node node = strategy.create(stateNode);
             assert node != null;
             bind(stateNode, node);
@@ -93,24 +93,24 @@ public final class Binder {
     }
 
     /**
-     * Bind the {@code htmlNode} to the {@code statNode}.
+     * Bind the {@code htmlNode} to the {@code stateNode}.
      * 
      * @param stateNode
      *            the state node
-     * @param htmlNode
-     *            the html node to bind, not {@code null}
+     * @param domNode
+     *            the DOM node to bind, not {@code null}
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static void bind(StateNode stateNode, Node htmlNode) {
-        BindingStrategy applicable = getApplicable(stateNode);
-        applicable.bind(stateNode, htmlNode, CONTEXT);
+    public static void bind(StateNode stateNode, Node domNode) {
+        BindingStrategy applicable = getApplicableStrategy(stateNode);
+        applicable.bind(stateNode, domNode, CONTEXT);
     }
 
-    private static BindingStrategy<?> getApplicable(StateNode node) {
+    private static BindingStrategy<?> getApplicableStrategy(StateNode node) {
         BindingStrategy<?> applicable = null;
         for (int i = 0; i < STRATEGIES.length(); i++) {
             BindingStrategy<?> strategy = STRATEGIES.get(i);
-            if (strategy.isAppliable(node)) {
+            if (strategy.isApplicable(node)) {
                 assert applicable == null : "Found two strategies for the node : "
                         + applicable.getClass() + ", " + strategy.getClass();
                 applicable = strategy;

@@ -115,7 +115,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     @Override
-    public boolean isAppliable(StateNode node) {
+    public boolean isApplicable(StateNode node) {
         if (node.hasFeature(NodeFeatures.ELEMENT_DATA)
                 || node.hasFeature(NodeFeatures.OVERRIDE_DATA)) {
             return true;
