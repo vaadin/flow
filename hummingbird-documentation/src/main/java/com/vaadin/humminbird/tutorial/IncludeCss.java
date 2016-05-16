@@ -15,27 +15,33 @@
  */
 package com.vaadin.humminbird.tutorial;
 
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
 @CodeFor("tutorial-include-css.asciidoc")
-public class IncludeCss extends UI {
+public class IncludeCss {
 
-    @Override
-    protected void init(VaadinRequest request) {
-        //@formatter:off - custom line wrapping
-
-        // Loaded from "styles.css" in your context root
-        getPage().addStyleSheet("styles.css");
-
-        // Loaded from "/root.css" regardless of how your application is deployed
-        getPage().addStyleSheet("/root.css");
-
-        // Loaded from "http://example.com/example.css" regardless of how your application is deployed
-        getPage().addStyleSheet("http://example.com/example.css");
-
-        //@formatter:on
+    //@formatter:off - custom line wrapping
+    @StyleSheet("styles.css") // Loaded from context root
+    @StyleSheet("http://www.example.com/example.css") // Loaded from external location
+    public class MainLayout extends Template {
+        // implementation omitted
     }
+    //@formatter:on
 
+    public class MyCustomUI extends UI {
+
+        @Override
+        protected void init(VaadinRequest request) {
+            //@formatter:off - custom line wrapping
+
+            // Loaded from "/root.css" regardless of how your application is deployed
+            getPage().addStyleSheet("/root.css");
+
+            //@formatter:on
+        }
+    }
 }
