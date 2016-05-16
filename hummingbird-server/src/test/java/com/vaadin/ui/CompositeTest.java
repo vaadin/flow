@@ -252,12 +252,12 @@ public class CompositeTest {
 
         Component component = new Component(new Element("div")) {
             @Override
-            protected void onAttach() {
+            protected void onAttach(AttachEvent attachEvent) {
                 triggered.add(1);
             }
 
             @Override
-            protected void onDetach() {
+            protected void onDetach(DetachEvent detachEvent) {
                 triggered.add(-1);
             }
         };
@@ -271,12 +271,12 @@ public class CompositeTest {
             };
 
             @Override
-            protected void onAttach() {
+            protected void onAttach(AttachEvent attachEvent) {
                 triggered.add(3);
             }
 
             @Override
-            protected void onDetach() {
+            protected void onDetach(DetachEvent detachEvent) {
                 triggered.add(-3);
             }
         };
@@ -290,12 +290,12 @@ public class CompositeTest {
             }
 
             @Override
-            protected void onAttach() {
+            protected void onAttach(AttachEvent attachEvent) {
                 triggered.add(5);
             }
 
             @Override
-            protected void onDetach() {
+            protected void onDetach(DetachEvent detachEvent) {
                 triggered.add(-5);
             }
         };
