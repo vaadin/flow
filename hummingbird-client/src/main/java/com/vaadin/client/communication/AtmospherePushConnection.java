@@ -590,7 +590,7 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Class providing data from an Atmosphere response Javascript object.
+     * Class providing data from an Atmosphere response JavaScript object.
      */
     public static class AtmosphereResponse extends AbstractJSO {
 

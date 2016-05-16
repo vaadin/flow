@@ -28,7 +28,8 @@ public class TextTemplateView extends Div implements View {
 
     public TextTemplateView() {
         Button button = new Button();
-        InlineTemplate text = new InlineTemplate("<div id='text'>{{name}}</div>");
+        InlineTemplate text = new InlineTemplate(
+                "<div id='text'>{{name}}</div>");
         setName(text, "Foo");
         button.addClickListener(event -> setName(text, "Bar"));
         add(button, text);

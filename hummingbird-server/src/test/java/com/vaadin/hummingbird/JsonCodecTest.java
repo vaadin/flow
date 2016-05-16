@@ -104,8 +104,7 @@ public class JsonCodecTest {
     public void encodeWithTypeInfo_attachedElement() {
         Element element = ElementFactory.createDiv();
 
-        StateTree tree = new StateTree(new UI(),
-                ElementChildrenList.class);
+        StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
         tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
                 element.getNode());
 

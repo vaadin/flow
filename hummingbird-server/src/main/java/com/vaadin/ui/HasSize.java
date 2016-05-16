@@ -39,11 +39,9 @@ public interface HasSize extends HasElement {
      */
     default void setWidth(String width) {
         if (width == null) {
-            getElement().getStyle()
-                    .remove(ElementConstants.STYLE_WIDTH);
+            getElement().getStyle().remove(ElementConstants.STYLE_WIDTH);
         } else {
-            getElement().getStyle().set(ElementConstants.STYLE_WIDTH,
-                    width);
+            getElement().getStyle().set(ElementConstants.STYLE_WIDTH, width);
         }
     }
 
@@ -56,8 +54,7 @@ public interface HasSize extends HasElement {
      * @return the width which has been set for the component
      */
     default String getWidth() {
-        return getElement().getStyle()
-                .get(ElementConstants.STYLE_WIDTH);
+        return getElement().getStyle().get(ElementConstants.STYLE_WIDTH);
     }
 
     /**
@@ -71,11 +68,9 @@ public interface HasSize extends HasElement {
      */
     default void setHeight(String height) {
         if (height == null) {
-            getElement().getStyle()
-                    .remove(ElementConstants.STYLE_HEIGHT);
+            getElement().getStyle().remove(ElementConstants.STYLE_HEIGHT);
         } else {
-            getElement().getStyle()
-                    .set(ElementConstants.STYLE_HEIGHT, height);
+            getElement().getStyle().set(ElementConstants.STYLE_HEIGHT, height);
         }
     }
 
@@ -88,7 +83,6 @@ public interface HasSize extends HasElement {
      * @return the height which has been set for the component
      */
     default String getHeight() {
-        return getElement().getStyle()
-                .get(ElementConstants.STYLE_HEIGHT);
+        return getElement().getStyle().get(ElementConstants.STYLE_HEIGHT);
     }
 }

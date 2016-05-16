@@ -114,7 +114,7 @@ public class Bootstrapper implements EntryPoint {
     }
 
     /**
-     * Reads the configuration values defined by the bootstrap Javascript.
+     * Reads the configuration values defined by the bootstrap JavaScript.
      *
      * @param conf
      */

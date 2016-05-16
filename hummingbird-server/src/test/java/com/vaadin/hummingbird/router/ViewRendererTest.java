@@ -26,6 +26,7 @@ import org.junit.Test;
 import com.vaadin.annotations.Title;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.ui.HasText;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
@@ -92,6 +93,13 @@ public class ViewRendererTest {
                 element.removeFromParent();
                 getElement().appendChild(element);
             }
+        }
+    }
+
+    public static class ErrorView extends TestView implements HasText {
+
+        public ErrorView() {
+            setText("custom errorview");
         }
     }
 

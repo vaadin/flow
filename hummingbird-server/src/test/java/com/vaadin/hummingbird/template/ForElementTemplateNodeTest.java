@@ -28,6 +28,7 @@ import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 public class ForElementTemplateNodeTest {
 
