@@ -1,6 +1,7 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.ui.AttachEvent;
 
 public class FragmentLinkView2 extends FragmentLinkView {
 
@@ -10,7 +11,7 @@ public class FragmentLinkView2 extends FragmentLinkView {
     }
 
     @Override
-    protected void onAttach() {
+    protected void onAttach(AttachEvent attachEvent) {
         // do not call super onAttach since it adds a hashchangelistener
     }
 }

@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.hummingbird.router.ViewRendererTest.ErrorView;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
@@ -253,7 +254,7 @@ public class RouterTest {
     }
 
     @Test
-    public void testNavigateToEmptyLocation() {
+    public void testNavigateToEmptyLocation_triggersDefaultErrorView() {
         UI ui = new RouterTestUI();
 
         Router router = new Router();
@@ -262,7 +263,23 @@ public class RouterTest {
 
         router.navigate(ui, new Location(""));
 
-        Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+        Assert.assertEquals(new DefaultErrorView().getText(),
+                ui.getElement().getTextContent());
+    }
+
+    @Test
+    public void testNavigateToEmptyLocation_triggersErrorView() {
+        UI ui = new RouterTestUI();
+
+        Router router = new Router();
+        router.reconfigure(c -> {
+            c.setErrorView(ErrorView.class);
+        });
+
+        router.navigate(ui, new Location(""));
+
+        Assert.assertEquals(new ErrorView().getText(),
+                ui.getElement().getTextContent());
     }
 
     @Test

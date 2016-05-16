@@ -33,6 +33,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
     private final Map<String, BindingValueProvider> properties = new HashMap<>();
     private final Map<String, BindingValueProvider> attributes = new HashMap<>();
     private final List<TemplateNodeBuilder> children = new ArrayList<>();
+    private final Map<String, String> eventHandlers = new HashMap<>();
 
     /**
      * Creates an element node builder with the given tag name.
@@ -47,8 +48,8 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
 
     @Override
     public ElementTemplateNode build(TemplateNode parent) {
-        return new ElementTemplateNode(parent, tag, properties, attributes,
-                children);
+        return new ElementTemplateNode(parent, getTag(), getProperties(),
+                getAttributes(), getEventHandlers(), children);
     }
 
     /**
@@ -144,5 +145,33 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
      */
     public Stream<TemplateNodeBuilder> getChildren() {
         return children.stream();
+    }
+
+    /**
+     * Adds an event handler to this builder.
+     *
+     * @param event
+     *            the event name, not <code>null</code>
+     * @param handler
+     *            the handler (JS code) that will be called when the event is
+     *            triggered, not <code>null</code>
+     * @return this element template builder
+     */
+    public ElementTemplateBuilder addEventHandler(String event,
+            String handler) {
+        assert event != null;
+        assert handler != null;
+        eventHandlers.put(event, handler);
+        return this;
+    }
+
+    /**
+     * Gets the event handler that have been defined using
+     * {@link #addEventHandler(String, String)}.
+     *
+     * @return a map of event handlers, not <code>null</code>
+     */
+    public Map<String, String> getEventHandlers() {
+        return Collections.unmodifiableMap(eventHandlers);
     }
 }

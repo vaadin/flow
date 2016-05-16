@@ -25,8 +25,4 @@ public class SubContextUI extends DependencyUI {
         super.init(request);
     }
 
-    @Override
-    protected String getServletToContextPath(String url) {
-        return "../" + super.getServletToContextPath(url);
-    }
 }

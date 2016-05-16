@@ -18,7 +18,7 @@ package com.vaadin.ui;
 import java.io.Serializable;
 
 /**
- * Represents a stylesheet or Javascript to include on the page.
+ * Represents a stylesheet or JavaScript to include on the page.
  *
  * @author Vaadin Ltd
  */
@@ -28,7 +28,7 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT;
+        STYLESHEET, JAVASCRIPT, HTML_IMPORT;
     }
 
     private final Type type;

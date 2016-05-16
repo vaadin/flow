@@ -23,6 +23,7 @@ import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
@@ -33,6 +34,7 @@ import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateMetadataFeature;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 
@@ -118,7 +120,7 @@ public class NodeFeatures {
     /**
      * Id for {@link ModelMap}.
      */
-    public static final int TEMPLATE_MODEL = 17;
+    public static final int TEMPLATE_MODELMAP = 17;
     /**
      * Id for {@link TemplateOverridesMap}.
      */
@@ -131,6 +133,15 @@ public class NodeFeatures {
      * Id for {@link ParentGeneratorHolder}.
      */
     public static final int PARENT_GENERATOR = 20;
+    /**
+     * Id for {@link ModelList}.
+     */
+    public static final int TEMPLATE_MODELLIST = 21;
+
+    /**
+     * Id for {@link TemplateMetadataFeature}.
+     */
+    public static final int TEMPLATE_METADATA = 22;
 
     /**
      * Key for {@link ElementData#getTag()}.

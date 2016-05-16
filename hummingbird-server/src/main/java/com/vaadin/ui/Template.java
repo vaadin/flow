@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
-import com.vaadin.hummingbird.template.TemplateParser;
+import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 /**
  * Component for declaratively defined element structures. The structure of a
@@ -48,14 +48,14 @@ import com.vaadin.hummingbird.template.TemplateParser;
  * A template can be used as a {@link HasChildView} in
  * {@link RouterConfiguration} if the template file contains a
  * <code>@child@</code> slot.
- * 
+ *
  * @see HtmlTemplate
  *
  * @author Vaadin Ltd
  */
 public abstract class Template extends Component implements HasChildView {
     private final StateNode stateNode = TemplateElementStateProvider
-            .createNode();
+            .createRootNode();
 
     /**
      * Creates a new template.
@@ -75,7 +75,7 @@ public abstract class Template extends Component implements HasChildView {
     /**
      * Creates a new template using {@code templateFileName} as the template
      * file name.
-     * 
+     *
      * @param templateFileName
      *            the template file name, not {@code null}
      */
@@ -88,10 +88,10 @@ public abstract class Template extends Component implements HasChildView {
 
     /**
      * Creates a new template using {@code inputStream} as a template content.
-     * 
+     *
      * @param inputStream
      *            the HTML snippet input stream
-     * 
+     *
      */
     protected Template(InputStream inputStream) {
         // Will set element later

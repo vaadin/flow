@@ -34,6 +34,9 @@ public interface TestElementTemplateNode
     @JsProperty
     public void setAttributes(JsonObject attributes);
 
+    @JsProperty
+    public void setEventHandlers(JsonObject handlers);
+
     @JsOverlay
     public static TestElementTemplateNode create(String tag) {
         TestElementTemplateNode templateNode = TestTemplateNode
@@ -52,6 +55,16 @@ public interface TestElementTemplateNode
     @JsOverlay
     public default void addProperty(String name, TestBinding binding) {
         doGetProperties().put(name, binding.asJson());
+    }
+
+    @JsOverlay
+    public default void addEventHandler(String name, String handler) {
+        JsonObject eventHandlers = getEventHandlers();
+        if (eventHandlers == null) {
+            eventHandlers = Json.createObject();
+            setEventHandlers(eventHandlers);
+        }
+        eventHandlers.put(name, handler);
     }
 
     @JsOverlay

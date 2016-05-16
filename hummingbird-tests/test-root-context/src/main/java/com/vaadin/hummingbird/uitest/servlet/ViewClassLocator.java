@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.uitest.servlet;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Collection;
@@ -65,8 +66,16 @@ public class ViewClassLocator {
                     Class<?> cls = classLoader.loadClass(className);
                     if (View.class.isAssignableFrom(cls)
                             && !Modifier.isAbstract(cls.getModifiers())) {
-                        views.put(cls.getSimpleName(),
-                                (Class<? extends View>) cls);
+                        try {
+                            // Only include views which have a no-arg
+                            // constructor
+                            Constructor<?> constructor = cls.getConstructor();
+                            assert constructor != null;
+                            views.put(cls.getSimpleName(),
+                                    (Class<? extends View>) cls);
+                        } catch (Exception e) {
+                            // InlineTemplate or similar
+                        }
                     }
                 } catch (Exception e) {
                     getLogger().warning("Unable to load class " + className);
@@ -79,7 +88,7 @@ public class ViewClassLocator {
         return Logger.getLogger(ViewClassLocator.class.getName());
     }
 
-    Collection<Class<? extends View>> getAllViewClasses() {
+    public Collection<Class<? extends View>> getAllViewClasses() {
         return views.values();
     }
 

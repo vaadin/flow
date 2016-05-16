@@ -70,6 +70,7 @@ public class VaadinServlet extends HttpServlet implements Constants {
     @Override
     public void init(javax.servlet.ServletConfig servletConfig)
             throws ServletException {
+        verifyServletVersion();
         CurrentInstance.clearAll();
         super.init(servletConfig);
         Properties initParameters = new Properties();
@@ -109,6 +110,21 @@ public class VaadinServlet extends HttpServlet implements Constants {
 
         servletInitialized();
         CurrentInstance.clearAll();
+
+    }
+
+    private static void verifyServletVersion() throws ServletException {
+        try {
+            Method m = javax.servlet.http.HttpServletResponse.class
+                    .getMethod("setContentLengthLong", long.class);
+            if (m != null) {
+                return;
+            }
+
+            throw new ServletException("Servlet 3.1+ is required");
+        } catch (Exception e) {
+            throw new ServletException("Servlet 3.1+ is required", e);
+        }
 
     }
 
