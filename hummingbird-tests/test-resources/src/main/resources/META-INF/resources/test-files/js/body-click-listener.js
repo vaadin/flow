@@ -4,7 +4,7 @@ document.body.addEventListener("click", function(e) {
 		return;
 	}
 	var d = document.createElement("div");
-	d.innerText = "Click on body, reported by Javascript click handler";
+	d.innerText = "Click on body, reported by JavaScript click handler";
 	d.classList.add("body-click-added");
 	document.body.appendChild(d);
 });

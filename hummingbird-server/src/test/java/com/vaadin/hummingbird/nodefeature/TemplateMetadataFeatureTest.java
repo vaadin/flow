@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.nodefeature;
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.stream.Collectors;
@@ -120,7 +121,8 @@ public class TemplateMetadataFeatureTest {
         TemplateMetadataFeature feature = stateNode
                 .getFeature(TemplateMetadataFeature.class);
         Assert.assertEquals(1, feature.size());
-        Assert.assertEquals(Template1.class.getDeclaredMethods()[0].getName(),
+        Assert.assertEquals(
+                getDeclaredMethods(Template1.class).findFirst().get(),
                 feature.get(0));
     }
 
@@ -163,15 +165,16 @@ public class TemplateMetadataFeatureTest {
                 .getFeature(TemplateMetadataFeature.class);
         Assert.assertEquals(3, feature.size());
 
-        HashSet<String> methods = Stream
-                .of(Template4.class.getDeclaredMethods()).map(Method::getName)
+        HashSet<String> methods = getDeclaredMethods(Template4.class)
                 .collect(Collectors.toCollection(HashSet::new));
-        methods.add(Template4.class.getDeclaredMethods()[0].getName());
+        methods.add(getDeclaredMethods(Template1.class).findFirst().get());
 
         for (int i = 0; i < feature.size(); i++) {
             methods.remove(feature.get(i));
         }
-        Assert.assertTrue(methods.isEmpty());
+        Assert.assertTrue(
+                "Feature doesn't contain methods: " + methods.toString(),
+                methods.isEmpty());
     }
 
     @Test
@@ -188,7 +191,8 @@ public class TemplateMetadataFeatureTest {
         TemplateMetadataFeature feature = stateNode
                 .getFeature(TemplateMetadataFeature.class);
         Assert.assertEquals(1, feature.size());
-        Assert.assertEquals(Template5.class.getDeclaredMethods()[0].getName(),
+        Assert.assertEquals(
+                getDeclaredMethods(Template5.class).findFirst().get(),
                 feature.get(0));
     }
 
@@ -221,5 +225,14 @@ public class TemplateMetadataFeatureTest {
                 TemplateMetadataFeature.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
+    }
+
+    private Stream<String> getDeclaredMethods(Class<?> clazz) {
+        // Code coverage jacoco adds nice unexpected private static method
+        // $jacocoInit which nobody needs
+        return Stream.of(clazz.getDeclaredMethods())
+                .filter(method -> !Modifier.isStatic(method.getModifiers())
+                        && !Modifier.isPrivate(method.getModifiers()))
+                .map(Method::getName);
     }
 }

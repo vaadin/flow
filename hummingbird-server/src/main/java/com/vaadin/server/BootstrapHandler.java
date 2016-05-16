@@ -331,6 +331,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                     + "server/es6-collections.js"));
         }
 
+        head.appendElement("script").attr("type", "text/javascript").attr("src",
+                context.getUriResolver()
+                        .resolveVaadinUri("context://"
+                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                + "server/webcomponents-lite.min.js"));
+
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
         }
