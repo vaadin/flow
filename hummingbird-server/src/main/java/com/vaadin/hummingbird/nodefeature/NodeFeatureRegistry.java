@@ -75,6 +75,8 @@ public class NodeFeatureRegistry {
         registerFeature(ParentGeneratorHolder.class,
                 ParentGeneratorHolder::new);
         registerFeature(ModelList.class, ModelList::new);
+        registerFeature(TemplateMetadataFeature.class,
+                TemplateMetadataFeature::new);
     }
 
     private NodeFeatureRegistry() {
