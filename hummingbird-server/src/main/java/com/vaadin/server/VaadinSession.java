@@ -408,11 +408,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     /**
      * Gets the currently used session. The current session is automatically
-     * defined when processing requests to the server and in threads started at
-     * a point when the current session is defined (see
-     * {@link InheritableThreadLocal}). In other cases, (e.g. from background
-     * threads started in some other way), the current session is not
-     * automatically defined.
+     * defined when processing requests to the server (see {@link ThreadLocal})
+     * and in {@link VaadinSession#access(Command)} and
+     * {@link UI#access(Command)}. In other cases, (e.g. from background
+     * threads), the current session is not automatically defined.
      * <p>
      * The session is stored using a weak reference to avoid leaking memory in
      * case it is not explicitly cleared.
@@ -449,7 +448,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * @since 7.0
      */
     public static void setCurrent(VaadinSession session) {
-        CurrentInstance.setInheritable(VaadinSession.class, session);
+        CurrentInstance.set(VaadinSession.class, session);
     }
 
     /**
