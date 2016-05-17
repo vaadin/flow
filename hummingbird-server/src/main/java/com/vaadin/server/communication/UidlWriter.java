@@ -24,10 +24,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
-import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.change.MapPutChange;
@@ -45,7 +41,6 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DependencyList;
-import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
@@ -193,8 +188,8 @@ public class UidlWriter implements Serializable {
             runIfNewTemplateChange(change, templateEncoder);
 
             // send components' @StyleSheet and @JavaScript dependencies
-            runIfComponentAttachChange(change,
-                    c -> addComponentDependencies(ui.getPage(), c));
+            runIfComponentAttachChange(change, c -> ui.getInternals()
+                    .addComponentDependencies(c.getClass()));
 
             // Encode the actual change
             stateChanges.set(stateChanges.length(), change.toJson());
@@ -223,20 +218,6 @@ public class UidlWriter implements Serializable {
                     .getFeature(ComponentMapping.class).getComponent();
             component.ifPresent(consumer);
         }
-    }
-
-    private void addComponentDependencies(Page page, Component component) {
-        List<JavaScript> javaScripts = AnnotationReader
-                .getJavaScriptAnnotations(component.getClass());
-        javaScripts.forEach(js -> page.addJavaScript(js.value()));
-
-        List<HtmlImport> htmlImports = AnnotationReader
-                .getHtmlImportAnnotations(component.getClass());
-        htmlImports.forEach(html -> page.addHtmlImport(html.value()));
-
-        List<StyleSheet> styleSheets = AnnotationReader
-                .getStyleSheetAnnotations(component.getClass());
-        styleSheets.forEach(sS -> page.addStyleSheet(sS.value()));
     }
 
     /**
