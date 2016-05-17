@@ -19,17 +19,19 @@ package com.vaadin.client;
 import com.google.gwt.core.client.Duration;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.HeadElement;
-import com.google.gwt.dom.client.LinkElement;
-import com.google.gwt.dom.client.NodeList;
-import com.google.gwt.dom.client.ScriptElement;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsSet;
+
+import elemental.client.Browser;
+import elemental.dom.Document;
+import elemental.dom.Element;
+import elemental.dom.NodeList;
+import elemental.html.HeadElement;
+import elemental.html.LinkElement;
+import elemental.html.ScriptElement;
 
 /**
  * ResourceLoader lets you dynamically include external scripts and styles on
@@ -142,21 +144,21 @@ public class ResourceLoader {
      * page.
      */
     private void initLoadedResourcesFromDom() {
-        Document document = Document.get();
+        Document document = Browser.getDocument();
 
         // detect already loaded scripts and stylesheets
-        NodeList<Element> scripts = document.getElementsByTagName("script");
+        NodeList scripts = document.getElementsByTagName("script");
         for (int i = 0; i < scripts.getLength(); i++) {
-            ScriptElement element = ScriptElement.as(scripts.getItem(i));
+            ScriptElement element = (ScriptElement) scripts.item(i);
             String src = element.getSrc();
             if (src != null && src.length() != 0) {
                 loadedResources.add(src);
             }
         }
 
-        NodeList<Element> links = document.getElementsByTagName("link");
+        NodeList links = document.getElementsByTagName("link");
         for (int i = 0; i < links.getLength(); i++) {
-            LinkElement linkElement = LinkElement.as(links.getItem(i));
+            LinkElement linkElement = (LinkElement) links.item(i);
             String rel = linkElement.getRel();
             String href = linkElement.getHref();
             if (("stylesheet".equalsIgnoreCase(rel)
@@ -211,11 +213,11 @@ public class ResourceLoader {
         }
 
         if (addListener(url, resourceLoadListener, loadListeners)) {
-            ScriptElement scriptTag = Document.get().createScriptElement();
+            ScriptElement scriptTag = Browser.getDocument()
+                    .createScriptElement();
             scriptTag.setSrc(url);
             scriptTag.setType("text/javascript");
-
-            scriptTag.setPropertyBoolean("async", async);
+            scriptTag.setAsync(async);
 
             addOnloadHandler(scriptTag, new ResourceLoadListener() {
                 @Override
@@ -232,8 +234,12 @@ public class ResourceLoader {
         }
     }
 
+    private static Document getDocument() {
+        return Browser.getDocument();
+    }
+
     private static HeadElement getHead() {
-        return Document.get().getHead();
+        return getDocument().getHead();
     }
 
     /**
@@ -260,7 +266,7 @@ public class ResourceLoader {
         }
 
         if (addListener(url, resourceLoadListener, loadListeners)) {
-            LinkElement linkTag = Document.get().createLinkElement();
+            LinkElement linkTag = getDocument().createLinkElement();
             linkTag.setAttribute("rel", "import");
             linkTag.setAttribute("href", url);
 
@@ -340,7 +346,7 @@ public class ResourceLoader {
         }
 
         if (addListener(url, resourceLoadListener, loadListeners)) {
-            LinkElement linkElement = Document.get().createLinkElement();
+            LinkElement linkElement = getDocument().createLinkElement();
             linkElement.setRel("stylesheet");
             linkElement.setType("text/css");
             linkElement.setHref(url);
