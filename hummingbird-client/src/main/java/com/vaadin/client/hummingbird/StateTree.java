@@ -169,8 +169,9 @@ public class StateTree {
      *            the method name
      */
     public void sendTemplateEventToServer(StateNode node, String methodName) {
-        // TODO Auto-generated method stub
-
+        assert assertValidNode(node);
+        registry.getServerConnector().sendTemplateEventMessage(node,
+                methodName);
     }
 
     /**
