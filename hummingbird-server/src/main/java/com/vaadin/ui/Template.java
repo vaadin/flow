@@ -17,7 +17,12 @@ package com.vaadin.ui;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
@@ -69,6 +74,36 @@ public abstract class Template extends Component implements HasChildView {
             setTemplateElement(getClass().getSimpleName() + ".html");
         } else {
             setTemplateElement(annotation.value());
+        }
+    }
+
+    /**
+     * Invokes event handler method with {@code methodName}.
+     * 
+     * @param methodName
+     *            the event handler method name
+     * 
+     */
+    public void invokeEventHandlerMethod(String methodName) {
+        invokeMethod(getClass(), methodName);
+    }
+
+    private void invokeMethod(Class<?> clazz, String methodName) {
+        Optional<Method> found = Stream.of(clazz.getDeclaredMethods())
+                .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> method
+                        .isAnnotationPresent(EventHandler.class))
+                .findFirst();
+        if (found.isPresent()) {
+            try {
+                found.get().invoke(this);
+            } catch (IllegalAccessException | IllegalArgumentException e) {
+                assert false;
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e.getCause());
+            }
+        } else if (!Template.class.equals(clazz)) {
+            invokeMethod(clazz.getSuperclass(), methodName);
         }
     }
 
@@ -140,4 +175,5 @@ public abstract class Template extends Component implements HasChildView {
             templateMap.setChild(childView.getElement().getNode());
         }
     }
+
 }

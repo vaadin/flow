@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
 import java.security.GeneralSecurityException;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.server.Constants;
@@ -34,9 +36,11 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
+import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -363,11 +367,34 @@ public class ServerRpcHandler implements Serializable {
             case JsonConstants.RPC_TYPE_NAVIGATION:
                 handleNavigation(ui, invocationJson);
                 break;
+            case JsonConstants.RPC_TYPE_TEMPLATE_EVENT:
+                handleTemplateEventHandler(ui, invocationJson);
             default:
                 throw new IllegalArgumentException(
                         "Unsupported event type: " + type);
             }
         }
+    }
+
+    private static void handleTemplateEventHandler(UI ui,
+            JsonObject invocationJson) {
+        assert invocationJson
+                .hasKey(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
+
+        StateNode node = getNode(ui, invocationJson);
+        if (node == null) {
+            return;
+        }
+        String methodName = invocationJson
+                .getString(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
+        assert node.hasFeature(ComponentMapping.class);
+        Optional<Component> component = node.getFeature(ComponentMapping.class)
+                .getComponent();
+        assert component.isPresent();
+        assert component.get() instanceof Template;
+
+        Template template = (Template) component.get();
+        template.invokeEventHandlerMethod(methodName);
     }
 
     private static void handleNavigation(UI ui, JsonObject invocationJson) {

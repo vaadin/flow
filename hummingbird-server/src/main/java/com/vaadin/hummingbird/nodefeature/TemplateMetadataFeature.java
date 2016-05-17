@@ -110,7 +110,27 @@ public class TemplateMetadataFeature extends SerializableNodeList<String> {
             builder.append(EventHandler.class);
             throw new IllegalStateException(builder.toString());
         }
+        Optional<Class<?>> checkedException = Stream
+                .of(method.getExceptionTypes()).filter(this::isCheckedException)
+                .findFirst();
+        if (checkedException.isPresent()) {
+            StringBuilder builder = new StringBuilder(
+                    "Event handler method may not declare checked exceptions. Component ");
+            builder.append(method.getDeclaringClass());
+            builder.append(" has method ").append(method.getName());
+            builder.append(" which declares checked exception ");
+            builder.append(checkedException.get());
+            builder.append(" and annotated with ");
+            builder.append(EventHandler.class);
+            throw new IllegalStateException(builder.toString());
+        }
         methods.add(method.getName());
+
+    }
+
+    private boolean isCheckedException(Class<?> exceptionClass) {
+        return !RuntimeException.class.isAssignableFrom(exceptionClass)
+                && !Error.class.isAssignableFrom(exceptionClass);
     }
 
 }
