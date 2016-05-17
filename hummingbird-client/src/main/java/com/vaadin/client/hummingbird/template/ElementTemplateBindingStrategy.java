@@ -175,10 +175,10 @@ public class ElementTemplateBindingStrategy
     private static native void attachServerProxyMethod(JavaScriptObject proxy,
             StateNode node, String methodName)
     /*-{
-        proxy[methodName] = function() {
+        proxy[methodName] = $entry(function() {
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
-            tree.@com.vaadin.client.hummingbird.StateTree::requestCallServerMethod(*)(node, methodName);
-        };
+            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName);
+        });
     }-*/;
 
 }

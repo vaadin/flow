@@ -168,7 +168,7 @@ public class StateTree {
      * @param methodName
      *            the method name
      */
-    public void requestCallServerMethod(StateNode node, String methodName) {
+    public void sendTemplateEventToServer(StateNode node, String methodName) {
         // TODO Auto-generated method stub
 
     }
