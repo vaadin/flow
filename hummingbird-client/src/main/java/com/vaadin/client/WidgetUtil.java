@@ -18,9 +18,9 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.AnchorElement;
-import com.google.gwt.dom.client.Document;
 
+import elemental.client.Browser;
+import elemental.html.AnchorElement;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -62,7 +62,7 @@ public class WidgetUtil {
      * @return the corresponding absolute URL as a string
      */
     public static String getAbsoluteUrl(String url) {
-        AnchorElement a = Document.get().createAnchorElement();
+        AnchorElement a = Browser.getDocument().createAnchorElement();
         a.setHref(url);
         return a.getHref();
     }
