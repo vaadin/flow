@@ -1,0 +1,81 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Using Events with a Polymer Web Component
+
+This tutorial covers listening to events emitted by a web component and is a continuation of the <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>> and <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>> tutorials. For information about events, see the <<tutorial-event-listener#,Listening to User Events>> tutorial.
+
+The standard way for Polymer Web Components to inform about changes inside the component is through firing events. The events fired by the `<paper-slider>` element are documented at https://elements.polymer-project.org/elements/paper-slider#events.
+
+For a basic integration, the most important event is `value-change`. This event is fired whenever the slider's value changes, regardless of what causes the change (user interaction or API call). To be able to use this event in the server side API, an event class which is bound to the `value-change` DOM event is needed:
+
+[source,java]
+----
+@DomEvent("value-change")
+public class ValueChangeEvent extends ComponentEvent<PaperSlider> {
+    public ValueChangeEvent(PaperSlider source, boolean fromClient) {
+        super(source, fromClient);
+    }
+}
+----
+
+To get the new value you need to set up synchronization of the `value` property for the element:
+
+[source,java]
+----
+public class PaperSlider extends Component {
+  public PaperSlider() {
+    getElement().synchronizeProperty("value", "value-change");
+  }
+}
+----
+
+Property synchronization takes place before events are fired so the event listener can use `ValueChangeEvent.getSource().getValue()` to get the new value. There should still be a public `addValueChangeListener` so the component user can listen to the event:
+[source,java]
+----
+public class PaperSlider extends Component {
+  public EventRegistrationHandle addValueChangeListener(
+        ComponentEventListener<ValueChangeEvent> valueChangeListener) {
+    return super.addListener(ValueChangeEvent.class, valueChangeListener);
+  }
+}
+----
+
+The final integration of `<paper-slider>` with support for `value`, `pin` and listening to value change events is:
+[source,java]
+----
+@DomEvent("value-change")
+public class ValueChangeEvent extends ComponentEvent<PaperSlider> {
+    public ValueChangeEvent(PaperSlider source, boolean fromClient) {
+        super(source, fromClient);
+    }
+}
+
+@Tag("paper-slider")
+@HtmlImport("context://bower_components/paper-slider/paper-slider.html")
+public class PaperSlider extends Component {
+
+    public PaperSlider() {
+        getElement().synchronizeProperty("value", "value-change");
+    }
+
+    public void setValue(int value) {
+        getElement().setProperty("value", value);
+    }
+
+    public int getValue() {
+        return getElement().getProperty("value", 0);
+    }
+
+    public void setPin(boolean pin) {
+        getElement().setProperty("pin", pin);
+    }
+
+    public boolean isPin() {
+        return getElement().getProperty("pin", false);
+    }
+
+    public EventRegistrationHandle addValueChangeListener(
+            ComponentEventListener<ValueChangeEvent> valueChangeListener) {
+        return super.addListener(ValueChangeEvent.class, valueChangeListener);
+    }
+}
+----
