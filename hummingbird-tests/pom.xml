@@ -66,8 +66,8 @@
 					<!-- export test server port to integration tests -->
 					<systemPropertyVariables>
 						<serverPort>${server.port}</serverPort>
-                        <phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
-                    </systemPropertyVariables>
+						<phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
+					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 			<!-- jetty plugin for those child modules that need it -->
@@ -91,23 +91,24 @@
 				</configuration>
 			</plugin>
 			<plugin>
-              <groupId>com.github.klieber</groupId>
-              <artifactId>phantomjs-maven-plugin</artifactId>
-              <executions>
-                <execution>
-                  <goals>
-                    <goal>install</goal>
-                  </goals>
-                  <configuration>
-                        <version>${phantomjs.version}</version>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
+				<groupId>com.github.klieber</groupId>
+				<artifactId>phantomjs-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>install</goal>
+						</goals>
+						<configuration>
+							<version>${phantomjs.version}</version>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -176,6 +177,13 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>validation</id>
+			<properties>
+				<maven.javadoc.skip>true</maven.javadoc.skip>
+			</properties>
+		</profile>
+
 	</profiles>
 
 </project>
