@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
@@ -29,6 +30,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.server.MockVaadinSession;
+import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -42,6 +44,16 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class UidlWriterTest {
+    @JavaScript("UI-parent-js")
+    private static class ParentUI extends UI {
+
+    }
+
+    @JavaScript("UI-js")
+    private static class TestUI extends ParentUI {
+
+    }
+
     @Test
     public void testEncodeExecuteJavaScript() {
         Element element = ElementFactory.createDiv();
@@ -139,12 +151,14 @@ public class UidlWriterTest {
     }
 
     private UI initializeUIForDependenciesTest() {
-        UI ui = new UI();
+        UI ui = new TestUI();
         MockVaadinSession session = new MockVaadinSession(
                 new VaadinServletService(new VaadinServlet(),
                         new MockDeploymentConfiguration()));
         session.lock();
         ui.getInternals().setSession(session);
+
+        ui.doInit(Mockito.mock(VaadinRequest.class), 1);
         return ui;
     }
 
@@ -154,44 +168,49 @@ public class UidlWriterTest {
         JsonObject response = uidlWriter.createUidl(ui, false);
         JsonArray dependencies = response
                 .getArray(DependencyList.DEPENDENCY_KEY);
-        Assert.assertEquals(12, dependencies.length());
+        Assert.assertEquals(14, dependencies.length());
 
-        // super component's dependencies should be first, then the interfaces
-        // and then the component
-        assertDependency("super-", dependencies.get(0),
+        int idx = 0;
+        // UI parent first, then UI, then super component's dependencies, then
+        // the interfaces and then the component
+        assertDependency("UI-parent-", dependencies.get(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("UI-", dependencies.get(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("super-", dependencies.get(idx++),
                 DependencyList.TYPE_JAVASCRIPT);
 
-        assertDependency("anotherinterface-", dependencies.get(1),
+        assertDependency("anotherinterface-", dependencies.get(idx++),
                 DependencyList.TYPE_JAVASCRIPT);
 
-        assertDependency("interface-", dependencies.get(2),
+        assertDependency("interface-", dependencies.get(idx++),
                 DependencyList.TYPE_JAVASCRIPT);
 
-        assertDependency("", dependencies.get(3),
+        assertDependency("", dependencies.get(idx++),
                 DependencyList.TYPE_JAVASCRIPT);
 
-        assertDependency("super-", dependencies.get(4),
+        assertDependency("super-", dependencies.get(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
 
-        assertDependency("anotherinterface-", dependencies.get(5),
+        assertDependency("anotherinterface-", dependencies.get(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
 
-        assertDependency("interface-", dependencies.get(6),
+        assertDependency("interface-", dependencies.get(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
 
-        assertDependency("", dependencies.get(7),
+        assertDependency("", dependencies.get(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
 
-        assertDependency("super-", dependencies.get(8),
+        assertDependency("super-", dependencies.get(idx++),
                 DependencyList.TYPE_STYLESHEET);
 
-        assertDependency("anotherinterface-", dependencies.get(9),
+        assertDependency("anotherinterface-", dependencies.get(idx++),
                 DependencyList.TYPE_STYLESHEET);
 
-        assertDependency("interface-", dependencies.get(10),
+        assertDependency("interface-", dependencies.get(idx++),
                 DependencyList.TYPE_STYLESHEET);
 
-        assertDependency("", dependencies.get(11),
+        assertDependency("", dependencies.get(idx++),
                 DependencyList.TYPE_STYLESHEET);
     }
 
