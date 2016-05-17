@@ -224,7 +224,7 @@ public class UI extends Component
      * @see ThreadLocal
      */
     public static void setCurrent(UI ui) {
-        CurrentInstance.setInheritable(UI.class, ui);
+        CurrentInstance.set(UI.class, ui);
     }
 
     /**
