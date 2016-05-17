@@ -41,28 +41,38 @@ import elemental.events.MouseEvent;
 
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
-    private TemplateRegistry reg = new TemplateRegistry();
-    private Registry registry = new Registry() {
-        @Override
-        public TemplateRegistry getTemplateRegistry() {
-            return reg;
-        }
-    };
-    private StateTree tree = new StateTree(registry);
+    private Registry registry;
+    private StateTree tree;
 
     /**
      * This state node is ALWAYS a template !!!
      */
-    private StateNode stateNode = new StateNode(0, tree) {
+    private StateNode stateNode;
 
-        @Override
-        public boolean hasFeature(int id) {
-            if (id == NodeFeatures.TEMPLATE) {
-                return true;
+    @Override
+    protected void gwtSetUp() throws Exception {
+        super.gwtSetUp();
+
+        registry = new Registry() {
+            {
+                set(TemplateRegistry.class, new TemplateRegistry());
             }
-            return super.hasFeature(id);
-        }
-    };
+        };
+        tree = new StateTree(registry);
+        /**
+         * This state node is ALWAYS a template !!!
+         */
+        stateNode = new StateNode(0, tree) {
+
+            @Override
+            public boolean hasFeature(int id) {
+                if (id == NodeFeatures.TEMPLATE) {
+                    return true;
+                }
+                return super.hasFeature(id);
+            }
+        };
+    }
 
     public void testTemplateProperties() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
@@ -726,7 +736,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     private void registerTemplateNode(TestTemplateNode templateNode,
             StateNode node, int id) {
-        reg.register(id, templateNode);
+        registry.getTemplateRegistry().register(id, templateNode);
         node.getMap(NodeFeatures.TEMPLATE)
                 .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
                 .setValue(Double.valueOf(id));
