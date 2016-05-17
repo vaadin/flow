@@ -1,20 +1,36 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Including Style Sheets
 
-For styling the application you typically need to include a style sheet. The framework is creating the initial HTML page so you need to tell it which style sheets you need. This can be done in your UI class using:
+For styling the application you typically need to include a style sheet. There
+are two ways to do this.
 
 [source,java]
 ----
-@Override
-protected void init(VaadinRequest request) {
-  // Loaded from "styles.css" in your context root
-  getPage().addStyleSheet("styles.css");
+@StyleSheet("styles.css") // Relative to Servlet URL
+@StyleSheet("http://www.example.com/example.css") // Loaded from external location
+public class MainLayout extends Template {
+  // implementation omitted
+}
+----
 
-  // Loaded from "/root.css" regardless of how your application is deployed
-  getPage().addStyleSheet("/root.css");
+The above snippet uses the `@StyleSheet` annotation on a component. The value of
+the annotation is a URL to load the style sheet from. The style sheet is loaded
+when the component is shown for the first time in the browser. You can use the
+annotation multiple times on the same component.
 
-  // Loaded from "http://example.com/example.css" regardless of how your application is deployed
-  getPage().addStyleSheet("http://example.com/example.css");
+Another way of adding a style sheet is using the `addStyleSheet(String url)`
+method from the `Page` class. It does exactly the same as the `@StyleSheet`
+annotation.
+
+[source,java]
+----
+public class MyCustomUI extends UI {
+
+  @Override
+  protected void init(VaadinRequest request) {
+    // Loaded from "/root.css" regardless of how your application is deployed
+    getPage().addStyleSheet("/root.css");
+  }
 }
 ----
 
