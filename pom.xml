@@ -316,5 +316,13 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+	<profiles>
+		<profile>
+			<id>validation</id>
+			<properties>
+				<maven.javadoc.skip>false</maven.javadoc.skip>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>
