@@ -93,6 +93,7 @@ public class JsCollections {
      */
     public static <K, V> JsMap<K, V> map() {
         if (GWT.isScript()) {
+            checkJunitPolyfillStatus();
             return createNativeMap();
         } else {
             return new JreJsMap<>();
@@ -106,6 +107,7 @@ public class JsCollections {
      */
     public static <K, V> JsWeakMap<K, V> weakMap() {
         if (GWT.isScript()) {
+            checkJunitPolyfillStatus();
             return createNativeWeakMap();
         } else {
             return new JreJsWeakMap<>();
@@ -119,6 +121,7 @@ public class JsCollections {
      */
     public static <V> JsSet<V> set() {
         if (GWT.isScript()) {
+            checkJunitPolyfillStatus();
             return createNativeSet();
         } else {
             return new JreJsSet<>();
@@ -134,6 +137,7 @@ public class JsCollections {
      */
     public static <T> JsSet<T> set(JsSet<T> values) {
         if (GWT.isScript()) {
+            checkJunitPolyfillStatus();
             return createNativeSet(values);
         } else {
             return new JreJsSet<>((JreJsSet<T>) values);
@@ -208,4 +212,23 @@ public class JsCollections {
         return set.size() == 0;
     }
 
+    private static void checkJunitPolyfillStatus() {
+        // Inlined to make this a no-op when not complied as a unit test
+        if ("native".equals(System.getProperty("compiler.stackMode"))) {
+            return;
+        }
+
+        if (!GWT.getModuleName().endsWith(".JUnit")) {
+            throw new IllegalStateException(
+                    "compiler.stackMode value does no longer predict JUnit compilation");
+        }
+
+        assert !isNativeMapConstructor() : "ES6 collection cannot be created before gwtSetUp has set up the polyfill";
+    }
+
+    private static native boolean isNativeMapConstructor()
+    /*-{
+      // Assuming it's a native implementation if string representation contains "[native"
+      return ('' + $wnd.Map).indexOf('[native') != -1;
+    }-*/;
 }
