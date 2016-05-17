@@ -44,7 +44,6 @@ import elemental.events.MouseEvent;
 
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
-    private TemplateRegistry reg;
     private Registry registry;
     private StateTree tree;
     private StateNode stateNode;
@@ -54,11 +53,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     @Override
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
-        reg = new TemplateRegistry();
         registry = new Registry() {
-            @Override
-            public TemplateRegistry getTemplateRegistry() {
-                return reg;
+            {
+                set(TemplateRegistry.class, new TemplateRegistry());
             }
         };
 
@@ -770,7 +767,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     private void registerTemplateNode(TestTemplateNode templateNode,
             StateNode node, int id) {
-        reg.register(id, templateNode);
+        registry.getTemplateRegistry().register(id, templateNode);
         node.getMap(NodeFeatures.TEMPLATE)
                 .getProperty(NodeFeatures.ROOT_TEMPLATE_ID)
                 .setValue(Double.valueOf(id));
