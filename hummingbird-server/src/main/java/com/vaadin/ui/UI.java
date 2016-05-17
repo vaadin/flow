@@ -174,6 +174,9 @@ public class UI extends Component
         }
         this.uiId = uiId;
 
+        // Add any dependencies from the UI class
+        getInternals().addComponentDependencies(getClass());
+
         // Call the init overridden by the application developer
         init(request);
 

@@ -29,6 +29,7 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.HasText;
 import com.vaadin.ui.UI;
 
+@StyleSheet("context://test-files/css/allred.css")
 public class DependencyUI extends UI {
 
     @StyleSheet("context://test-files/css/allblueimportant.css")
@@ -55,7 +56,6 @@ public class DependencyUI extends UI {
         getElement().appendChild(ElementFactory.createDiv(
                 "This test initially loads a stylesheet which makes all text red and a JavaScript which listens to body clicks"));
         getElement().appendChild(ElementFactory.createHr());
-        getPage().addStyleSheet("context://test-files/css/allred.css");
         add(new JsResourceComponent());
 
         Element jsOrder = ElementFactory.createButton("Load js")
