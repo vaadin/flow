@@ -26,6 +26,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -635,5 +639,30 @@ public class UIInternals implements Serializable {
      */
     public DependencyList getDependencyList() {
         return dependencyList;
+    }
+
+    /**
+     * Adds the dependencies defined using {@link StyleSheet},
+     * {@link JavaScript} or {@link HtmlImport} on the given Component class.
+     *
+     * @param componentClass
+     *            the component class to read annotations from
+     */
+    public void addComponentDependencies(
+            Class<? extends Component> componentClass) {
+        Page page = ui.getPage();
+        List<JavaScript> javaScripts = AnnotationReader
+                .getJavaScriptAnnotations(componentClass);
+        javaScripts.forEach(js -> page.addJavaScript(js.value()));
+
+        List<HtmlImport> htmlImports = AnnotationReader
+                .getHtmlImportAnnotations(componentClass);
+        htmlImports.forEach(html -> page.addHtmlImport(html.value()));
+
+        List<StyleSheet> styleSheets = AnnotationReader
+                .getStyleSheetAnnotations(componentClass);
+        styleSheets
+                .forEach(styleSheet -> page.addStyleSheet(styleSheet.value()));
+
     }
 }
