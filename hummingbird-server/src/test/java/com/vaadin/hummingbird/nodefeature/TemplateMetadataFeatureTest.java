@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashSet;
@@ -61,6 +62,23 @@ public class TemplateMetadataFeatureTest {
         @EventHandler
         protected int op() {
             return 0;
+        }
+    }
+
+    static class TemplateWithMethodDeclaringCheckedException extends Template1 {
+
+        @EventHandler
+        protected void op() throws IOException {
+
+        }
+    }
+
+    static class TemplateWithMethodDeclaringUncheckedException
+            extends Template1 {
+
+        @EventHandler
+        protected void op() throws NullPointerException {
+
         }
     }
 
@@ -135,6 +153,30 @@ public class TemplateMetadataFeatureTest {
 
         Template template = new TemplateWithMethodReturnValue();
         ui.add(template);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void attach_methodCheckedExcepotion_ExceptionIsThrown() {
+        UI ui = new UI();
+
+        Template template = new TemplateWithMethodDeclaringCheckedException();
+        ui.add(template);
+    }
+
+    @Test
+    public void attach_methodWithUncheckedException_metadataContainsTemplateMethod() {
+        UI ui = new UI();
+
+        Template template = new TemplateWithMethodDeclaringUncheckedException();
+        ui.add(template);
+
+        TemplateMetadataFeature feature = template.getElement().getNode()
+                .getFeature(TemplateMetadataFeature.class);
+        Assert.assertEquals(2, feature.size());
+        Assert.assertEquals(getDeclaredMethods(
+                TemplateWithMethodDeclaringUncheckedException.class).findFirst()
+                        .get(),
+                feature.get(0));
     }
 
     @Test
