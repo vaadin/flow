@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventHandler;
+import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Component;
 
@@ -84,16 +85,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
     }
 
     private void addEventHandlerMethod(Method method, Set<String> methods) {
-        if (method.getParameterCount() != 0) {
-            // not supported now
-            StringBuilder builder = new StringBuilder(
-                    "Event handler methods with parameters are not supported. Component ");
-            builder.append(method.getDeclaringClass());
-            builder.append(" has method ").append(method.getName());
-            builder.append(" with at least one parameter annotated with ");
-            builder.append(EventHandler.class);
-            throw new IllegalStateException(builder.toString());
-        }
+        checkParameterTypes(method);
         if (!void.class.equals(method.getReturnType())) {
             StringBuilder builder = new StringBuilder(
                     "Non void event handler methods (no return type) are not supported. Component ");
@@ -119,6 +111,31 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
         }
         methods.add(method.getName());
 
+    }
+
+    private void checkParameterTypes(Method method) {
+        if (method.getParameterCount() == 0) {
+            return;
+        }
+        Stream.of(method.getParameterTypes())
+                .forEach(type -> checkParameterType(method, type));
+    }
+
+    private void checkParameterType(Method method, Class<?> type) {
+        if (type.isArray()) {
+            checkParameterType(method, type.getComponentType());
+        } else if (!JsonCodec.canEncode(type)) {
+            StringBuilder builder = new StringBuilder(
+                    "Event handler method may contain only serializable to JSON types. Component ");
+            builder.append(method.getDeclaringClass());
+            builder.append(" has method ").append(method.getName());
+            builder.append(
+                    " which declares parameter with non serializable to JSON type");
+            builder.append(type);
+            builder.append(" and annotated with ");
+            builder.append(EventHandler.class);
+            throw new IllegalStateException(builder.toString());
+        }
     }
 
     private boolean isCheckedException(Class<?> exceptionClass) {

@@ -32,6 +32,8 @@ import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
+import elemental.json.JsonValue;
+
 /**
  * @author Vaadin Ltd
  *
@@ -49,12 +51,46 @@ public class TemplateEventHandlerNamesTest {
         }
     }
 
-    static class TemplateWithMethodParameters extends Template1 {
+    static class TemplateWithBadParametersMethod extends Template1 {
 
         @EventHandler
-        protected void method(String arg) {
+        protected void method(int arg) {
 
         }
+    }
+
+    static class TemplateWithGoodParametersMethods extends Template1 {
+
+        @EventHandler
+        protected void method1(String arg) {
+
+        }
+
+        @EventHandler
+        protected void method2(Integer arg) {
+
+        }
+
+        @EventHandler
+        protected void method3(Boolean arg) {
+
+        }
+
+        @EventHandler
+        protected void method4(JsonValue arg) {
+
+        }
+
+        @EventHandler
+        protected void method5(Integer[] arg) {
+
+        }
+
+        @EventHandler
+        protected void method6(String... arg) {
+
+        }
+
     }
 
     static class TemplateWithMethodReturnValue extends Template1 {
@@ -103,7 +139,7 @@ public class TemplateEventHandlerNamesTest {
     }
 
     static class ChildTemplateOfIncorrectTemplate
-            extends TemplateWithMethodParameters {
+            extends TemplateWithBadParametersMethod {
 
         @Override
         @EventHandler
@@ -140,11 +176,35 @@ public class TemplateEventHandlerNamesTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void attach_methodHasArg_ExceptionIsThrown() {
+    public void attach_methodHasBadArg_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new TemplateWithMethodParameters();
+        Template template = new TemplateWithBadParametersMethod();
         ui.add(template);
+    }
+
+    @Test
+    public void attach_methodHasGoodArg_ExceptionIsThrown() {
+        UI ui = new UI();
+
+        Template template = new TemplateWithGoodParametersMethods();
+        ui.add(template);
+
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
+        Assert.assertEquals(7, feature.size());
+
+        HashSet<String> methods = getDeclaredMethods(
+                TemplateWithGoodParametersMethods.class)
+                        .collect(Collectors.toCollection(HashSet::new));
+        methods.add(getDeclaredMethods(Template1.class).findFirst().get());
+
+        for (int i = 0; i < feature.size(); i++) {
+            methods.remove(feature.get(i));
+        }
+        Assert.assertTrue(
+                "Feature doesn't contain methods: " + methods.toString(),
+                methods.isEmpty());
     }
 
     @Test(expected = IllegalStateException.class)
