@@ -87,6 +87,22 @@ public class JsonCodec {
     }
 
     /**
+     * Helper for checking "primitive" types that is directly supported in JSON.
+     * Supported values types are {@link String}, {@link Number},
+     * {@link Boolean}, {@link JsonValue}.
+     *
+     * @param value
+     *            the type to check
+     * @return whether the type can be encoded
+     */
+    public static boolean canEncode(Class<?> type) {
+        assert type != null;
+        return String.class.equals(type) || Number.class.isAssignableFrom(type)
+                || Boolean.class.equals(type)
+                || JsonValue.class.isAssignableFrom(type);
+    }
+
+    /**
      * Helper for encoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
      * {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
@@ -96,6 +112,10 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithoutTypeInfo(Object value) {
+        if (value != null && !canEncode(value.getClass())) {
+            throw new IllegalArgumentException(
+                    "Can't encode" + value.getClass() + " to json");
+        }
         if (value instanceof String) {
             return Json.create((String) value);
         } else if (value instanceof Number) {
@@ -106,10 +126,9 @@ public class JsonCodec {
             return (JsonValue) value;
         } else if (value == null) {
             return Json.createNull();
-        } else {
-            throw new IllegalArgumentException(
-                    "Can't encode" + value.getClass() + " to json");
         }
+        assert false;
+        return null;
     }
 
     /**
