@@ -140,5 +140,4 @@ public abstract class Template extends Component implements HasChildView {
             templateMap.setChild(childView.getElement().getNode());
         }
     }
-
 }

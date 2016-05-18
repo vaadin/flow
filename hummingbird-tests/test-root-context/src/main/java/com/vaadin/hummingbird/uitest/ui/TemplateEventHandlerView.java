@@ -17,9 +17,9 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.HtmlContainer;
 import com.vaadin.hummingbird.html.Label;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.ui.UI;
 
 /**
  * @author Vaadin Ltd
@@ -29,20 +29,23 @@ public class TemplateEventHandlerView extends Div implements View {
 
     public static class EventReceiver extends InlineTemplate {
 
-        EventReceiver() {
+        private final HtmlContainer parent;
+
+        EventReceiver(HtmlContainer parent) {
             super("<div id='event-receiver' (click)='$server.method()'>Click to send event to the server</div>");
+            this.parent = parent;
         }
 
         @EventHandler
         protected void method() {
             Label label = new Label("Event is received");
             label.setId("event-handler");
-            UI.getCurrent().add(label);
+            parent.add(label);
         }
     }
 
     public TemplateEventHandlerView() {
-        add(new EventReceiver());
+        add(new EventReceiver(this));
     }
 
 }
