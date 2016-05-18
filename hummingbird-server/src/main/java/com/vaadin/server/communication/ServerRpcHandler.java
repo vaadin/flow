@@ -324,13 +324,13 @@ public class ServerRpcHandler implements Serializable {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             } catch (IllegalArgumentException e) {
-                Logger.getLogger(ServerRpcHandler.class.getName())
-                        .log(Level.SEVERE, null, e);
                 // method may not have parameters because above filter
-                assert false;
+                throw new IllegalArgumentException(
+                        "Method " + methodName + " has unexpected arguments",
+                        e);
             } catch (InvocationTargetException e) {
                 Logger.getLogger(ServerRpcHandler.class.getName())
-                        .log(Level.SEVERE, null, e);
+                        .log(Level.FINE, null, e);
                 throw new RuntimeException(e.getCause());
             }
         } else if (!Component.class.equals(clazz)) {
@@ -339,7 +339,7 @@ public class ServerRpcHandler implements Serializable {
             StringBuilder builder = new StringBuilder("Neither class '");
             builder.append(instance.getClass());
             builder.append(
-                    "' nor its subclasses don't declare event handler method '");
+                    "' nor its super classes declare event handler method '");
             builder.append(methodName).append("'");
             throw new IllegalStateException(builder.toString());
         }
