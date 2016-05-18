@@ -373,12 +373,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Optional<Component> getComponent(StateNode node) {
-        assert node != null;
-        return node.getFeature(ComponentMapping.class).getComponent();
-    }
-
-    @Override
     public void setAttribute(StateNode node, String attribute,
             StreamResource resource) {
         assert node != null;

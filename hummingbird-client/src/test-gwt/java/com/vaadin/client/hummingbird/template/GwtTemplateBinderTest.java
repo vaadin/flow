@@ -467,7 +467,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         String operation = "operation";
         templateNode.addEventHandler("click", "$server." + operation + "()");
 
-        stateNode.getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES).set(0, operation);
+        stateNode.getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES).set(0,
+                operation);
 
         Element element = createElement(templateNode);
         MouseEvent event = (MouseEvent) Browser.getDocument()
