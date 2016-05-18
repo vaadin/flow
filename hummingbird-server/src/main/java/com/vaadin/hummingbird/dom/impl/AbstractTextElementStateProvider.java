@@ -17,7 +17,6 @@ package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -164,12 +163,6 @@ public abstract class AbstractTextElementStateProvider
         assert node != null;
         assert component != null;
         node.getFeature(ComponentMapping.class).setComponent(component);
-    }
-
-    @Override
-    public Optional<Component> getComponent(StateNode node) {
-        assert node != null;
-        return node.getFeature(ComponentMapping.class).getComponent();
     }
 
     @Override

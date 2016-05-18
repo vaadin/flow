@@ -321,11 +321,6 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
-    @Override
-    public Optional<Component> getComponent(StateNode node) {
-        return Optional.empty();
-    }
-
     private Optional<StateNode> getOverrideNode(StateNode node) {
         return Optional.ofNullable(node.getFeature(TemplateOverridesMap.class)
                 .get(templateNode, false));
