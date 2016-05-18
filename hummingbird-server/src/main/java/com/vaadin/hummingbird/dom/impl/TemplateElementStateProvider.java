@@ -323,7 +323,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Optional<Component> getComponent(StateNode node) {
-        return Optional.empty();
+        assert node != null;
+        return node.getFeature(ComponentMapping.class).getComponent();
     }
 
     private Optional<StateNode> getOverrideNode(StateNode node) {
