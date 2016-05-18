@@ -160,6 +160,21 @@ public class StateTree {
     }
 
     /**
+     * Sends a request to call server side method with {@code methodName}.
+     * 
+     * @param node
+     *            the node referring to the server side instance containing the
+     *            method
+     * @param methodName
+     *            the method name
+     */
+    public void sendTemplateEventToServer(StateNode node, String methodName) {
+        assert assertValidNode(node);
+        registry.getServerConnector().sendTemplateEventMessage(node,
+                methodName);
+    }
+
+    /**
      * Gets the {@link Registry} that this state tree belongs to.
      *
      * @return the registry of this tree, not <code>null</code>

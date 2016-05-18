@@ -19,12 +19,17 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Hr;
 import com.vaadin.server.InputStreamFactory;
 import com.vaadin.server.StreamResource;
 import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.ui.AttachEvent;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.HasText;
 import com.vaadin.ui.Text;
 
 public class DependencyView extends AbstractDivView {
@@ -32,11 +37,20 @@ public class DependencyView extends AbstractDivView {
     private StreamResourceRegistration htmlImport2;
     private StreamResourceRegistration htmlImport3;
 
+    @Tag("div")
+    @HtmlImport("/test-files/html/htmlimport4.html")
+    static class HtmlComponent extends Component implements HasText {
+
+        public HtmlComponent() {
+            setText("Text component");
+        }
+    }
+
     @Override
     protected void onShow() {
         add(new Text(
-                "This test initially loads a stylesheet which makes all text red, a JavaScript for logging window messages, a JavaScript for handling body click events and an HTML which sends a window message"));
-        add(new Hr());
+                "This test initially loads a stylesheet which makes all text red, a JavaScript for logging window messages, a JavaScript for handling body click events and an HTML which sends a window message"),
+                new Hr(), new HtmlComponent(), new Hr());
 
         Div clickBody = new Div();
         clickBody.setText("Hello, click the body please");
@@ -74,8 +88,8 @@ public class DependencyView extends AbstractDivView {
     }
 
     @Override
-    protected void onAttach() {
-        super.onAttach();
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         htmlImport2 = registerResource("htmlimport2.html",
                 new HTMLImportStreamFactory("HTML import 2", 1000));
         htmlImport3 = registerResource("htmlimport3.html",

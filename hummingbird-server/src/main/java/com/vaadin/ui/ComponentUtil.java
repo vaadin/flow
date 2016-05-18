@@ -172,9 +172,9 @@ public interface ComponentUtil {
     }
 
     /**
-     * Handles triggering the {@link Component#onAttach() onAttach} method and
-     * firing the {@link AttachEvent} for the given component when it has been
-     * attached to a UI.
+     * Handles triggering the {@link Component#onAttach(AttachEvent) onAttach}
+     * method and firing the {@link AttachEvent} for the given component when it
+     * has been attached to a UI.
      *
      * @param component
      *            the component attached to a UI
@@ -184,17 +184,17 @@ public interface ComponentUtil {
             onComponentAttach(((Composite<?>) component).getContent());
         }
 
-        component.onAttach();
-
+        AttachEvent attachEvent = new AttachEvent(component);
+        component.onAttach(attachEvent);
         if (component.hasListener(AttachEvent.class)) {
-            component.getEventBus().fireEvent(new AttachEvent(component));
+            component.getEventBus().fireEvent(attachEvent);
         }
     }
 
     /**
-     * Handles triggering the {@link Component#onDetach() onDetach} method and
-     * firing the {@link DetachEvent} for the given component right before it is
-     * detached from a UI.
+     * Handles triggering the {@link Component#onDetach(DetachEvent) onDetach}
+     * method and firing the {@link DetachEvent} for the given component right
+     * before it is detached from a UI.
      *
      * @param component
      *            the component detached from a UI
@@ -204,10 +204,10 @@ public interface ComponentUtil {
             onComponentDetach(((Composite<?>) component).getContent());
         }
 
-        component.onDetach();
-
+        DetachEvent detachEvent = new DetachEvent(component);
+        component.onDetach(detachEvent);
         if (component.hasListener(DetachEvent.class)) {
-            component.getEventBus().fireEvent(new DetachEvent(component));
+            component.getEventBus().fireEvent(detachEvent);
         }
     }
 

@@ -87,6 +87,23 @@ public class ServerConnector {
     }
 
     /**
+     * Sends a template event message to the server.
+     * 
+     * @param node
+     *            the node that listened to the event
+     * @param methodName
+     *            the event handler method name to execute on the server side
+     */
+    public void sendTemplateEventMessage(StateNode node, String methodName) {
+        JsonObject message = Json.createObject();
+        message.put(JsonConstants.RPC_TYPE,
+                JsonConstants.RPC_TYPE_TEMPLATE_EVENT);
+        message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME, methodName);
+        sendMessage(message);
+    }
+
+    /**
      * Sends a property sync message to the server.
      *
      * @param node

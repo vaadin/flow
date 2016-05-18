@@ -18,9 +18,9 @@ package com.vaadin.client.hummingbird.collection;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
+import com.vaadin.client.hummingbird.binding.Binder;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
@@ -93,7 +93,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         Reactive.reset();
         tree = new CollectingStateTree();
 
-        node = tree.getRootNode();
+        node = new StateNode(0, tree);
         properties = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
         attributes = node.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
         elementData = node.getMap(NodeFeatures.ELEMENT_DATA);
@@ -114,7 +114,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testBindExistingProperty() {
         titleProperty.setValue("foo");
 
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         Reactive.flush();
 
@@ -122,7 +122,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testBindNewProperty() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         properties.getProperty("lang").setValue("foo");
 
@@ -134,18 +134,18 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testBindingBeforeFlush() {
         titleProperty.setValue("foo");
 
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         assertEquals("", element.getTitle());
     }
 
     public void testUnbindBeforeFlush() {
-        BasicElementBinder binder = BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         titleProperty.setValue("foo");
         idAttribute.setValue("foo");
 
-        binder.remove();
+        node.unregister();
 
         titleProperty.setValue("bar");
         idAttribute.setValue("bar");
@@ -159,14 +159,14 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testUnbindAfterFlush() {
-        BasicElementBinder binder = BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         titleProperty.setValue("foo");
         idAttribute.setValue("foo");
 
         Reactive.flush();
 
-        binder.remove();
+        node.unregister();
 
         titleProperty.setValue("bar");
         idAttribute.setValue("bar");
@@ -183,7 +183,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         MapProperty foo = properties.getProperty("foo");
         foo.setValue("bar");
 
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         Reactive.flush();
 
@@ -199,7 +199,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testRemoveBuiltInProperty() {
         titleProperty.setValue("foo");
 
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         Reactive.flush();
 
@@ -216,7 +216,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         elementData.getProperty(NodeFeatures.TAG).setValue("span");
 
         try {
-            BasicElementBinder.bind(node, element);
+            Binder.bind(node, element);
             fail("Should have thrown");
         } catch (AssertionError expected) {
         }
@@ -225,13 +225,13 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testBindRightTagOk() {
         elementData.getProperty(NodeFeatures.TAG).setValue("div");
 
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
     }
 
     public void testBindExistingAttribute() {
         idAttribute.setValue("foo");
 
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         Reactive.flush();
 
@@ -239,7 +239,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testBindNewAttribute() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         attributes.getProperty("lang").setValue("foo");
 
@@ -251,13 +251,13 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testSetAttributeWithoutFlush() {
         idAttribute.setValue("foo");
 
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         assertEquals("", element.getId());
     }
 
     public void testRemoveAttribute() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         idAttribute.setValue("foo");
 
@@ -284,7 +284,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testAddChild() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         StateNode childNode = createChildNode("child");
 
@@ -301,7 +301,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testRemoveChild() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         StateNode childNode = createChildNode(null);
 
@@ -321,7 +321,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testRemoveChildPosition() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         StateNode childNode = createChildNode("child");
         children.add(0, childNode);
@@ -345,7 +345,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testAddRemoveMultiple() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         children.splice(0, 0,
                 JsCollections.array(createChildNode("1"), createChildNode("2"),
@@ -376,7 +376,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testAddBeforeSetTag() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         StateNode childNode = new StateNode(nextId++, node.getTree());
 
@@ -392,7 +392,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testEventFired() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         // User agent is "Mozilla/5.0..."
         String booleanExpression = "window.navigator.userAgent[0] === 'M'";
@@ -422,7 +422,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testRemovedEventNotFired() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         MapProperty clickEvent = node.getMap(NodeFeatures.ELEMENT_LISTENERS)
                 .getProperty("click");
@@ -440,7 +440,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testAddTextNode() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         StateNode textNode = new StateNode(nextId++, node.getTree());
         MapProperty textProperty = textNode.getMap(NodeFeatures.TEXT_NODE)
@@ -461,7 +461,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testRemoveTextNode() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         StateNode textNode = new StateNode(nextId++, node.getTree());
         textNode.getMap(NodeFeatures.TEXT_NODE).getProperty(NodeFeatures.TEXT)
@@ -482,13 +482,13 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testAddClassesBeforeBind() {
         node.getList(NodeFeatures.CLASS_LIST).add(0, "foo");
 
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         assertEquals("foo", element.getClassName());
     }
 
     public void testAddClassesAfterBind() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         node.getList(NodeFeatures.CLASS_LIST).add(0, "foo");
 
@@ -496,7 +496,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testRemoveClasses() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         node.getList(NodeFeatures.CLASS_LIST).splice(0, 0,
                 JsCollections.array("one", "two", "three"));
@@ -509,11 +509,11 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testAddClassesAfterUnbind() {
-        BasicElementBinder binder = BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         node.getList(NodeFeatures.CLASS_LIST).add(0, "foo");
 
-        binder.remove();
+        node.unregister();
 
         node.getList(NodeFeatures.CLASS_LIST).add(0, "bar");
 
@@ -525,14 +525,14 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
                 .setValue("green");
 
         Reactive.flush();
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         Reactive.flush();
         assertEquals("green", element.getStyle().getColor());
     }
 
     public void testAddStylesAfterBind() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
         node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES).getProperty("color")
                 .setValue("green");
 
@@ -541,7 +541,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testRemoveStyles() {
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         NodeMap styleMap = node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES);
         styleMap.getProperty("background").setValue("blue");
@@ -558,14 +558,14 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     }
 
     public void testAddStylesAfterUnbind() {
-        BasicElementBinder binder = BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         NodeMap styleMap = node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES);
 
         styleMap.getProperty("color").setValue("red");
         Reactive.flush();
 
-        binder.remove();
+        node.unregister();
 
         styleMap.getProperty("color").setValue("blue");
         styleMap.getProperty("font-size").setValue("12px");
@@ -592,7 +592,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testSynchronizePropertySendsToServer() {
         // Must append for events to work in HTMLUnit
         Browser.getDocument().getBody().appendChild(element);
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         setSyncEvents("event1");
         setSyncProperties("offsetWidth", "tagName");
@@ -606,7 +606,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testSynchronizePropertyOnlyOnChange() {
         // Must append for events to work in HTMLUnit
         Browser.getDocument().getBody().appendChild(element);
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         setSyncEvents("event");
         setSyncProperties("offsetWidth", "offsetHeight");
@@ -633,7 +633,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testSynchronizePropertyAddRemoveEvent() {
         // Must append for events to work in HTMLUnit
         Browser.getDocument().getBody().appendChild(element);
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         setSyncEvents("event1", "event2");
         setSyncProperties("offsetWidth");
@@ -659,7 +659,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     public void testSynchronizePropertyAddRemoveProperties() {
         // Must append for events to work in HTMLUnit
         Browser.getDocument().getBody().appendChild(element);
-        BasicElementBinder.bind(node, element);
+        Binder.bind(node, element);
 
         setSyncEvents("event1");
         setSyncProperties("offsetWidth");
@@ -742,7 +742,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
                 templateStateNode);
 
         Element element = Browser.getDocument().createElement("div");
-        BasicElementBinder.bind(parentElementNode, element);
+        Binder.bind(parentElementNode, element);
 
         Reactive.flush();
 

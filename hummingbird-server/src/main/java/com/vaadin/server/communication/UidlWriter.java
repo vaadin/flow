@@ -18,6 +18,7 @@ package com.vaadin.server.communication;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +27,9 @@ import java.util.stream.Stream;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.change.MapPutChange;
+import com.vaadin.hummingbird.change.NodeAttachChange;
+import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.TemplateNode;
@@ -35,6 +39,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
@@ -178,22 +183,41 @@ public class UidlWriter implements Serializable {
                 }
             }
         };
-
         stateTree.collectChanges(change -> {
             // Ensure new templates are sent to the client
-            if (change instanceof MapPutChange) {
-                MapPutChange put = (MapPutChange) change;
-                if (put.getFeature() == TemplateMap.class
-                        && put.getKey().equals(NodeFeatures.ROOT_TEMPLATE_ID)) {
-                    Integer id = (Integer) put.getValue();
-                    TemplateNode templateNode = TemplateNode.get(id.intValue());
-                    templateEncoder.accept(templateNode);
-                }
-            }
+            runIfNewTemplateChange(change, templateEncoder);
+
+            // send components' @StyleSheet and @JavaScript dependencies
+            runIfComponentAttachChange(change, c -> ui.getInternals()
+                    .addComponentDependencies(c.getClass()));
 
             // Encode the actual change
             stateChanges.set(stateChanges.length(), change.toJson());
         });
+    }
+
+    private static void runIfNewTemplateChange(NodeChange change,
+            Consumer<TemplateNode> consumer) {
+        if (change instanceof MapPutChange) {
+            MapPutChange put = (MapPutChange) change;
+            if (put.getFeature() == TemplateMap.class
+                    && put.getKey().equals(NodeFeatures.ROOT_TEMPLATE_ID)) {
+                Integer id = (Integer) put.getValue();
+                TemplateNode templateNode = TemplateNode.get(id.intValue());
+
+                consumer.accept(templateNode);
+            }
+        }
+    }
+
+    private static void runIfComponentAttachChange(NodeChange change,
+            Consumer<Component> consumer) {
+        if (change instanceof NodeAttachChange
+                && change.getNode().hasFeature(ComponentMapping.class)) {
+            Optional<Component> component = change.getNode()
+                    .getFeature(ComponentMapping.class).getComponent();
+            component.ifPresent(consumer);
+        }
     }
 
     /**

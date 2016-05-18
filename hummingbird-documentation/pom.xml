@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>hummingbird-html-components</artifactId>
-            <version>${parent.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>

@@ -117,11 +117,12 @@ public class UI extends Component
      * standard workaround is to use {@link VaadinSession#getCurrent()} to
      * retrieve the application instance that the current request relates to.
      * Another way is to move the problematic initialization to
-     * {@link #onAttach()}, as described in the documentation of the method.
+     * {@link #onAttach(AttachEvent)}, as described in the documentation of the
+     * method.
      * </p>
      *
      * @return the parent application of the component or <code>null</code>.
-     * @see #onAttach()
+     * @see #onAttach(AttachEvent)
      */
     public VaadinSession getSession() {
         return internals.getSession();
@@ -173,6 +174,9 @@ public class UI extends Component
         }
         this.uiId = uiId;
 
+        // Add any dependencies from the UI class
+        getInternals().addComponentDependencies(getClass());
+
         // Call the init overridden by the application developer
         init(request);
 
@@ -220,7 +224,7 @@ public class UI extends Component
      * @see ThreadLocal
      */
     public static void setCurrent(UI ui) {
-        CurrentInstance.setInheritable(UI.class, ui);
+        CurrentInstance.set(UI.class, ui);
     }
 
     /**
@@ -240,9 +244,9 @@ public class UI extends Component
     }
 
     /**
-     * Marks this UI to be {@link #onDetach() detached} from the session at the
-     * end of the current request, or the next request if there is no current
-     * request (if called from a background thread, for instance.)
+     * Marks this UI to be {@link #onDetach(DetachEvent) detached} from the
+     * session at the end of the current request, or the next request if there
+     * is no current request (if called from a background thread, for instance.)
      * <p>
      * The UI is detached after the response is sent, so in the current request
      * it can still update the client side normally. However, after the response
@@ -253,8 +257,8 @@ public class UI extends Component
      * <p>
      * Note that this method is strictly for users to explicitly signal the
      * framework that the UI should be detached. Overriding it is not a reliable
-     * way to catch UIs that are to be detached. Instead, {@code UI.onDetach()}
-     * should be overridden.
+     * way to catch UIs that are to be detached. Instead,
+     * {@code #onDetach(DetachEvent)} should be overridden.
      */
     public void close() {
         closing = true;
@@ -297,7 +301,7 @@ public class UI extends Component
      *
      */
     @Override
-    protected void onAttach() {
+    protected void onAttach(AttachEvent attachEvent) {
     }
 
     /**
@@ -314,7 +318,7 @@ public class UI extends Component
      * silently ignored.
      */
     @Override
-    protected void onDetach() {
+    protected void onDetach(DetachEvent detachEvent) {
     }
 
     /**

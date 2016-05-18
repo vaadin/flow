@@ -21,9 +21,9 @@ import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
-import com.vaadin.client.hummingbird.BasicElementBinder;
 import com.vaadin.client.hummingbird.RouterLinkHandler;
 import com.vaadin.client.hummingbird.StateNode;
+import com.vaadin.client.hummingbird.binding.Binder;
 import com.vaadin.shared.Version;
 
 import elemental.client.Browser;
@@ -57,7 +57,7 @@ public class ApplicationConnection {
 
         Element body = Browser.getDocument().getBody();
 
-        BasicElementBinder.bind(rootNode, body);
+        Binder.bind(rootNode, body);
         RouterLinkHandler.bind(registry, body);
 
         Console.log("Starting application "

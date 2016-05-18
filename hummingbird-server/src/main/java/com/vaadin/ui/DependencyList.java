@@ -26,8 +26,10 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
- * List for storing dependencies/files (Javascript, Stylesheets) to be loaded
+ * List for storing dependencies/files (JavaScript, Stylesheets) to be loaded
  * and included on the client side.
+ * <p>
+ * Tracks previously sent URLs and doesn't send them again.
  *
  * @author Vaadin Ltd
  */
@@ -54,6 +56,8 @@ public class DependencyList implements Serializable {
 
     /**
      * Adds the given dependency to be loaded by the client side.
+     * <p>
+     * Does not send any previously sent dependencies again.
      * <p>
      * Relative URLs are interpreted as relative to the service (servlet) path.
      * You can prefix the URL with {@literal context://} to make it relative to

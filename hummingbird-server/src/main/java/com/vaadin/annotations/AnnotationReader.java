@@ -17,11 +17,15 @@
 package com.vaadin.annotations;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.shared.ui.ui.Transport;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 /**
@@ -40,7 +44,7 @@ public class AnnotationReader {
      *
      * @param viewWithTitle
      *            the class with the title
-     * @return the title or <code>null</code> if no title specified
+     * @return the page title or an empty optional if no annotation present
      */
     public static Optional<String> getPageTitle(
             Class<? extends View> viewWithTitle) {
@@ -48,32 +52,74 @@ public class AnnotationReader {
     }
 
     /**
-     * Finds the {@link PushMode} to use for a specific UI. If no specific push
-     * mode is required, <code>null</code> is returned.
+     * Finds the {@link PushMode} to use for a specific UI, if defined with a
+     * {@link Push @Push} annotation.
      *
      * @param uiClass
      *            the UI to search for the Push annotation.
-     * @return the push mode to use, or <code>null</code> if no push mode is
-     *         defined
-     *
+     * @return the push mode to use, or an empty optional if no annotation
+     *         present
      */
-    public static PushMode getPushMode(Class<? extends UI> uiClass) {
-        return getAnnotationFor(uiClass, Push.class).map(Push::value)
-                .orElse(null);
+    public static Optional<PushMode> getPushMode(Class<? extends UI> uiClass) {
+        return getAnnotationFor(uiClass, Push.class).map(Push::value);
     }
 
     /**
-     * Finds the {@link Transport} to use for a specific UI. If no transport is
-     * defined, <code>null</code> is returned.
+     * Finds the {@link Transport} to use for a specific UI, if defined with a
+     * {@link Push @Push} annotation.
      *
      * @param uiClass
      *            the UI to search for the Push annotation
-     * @return the transport type to use, or <code>null</code> if no transport
-     *         is defined
+     * @return the transport type to use, or an empty optional if no annotation
+     *         present
      */
-    public static Transport getPushTransport(Class<?> uiClass) {
-        return getAnnotationFor(uiClass, Push.class).map(Push::transport)
-                .orElse(null);
+    public static Optional<Transport> getPushTransport(Class<?> uiClass) {
+        return getAnnotationFor(uiClass, Push.class).map(Push::transport);
+    }
+
+    /**
+     * Finds all {@link StyleSheet} annotations on the given {@link Component}
+     * class, its super classes and implemented interfaces.
+     *
+     * @param componentClass
+     *            the component class to search for the annotation
+     * @return a list the style sheet annotations found
+     * @see #getAnnotationFor(Class, Class) for what order the annotations are
+     *      in the list
+     */
+    public static List<StyleSheet> getStyleSheetAnnotations(
+            Class<? extends Component> componentClass) {
+        return getAnnotationsFor(componentClass, StyleSheet.class);
+    }
+
+    /**
+     * Finds all {@link JavaScript} annotations on the given {@link Component}
+     * class, its super classes and implemented interfaces.
+     *
+     * @param componentClass
+     *            the component class to search for the annotation
+     * @return a list the JavaScript annotations found
+     * @see #getAnnotationFor(Class, Class) for what order the annotations are
+     *      in the list
+     */
+    public static List<JavaScript> getJavaScriptAnnotations(
+            Class<? extends Component> componentClass) {
+        return getAnnotationsFor(componentClass, JavaScript.class);
+    }
+
+    /**
+     * Finds all {@link HtmlImport} annotations on the given {@link Component}
+     * class, its super classes and implemented interfaces.
+     *
+     * @param componentClass
+     *            the component class to search for the annotation
+     * @return a list the html import annotations found
+     * @see #getAnnotationFor(Class, Class) for what order the annotations are
+     *      in the list
+     */
+    public static List<HtmlImport> getHtmlImportAnnotations(
+            Class<? extends Component> componentClass) {
+        return getAnnotationsFor(componentClass, HtmlImport.class);
     }
 
     /**
@@ -110,5 +156,49 @@ public class AnnotationReader {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Helper to get annotations for a class by searching recursively the class
+     * and all its super classes and implemented interfaces and their parent
+     * interfaces.
+     * <p>
+     * The annotations in the list are ordered top-down according to the class
+     * hierarchy. For each hierarchy level, the annotations from interfaces
+     * implemented at that level are on the list before the annotations of the
+     * class itself.
+     * <p>
+     * NOTE: the list may contain annotations with the same values.
+     *
+     * @param clazz
+     *            the class from which the annotation should be found
+     * @param annotationType
+     *            the annotation type to look for
+     * @return a list containing all the annotations found
+     */
+    public static <T extends Annotation> List<T> getAnnotationsFor(
+            Class<?> clazz, Class<T> annotationType) {
+        if (clazz == null || clazz == Object.class) {
+            return Collections.emptyList();
+        }
+
+        List<T> annotations = new ArrayList<>();
+        // find from super classes
+        annotations.addAll(
+                getAnnotationsFor(clazz.getSuperclass(), annotationType));
+
+        // find from any implemented interfaces
+        for (Class<?> iface : clazz.getInterfaces()) {
+            annotations.addAll(getAnnotationsFor(iface, annotationType));
+        }
+
+        // find from this class
+        for (T annotation : clazz.getAnnotationsByType(annotationType)) {
+            if (annotation != null) {
+                annotations.add(annotation);
+            }
+        }
+
+        return annotations;
     }
 }

@@ -55,6 +55,7 @@
 		<failOnMissingWebXml>false</failOnMissingWebXml>
 		<phantomjs.plugin.version>0.7</phantomjs.plugin.version>
 		<phantomjs.version>2.1.1</phantomjs.version>
+		<phantomjs.outputDir>${project.rootdir}/target/phantomjs-maven-plugin</phantomjs.outputDir>
 	</properties>
 
 	<repositories>
@@ -235,6 +236,24 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>2.6.1</version>
 			</plugin>
+			<plugin>
+				<groupId>org.commonjava.maven.plugins</groupId>
+				<artifactId>directory-maven-plugin</artifactId>
+				<version>0.1</version>
+				<executions>
+					<execution>
+						<id>directories</id>
+						<goals>
+							<goal>highest-basedir</goal>
+						</goals>
+						<phase>initialize</phase>
+						<configuration>
+							<property>project.rootdir</property>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -263,8 +282,48 @@
 					<artifactId>phantomjs-maven-plugin</artifactId>
 					<version>${phantomjs.plugin.version}</version>
 				</plugin>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.commonjava.maven.plugins
+										</groupId>
+										<artifactId>
+											directory-maven-plugin
+										</artifactId>
+										<versionRange>
+											[0.1,)
+										</versionRange>
+										<goals>
+											<goal>highest-basedir</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
+	<profiles>
+		<profile>
+			<id>validation</id>
+			<properties>
+				<maven.javadoc.skip>false</maven.javadoc.skip>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>

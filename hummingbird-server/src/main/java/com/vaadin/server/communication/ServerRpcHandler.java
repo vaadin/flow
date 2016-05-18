@@ -19,13 +19,20 @@ package com.vaadin.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
+import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.server.Constants;
@@ -34,6 +41,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
@@ -300,6 +308,43 @@ public class ServerRpcHandler implements Serializable {
 
     }
 
+    static void invokeMethod(Component instance, Class<?> clazz,
+            String methodName) {
+        assert instance != null;
+        Optional<Method> found = Stream.of(clazz.getDeclaredMethods())
+                .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> method.getParameterCount() == 0)
+                .filter(method -> method
+                        .isAnnotationPresent(EventHandler.class))
+                .findFirst();
+        if (found.isPresent()) {
+            try {
+                found.get().setAccessible(true);
+                found.get().invoke(instance);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {
+                // method may not have parameters because above filter
+                throw new IllegalArgumentException(
+                        "Method " + methodName + " has unexpected arguments",
+                        e);
+            } catch (InvocationTargetException e) {
+                Logger.getLogger(ServerRpcHandler.class.getName())
+                        .log(Level.FINE, null, e);
+                throw new RuntimeException(e.getCause());
+            }
+        } else if (!Component.class.equals(clazz)) {
+            invokeMethod(instance, clazz.getSuperclass(), methodName);
+        } else {
+            StringBuilder builder = new StringBuilder("Neither class '");
+            builder.append(instance.getClass());
+            builder.append(
+                    "' nor its super classes declare event handler method '");
+            builder.append(methodName).append("'");
+            throw new IllegalStateException(builder.toString());
+        }
+    }
+
     /**
      * Checks that the version reported by the client (widgetset) matches that
      * of the server.
@@ -363,11 +408,37 @@ public class ServerRpcHandler implements Serializable {
             case JsonConstants.RPC_TYPE_NAVIGATION:
                 handleNavigation(ui, invocationJson);
                 break;
+            case JsonConstants.RPC_TYPE_TEMPLATE_EVENT:
+                handleTemplateEventHandler(ui, invocationJson);
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Unsupported event type: " + type);
             }
         }
+    }
+
+    private static void handleTemplateEventHandler(UI ui,
+            JsonObject invocationJson) {
+        assert invocationJson
+                .hasKey(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
+
+        StateNode node = getNode(ui, invocationJson);
+        if (node == null) {
+            return;
+        }
+        String methodName = invocationJson
+                .getString(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
+        assert node.hasFeature(ComponentMapping.class);
+        Optional<Component> component = node.getFeature(ComponentMapping.class)
+                .getComponent();
+        if (!component.isPresent()) {
+            throw new IllegalStateException(
+                    "Unable to handle RPC template event JSON message: "
+                            + "there is no component available for the target node.");
+        }
+
+        invokeMethod(component.get(), component.get().getClass(), methodName);
     }
 
     private static void handleNavigation(UI ui, JsonObject invocationJson) {
