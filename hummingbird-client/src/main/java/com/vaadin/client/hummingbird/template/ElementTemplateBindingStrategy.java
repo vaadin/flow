@@ -163,8 +163,8 @@ public class ElementTemplateBindingStrategy
     private JavaScriptObject createServerProxy(StateNode node) {
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
-        if (node.hasFeature(NodeFeatures.TEMPLATE_METADATA)) {
-            NodeList list = node.getList(NodeFeatures.TEMPLATE_METADATA);
+        if (node.hasFeature(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES)) {
+            NodeList list = node.getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES);
             for (int i = 0; i < list.length(); i++) {
                 attachServerProxyMethod(proxy, node, list.get(i).toString());
             }
