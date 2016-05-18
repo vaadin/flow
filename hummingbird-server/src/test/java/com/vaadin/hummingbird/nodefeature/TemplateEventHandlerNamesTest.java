@@ -36,7 +36,7 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  *
  */
-public class TemplateMetadataFeatureTest {
+public class TemplateEventHandlerNamesTest {
 
     static class Template1 extends InlineTemplate {
         public Template1() {
@@ -115,24 +115,24 @@ public class TemplateMetadataFeatureTest {
     @Test
     public void noValuesBeforeAttach() {
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
+                TemplateEventHandlerNames.class);
         stateNode.getFeature(ComponentMapping.class)
                 .setComponent(new Template1());
 
-        TemplateMetadataFeature feature = stateNode
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = stateNode
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(0, feature.size());
     }
 
     @Test
-    public void attach_metadataContainsTemplateMethod() {
+    public void attach_handlersContainsTemplateMethod() {
         UI ui = new UI();
 
         Template template = new Template1();
         ui.add(template);
 
-        TemplateMetadataFeature feature = template.getElement().getNode()
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(Template1.class).findFirst().get(),
@@ -164,14 +164,14 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test
-    public void attach_methodWithUncheckedException_metadataContainsTemplateMethod() {
+    public void attach_methodWithUncheckedException_handlersContainsTemplateMethod() {
         UI ui = new UI();
 
         Template template = new TemplateWithMethodDeclaringUncheckedException();
         ui.add(template);
 
-        TemplateMetadataFeature feature = template.getElement().getNode()
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(2, feature.size());
         Assert.assertEquals(getDeclaredMethods(
                 TemplateWithMethodDeclaringUncheckedException.class).findFirst()
@@ -180,14 +180,14 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test
-    public void attach_metadataContainsAllTemplateMethods() {
+    public void attach_handlersContainsAllTemplateMethods() {
         UI ui = new UI();
 
         Template template = new ChildTemplateWithMultipleMethods();
         ui.add(template);
 
-        TemplateMetadataFeature feature = template.getElement().getNode()
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(3, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
@@ -204,14 +204,14 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test
-    public void attach_metadataContainsOnlyOneTemplateMethod() {
+    public void attach_handlersContainsOnlyOneTemplateMethod() {
         UI ui = new UI();
 
         Template template = new ChildTemplateOverridingMethod();
         ui.add(template);
 
-        TemplateMetadataFeature feature = template.getElement().getNode()
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(ChildTemplateOverridingMethod.class)
@@ -231,7 +231,7 @@ public class TemplateMetadataFeatureTest {
     public void attach_noFeature() {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
-        StateNode stateNode = new StateNode(TemplateMetadataFeature.class);
+        StateNode stateNode = new StateNode(TemplateEventHandlerNames.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
     }
@@ -241,7 +241,7 @@ public class TemplateMetadataFeatureTest {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
+                TemplateEventHandlerNames.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
     }

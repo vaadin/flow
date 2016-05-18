@@ -32,9 +32,11 @@ import com.vaadin.ui.Component;
  * @author Vaadin Ltd
  *
  */
-public class TemplateMetadataFeature extends SerializableNodeList<String> {
+public class TemplateEventHandlerNames extends SerializableNodeList<String> {
 
-    private static final String ERROR_MSG = "The TemplateMetadataFeature may be used only for components";
+    private static final String ERROR_MSG = "The "
+            + TemplateEventHandlerNames.class.getSimpleName()
+            + " may be used only for components";
     private boolean isInfoCollected;
 
     /**
@@ -43,7 +45,7 @@ public class TemplateMetadataFeature extends SerializableNodeList<String> {
      * @param node
      *            the template node that the list belongs to
      */
-    public TemplateMetadataFeature(StateNode node) {
+    public TemplateEventHandlerNames(StateNode node) {
         super(node);
     }
 
