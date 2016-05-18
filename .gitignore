@@ -9,6 +9,7 @@
 /.gwt-cache
 /.externalToolBuilders
 /extras
+*~
 
 *pom.xml.versionsBackup
 

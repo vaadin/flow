@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -44,7 +45,6 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
-import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -308,6 +308,43 @@ public class ServerRpcHandler implements Serializable {
 
     }
 
+    static void invokeMethod(Component instance, Class<?> clazz,
+            String methodName) {
+        assert instance != null;
+        Optional<Method> found = Stream.of(clazz.getDeclaredMethods())
+                .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> method.getParameterCount() == 0)
+                .filter(method -> method
+                        .isAnnotationPresent(EventHandler.class))
+                .findFirst();
+        if (found.isPresent()) {
+            try {
+                found.get().setAccessible(true);
+                found.get().invoke(instance);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {
+                Logger.getLogger(ServerRpcHandler.class.getName())
+                        .log(Level.SEVERE, null, e);
+                // method may not have parameters because above filter
+                assert false;
+            } catch (InvocationTargetException e) {
+                Logger.getLogger(ServerRpcHandler.class.getName())
+                        .log(Level.SEVERE, null, e);
+                throw new RuntimeException(e.getCause());
+            }
+        } else if (!Component.class.equals(clazz)) {
+            invokeMethod(instance, clazz.getSuperclass(), methodName);
+        } else {
+            StringBuilder builder = new StringBuilder("Neither class '");
+            builder.append(instance.getClass());
+            builder.append(
+                    "' nor its subclasses don't declare event handler method '");
+            builder.append(methodName).append("'");
+            throw new IllegalStateException(builder.toString());
+        }
+    }
+
     /**
      * Checks that the version reported by the client (widgetset) matches that
      * of the server.
@@ -395,7 +432,11 @@ public class ServerRpcHandler implements Serializable {
         assert node.hasFeature(ComponentMapping.class);
         Optional<Component> component = node.getFeature(ComponentMapping.class)
                 .getComponent();
-        assert component.isPresent();
+        if (!component.isPresent()) {
+            throw new IllegalStateException(
+                    "Unable to handle RPC template event JSON message: "
+                            + "there is no component available for the target node.");
+        }
 
         invokeMethod(component.get(), component.get().getClass(), methodName);
     }
@@ -499,29 +540,6 @@ public class ServerRpcHandler implements Serializable {
 
     private static final Logger getLogger() {
         return Logger.getLogger(ServerRpcHandler.class.getName());
-    }
-
-    private static void invokeMethod(Object instance, Class<?> clazz,
-            String methodName) {
-        Optional<Method> found = Stream.of(clazz.getDeclaredMethods())
-                .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> method
-                        .isAnnotationPresent(EventHandler.class))
-                .findFirst();
-        if (found.isPresent()) {
-            try {
-                found.get().setAccessible(true);
-                found.get().invoke(instance);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalArgumentException e) {
-                assert false;
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e.getCause());
-            }
-        } else if (!Template.class.equals(clazz)) {
-            invokeMethod(instance, clazz.getSuperclass(), methodName);
-        }
     }
 
 }
