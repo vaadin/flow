@@ -16,7 +16,6 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -83,14 +82,6 @@ public class TemplateMetadataFeature extends SerializableNodeList<String> {
     }
 
     private void addEventHandlerMethod(Method method, Set<String> methods) {
-        if (Modifier.isPrivate(method.getModifiers())) {
-            StringBuilder builder = new StringBuilder("Component ");
-            builder.append(method.getDeclaringClass());
-            builder.append(" has private method ").append(method.getName());
-            builder.append(" annotated with ");
-            builder.append(EventHandler.class);
-            throw new IllegalStateException(builder.toString());
-        }
         if (method.getParameterCount() != 0) {
             // not supported now
             StringBuilder builder = new StringBuilder(

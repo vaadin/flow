@@ -19,10 +19,14 @@ package com.vaadin.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
@@ -369,6 +373,7 @@ public class ServerRpcHandler implements Serializable {
                 break;
             case JsonConstants.RPC_TYPE_TEMPLATE_EVENT:
                 handleTemplateEventHandler(ui, invocationJson);
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Unsupported event type: " + type);
@@ -391,10 +396,8 @@ public class ServerRpcHandler implements Serializable {
         Optional<Component> component = node.getFeature(ComponentMapping.class)
                 .getComponent();
         assert component.isPresent();
-        assert component.get() instanceof Template;
 
-        Template template = (Template) component.get();
-        template.invokeEventHandlerMethod(methodName);
+        invokeMethod(component.get(), component.get().getClass(), methodName);
     }
 
     private static void handleNavigation(UI ui, JsonObject invocationJson) {
@@ -496,6 +499,29 @@ public class ServerRpcHandler implements Serializable {
 
     private static final Logger getLogger() {
         return Logger.getLogger(ServerRpcHandler.class.getName());
+    }
+
+    private static void invokeMethod(Object instance, Class<?> clazz,
+            String methodName) {
+        Optional<Method> found = Stream.of(clazz.getDeclaredMethods())
+                .filter(method -> methodName.equals(method.getName()))
+                .filter(method -> method
+                        .isAnnotationPresent(EventHandler.class))
+                .findFirst();
+        if (found.isPresent()) {
+            try {
+                found.get().setAccessible(true);
+                found.get().invoke(instance);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalArgumentException e) {
+                assert false;
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e.getCause());
+            }
+        } else if (!Template.class.equals(clazz)) {
+            invokeMethod(instance, clazz.getSuperclass(), methodName);
+        }
     }
 
 }

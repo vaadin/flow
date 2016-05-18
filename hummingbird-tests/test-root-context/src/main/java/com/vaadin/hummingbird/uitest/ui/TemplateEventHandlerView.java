@@ -15,9 +15,11 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Label;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.ui.UI;
 
 /**
  * @author Vaadin Ltd
@@ -25,10 +27,22 @@ import com.vaadin.hummingbird.router.View;
  */
 public class TemplateEventHandlerView extends Div implements View {
 
-    @Override
-    public Element getElement() {
-        // TODO Auto-generated method stub
-        return null;
+    public static class EventReceiver extends InlineTemplate {
+
+        EventReceiver() {
+            super("<div id='event-receiver' (click)='$server.method()'>Click to send event to the server</div>");
+        }
+
+        @EventHandler
+        protected void method() {
+            Label label = new Label("Event is received");
+            label.setId("event-handler");
+            UI.getCurrent().add(label);
+        }
+    }
+
+    public TemplateEventHandlerView() {
+        add(new EventReceiver());
     }
 
 }

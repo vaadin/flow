@@ -15,18 +15,18 @@
  */
 package com.vaadin.ui;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
-import com.vaadin.hummingbird.nodefeature.TemplateMetadataFeature;
-import com.vaadin.hummingbird.template.InlineTemplate;
 
 /**
  * @author Vaadin Ltd
@@ -34,9 +34,10 @@ import com.vaadin.hummingbird.template.InlineTemplate;
  */
 public class TemplateTest {
 
-    private static class TestTemplate extends InlineTemplate {
+    private static class TestTemplate extends Template {
         TestTemplate() {
-            super("<div>foo</div>");
+            super(new ByteArrayInputStream(
+                    "<div>foo</div>".getBytes(StandardCharsets.UTF_8)));
         }
     }
 
@@ -68,41 +69,6 @@ public class TemplateTest {
 
     private static class InheritedAnnotationTemplate
             extends AnnotatedAbsolutePathTemplate {
-
-    }
-
-    private static class EventHandlerTemplate extends TestTemplate {
-
-        private boolean isInvoked;
-
-        @EventHandler
-        protected void operation() {
-            isInvoked = true;
-        }
-
-        /**
-         * won't be introspected by {@link TemplateMetadataFeature}
-         */
-        @EventHandler
-        private void wrongVisibility() {
-        }
-
-        /**
-         * won't be introspected by {@link TemplateMetadataFeature}
-         */
-        @EventHandler
-        protected void hasParameter(int i) {
-        }
-
-        @EventHandler
-        protected void throwsUncheckedException() throws NullPointerException {
-            String str = null;
-            str.length();
-        }
-    }
-
-    private static class EventHandlerTemplateSubclass
-            extends EventHandlerTemplate {
 
     }
 
@@ -162,44 +128,5 @@ public class TemplateTest {
         AnnotatedNoExtensionTemplate template = new AnnotatedNoExtensionTemplate();
         Assert.assertEquals("no-extension",
                 template.getElement().getAttribute("id"));
-    }
-
-    @Test
-    public void invokeEventHandlerMethod_methodInsideClass() {
-        EventHandlerTemplate template = new EventHandlerTemplate();
-        template.invokeEventHandlerMethod("operation");
-
-        Assert.assertTrue(template.isInvoked);
-    }
-
-    @Test(expected = AssertionError.class)
-    public void invokeEventHandlerMethod_badVisibility() {
-        EventHandlerTemplate template = new EventHandlerTemplate();
-        template.invokeEventHandlerMethod("wrongVisibility");
-    }
-
-    @Test(expected = AssertionError.class)
-    public void invokeEventHandlerMethod_hasParameter() {
-        EventHandlerTemplate template = new EventHandlerTemplate();
-        template.invokeEventHandlerMethod("hasParameter");
-    }
-
-    @Test
-    public void invokeEventHandlerMethod_throwsException() {
-        EventHandlerTemplate template = new EventHandlerTemplate();
-        try {
-            template.invokeEventHandlerMethod("throwsUncheckedException");
-        } catch (RuntimeException e) {
-            Assert.assertTrue(e.getCause() instanceof NullPointerException);
-        }
-
-    }
-
-    @Test
-    public void invokeEventHandlerMethod_methodInsideSuperClass() {
-        EventHandlerTemplateSubclass template = new EventHandlerTemplateSubclass();
-        template.invokeEventHandlerMethod("operation");
-
-        Assert.assertTrue(((EventHandlerTemplate) template).isInvoked);
     }
 }
