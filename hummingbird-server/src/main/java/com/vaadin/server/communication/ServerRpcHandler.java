@@ -23,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
 import java.util.Optional;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
@@ -44,7 +45,6 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
-import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -501,7 +501,7 @@ public class ServerRpcHandler implements Serializable {
         return Logger.getLogger(ServerRpcHandler.class.getName());
     }
 
-    private static void invokeMethod(Object instance, Class<?> clazz,
+    private static void invokeMethod(Component instance, Class<?> clazz,
             String methodName) {
         Optional<Method> found = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
@@ -515,11 +515,15 @@ public class ServerRpcHandler implements Serializable {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             } catch (IllegalArgumentException e) {
+                Logger.getLogger(ServerRpcHandler.class.getName())
+                        .log(Level.SEVERE, null, e);
                 assert false;
             } catch (InvocationTargetException e) {
+                Logger.getLogger(ServerRpcHandler.class.getName())
+                        .log(Level.SEVERE, null, e);
                 throw new RuntimeException(e.getCause());
             }
-        } else if (!Template.class.equals(clazz)) {
+        } else if (!Component.class.equals(clazz)) {
             invokeMethod(instance, clazz.getSuperclass(), methodName);
         }
     }

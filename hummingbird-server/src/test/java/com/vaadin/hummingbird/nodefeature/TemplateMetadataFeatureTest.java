@@ -65,7 +65,7 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class TemplateWithMethodDelcaringCheckedException extends Template1 {
+    static class TemplateWithMethodDeclaringCheckedException extends Template1 {
 
         @EventHandler
         protected void op() throws IOException {
@@ -73,7 +73,7 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class TemplateWithMethodDelcaringUncheckedException
+    static class TemplateWithMethodDeclaringUncheckedException
             extends Template1 {
 
         @EventHandler
@@ -159,7 +159,7 @@ public class TemplateMetadataFeatureTest {
     public void attach_methodCheckedExcepotion_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new TemplateWithMethodDelcaringCheckedException();
+        Template template = new TemplateWithMethodDeclaringCheckedException();
         ui.add(template);
     }
 
@@ -167,14 +167,14 @@ public class TemplateMetadataFeatureTest {
     public void attach_methodWithUncheckedException_metadataContainsTemplateMethod() {
         UI ui = new UI();
 
-        Template template = new TemplateWithMethodDelcaringUncheckedException();
+        Template template = new TemplateWithMethodDeclaringUncheckedException();
         ui.add(template);
 
         TemplateMetadataFeature feature = template.getElement().getNode()
                 .getFeature(TemplateMetadataFeature.class);
         Assert.assertEquals(2, feature.size());
         Assert.assertEquals(getDeclaredMethods(
-                TemplateWithMethodDelcaringUncheckedException.class).findFirst()
+                TemplateWithMethodDeclaringUncheckedException.class).findFirst()
                         .get(),
                 feature.get(0));
     }
