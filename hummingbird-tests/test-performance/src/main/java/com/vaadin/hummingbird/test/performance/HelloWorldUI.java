@@ -39,6 +39,8 @@ public class HelloWorldUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
+        MemoryUsageMonitor.registerUI(this);
+
         Button b = new Button("Hello");
         add(b);
     }
