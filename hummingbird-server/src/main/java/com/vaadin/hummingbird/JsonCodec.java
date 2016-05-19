@@ -112,9 +112,6 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithoutTypeInfo(Object value) {
-        if (value != null) {
-            assert canEncodeWithoutTypeInfo(value.getClass());
-        }
         if (value == null) {
             return Json.createNull();
         }
@@ -128,6 +125,7 @@ public class JsonCodec {
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return (JsonValue) value;
         }
+        assert !canEncodeWithoutTypeInfo(type);
         throw new IllegalArgumentException(
                 "Can't encode" + value.getClass() + " to json");
     }
@@ -178,7 +176,6 @@ public class JsonCodec {
         if (json.getType() == JsonType.NULL) {
             return null;
         }
-        assert canEncodeWithoutTypeInfo(type);
 
         if (type == String.class) {
             return type.cast(json.asString());
@@ -189,6 +186,7 @@ public class JsonCodec {
         } else if (type == Integer.class) {
             return type.cast(Integer.valueOf((int) json.asNumber()));
         } else {
+            assert !canEncodeWithoutTypeInfo(type);
             throw new IllegalArgumentException(
                     "Unknown type " + type.getName());
         }

@@ -128,6 +128,17 @@ public class ServerRpcHandlerTest {
         Assert.assertTrue(component.isInvoked);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void methodWithoutArgs_argsProvided() {
+        JsonArray args = Json.createArray();
+        args.set(0, true);
+        ComponentWithMethod component = new ComponentWithMethod();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                args);
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void twoEventHandlerMethodsWithTheSameName() {
         ComponentWithMethod component = new ComponentWithTwoEventHandlerMethodSameName();

@@ -344,6 +344,7 @@ public class StateNode implements Serializable {
 
     private void handleOnAttach() {
         assert isAttached();
+        boolean initialAttach = false;
 
         int newId = owner.register(this);
 
@@ -351,6 +352,7 @@ public class StateNode implements Serializable {
             if (id == -1) {
                 // Didn't have an id previously, set one now
                 id = newId;
+                initialAttach = true;
             } else if (newId != id) {
                 throw new IllegalStateException(
                         "Can't change id once it has been assigned");
@@ -360,7 +362,7 @@ public class StateNode implements Serializable {
         // Ensure attach change is sent
         markAsDirty();
 
-        fireAttachListeners();
+        fireAttachListeners(initialAttach);
     }
 
     private void handleOnDetach() {
@@ -431,14 +433,14 @@ public class StateNode implements Serializable {
         }
     }
 
-    private void fireAttachListeners() {
+    private void fireAttachListeners(boolean initialAttach) {
         if (attachListeners != null) {
             ArrayList<Command> copy = new ArrayList<>(attachListeners);
 
             copy.forEach(Command::execute);
         }
 
-        features.values().forEach(NodeFeature::onAttach);
+        features.values().forEach(f -> f.onAttach(initialAttach));
     }
 
     private void fireDetachListeners() {
