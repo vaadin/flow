@@ -65,8 +65,9 @@ public class ComponentMapping extends ServerSideFeature {
     }
 
     @Override
-    public void onAttach() {
-        getComponent().ifPresent(ComponentUtil::onComponentAttach);
+    public void onAttach(boolean initialAttach) {
+        getComponent().ifPresent(
+                c -> ComponentUtil.onComponentAttach(c, initialAttach));
     }
 
     @Override
