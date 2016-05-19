@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.change.NodeChange;
 
 /**
@@ -107,8 +108,12 @@ public abstract class NodeFeature implements Serializable {
 
     /**
      * Called when the state node has been attached to the state tree.
+     *
+     * @param initialAttach
+     *            <code>true</code> if this is the first time the node is
+     *            attached to a {@link StateTree}, <code>false</code> otherwise
      */
-    public void onAttach() {
+    public void onAttach(boolean initialAttach) {
         // NOOP by default
     }
 
