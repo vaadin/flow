@@ -15,9 +15,11 @@
  */
 package com.vaadin.client.hummingbird.template;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsArray;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
@@ -41,6 +43,8 @@ import elemental.dom.Node;
 import elemental.dom.NodeList;
 import elemental.dom.Text;
 import elemental.events.MouseEvent;
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
@@ -48,7 +52,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private StateTree tree;
     private StateNode stateNode;
 
-    private Set<String> serverMethods = new HashSet<>();
+    private Map<String, JsArray<? extends JavaScriptObject>> serverMethods = new HashMap<>();
 
     @Override
     protected void gwtSetUp() throws Exception {
@@ -63,8 +67,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
             @Override
             public void sendTemplateEventToServer(StateNode node,
-                    String methodName) {
-                serverMethods.add(methodName);
+                    String methodName,
+                    JsArray<? extends JavaScriptObject> argValues) {
+                serverMethods.put(methodName, argValues);
             }
         };
 
@@ -461,7 +466,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("foo", element.getAttribute("id"));
     }
 
-    public void testServerEventHandler() {
+    public void testServerEventHandler_noArgs() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         String operation = "operation";
@@ -481,7 +486,47 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         element.dispatchEvent(event);
 
         assertEquals(1, serverMethods.size());
-        assertTrue(serverMethods.contains(operation));
+        JsArray<? extends JavaScriptObject> args = serverMethods.get(operation);
+        assertNotNull(args);
+        assertEquals(0, args.length());
+    }
+
+    public void testServerEventHandler_args() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        String operation = "operation";
+        templateNode.addEventHandler("click", "$server." + operation
+                + "($wnd.booleanprop, $wnd.stringprop, $wnd.numberprop, $wnd.objectprop)");
+
+        stateNode.getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES).set(0,
+                operation);
+
+        Element element = createElement(templateNode);
+        WidgetUtil.setJsProperty(Browser.getWindow(), "booleanprop", true);
+        WidgetUtil.setJsProperty(Browser.getWindow(), "stringprop", "foo");
+        WidgetUtil.setJsProperty(Browser.getWindow(), "numberprop", 11);
+        JsonObject obj = Json.createObject();
+        obj.put("foo", "bar");
+        WidgetUtil.setJsProperty(Browser.getWindow(), "objectprop", obj);
+
+        MouseEvent event = (MouseEvent) Browser.getDocument()
+                .createEvent(Events.MOUSE);
+        event.initMouseEvent("click", true, true, Browser.getWindow(), 0, 0, 0,
+                0, 0, false, false, false, false, 0, element);
+
+        Browser.getDocument().getBody().appendChild(element);
+
+        element.dispatchEvent(event);
+
+        assertEquals(1, serverMethods.size());
+        JsArray<? extends JavaScriptObject> args = serverMethods.get(operation);
+        assertNotNull(args);
+        assertEquals(4, args.length());
+        assertEquals(true, args.get(0));
+        assertEquals("foo", args.get(1));
+        assertEquals(11, args.get(2));
+        assertTrue(args.get(3) instanceof JsonObject);
+        assertEquals(obj, args.get(3));
     }
 
     public void testNgFor() {

@@ -177,8 +177,9 @@ public class ElementTemplateBindingStrategy
             StateNode node, String methodName)
     /*-{
         proxy[methodName] = $entry(function() {
+            var args = Array.prototype.slice.call(arguments);
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
-            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName);
+            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
         });
     }-*/;
 
