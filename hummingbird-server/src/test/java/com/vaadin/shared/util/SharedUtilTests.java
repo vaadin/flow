@@ -109,6 +109,25 @@ public class SharedUtilTests {
     }
 
     @Test
+    public void camelCaseToDashSeparated() {
+        Assert.assertEquals(null, SharedUtil.camelCaseToDashSeparated(null));
+        Assert.assertEquals("", SharedUtil.camelCaseToDashSeparated(""));
+        Assert.assertEquals("foo", SharedUtil.camelCaseToDashSeparated("foo"));
+        Assert.assertEquals("foo-bar",
+                SharedUtil.camelCaseToDashSeparated("fooBar"));
+        Assert.assertEquals("foo--bar",
+                SharedUtil.camelCaseToDashSeparated("foo--bar"));
+        Assert.assertEquals("foo-bar-baz",
+                SharedUtil.camelCaseToDashSeparated("fooBarBaz"));
+        Assert.assertEquals("-my-bean-container",
+                SharedUtil.camelCaseToDashSeparated("MyBeanContainer"));
+        Assert.assertEquals("-awesome-uRL-factory",
+                SharedUtil.camelCaseToDashSeparated("AwesomeURLFactory"));
+        Assert.assertEquals("some-uri-action",
+                SharedUtil.camelCaseToDashSeparated("someUriAction"));
+    }
+
+    @Test
     public void methodUppercaseWithTurkishLocale() {
         Locale defaultLocale = Locale.getDefault();
         try {
