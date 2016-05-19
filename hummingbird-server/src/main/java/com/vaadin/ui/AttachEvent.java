@@ -23,14 +23,30 @@ package com.vaadin.ui;
  */
 public class AttachEvent extends AbstractAttachDetachEvent {
 
+    private boolean initialAttach;
+
     /**
      * Creates a new attach event with the given component as source.
      *
      * @param source
      *            the component that was attached
+     * @param initialAttach
+     *            indicates whether this is the first time the component
+     *            (element) has been attached
      */
-    public AttachEvent(Component source) {
+    public AttachEvent(Component source, boolean initialAttach) {
         super(source);
+        this.initialAttach = initialAttach;
+    }
+
+    /**
+     * Checks whether this is the first time the component has been attached.
+     *
+     * @return <code>true</code> if this it the first time the component has
+     *         been attached, <code>false</code> otherwise
+     */
+    public boolean isInitialAttach() {
+        return initialAttach;
     }
 
 }

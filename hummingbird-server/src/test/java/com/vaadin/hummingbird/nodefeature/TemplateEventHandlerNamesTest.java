@@ -54,7 +54,7 @@ public class TemplateEventHandlerNamesTest {
     static class TemplateWithBadParametersMethod extends Template1 {
 
         @EventHandler
-        protected void method(char arg) {
+        protected void method1(char arg) {
 
         }
     }

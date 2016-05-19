@@ -79,13 +79,13 @@ public class ServerRpcHandlerTest {
 
         @EventHandler
         protected void method1(String str, boolean[] array) {
-            this.strArg = str;
-            this.arrayArg = array;
+            strArg = str;
+            arrayArg = array;
         }
 
         @EventHandler
         protected void method2(Double[] arg1, Integer... varArg) {
-            this.doubleArg = arg1;
+            doubleArg = arg1;
             this.varArg = varArg;
         }
 
@@ -128,13 +128,20 @@ public class ServerRpcHandlerTest {
         Assert.assertTrue(component.isInvoked);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void methodWithoutArgs_argsProvided() {
+        JsonArray args = Json.createArray();
+        args.set(0, true);
+        ComponentWithMethod component = new ComponentWithMethod();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                args);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void twoEventHandlerMethodsWithTheSameName() {
         ComponentWithMethod component = new ComponentWithTwoEventHandlerMethodSameName();
         ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
                 Json.createArray());
-
-        Assert.assertTrue(component.isInvoked);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -142,8 +149,6 @@ public class ServerRpcHandlerTest {
         ComponentWithMethod component = new ComponentWithParameterizedMethod();
         ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
                 Json.createArray());
-
-        Assert.assertTrue(component.isInvoked);
     }
 
     @Test

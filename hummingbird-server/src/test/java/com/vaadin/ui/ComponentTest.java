@@ -18,6 +18,7 @@ package com.vaadin.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.event.ComponentEventBus;
 import com.vaadin.hummingbird.event.ComponentEventListener;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 
 public class ComponentTest {
@@ -579,4 +581,41 @@ public class ComponentTest {
                 "detachEvent", "onAttach", "attachEvent" });
     }
 
+    @Test
+    public void testUIInitialAttach() {
+        AtomicBoolean initialAttach = new AtomicBoolean(false);
+        UI ui = new UI();
+        ui.addAttachListener(e -> {
+            initialAttach.set(e.isInitialAttach());
+        });
+        ui.getInternals().setSession(new VaadinSession(null));
+        Assert.assertTrue(initialAttach.get());
+        // UI is never detached and reattached
+    }
+
+    @Test
+    public void testInitialAttach() {
+        AtomicBoolean initialAttach = new AtomicBoolean(false);
+        TestComponent c = new TestComponent();
+        c.addAttachListener(e -> {
+            initialAttach.set(e.isInitialAttach());
+        });
+        UI ui = new UI();
+        ui.add(c);
+        Assert.assertTrue(initialAttach.get());
+    }
+
+    @Test
+    public void testSecondAttach() {
+        AtomicBoolean initialAttach = new AtomicBoolean(false);
+        TestComponent c = new TestComponent();
+        c.addAttachListener(e -> {
+            initialAttach.set(e.isInitialAttach());
+        });
+        UI ui = new UI();
+        ui.add(c);
+        ui.remove(c);
+        ui.add(c);
+        Assert.assertFalse(initialAttach.get());
+    }
 }
