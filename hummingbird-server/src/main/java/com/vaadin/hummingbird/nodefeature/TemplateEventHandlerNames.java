@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -34,7 +35,7 @@ import com.vaadin.util.ReflectTools;
 /**
  * Template meta data information: list of template methods annotated with @
  * {@link EventHandler}.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -56,7 +57,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
     }
 
     @Override
-    public void onAttach() {
+    public void onAttach(boolean initialAttach) {
         if (!isInfoCollected) {
             collectEventHandlerMethods(getComponent());
         }
@@ -68,16 +69,15 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
         collectEventHandlerMethods(component.getClass(), methods);
         Map<String, Method> map = new HashMap<>();
         for (Method method : methods) {
-            Method exising = map.get(method.getName());
-            if (exising != null && !Arrays.asList(exising.getParameterTypes())
-                    .equals(Arrays.asList(method.getParameterTypes()))) {
-                StringBuilder builder = new StringBuilder(
-                        "There may be only one event handler method with the given name. Class ");
-                builder.append(component.getClass());
-                builder.append(
-                        " (considering with its suprerclasses) contains several event handler methods with the same name:");
-                builder.append(method.getName());
-                throw new IllegalStateException(builder.toString());
+            Method existing = map.get(method.getName());
+            if (existing != null && !Arrays.equals(existing.getParameterTypes(),
+                    method.getParameterTypes())) {
+                String msg = String.format(Locale.ENGLISH,
+                        "There may be only one event handler method with the given name. "
+                                + "Class '%s'  (considering with its superclasses) "
+                                + "contains several event handler methods with the same name: '%s'",
+                        component.getClass(), method.getName());
+                throw new IllegalStateException(msg);
             }
             map.put(method.getName(), method);
         }
@@ -108,33 +108,31 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
             Collection<Method> methods) {
         checkParameterTypes(method);
         if (!void.class.equals(method.getReturnType())) {
-            StringBuilder builder = new StringBuilder(
-                    "Non void event handler methods (no return type) are not supported. Component ");
-            builder.append(method.getDeclaringClass());
-            builder.append(" has method ").append(method.getName());
-            builder.append(" whose return type is not void annotated with ");
-            builder.append(EventHandler.class);
-            throw new IllegalStateException(builder.toString());
+            String msg = String.format(Locale.ENGLISH,
+                    "Non void event handler methods (no return type) are not supported. "
+                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void",
+                    method.getDeclaringClass().getName(), method.getName(),
+                    EventHandler.class.getName());
+            throw new IllegalStateException(msg);
         }
         Optional<Class<?>> checkedException = Stream
                 .of(method.getExceptionTypes()).filter(this::isCheckedException)
                 .findFirst();
         if (checkedException.isPresent()) {
-            StringBuilder builder = new StringBuilder(
-                    "Event handler method may not declare checked exceptions. Component ");
-            builder.append(method.getDeclaringClass());
-            builder.append(" has method ").append(method.getName());
-            builder.append(" which declares checked exception ");
-            builder.append(checkedException.get());
-            builder.append(" and annotated with ");
-            builder.append(EventHandler.class);
-            throw new IllegalStateException(builder.toString());
+            String msg = String.format(Locale.ENGLISH,
+                    "Event handler method may not declare checked exceptions. "
+                            + "Component '%s' has method '%s' which declares checked exception '%s'"
+                            + " and annotated with '%s'",
+                    method.getDeclaringClass().getName(), method.getName(),
+                    checkedException.get().getName(),
+                    EventHandler.class.getName());
+            throw new IllegalStateException(msg);
         }
         methods.add(method);
 
     }
 
-    private void checkParameterTypes(Method method) {
+    private static void checkParameterTypes(Method method) {
         if (method.getParameterCount() == 0) {
             return;
         }
@@ -142,21 +140,18 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
                 .forEach(type -> checkParameterType(method, type));
     }
 
-    private void checkParameterType(Method method, Class<?> type) {
+    private static void checkParameterType(Method method, Class<?> type) {
         Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
         if (parameterType.isArray()) {
             checkParameterType(method, parameterType.getComponentType());
         } else if (!JsonCodec.canEncodeWithoutTypeInfo(parameterType)) {
-            StringBuilder builder = new StringBuilder(
-                    "Event handler method may contain only serializable to JSON types. Component ");
-            builder.append(method.getDeclaringClass());
-            builder.append(" has method ").append(method.getName());
-            builder.append(
-                    " which declares parameter with non serializable to JSON type");
-            builder.append(parameterType);
-            builder.append(" and annotated with ");
-            builder.append(EventHandler.class);
-            throw new IllegalStateException(builder.toString());
+            String msg = String.format(Locale.ENGLISH,
+                    "Event handler method may contain only serializable to JSON types."
+                            + " Component %s has method '%s' which declares parameter "
+                            + "with non serializable to JSON type '%s'  and annotated with %s",
+                    method.getDeclaringClass().getName(), method.getName(),
+                    type.getName(), EventHandler.class.getName());
+            throw new IllegalStateException(msg);
         }
     }
 

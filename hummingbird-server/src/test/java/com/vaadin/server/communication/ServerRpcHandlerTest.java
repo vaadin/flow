@@ -61,8 +61,7 @@ public class ServerRpcHandlerTest {
         }
     }
 
-    public static class ComponentWithParameterizedMethod
-            extends ComponentWithMethod {
+    public static class MethodWithParameters extends ComponentWithMethod {
 
         private int intArg;
         private String strArg;
@@ -79,13 +78,13 @@ public class ServerRpcHandlerTest {
 
         @EventHandler
         protected void method1(String str, boolean[] array) {
-            this.strArg = str;
-            this.arrayArg = array;
+            strArg = str;
+            arrayArg = array;
         }
 
         @EventHandler
         protected void method2(Double[] arg1, Integer... varArg) {
-            this.doubleArg = arg1;
+            doubleArg = arg1;
             this.varArg = varArg;
         }
 
@@ -128,29 +127,34 @@ public class ServerRpcHandlerTest {
         Assert.assertTrue(component.isInvoked);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void methodWithoutArgs_argsProvided() {
+        JsonArray args = Json.createArray();
+        args.set(0, true);
+        ComponentWithMethod component = new ComponentWithMethod();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                args);
+    }
+
     @Test(expected = IllegalStateException.class)
     public void twoEventHandlerMethodsWithTheSameName() {
         ComponentWithMethod component = new ComponentWithTwoEventHandlerMethodSameName();
         ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
                 Json.createArray());
-
-        Assert.assertTrue(component.isInvoked);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void parameterizedMethodIsNotAccepted() {
-        ComponentWithMethod component = new ComponentWithParameterizedMethod();
+        ComponentWithMethod component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
                 Json.createArray());
-
-        Assert.assertTrue(component.isInvoked);
     }
 
     @Test
     public void parameterizedMethodIsInvoked() {
         JsonArray array = Json.createArray();
         array.set(0, 65);
-        ComponentWithParameterizedMethod component = new ComponentWithParameterizedMethod();
+        MethodWithParameters component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
                 array);
 
@@ -165,7 +169,7 @@ public class ServerRpcHandlerTest {
         secondArg.set(0, true);
         secondArg.set(1, false);
         array.set(1, secondArg);
-        ComponentWithParameterizedMethod component = new ComponentWithParameterizedMethod();
+        MethodWithParameters component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(),
                 "method1", array);
 
@@ -187,7 +191,7 @@ public class ServerRpcHandlerTest {
         array.set(1, Json.createNull());
         array.set(2, 56);
 
-        ComponentWithParameterizedMethod component = new ComponentWithParameterizedMethod();
+        MethodWithParameters component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(),
                 "method2", array);
 
@@ -217,7 +221,7 @@ public class ServerRpcHandlerTest {
 
         array.set(1, secondArg);
 
-        ComponentWithParameterizedMethod component = new ComponentWithParameterizedMethod();
+        MethodWithParameters component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(),
                 "method3", array);
 
@@ -249,7 +253,7 @@ public class ServerRpcHandlerTest {
         secondArg.set(2, 2);
         array.set(1, secondArg);
 
-        ComponentWithParameterizedMethod component = new ComponentWithParameterizedMethod();
+        MethodWithParameters component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(),
                 "method2", array);
 
@@ -266,7 +270,7 @@ public class ServerRpcHandlerTest {
     public void nullValueIsNotAcceptedForPrimitive() {
         JsonArray array = Json.createArray();
         array.set(0, Json.createNull());
-        ComponentWithParameterizedMethod component = new ComponentWithParameterizedMethod();
+        MethodWithParameters component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
                 array);
     }
