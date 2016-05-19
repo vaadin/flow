@@ -97,8 +97,8 @@ public class JsonCodec {
      */
     public static boolean canEncodeWithoutTypeInfo(Class<?> type) {
         assert type != null;
-        return String.class.equals(type) || Number.class.isAssignableFrom(type)
-                || Boolean.class.equals(type)
+        return String.class.equals(type) || Integer.class.equals(type)
+                || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonValue.class.isAssignableFrom(type);
     }
 
@@ -115,16 +115,18 @@ public class JsonCodec {
         if (value != null) {
             assert canEncodeWithoutTypeInfo(value.getClass());
         }
-        if (value instanceof String) {
-            return Json.create((String) value);
-        } else if (value instanceof Number) {
-            return Json.create(((Number) value).doubleValue());
-        } else if (value instanceof Boolean) {
-            return Json.create(((Boolean) value).booleanValue());
-        } else if (value instanceof JsonValue) {
-            return (JsonValue) value;
-        } else if (value == null) {
+        if (value == null) {
             return Json.createNull();
+        }
+        Class<?> type = value.getClass();
+        if (String.class.equals(value.getClass())) {
+            return Json.create((String) value);
+        } else if (Integer.class.equals(type) || Double.class.equals(type)) {
+            return Json.create(((Number) value).doubleValue());
+        } else if (Boolean.class.equals(type)) {
+            return Json.create(((Boolean) value).booleanValue());
+        } else if (JsonValue.class.isAssignableFrom(type)) {
+            return (JsonValue) value;
         }
         throw new IllegalArgumentException(
                 "Can't encode" + value.getClass() + " to json");
@@ -176,6 +178,7 @@ public class JsonCodec {
         if (json.getType() == JsonType.NULL) {
             return null;
         }
+        assert canEncodeWithoutTypeInfo(type);
 
         if (type == String.class) {
             return type.cast(json.asString());

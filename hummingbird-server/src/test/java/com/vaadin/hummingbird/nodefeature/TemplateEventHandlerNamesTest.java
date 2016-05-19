@@ -54,7 +54,7 @@ public class TemplateEventHandlerNamesTest {
     static class TemplateWithBadParametersMethod extends Template1 {
 
         @EventHandler
-        protected void method(int arg) {
+        protected void method(char arg) {
 
         }
     }
@@ -91,6 +91,20 @@ public class TemplateEventHandlerNamesTest {
 
         }
 
+        @EventHandler
+        protected void method7(int arg) {
+
+        }
+
+        @EventHandler
+        protected void method8(double arg) {
+
+        }
+
+        @EventHandler
+        protected void method9(boolean arg) {
+
+        }
     }
 
     static class TemplateWithMethodReturnValue extends Template1 {
@@ -129,7 +143,7 @@ public class TemplateEventHandlerNamesTest {
         }
     }
 
-    static class ChildTemplateOverridingMethod extends Template1 {
+    static class ChildTemplateWithOverriddenMethod extends Template1 {
 
         @Override
         @EventHandler
@@ -144,6 +158,14 @@ public class TemplateEventHandlerNamesTest {
         @Override
         @EventHandler
         protected void method() {
+
+        }
+    }
+
+    static class ChildTemplateWithOverloadedMethod extends Template1 {
+
+        @EventHandler
+        protected void method(int i) {
 
         }
     }
@@ -184,6 +206,14 @@ public class TemplateEventHandlerNamesTest {
     }
 
     @Test
+    public void attach_twoMethodsWithTheSameName_ExceptionIsThrown() {
+        UI ui = new UI();
+
+        Template template = new ChildTemplateWithOverriddenMethod();
+        ui.add(template);
+    }
+
+    @Test
     public void attach_methodHasGoodArg_ExceptionIsThrown() {
         UI ui = new UI();
 
@@ -192,7 +222,7 @@ public class TemplateEventHandlerNamesTest {
 
         TemplateEventHandlerNames feature = template.getElement().getNode()
                 .getFeature(TemplateEventHandlerNames.class);
-        Assert.assertEquals(7, feature.size());
+        Assert.assertEquals(10, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
                 TemplateWithGoodParametersMethods.class)
@@ -267,14 +297,14 @@ public class TemplateEventHandlerNamesTest {
     public void attach_handlersContainsOnlyOneTemplateMethod() {
         UI ui = new UI();
 
-        Template template = new ChildTemplateOverridingMethod();
+        Template template = new ChildTemplateWithOverriddenMethod();
         ui.add(template);
 
         TemplateEventHandlerNames feature = template.getElement().getNode()
                 .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
-                getDeclaredMethods(ChildTemplateOverridingMethod.class)
+                getDeclaredMethods(ChildTemplateWithOverriddenMethod.class)
                         .findFirst().get(),
                 feature.get(0));
     }

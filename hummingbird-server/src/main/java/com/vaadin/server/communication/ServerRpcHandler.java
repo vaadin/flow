@@ -19,12 +19,17 @@ package com.vaadin.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventHandler;
@@ -46,10 +51,12 @@ import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.History.HistoryStateChangeHandler;
 import com.vaadin.ui.UI;
+import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
@@ -309,32 +316,24 @@ public class ServerRpcHandler implements Serializable {
     }
 
     static void invokeMethod(Component instance, Class<?> clazz,
-            String methodName) {
+            String methodName, JsonArray args) {
         assert instance != null;
-        Optional<Method> found = Stream.of(clazz.getDeclaredMethods())
+        Collection<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> method.getParameterCount() == 0)
                 .filter(method -> method
                         .isAnnotationPresent(EventHandler.class))
-                .findFirst();
-        if (found.isPresent()) {
-            try {
-                found.get().setAccessible(true);
-                found.get().invoke(instance);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalArgumentException e) {
-                // method may not have parameters because above filter
-                throw new IllegalArgumentException(
-                        "Method " + methodName + " has unexpected arguments",
-                        e);
-            } catch (InvocationTargetException e) {
-                Logger.getLogger(ServerRpcHandler.class.getName())
-                        .log(Level.FINE, null, e);
-                throw new RuntimeException(e.getCause());
-            }
+                .collect(Collectors.toList());
+        if (methods.size() > 1) {
+            StringBuilder builder = new StringBuilder("Class '");
+            builder.append(instance.getClass());
+            builder.append(
+                    "' contains several event handler method with the same name '");
+            builder.append(methodName).append("'");
+            throw new IllegalStateException(builder.toString());
+        } else if (methods.size() == 1) {
+            invokeMethod(instance, methodName, methods.iterator().next(), args);
         } else if (!Component.class.equals(clazz)) {
-            invokeMethod(instance, clazz.getSuperclass(), methodName);
+            invokeMethod(instance, clazz.getSuperclass(), methodName, args);
         } else {
             StringBuilder builder = new StringBuilder("Neither class '");
             builder.append(instance.getClass());
@@ -343,6 +342,127 @@ public class ServerRpcHandler implements Serializable {
             builder.append(methodName).append("'");
             throw new IllegalStateException(builder.toString());
         }
+    }
+
+    private static void invokeMethod(Component instance, String methodName,
+            Method method, JsonArray args) {
+        try {
+            method.setAccessible(true);
+            method.invoke(instance, decodeArgs(method, args));
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            Logger.getLogger(ServerRpcHandler.class.getName()).log(Level.FINE,
+                    null, e);
+            throw new RuntimeException(e.getCause());
+        }
+    }
+
+    private static Object[] decodeArgs(Method method, JsonArray args) {
+        if (args.length() == 0) {
+            return new Object[0];
+        }
+        if (args.length() < method.getParameterCount()) {
+            StringBuilder builder = new StringBuilder(
+                    "The number of received values is lesss than arguments length in the method '");
+            builder.append(method.getName());
+            builder.append("' declared in '");
+            builder.append(method.getDeclaringClass());
+            throw new IllegalArgumentException(builder.toString());
+        }
+        List<Object> decoded = new ArrayList<>(method.getParameterCount());
+        boolean hasVarargs = args.length() != method.getParameterCount();
+        int argsCount = hasVarargs ? method.getParameterCount() - 1
+                : method.getParameterCount();
+        Class<?>[] types = method.getParameterTypes();
+        for (int i = 0; i < argsCount; i++) {
+            Class<?> type = types[i];
+            decoded.add(decodeArg(method, type, i, args.get(i)));
+        }
+        if (hasVarargs) {
+            Class<?> type = types[types.length - 1];
+            if (!type.isArray()) {
+                StringBuilder builder = new StringBuilder(
+                        "The number of received values is greater than arguments length in the method '");
+                builder.append(method.getName());
+                builder.append("' declared in '");
+                builder.append(method.getDeclaringClass());
+                builder.append(
+                        " and the last argument of the method has type '");
+                builder.append(type);
+                builder.append(" which is not vararg or has an array type.");
+                throw new IllegalArgumentException(builder.toString());
+            }
+            JsonArray rest = Json.createArray();
+            int newIndex = 0;
+            for (int i = method.getParameterCount() - 1; i < args
+                    .length(); i++, newIndex++) {
+                JsonValue value = args.get(i);
+                rest.set(newIndex, value);
+            }
+            decoded.add(decodeArray(method, type,
+                    method.getParameterCount() - 1, rest));
+        }
+        return decoded.toArray(new Object[method.getParameterCount()]);
+    }
+
+    private static Object decodeArg(Method method, Class<?> type, int index,
+            JsonValue argValue) {
+        if (type.isPrimitive()
+                && (argValue == null || argValue.getType() == JsonType.NULL)) {
+            StringBuilder builder = new StringBuilder(
+                    "The 'null' value is received for ");
+            builder.append(index);
+            builder.append("-th parameter which refers to primitive type ");
+            builder.append(type);
+            builder.append(" in the method '");
+            builder.append(method.getName());
+            builder.append(
+                    "' defined in the class " + method.getDeclaringClass());
+            builder.append(index);
+            throw new IllegalArgumentException(builder.toString());
+        } else if (type.isArray()) {
+            return decodeArray(method, type, index, argValue);
+        } else {
+            Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
+            if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
+                StringBuilder builder = new StringBuilder("Class ");
+                builder.append(method.getDeclaringClass());
+                builder.append(" has the method '");
+                builder.append(method.getName());
+                builder.append("' whose ");
+                builder.append(index);
+                builder.append("-th parameter refers to unsupported type ");
+                builder.append(type);
+                throw new IllegalArgumentException(builder.toString());
+            }
+            return JsonCodec.decodeAs(argValue, convertedType);
+        }
+    }
+
+    private static Object decodeArray(Method method, Class<?> type, int index,
+            JsonValue argValue) {
+        if (argValue.getType() != JsonType.ARRAY) {
+            StringBuilder builder = new StringBuilder("Class ");
+            builder.append(method.getDeclaringClass());
+            builder.append(" has the method '");
+            builder.append(method.getName());
+            builder.append("' whose ");
+            builder.append(index);
+            builder.append("-th parameter refers to the array type ");
+            builder.append(type);
+            builder.append(" but received value is not an array, its type is ");
+            builder.append(argValue.getType());
+            throw new IllegalArgumentException(builder.toString());
+        }
+        Class<?> componentType = type.getComponentType();
+        JsonArray array = (JsonArray) argValue;
+        Object result = Array.newInstance(componentType, array.length());
+        for (int i = 0; i < array.length(); i++) {
+            Array.set(result, i,
+                    decodeArg(method, componentType, index, array.get(i)));
+        }
+        return result;
     }
 
     /**
@@ -429,6 +549,20 @@ public class ServerRpcHandler implements Serializable {
         }
         String methodName = invocationJson
                 .getString(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
+        if (methodName == null) {
+            throw new IllegalArgumentException(
+                    "Event handler method name may not be null");
+        }
+        JsonValue args = invocationJson
+                .get(JsonConstants.RPC_TEMPLATE_EVENT_ARGS);
+        if (args == null) {
+            throw new IllegalArgumentException(
+                    "Event handler argument values may not be null");
+        }
+        if (args.getType() != JsonType.ARRAY) {
+            throw new IllegalArgumentException(
+                    "Incorrect type for method arguments :" + args.getClass());
+        }
         assert node.hasFeature(ComponentMapping.class);
         Optional<Component> component = node.getFeature(ComponentMapping.class)
                 .getComponent();
@@ -438,7 +572,8 @@ public class ServerRpcHandler implements Serializable {
                             + "there is no component available for the target node.");
         }
 
-        invokeMethod(component.get(), component.get().getClass(), methodName);
+        invokeMethod(component.get(), component.get().getClass(), methodName,
+                (JsonArray) args);
     }
 
     private static void handleNavigation(UI ui, JsonObject invocationJson) {

@@ -37,6 +37,10 @@ These tutorials show how the different features are used.
 ** <<tutorial-template-bindings#,Binding Model Data in a Template>>
 ** <<tutorial-template-components#,Adding Components to a Template>>
 ** <<tutorial-template-for#,Creating Template Contents Dynamically Based on a List of Items>>
+* Web Components
+** <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+** <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
+** <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>

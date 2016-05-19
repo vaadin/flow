@@ -179,6 +179,14 @@ public class JsonConstants implements Serializable {
     public static final String RPC_TEMPLATE_EVENT_METHOD_NAME = "templateEventMethodName";
 
     /**
+     * Key used to hold the argument values for server side method call.
+     * 
+     * @see #RPC_TEMPLATE_EVENT_METHOD_NAME
+     * @see #RPC_TYPE_TEMPLATE_EVENT
+     */
+    public static final String RPC_TEMPLATE_EVENT_ARGS = "templateEventMethodArgs";
+
+    /**
      * Key used when informing the client side that the session has expired.
      */
     public static final String META_SESSION_EXPIRED = "sessionExpired";

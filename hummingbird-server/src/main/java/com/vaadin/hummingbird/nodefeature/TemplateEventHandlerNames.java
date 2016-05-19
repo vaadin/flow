@@ -16,15 +16,20 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Component;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Template meta data information: list of template methods annotated with @
@@ -59,13 +64,28 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
     }
 
     private void collectEventHandlerMethods(Component component) {
-        Set<String> methods = new HashSet<>();
+        List<Method> methods = new ArrayList<>();
         collectEventHandlerMethods(component.getClass(), methods);
-        methods.forEach(this::add);
+        Map<String, Method> map = new HashMap<>();
+        for (Method method : methods) {
+            Method exising = map.get(method.getName());
+            if (exising != null && !Arrays.asList(exising.getParameterTypes())
+                    .equals(Arrays.asList(method.getParameterTypes()))) {
+                StringBuilder builder = new StringBuilder(
+                        "There may be only one event handler method with the given name. Class ");
+                builder.append(component.getClass());
+                builder.append(
+                        " (considering with its suprerclasses) contains several event handler methods with the same name:");
+                builder.append(method.getName());
+                throw new IllegalStateException(builder.toString());
+            }
+            map.put(method.getName(), method);
+        }
+        map.keySet().forEach(this::add);
     }
 
     private void collectEventHandlerMethods(Class<?> clazz,
-            Set<String> methods) {
+            Collection<Method> methods) {
         if (clazz.equals(Component.class)) {
             return;
         }
@@ -84,7 +104,8 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
         return component.get();
     }
 
-    private void addEventHandlerMethod(Method method, Set<String> methods) {
+    private void addEventHandlerMethod(Method method,
+            Collection<Method> methods) {
         checkParameterTypes(method);
         if (!void.class.equals(method.getReturnType())) {
             StringBuilder builder = new StringBuilder(
@@ -109,7 +130,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
             builder.append(EventHandler.class);
             throw new IllegalStateException(builder.toString());
         }
-        methods.add(method.getName());
+        methods.add(method);
 
     }
 
@@ -122,16 +143,17 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
     }
 
     private void checkParameterType(Method method, Class<?> type) {
-        if (type.isArray()) {
-            checkParameterType(method, type.getComponentType());
-        } else if (!JsonCodec.canEncode(type)) {
+        Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
+        if (parameterType.isArray()) {
+            checkParameterType(method, parameterType.getComponentType());
+        } else if (!JsonCodec.canEncodeWithoutTypeInfo(parameterType)) {
             StringBuilder builder = new StringBuilder(
                     "Event handler method may contain only serializable to JSON types. Component ");
             builder.append(method.getDeclaringClass());
             builder.append(" has method ").append(method.getName());
             builder.append(
                     " which declares parameter with non serializable to JSON type");
-            builder.append(type);
+            builder.append(parameterType);
             builder.append(" and annotated with ");
             builder.append(EventHandler.class);
             throw new IllegalStateException(builder.toString());
