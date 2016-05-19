@@ -35,13 +35,13 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
     private StateTree tree;
     private Registry registry;
 
-    private static class TestServerConntector extends ServerConnector {
+    private static class TestServerConnector extends ServerConnector {
 
         private StateNode node;
         private String methodName;
         private JsonArray args;
 
-        private TestServerConntector(Registry registry) {
+        private TestServerConnector(Registry registry) {
             super(registry);
         }
 
@@ -61,7 +61,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         registry = new Registry() {
 
             {
-                set(ServerConnector.class, new TestServerConntector(this));
+                set(ServerConnector.class, new TestServerConnector(this));
             }
 
         };
@@ -81,7 +81,7 @@ public class GwtStateTreeTest extends ClientEngineTestBase {
         array.set(array.length(), WidgetUtil.crazyJsCast(object));
         array.set(array.length(), getNativeArray());
 
-        TestServerConntector serverConnector = (TestServerConntector) registry
+        TestServerConnector serverConnector = (TestServerConnector) registry
                 .getServerConnector();
         assertEquals(node, serverConnector.node);
         assertEquals("foo", serverConnector.methodName);

@@ -94,9 +94,11 @@ public class ServerConnector {
      *            the node that listened to the event
      * @param methodName
      *            the event handler method name to execute on the server side
+     * @param argsArray
+     *            the arguments array for the method
      */
     public void sendTemplateEventMessage(StateNode node, String methodName,
-            JsonArray array) {
+            JsonArray argsArray) {
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE,
                 JsonConstants.RPC_TYPE_TEMPLATE_EVENT);

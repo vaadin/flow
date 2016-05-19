@@ -163,13 +163,16 @@ public class StateTree {
     }
 
     /**
-     * Sends a request to call server side method with {@code methodName}.
+     * Sends a request to call server side method with {@code methodName} using
+     * {@code argsArray} as argument values.
      * 
      * @param node
      *            the node referring to the server side instance containing the
      *            method
      * @param methodName
      *            the method name
+     * @param argsArray
+     *            the arguments array for the method
      */
     public void sendTemplateEventToServer(StateNode node, String methodName,
             JsArray<?> argsArray) {

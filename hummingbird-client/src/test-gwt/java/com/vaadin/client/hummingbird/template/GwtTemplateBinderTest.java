@@ -67,8 +67,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
             @Override
             public void sendTemplateEventToServer(StateNode node,
-                    String methodName,
-                    JsArray<? extends JavaScriptObject> argValues) {
+                    String methodName, JsArray<?> argValues) {
                 serverMethods.put(methodName, argValues);
             }
         };
