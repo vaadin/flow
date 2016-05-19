@@ -34,7 +34,7 @@ import com.vaadin.util.ReflectTools;
 /**
  * Template meta data information: list of template methods annotated with @
  * {@link EventHandler}.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -56,7 +56,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
     }
 
     @Override
-    public void onAttach() {
+    public void onAttach(boolean initialAttach) {
         if (!isInfoCollected) {
             collectEventHandlerMethods(getComponent());
         }
@@ -68,14 +68,14 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
         collectEventHandlerMethods(component.getClass(), methods);
         Map<String, Method> map = new HashMap<>();
         for (Method method : methods) {
-            Method exising = map.get(method.getName());
-            if (exising != null && !Arrays.asList(exising.getParameterTypes())
+            Method existing = map.get(method.getName());
+            if (existing != null && !Arrays.asList(existing.getParameterTypes())
                     .equals(Arrays.asList(method.getParameterTypes()))) {
                 StringBuilder builder = new StringBuilder(
                         "There may be only one event handler method with the given name. Class ");
                 builder.append(component.getClass());
                 builder.append(
-                        " (considering with its suprerclasses) contains several event handler methods with the same name:");
+                        " (considering with its superclasses) contains several event handler methods with the same name:");
                 builder.append(method.getName());
                 throw new IllegalStateException(builder.toString());
             }
@@ -134,7 +134,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
 
     }
 
-    private void checkParameterTypes(Method method) {
+    private static void checkParameterTypes(Method method) {
         if (method.getParameterCount() == 0) {
             return;
         }
@@ -142,7 +142,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
                 .forEach(type -> checkParameterType(method, type));
     }
 
-    private void checkParameterType(Method method, Class<?> type) {
+    private static void checkParameterType(Method method, Class<?> type) {
         Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
         if (parameterType.isArray()) {
             checkParameterType(method, parameterType.getComponentType());

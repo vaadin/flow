@@ -331,7 +331,7 @@ public class ServerRpcHandler implements Serializable {
             builder.append(methodName).append("'");
             throw new IllegalStateException(builder.toString());
         } else if (methods.size() == 1) {
-            invokeMethod(instance, methodName, methods.iterator().next(), args);
+            invokeMethod(instance, methods.iterator().next(), args);
         } else if (!Component.class.equals(clazz)) {
             invokeMethod(instance, clazz.getSuperclass(), methodName, args);
         } else {
@@ -344,43 +344,56 @@ public class ServerRpcHandler implements Serializable {
         }
     }
 
-    private static void invokeMethod(Component instance, String methodName,
-            Method method, JsonArray args) {
+    private static void invokeMethod(Component instance, Method method,
+            JsonArray args) {
         try {
             method.setAccessible(true);
             method.invoke(instance, decodeArgs(method, args));
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
-            Logger.getLogger(ServerRpcHandler.class.getName()).log(Level.FINE,
-                    null, e);
+            getLogger().log(Level.FINE, null, e);
             throw new RuntimeException(e.getCause());
         }
     }
 
-    private static Object[] decodeArgs(Method method, JsonArray args) {
-        if (args.length() == 0) {
-            return new Object[0];
-        }
-        if (args.length() < method.getParameterCount()) {
+    private static Object[] decodeArgs(Method method,
+            JsonArray argsFromClient) {
+        if (argsFromClient.length() < method.getParameterCount()) {
             StringBuilder builder = new StringBuilder(
-                    "The number of received values is lesss than arguments length in the method '");
+                    "The number of received values is smaller than the number of arguments in the method '");
             builder.append(method.getName());
             builder.append("' declared in '");
             builder.append(method.getDeclaringClass());
             throw new IllegalArgumentException(builder.toString());
         }
+        if (method.getParameterCount() == 0) {
+            if (argsFromClient.length() > 0) {
+                StringBuilder builder = new StringBuilder("Method '");
+                builder.append(method.getName());
+                builder.append("' declared in '");
+                builder.append(method.getDeclaringClass());
+                builder.append(" has no parameters and may not be applied to "
+                        + "received argument values whose length is ");
+                builder.append(argsFromClient.length());
+                throw new IllegalArgumentException(builder.toString());
+            } else {
+                return new Object[0];
+            }
+        }
         List<Object> decoded = new ArrayList<>(method.getParameterCount());
-        boolean hasVarargs = args.length() != method.getParameterCount();
+        boolean hasVarargs = argsFromClient.length() != method
+                .getParameterCount();
         int argsCount = hasVarargs ? method.getParameterCount() - 1
                 : method.getParameterCount();
-        Class<?>[] types = method.getParameterTypes();
+        Class<?>[] methodParameterTypes = method.getParameterTypes();
         for (int i = 0; i < argsCount; i++) {
-            Class<?> type = types[i];
-            decoded.add(decodeArg(method, type, i, args.get(i)));
+            Class<?> type = methodParameterTypes[i];
+            decoded.add(decodeArg(method, type, i, argsFromClient.get(i)));
         }
         if (hasVarargs) {
-            Class<?> type = types[types.length - 1];
+            Class<?> type = methodParameterTypes[methodParameterTypes.length
+                    - 1];
             if (!type.isArray()) {
                 StringBuilder builder = new StringBuilder(
                         "The number of received values is greater than arguments length in the method '");
@@ -395,10 +408,11 @@ public class ServerRpcHandler implements Serializable {
             }
             JsonArray rest = Json.createArray();
             int newIndex = 0;
-            for (int i = method.getParameterCount() - 1; i < args
-                    .length(); i++, newIndex++) {
-                JsonValue value = args.get(i);
+            for (int i = method.getParameterCount() - 1; i < argsFromClient
+                    .length(); i++) {
+                JsonValue value = argsFromClient.get(i);
                 rest.set(newIndex, value);
+                newIndex++;
             }
             decoded.add(decodeArray(method, type,
                     method.getParameterCount() - 1, rest));
@@ -408,10 +422,10 @@ public class ServerRpcHandler implements Serializable {
 
     private static Object decodeArg(Method method, Class<?> type, int index,
             JsonValue argValue) {
-        if (type.isPrimitive()
-                && (argValue == null || argValue.getType() == JsonType.NULL)) {
+        assert argValue != null;
+        if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
             StringBuilder builder = new StringBuilder(
-                    "The 'null' value is received for ");
+                    "A 'null' value was received for ");
             builder.append(index);
             builder.append("-th parameter which refers to primitive type ");
             builder.append(type);
@@ -556,8 +570,7 @@ public class ServerRpcHandler implements Serializable {
         JsonValue args = invocationJson
                 .get(JsonConstants.RPC_TEMPLATE_EVENT_ARGS);
         if (args == null) {
-            throw new IllegalArgumentException(
-                    "Event handler argument values may not be null");
+            args = Json.createArray();
         }
         if (args.getType() != JsonType.ARRAY) {
             throw new IllegalArgumentException(

@@ -54,7 +54,7 @@ public class TemplateEventHandlerNamesTest {
     static class TemplateWithBadParametersMethod extends Template1 {
 
         @EventHandler
-        protected void method(char arg) {
+        protected void method1(char arg) {
 
         }
     }
@@ -314,6 +314,14 @@ public class TemplateEventHandlerNamesTest {
         UI ui = new UI();
 
         Template template = new ChildTemplateOfIncorrectTemplate();
+        ui.add(template);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void attach_overloadedMethod_ExceptionIsThrown() {
+        UI ui = new UI();
+
+        Template template = new ChildTemplateWithOverloadedMethod();
         ui.add(template);
     }
 
