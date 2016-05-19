@@ -178,13 +178,17 @@ public interface ComponentUtil {
      *
      * @param component
      *            the component attached to a UI
+     * @param initialAttach
+     *            indicates if this is the first time the component (element)
+     *            has been attached
      */
-    static void onComponentAttach(Component component) {
+    static void onComponentAttach(Component component, boolean initialAttach) {
         if (component instanceof Composite) {
-            onComponentAttach(((Composite<?>) component).getContent());
+            onComponentAttach(((Composite<?>) component).getContent(),
+                    initialAttach);
         }
 
-        AttachEvent attachEvent = new AttachEvent(component);
+        AttachEvent attachEvent = new AttachEvent(component, initialAttach);
         component.onAttach(attachEvent);
         if (component.hasListener(AttachEvent.class)) {
             component.getEventBus().fireEvent(attachEvent);

@@ -359,9 +359,6 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private static Object[] decodeArgs(Method method, JsonArray args) {
-        if (args.length() == 0) {
-            return new Object[0];
-        }
         if (args.length() < method.getParameterCount()) {
             StringBuilder builder = new StringBuilder(
                     "The number of received values is lesss than arguments length in the method '");
@@ -369,6 +366,9 @@ public class ServerRpcHandler implements Serializable {
             builder.append("' declared in '");
             builder.append(method.getDeclaringClass());
             throw new IllegalArgumentException(builder.toString());
+        }
+        if (args.length() == 0) {
+            return new Object[0];
         }
         List<Object> decoded = new ArrayList<>(method.getParameterCount());
         boolean hasVarargs = args.length() != method.getParameterCount();
