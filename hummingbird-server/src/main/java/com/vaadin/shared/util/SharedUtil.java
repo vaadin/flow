@@ -147,6 +147,27 @@ public class SharedUtil implements Serializable {
     }
 
     /**
+     * Changes the first character in the given string to lower case in a way
+     * suitable for use in code (methods, properties etc).
+     *
+     * @param string
+     *            The string to change
+     * @return The string with initial character turned into lower case
+     */
+    public static String lowercase(String string) {
+        if (string == null) {
+            return null;
+        }
+
+        if (string.length() <= 1) {
+            return string.toLowerCase(Locale.ENGLISH);
+        }
+
+        return string.substring(0, 1).toLowerCase(Locale.ENGLISH)
+                + string.substring(1);
+    }
+
+    /**
      * Converts a property id to a human friendly format. Handles nested
      * properties by only considering the last part, e.g. "address.streetName"
      * is equal to "streetName" for this method.
@@ -267,6 +288,37 @@ public class SharedUtil implements Serializable {
         }
 
         return join(parts, "");
+    }
+
+    /**
+     * Converts a camelCase string into dash ("-") separated.
+     * <p>
+     * Examples:
+     * <p>
+     * {@literal foo} becomes {@literal foo} {@literal fooBar} becomes
+     * {@literal foo-bar} {@literal MyBeanContainer} becomes
+     * {@literal -my-bean-container} {@literal AwesomeURLFactory} becomes
+     * {@literal -awesome-uRL-factory} {@literal someUriAction} becomes
+     * {@literal some-uri-action}
+     *
+     * @param camelCaseString
+     *            The input string in camelCase format
+     * @return A human friendly version of the input
+     */
+    public static String camelCaseToDashSeparated(String camelCaseString) {
+        if (camelCaseString == null) {
+            return null;
+        }
+        String[] parts = splitCamelCase(camelCaseString);
+        if (parts[0].length() >= 1
+                && Character.isUpperCase(parts[0].charAt(0))) {
+            // starts with upper case
+            parts[0] = "-" + lowercase(parts[0]);
+        }
+        for (int i = 1; i < parts.length; i++) {
+            parts[i] = lowercase(parts[i]);
+        }
+        return join(parts, "-");
     }
 
 }
