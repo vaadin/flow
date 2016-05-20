@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.HtmlContainer;
@@ -29,7 +32,7 @@ public class TemplateEventHandlerView extends Div implements View {
 
     public static class EventReceiver extends InlineTemplate {
 
-        EventReceiver(HtmlContainer parent) {
+        EventReceiver() {
             super("<div id='event-receiver' (click)='$server.method()'>Click to send event to the server</div>");
         }
 
@@ -47,8 +50,10 @@ public class TemplateEventHandlerView extends Div implements View {
 
     public static class ArgReceiver extends InlineTemplate {
 
-        ArgReceiver(HtmlContainer parent) {
-            super("<div id='arg-receiver' (click)='$server.method()'>Click to send event to the server</div>");
+        ArgReceiver() {
+            super("<div id='arg-receiver' "
+                    + "(click)='$server.method($event.target.id, 3, 6.2, true, [2.1, 6.7], 'foo','bar' )'>"
+                    + "Click to send event to the server</div>");
         }
 
         @EventHandler
@@ -62,6 +67,10 @@ public class TemplateEventHandlerView extends Div implements View {
             addLabel("event-int-arg", size);
             addLabel("event-double-arg", value);
             addLabel("event-boolean-arg", visible);
+            addLabel("event-array-arg", Stream.of(array).map(Object::toString)
+                    .collect(Collectors.joining(",")));
+            addLabel("event-vararg-arg",
+                    Stream.of(vararg).collect(Collectors.joining(",")));
         }
 
         private void addLabel(String id, Object value) {
@@ -76,7 +85,8 @@ public class TemplateEventHandlerView extends Div implements View {
     }
 
     public TemplateEventHandlerView() {
-        add(new EventReceiver(this));
+        add(new EventReceiver());
+        add(new ArgReceiver());
     }
 
 }

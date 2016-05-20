@@ -21,6 +21,7 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.util.NativeFunction;
@@ -37,7 +38,7 @@ import jsinterop.annotations.JsFunction;
 
 /**
  * Element template binding strategy.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -84,14 +85,14 @@ public class ElementTemplateBindingStrategy
             }
         }
 
-        JsArray<Double> children = templateNode.getChildren();
+        JsArray<Double> children = templateNode.getChildrenIds();
         if (children != null) {
             for (int i = 0; i < children.length(); i++) {
                 int childTemplateId = children.get(i).intValue();
 
                 Node child = createAndBind(stateNode, childTemplateId, context);
 
-                element.appendChild(child);
+                DomApi.wrap(element).appendChild(child);
             }
         }
 

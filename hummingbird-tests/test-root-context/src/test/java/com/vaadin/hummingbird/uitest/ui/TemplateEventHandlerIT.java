@@ -39,4 +39,11 @@ public class TemplateEventHandlerIT extends PhantomJSTest {
 
         Assert.assertTrue(isElementPresent(By.id("event-handler")));
     }
+
+    @Test
+    public void sendArgumentsToServer() {
+        findElement(By.id("arg-receiver")).click();
+
+        Assert.assertTrue(isElementPresent(By.id("event-handler")));
+    }
 }
