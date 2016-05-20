@@ -19,43 +19,29 @@ package com.vaadin.server.communication;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.hummingbird.JsonCodec;
-import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.dom.DomEvent;
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.nodefeature.ComponentMapping;
-import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
-import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.communication.rpc.EventHandler;
+import com.vaadin.server.communication.rpc.NavigationHandler;
+import com.vaadin.server.communication.rpc.PropertySyncHandler;
+import com.vaadin.server.communication.rpc.RpcInvocationHandler;
+import com.vaadin.server.communication.rpc.TemplateEventHandler;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.History;
-import com.vaadin.ui.History.HistoryStateChangeEvent;
-import com.vaadin.ui.History.HistoryStateChangeHandler;
 import com.vaadin.ui.UI;
-import com.vaadin.util.ReflectTools;
 
-import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
@@ -66,6 +52,10 @@ import elemental.json.impl.JsonUtil;
  * @since 7.1
  */
 public class ServerRpcHandler implements Serializable {
+
+    private Map<String, RpcInvocationHandler> HANDLERS = loadHandlers().stream()
+            .collect(Collectors.toMap(RpcInvocationHandler::getRpcType,
+                    Function.identity()));
 
     /**
      * A data transfer object representing an RPC request sent by the client
@@ -314,156 +304,6 @@ public class ServerRpcHandler implements Serializable {
 
     }
 
-    static void invokeMethod(Component instance, Class<?> clazz,
-            String methodName, JsonArray args) {
-        assert instance != null;
-        List<Method> methods = Stream.of(clazz.getDeclaredMethods())
-                .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> method
-                        .isAnnotationPresent(EventHandler.class))
-                .collect(Collectors.toList());
-        if (methods.size() > 1) {
-            String msg = String.format(
-                    "Class '%s' contains "
-                            + "several event handler method with the same name '%s'",
-                    instance.getClass().getName(), methodName);
-            throw new IllegalStateException(msg);
-        } else if (methods.size() == 1) {
-            invokeMethod(instance, methods.get(0), args);
-        } else if (!Component.class.equals(clazz)) {
-            invokeMethod(instance, clazz.getSuperclass(), methodName, args);
-        } else {
-            String msg = String.format(
-                    "Neither class '%s' "
-                            + "nor its super classes declare event handler method '%s'",
-                    instance.getClass().getName(), methodName);
-            throw new IllegalStateException(msg);
-        }
-    }
-
-    private static void invokeMethod(Component instance, Method method,
-            JsonArray args) {
-        try {
-            method.setAccessible(true);
-            method.invoke(instance, decodeArgs(method, args));
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            getLogger().log(Level.FINE, null, e);
-            throw new RuntimeException(e.getCause());
-        }
-    }
-
-    private static Object[] decodeArgs(Method method,
-            JsonArray argsFromClient) {
-        if (argsFromClient.length() < method.getParameterCount()) {
-            String msg = String.format(
-                    "The number of received values (%d) is smaller "
-                            + "than the number of arguments (%d) in the method '%s' "
-                            + "' declared in '%s'",
-                    argsFromClient.length(), method.getParameterCount(),
-                    method.getName(), method.getDeclaringClass().getName());
-            throw new IllegalArgumentException(msg);
-        }
-        if (method.getParameterCount() == 0) {
-            if (argsFromClient.length() > 0) {
-                String msg = String.format(
-                        "Method '%s'  declared in '%s'"
-                                + " has no parameters and may not be applied to "
-                                + "received argument values whose length is %d",
-                        method.getName(), method.getDeclaringClass().getName(),
-                        argsFromClient.length());
-                throw new IllegalArgumentException(msg);
-            } else {
-                return new Object[0];
-            }
-        }
-        List<Object> decoded = new ArrayList<>(method.getParameterCount());
-        boolean hasVarargs = argsFromClient.length() != method
-                .getParameterCount();
-        int argsCount = hasVarargs ? method.getParameterCount() - 1
-                : method.getParameterCount();
-        Class<?>[] methodParameterTypes = method.getParameterTypes();
-        for (int i = 0; i < argsCount; i++) {
-            Class<?> type = methodParameterTypes[i];
-            decoded.add(decodeArg(method, type, i, argsFromClient.get(i)));
-        }
-        if (hasVarargs) {
-            Class<?> type = methodParameterTypes[methodParameterTypes.length
-                    - 1];
-            if (!type.isArray()) {
-                String msg = String.format(
-                        "The number of received values is greater than "
-                                + "arguments length in the method '%s' "
-                                + "declared in '%s' and the last argument of the method "
-                                + "has type '%s' which is not vararg and does not have an array type",
-                        method.getName(), method.getDeclaringClass().getName(),
-                        type.getName());
-                throw new IllegalArgumentException(msg);
-            }
-            JsonArray rest = Json.createArray();
-            int newIndex = 0;
-            for (int i = method.getParameterCount() - 1; i < argsFromClient
-                    .length(); i++) {
-                JsonValue value = argsFromClient.get(i);
-                rest.set(newIndex, value);
-                newIndex++;
-            }
-            decoded.add(decodeArray(method, type,
-                    method.getParameterCount() - 1, rest));
-        }
-        return decoded.toArray(new Object[method.getParameterCount()]);
-    }
-
-    private static Object decodeArg(Method method, Class<?> type, int index,
-            JsonValue argValue) {
-        assert argValue != null;
-        if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
-            String msg = String.format(
-                    "Null values are not allowed for primitive types but "
-                            + "a 'null' value was received for parameter %d"
-                            + "which refers to primitive type '%s' "
-                            + " in the method '%s' defined in the class '%s'",
-                    index, type.getName(), method.getName(),
-                    method.getDeclaringClass().getName());
-            throw new IllegalArgumentException(msg);
-        } else if (type.isArray()) {
-            return decodeArray(method, type, index, argValue);
-        } else {
-            Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
-            if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
-                String msg = String.format(
-                        "Class '%s' has the method '%s'"
-                                + " whose parameter %d refers to unsupported type '%s'",
-                        method.getDeclaringClass().getName(), method.getName(),
-                        index, type.getName());
-                throw new IllegalArgumentException(msg);
-            }
-            return JsonCodec.decodeAs(argValue, convertedType);
-        }
-    }
-
-    private static Object decodeArray(Method method, Class<?> type, int index,
-            JsonValue argValue) {
-        if (argValue.getType() != JsonType.ARRAY) {
-            String msg = String.format(
-                    "Class '%s' has the method '%s'"
-                            + " whose parameter %d refers to the array type '%s'"
-                            + "but received value is not an array, its type is '%s'",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    index, type.getName(), argValue.getType().name());
-            throw new IllegalArgumentException(msg);
-        }
-        Class<?> componentType = type.getComponentType();
-        JsonArray array = (JsonArray) argValue;
-        Object result = Array.newInstance(componentType, array.length());
-        for (int i = 0; i < array.length(); i++) {
-            Array.set(result, i,
-                    decodeArg(method, componentType, index, array.get(i)));
-        }
-        return result;
-    }
-
     /**
      * Checks that the version reported by the client (widgetset) matches that
      * of the server.
@@ -502,157 +342,33 @@ public class ServerRpcHandler implements Serializable {
     private void handleInvocations(UI ui, int lastSyncIdSeenByClient,
             JsonArray invocationsData) {
 
+        List<JsonObject> data = new ArrayList<>(invocationsData.length());
+        RpcInvocationHandler syncPropertyHandler = HANDLERS
+                .get(JsonConstants.RPC_TYPE_PROPERTY_SYNC);
         for (int i = 0; i < invocationsData.length(); i++) {
             JsonObject invocationJson = invocationsData.getObject(i);
             String type = invocationJson.getString(JsonConstants.RPC_TYPE);
             assert type != null;
             if (JsonConstants.RPC_TYPE_PROPERTY_SYNC.equals(type)) {
                 // Handle these before any RPC
-                handlePropertySync(ui, invocationJson);
+                syncPropertyHandler.handle(ui, invocationJson);
+            } else {
+                data.add(invocationJson);
             }
         }
 
-        for (int i = 0; i < invocationsData.length(); i++) {
-            JsonObject invocationJson = invocationsData.getObject(i);
-            String type = invocationJson.getString(JsonConstants.RPC_TYPE);
-            assert type != null;
-
-            switch (type) {
-            case JsonConstants.RPC_TYPE_EVENT:
-                handleEventInvocation(ui, invocationJson);
-                break;
-            case JsonConstants.RPC_TYPE_PROPERTY_SYNC:
-                // Handled above
-                break;
-            case JsonConstants.RPC_TYPE_NAVIGATION:
-                handleNavigation(ui, invocationJson);
-                break;
-            case JsonConstants.RPC_TYPE_TEMPLATE_EVENT:
-                handleTemplateEventHandler(ui, invocationJson);
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported event type: " + type);
-            }
-        }
+        data.forEach(object -> handleInvocationData(object, ui, object));
     }
 
-    private static void handleTemplateEventHandler(UI ui,
+    private void handleInvocationData(JsonObject object, UI ui,
             JsonObject invocationJson) {
-        assert invocationJson
-                .hasKey(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
-
-        StateNode node = getNode(ui, invocationJson);
-        if (node == null) {
-            return;
-        }
-        String methodName = invocationJson
-                .getString(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
-        if (methodName == null) {
+        String type = invocationJson.getString(JsonConstants.RPC_TYPE);
+        RpcInvocationHandler handler = HANDLERS.get(type);
+        if (handler == null) {
             throw new IllegalArgumentException(
-                    "Event handler method name may not be null");
+                    "Unsupported event type: " + type);
         }
-        JsonValue args = invocationJson
-                .get(JsonConstants.RPC_TEMPLATE_EVENT_ARGS);
-        if (args == null) {
-            args = Json.createArray();
-        }
-        if (args.getType() != JsonType.ARRAY) {
-            throw new IllegalArgumentException(
-                    "Incorrect type for method arguments :" + args.getClass());
-        }
-        assert node.hasFeature(ComponentMapping.class);
-        Optional<Component> component = node.getFeature(ComponentMapping.class)
-                .getComponent();
-        if (!component.isPresent()) {
-            throw new IllegalStateException(
-                    "Unable to handle RPC template event JSON message: "
-                            + "there is no component available for the target node.");
-        }
-
-        invokeMethod(component.get(), component.get().getClass(), methodName,
-                (JsonArray) args);
-    }
-
-    private static void handleNavigation(UI ui, JsonObject invocationJson) {
-        History history = ui.getPage().getHistory();
-
-        HistoryStateChangeHandler historyStateChangeHandler = history
-                .getHistoryStateChangeHandler();
-        if (historyStateChangeHandler != null) {
-            JsonValue state = invocationJson
-                    .get(JsonConstants.RPC_NAVIGATION_STATE);
-            String location = invocationJson
-                    .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
-
-            HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
-                    state, location);
-            historyStateChangeHandler.onHistoryStateChange(event);
-        }
-    }
-
-    private static void handlePropertySync(UI ui, JsonObject invocationJson) {
-        assert invocationJson.hasKey(JsonConstants.RPC_NODE);
-        assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
-        assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
-
-        StateNode node = getNode(ui, invocationJson);
-        if (node == null) {
-            return;
-        }
-        String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
-        Serializable value = JsonCodec.decodeWithoutTypeInfo(
-                invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
-        node.getFeature(ElementPropertyMap.class).setProperty(property, value,
-                false);
-
-    }
-
-    private static int getNodeId(JsonObject invocationJson) {
-        return (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
-    }
-
-    private static StateNode getNode(UI ui, JsonObject invocationJson) {
-        StateNode node = ui.getInternals().getStateTree()
-                .getNodeById(getNodeId(invocationJson));
-
-        if (node == null) {
-            getLogger().warning("Got an RPC for non-existent node: "
-                    + getNodeId(invocationJson));
-            return null;
-        }
-
-        if (!node.isAttached()) {
-            getLogger().warning("Got an RPC for detached node: "
-                    + getNodeId(invocationJson));
-            return null;
-        }
-        return node;
-
-    }
-
-    private static void handleEventInvocation(UI ui,
-            JsonObject invocationJson) {
-        assert invocationJson.hasKey(JsonConstants.RPC_NODE);
-        assert invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE);
-
-        StateNode node = getNode(ui, invocationJson);
-        if (node == null) {
-            return;
-        }
-
-        String eventType = invocationJson
-                .getString(JsonConstants.RPC_EVENT_TYPE);
-
-        JsonObject eventData = invocationJson
-                .getObject(JsonConstants.RPC_EVENT_DATA);
-        if (eventData == null) {
-            eventData = Json.createObject();
-        }
-
-        DomEvent event = new DomEvent(Element.get(node), eventType, eventData);
-
-        node.getFeature(ElementListenerMap.class).fireEvent(event);
+        handler.handle(ui, invocationJson);
     }
 
     protected String getMessage(Reader reader) throws IOException {
@@ -673,6 +389,15 @@ public class ServerRpcHandler implements Serializable {
 
     private static final Logger getLogger() {
         return Logger.getLogger(ServerRpcHandler.class.getName());
+    }
+
+    private static List<RpcInvocationHandler> loadHandlers() {
+        List<RpcInvocationHandler> list = new ArrayList<>();
+        list.add(new EventHandler());
+        list.add(new NavigationHandler());
+        list.add(new PropertySyncHandler());
+        list.add(new TemplateEventHandler());
+        return list;
     }
 
 }
