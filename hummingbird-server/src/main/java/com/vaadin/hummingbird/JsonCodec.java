@@ -87,6 +87,23 @@ public class JsonCodec {
     }
 
     /**
+     * Helper for checking whether the type is supported by
+     * {@link #encodeWithoutTypeInfo(Object)}. Supported values types are
+     * {@link String}, {@link Integer}, {@link Double}, {@link Boolean},
+     * {@link JsonValue}.
+     *
+     * @param type
+     *            the type to check
+     * @return whether the type can be encoded
+     */
+    public static boolean canEncodeWithoutTypeInfo(Class<?> type) {
+        assert type != null;
+        return String.class.equals(type) || Integer.class.equals(type)
+                || Double.class.equals(type) || Boolean.class.equals(type)
+                || JsonValue.class.isAssignableFrom(type);
+    }
+
+    /**
      * Helper for encoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
      * {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
@@ -96,20 +113,22 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithoutTypeInfo(Object value) {
-        if (value instanceof String) {
-            return Json.create((String) value);
-        } else if (value instanceof Number) {
-            return Json.create(((Number) value).doubleValue());
-        } else if (value instanceof Boolean) {
-            return Json.create(((Boolean) value).booleanValue());
-        } else if (value instanceof JsonValue) {
-            return (JsonValue) value;
-        } else if (value == null) {
+        if (value == null) {
             return Json.createNull();
-        } else {
-            throw new IllegalArgumentException(
-                    "Can't encode" + value.getClass() + " to json");
         }
+        Class<?> type = value.getClass();
+        if (String.class.equals(value.getClass())) {
+            return Json.create((String) value);
+        } else if (Integer.class.equals(type) || Double.class.equals(type)) {
+            return Json.create(((Number) value).doubleValue());
+        } else if (Boolean.class.equals(type)) {
+            return Json.create(((Boolean) value).booleanValue());
+        } else if (JsonValue.class.isAssignableFrom(type)) {
+            return (JsonValue) value;
+        }
+        assert !canEncodeWithoutTypeInfo(type);
+        throw new IllegalArgumentException(
+                "Can't encode" + value.getClass() + " to json");
     }
 
     /**
@@ -168,6 +187,7 @@ public class JsonCodec {
         } else if (type == Integer.class) {
             return type.cast(Integer.valueOf((int) json.asNumber()));
         } else {
+            assert !canEncodeWithoutTypeInfo(type);
             throw new IllegalArgumentException(
                     "Unknown type " + type.getName());
         }

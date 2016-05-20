@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.HtmlContainer;
@@ -29,23 +32,62 @@ public class TemplateEventHandlerView extends Div implements View {
 
     public static class EventReceiver extends InlineTemplate {
 
-        private final HtmlContainer parent;
-
-        EventReceiver(HtmlContainer parent) {
+        EventReceiver() {
             super("<div id='event-receiver' (click)='$server.method()'>Click to send event to the server</div>");
-            this.parent = parent;
         }
 
         @EventHandler
         protected void method() {
             Label label = new Label("Event is received");
             label.setId("event-handler");
-            parent.add(label);
+            getParentContainer().add(label);
+        }
+
+        private HtmlContainer getParentContainer() {
+            return (HtmlContainer) getParent().get();
+        }
+    }
+
+    public static class ArgReceiver extends InlineTemplate {
+
+        ArgReceiver() {
+            super("<div id='arg-receiver' (click)="
+                    + "'$server.method($event.target.id, 3, 6.2, true, [2.1, 6.7],\"foo\",\"bar\" )'>"
+                    + "Click to send event to the server</div>");
+        }
+
+        @EventHandler
+        protected void method(String msg, int size, double value,
+                boolean visible, Double[] array, String... vararg) {
+            Label label = new Label("Event data is received");
+            label.setId("event-arguments");
+            getParentContainer().add(label);
+
+            addLabel("event-msg-arg", msg);
+            addLabel("event-int-arg", size);
+            addLabel("event-double-arg", value);
+            addLabel("event-boolean-arg", visible);
+            addLabel("event-array-arg", Stream.of(array).map(Object::toString)
+                    .collect(Collectors.joining(",")));
+            addLabel("event-vararg-arg",
+                    Stream.of(vararg).collect(Collectors.joining(",")));
+        }
+
+        private void addLabel(String id, Object value) {
+            Label label = new Label(value.toString());
+            label.getStyle().set("display", "block");
+            label.setId(id);
+            getParentContainer().add(label);
+        }
+
+        private HtmlContainer getParentContainer() {
+            return (HtmlContainer) getParent().get();
         }
     }
 
     public TemplateEventHandlerView() {
-        add(new EventReceiver(this));
+        add(new EventReceiver());
+        add(new ArgReceiver());
     }
 
 }
