@@ -1,0 +1,48 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Handling User Events in a Template
+
+Template defines a special syntax for attaching event handlers to elements:
+[source,html]
+----
+<div (click)="window.alert('Hello');"></div>
+----
+
+Clicking on the `<div>` will now show an alert in the browser. You can listen to any event using the `(event-name)` syntax, it does not matter if it is a built-in browser event or a custom event from e.g. a web component.
+
+== Communicating with the Server
+To get data forwarded to the server from a template event handler, you have two options:
+1. Fire a custom event to which you listen on the server
+2. Use `$server.myEventHandler(myParameters)` to directly invoke a method in the server side template class
+
+In this tutorial, the focus is on option 2. For option 1, see <<tutorial-event-listener#,Listening to User Events>> and online resources for firing custom events.
+
+If you have a template which looks like:
+[source,html]
+----
+<div>
+  <input id="input" />
+  <button (click)="$server.sayHello(input.value)">Say hello</button>
+  <span>{{helloText}}</span>
+</div>
+----
+
+You can define a published method in a `Template` class as follows:
+[source,java]
+----
+public class MyTemplate extends Template {
+  @EventHandler
+  private void sayHello(String name) {
+        getElement().getNode().getFeature(ModelMap.class)
+                .setValue("helloText", "Hello " + name);
+  }
+}
+----
+
+The `sayHello` method will be invoked whenever `$server.sayHello` is called on the client side and the given parameters will be passed to the method on the server. In this case the event handler updates the template model so that a "Hello <name>" message is shown.
+
+[NOTE]
+Only `String`, `Integer`, `Double`, `Boolean` and `JsonValue` are supported parameter types.
+[NOTE]
+The `@EventHandler` method can have any access modifier (`private`/`protected`/`public`) but must return `void`.
+[NOTE]
+The `$server` variable is only available in template event handler methods.
