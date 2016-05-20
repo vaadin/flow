@@ -25,6 +25,8 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.Binder;
 import com.vaadin.client.hummingbird.binding.SimpleElementBindingStrategy;
+import com.vaadin.client.hummingbird.dom.DomApi;
+import com.vaadin.client.hummingbird.dom.DomNode.DomNodeList;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Reactive;
@@ -124,7 +126,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         TestElementTemplateNode parentTemplate = TestElementTemplateNode
                 .create("div");
-        parentTemplate.setChildren(new double[] { childId });
+        parentTemplate.setChildrenIds(new double[] { childId });
 
         Element element = createElement(parentTemplate);
 
@@ -333,15 +335,15 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         int childId = 67;
         registry.getTemplateRegistry().register(childId, childSlot);
 
-        templateNode.setChildren(new double[] { childId });
+        templateNode.setChildrenIds(new double[] { childId });
 
         Element element = createElement(templateNode);
 
         Reactive.flush();
 
-        assertEquals(1, element.getChildNodes().getLength());
+        assertEquals(1, DomApi.wrap(element).getChildNodes().getLength());
         assertEquals(Node.COMMENT_NODE,
-                element.getChildNodes().item(0).getNodeType());
+                DomApi.wrap(element).getChildNodes().item(0).getNodeType());
 
         StateNode childContentNode = new StateNode(79, stateNode.getTree());
 
@@ -359,7 +361,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 element.getChildNodes().item(0).getNodeType());
         assertEquals(Node.ELEMENT_NODE,
                 element.getChildNodes().item(1).getNodeType());
-        assertEquals("SPAN", element.getLastElementChild().getTagName());
+        assertEquals("SPAN",
+                DomApi.wrap(element).getLastElementChild().getTagName());
 
         stateNode.getMap(NodeFeatures.TEMPLATE)
                 .getProperty(TemplateMap.CHILD_SLOT_CONTENT).setValue(null);
@@ -386,7 +389,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         int childId = 67;
         registry.getTemplateRegistry().register(childId, childSlot);
 
-        templateNode.setChildren(new double[] { childId });
+        templateNode.setChildrenIds(new double[] { childId });
 
         childContentNode.getMap(NodeFeatures.ELEMENT_DATA)
                 .getProperty(NodeFeatures.TAG).setValue("span");
@@ -503,7 +506,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals("DIV", element.getTagName());
-        NodeList childNodes = element.getChildNodes();
+        DomNodeList childNodes = DomApi.wrap(element).getChildNodes();
         assertTrue(childNodes.getLength() > 1);
         assertEquals("DIV", ((Element) childNodes.item(0)).getTagName());
         assertEquals("SPAN",
@@ -671,11 +674,11 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
      * template.
      * <p>
      * So the result is:
-     * 
+     *
      * <pre>
      *                                 parent
      *                                   |
-     *              ________________________________________________________     
+     *              ________________________________________________________
      *              |                          |                           |
      *      <firstChildTag>    <ngForTag>{{textVar}}</ngForTag>     <lastChildTag>
      * </pre>
@@ -702,18 +705,18 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .create(TestBinding.createTextValueBinding(textVar));
         int textChildId = 85;
         registry.getTemplateRegistry().register(textChildId, text);
-        forChild.setChildren(new double[] { textChildId });
+        forChild.setChildrenIds(new double[] { textChildId });
 
         int forChildId = 11;
         registry.getTemplateRegistry().register(forChildId, forChild);
 
-        templateNode.setChildren(new double[] { forChildId });
+        templateNode.setChildrenIds(new double[] { forChildId });
 
         TestElementTemplateNode child2 = TestElementTemplateNode
                 .create(lastChildTag);
         int child2Id = 84;
         registry.getTemplateRegistry().register(child2Id, child2);
-        parent.setChildren(new double[] { child1Id, templateId, child2Id });
+        parent.setChildrenIds(new double[] { child1Id, templateId, child2Id });
 
         NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
 
