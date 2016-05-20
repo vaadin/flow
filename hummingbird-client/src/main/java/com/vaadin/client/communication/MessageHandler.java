@@ -34,6 +34,7 @@ import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsSet;
+import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.template.TemplateRegistry;
 import com.vaadin.shared.ApplicationConstants;
@@ -418,6 +419,7 @@ public class MessageHandler {
             }
 
         };
+        DependencyLoader.runWhenDependenciesLoaded(DomApi::updateApiImplementation);
         DependencyLoader.runWhenDependenciesLoaded(c);
     }
 

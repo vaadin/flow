@@ -17,6 +17,7 @@ package com.vaadin.client.hummingbird.template;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.shared.JsonConstants;
 
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsProperty;
@@ -27,8 +28,8 @@ public interface TestTemplateNode extends TemplateNode {
     @JsProperty
     public void setType(String type);
 
-    @JsProperty
-    public void setChildren(double[] children);
+    @JsProperty(name = JsonConstants.CHILD_TEMPLATE_KEY)
+    public void setChildrenIds(double[] children);
 
     @SuppressWarnings("unchecked")
     @JsOverlay

@@ -16,6 +16,8 @@
 package com.vaadin.client.hummingbird.template;
 
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.dom.DomElement;
+import com.vaadin.shared.JsonConstants;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -44,15 +46,18 @@ public interface TemplateNode {
     /**
      * Gets an array of child template ids. The corresponding template instances
      * can be found using {@link TemplateRegistry#get(int)}.
+     * <p>
+     * The name childrenIds is used instead of children because of colliding
+     * with {@link DomElement} API.
      *
      * @return and array of child template ids
      */
-    @JsProperty
-    JsArray<Double> getChildren();
+    @JsProperty(name = JsonConstants.CHILD_TEMPLATE_KEY)
+    JsArray<Double> getChildrenIds();
 
     /**
      * Gets the id that this template node has in its {@link TemplateRegistry}.
-     * 
+     *
      * @return the template node id, or <code>null</code> if this node has not
      *         been registered
      */
