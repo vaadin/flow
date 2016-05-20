@@ -28,7 +28,6 @@ import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.dom.DomElement.DomTokenList;
-import com.vaadin.client.hummingbird.dom.DomNode.DomNodeList;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
@@ -343,13 +342,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsArray<?> add = event.getAdd();
         if (add.length() != 0) {
             int insertIndex = event.getIndex();
-            DomNodeList childNodes = DomApi.wrap(context.element)
+            JsArray<Node> childNodes = DomApi.wrap(context.element)
                     .getChildNodes();
 
             Node beforeRef;
-            if (insertIndex < childNodes.getLength()) {
+            if (insertIndex < childNodes.length()) {
                 // Insert before the node current at the target index
-                beforeRef = childNodes.item(insertIndex);
+                beforeRef = childNodes.get(insertIndex);
             } else {
                 // Insert at the end
                 beforeRef = null;
