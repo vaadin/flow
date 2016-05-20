@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -151,7 +152,7 @@ public abstract class TemplateNode implements Serializable {
                 children.set(i, Json.create(child.getId()));
             }
 
-            json.put("children", children);
+            json.put(JsonConstants.CHILD_TEMPLATE_KEY, children);
         }
 
         return json;

@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 
 import elemental.dom.Element;
@@ -138,7 +139,7 @@ public interface BinderContext {
 
             Node child = factory.apply(childNode);
 
-            parent.insertBefore(child, beforeNode);
+            DomApi.wrap(parent).insertBefore(child, beforeNode);
         }
         return children;
     }

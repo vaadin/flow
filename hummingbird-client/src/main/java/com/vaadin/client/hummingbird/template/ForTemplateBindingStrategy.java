@@ -20,6 +20,7 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
@@ -32,7 +33,7 @@ import elemental.dom.Node;
 
 /**
  * *ngFor template binding strategy.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -71,17 +72,17 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
         public void execute() {
             Element parent = anchor.getParentElement();
             if (beforeNode == null) {
-                beforeNode = anchor.getNextSibling();
+                beforeNode = DomApi.wrap(anchor).getNextSibling();
             }
 
-            JsArray<Double> children = templateNode.getChildren();
+            JsArray<Double> children = templateNode.getChildrenIds();
             assert children.length() == 1;
             int childId = children.get(0).intValue();
 
-            Node htmlNode = anchor.getNextSibling();
+            Node htmlNode = DomApi.wrap(anchor).getNextSibling();
             while (htmlNode != beforeNode) {
-                parent.removeChild(htmlNode);
-                htmlNode = anchor.getNextSibling();
+                DomApi.wrap(parent).removeChild(htmlNode);
+                htmlNode = DomApi.wrap(anchor).getNextSibling();
             }
 
             NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
