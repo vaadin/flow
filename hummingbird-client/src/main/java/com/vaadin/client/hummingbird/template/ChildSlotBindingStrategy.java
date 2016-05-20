@@ -19,6 +19,7 @@ import com.vaadin.client.Command;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
+import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
@@ -30,7 +31,7 @@ import elemental.dom.Node;
 
 /**
  * Child slot binding strategy. Handles "@child@" node.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -73,13 +74,14 @@ public class ChildSlotBindingStrategy extends AbstractTemplateStrategy<Node> {
                 Node oldChild = oldChildNode.getDomNode();
                 assert oldChild.getParentElement() == parent;
 
-                parent.removeChild(oldChild);
+                DomApi.wrap(parent).removeChild(oldChild);
             }
 
             if (newChildNode != null) {
                 Node newChild = context.createAndBind(childNode);
 
-                parent.insertBefore(newChild, anchor.getNextSibling());
+                DomApi.wrap(parent).insertBefore(newChild,
+                        DomApi.wrap(anchor).getNextSibling());
             }
         }
     }
