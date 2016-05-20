@@ -358,9 +358,10 @@ public class ServerRpcHandler implements Serializable {
             JsonArray argsFromClient) {
         if (argsFromClient.length() < method.getParameterCount()) {
             String msg = String.format(
-                    "The number of received values is smaller "
-                            + "than the number of arguments in the method '%s' "
+                    "The number of received values (%d) is smaller "
+                            + "than the number of arguments (%d) in the method '%s' "
                             + "' declared in '%s'",
+                    argsFromClient.length(), method.getParameterCount(),
                     method.getName(), method.getDeclaringClass().getName());
             throw new IllegalArgumentException(msg);
         }
@@ -419,7 +420,8 @@ public class ServerRpcHandler implements Serializable {
         assert argValue != null;
         if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
             String msg = String.format(
-                    "A 'null' value was received for %d-th parameter "
+                    "Null values are not allowed for primitive types but "
+                            + "a 'null' value was received for %d-th parameter "
                             + "which refers to primitive type '%s' "
                             + " in the method '%s' defined in the class '%s'",
                     index, type.getName(), method.getName(),

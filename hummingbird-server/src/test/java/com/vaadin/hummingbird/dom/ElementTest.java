@@ -1262,7 +1262,7 @@ public class ElementTest {
     }
 
     @Test
-    public void singleStyleAsAttribute() {
+    public void getSingleStyleAsAttribute() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("border", "1px solid black");
@@ -1271,7 +1271,7 @@ public class ElementTest {
     }
 
     @Test
-    public void multipleStylesAsAttribute() {
+    public void getMultipleStylesAsAttribute() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("border", "1px solid black");
@@ -1281,6 +1281,80 @@ public class ElementTest {
                 new String[] { "border:1px solid black;margin:1em",
                         "margin:1em;border:1px solid black" },
                 e.getAttribute("style"));
+    }
+
+    @Test
+    public void setSingleStyleAsAttribute() {
+        Element e = ElementFactory.createDiv();
+        String style = "width:12em";
+        e.setAttribute("style", style);
+        Assert.assertEquals(style, e.getAttribute("style"));
+
+    }
+
+    @Test
+    public void setMultipleStylesAsAttribute() {
+        Element e = ElementFactory.createDiv();
+        String style = "width:12em;height:2em";
+        e.setAttribute("style", style);
+        Assert.assertEquals(style, e.getAttribute("style"));
+
+    }
+
+    @Test
+    public void setComplexStylesAsAttribute() {
+        testStyleAttribute(
+                "background:rgb(0, 255, 0) url(http://foo.bar/smiley.gif) no-repeat fixed center");
+        testStyleAttribute("content:\"content: bar\"");
+        testStyleAttribute("width:calc(100% -80px)");
+        testStyleAttribute("width:12px;content:\"content: bar\";height:12px");
+        // CSS variables do not currently work
+        // testStyleAttribute("width:calc(var(--widthB) / 2)");
+    }
+
+    private void testStyleAttribute(String style) {
+        Element e = ElementFactory.createDiv();
+        e.setAttribute("style", style);
+        Assert.assertEquals(style, e.getAttribute("style"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setInvalidStyleAsAttribute() {
+        Element e = ElementFactory.createDiv();
+        e.setAttribute("style", "width:");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setInvalidStyleAsAttribute2() {
+        Element e = ElementFactory.createDiv();
+        e.setAttribute("style", "width");
+    }
+
+    @Test
+    public void setVendorSpecificStylesProperty() {
+        Element e = ElementFactory.createDiv();
+        String style = "-moz-user-input:inherit";
+        e.setAttribute("style", style);
+        Assert.assertEquals("inherit", e.getStyle().get("mozUserInput"));
+        Assert.assertEquals(style, e.getAttribute("style"));
+    }
+
+    @Test
+    public void setVendorSpecificStylesValue() {
+        Element e = ElementFactory.createDiv();
+        String style = "display:-moz-box";
+        e.setAttribute("style", style);
+        Assert.assertEquals("-moz-box", e.getStyle().get("display"));
+        Assert.assertEquals(style, e.getAttribute("style"));
+
+    }
+
+    @Test
+    public void setStyleAttributeTrailingSemicolon() {
+        Element e = ElementFactory.createDiv();
+        String style = "width:12em";
+        e.setAttribute("style", style + ";");
+        Assert.assertEquals(style, e.getAttribute("style"));
     }
 
     private void assertEqualsOne(String[] expected, String actual) {
@@ -1316,12 +1390,6 @@ public class ElementTest {
         Assert.assertEquals("red", e.getStyle().get("color"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void setStyleAttribute() {
-        Element e = ElementFactory.createDiv();
-        e.setAttribute("style", "foo: bar;");
-    }
-
     @Test
     public void removeStyles() {
         Element element = ElementFactory.createDiv();
@@ -1331,7 +1399,7 @@ public class ElementTest {
 
         element.getStyle().remove("background");
 
-        Assert.assertEquals("zIndex:12", element.getAttribute("style"));
+        Assert.assertEquals("z-index:12", element.getAttribute("style"));
 
         element.getStyle().remove("zIndex");
 
