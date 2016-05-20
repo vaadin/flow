@@ -25,11 +25,8 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.event.UIEvents.PollEvent;
-import com.vaadin.event.UIEvents.PollNotifier;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
@@ -492,11 +489,6 @@ public class UI extends Component
     public int getPollInterval() {
         return getNode().getFeature(PollConfigurationMap.class)
                 .getPollInterval();
-    }
-
-    @Override
-    public void addPollListener(ComponentEventListener<PollEvent> listener) {
-        getEventBus().addListener(PollEvent.class, listener);
     }
 
     /**
