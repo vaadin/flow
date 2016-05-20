@@ -74,7 +74,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
                     method.getParameterTypes())) {
                 String msg = String.format(Locale.ENGLISH,
                         "There may be only one event handler method with the given name. "
-                                + "Class '%s'  (considering with its superclasses) "
+                                + "Class '%s' (considering its superclasses) "
                                 + "contains several event handler methods with the same name: '%s'",
                         component.getClass(), method.getName());
                 throw new IllegalStateException(msg);
@@ -146,11 +146,11 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
             checkParameterType(method, parameterType.getComponentType());
         } else if (!JsonCodec.canEncodeWithoutTypeInfo(parameterType)) {
             String msg = String.format(Locale.ENGLISH,
-                    "Event handler method may contain only serializable to JSON types."
-                            + " Component %s has method '%s' which declares parameter "
-                            + "with non serializable to JSON type '%s'  and annotated with %s",
+                    "The parameter types of event handler methods must be serializable to JSON."
+                            + " Component %s has method '%s' and annotated with %s "
+                            + "which declares parameter with non serializable to JSON type '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
-                    type.getName(), EventHandler.class.getName());
+                    EventHandler.class.getName(), type.getName());
             throw new IllegalStateException(msg);
         }
     }
