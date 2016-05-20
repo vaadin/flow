@@ -27,8 +27,8 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.Binder;
 import com.vaadin.client.hummingbird.binding.SimpleElementBindingStrategy;
+import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.dom.DomApi;
-import com.vaadin.client.hummingbird.dom.DomNode.DomNodeList;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Reactive;
@@ -345,9 +345,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         Reactive.flush();
 
-        assertEquals(1, DomApi.wrap(element).getChildNodes().getLength());
+        assertEquals(1, DomApi.wrap(element).getChildNodes().length());
         assertEquals(Node.COMMENT_NODE,
-                DomApi.wrap(element).getChildNodes().item(0).getNodeType());
+                DomApi.wrap(element).getChildNodes().get(0).getNodeType());
 
         StateNode childContentNode = new StateNode(79, stateNode.getTree());
 
@@ -550,18 +550,17 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals("DIV", element.getTagName());
-        DomNodeList childNodes = DomApi.wrap(element).getChildNodes();
-        assertTrue(childNodes.getLength() > 1);
-        assertEquals("DIV", ((Element) childNodes.item(0)).getTagName());
-        assertEquals("SPAN",
-                ((Element) childNodes.item(childNodes.getLength() - 1))
-                        .getTagName());
+        JsArray<Node> childNodes = DomApi.wrap(element).getChildNodes();
+        assertTrue(childNodes.length() > 1);
+        assertEquals("DIV", ((Element) childNodes.get(0)).getTagName());
+        assertEquals("SPAN", ((Element) childNodes.get(childNodes.length() - 1))
+                .getTagName());
 
-        Element li = ((Element) childNodes.item(childNodes.getLength() - 2));
+        Element li = ((Element) childNodes.get(childNodes.length() - 2));
         assertEquals("LI", li.getTagName());
-        assertEquals(4, childNodes.getLength());
+        assertEquals(4, childNodes.length());
         // comment
-        assertEquals(Node.COMMENT_NODE, childNodes.item(1).getNodeType());
+        assertEquals(Node.COMMENT_NODE, childNodes.get(1).getNodeType());
 
         assertEquals("foo", li.getTextContent());
     }

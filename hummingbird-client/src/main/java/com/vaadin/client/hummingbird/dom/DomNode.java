@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird.dom;
 
+import com.vaadin.client.hummingbird.collection.JsArray;
+
 import elemental.dom.Node;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -35,37 +37,16 @@ import jsinterop.annotations.JsType;
 public interface DomNode {
 
     /**
-     * A <a href="https://developer.mozilla.org/en-US/docs/Web/API/NodeList">
-     * NodeList</a> java representation.
-     */
-    @JsType(isNative = true)
-    interface DomNodeList {
-
-        /**
-         * Returns the <code>length</code> property.
-         *
-         * @return the node list length
-         */
-        @JsProperty
-        int getLength();
-
-        /**
-         * Returns an item in the list by its index.
-         *
-         * @param index
-         *            the index to look for the item
-         * @return the node at the given index
-         */
-        Node item(int index);
-    }
-
-    /**
      * Returns the <code>childNodes</code> property.
+     * <p>
+     * NOTE: returns an array since that is what the Polymer.dom API does, and
+     * luckily native NodeList items can be accessed array like with
+     * <code>list[index].</code>
      *
      * @return the child nodes
      */
     @JsProperty
-    DomNodeList getChildNodes();
+    JsArray<Node> getChildNodes();
 
     /**
      * Returns the <code>firstChild</code> property.

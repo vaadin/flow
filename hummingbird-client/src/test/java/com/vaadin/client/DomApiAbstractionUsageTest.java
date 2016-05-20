@@ -75,9 +75,11 @@ public class DomApiAbstractionUsageTest {
      * This tests that no API from {@link DomElement} or {@link DomNode} is used
      * without wrapping it with a {@link DomApi#wrap(elemental.dom.Node)} call.
      * <p>
-     * Needs to be updated to take nested calls also into account, e.g.
-     * <code>DomApi.wrap(element).getFirstElemenetChild().appendChild(anotherElement);</code>
-     * , which should have the returned element also wrapped.
+     * Verifies that any required method call is preceded with DomApi.wrap(*).
+     * <p>
+     * Currently doesn't support calling methods more than once on the same
+     * line, e.g. this will fail event though correctly handled:
+     * <code>DomApi.wrap(DomApi.wrap(n).getChildNodes()).getChildNodes()</code>
      */
     @Test
     public void testDomApiCodeNotUsed() throws IOException {

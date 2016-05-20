@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird.dom;
 
+import com.vaadin.client.Console;
+
 import elemental.dom.Node;
 
 /**
@@ -30,10 +32,26 @@ import elemental.dom.Node;
 public class DomApi {
 
     /**
+     * Flag for tracking if Polymer-micro.html is loaded (contains dom).
+     *
+     * Package protected for testing reasons.
+     */
+    static boolean polymerMicroLoaded = false;
+
+    /**
+     * Flag for tracking if Polymer.html is loaded (contains updateStyles)
+     *
+     * Package protected for testing reasons.
+     */
+    static boolean polymerFullyLoaded = false;
+
+    /**
      * The currently used DOM API implementation. By default just returns the
      * same object.
+     *
+     * Package protected for testing reasons.
      */
-    private static DomApiImpl impl = node -> (DomElement) node;
+    static DomApiImpl impl = node -> (DomElement) node;
 
     private DomApi() {
         // NOOP
@@ -55,7 +73,35 @@ public class DomApi {
      * Updates the DOM API implementation used.
      */
     public static void updateApiImplementation() {
-        // NOOP for now
+        Console.log("Updating DomApi implementation");
+        if (polymerFullyLoaded) {
+            return;
+        }
+
+        if (PolymerDomApiImpl.isPolymerFullyLoaded()) {
+            // Full Polymer loaded
+            if (!polymerMicroLoaded) {
+                // Full loads micro automatically
+                polymerMicroLoaded();
+            }
+            polymerFullyLoaded = true;
+            polymerFullyLoaded();
+        } else if (!polymerMicroLoaded
+                && PolymerDomApiImpl.isPolymerMicroLoaded()) {
+            // Only micro loaded
+            polymerMicroLoaded();
+        }
+    }
+
+    private static void polymerMicroLoaded() {
+        polymerMicroLoaded = true;
+        Console.log("Polymer micro is now loaded, using Polymer DOM API");
+        impl = new PolymerDomApiImpl();
+    }
+
+    private static void polymerFullyLoaded() {
+        polymerFullyLoaded = true;
+        Console.log("Polymer is now fully loaded");
     }
 
 }
