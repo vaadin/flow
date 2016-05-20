@@ -396,7 +396,7 @@ public class ServerRpcHandler implements Serializable {
                         "The number of received values is greater than "
                                 + "arguments length in the method '%s' "
                                 + "declared in '%s' and the last argument of the method "
-                                + "has type '%s' which is not vararg or has an array type",
+                                + "has type '%s' which is not vararg and does not have an array type",
                         method.getName(), method.getDeclaringClass().getName(),
                         type.getName());
                 throw new IllegalArgumentException(msg);
@@ -421,7 +421,7 @@ public class ServerRpcHandler implements Serializable {
         if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
             String msg = String.format(
                     "Null values are not allowed for primitive types but "
-                            + "a 'null' value was received for %d-th parameter "
+                            + "a 'null' value was received for parameter %d"
                             + "which refers to primitive type '%s' "
                             + " in the method '%s' defined in the class '%s'",
                     index, type.getName(), method.getName(),
@@ -434,7 +434,7 @@ public class ServerRpcHandler implements Serializable {
             if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
                 String msg = String.format(
                         "Class '%s' has the method '%s'"
-                                + " whose %d-th parameter refers to unsupported type '%s'",
+                                + " whose parameter %d refers to unsupported type '%s'",
                         method.getDeclaringClass().getName(), method.getName(),
                         index, type.getName());
                 throw new IllegalArgumentException(msg);
@@ -448,7 +448,7 @@ public class ServerRpcHandler implements Serializable {
         if (argValue.getType() != JsonType.ARRAY) {
             String msg = String.format(
                     "Class '%s' has the method '%s'"
-                            + " whose %d-th parameter refers to the array type '%s'"
+                            + " whose parameter %d refers to the array type '%s'"
                             + "but received value is not an array, its type is '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     index, type.getName(), argValue.getType().name());

@@ -76,7 +76,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
                         "There may be only one event handler method with the given name. "
                                 + "Class '%s' (considering its superclasses) "
                                 + "contains several event handler methods with the same name: '%s'",
-                        component.getClass(), method.getName());
+                        component.getClass().getName(), method.getName());
                 throw new IllegalStateException(msg);
             }
             map.put(method.getName(), method);

@@ -190,4 +190,9 @@ public class JsonConstants implements Serializable {
      * Key used when informing the client side that the session has expired.
      */
     public static final String META_SESSION_EXPIRED = "sessionExpired";
+
+    /**
+     * Key used for storing child template nodes.
+     */
+    public static final String CHILD_TEMPLATE_KEY = "children";
 }
