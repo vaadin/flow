@@ -104,7 +104,7 @@ public class ServerConnector {
                 JsonConstants.RPC_TYPE_TEMPLATE_EVENT);
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME, methodName);
-        message.put(JsonConstants.RPCTE)
+        message.put(JsonConstants.RPC_TEMPLATE_EVENT_ARGS, argsArray);
         sendMessage(message);
     }
 

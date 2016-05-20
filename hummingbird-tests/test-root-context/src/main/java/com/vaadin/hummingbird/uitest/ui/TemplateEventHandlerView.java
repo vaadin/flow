@@ -51,8 +51,8 @@ public class TemplateEventHandlerView extends Div implements View {
     public static class ArgReceiver extends InlineTemplate {
 
         ArgReceiver() {
-            super("<div id='arg-receiver' "
-                    + "(click)='$server.method($event.target.id, 3, 6.2, true, [2.1, 6.7], 'foo','bar' )'>"
+            super("<div id='arg-receiver' (click)="
+                    + "'$server.method($event.target.id, 3, 6.2, true, [2.1, 6.7],\"foo\",\"bar\" )'>"
                     + "Click to send event to the server</div>");
         }
 
@@ -75,6 +75,7 @@ public class TemplateEventHandlerView extends Div implements View {
 
         private void addLabel(String id, Object value) {
             Label label = new Label(value.toString());
+            label.getStyle().set("display", "block");
             label.setId(id);
             getParentContainer().add(label);
         }
