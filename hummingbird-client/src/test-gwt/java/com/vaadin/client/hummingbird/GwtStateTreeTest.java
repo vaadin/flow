@@ -16,11 +16,11 @@
 package com.vaadin.client.hummingbird;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.ServerConnector;
+import com.vaadin.client.hummingbird.collection.JsArray;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;

@@ -18,8 +18,6 @@ package com.vaadin.client.hummingbird.template;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.core.client.JsArray;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
@@ -27,6 +25,7 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.Binder;
 import com.vaadin.client.hummingbird.binding.SimpleElementBindingStrategy;
+import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.dom.DomNode.DomNodeList;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
@@ -54,7 +53,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private StateTree tree;
     private StateNode stateNode;
 
-    private Map<String, JsArray<? extends JavaScriptObject>> serverMethods = new HashMap<>();
+    private Map<String, JsArray<?>> serverMethods = new HashMap<>();
 
     @Override
     protected void gwtSetUp() throws Exception {
@@ -488,7 +487,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         element.dispatchEvent(event);
 
         assertEquals(1, serverMethods.size());
-        JsArray<? extends JavaScriptObject> args = serverMethods.get(operation);
+        JsArray<?> args = serverMethods.get(operation);
         assertNotNull(args);
         assertEquals(0, args.length());
     }
@@ -521,7 +520,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         element.dispatchEvent(event);
 
         assertEquals(1, serverMethods.size());
-        JsArray<? extends JavaScriptObject> args = serverMethods.get(operation);
+        JsArray<?> args = serverMethods.get(operation);
         assertNotNull(args);
         assertEquals(4, args.length());
         assertEquals(true, args.get(0));
