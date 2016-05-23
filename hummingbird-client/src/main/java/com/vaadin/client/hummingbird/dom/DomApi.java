@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird.dom;
 
+import com.vaadin.client.Console;
+
 import elemental.dom.Node;
 
 /**
@@ -30,10 +32,19 @@ import elemental.dom.Node;
 public class DomApi {
 
     /**
+     * Flag for tracking if Polymer-micro.html is loaded (contains dom).
+     *
+     * Package protected for testing reasons.
+     */
+    static boolean polymerMicroLoaded = false;
+
+    /**
      * The currently used DOM API implementation. By default just returns the
      * same object.
+     *
+     * Package protected for testing reasons.
      */
-    private static DomApiImpl impl = node -> (DomElement) node;
+    static DomApiImpl impl = node -> (DomElement) node;
 
     private DomApi() {
         // NOOP
@@ -55,7 +66,15 @@ public class DomApi {
      * Updates the DOM API implementation used.
      */
     public static void updateApiImplementation() {
-        // NOOP for now
+        if (!polymerMicroLoaded && PolymerDomApiImpl.isPolymerMicroLoaded()) {
+            polymerMicroLoaded();
+        }
+    }
+
+    private static void polymerMicroLoaded() {
+        polymerMicroLoaded = true;
+        Console.log("Polymer micro is now loaded, using Polymer DOM API");
+        impl = new PolymerDomApiImpl();
     }
 
 }

@@ -15,8 +15,10 @@
  */
 package com.vaadin.client.hummingbird.dom;
 
+import com.vaadin.client.hummingbird.collection.JsArray;
+
 import elemental.dom.Element;
-import elemental.dom.NodeList;
+import elemental.dom.Node;
 import elemental.html.HTMLCollection;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
@@ -162,10 +164,17 @@ public interface DomElement extends DomNode {
     /**
      * Returns a non-live <code>NodeList</code> of all elements descended from
      * this element and match the given group of CSS selectors.
+     * <p>
+     * NOTE: returns an array since that is what the Polymer.dom API does, and
+     * luckily native NodeList items can be accessed array like with
+     * <code>list[index].</code>
+     * <p>
+     * This means that only {@link JsArray#get(int)} and
+     * {@link JsArray#length()} methods can be used from the returned "array".
      *
      * @param selectors
      *            a group of selectors to match on
      * @return a non-live node list of elements that matched the given selectors
      */
-    NodeList querySelectorAll(String selectors);
+    JsArray<Node> querySelectorAll(String selectors);
 }
