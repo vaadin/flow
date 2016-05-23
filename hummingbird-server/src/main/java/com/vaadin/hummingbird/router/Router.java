@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
 
 /**
@@ -83,11 +84,11 @@ public class Router implements Serializable {
         ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
             String newLocation = e.getLocation();
 
-            navigate(ui, new Location(newLocation));
+            navigate(ui, new Location(newLocation), false);
         });
 
         Location location = new Location(path);
-        navigate(ui, location);
+        navigate(ui, location, true);
     }
 
     /**
@@ -99,6 +100,10 @@ public class Router implements Serializable {
      *            the location to navigate to
      */
     public void navigate(UI ui, Location location) {
+        navigate(ui, location, false);
+    }
+
+    private void navigate(UI ui, Location location, boolean initialRequest) {
         // Read volatile field only once per navigation
         ImmutableRouterConfiguration currentConfig = configuration;
         assert currentConfig.isConfigured();
@@ -128,6 +133,11 @@ public class Router implements Serializable {
             Class<? extends View> errorView = configuration.getErrorView();
             handler = new StaticViewRenderer(errorView,
                     configuration.getParentViewsAsList(errorView));
+
+            // for initial request return 404 access code
+            if (initialRequest) {
+                VaadinService.getCurrentResponse().setStatus(404);
+            }
         }
 
         handler.handle(navigationEvent);
