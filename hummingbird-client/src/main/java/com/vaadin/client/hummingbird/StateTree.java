@@ -15,9 +15,9 @@
  */
 package com.vaadin.client.hummingbird;
 
-import com.google.gwt.core.client.JsArray;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
@@ -165,7 +165,7 @@ public class StateTree {
     /**
      * Sends a request to call server side method with {@code methodName} using
      * {@code argsArray} as argument values.
-     * 
+     *
      * @param node
      *            the node referring to the server side instance containing the
      *            method
