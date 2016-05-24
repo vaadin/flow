@@ -1304,12 +1304,14 @@ public class ElementTest {
     @Test
     public void setComplexStylesAsAttribute() {
         testStyleAttribute(
-                "background:rgb(0, 255, 0) url(http://foo.bar/smiley.gif) no-repeat fixed center");
+                "background:rgb(0,255,0) url(http://foo.bar/smiley.gif) no-repeat fixed center");
         testStyleAttribute("content:\"content: bar\"");
-        testStyleAttribute("width:calc(100% -80px)");
         testStyleAttribute("width:12px;content:\"content: bar\";height:12px");
-        // CSS variables do not currently work
-        // testStyleAttribute("width:calc(var(--widthB) / 2)");
+        testStyleAttribute("width:calc(100% - 80px)");
+        testStyleAttribute("width:var(--widthB)");
+        testStyleAttribute("color:var(--mainColor)");
+        // Reduced calc does not work (http://cssnext.io/features/#reduced-calc)
+        // testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
     }
 
     private void testStyleAttribute(String style) {
