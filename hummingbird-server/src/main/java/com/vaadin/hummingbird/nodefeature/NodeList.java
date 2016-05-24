@@ -16,9 +16,6 @@
 
 package com.vaadin.hummingbird.nodefeature;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -42,7 +39,7 @@ import com.vaadin.hummingbird.change.NodeChange;
  * @param <T>
  *            the type of the items in the list
  */
-public abstract class NodeList<T> extends NodeFeature {
+public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     /**
      * Provides access to a {@link NodeList} as a {@link Set}.
@@ -50,8 +47,8 @@ public abstract class NodeList<T> extends NodeFeature {
      * @param <T>
      *            the type of objects in the list (and set)
      */
-    protected abstract static class SetView<T> extends AbstractSet<T>
-            implements Serializable {
+    protected abstract static class SetView<T extends Serializable>
+            extends AbstractSet<T> implements Serializable {
 
         private NodeList<T> nodeList;
 
@@ -106,9 +103,9 @@ public abstract class NodeList<T> extends NodeFeature {
         }
     }
 
-    private transient List<T> values = new ArrayList<>();
+    private List<T> values = new ArrayList<>();
 
-    private transient List<ListSpliceChange> changes = new ArrayList<>();
+    private List<ListSpliceChange> changes = new ArrayList<>();
 
     /**
      * Creates a new list for the given node.
@@ -275,74 +272,4 @@ public abstract class NodeList<T> extends NodeFeature {
             }
         };
     }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void readObject(ObjectInputStream stream)
-            throws IOException, ClassNotFoundException {
-        stream.defaultReadObject();
-
-        changes = (List<ListSpliceChange>) stream.readObject();
-        values = (List<T>) stream.readObject();
-
-        postReadChanges(changes);
-        postReadList((List) values);
-    }
-
-    /**
-     * Called after deserializing the internal value list.
-     * <p>
-     * Extending classes can override this method to do in-place transformations
-     * of the list.
-     *
-     * @param list
-     *            the list which was deserialized
-     */
-    protected void postReadList(List<Object> list) {
-    }
-
-    /**
-     * Called after deserializing the internal changes list.
-     * <p>
-     * Extending classes can override this method to do inplace transformations
-     * of the list, if needed.
-     *
-     * @param list
-     *            the list which was deserialized
-     */
-    protected void postReadChanges(List<ListSpliceChange> list) {
-    }
-
-    /**
-     * Called before serializing the internal values list.
-     * <p>
-     * Extending classes can override this method and to do transformations on a
-     * copy of the list, if needed. No modifications can be done to the list
-     * itself.
-     *
-     * @return the original list or a modified copy of the list
-     */
-    protected Serializable preWriteValues(List<T> list) {
-        return (Serializable) list;
-    }
-
-    /**
-     * Called before serializing the internal changes list.
-     * <p>
-     * Extending classes can override this method and to do transformations on a
-     * copy of the list, if needed. No modifications can be done to the list
-     * itself.
-     *
-     * @return the original list or a modified copy of the list
-     */
-    protected Serializable preWriteChanges(List<ListSpliceChange> list) {
-        return (Serializable) list;
-    }
-
-    private void writeObject(ObjectOutputStream stream) throws IOException {
-        stream.defaultWriteObject();
-
-        stream.writeObject(preWriteChanges(changes));
-        stream.writeObject(preWriteValues(values));
-    }
-
 }
