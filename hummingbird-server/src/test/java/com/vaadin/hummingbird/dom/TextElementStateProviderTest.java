@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest.NullTemplateResolver;
 import com.vaadin.hummingbird.dom.impl.TemplateTextElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
@@ -128,8 +129,8 @@ public class TextElementStateProviderTest {
     @Test
     public void testSupports() {
         TemplateTextElementStateProvider provider = new TemplateTextElementStateProvider(
-                (TextTemplateNode) TemplateParser.parse("<div>{{value}}</div>")
-                        .getChild(0));
+                (TextTemplateNode) TemplateParser.parse("<div>{{value}}</div>",
+                        new NullTemplateResolver()).getChild(0));
 
         Assert.assertTrue(provider.supports(new StateNode(ModelMap.class)));
         Assert.assertFalse(provider.supports(new StateNode(TemplateMap.class)));

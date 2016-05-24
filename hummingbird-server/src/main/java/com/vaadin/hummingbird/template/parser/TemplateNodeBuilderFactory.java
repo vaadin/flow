@@ -53,11 +53,13 @@ public interface TemplateNodeBuilderFactory<T extends Node> {
      * @param node
      *            the node that the factory is able to handle and produce a
      *            builder for
+     * @param templateResolver
+     *            the resolver to use to look up included files
      * @param builderProducer
      *            builder producer as a context to handle nodes that the factory
      *            is not able to handle
      * @return the template node builder for the {@code node}
      */
-    TemplateNodeBuilder createBuilder(T node,
+    TemplateNodeBuilder createBuilder(T node, TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer);
 }
