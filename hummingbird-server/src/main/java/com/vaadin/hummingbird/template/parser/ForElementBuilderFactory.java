@@ -32,7 +32,7 @@ import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
  * The factory that handles *ngFor template elements.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

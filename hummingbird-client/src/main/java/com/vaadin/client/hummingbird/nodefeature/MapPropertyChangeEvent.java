@@ -29,7 +29,7 @@ public class MapPropertyChangeEvent extends ReactiveChangeEvent {
 
     /**
      * Creates a new map property change event.
-     * 
+     *
      * @param source
      *            the changed map property
      * @param oldValue
@@ -46,7 +46,7 @@ public class MapPropertyChangeEvent extends ReactiveChangeEvent {
 
     /**
      * Gets the old property value.
-     * 
+     *
      * @return the old value
      */
     public Object getOldValue() {
@@ -55,7 +55,7 @@ public class MapPropertyChangeEvent extends ReactiveChangeEvent {
 
     /**
      * Gets the new property value.
-     * 
+     *
      * @return the new value
      */
     public Object getNewValue() {

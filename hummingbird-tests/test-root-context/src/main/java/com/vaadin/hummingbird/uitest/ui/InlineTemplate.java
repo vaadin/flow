@@ -31,7 +31,7 @@ public class InlineTemplate extends Template {
      * <p>
      * Note: super constructor uses the {@code String} parameter as a file path,
      * not as a content.
-     * 
+     *
      * @param templateHtml
      *            the template HTML
      */

@@ -180,7 +180,7 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used to hold the argument values for server side method call.
-     * 
+     *
      * @see #RPC_TEMPLATE_EVENT_METHOD_NAME
      * @see #RPC_TYPE_TEMPLATE_EVENT
      */

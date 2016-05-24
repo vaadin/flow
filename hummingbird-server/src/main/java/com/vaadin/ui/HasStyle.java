@@ -19,7 +19,7 @@ import com.vaadin.hummingbird.dom.Style;
 
 /**
  * Represents {@link Component} which has class attribute and inline styles.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

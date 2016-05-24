@@ -28,7 +28,7 @@ import elemental.dom.Text;
 
 /**
  * Binding strategy for simple (not template) text {@link Node}.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
