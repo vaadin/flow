@@ -34,8 +34,9 @@ import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
-import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateModelData;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
@@ -59,7 +60,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] rootOnlyFeatures = new Class[] {
             ComponentMapping.class, TemplateMap.class,
-            ParentGeneratorHolder.class, TemplateEventHandlerNames.class };
+            ParentGeneratorHolder.class, TemplateEventHandlerNames.class,
+            TemplateModelData.class };
 
     private static Class<? extends NodeFeature>[] rootNodeFeatures = Stream
             .concat(Stream.of(requiredFeatures), Stream.of(rootOnlyFeatures))

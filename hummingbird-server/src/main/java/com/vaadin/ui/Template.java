@@ -28,6 +28,7 @@ import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 /**
@@ -139,5 +140,9 @@ public abstract class Template extends Component implements HasChildView {
         } else {
             templateMap.setChild(childView.getElement().getNode());
         }
+    }
+
+    protected TemplateModel getModel() {
+        return TemplateModel.getTemplateModel(stateNode, getClass());
     }
 }

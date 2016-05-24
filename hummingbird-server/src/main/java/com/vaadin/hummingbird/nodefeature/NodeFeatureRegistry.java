@@ -77,6 +77,7 @@ public class NodeFeatureRegistry {
         registerFeature(ModelList.class, ModelList::new);
         registerFeature(TemplateEventHandlerNames.class,
                 TemplateEventHandlerNames::new);
+        registerFeature(TemplateModelData.class, TemplateModelData::new);
     }
 
     private NodeFeatureRegistry() {

@@ -93,6 +93,8 @@ public class NodeFeatureTest {
         expectedIds.put(ModelList.class, NodeFeatures.TEMPLATE_MODELLIST);
         expectedIds.put(TemplateEventHandlerNames.class,
                 NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES);
+        expectedIds.put(TemplateModelData.class,
+                NodeFeatures.TEMPLATE_MODELDATA);
 
         Assert.assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());

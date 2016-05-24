@@ -35,6 +35,7 @@ import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.nodefeature.TemplateModelData;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 
@@ -142,6 +143,11 @@ public class NodeFeatures {
      * Id for {@link TemplateEventHandlerNames}.
      */
     public static final int TEMPLATE_EVENT_HANDLER_NAMES = 22;
+
+    /**
+     * Id for {@link TemplateModelData}.
+     */
+    public static final Integer TEMPLATE_MODELDATA = 23;
 
     /**
      * Key for {@link ElementData#getTag()}.
