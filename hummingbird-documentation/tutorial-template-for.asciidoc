@@ -73,19 +73,19 @@ public class EmployeesTable extends Template {
 
   // helper for fetching the employees list from the model
   private ModelList getEmployeesList() {
-    StateNode employees = (StateNode) getModel().getValue("employees");
+    StateNode employees = (StateNode) getModelMap().getValue("employees");
 
     // create the employees list if necessary
     if (employees == null) {
       employees = new StateNode(ModelList.class);
-      getModel().setValue("employees", employees);
+      getModelMap().setValue("employees", employees);
     }
 
     return employees.getFeature(ModelList.class);
   }
 
   // helper for accessing the model of the template
-  private ModelMap getModel() {
+  private ModelMap getModelMap() {
     return getElement().getNode().getFeature(ModelMap.class);
   }
 }

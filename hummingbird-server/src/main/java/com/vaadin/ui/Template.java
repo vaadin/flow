@@ -28,6 +28,9 @@ import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.hummingbird.template.model.TemplateModel;
+import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
+import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 /**
@@ -56,6 +59,8 @@ import com.vaadin.hummingbird.template.parser.TemplateParser;
 public abstract class Template extends Component implements HasChildView {
     private final StateNode stateNode = TemplateElementStateProvider
             .createRootNode();
+
+    private TemplateModel model;
 
     /**
      * Creates a new template.
@@ -139,5 +144,30 @@ public abstract class Template extends Component implements HasChildView {
         } else {
             templateMap.setChild(childView.getElement().getNode());
         }
+    }
+
+    /**
+     * Returns the {@link TemplateModel model} of this template.
+     * <p>
+     * The type of the model will be the type that this method returns in the
+     * instance it is invoked on - meaning that you should override this method
+     * and return your own model type that extends {@link TemplateModel}.
+     *
+     * @return the model of this template
+     * @see TemplateModel
+     */
+    protected TemplateModel getModel() {
+        if (model == null) {
+            model = createTemplateModelInstance();
+        }
+        return model;
+    }
+
+    private TemplateModel createTemplateModelInstance() {
+        Class<? extends TemplateModel> modelType = TemplateModelTypeParser
+                .getType(getClass());
+
+        return TemplateModelProxyHandler
+                .createModelProxy(stateNode, modelType);
     }
 }
