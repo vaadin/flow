@@ -24,6 +24,8 @@ import com.vaadin.hummingbird.html.HtmlContainer;
 import com.vaadin.hummingbird.html.Label;
 import com.vaadin.hummingbird.router.View;
 
+import elemental.json.JsonValue;
+
 /**
  * @author Vaadin Ltd
  *
@@ -85,9 +87,34 @@ public class TemplateEventHandlerView extends Div implements View {
         }
     }
 
+    public static class JsonValueReceiver extends InlineTemplate {
+
+        JsonValueReceiver() {
+            super("<div id='json-receiver' (click)='$server.method({\"foo\":\"bar\"})'>"
+                    + "Click to send json to the server</div>");
+        }
+
+        @EventHandler
+        protected void method(JsonValue value) {
+            Label label = new Label("Json object is received");
+            label.setId("event-json");
+            getParentContainer().add(label);
+
+            Label jsonLabel = new Label(value.toJson());
+            jsonLabel.getStyle().set("display", "block");
+            jsonLabel.setId("json-arg");
+            getParentContainer().add(jsonLabel);
+        }
+
+        private HtmlContainer getParentContainer() {
+            return (HtmlContainer) getParent().get();
+        }
+    }
+
     public TemplateEventHandlerView() {
         add(new EventReceiver());
         add(new ArgReceiver());
+        add(new JsonValueReceiver());
     }
 
 }
