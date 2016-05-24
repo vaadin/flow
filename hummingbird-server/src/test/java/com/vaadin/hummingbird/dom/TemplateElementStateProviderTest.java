@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.dom;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,8 +33,8 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
-import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
@@ -42,11 +43,20 @@ import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
+import com.vaadin.hummingbird.template.parser.TemplateResolver;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
 public class TemplateElementStateProviderTest {
+
+    public static class NullTemplateResolver implements TemplateResolver {
+        @Override
+        public InputStream resolve(String relativeFilename) {
+            return null;
+        }
+    }
+
     @Test
     public void testEmptyElement() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div");
@@ -489,7 +499,8 @@ public class TemplateElementStateProviderTest {
     }
 
     private static Element createElement(String template) {
-        return createElement(TemplateParser.parse(template));
+        return createElement(
+                TemplateParser.parse(template, new NullTemplateResolver()));
     }
 
     private static Element createElement(TemplateNodeBuilder builder) {
