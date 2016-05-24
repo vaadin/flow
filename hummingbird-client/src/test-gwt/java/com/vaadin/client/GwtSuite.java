@@ -39,6 +39,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtStateTreeTest.class);
         suite.addTestSuite(GwtDomApiTest.class);
         suite.addTestSuite(GwtPolymerApiImplTest.class);
+        suite.addTestSuite(GwtWidgetUtilTest.class);
         return suite;
     }
 }
