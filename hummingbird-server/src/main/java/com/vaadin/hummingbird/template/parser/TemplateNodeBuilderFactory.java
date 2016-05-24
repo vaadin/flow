@@ -58,6 +58,6 @@ public interface TemplateNodeBuilderFactory<T extends Node> {
      *            is not able to handle
      * @return the template node builder for the {@code node}
      */
-    TemplateNodeBuilder createBuilder(T node,
+    TemplateNodeBuilder createBuilder(T node, TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer);
 }
