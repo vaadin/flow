@@ -94,6 +94,17 @@ public class ServerRpcHandlerTest {
         }
     }
 
+    public static class MethodWithVarArgParameter extends ComponentWithMethod {
+
+        private String[] varArg;
+
+        @EventHandler
+        protected void method(String... args) {
+            varArg = args;
+        }
+
+    }
+
     public static class ComponentWithMethodThrowingException
             extends ComponentWithMethod {
 
@@ -264,6 +275,47 @@ public class ServerRpcHandlerTest {
         Assert.assertNotNull(component.varArg);
         Assert.assertArrayEquals(new Integer[] { (int) secondArg.getNumber(0),
                 null, (int) secondArg.getNumber(2) }, component.varArg);
+    }
+
+    @Test
+    public void methodWithVarArg_acceptNoValues() {
+        JsonArray array = Json.createArray();
+
+        MethodWithVarArgParameter component = new MethodWithVarArgParameter();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                array);
+
+        Assert.assertEquals(0, component.varArg.length);
+    }
+
+    @Test
+    public void methodWithVarArg_acceptOneValue() {
+        JsonArray array = Json.createArray();
+
+        array.set(0, "foo");
+
+        MethodWithVarArgParameter component = new MethodWithVarArgParameter();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                array);
+
+        Assert.assertEquals(1, component.varArg.length);
+        Assert.assertEquals("foo", component.varArg[0]);
+    }
+
+    @Test
+    public void methodWithVarArg_arrayIsCorrectlyHandled() {
+        JsonArray array = Json.createArray();
+
+        JsonArray value = Json.createArray();
+        value.set(0, "foo");
+        array.set(0, value);
+
+        MethodWithVarArgParameter component = new MethodWithVarArgParameter();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                array);
+
+        Assert.assertArrayEquals(new String[] { value.getString(0) },
+                component.varArg);
     }
 
     @Test(expected = IllegalArgumentException.class)

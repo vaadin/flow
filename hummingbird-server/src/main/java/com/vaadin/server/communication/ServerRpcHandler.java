@@ -356,7 +356,7 @@ public class ServerRpcHandler implements Serializable {
 
     private static Object[] decodeArgs(Method method,
             JsonArray argsFromClient) {
-        if (argsFromClient.length() < method.getParameterCount()) {
+        if (argsFromClient.length() < method.getParameterCount() - 1) {
             String msg = String.format(
                     "The number of received values (%d) is smaller "
                             + "than the number of arguments (%d) in the method '%s' "
@@ -379,8 +379,7 @@ public class ServerRpcHandler implements Serializable {
             }
         }
         List<Object> decoded = new ArrayList<>(method.getParameterCount());
-        boolean hasVarargs = argsFromClient.length() != method
-                .getParameterCount();
+        boolean hasVarargs = hasVarArgs(method, argsFromClient);
         int argsCount = hasVarargs ? method.getParameterCount() - 1
                 : method.getParameterCount();
         Class<?>[] methodParameterTypes = method.getParameterTypes();
@@ -413,6 +412,32 @@ public class ServerRpcHandler implements Serializable {
                     method.getParameterCount() - 1, rest));
         }
         return decoded.toArray(new Object[method.getParameterCount()]);
+    }
+
+    private static boolean hasVarArgs(Method method, JsonArray argsFromClient) {
+        int parameterCount = method.getParameterCount();
+        assert parameterCount > 0;
+        Class<?> type = method.getParameterTypes()[parameterCount - 1];
+        if (parameterCount - 1 == argsFromClient.length()) {
+            if (type.isArray()) {
+                return true;
+            } else {
+                String msg = String.format(
+                        "The number of received values (%d) is smaller "
+                                + "than the number of arguments (%d) in the method '%s' "
+                                + "' declared in '%s' and the last argument of the method "
+                                + "has type '%s' which is not vararg and does not have an array type",
+                        argsFromClient.length(), method.getParameterCount(),
+                        method.getName(), method.getDeclaringClass().getName(),
+                        type.getName());
+                throw new IllegalArgumentException(msg);
+            }
+        } else if (parameterCount == argsFromClient.length()) {
+            return argsFromClient.get(argsFromClient.length() - 1)
+                    .getType() != JsonType.ARRAY
+                    && method.getParameterTypes()[parameterCount - 1].isArray();
+        }
+        return argsFromClient.length() != method.getParameterCount();
     }
 
     private static Object decodeArg(Method method, Class<?> type, int index,
