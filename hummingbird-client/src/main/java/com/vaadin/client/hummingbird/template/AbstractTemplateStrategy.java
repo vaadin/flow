@@ -35,7 +35,7 @@ import elemental.dom.Node;
 
 /**
  * Abstract binding strategy to handle template nodes.
- * 
+ *
  * @author Vaadin Ltd
  *
  * @param <T>
@@ -68,7 +68,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     /**
      * Returns whether this strategy applies to the template node with the given
      * {@code templateId} inside the state {@code tree}.
-     * 
+     *
      * @param tree
      *            the state tree, not {@code null}
      * @param templateId
@@ -85,7 +85,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      * Gets template type which strategy handles.
      * <p>
      * Only one strategy may handle the given type.
-     * 
+     *
      * @return template type of the strategy
      */
     protected abstract String getTemplateType();
@@ -93,7 +93,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     /**
      * Creates a DOM node for the {@code templateId} using the {@code tree} as a
      * context.
-     * 
+     *
      * @param tree
      *            the state tree, not {@code null}
      * @param templateId
@@ -106,7 +106,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      * Binds a DOM node to the {@code stateNode} using the {@code templateId}
      * and {@code context} to delegate handling of nodes with the types that the
      * strategy is not aware of.
-     * 
+     *
      * @param stateNode
      *            the state node to bind, not {@code null}
      * @param node
@@ -122,7 +122,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     /**
      * Binds the {@code stateNode} using the given {@code binding} and
      * {@code executor} to set the {@code binding} data to the node.
-     * 
+     *
      * @param stateNode
      *            the state node, not {@code null}
      * @param binding
@@ -146,7 +146,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
 
     /**
      * Gets the model property from the {@code node} for the {@code binding}.
-     * 
+     *
      * @param node
      *            the state node, not {@code null}
      * @param binding
@@ -162,7 +162,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
 
     /**
      * Gets static biding value for the {@code binding}.
-     * 
+     *
      * @param binding
      *            binding data, not {@code null}
      * @return static binding value
@@ -175,7 +175,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     /**
      * Gets template node from the template registry of the {@code tree} by the
      * {@code templateId}.
-     * 
+     *
      * @param tree
      *            state tree which owns the template sregistry
      * @param templateId
@@ -190,7 +190,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     /**
      * Creates and binds a DOM node for the given state node and
      * {@code templateId} using binder {@code context}.
-     * 
+     *
      * @param node
      *            the state node for which to create a DOM node, not
      *            <code>null</code>
@@ -198,7 +198,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      *            template id
      * @param context
      *            binder context
-     * 
+     *
      * @return the DOM node, not <code>null</code>
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })

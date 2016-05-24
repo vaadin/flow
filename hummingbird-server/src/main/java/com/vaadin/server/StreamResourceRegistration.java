@@ -24,7 +24,7 @@ import java.util.Optional;
  * <p>
  * Use {@link #getResourceUri()} to get URI after {@link StreamResource} is
  * registered. It also allows to unregister the resource.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -34,7 +34,7 @@ public interface StreamResourceRegistration extends Serializable {
      * Get resource URI for registered {@link StreamResource} instance.
      * <p>
      * The URI is relative to the application base URI.
-     * 
+     *
      * @return resource URI
      */
     URI getResourceUri();

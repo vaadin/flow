@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.template.TextTemplateBuilder;
 
 /**
  * The factory that is default for JSOUP {@link TextNode}s.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

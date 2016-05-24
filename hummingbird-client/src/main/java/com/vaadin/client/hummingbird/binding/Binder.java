@@ -31,7 +31,7 @@ import elemental.dom.Node;
  * Entry point for binding Node to state nodes.
  * <p>
  * This is the only public API class for external use.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -94,7 +94,7 @@ public final class Binder {
 
     /**
      * Bind the {@code domNode} to the {@code stateNode}.
-     * 
+     *
      * @param stateNode
      *            the state node
      * @param domNode

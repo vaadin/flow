@@ -26,7 +26,7 @@ import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 
 /**
  * The factory that handles "@child@" template.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

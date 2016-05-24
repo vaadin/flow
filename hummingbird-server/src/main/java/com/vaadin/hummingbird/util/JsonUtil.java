@@ -237,7 +237,7 @@ public class JsonUtil {
 
     /**
      * Creates a new JSON array with the given values.
-     * 
+     *
      * @param values
      *            the values that should be in the created array
      * @return the created array

@@ -30,7 +30,7 @@ import javax.servlet.ServletContext;
  * The instance should be registered via
  * {@link StreamResourceRegistry#registerResource(StreamResource)}. This method
  * returns an object which may be used to get resource URI.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -122,7 +122,7 @@ public class StreamResource implements Serializable {
      * {@code name} parameter value will be used in URI (generated when resource
      * is registered) in a way that the {@code name} is the last segment of the
      * path. So this is synthetic file name (not real one).
-     * 
+     *
      * @param name
      *            resource file name. May not be null.
      * @param writer
@@ -148,7 +148,7 @@ public class StreamResource implements Serializable {
      * {@code name} parameter value will be used in URI (generated when resource
      * is registered) in a way that the {@code name} is the last segment of the
      * path. So this is synthetic file name (not real one).
-     * 
+     *
      * @param name
      *            resource file name. May not be null.
      * @param factory
@@ -165,7 +165,7 @@ public class StreamResource implements Serializable {
      * value.
      * <p>
      * Default value is {@code 0}. So caching is disabled.
-     * 
+     *
      * @return cache time in milliseconds.
      */
     public long getCacheTime() {
@@ -178,7 +178,7 @@ public class StreamResource implements Serializable {
      * The value will be used in URI (generated when resource is registered) in
      * a way that the {@code name} is the last segment of the path. So this is
      * synthetic file name (not real one).
-     * 
+     *
      * @return resource file name
      */
     public String getFileName() {
@@ -188,7 +188,7 @@ public class StreamResource implements Serializable {
     /**
      * Set cache time in millis. Zero or negative value disables the caching of
      * this stream.
-     * 
+     *
      * @param cacheTime
      *            cache time
      * @return this resource
@@ -203,7 +203,7 @@ public class StreamResource implements Serializable {
      * <p>
      * Writer writes data in the output stream provided as an argument to its
      * {@link StreamResourceWriter#accept(OutputStream, VaadinSession)} method.
-     * 
+     *
      * @return stream resource writer
      */
     public StreamResourceWriter getWriter() {
@@ -215,7 +215,7 @@ public class StreamResource implements Serializable {
      * resource.
      * <p>
      * By default a resolver based on servletContext.getMimeType() is used.
-     * 
+     *
      * @param resolver
      *            content type resolver, not <code>null</code>
      * @return this resource
@@ -250,7 +250,7 @@ public class StreamResource implements Serializable {
     /**
      * Gets the resolver which is used to lookup the content type of the
      * resource.
-     * 
+     *
      * @return content type resolver
      */
     public ContentTypeResolver getContentTypeResolver() {
@@ -259,7 +259,7 @@ public class StreamResource implements Serializable {
 
     /**
      * Gets unique identifier of the resource.
-     * 
+     *
      * @return the resource unique id
      */
     public final String getId() {

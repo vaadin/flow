@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
 public @interface CodeFor {
     /**
      * Gets the name of the tutorial file.
-     * 
+     *
      * @return the tutorial file name
      */
     String value();
