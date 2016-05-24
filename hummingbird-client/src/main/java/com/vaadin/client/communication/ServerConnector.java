@@ -89,7 +89,7 @@ public class ServerConnector {
 
     /**
      * Sends a template event message to the server.
-     * 
+     *
      * @param node
      *            the node that listened to the event
      * @param methodName

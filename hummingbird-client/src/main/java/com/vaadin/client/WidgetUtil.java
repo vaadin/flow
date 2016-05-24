@@ -62,7 +62,8 @@ public class WidgetUtil {
      * @return the corresponding absolute URL as a string
      */
     public static String getAbsoluteUrl(String url) {
-        AnchorElement a = Browser.getDocument().createAnchorElement();
+        AnchorElement a = (AnchorElement) Browser.getDocument()
+                .createElement("a");
         a.setHref(url);
         return a.getHref();
     }

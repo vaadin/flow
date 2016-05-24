@@ -29,7 +29,7 @@ import elemental.dom.Node;
 /**
  * Binder context which is passed to the {@link BindingStrategy} instances
  * enabling them to delegate the creation of any child nodes.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -38,7 +38,7 @@ public interface BinderContext {
     /**
      * Creates and binds a DOM node for the given state node. For state nodes
      * based on templates, the root element of the template is returned.
-     * 
+     *
      * @param node
      *            the state node for which to create a DOM node, not
      *            <code>null</code>
@@ -48,7 +48,7 @@ public interface BinderContext {
 
     /**
      * Binds a DOM node for the given state node.
-     * 
+     *
      * @param stateNode
      *            the state node to bind, not {@code null}
      * @param node
@@ -65,7 +65,7 @@ public interface BinderContext {
      * should be used. It's the developer responsibility to make sure that the
      * resulting strategies types are correct to avoid
      * {@link ClassCastException}.
-     * 
+     *
      * @param predicate
      *            predicate to filter strategies using type {@code T}.
      * @return collection of filtered strategies
@@ -82,9 +82,9 @@ public interface BinderContext {
      * This is just a shorthand for
      * {@link #populateChildren(Element, StateNode, int, Function, Node)} with
      * the {@code null} value for the last parameter
-     * 
+     *
      * @see #populateChildren(Element, StateNode, int, Function, Node)
-     * 
+     *
      * @param parent
      *            parent Element, not {@code null}
      * @param node
@@ -110,9 +110,9 @@ public interface BinderContext {
      * <p>
      * The {@code beforeNode} parameter is used to add children to the
      * {@code parent} before the {@code beforeNode}. It can be {@code null}.
-     * 
+     *
      * @see #populateChildren(Element, StateNode, int, Function)
-     * 
+     *
      * @param parent
      *            parent Element, not {@code null}
      * @param node

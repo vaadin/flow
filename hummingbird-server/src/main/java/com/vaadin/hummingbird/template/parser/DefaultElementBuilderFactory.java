@@ -30,7 +30,7 @@ import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
  * The factory that is default for JSOUP {@link Element}s.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

@@ -118,7 +118,7 @@ public class SimpleEventBus extends EventBus {
     /**
      * Not documented in GWT, required by legacy features in GWT's old
      * HandlerManager.
-     * 
+     *
      * @deprecated required by legacy features in GWT's old HandlerManager
      */
     @Deprecated
@@ -129,7 +129,7 @@ public class SimpleEventBus extends EventBus {
     /**
      * Not documented in GWT, required by legacy features in GWT's old
      * HandlerManager.
-     * 
+     *
      * @deprecated required by legacy features in GWT's old HandlerManager
      */
     @Deprecated

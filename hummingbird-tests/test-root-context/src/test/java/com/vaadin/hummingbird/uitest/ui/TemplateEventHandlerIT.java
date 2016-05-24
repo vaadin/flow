@@ -67,10 +67,10 @@ public class TemplateEventHandlerIT extends PhantomJSTest {
     }
 
     @Test
-    public void setJsonToServer() {
+    public void sendJsonToServer() {
         findElement(By.id("json-receiver")).click();
 
-        Assert.assertTrue(isElementPresent(By.id("event-arguments")));
+        Assert.assertTrue(isElementPresent(By.id("event-json")));
 
         WebElement msg = findElement(By.id("json-arg"));
         Assert.assertEquals("{\"foo\":\"bar\"}", msg.getText());

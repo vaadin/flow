@@ -25,10 +25,10 @@ import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 /**
  * Strategy to handle a JSOUP node and produce a {@link TemplateNodeBuilder}
  * instance if applicable.
- * 
+ *
  * @param <T>
  *            the node type which factory is able to handle
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -38,7 +38,7 @@ public interface TemplateNodeBuilderFactory<T extends Node> {
      * Returns {@code true} if applicable to the {@code node}.
      * <p>
      * Only one factory must be applicable for the {@code node}.
-     * 
+     *
      * @param node
      *            the node to check against of
      * @return {@code true} if the factory is applicable to the node
@@ -49,7 +49,7 @@ public interface TemplateNodeBuilderFactory<T extends Node> {
      * Returns a template builder for the given {@code node} using
      * {@code builderProducer} as a context to create a builder for other node
      * type.
-     * 
+     *
      * @param node
      *            the node that the factory is able to handle and produce a
      *            builder for

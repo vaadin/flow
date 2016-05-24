@@ -26,7 +26,7 @@ import com.vaadin.ui.Template;
 
 /**
  * Allows to map a specific html file for {@link Template}.
- * 
+ *
  * @see Template
  * @author Vaadin Ltd
  *
@@ -43,7 +43,7 @@ public @interface HtmlTemplate {
      * It the path starts from "/" then it defines absolute path from the root
      * otherwise the path is considered as a relative to the package of
      * annotated class.
-     * 
+     *
      * @return the HTML file path
      */
     String value();

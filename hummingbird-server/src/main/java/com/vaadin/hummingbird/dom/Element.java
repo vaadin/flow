@@ -15,13 +15,9 @@
  */
 package com.vaadin.hummingbird.dom;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,13 +29,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.w3c.css.sac.CSSException;
-import org.w3c.css.sac.CSSParseException;
-import org.w3c.css.sac.ErrorHandler;
-import org.w3c.css.sac.InputSource;
-import org.w3c.dom.css.CSSStyleDeclaration;
-
-import com.steadystate.css.parser.CSSOMParser;
+import com.helger.css.ECSSVersion;
+import com.helger.css.decl.CSSDeclaration;
+import com.helger.css.decl.CSSDeclarationList;
+import com.helger.css.reader.CSSReaderDeclarationList;
+import com.helger.css.reader.errorhandler.CollectingCSSParseErrorHandler;
+import com.helger.css.writer.CSSWriterSettings;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
@@ -158,7 +153,7 @@ public class Element implements Serializable {
      * {@link Element#getStyle()}.
      */
     private static class StyleAttributeHandler implements CustomAttribute {
-        private static final String ERROR_PARSING_STYLE = "Error parsing style '%s'";
+        private static final String ERROR_PARSING_STYLE = "Error parsing style '%s': %s";
 
         @Override
         public boolean hasAttribute(Element element) {
@@ -178,76 +173,30 @@ public class Element implements Serializable {
             }).collect(Collectors.joining(";"));
         }
 
-        private static class ParseErrorCollector implements ErrorHandler {
-            List<CSSParseException> errors = new ArrayList<>();
-
-            @Override
-            public void warning(CSSParseException exception)
-                    throws CSSException {
-                errors.add(exception);
-            }
-
-            @Override
-            public void fatalError(CSSParseException exception)
-                    throws CSSException {
-                errors.add(exception);
-            }
-
-            @Override
-            public void error(CSSParseException exception) throws CSSException {
-                errors.add(exception);
-            }
-
-            /**
-             * Checks if errors or warnings have been reported.
-             *
-             * @return <code>true</code> if at least one error/warning has been
-             *         reported, <code>false</code> otherwise
-             */
-            public boolean hasErrors() {
-                return !errors.isEmpty();
-            }
-
-            /**
-             * Gets the first reported warning or error.
-             *
-             * @return the first warning or error, or null if no errors or
-             *         warnings have occurred
-             */
-            public CSSParseException getFirstError() {
-                if (errors.isEmpty()) {
-                    return null;
-                } else {
-                    return errors.get(0);
-                }
-            }
-        }
-
         @Override
         public void setAttribute(Element element, String attributeValue) {
             Style style = element.getStyle();
-            InputSource source = new InputSource(
-                    new StringReader(attributeValue));
-            CSSOMParser parser = new CSSOMParser();
-
-            ParseErrorCollector errorCollector = new ParseErrorCollector();
-            parser.setErrorHandler(errorCollector);
-            try {
-                CSSStyleDeclaration parsed = parser
-                        .parseStyleDeclaration(source);
-                if (errorCollector.hasErrors()) {
-                    throw new IllegalArgumentException(
-                            String.format(ERROR_PARSING_STYLE, attributeValue),
-                            errorCollector.getFirstError());
-                }
-                for (int i = 0; i < parsed.getLength(); i++) {
-                    String key = parsed.item(i);
-                    String value = parsed.getPropertyValue(key);
-                    style.set(StyleUtil.styleAttributeToProperty(key), value);
-                }
-            } catch (IOException e) {
+            CollectingCSSParseErrorHandler errorCollector = new CollectingCSSParseErrorHandler();
+            CSSDeclarationList parsed = CSSReaderDeclarationList.readFromString(
+                    attributeValue, ECSSVersion.LATEST, errorCollector);
+            if (errorCollector.hasParseErrors()) {
+                throw new IllegalArgumentException(String.format(
+                        ERROR_PARSING_STYLE, attributeValue, errorCollector
+                                .getAllParseErrors().get(0).getErrorMessage()));
+            }
+            if (parsed == null) {
+                // Did not find any styles
                 throw new IllegalArgumentException(
-                        String.format(ERROR_PARSING_STYLE, attributeValue), e);
+                        String.format(ERROR_PARSING_STYLE, attributeValue,
+                                "No styles found"));
+            }
+            for (CSSDeclaration declaration : parsed.getAllDeclarations()) {
+                String key = declaration.getProperty();
+                String value = declaration.getExpression().getAsCSSString(
+                        new CSSWriterSettings(ECSSVersion.LATEST)
+                                .setOptimizedOutput(true),
+                        0);
+                style.set(StyleUtil.styleAttributeToProperty(key), value);
             }
         }
 

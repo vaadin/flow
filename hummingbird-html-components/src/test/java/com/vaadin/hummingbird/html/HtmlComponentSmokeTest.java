@@ -21,6 +21,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
@@ -164,8 +167,16 @@ public class HtmlComponentSmokeTest {
         Class<?> propertyType = setter.getParameterTypes()[0];
 
         Method getter = findGetter(setter);
+        Class<?> getterType = getter.getReturnType();
+        boolean isOptional = (getterType == Optional.class);
+        if (isOptional) {
+            // setFoo(String) + Optional<String> getFoo() is ok
+            Type gen = getter.getGenericReturnType();
+            getterType = (Class<?>) ((ParameterizedType) gen)
+                    .getActualTypeArguments()[0];
+        }
         Assert.assertEquals(setter + " should have the same type as its getter",
-                propertyType, getter.getReturnType());
+                propertyType, getterType);
 
         Object testValue = testValues.get(propertyType);
 
@@ -188,8 +199,12 @@ public class HtmlComponentSmokeTest {
                     setter + " should update the underlying state node",
                     hasPendingChanges(elementNode));
 
+            Object getterValue = getter.invoke(instance);
+            if (isOptional) {
+                getterValue = ((Optional<?>) getterValue).get();
+            }
             Assert.assertEquals(getter + " should return the set value",
-                    testValue, getter.invoke(instance));
+                    testValue, getterValue);
 
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
@@ -244,4 +259,5 @@ public class HtmlComponentSmokeTest {
     private static boolean isClassFile(Path path) {
         return path.toString().endsWith(".class");
     }
+
 }

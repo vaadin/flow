@@ -38,16 +38,19 @@ public class Text extends Component {
      * Sets the text of the component.
      *
      * @param text
-     *            the text of the component
+     *            the text of the component, not <code>null</code>
      */
     public void setText(String text) {
+        if (text == null) {
+            throw new IllegalArgumentException("The text must not be null");
+        }
         getElement().setTextContent(text);
     }
 
     /**
      * Gets the text of the component.
      *
-     * @return the text of the component
+     * @return the text of the component, not <code>null</code>
      */
     public String getText() {
         return getElement().getOwnTextContent();
