@@ -34,6 +34,7 @@ import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.hummingbird.template.InlineTemplate;
+import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
  * @author Vaadin Ltd
@@ -189,5 +190,11 @@ public class TemplateTest {
         p.add(template);
 
         Assert.assertEquals(p, template.getParent().get());
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void templateInputStreamWithInclude() {
+        new InlineTemplate("<div>@include bar.html@</div>");
+
     }
 }

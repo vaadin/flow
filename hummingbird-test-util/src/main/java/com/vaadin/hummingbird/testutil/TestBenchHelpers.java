@@ -17,8 +17,10 @@ package com.vaadin.hummingbird.testutil;
 
 import java.util.stream.Stream;
 
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -118,4 +120,30 @@ public class TestBenchHelpers extends TestBenchTestCase {
         }
         return Stream.of(classes.split(" ")).anyMatch(className::equals);
     }
+
+    /**
+     * Assert that the two elements are equal.
+     * <p>
+     * Can be removed if https://dev.vaadin.com/ticket/18484 is fixed.
+     *
+     * @param expectedElement
+     *            the expected element
+     * @param actualElement
+     *            the actual element
+     */
+    protected static void assertEquals(WebElement expectedElement,
+            WebElement actualElement) {
+        WebElement unwrappedExpected = expectedElement;
+        WebElement unwrappedActual = actualElement;
+        while (unwrappedExpected instanceof WrapsElement) {
+            unwrappedExpected = ((WrapsElement) unwrappedExpected)
+                    .getWrappedElement();
+        }
+        while (unwrappedActual instanceof WrapsElement) {
+            unwrappedActual = ((WrapsElement) unwrappedActual)
+                    .getWrappedElement();
+        }
+        Assert.assertEquals(unwrappedExpected, unwrappedActual);
+    }
+
 }
