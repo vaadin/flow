@@ -46,6 +46,7 @@ public class DefaultElementBuilderFactory
 
     @Override
     public TemplateNodeBuilder createBuilder(Element element,
+            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         ElementTemplateBuilder builder = new ElementTemplateBuilder(
                 element.tagName());

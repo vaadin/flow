@@ -25,17 +25,25 @@ import org.junit.Test;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
+import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest.NullTemplateResolver;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
+import com.vaadin.hummingbird.template.parser.TemplateResolver;
 
 public class ForElementTemplateNodeTest {
 
+    private TemplateResolver nullTemplateResolver = new NullTemplateResolver();
+
+    private TemplateNode parse(String html) {
+        return TemplateParser.parse(html, nullTemplateResolver);
+    }
+
     @Test
     public void noChildren() {
-        TemplateNode templateNode = TemplateParser
-                .parse("<div><li *ngFor='let item of items'></li></div>");
+        TemplateNode templateNode = parse(
+                "<div><li *ngFor='let item of items'></li></div>");
         Element div = getElement(templateNode);
 
         StateNode model = createModel(div, "items");
@@ -46,7 +54,7 @@ public class ForElementTemplateNodeTest {
 
     @Test
     public void oneChildNoDataBinding() {
-        TemplateNode divTemplateNode = TemplateParser.parse(
+        TemplateNode divTemplateNode = parse(
                 "<div><li *ngFor='let item of items' foo='static' /></div>");
         Element div = getElement(divTemplateNode);
         TemplateNode forTemplateNode = divTemplateNode.getChild(0);
@@ -67,7 +75,7 @@ public class ForElementTemplateNodeTest {
 
     @Test
     public void twoChildrenNoDataBinding() {
-        TemplateNode divTemplateNode = TemplateParser.parse(
+        TemplateNode divTemplateNode = parse(
                 "<div><li *ngFor='let item of items' foo='static' /></div>");
         Element div = getElement(divTemplateNode);
         TemplateNode forTemplateNode = divTemplateNode.getChild(0);
@@ -88,7 +96,7 @@ public class ForElementTemplateNodeTest {
 
     @Test
     public void oneChildWithTextBinding() {
-        TemplateNode divTemplateNode = TemplateParser.parse(
+        TemplateNode divTemplateNode = parse(
                 "<div><li *ngFor='let item of items' foo='static'>{{item.text}}</li></div>");
         TemplateNode forTemplateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
@@ -104,7 +112,7 @@ public class ForElementTemplateNodeTest {
 
     @Test
     public void twoChildrenWithTextBinding() {
-        TemplateNode divTemplateNode = TemplateParser.parse(
+        TemplateNode divTemplateNode = parse(
                 "<div><li *ngFor='let item of items' foo='static'>{{item.text}}</li></div>");
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
@@ -124,7 +132,7 @@ public class ForElementTemplateNodeTest {
 
     @Test
     public void oneChildWithPropertyBinding() {
-        TemplateNode divTemplateNode = TemplateParser.parse(
+        TemplateNode divTemplateNode = parse(
                 "<div><li *ngFor='let item of items' [value]='item.value'></div>");
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);
@@ -140,7 +148,7 @@ public class ForElementTemplateNodeTest {
 
     @Test
     public void twoChildrenWithPropertyBinding() {
-        TemplateNode divTemplateNode = TemplateParser.parse(
+        TemplateNode divTemplateNode = parse(
                 "<div><li *ngFor='let item of items' [value]='item.value'></div>");
         TemplateNode templateNode = divTemplateNode.getChild(0);
         Element div = getElement(divTemplateNode);

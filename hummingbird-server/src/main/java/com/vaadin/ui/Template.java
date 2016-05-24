@@ -15,6 +15,7 @@
  */
 package com.vaadin.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -26,9 +27,11 @@ import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.RelativeFileResolver;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
+import com.vaadin.hummingbird.template.parser.TemplateResolver;
 
 /**
  * Component for declaratively defined element structures. The structure of a
@@ -97,28 +100,32 @@ public abstract class Template extends Component implements HasChildView {
         // Will set element later
         super(null);
 
-        setTemplateElement(inputStream);
+        // No support for @include@ when using this constructor right now
+        setTemplateElement(inputStream, relativeFilename -> {
+            throw new IOException("No template resolver defined");
+        });
     }
 
-    private void setTemplateElement(String templateFileName) {
-        if (templateFileName == null) {
+    private void setTemplateElement(String templateFileNameAndPath) {
+        if (templateFileNameAndPath == null) {
             throw new IllegalArgumentException(
                     "HTML template file name cannot be null");
         }
-        InputStream templateContentStream = getClass()
-                .getResourceAsStream(templateFileName);
-        if (templateContentStream == null) {
-            throw new IllegalArgumentException(
-                    templateFileName + " not found on the classpath");
-        }
-        setTemplateElement(templateContentStream);
+        RelativeFileResolver templateResolver = new RelativeFileResolver(
+                getClass(), templateFileNameAndPath);
+
+        String templateFileName = new File(templateFileNameAndPath).getName();
+        InputStream templateContentStream = templateResolver
+                .resolve(templateFileName);
+        setTemplateElement(templateContentStream, templateResolver);
     }
 
-    private void setTemplateElement(InputStream inputStream) {
+    private void setTemplateElement(InputStream inputStream,
+            TemplateResolver templateResolver) {
         try (InputStream templateContentStream = inputStream) {
 
             TemplateNode templateRoot = TemplateParser
-                    .parse(templateContentStream);
+                    .parse(templateContentStream, templateResolver);
 
             stateNode.getFeature(TemplateMap.class)
                     .setRootTemplate(templateRoot);
