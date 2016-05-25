@@ -35,6 +35,7 @@ import elemental.json.Json;
 import elemental.json.JsonBoolean;
 import elemental.json.JsonNull;
 import elemental.json.JsonNumber;
+import elemental.json.JsonObject;
 import elemental.json.JsonString;
 import elemental.json.JsonValue;
 
@@ -55,12 +56,15 @@ public class JsonCodecTest {
                 JsonCodec.encodeWithoutTypeInfo(Integer.valueOf(42)));
         assertJsonEquals(Json.createNull(),
                 JsonCodec.encodeWithoutTypeInfo(null));
+        JsonObject json = Json.createObject();
+        json.put("foo", "bar");
+        assertJsonEquals(json, JsonCodec.encodeWithoutTypeInfo(json));
 
         assertJsonEquals(Json.createNull(), Json.createNull());
         assertJsonEquals(Json.create(false), Json.create(false));
         assertJsonEquals(Json.create(234), Json.create(234));
         assertJsonEquals(Json.create("string"), Json.create("string"));
-        assertJsonEquals(Json.createObject(), Json.createObject());
+        assertJsonEquals(json, json);
         assertJsonEquals(Json.createArray(), Json.createArray());
     }
 
@@ -152,6 +156,7 @@ public class JsonCodecTest {
                 JsonCodec.decodeAs(json, Integer.class));
         Assert.assertEquals(Double.valueOf(1.0),
                 JsonCodec.decodeAs(json, Double.class));
+        Assert.assertEquals(json, JsonCodec.decodeAs(json, JsonValue.class));
     }
 
     @Test
@@ -163,6 +168,7 @@ public class JsonCodecTest {
         Assert.assertEquals(Integer.valueOf(0),
                 JsonCodec.decodeAs(json, Integer.class));
         Assert.assertTrue(JsonCodec.decodeAs(json, Double.class).isNaN());
+        Assert.assertEquals(json, JsonCodec.decodeAs(json, JsonValue.class));
     }
 
     @Test
@@ -174,6 +180,7 @@ public class JsonCodecTest {
                 JsonCodec.decodeAs(json, Integer.class));
         Assert.assertEquals(Double.valueOf(15.7),
                 JsonCodec.decodeAs(json, Double.class));
+        Assert.assertEquals(json, JsonCodec.decodeAs(json, JsonValue.class));
     }
 
     @Test
@@ -183,6 +190,27 @@ public class JsonCodecTest {
         Assert.assertNull(JsonCodec.decodeAs(json, String.class));
         Assert.assertNull(JsonCodec.decodeAs(json, Integer.class));
         Assert.assertNull(JsonCodec.decodeAs(json, Double.class));
+        Assert.assertNull(JsonCodec.decodeAs(json, JsonValue.class));
+    }
+
+    @Test
+    public void decodeAs_jsonValue() {
+        JsonObject json = Json.createObject();
+        json.put("foo", "bar");
+        Assert.assertTrue(JsonCodec.decodeAs(json, Boolean.class));
+        Assert.assertEquals("[object Object]",
+                JsonCodec.decodeAs(json, String.class));
+        Assert.assertEquals(Integer.valueOf(0),
+                JsonCodec.decodeAs(json, Integer.class));
+        Assert.assertTrue(JsonCodec.decodeAs(json, Double.class).isNaN());
+        Assert.assertEquals(json, JsonCodec.decodeAs(json, JsonValue.class));
+    }
+
+    @Test(expected = ClassCastException.class)
+    public void decodeAs_jsonValueWrongType_classCastException() {
+        JsonObject json = Json.createObject();
+        json.put("foo", "bar");
+        JsonCodec.decodeAs(json, JsonNumber.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
