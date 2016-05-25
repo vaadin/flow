@@ -59,10 +59,10 @@ public final class PropertyDescriptors {
         }
 
         @Override
-        public void set(Component component, S value) {
-            assert component != null;
+        public void set(HasElement hasElement, S value) {
+            assert hasElement != null;
 
-            Element e = component.getElement();
+            Element e = hasElement.getElement();
             if (value == null) {
                 throw new IllegalArgumentException(
                         "Cannot set " + name + " to null");
@@ -74,10 +74,10 @@ public final class PropertyDescriptors {
         }
 
         @Override
-        public G get(Component component) {
-            assert component != null;
+        public G get(HasElement hasElement) {
+            assert hasElement != null;
 
-            S rawValue = getter.apply(component.getElement());
+            S rawValue = getter.apply(hasElement.getElement());
 
             return returnWrapper.apply(rawValue, defaultValue);
         }
