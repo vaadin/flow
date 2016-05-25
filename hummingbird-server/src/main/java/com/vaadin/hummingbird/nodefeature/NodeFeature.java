@@ -28,6 +28,8 @@ import com.vaadin.hummingbird.change.NodeChange;
  * state node.
  *
  * @author Vaadin Ltd
+ * @param <T>
+ *            the type used for tracking changes for this feature
  */
 public abstract class NodeFeature implements Serializable {
     private final StateNode node;
@@ -52,9 +54,7 @@ public abstract class NodeFeature implements Serializable {
     }
 
     /**
-     * Collects all changes made to this feature since the last time
-     * {@link #collectChanges(Consumer)} or {@link #resetChanges()} has been
-     * called.
+     * Collects all changes that are recorded for this feature.
      *
      * @param collector
      *            a consumer accepting node changes
@@ -62,11 +62,26 @@ public abstract class NodeFeature implements Serializable {
     public abstract void collectChanges(Consumer<NodeChange> collector);
 
     /**
-     * Resets the collected changes of this feature so that the next invocation
-     * of {@link #collectChanges(Consumer)} will report changes relative to a
-     * newly created feature.
+     * Generates all changes that would be needed to take this node from its
+     * initial empty state to its current state.
      */
-    public abstract void resetChanges();
+    public abstract void generateChangesFromEmpty();
+
+    /**
+     * Gets or creates an instance for tracking changes for this feature.
+     *
+     * @return a change tracker instance
+     */
+    protected Serializable getChangeTracker() {
+        return node.getChangeTracker(this, this::createChangeTracker);
+    }
+
+    /**
+     * Creates a change tracker object of the desired type.
+     *
+     * @return a change tracker object
+     */
+    protected abstract Serializable createChangeTracker();
 
     /**
      * Attaches an object if it is a {@link StateNode}.

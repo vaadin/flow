@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.io.Serializable;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
@@ -39,12 +40,18 @@ public abstract class ServerSideFeature extends NodeFeature {
     }
 
     @Override
+    protected Serializable createChangeTracker() {
+        // Server side only feature
+        return null;
+    }
+
+    @Override
     public void collectChanges(Consumer<NodeChange> collector) {
         // Server side only feature
     }
 
     @Override
-    public void resetChanges() {
+    public void generateChangesFromEmpty() {
         // Server side only feature
     }
 
