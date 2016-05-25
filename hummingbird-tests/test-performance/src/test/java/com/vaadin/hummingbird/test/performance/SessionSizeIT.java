@@ -62,34 +62,48 @@ public class SessionSizeIT extends AbstractTestBenchTest {
     @Test
     public void testSessionSize() {
         // Warm up the server
-        openTestUIs(1000);
+        openTestUIs(1000, 1);
         getUsage();
-        openTestUIs(1000);
+        openTestUIs(1000, 1);
 
+        long oneButtonSize = getSessionSize(1);
+
+        HelloWorldIT.printTeamcityStats("helloworld-session-size",
+                oneButtonSize);
+
+        long fiftyButtonsSize = getSessionSize(50);
+
+        long sizePerButton = (fiftyButtonsSize - oneButtonSize) / 49;
+
+        HelloWorldIT.printTeamcityStats("helloworld-button-size",
+                sizePerButton);
+
+    }
+
+    private long getSessionSize(int buttonCount) {
         // Repeat until we get two consecutive results within 0.1% of each other
         double lastResult = 0;
         for (int i = 0; i < 50; i++) {
-            double currentResult = getMemoryPerUI(500);
+            double currentResult = getMemoryPerUI(500, buttonCount);
 
             double delta = Math.abs(lastResult - currentResult);
             double deltaLimit = currentResult * 0.001;
 
             if (delta < deltaLimit) {
-                HelloWorldIT.printTeamcityStats("helloworld-session-size",
-                        (long) lastResult);
-                return;
+                return (long) lastResult;
             } else {
                 lastResult = currentResult;
             }
         }
 
         Assert.fail("Session size does not stabilize");
+        return -1;
     }
 
-    private double getMemoryPerUI(int uiCount) {
+    private double getMemoryPerUI(int uiCount, int buttonCount) {
         UsageReport before = getUsage();
 
-        openTestUIs(uiCount);
+        openTestUIs(uiCount, buttonCount);
 
         UsageReport after = getUsage();
 
@@ -112,10 +126,11 @@ public class SessionSizeIT extends AbstractTestBenchTest {
         uiOpenExecutor.shutdownNow();
     }
 
-    private void openTestUIs(int uiCount) {
+    private void openTestUIs(int uiCount, int buttonCount) {
         // Submit to executor
         List<Future<?>> futures = Stream
-                .generate(() -> uiOpenExecutor.submit(this::openSession))
+                .generate(() -> uiOpenExecutor
+                        .submit(() -> openSession(buttonCount)))
                 .limit(uiCount).collect(Collectors.toList());
 
         // Wait for all tasks to finish
@@ -150,12 +165,13 @@ public class SessionSizeIT extends AbstractTestBenchTest {
         }
     }
 
-    private void openSession() {
-        String url = getTestURL();
+    private void openSession(int buttonCount) {
+        String url = getTestURL() + "?buttons=" + buttonCount;
         try {
             String response = IOUtils.toString(new URL(url),
                     StandardCharsets.UTF_8);
-            Assert.assertEquals(1, StringUtils.countMatches(response, "Hello"));
+            Assert.assertEquals(buttonCount,
+                    StringUtils.countMatches(response, "Hello"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
