@@ -59,10 +59,10 @@ public final class PropertyDescriptors {
         }
 
         @Override
-        public void set(Component component, S value) {
-            assert component != null;
+        public void set(HasElement hasElement, S value) {
+            assert hasElement != null;
 
-            Element e = component.getElement();
+            Element e = hasElement.getElement();
             if (value == null) {
                 throw new IllegalArgumentException(
                         "Cannot set " + name + " to null");
@@ -74,10 +74,10 @@ public final class PropertyDescriptors {
         }
 
         @Override
-        public G get(Component component) {
-            assert component != null;
+        public G get(HasElement hasElement) {
+            assert hasElement != null;
 
-            S rawValue = getter.apply(component.getElement());
+            S rawValue = getter.apply(hasElement.getElement());
 
             return returnWrapper.apply(rawValue, defaultValue);
         }
@@ -122,6 +122,46 @@ public final class PropertyDescriptors {
      */
     public static PropertyDescriptor<String, String> propertyWithDefault(
             String name, String defaultValue) {
+        return new PropertyDescriptorImpl<>(name, defaultValue,
+                (element, value) -> element.setProperty(name, value),
+                element -> element.removeProperty(name),
+                element -> element.getProperty(name, defaultValue),
+                nullToDefault());
+    }
+
+    /**
+     * Creates a descriptor for a property of the component's root element with
+     * a non-null default value.
+     *
+     * @param name
+     *            the name of the element property, not <code>null</code>
+     * @param defaultValue
+     *            the default value of the property, not <code>null</code>
+     *
+     * @return a property descriptor, not <code>null</code>
+     */
+    public static PropertyDescriptor<Integer, Integer> propertyWithDefault(
+            String name, Integer defaultValue) {
+        return new PropertyDescriptorImpl<>(name, defaultValue,
+                (element, value) -> element.setProperty(name, value),
+                element -> element.removeProperty(name),
+                element -> element.getProperty(name, defaultValue),
+                nullToDefault());
+    }
+
+    /**
+     * Creates a descriptor for a property of the component's root element with
+     * a non-null default value.
+     *
+     * @param name
+     *            the name of the element property, not <code>null</code>
+     * @param defaultValue
+     *            the default value of the property, not <code>null</code>
+     *
+     * @return a property descriptor, not <code>null</code>
+     */
+    public static PropertyDescriptor<Boolean, Boolean> propertyWithDefault(
+            String name, Boolean defaultValue) {
         return new PropertyDescriptorImpl<>(name, defaultValue,
                 (element, value) -> element.setProperty(name, value),
                 element -> element.removeProperty(name),

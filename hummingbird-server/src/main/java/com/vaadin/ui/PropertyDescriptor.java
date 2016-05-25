@@ -37,22 +37,22 @@ public interface PropertyDescriptor<S, G> {
     /**
      * Sets the property value for the given component.
      *
-     * @param component
+     * @param hasElement
      *            the component for which to set the value, not
      *            <code>null</code>
      * @param value
      *            the property value to set
      */
-    void set(Component component, S value);
+    void set(HasElement hasElement, S value);
 
     /**
      * Gets the property value for the given component.
      *
-     * @param component
+     * @param hasElement
      *            the component for which to get the value, not
      *            <code>null</code>
      * @return the property value
      */
-    G get(Component component);
+    G get(HasElement hasElement);
 
 }
