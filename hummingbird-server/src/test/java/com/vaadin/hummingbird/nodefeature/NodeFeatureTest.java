@@ -16,6 +16,7 @@
 
 package com.vaadin.hummingbird.nodefeature;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,11 @@ public class NodeFeatureTest {
     private static abstract class UnregisteredNodeFeature extends NodeFeature {
         public UnregisteredNodeFeature(StateNode node) {
             super(node);
+        }
+
+        @Override
+        protected Serializable createChangeTracker() {
+            return null;
         }
     }
 

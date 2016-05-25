@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
@@ -42,6 +43,8 @@ import com.vaadin.server.Command;
  */
 public class StateNode implements Serializable {
     private final Map<Class<? extends NodeFeature>, NodeFeature> features = new HashMap<>();
+
+    private Map<Class<? extends NodeFeature>, Serializable> changes;
 
     private ArrayList<Command> attachListeners;
 
@@ -269,7 +272,9 @@ public class StateNode implements Serializable {
                 collector.accept(new NodeAttachChange(this));
 
                 // Make all changes show up as if the node was recently attached
-                features.values().forEach(NodeFeature::resetChanges);
+                clearChanges();
+                features.values()
+                        .forEach(NodeFeature::generateChangesFromEmpty);
             } else {
                 collector.accept(new NodeDetachChange(this));
             }
@@ -278,8 +283,22 @@ public class StateNode implements Serializable {
         }
 
         if (isAttached) {
-            features.values().forEach(n -> n.collectChanges(collector));
+            features.values().stream().filter(this::hasChangeTracker)
+                    .forEach(feature -> feature.collectChanges(collector));
+            clearChanges();
         }
+    }
+
+    private boolean hasChangeTracker(NodeFeature nodeFeature) {
+        return changes != null && changes.containsKey(nodeFeature.getClass());
+    }
+
+    /**
+     * Clears all changes recorded for this node. This method is public only for
+     * testing purposes.
+     */
+    public void clearChanges() {
+        changes = null;
     }
 
     /**
@@ -451,5 +470,24 @@ public class StateNode implements Serializable {
         }
 
         features.values().forEach(NodeFeature::onDetach);
+    }
+
+    /**
+     * Gets or creates a change tracker object for the provided feature.
+     *
+     * @param feature
+     *            the feature for which to get a change tracker
+     * @param factory
+     *            a factory method used to create a new tracker if there isn't
+     *            already one
+     * @return the change tracker to use
+     */
+    public Serializable getChangeTracker(NodeFeature feature,
+            Supplier<? extends Serializable> factory) {
+        if (changes == null) {
+            changes = new HashMap<>();
+        }
+
+        return changes.computeIfAbsent(feature.getClass(), k -> factory.get());
     }
 }

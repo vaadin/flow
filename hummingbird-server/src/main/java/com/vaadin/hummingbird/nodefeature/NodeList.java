@@ -105,8 +105,6 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     private List<T> values = new ArrayList<>();
 
-    private List<ListSpliceChange> changes = new ArrayList<>();
-
     /**
      * Creates a new list for the given node.
      *
@@ -179,11 +177,24 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         return removed;
     }
 
+    @Override
+    protected ArrayList<ListSpliceChange> createChangeTracker() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    protected ArrayList<ListSpliceChange> getChangeTracker() {
+        // NodeFeature should really be generic on this type, but that would
+        // cause so much ugliness in other parts of the code
+        return (ArrayList<ListSpliceChange>) super.getChangeTracker();
+    }
+
     private void addChange(ListSpliceChange change) {
         getNode().markAsDirty();
 
         // XXX combine with previous changes if possible
-        changes.add(change);
+        getChangeTracker().add(change);
 
         // TODO Fire some listeners
     }
@@ -194,8 +205,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        changes.forEach(collector);
-        changes.clear();
+        getChangeTracker().forEach(collector);
     }
 
     @Override
@@ -203,11 +213,10 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     }
 
     @Override
-    public void resetChanges() {
-        changes.clear();
+    public void generateChangesFromEmpty() {
         if (!values.isEmpty()) {
-            changes.add(new ListSpliceChange(this, isNodeValues(), 0, 0,
-                    new ArrayList<>(values)));
+            getChangeTracker().add(new ListSpliceChange(this, isNodeValues(), 0,
+                    0, new ArrayList<>(values)));
         }
     }
 
