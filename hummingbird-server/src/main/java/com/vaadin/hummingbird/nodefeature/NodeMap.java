@@ -19,6 +19,7 @@ package com.vaadin.hummingbird.nodefeature;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -39,8 +40,6 @@ public abstract class NodeMap extends NodeFeature {
     };
 
     private HashMap<String, Serializable> values = new HashMap<>();
-
-    private HashMap<String, Serializable> changes = new HashMap<>();
 
     /**
      * Creates a new map feature for the given node.
@@ -224,13 +223,15 @@ public abstract class NodeMap extends NodeFeature {
 
     private void setUnChanged(String key) {
         assert key != null;
-        changes.remove(key);
+        getChangeTracker().remove(key);
     }
 
     private void setChanged(String key) {
         assert key != null;
 
         getNode().markAsDirty();
+
+        Map<String, Serializable> changes = getChangeTracker();
 
         if (!changes.containsKey(key)) {
             // Record this as changed for the collection logic
@@ -245,6 +246,10 @@ public abstract class NodeMap extends NodeFeature {
         // TODO notify listeners
     }
 
+    private HashMap<String, Serializable> getChangeTracker() {
+        return getNode().getChangeTracker(this, HashMap::new);
+    }
+
     private void setAccessed(String key) {
         assert key != null;
 
@@ -253,7 +258,7 @@ public abstract class NodeMap extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        changes.forEach((key, earlierValue) -> {
+        getChangeTracker().forEach((key, earlierValue) -> {
             boolean containsNow = values.containsKey(key);
             boolean containedEarlier = earlierValue != REMOVED_MARKER;
             if (containedEarlier && !containsNow) {
@@ -267,12 +272,11 @@ public abstract class NodeMap extends NodeFeature {
                 }
             }
         });
-        changes.clear();
     }
 
     @Override
-    public void resetChanges() {
-        changes.clear();
+    public void generateChangesFromEmpty() {
+        Map<String, Serializable> changes = getChangeTracker();
         values.keySet().forEach(k -> changes.put(k, REMOVED_MARKER));
     }
 
