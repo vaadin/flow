@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
@@ -42,8 +43,21 @@ import com.vaadin.hummingbird.event.ComponentEventListener;
 public abstract class Component implements HasElement, Serializable,
         ComponentEventNotifier, AttachNotifier, DetachNotifier {
 
+    private static class WrapData {
+        private Element element = null;
+        private boolean mapElementToComponent = false;
+
+        public WrapData(Element element, boolean mapElementToComponent) {
+            this.element = element;
+            this.mapElementToComponent = mapElementToComponent;
+        }
+
+    }
+
     private static final PropertyDescriptor<String, Optional<String>> idDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("id", "");
+
+    private static ThreadLocal<WrapData> elementToWrap = new ThreadLocal<>();
 
     private Element element;
 
@@ -54,21 +68,38 @@ public abstract class Component implements HasElement, Serializable,
      * {@link Tag} annotation of the sub class.
      */
     protected Component() {
-        Tag tag = getClass().getAnnotation(Tag.class);
-        if (tag == null) {
-            throw new IllegalStateException(getClass().getSimpleName()
-                    + " (or a super class) must be annotated with @"
-                    + Tag.class.getName()
-                    + " if the default constructor is used.");
-        }
+        WrapData wrapData = elementToWrap.get();
+        Element e;
 
-        String tagName = tag.value();
-        if (tagName.isEmpty()) {
-            throw new IllegalStateException("@" + Tag.class.getSimpleName()
-                    + " value cannot be empty.");
-        }
+        Optional<String> tagName = AnnotationReader
+                .getAnnotationFor(getClass(), Tag.class).map(Tag::value);
 
-        setElement(this, new Element(tagName));
+        if (wrapData == null) {
+            if (!tagName.isPresent()) {
+                throw new IllegalStateException(getClass().getSimpleName()
+                        + " (or a super class) must be annotated with @"
+                        + Tag.class.getName()
+                        + " if the default constructor is used.");
+            }
+
+            if (tagName.get().isEmpty()) {
+                throw new IllegalStateException("@" + Tag.class.getSimpleName()
+                        + " value cannot be empty.");
+            }
+            e = new Element(tagName.get());
+        } else {
+            if (tagName.isPresent()) {
+                String elementTag = wrapData.element.getTag();
+                if (!tagName.get().equals(elementTag)) {
+                    throw new IllegalArgumentException(
+                            "A component specified to use a " + tagName.get()
+                                    + " element cannot use an element with tag name "
+                                    + elementTag);
+                }
+            }
+            e = wrapData.element;
+        }
+        setElement(this, e);
     }
 
     /**
@@ -125,7 +156,10 @@ public abstract class Component implements HasElement, Serializable,
             throw new IllegalArgumentException("Element must not be null");
         }
         component.element = element;
-        ElementUtil.setComponent(element, component);
+        if (elementToWrap.get() == null
+                || elementToWrap.get().mapElementToComponent) {
+            ElementUtil.setComponent(element, component);
+        }
     }
 
     /**
@@ -137,12 +171,15 @@ public abstract class Component implements HasElement, Serializable,
      *         component is not attached to a parent
      */
     public Optional<Component> getParent() {
-        assert ElementUtil.isComponentElementMappedCorrectly(this);
 
         // If "this" is a component inside a Composite, iterate from the
         // Composite downwards
         Optional<Component> mappedComponent = ElementUtil
                 .getComponent(getElement());
+        if (!mappedComponent.isPresent()) {
+            throw new IllegalStateException(
+                    "You cannot use getParent() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
+        }
         if (isInsideComposite(mappedComponent)) {
             Component parent = ComponentUtil.getParentUsingComposite(
                     (Composite<?>) mappedComponent.get(), this);
@@ -175,7 +212,11 @@ public abstract class Component implements HasElement, Serializable,
         // This should not ever be called for a Composite as it will return
         // wrong results
         assert !(this instanceof Composite);
-        assert ElementUtil.isComponentElementMappedCorrectly(this);
+
+        if (!ElementUtil.getComponent(getElement()).isPresent()) {
+            throw new IllegalStateException(
+                    "You cannot use getChildren() on a wrapped component. Use Component.wrapAndMap to include the component in the hierarchy");
+        }
 
         Builder<Component> childComponents = Stream.builder();
         getElement().getChildren().forEach(childElement -> {
@@ -326,5 +367,84 @@ public abstract class Component implements HasElement, Serializable,
         assert descriptor != null;
 
         return descriptor.get(this);
+    }
+
+    /**
+     * Creates a new component instance which uses the given element.
+     * <p>
+     * You can use this method when you have an element instance and want to
+     * configure the element using the {@link Component} API.
+     * <p>
+     * This method makes the component instance use the underlying element but
+     * does not attach the new component instance to the element so that
+     * {@link Element#getComponent()} would return the component instance. This
+     * means that {@link #getParent()}, {@link #getChildren()} and possibly
+     * other methods which rely on {@link Element} -&gt; {@link Component}
+     * mappings will not work.
+     * <p>
+     * To also map the element to the {@link Component} instance, use
+     * #wrapAndMap
+     *
+     * @param element
+     *            the element to wrap
+     * @param componentType
+     *            the component type
+     * @return the component instance connected to the given element
+     */
+    public static <T> T wrap(Element element, Class<T> componentType) {
+        return doWrap(new WrapData(element, false), componentType);
+    }
+
+    /**
+     * Creates a new component instance which uses the given element.
+     * <p>
+     * You can use this method when you have an element instance and want to
+     * configure the element using the {@link Component} API.
+     * <p>
+     * This method attaches the component instnace to the element so that
+     * {@link Element#getComponent()} returns the component instance. This means
+     * that {@link #getParent()}, {@link #getChildren()} and other methods which
+     * rely on {@link Element} -&gt; {@link Component} mappings will work
+     * correctly.
+     * <p>
+     * Note that only one {@link Component} can be mapped to any given
+     * {@link Element}.
+     *
+     * @param element
+     *            the element to wrap
+     * @param componentType
+     *            the component type
+     * @return the component instance connected to the given element
+     */
+    public static <T> T wrapAndMap(Element element, Class<T> componentType) {
+        return doWrap(new WrapData(element, true), componentType);
+    }
+
+    private static <T> T doWrap(WrapData wrapData, Class<T> componentType) {
+        if (wrapData.element == null) {
+            throw new IllegalArgumentException(
+                    "Element to wrap cannot be null");
+        }
+        if (componentType == null) {
+            throw new IllegalArgumentException("Component type cannot be null");
+        }
+
+        elementToWrap.set(wrapData);
+        try {
+            return componentType.newInstance();
+        } catch (InstantiationException e) {
+            String msg = "Unable to create an instance of "
+                    + componentType.getName()
+                    + ". Make sure it has a no-arg constructor";
+            throw new RuntimeException(msg, e);
+        } catch (IllegalAccessException e) {
+            String msg = "Unable to create an instance of "
+                    + componentType.getName()
+                    + ". Make sure it is a public class and that it is static if it is an inner class";
+            throw new RuntimeException(msg, e);
+        } finally {
+            elementToWrap.remove();
+        }
+
     }
 }

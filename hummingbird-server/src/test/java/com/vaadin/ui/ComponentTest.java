@@ -38,6 +38,18 @@ import com.vaadin.tests.util.TestUtil;
 
 public class ComponentTest {
 
+    @Tag("div")
+    public static class TestDiv extends Component {
+    }
+
+    @Tag("button")
+    public static class TestButton extends Component {
+    }
+
+    @Tag("button")
+    public static class TestOtherButton extends Component {
+    }
+
     private Component divWithTextComponent;
     private Component parentDivComponent;
     private Component child1SpanComponent;
@@ -618,4 +630,95 @@ public class ComponentTest {
         ui.add(c);
         Assert.assertFalse(initialAttach.get());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void wrapNullComponentType() {
+        Component.wrap(new Element("div"), null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void wrapNullElement() {
+        Component.wrap(null, TestComponent.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void wrapWrongTag() {
+        Element foo = new Element("foo");
+        Component.wrap(foo, TestDiv.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void wrappedComponentGetParent() {
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        Component.wrap(div, TestDiv.class);
+        Component.wrap(button, TestButton.class).getParent();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void wrappedComponentGetChildren() {
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        Component.wrap(button, TestButton.class);
+        Component.wrap(div, TestDiv.class).getChildren();
+    }
+
+    @Test
+    public void wrapAndMapHierarchy() {
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        TestDiv testDiv = Component.wrapAndMap(div, TestDiv.class);
+        TestButton testButton = Component.wrapAndMap(button, TestButton.class);
+        Assert.assertEquals(testButton.getParent().get(), testDiv);
+        Assert.assertTrue(testDiv.getChildren().anyMatch(c -> c == testButton));
+    }
+
+    @Test
+    public void wrappedComponentUsesElement() {
+        Element div = new Element("div");
+        div.setAttribute("id", "foo");
+        Assert.assertEquals(Optional.of("foo"),
+                Component.wrap(div, TestDiv.class).getId());
+
+    }
+
+    @Test
+    public void wrappedComponentModifyElement() {
+        Element div = new Element("div");
+        Component.wrap(div, TestDiv.class).setId("foo");
+        Assert.assertEquals("foo", div.getAttribute("id"));
+    }
+
+    @Test
+    public void wrapToExistingComponent() {
+        TestButton button = new TestButton();
+        TestButton button2 = Component.wrap(button.getElement(),
+                TestButton.class);
+        button.setId("id1");
+        Assert.assertEquals(Optional.of("id1"), button2.getId());
+        Assert.assertEquals(Optional.of("id1"), button.getId());
+    }
+
+    @Test
+    public void wrapDifferentTypeToExistingComponent() {
+        TestButton button = new TestButton();
+        TestOtherButton button2 = Component.wrap(button.getElement(),
+                TestOtherButton.class);
+        button.setId("id1");
+        Assert.assertEquals(Optional.of("id1"), button2.getId());
+        Assert.assertEquals(Optional.of("id1"), button.getId());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void wrapAndMapToExistingComponent() {
+        TestButton button = new TestButton();
+        Component.wrapAndMap(button.getElement(), TestButton.class);
+    }
+
 }
