@@ -44,6 +44,7 @@ public class DataNodeFactory extends AbstractTemplateBuilderFactory<DataNode> {
 
     @Override
     public TemplateNodeBuilder createBuilder(DataNode node,
+            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         String data = node.getWholeData();
 

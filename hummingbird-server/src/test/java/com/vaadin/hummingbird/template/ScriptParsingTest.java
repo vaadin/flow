@@ -19,12 +19,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest.NullTemplateResolver;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 
 public class ScriptParsingTest {
 
     private TemplateNode parse(String html) {
-        return TemplateParser.parse(html);
+        return TemplateParser.parse(html, new NullTemplateResolver());
     }
 
     @Test
