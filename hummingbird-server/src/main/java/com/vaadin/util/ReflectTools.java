@@ -19,9 +19,12 @@ import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;import java.lang.reflect.Method;<<<<<<<0f 2f 66f e6d4f6a4bd846b304fc61145b6a6271a2
-import java.lang.reflect.Type;import java.util.regex.Pattern;=======
-import java.lang.reflect.Modifier;import java.text.MessageFormat;>>>>>>>Helper for providing a good error message for instatiation exceptions
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.text.MessageFormat;
+import java.util.regex.Pattern;
 
 /**
  * An util class with helpers for reflection operations. Used internally by
