@@ -105,8 +105,6 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     private List<T> values = new ArrayList<>();
 
-    private List<ListSpliceChange> changes = new ArrayList<>();
-
     /**
      * Creates a new list for the given node.
      *
@@ -179,11 +177,23 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         return removed;
     }
 
+    /**
+     * Gets or creates the list used to track changes that should be sent to the
+     * client.
+     * <p>
+     * This method is non-private for testing purposes.
+     *
+     * @return the list to track changes in
+     */
+    protected ArrayList<ListSpliceChange> getChangeTracker() {
+        return getNode().getChangeTracker(this, ArrayList::new);
+    }
+
     private void addChange(ListSpliceChange change) {
         getNode().markAsDirty();
 
         // XXX combine with previous changes if possible
-        changes.add(change);
+        getChangeTracker().add(change);
 
         // TODO Fire some listeners
     }
@@ -194,8 +204,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        changes.forEach(collector);
-        changes.clear();
+        getChangeTracker().forEach(collector);
     }
 
     @Override
@@ -203,11 +212,10 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     }
 
     @Override
-    public void resetChanges() {
-        changes.clear();
+    public void generateChangesFromEmpty() {
         if (!values.isEmpty()) {
-            changes.add(new ListSpliceChange(this, isNodeValues(), 0, 0,
-                    new ArrayList<>(values)));
+            getChangeTracker().add(new ListSpliceChange(this, isNodeValues(), 0,
+                    0, new ArrayList<>(values)));
         }
     }
 

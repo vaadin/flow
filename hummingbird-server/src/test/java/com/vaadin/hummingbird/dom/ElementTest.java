@@ -680,10 +680,7 @@ public class ElementTest {
         Element child1 = new Element("child1");
         parent.appendChild(child1);
 
-        parent.getNode().getFeature(ElementChildrenList.class)
-                .collectChanges(e -> {
-                    // Remove the "append" change
-                });
+        parent.getNode().clearChanges();
 
         parent.setChild(0, child1);
 

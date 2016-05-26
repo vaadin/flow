@@ -84,14 +84,16 @@ public class StateNodeNodeListTest
     }
 
     @Test
-    public void testChangesAfterRest() {
+    public void testChangesAfterReset() {
         StateNode value1 = StateNodeTest.createEmptyNode("value1");
         StateNode value2 = StateNodeTest.createEmptyNode("value2");
 
         nodeList.add(value1);
         nodeList.add(value2);
 
-        nodeList.resetChanges();
+        nodeList.getNode().clearChanges();
+
+        nodeList.generateChangesFromEmpty();
 
         List<NodeChange> changes = collectChanges(nodeList);
 
