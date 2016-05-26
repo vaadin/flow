@@ -44,6 +44,7 @@ public class DefaultTextModelBuilderFactory
 
     @Override
     public TemplateNodeBuilder createBuilder(TextNode node,
+            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         String text = node.text();
         if (text.startsWith("{{") && text.endsWith("}}")) {
