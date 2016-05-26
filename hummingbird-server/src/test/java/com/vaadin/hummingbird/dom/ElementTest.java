@@ -104,6 +104,8 @@ public class ElementTest {
 
         // Returns index of child element
         ignore.add("indexOfChild");
+        // Component wrapper
+        ignore.add("as");
 
         for (Method m : Element.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
