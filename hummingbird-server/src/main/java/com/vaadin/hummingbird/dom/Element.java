@@ -48,6 +48,7 @@ import com.vaadin.hummingbird.template.AbstractElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -1564,4 +1565,31 @@ public class Element implements Serializable {
         return ElementUtil.toJsoup(new Document(""), this).outerHtml();
     }
 
+    /**
+     * Creates a new component instance using this element.
+     * <p>
+     * You can use this method when you have an element instance and want to use
+     * it through the API of a {@link Component} class.
+     * <p>
+     * This method makes the component instance use the underlying element but
+     * does not attach the new component instance to the element so that
+     * {@link Element#getComponent()} would return the component instance. This
+     * means that {@link #getParent()}, {@link #getChildren()} and possibly
+     * other methods which rely on {@link Element} -&gt; {@link Component}
+     * mappings will not work.
+     * <p>
+     * To also map the element to the {@link Component} instance, use
+     * {@link Component#from(Element, Class)}
+     *
+     * @see Component#from(Element, Class)
+     *
+     * @param element
+     *            the element to wrap
+     * @param componentType
+     *            the component type
+     * @return the component instance connected to the given element
+     */
+    public <T> T as(Class<T> componentType) {
+        return ComponentUtil.componentFromElement(this, componentType, false);
+    }
 }
