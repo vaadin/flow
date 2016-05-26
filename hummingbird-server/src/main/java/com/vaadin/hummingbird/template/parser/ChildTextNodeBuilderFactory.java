@@ -42,6 +42,7 @@ public class ChildTextNodeBuilderFactory
 
     @Override
     public TemplateNodeBuilder createBuilder(TextNode node,
+            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         return new ChildSlotBuilder();
     }

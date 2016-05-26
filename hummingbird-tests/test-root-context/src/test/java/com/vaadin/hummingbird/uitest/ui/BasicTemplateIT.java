@@ -15,6 +15,8 @@ package com.vaadin.hummingbird.uitest.ui;
  * the License.
  */
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -32,6 +34,21 @@ public class BasicTemplateIT extends PhantomJSTest {
         Assert.assertEquals("baz", bar.getText());
         Assert.assertTrue(isElementPresent(By.cssSelector(".bar input")));
 
+        // Included file
+        WebElement templateRoot = bar.findElement(By.xpath(".."));
+        List<WebElement> children = templateRoot.findElements(By.xpath("*"));
+
+        WebElement otherFileRoot = findElement(By.id("otherfile"));
+        assertEquals(children.get(1), otherFileRoot);
+
+        List<WebElement> otherFileChildren = otherFileRoot
+                .findElements(By.xpath("*"));
+        Assert.assertEquals(2, otherFileChildren.size());
+        Assert.assertEquals("This is otherfile.html, nested file below",
+                otherFileChildren.get(0).getText());
+        assertEquals(otherFileChildren.get(1),
+                findElement(By.id("nested-in-otherfile")));
+        //
         WebElement containerButton = findElement(
                 By.cssSelector("#container > button"));
 

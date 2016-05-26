@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
@@ -58,14 +57,17 @@ public class TemplateParser {
      * @param templateStream
      *            the input stream containing the template to parse, not
      *            <code>null</code>
+     * @param templateResolver
+     *            the resolver to use to look up included files
      * @return the template node at the root of the parsed template tree
      */
-    public static TemplateNode parse(InputStream templateStream) {
+    public static TemplateNode parse(InputStream templateStream,
+            TemplateResolver templateResolver) {
         assert templateStream != null;
         try {
             Document document = Jsoup.parse(templateStream, null, "");
 
-            return parse(document);
+            return parse(document, templateResolver);
         } catch (IOException e) {
             throw new TemplateParseException("Error reading template data", e);
         }
@@ -76,19 +78,23 @@ public class TemplateParser {
      *
      * @param templateString
      *            the template string to parse, not <code>null</code>
+     * @param templateResolver
+     *            the resolver to use to look up included files
      * @return the template node at the root of the parsed template tree
      */
-    public static TemplateNode parse(String templateString) {
+    public static TemplateNode parse(String templateString,
+            TemplateResolver templateResolver) {
         assert templateString != null;
 
         Document document = Jsoup.parseBodyFragment(templateString);
 
-        return parse(document);
+        return parse(document, templateResolver);
     }
 
     private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
         Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
         factories.add(new ChildTextNodeBuilderFactory());
+        factories.add(new TemplateIncludeBuilderFactory());
         factories.add(new ForElementBuilderFactory());
         factories.add(new DataNodeFactory());
         return factories;
@@ -101,7 +107,8 @@ public class TemplateParser {
         return factories;
     }
 
-    private static TemplateNode parse(Document bodyFragment) {
+    private static TemplateNode parse(Document bodyFragment,
+            TemplateResolver templateResolver) {
         Elements children = bodyFragment.body().children();
 
         int childNodeSize = children.size();
@@ -117,13 +124,14 @@ public class TemplateParser {
         }
 
         Optional<TemplateNodeBuilder> templateBuilder = createBuilder(
-                children.get(0));
+                children.get(0), templateResolver);
         assert templateBuilder.isPresent();
         return templateBuilder.get().build(null);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private static Optional<TemplateNodeBuilder> createBuilder(Node node) {
+    private static Optional<TemplateNodeBuilder> createBuilder(Node node,
+            TemplateResolver templateResolver) {
         if (node instanceof Comment) {
             return Optional.empty();
         }
@@ -137,9 +145,10 @@ public class TemplateParser {
             }
         }
         assert list.size() == 1;
+
         TemplateNodeBuilderFactory factory = list.get(0);
-        Function<Node, Optional<TemplateNodeBuilder>> function = TemplateParser::createBuilder;
-        return Optional.of(factory.createBuilder(node, function));
+        return Optional.of(factory.createBuilder(node, templateResolver,
+                n -> createBuilder((Node) n, templateResolver)));
     }
 
     private static List<TemplateNodeBuilderFactory<?>> filterApplicable(
