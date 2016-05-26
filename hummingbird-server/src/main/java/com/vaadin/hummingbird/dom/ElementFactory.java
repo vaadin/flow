@@ -274,6 +274,26 @@ public interface ElementFactory {
     }
 
     /**
+     * Creates an {@code &lt;label>} element.
+     *
+     * @return an {@code &lt;label>} element.
+     */
+    static Element createLabel() {
+        return new Element(Tag.LABEL);
+    }
+
+    /**
+     * Creates an {@code &lt;label>} element with the given text content.
+     *
+     * @param textContent
+     *            the text content of the element
+     * @return an {@code &lt;label>} element.
+     */
+    static Element createLabel(String textContent) {
+        return createLabel().setTextContent(textContent);
+    }
+
+    /**
      * Creates an {@code &lt;li>} element.
      *
      * @return an {@code &lt;li>} element.

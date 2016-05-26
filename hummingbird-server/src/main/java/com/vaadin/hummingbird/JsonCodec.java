@@ -152,8 +152,7 @@ public class JsonCodec {
         case NULL:
             return null;
         default:
-            throw new IllegalArgumentException(
-                    "Can't (yet) decode " + json.getType());
+            return json;
         }
 
     }
@@ -186,6 +185,8 @@ public class JsonCodec {
             return type.cast(Double.valueOf(json.asNumber()));
         } else if (type == Integer.class) {
             return type.cast(Integer.valueOf((int) json.asNumber()));
+        } else if (JsonValue.class.isAssignableFrom(type)) {
+            return type.cast(json);
         } else {
             assert !canEncodeWithoutTypeInfo(type);
             throw new IllegalArgumentException(

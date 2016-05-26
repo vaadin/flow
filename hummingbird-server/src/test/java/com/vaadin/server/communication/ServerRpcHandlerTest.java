@@ -25,6 +25,8 @@ import com.vaadin.ui.Component;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * @author Vaadin Ltd
@@ -69,6 +71,7 @@ public class ServerRpcHandlerTest {
         private Double[] doubleArg;
         private Integer[] varArg;
         private int[][] doubleArray;
+        private JsonValue jsonValue;
 
         @Override
         @EventHandler
@@ -91,6 +94,11 @@ public class ServerRpcHandlerTest {
         @EventHandler
         protected void method3(int[][] array) {
             doubleArray = array;
+        }
+
+        @EventHandler
+        protected void method4(JsonValue value) {
+            jsonValue = value;
         }
     }
 
@@ -155,14 +163,14 @@ public class ServerRpcHandlerTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void parameterizedMethodIsNotAccepted() {
+    public void methodWithParametersIsNotAccepted() {
         ComponentWithMethod component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
                 Json.createArray());
     }
 
     @Test
-    public void parameterizedMethodIsInvoked() {
+    public void methodWithParametersIsInvoked() {
         JsonArray array = Json.createArray();
         array.set(0, 65);
         MethodWithParameters component = new MethodWithParameters();
@@ -173,7 +181,7 @@ public class ServerRpcHandlerTest {
     }
 
     @Test
-    public void parameterizedMethodWithArrayParamIsInvoked() {
+    public void methodWithArrayParamIsInvoked() {
         JsonArray array = Json.createArray();
         array.set(0, "foo");
         JsonArray secondArg = Json.createArray();
@@ -190,7 +198,7 @@ public class ServerRpcHandlerTest {
     }
 
     @Test
-    public void parameterizedMethodWithVarArgIsInvoked_varArgsAreNotArray() {
+    public void methodWithVarArgIsInvoked_varArgsAreNotArray() {
         JsonArray array = Json.createArray();
 
         JsonArray firstArg = Json.createArray();
@@ -217,39 +225,53 @@ public class ServerRpcHandlerTest {
     }
 
     @Test
-    public void parameterizedMethodWithDoubleArrayIsInvoked() {
+    public void methodWithDoubleArrayIsInvoked() {
         JsonArray array = Json.createArray();
 
-        JsonArray firstArg = Json.createArray();
-        firstArg.set(0, 1);
-        firstArg.set(1, 2);
+        JsonArray arg = Json.createArray();
 
-        array.set(0, firstArg);
+        JsonArray first = Json.createArray();
+        first.set(0, 1);
+        first.set(1, 2);
 
-        JsonArray secondArg = Json.createArray();
-        secondArg.set(0, 3);
-        secondArg.set(1, 4);
+        arg.set(0, first);
 
-        array.set(1, secondArg);
+        JsonArray second = Json.createArray();
+        second.set(0, 3);
+        second.set(1, 4);
+
+        arg.set(1, second);
+
+        array.set(0, arg);
 
         MethodWithParameters component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(),
                 "method3", array);
 
-        Assert.assertArrayEquals(
-                new int[] { (int) firstArg.getNumber(0),
-                        (int) firstArg.getNumber(1) },
-                component.doubleArray[0]);
+        Assert.assertArrayEquals(new int[] { (int) first.getNumber(0),
+                (int) first.getNumber(1) }, component.doubleArray[0]);
 
-        Assert.assertArrayEquals(
-                new int[] { (int) secondArg.getNumber(0),
-                        (int) secondArg.getNumber(1) },
-                component.doubleArray[1]);
-
+        Assert.assertArrayEquals(new int[] { (int) second.getNumber(0),
+                (int) second.getNumber(1) }, component.doubleArray[1]);
     }
 
     @Test
-    public void parameterizedMethodWithVarArgIsInvoked_varArgsIsArray() {
+    public void methodWithJsonValueIsInvoked() {
+        JsonArray array = Json.createArray();
+
+        JsonObject json = Json.createObject();
+        json.put("foo", "bar");
+        array.set(0, json);
+
+        MethodWithParameters component = new MethodWithParameters();
+        ServerRpcHandler.invokeMethod(component, component.getClass(),
+                "method4", array);
+
+        Assert.assertEquals(component.jsonValue, json);
+    }
+
+    @Test
+    public void methodWithVarArgIsInvoked_varArgsIsArray() {
         JsonArray array = Json.createArray();
 
         JsonArray firstArg = Json.createArray();

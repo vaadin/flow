@@ -44,7 +44,7 @@ public abstract class ServerSideFeature extends NodeFeature {
     }
 
     @Override
-    public void resetChanges() {
+    public void generateChangesFromEmpty() {
         // Server side only feature
     }
 

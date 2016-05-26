@@ -103,9 +103,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
     }
 
-    private List<T> values = new ArrayList<>();
-
-    private List<ListSpliceChange> changes = new ArrayList<>();
+    private List<T> values;
 
     /**
      * Creates a new list for the given node.
@@ -124,7 +122,16 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      */
     protected int size() {
         setAccessed();
+        if (values == null) {
+            return 0;
+        }
         return values.size();
+    }
+
+    private void ensureValues() {
+        if (values == null) {
+            values = new ArrayList<>();
+        }
     }
 
     /**
@@ -136,6 +143,9 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      */
     protected T get(int index) {
         setAccessed();
+        if (values == null) {
+            throw new IndexOutOfBoundsException();
+        }
         return values.get(index);
     }
 
@@ -146,6 +156,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      *            the item to add
      */
     protected void add(T item) {
+        ensureValues();
         add(values.size(), item);
     }
 
@@ -158,6 +169,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      *            the item to insert
      */
     protected void add(int index, T item) {
+        ensureValues();
         values.add(index, item);
 
         addChange(new ListSpliceChange(this, isNodeValues(), index, 0,
@@ -172,18 +184,38 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      * @return the element previously at the specified position
      */
     protected T remove(int index) {
+        if (values == null) {
+            throw new IndexOutOfBoundsException();
+        }
+
         T removed = values.remove(index);
 
         addChange(new ListSpliceChange(this, isNodeValues(), index, 1,
                 Collections.emptyList()));
+
+        if (values.isEmpty()) {
+            values = null;
+        }
         return removed;
+    }
+
+    /**
+     * Gets or creates the list used to track changes that should be sent to the
+     * client.
+     * <p>
+     * This method is non-private for testing purposes.
+     *
+     * @return the list to track changes in
+     */
+    protected ArrayList<ListSpliceChange> getChangeTracker() {
+        return getNode().getChangeTracker(this, ArrayList::new);
     }
 
     private void addChange(ListSpliceChange change) {
         getNode().markAsDirty();
 
         // XXX combine with previous changes if possible
-        changes.add(change);
+        getChangeTracker().add(change);
 
         // TODO Fire some listeners
     }
@@ -194,8 +226,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        changes.forEach(collector);
-        changes.clear();
+        getChangeTracker().forEach(collector);
     }
 
     @Override
@@ -203,11 +234,11 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     }
 
     @Override
-    public void resetChanges() {
-        changes.clear();
-        if (!values.isEmpty()) {
-            changes.add(new ListSpliceChange(this, isNodeValues(), 0, 0,
-                    new ArrayList<>(values)));
+    public void generateChangesFromEmpty() {
+        if (values != null) {
+            assert !values.isEmpty();
+            getChangeTracker().add(new ListSpliceChange(this, isNodeValues(), 0,
+                    0, new ArrayList<>(values)));
         }
     }
 
@@ -239,6 +270,9 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      */
     protected int indexOf(T value) {
         setAccessed();
+        if (values == null) {
+            return -1;
+        }
         return values.indexOf(value);
     }
 
@@ -248,6 +282,9 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      * @return an iterator returning all items
      */
     protected Iterator<T> iterator() {
+        if (values == null) {
+            return Collections.<T> emptyList().iterator();
+        }
         Iterator<T> arrayIterator = values.iterator();
         return new Iterator<T>() {
             int index = -1;

@@ -37,6 +37,7 @@ import com.vaadin.server.StreamResource;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
+import com.vaadin.ui.Html;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -679,10 +680,7 @@ public class ElementTest {
         Element child1 = new Element("child1");
         parent.appendChild(child1);
 
-        parent.getNode().getFeature(ElementChildrenList.class)
-                .collectChanges(e -> {
-                    // Remove the "append" change
-                });
+        parent.getNode().clearChanges();
 
         parent.setChild(0, child1);
 
@@ -2438,6 +2436,62 @@ public class ElementTest {
         child.addDetachListener(
                 e -> Assert.fail("Child should not be detached"));
         parent.insertChild(0, child);
+    }
+
+    @Test
+    public void textNodeOuterHtml() {
+        Element e = Element.createText("foobar");
+        Assert.assertEquals("foobar", e.getOuterHTML());
+    }
+
+    @Test
+    public void singleElementOuterHtml() {
+        Element e = ElementFactory.createAnchor();
+        Assert.assertEquals("<a></a>", e.getOuterHTML());
+    }
+
+    @Test
+    public void elementTreeOuterHtml() {
+        Element div = ElementFactory.createDiv();
+        Element span = ElementFactory.createSpan();
+        Element button = ElementFactory.createButton("hello");
+
+        div.appendChild(span);
+        span.appendChild(button);
+
+        Assert.assertEquals(
+                "<div>\n" + " <span><button>hello</button></span>\n" + "</div>",
+                div.getOuterHTML());
+    }
+
+    @Test
+    public void elementAttributesOuterHtml() {
+        Element div = ElementFactory.createDiv();
+        div.setAttribute("foo", "bar");
+        div.getStyle().set("width", "20px");
+        div.getClassList().add("cls");
+        div.setAttribute("pin", "");
+
+        Assert.assertEquals(
+                "<div pin=\"\" foo=\"bar\" style=\"width:20px\" class=\"cls\"></div>",
+                div.getOuterHTML());
+    }
+
+    @Test
+    public void elementAttributeSpecialCharactersOuterHtml() {
+        Element div = ElementFactory.createDiv();
+        div.setAttribute("foo", "bar\"'&quot;");
+
+        Assert.assertEquals("<div foo=\"bar&quot;'&amp;quot;\"></div>",
+                div.getOuterHTML());
+    }
+
+    @Test
+    public void htmlComponentOuterHtml() {
+        Html html = new Html("<div><span><button>hello</button></span></div>");
+        Assert.assertEquals(
+                "<div>\n" + " <span><button>hello</button></span>\n" + "</div>",
+                html.getElement().getOuterHTML());
     }
 
 }
