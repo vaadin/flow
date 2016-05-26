@@ -20,6 +20,8 @@ import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.regex.Pattern;
 
 /**
  * An util class with helpers for reflection operations. Used internally by
@@ -29,6 +31,12 @@ import java.lang.reflect.Method;
  * @since 6.2
  */
 public class ReflectTools implements Serializable {
+
+    private static final Pattern GETTER_STARTS = Pattern
+            .compile("^(get)\\p{Lu}");
+    private static final Pattern IS_STARTS = Pattern.compile("^(is)\\p{Lu}");
+    private static final Pattern SETTER_STARTS = Pattern.compile("^set\\p{Lu}");
+
     /**
      * Locates the method in the given class. Returns null if the method is not
      * found. Throws an ExceptionInInitializerError if there is a problem
@@ -74,7 +82,7 @@ public class ReflectTools implements Serializable {
      */
     public static Object getJavaFieldValue(Object object,
             java.lang.reflect.Field field) throws IllegalArgumentException,
-                    IllegalAccessException, InvocationTargetException {
+            IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -118,8 +126,8 @@ public class ReflectTools implements Serializable {
      */
     public static Object getJavaFieldValue(Object object,
             java.lang.reflect.Field field, Class<?> propertyType)
-                    throws IllegalArgumentException, IllegalAccessException,
-                    InvocationTargetException {
+            throws IllegalArgumentException, IllegalAccessException,
+            InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -165,8 +173,8 @@ public class ReflectTools implements Serializable {
      */
     public static void setJavaFieldValue(Object object,
             java.lang.reflect.Field field, Object value)
-                    throws IllegalAccessException, IllegalArgumentException,
-                    InvocationTargetException {
+            throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
         PropertyDescriptor pd;
         try {
             pd = new PropertyDescriptor(field.getName(), object.getClass());
@@ -218,4 +226,43 @@ public class ReflectTools implements Serializable {
         }
         return type;
     }
+
+    /**
+     * Checks whether the given method is a valid setter according to the
+     * JavaBeans Specification.
+     *
+     * @param method
+     *            the method to check
+     * @return <code>true</code> if the method is a setter, <code>false</code>
+     *         if not
+     */
+    public static boolean isSetter(Method method) {
+        final String methodName = method.getName();
+        final Class<?> returnType = method.getReturnType();
+        final Type[] argTypes = method.getParameterTypes();
+
+        return returnType == void.class && argTypes.length == 1
+                && SETTER_STARTS.matcher(methodName).find();
+    }
+
+    /**
+     * Checks whether the given method is a valid getter according to JavaBeans
+     * Specification.
+     *
+     * @param method
+     *            the method to check
+     * @return <code>true</code> if the method is a getter, <code>false</code>
+     *         if not
+     */
+    public static boolean isGetter(Method method) {
+        final String methodName = method.getName();
+        final Class<?> returnType = method.getReturnType();
+        final Type[] argTypes = method.getParameterTypes();
+
+        return returnType != void.class && argTypes.length == 0
+                && (GETTER_STARTS.matcher(methodName).find()
+                        || (IS_STARTS.matcher(methodName).find()
+                                && returnType == boolean.class));
+    }
+
 }
