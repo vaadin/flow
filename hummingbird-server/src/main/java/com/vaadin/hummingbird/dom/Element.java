@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.Document;
+
 import com.helger.css.ECSSVersion;
 import com.helger.css.decl.CSSDeclaration;
 import com.helger.css.decl.CSSDeclarationList;
@@ -1544,4 +1546,22 @@ public class Element implements Serializable {
         return getNode().addDetachListener(
                 () -> detachListener.onDetach(new ElementDetachEvent(this)));
     }
+
+    @Override
+    public String toString() {
+        return getOuterHTML();
+    }
+
+    /**
+     * Gets the outer HTML for the element.
+     * <p>
+     * This operation recursively iterates the element and all children and
+     * should not be called unnecessarily.
+     *
+     * @return the outer HTML for the element
+     */
+    public String getOuterHTML() {
+        return ElementUtil.toJsoup(new Document(""), this).outerHtml();
+    }
+
 }
