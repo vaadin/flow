@@ -30,6 +30,8 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.HasComponents;
 import com.vaadin.ui.HasStyle;
 import com.vaadin.ui.HasText;
+import com.vaadin.ui.PropertyDescriptor;
+import com.vaadin.ui.PropertyDescriptors;
 import com.vaadin.ui.UI;
 
 /**
@@ -44,6 +46,9 @@ import com.vaadin.ui.UI;
 @Tag("a")
 public class RouterLink extends Component
         implements HasText, HasComponents, HasStyle {
+
+    private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors
+            .attributeWithDefault("href", "");
 
     /**
      * Creates a new empty router link.
@@ -168,7 +173,16 @@ public class RouterLink extends Component
         assert router != null;
         String url = buildUrl(router, viewType, parameters);
 
-        getElement().setAttribute("href", url);
+        HREF.set(this, url);
+    }
+
+    /**
+     * Gets the href (the URL) of this link.
+     *
+     * @return the href
+     */
+    public String getHref() {
+        return HREF.get(this);
     }
 
     /**
