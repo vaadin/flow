@@ -40,7 +40,7 @@ import elemental.json.JsonValue;
  */
 public class ElementListenerMap extends NodeMap {
     // Server-side only data
-    private HashMap<String, ArrayList<DomEventListener>> listeners = new HashMap<>();
+    private HashMap<String, ArrayList<DomEventListener>> listeners;
 
     /**
      * Creates a new element listener map for the given node.
@@ -69,6 +69,10 @@ public class ElementListenerMap extends NodeMap {
         assert eventType != null;
         assert listener != null;
         assert eventDataExpressions != null;
+
+        if (listeners == null) {
+            listeners = new HashMap<>();
+        }
 
         // Could optimize slightly by integrating the initialization into the
         // main logic, but that would make the code much harder to read
@@ -99,6 +103,9 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void removeListener(String eventType, DomEventListener listener) {
+        if (listeners == null) {
+            return;
+        }
         ArrayList<DomEventListener> listenerList = listeners.get(eventType);
         if (listenerList != null) {
             listenerList.remove(listener);
@@ -106,6 +113,10 @@ public class ElementListenerMap extends NodeMap {
             // No more listeners of this type?
             if (listenerList.isEmpty()) {
                 listeners.remove(eventType);
+
+                if (listeners.isEmpty()) {
+                    listeners = null;
+                }
 
                 // Remove from the set that is synchronized with the client
                 remove(eventType);
@@ -120,6 +131,9 @@ public class ElementListenerMap extends NodeMap {
      *            the event to fire
      */
     public void fireEvent(DomEvent event) {
+        if (listeners == null) {
+            return;
+        }
         ArrayList<DomEventListener> typeListeners = listeners
                 .get(event.getType());
         if (typeListeners == null) {

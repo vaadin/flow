@@ -36,9 +36,9 @@ import com.vaadin.server.VaadinSession;
  */
 public class ElementAttributeMap extends NodeMap {
 
-    private final HashMap<String, StreamResourceRegistration> resourceRegistrations = new HashMap<>();
+    private HashMap<String, StreamResourceRegistration> resourceRegistrations;
 
-    private final HashMap<String, EventRegistrationHandle> pendingResources = new HashMap<>();
+    private HashMap<String, EventRegistrationHandle> pendingResources;
 
     /**
      * Creates a new element attribute map for the given node.
@@ -126,7 +126,22 @@ public class ElementAttributeMap extends NodeMap {
         }
     }
 
+    private void ensurePendingResources() {
+        if (pendingResources == null) {
+            pendingResources = new HashMap<>();
+        }
+    }
+
+    private void ensureResourceRegistrations() {
+        if (resourceRegistrations == null) {
+            resourceRegistrations = new HashMap<>();
+        }
+    }
+
     private void unregisterResource(String attribute) {
+        ensureResourceRegistrations();
+        ensurePendingResources();
+
         StreamResourceRegistration registration = resourceRegistrations
                 .remove(attribute);
         EventRegistrationHandle handle = pendingResources.remove(attribute);
@@ -136,9 +151,17 @@ public class ElementAttributeMap extends NodeMap {
         if (registration != null) {
             registration.unregister();
         }
+        if (resourceRegistrations.isEmpty()) {
+            resourceRegistrations = null;
+        }
+        if (pendingResources.isEmpty()) {
+            pendingResources = null;
+        }
     }
 
     private void deferRegistration(String attribute, StreamResource resource) {
+        ensurePendingResources();
+
         assert !pendingResources.containsKey(attribute);
         EventRegistrationHandle handle = getNode()
                 .addAttachListener(() -> registerResource(attribute, resource));
@@ -146,6 +169,9 @@ public class ElementAttributeMap extends NodeMap {
     }
 
     private void registerResource(String attribute, StreamResource resource) {
+        ensureResourceRegistrations();
+        ensurePendingResources();
+
         assert !resourceRegistrations.containsKey(attribute);
         StreamResourceRegistration registration = getSession()
                 .getResourceRegistry().registerResource(resource);
@@ -159,6 +185,7 @@ public class ElementAttributeMap extends NodeMap {
     }
 
     private void unsetResource(String attribute) {
+        ensureResourceRegistrations();
         StreamResourceRegistration registration = resourceRegistrations
                 .get(attribute);
         Optional<StreamResource> resource = Optional.empty();
