@@ -20,14 +20,25 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.router.ViewRendererTest.ErrorView;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
+import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinResponse;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletService;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
+import com.vaadin.util.CurrentInstance;
 import com.vaadin.ui.UI;
 
 public class RouterTest {
@@ -65,6 +76,11 @@ public class RouterTest {
                 }
             };
         }
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
     }
 
     @Test
@@ -116,7 +132,38 @@ public class RouterTest {
     }
 
     @Test
-    public void testResolveError() {
+    public void testResolveError() throws ServletException {
+        UI ui = new RouterTestUI();
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+
+        ServletConfig servletConfig = new MockServletConfig();
+        VaadinServlet servlet = new VaadinServlet();
+        servlet.init(servletConfig);
+        VaadinService service = servlet.getService();
+        service.setCurrentInstances(request, response);
+
+        Router router = new Router();
+        router.reconfigure(c -> c.setResolver(event -> null));
+
+        router.navigate(ui, new Location(""));
+
+        Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+        // 404 code should be sent ONLY on initial request
+        Mockito.verifyZeroInteractions(response);
+
+        // to verify that the setup has been correct and the mocks work,
+        // test the case where 404 should be sent
+        router.initializeUI(ui, request);
+
+        ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
+                .forClass(Integer.class);
+        Mockito.verify(response).setStatus(statusCodeCaptor.capture());
+        Assert.assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
+    }
+
+    @Test
+    public void testResolverError_noCurrentResponse() {
         UI ui = new RouterTestUI();
 
         Router router = new Router();
