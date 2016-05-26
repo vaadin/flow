@@ -59,25 +59,24 @@ public final class PropertyDescriptors {
         }
 
         @Override
-        public void set(HasElement hasElement, S value) {
-            assert hasElement != null;
+        public void set(Element element, S value) {
+            assert element != null;
 
-            Element e = hasElement.getElement();
             if (value == null) {
                 throw new IllegalArgumentException(
                         "Cannot set " + name + " to null");
             } else if (defaultValue.equals(value)) {
-                remover.accept(e);
+                remover.accept(element);
             } else {
-                setter.accept(e, value);
+                setter.accept(element, value);
             }
         }
 
         @Override
-        public G get(HasElement hasElement) {
-            assert hasElement != null;
+        public G get(Element element) {
+            assert element != null;
 
-            S rawValue = getter.apply(hasElement.getElement());
+            S rawValue = getter.apply(element);
 
             return returnWrapper.apply(rawValue, defaultValue);
         }
