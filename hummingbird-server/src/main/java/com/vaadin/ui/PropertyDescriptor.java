@@ -15,6 +15,8 @@
  */
 package com.vaadin.ui;
 
+import com.vaadin.hummingbird.dom.Element;
+
 /**
  * Describes a component property that has its value stored in some form in the
  * component's element, typically an element property or attribute. The
@@ -43,7 +45,19 @@ public interface PropertyDescriptor<S, G> {
      * @param value
      *            the property value to set
      */
-    void set(HasElement hasElement, S value);
+    default void set(HasElement hasElement, S value) {
+        set(hasElement.getElement(), value);
+    }
+
+    /**
+     * Sets the property value for the given element.
+     *
+     * @param element
+     *            the element for which to set the value, not <code>null</code>
+     * @param value
+     *            the property value to set
+     */
+    void set(Element element, S value);
 
     /**
      * Gets the property value for the given component.
@@ -53,6 +67,17 @@ public interface PropertyDescriptor<S, G> {
      *            <code>null</code>
      * @return the property value
      */
-    G get(HasElement hasElement);
+    default G get(HasElement hasElement) {
+        return get(hasElement.getElement());
+    }
+
+    /**
+     * Gets the property value for the given element.
+     *
+     * @param element
+     *            the element for which to get the value, not <code>null</code>
+     * @return the property value
+     */
+    G get(Element element);
 
 }
