@@ -24,8 +24,8 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
 @Tag("paper-slider")
-@HtmlImport("http://polygit.org/paper-slider+PolymerElements+v1.0.10/components/paper-slider/paper-slider.html")
-public class PaperSlider extends Component {
+@HtmlImport(PolyGit.BASE_URL + "paper-slider/paper-slider.html")
+public class PaperSlider extends Component implements HasValue {
     @DomEvent("value-change")
     public static class ValueChangeEvent extends ComponentEvent<PaperSlider> {
         public ValueChangeEvent(PaperSlider source, boolean fromClient) {
@@ -35,14 +35,6 @@ public class PaperSlider extends Component {
 
     public PaperSlider() {
         getElement().synchronizeProperty("value", "value-change");
-    }
-
-    public void setValue(int value) {
-        getElement().setProperty("value", value);
-    }
-
-    public int getValue() {
-        return getElement().getProperty("value", 0);
     }
 
     public void setPin(boolean pin) {
