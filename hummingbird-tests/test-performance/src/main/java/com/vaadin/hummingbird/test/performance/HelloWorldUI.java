@@ -1,5 +1,7 @@
 package com.vaadin.hummingbird.test.performance;
 
+import java.util.Optional;
+
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -41,7 +43,16 @@ public class HelloWorldUI extends UI {
     protected void init(VaadinRequest request) {
         MemoryUsageMonitor.registerUI(this);
 
-        Button b = new Button("Hello");
-        add(b);
+        int buttonCount = Optional.ofNullable(request.getParameter("buttons"))
+                .map(Integer::new).orElse(Integer.valueOf(1)).intValue();
+
+        addButtons(buttonCount);
+    }
+
+    private void addButtons(int count) {
+        for (int i = 0; i < count; i++) {
+            Button b = new Button("Hello");
+            add(b);
+        }
     }
 }
