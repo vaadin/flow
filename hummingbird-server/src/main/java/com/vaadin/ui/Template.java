@@ -60,6 +60,7 @@ import com.vaadin.hummingbird.template.parser.TemplateResolver;
  * @author Vaadin Ltd
  */
 public abstract class Template extends Component implements HasChildView {
+
     private final StateNode stateNode = TemplateElementStateProvider
             .createRootNode();
 
@@ -174,7 +175,6 @@ public abstract class Template extends Component implements HasChildView {
         Class<? extends TemplateModel> modelType = TemplateModelTypeParser
                 .getType(getClass());
 
-        return TemplateModelProxyHandler
-                .createModelProxy(stateNode, modelType);
+        return TemplateModelProxyHandler.createModelProxy(stateNode, modelType);
     }
 }

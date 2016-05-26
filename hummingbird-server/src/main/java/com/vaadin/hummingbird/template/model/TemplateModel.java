@@ -25,7 +25,10 @@ import com.vaadin.ui.Template;
  * <p>
  * Currently supported property types:
  * <ul>
- * <li>NONE</li>
+ * <li>boolean &amp; Boolean</li>
+ * <li>int &amp; Integer</li>
+ * <li>double &amp; Double</li>
+ * <li>String</li>
  * </ul>
  *
  * @author Vaadin Ltd
