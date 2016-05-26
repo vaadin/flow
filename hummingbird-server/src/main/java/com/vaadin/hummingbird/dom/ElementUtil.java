@@ -19,6 +19,10 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Composite;
@@ -244,4 +248,36 @@ public class ElementUtil {
 
     }
 
+    /**
+     * Converts the given element and its children to a JSoup node with
+     * children.
+     *
+     * @param document
+     *            A JSoup document
+     * @param element
+     *            The element to convert
+     * @return A JSoup node containing the converted element
+     */
+    public static Node toJsoup(Document document, Element element) {
+        if (element.isTextNode()) {
+            return new TextNode(element.getOwnTextContent(),
+                    document.baseUri());
+        }
+
+        org.jsoup.nodes.Element target = document
+                .createElement(element.getTag());
+        if (element.hasProperty("innerHTML")) {
+            target.html((String) element.getPropertyRaw("innerHTML"));
+        }
+
+        element.getAttributeNames().forEach(name -> {
+            target.attr(name, element.getAttribute(name));
+        });
+
+        element.getChildren()
+                .forEach(child -> target.appendChild(toJsoup(document, child)));
+
+        return target;
+
+    }
 }
