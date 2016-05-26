@@ -86,15 +86,14 @@ public class TemplateParser {
         return parse(document);
     }
 
-    @SuppressWarnings("rawtypes")
     private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
         Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
         factories.add(new ChildTextNodeBuilderFactory());
         factories.add(new ForElementBuilderFactory());
+        factories.add(new DataNodeFactory());
         return factories;
     }
 
-    @SuppressWarnings("rawtypes")
     private static Collection<TemplateNodeBuilderFactory<?>> loadDefaultFactories() {
         Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
         factories.add(new DefaultTextModelBuilderFactory());
