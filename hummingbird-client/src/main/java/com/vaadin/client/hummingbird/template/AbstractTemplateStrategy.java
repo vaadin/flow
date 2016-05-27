@@ -16,8 +16,10 @@
 package com.vaadin.client.hummingbird.template;
 
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
@@ -32,6 +34,7 @@ import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 
 import elemental.dom.Node;
+import elemental.json.JsonObject;
 
 /**
  * Abstract binding strategy to handle template nodes.
@@ -141,6 +144,30 @@ public abstract class AbstractTemplateStrategy<T extends Node>
             // Only static bindings is known as a final call
             assert binding.getType().equals(StaticBindingValueProvider.TYPE);
             executor.accept(Optional.of(getStaticBindingValue(binding)));
+        }
+    }
+
+    /**
+     * Hooks up all {@code bindings} to run {@code executor} when the
+     * {@code stateNode} changes in a way that affects the binding.
+     *
+     * @param stateNode
+     *            the state node, not {@code null}
+     * @param bindings
+     *            binding data to set, not {@code null}
+     * @param executor
+     *            the operation to use the binding value for a named binding,
+     *            not {@code null}
+     */
+    protected void bind(StateNode stateNode, JsonObject bindings,
+            BiConsumer<String, Optional<Object>> executor) {
+        if (bindings == null) {
+            return;
+        }
+
+        for (String name : bindings.keys()) {
+            Binding binding = WidgetUtil.crazyJsCast(bindings.get(name));
+            bind(stateNode, binding, value -> executor.accept(name, value));
         }
     }
 

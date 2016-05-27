@@ -34,6 +34,12 @@ public interface ClassList extends Set<String> {
      * @return true if the class list was modified (class name added or
      *         removed), false otherwise
      */
-    boolean set(String className, boolean set);
+    default boolean set(String className, boolean set) {
+        if (set) {
+            return add(className);
+        } else {
+            return remove(className);
+        }
+    }
 
 }
