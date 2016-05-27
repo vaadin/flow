@@ -18,9 +18,12 @@ package com.vaadin.util;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.text.MessageFormat;
 import java.util.regex.Pattern;
 
 /**
@@ -36,6 +39,11 @@ public class ReflectTools implements Serializable {
             .compile("^(get)\\p{Lu}");
     private static final Pattern IS_STARTS = Pattern.compile("^(is)\\p{Lu}");
     private static final Pattern SETTER_STARTS = Pattern.compile("^set\\p{Lu}");
+    static final String CREATE_INSTANCE_FAILED = "Unable to create an instance of {0}. Make sure it has a no-arg constructor";
+    static final String CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS = "Unable to create an instance of {0}. Make sure the class is static if it is an inner class.";
+    static final String CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION = "Unable to create an instance of {0}. Make sure the class is public and that is has a public no-arg constructor.";
+    static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of {0}. Make sure the class has a public no-arg constructor.";
+    static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of {0}. The constructor threw an exception.";
 
     /**
      * Locates the method in the given class. Returns null if the method is not
@@ -263,6 +271,55 @@ public class ReflectTools implements Serializable {
                 && (GETTER_STARTS.matcher(methodName).find()
                         || (IS_STARTS.matcher(methodName).find()
                                 && returnType == boolean.class));
+    }
+
+    /**
+     * Creates a instance of the given class with a no-arg constructor.
+     * <p>
+     * Catches all exceptions which might occur and wraps them in a
+     * {@link IllegalArgumentException} with a descriptive error message hinting
+     * of what might be wrong with the class that could not be instantiated.
+     *
+     * @param cls
+     *            the class to instantiate
+     * @return an instance of the class
+     */
+    public static <T> T createInstance(Class<T> cls) {
+        Constructor<T> constructor;
+        try {
+            constructor = cls.getConstructor();
+            return constructor.newInstance();
+        } catch (NoSuchMethodException e) {
+            if (cls.isMemberClass() && !Modifier.isStatic(cls.getModifiers())) {
+                throw new IllegalArgumentException(MessageFormat.format(
+                        CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
+                        cls.getName()), e);
+            } else {
+                throw new IllegalArgumentException(MessageFormat.format(
+                        CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
+                        cls.getName()), e);
+            }
+        } catch (InstantiationException e) {
+            if (cls.isMemberClass() && !Modifier.isStatic(cls.getModifiers())) {
+                throw new IllegalArgumentException(MessageFormat.format(
+                        CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
+                        cls.getName()), e);
+            } else {
+                throw new IllegalArgumentException(MessageFormat
+                        .format(CREATE_INSTANCE_FAILED, cls.getName()), e);
+            }
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION, cls.getName()), e);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    MessageFormat.format(CREATE_INSTANCE_FAILED, cls.getName()),
+                    e);
+        } catch (InvocationTargetException e) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
+                    cls.getName()), e);
+        }
     }
 
 }
