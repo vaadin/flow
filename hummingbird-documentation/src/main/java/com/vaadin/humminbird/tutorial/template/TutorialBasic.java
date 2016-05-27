@@ -21,7 +21,7 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.ui.Template;
 
 @CodeFor("tutorial-template-basic.asciidoc")
-public class TutorialBasic {
+public class TemplateBasic {
     public class Greeting extends Template {
         //@formatter:off - custom line breaks
         // This API will be improved

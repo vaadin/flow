@@ -1,0 +1,44 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Binding Class Names in a Template
+
+This is a tutorial for class name bindings in a template, for a generic tutorial on bindings see <<tutorial-template-bindings#,Binding Model Data in a Template>>.
+
+Template offers more fine grained binding for class names compared to other properties. While it is possible to bind class names using a generic binding like
+
+[source,html]
+----
+<div [class]="myclasses"></div>
+----
+
+and use a model such as
+
+[source,java]
+----
+public interface MyModel extends TemplateModel {
+  public void setMyclasses(String myclasses);
+}
+----
+
+it becomes a bit tedious to maintain the "myclasses" model variable, especially when you are toggling many classes on and off independent of each other. To make class binding easier and better communicate intent, templates allow you to bind individual class names to individual model properties, e.g.
+
+[source,html]
+----
+<input [class.error]="error" [class.good]="good" [class.required]="required" />
+----
+
+Now the model looks like
+
+[source,java]
+----
+public interface MyModel extends TemplateModel {
+  public void setError(boolean error);
+  public void setGood(boolean good);
+  public void setRequired(boolean required);
+  // + getters
+}
+----
+
+With this model, you can toggle the individual class names from code using the defined setter methods.
+
+[NOTE]
+The syntax is `[class.<class name>]="property in model"` and the model property should always be a `boolean`.
