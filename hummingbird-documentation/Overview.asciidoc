@@ -35,6 +35,7 @@ These tutorials show how the different features are used.
 * Template API
 ** <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 ** <<tutorial-template-bindings#,Binding Model Data in a Template>>
+** <<tutorial-template-class-name-binding#,Binding Class Names in a Template>>
 ** <<tutorial-template-components#,Adding Components to a Template>>
 ** <<tutorial-template-for#,Creating Template Contents Dynamically Based on a List of Items>>
 ** <<tutorial-template-event-handlers#,Handling User Events in a Template>>
