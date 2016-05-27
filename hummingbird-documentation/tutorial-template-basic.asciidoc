@@ -12,9 +12,6 @@ For tutorials about how to use different template features, see:
 * <<tutorial-template-bindings#,Binding Model Data in a Template>>
 * <<tutorial-template-for#,Creating Template Contents Dynamically Based on a List of Items>>
 
-[WARNING]
-Implementation of the Template API has only just started. The current feature set is still cumbersome to use and very limiting.
-
 You can use a template to create a simple greeting component in this way:
 
 [source,html]
@@ -34,23 +31,29 @@ The template engine optimizes performance by updating only the changed parts.
 The model of a template component should not be confused with domain model objects defined for the application's business logic.
 Data from the domain model might be used in the template model, but they are still separate concepts.
 
-To use this template and set model values, you also need to create a class that extends `Template` and add an instance of the component to your view.
-
-Each instance of a `Template` component has its own model instance that holds values used by different types of bindings in the template file (i.e. the `.html` file).
+To use this template and set model values, you need to create a model class which extends `TemplateModel` and a template class which extends `Template`. Each instance of a `Template` component has its own model instance that holds values used by different types of bindings in the template file (i.e. the `.html` file). The template instance is a component which you can add to your view.
 
 [source,java]
 ----
+public interface GreetingModel extends TemplateModel {
+  public void setName(String name);
+  public String getName();
+}
+
 public class Greeting extends Template {
-    // This API will be improved
-    private ModelMap model = getElement().getNode().getFeature(ModelMap.class);
 
-    public void setName(String name) {
-        model.setValue("name", name);
-    }
+  @Override
+  public GreetingModel getModel() {
+      return (GreetingModel) super.getModel();
+  }
 
-    public String getName() {
-        return (String) model.getValue("name");
-    }
+  public void setName(String name) {
+    getModel().setName(name);
+  }
+
+  public String getName() {
+    return getModel().getName();
+  }
 }
 ----
 
