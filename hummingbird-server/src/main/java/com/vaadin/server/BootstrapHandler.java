@@ -46,6 +46,7 @@ import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
 import com.vaadin.ui.UI;
+import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -554,7 +555,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             VaadinRequest request, VaadinSession session) {
         Integer uiId = Integer.valueOf(session.getNextUIid());
 
-        UI ui = createInstance(uiClass);
+        UI ui = ReflectTools.createInstance(uiClass);
 
         // Initialize some fields for a newly created UI
         ui.getInternals().setSession(session);
@@ -650,22 +651,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .resolveVaadinUri("context://" + clientEngineFile);
     }
 
-    private static UI createInstance(Class<? extends UI> uiClass) {
-        try {
-            return uiClass.newInstance();
-        } catch (InstantiationException e) {
-            throw new BootstrapException(
-                    "Could not create an instance of the UI class "
-                            + uiClass.getName(),
-                    e);
-        } catch (IllegalAccessException e) {
-            throw new BootstrapException(
-                    "No public no-args constructor available for the UI "
-                            + uiClass.getName(),
-                    e);
-        }
-    }
-
     /**
      * Returns the UI class mapped for servlet that handles the given request.
      * <p>
@@ -728,22 +713,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         } else if (viewportGeneratorClassAnnotation.isPresent()) {
             Class<? extends ViewportGenerator> viewportGeneratorClass = viewportGeneratorClassAnnotation
                     .get().value();
-            try {
-                viewportContent = viewportGeneratorClass.newInstance()
-                        .getViewport(request);
-            } catch (InstantiationException e) {
-                throw new BootstrapException(
-                        "Bootstrap failed: Could not create an instance of viewport generator class "
-                                + viewportGeneratorClass.getName() + " for UI "
-                                + uiClass.getName(),
-                        e);
-            } catch (IllegalAccessException e) {
-                throw new BootstrapException(
-                        "Bootstrap failed: No public no-args constructor available for viewport generator class "
-                                + viewportGeneratorClass.getName()
-                                + " was available for UI " + uiClass.getName(),
-                        e);
-            }
+            viewportContent = ReflectTools
+                    .createInstance(viewportGeneratorClass)
+                    .getViewport(request);
         }
         return viewportContent;
     }
