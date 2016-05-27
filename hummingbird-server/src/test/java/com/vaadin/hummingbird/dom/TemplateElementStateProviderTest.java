@@ -20,9 +20,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -438,10 +443,73 @@ public class TemplateElementStateProviderTest {
 
         Assert.assertEquals("foo bar", element.getAttribute("class"));
 
+        assertClassList(element.getClassList(), "foo", "bar");
+    }
+
+    @Test
+    public void dynamicClassNames() {
+        Element element = createElement(
+                "<div class='foo bar' [class.bar]=hasBar [class.baz]=hasBaz></div>");
         ClassList classList = element.getClassList();
-        Assert.assertEquals(2, classList.size());
-        Assert.assertTrue(classList.contains("foo"));
-        Assert.assertTrue(classList.contains("bar"));
+
+        Assert.assertEquals("foo", element.getAttribute("class"));
+
+        assertClassList(classList, "foo");
+        assertNotClassList(classList, "bar", "baz");
+
+        ModelMap modelMap = element.getNode().getFeature(ModelMap.class);
+
+        modelMap.setValue("hasBar", "");
+        modelMap.setValue("hasBaz", "yes");
+        assertClassList(classList, "foo", "baz");
+        assertNotClassList(classList, "bar");
+
+        modelMap.setValue("hasBar", 5);
+        modelMap.setValue("hasBaz", 0);
+        assertClassList(classList, "foo", "bar");
+        assertNotClassList(classList, "baz");
+
+        modelMap.setValue("hasBar", false);
+        modelMap.setValue("hasBaz", true);
+        assertClassList(classList, "foo", "baz");
+        assertNotClassList(classList, "bar");
+    }
+
+    private void assertClassList(ClassList classList, String... expectedNames) {
+        HashSet<String> expectedSet = new HashSet<>(
+                Arrays.asList(expectedNames));
+
+        Assert.assertEquals(expectedNames.length, classList.size());
+        Assert.assertEquals(expectedNames.length, classList.stream().count());
+        Assert.assertEquals(expectedNames.length,
+                iteratorToStream(classList.iterator()).count());
+
+        for (String className : expectedNames) {
+            Assert.assertTrue(classList.contains(className));
+        }
+
+        Assert.assertEquals(expectedSet, classList);
+        Assert.assertEquals(classList, expectedSet);
+
+        // Does classList.iterator() contain the right values?
+        Assert.assertEquals(expectedSet, new HashSet<>(classList));
+
+        // Does classList.stream() contain the right values?
+        Assert.assertEquals(expectedSet,
+                classList.stream().collect(Collectors.toSet()));
+    }
+
+    private Stream<String> iteratorToStream(Iterator<String> iterator) {
+        return StreamSupport.stream(Spliterators
+                .spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+    }
+
+    private void assertNotClassList(ClassList classList,
+            String... forbiddenClassNames) {
+        for (String className : forbiddenClassNames) {
+            Assert.assertFalse(classList.contains(className));
+        }
+
     }
 
     @Test

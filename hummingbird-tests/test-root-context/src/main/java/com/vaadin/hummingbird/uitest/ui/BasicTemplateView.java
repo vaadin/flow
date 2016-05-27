@@ -15,9 +15,13 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.io.Serializable;
+
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Template;
@@ -44,5 +48,25 @@ public class BasicTemplateView extends Template implements View {
         });
         getElement().getNode().getFeature(TemplateMap.class)
                 .setChild(childSlotContent.getElement().getNode());
+    }
+
+    @EventHandler
+    private void clearModel() {
+        setModelValue(null);
+    }
+
+    @EventHandler
+    private void setModelText() {
+        setModelValue("text");
+    }
+
+    @EventHandler
+    private void setModelBoolean() {
+        setModelValue(Boolean.FALSE);
+    }
+
+    private void setModelValue(Serializable value) {
+        getElement().getNode().getFeature(ModelMap.class).setValue("modelValue",
+                value);
     }
 }
