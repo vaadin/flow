@@ -34,10 +34,17 @@ You can define a published method in a `Template` class as follows:
 [source,java]
 ----
 public class MyTemplate extends Template {
+  public interface MyModel extends TemplateModel {
+      public void setHelloText(String helloText);
+  }
+  @Override
+  public MyModel getModel() {
+      return (MyModel) super.getModel();
+  }
+
   @EventHandler
   private void sayHello(String name) {
-        getElement().getNode().getFeature(ModelMap.class)
-                .setValue("helloText", "Hello " + name);
+    getModel().setHelloText("Hello " + name);
   }
 }
 ----
