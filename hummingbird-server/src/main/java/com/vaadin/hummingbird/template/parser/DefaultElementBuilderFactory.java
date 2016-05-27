@@ -71,23 +71,27 @@ public class DefaultElementBuilderFactory
 
         if (name.startsWith("(")) {
             if (!name.endsWith(")")) {
-                StringBuilder msg = new StringBuilder(
-                        "Event listener registration should be in the form (click)='...' but template contains '");
-                msg.append(attribute.toString()).append("'.");
-                throw new TemplateParseException(msg.toString());
+                throw new TemplateParseException(
+                        "Event listener registration should be in the form (click)='...' but template contains '"
+                                + attribute.toString() + "'.");
             }
             String key = extractKey(name, 1);
             builder.addEventHandler(key, attribute.getValue());
         } else if (name.startsWith("[")) {
             if (!name.endsWith("]")) {
-                StringBuilder msg = new StringBuilder(
-                        "Property binding should be in the form [property]='value' but template contains '");
-                msg.append(attribute.toString()).append("'.");
-                throw new TemplateParseException(msg.toString());
+                throw new TemplateParseException(
+                        "Property binding should be in the form [property]='value' but template contains '"
+                                + attribute.toString() + "'.");
             }
             String key = extractKey(name, 1);
-            builder.setProperty(key, new ModelValueBindingProvider(
-                    stripForLoopVariableIfNeeded(attribute.getValue())));
+            ModelValueBindingProvider binding = new ModelValueBindingProvider(
+                    stripForLoopVariableIfNeeded(attribute.getValue()));
+            if (key.startsWith("class.")) {
+                String className = key.substring("class.".length());
+                builder.setClassName(className, binding);
+            } else {
+                builder.setProperty(key, binding);
+            }
         } else {
             /*
              * Regular attribute names in the template, i.e. name not starting

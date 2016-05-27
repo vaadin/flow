@@ -74,6 +74,8 @@ public class ElementTemplateBindingStrategy
                 stateNode.getTree(), templateId);
         bindProperties(stateNode, templateNode, element);
 
+        bindClassNames(stateNode, element, templateNode);
+
         JsonObject attributes = templateNode.getAttributes();
         if (attributes != null) {
             for (String name : attributes.keys()) {
@@ -140,14 +142,20 @@ public class ElementTemplateBindingStrategy
 
     private void bindProperties(StateNode stateNode,
             ElementTemplateNode templateNode, Element element) {
-        JsonObject properties = templateNode.getProperties();
-        if (properties != null) {
-            for (String name : properties.keys()) {
-                Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
-                bind(stateNode, binding, value -> WidgetUtil
-                        .setJsProperty(element, name, value.orElse(null)));
+        bind(stateNode, templateNode.getProperties(),
+                (name, value) -> WidgetUtil.setJsProperty(element, name,
+                        value.orElse(null)));
+    }
+
+    private void bindClassNames(StateNode stateNode, Element element,
+            ElementTemplateNode templateNode) {
+        bind(stateNode, templateNode.getClassNames(), (name, value) -> {
+            if (WidgetUtil.isTrueish(value.orElse(null))) {
+                element.getClassList().add(name);
+            } else {
+                element.getClassList().remove(name);
             }
-        }
+        });
     }
 
     private void bindOverrideNode(Element element, MapProperty overrideProperty,

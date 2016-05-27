@@ -26,6 +26,8 @@ public class TemplateBuilderTest {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div")
                 .setProperty("foo", new StaticBindingValueProvider("bar"))
                 .setAttribute("baz", new StaticBindingValueProvider("lorem"))
+                .setClassName("a-name",
+                        new StaticBindingValueProvider("a-value"))
                 .addChild(new TextTemplateBuilder(
                         new StaticBindingValueProvider("baz")));
 
@@ -43,6 +45,11 @@ public class TemplateBuilderTest {
                 node.getAttributeNames().toArray());
         Assert.assertEquals("lorem",
                 node.getAttributeBinding("baz").get().getValue(null));
+
+        Assert.assertArrayEquals(new String[] { "a-name" },
+                node.getClassNames().toArray());
+        Assert.assertEquals("a-value",
+                node.getClassNameBinding("a-name").get().getValue(null));
 
         Assert.assertEquals(1, node.getChildCount());
 

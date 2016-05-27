@@ -207,6 +207,47 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals(null, WidgetUtil.getJsProperty(domNode, "prop"));
     }
 
+    public void testClassNameBinding() {
+        MapProperty property = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                .getProperty("key");
+
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+
+        templateNode.addClassName("static", "true");
+        templateNode.addClassName("dynamic", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, "key"));
+
+        Element element = createElement(templateNode);
+
+        property.setValue(Boolean.TRUE);
+        Reactive.flush();
+        assertEquals("static dynamic", element.getClassName());
+
+        property.setValue(Boolean.FALSE);
+        Reactive.flush();
+        assertEquals("static", element.getClassName());
+
+        // trueish value
+        property.setValue("yes");
+        Reactive.flush();
+        assertEquals("static dynamic", element.getClassName());
+
+        // falseish value
+        property.setValue("");
+        Reactive.flush();
+        assertEquals("static", element.getClassName());
+
+        // trueish value
+        property.setValue(Double.valueOf(1));
+        Reactive.flush();
+        assertEquals("static dynamic", element.getClassName());
+
+        property.removeValue();
+        Reactive.flush();
+        assertEquals("static", element.getClassName());
+    }
+
     public void testTextValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding("key"));

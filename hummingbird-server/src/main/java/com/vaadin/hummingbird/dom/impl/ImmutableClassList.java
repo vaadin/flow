@@ -50,11 +50,6 @@ public class ImmutableClassList extends AbstractSet<String>
     }
 
     @Override
-    public boolean set(String className, boolean set) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
-    }
-
-    @Override
     public Iterator<String> iterator() {
         return values.iterator();
     }
