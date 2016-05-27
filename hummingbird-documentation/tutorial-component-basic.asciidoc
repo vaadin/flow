@@ -34,3 +34,6 @@ To make the component easier to use, you can add an API for getting and setting 
     getElement().setProperty("value", value);
   }
 ----
+
+[TIP]
+For an easier way to address properties and attributes, see <<tutorial-component-property-descriptor#,Using API Helpers for Defining Component Properties>>
