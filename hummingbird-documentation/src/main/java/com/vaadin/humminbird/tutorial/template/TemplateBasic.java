@@ -21,7 +21,7 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
 
 @CodeFor("tutorial-template-basic.asciidoc")
-public class TutorialBasic {
+public class TemplateBasic {
 
     public interface GreetingModel extends TemplateModel {
         public void setName(String name);
