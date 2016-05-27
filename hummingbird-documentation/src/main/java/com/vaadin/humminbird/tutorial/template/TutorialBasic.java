@@ -17,23 +17,31 @@ package com.vaadin.humminbird.tutorial.template;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.html.Div;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
 
 @CodeFor("tutorial-template-basic.asciidoc")
 public class TutorialBasic {
+
+    public interface GreetingModel extends TemplateModel {
+        public void setName(String name);
+
+        public String getName();
+    }
+
     public class Greeting extends Template {
-        //@formatter:off - custom line breaks
-        // This API will be improved
-        private ModelMap model = getElement().getNode().getFeature(ModelMap.class);
-        //@formatter:on - custom line breaks
+
+        @Override
+        public GreetingModel getModel() {
+            return (GreetingModel) super.getModel();
+        }
 
         public void setName(String name) {
-            model.setValue("name", name);
+            getModel().setName(name);
         }
 
         public String getName() {
-            return (String) model.getValue("name");
+            return getModel().getName();
         }
     }
 
