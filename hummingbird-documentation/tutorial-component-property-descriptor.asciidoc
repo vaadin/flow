@@ -1,0 +1,50 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Using API Helpers for Defining Component Properties
+
+The framework provides a helper called `PropertyDescriptor` which makes managing attributes and properties in a component easier. Using `PropertyDescriptor` you can define the property name and the default value in one place and use that from the setter and getter methods which become oneliners:
+
+[source,java]
+----
+@Tag("input")
+public class TextField extends Component {
+  private static PropertyDescriptor<String, String> VALUE = PropertyDescriptors.propertyWithDefault("value", "");
+
+  public String getValue() {
+    return get(VALUE);
+  }
+  public void setValue(String value) {
+    set(VALUE, value);
+  }
+}
+----
+
+In your component API for a given property, e.g. `value` of an input field, you want to ensure a couple of things are always true:
+
+* The getter and setter use the same property or attribute
+* The default value is handled properly
+* The getter return value is either the type used by the setter, e.g. `String` for an input `value` or an optional version of it, i.e. `Optional<String>` if the property is not mandatory.
+
+PropertyDescriptors will automatically take these points into consideration for you.
+
+`PropertyDescriptor` instance are created using the helpers available in the `PropertyDescriptors` class. If you want to map the property to an attribute instead of an element property, you can use the `PropertyDescriptors.attribute*` methods instead of `PropertyDescriptors.property*`.
+
+For optional properties, e.g. `placeholder` in a TextField, you can use the `PropertyDescriptors.optional*` methods, e.g.
+[source,java]
+----
+@Tag("input")
+public class TextField extends Component {
+  private static PropertyDescriptor<String, Optional<String>> PLACEHOLDER = PropertyDescriptors.optionalAttributeWithDefault("placeholder", "");
+
+  public Optional<String> getPlaceholder() {
+    return get(PLACEHOLDER);
+  }
+  public void setPlaceholder(String placeholder) {
+      set(PLACEHOLDER, placeholder);
+  }
+}
+----
+
+The `placeholder` getter will now return an empty `Optional` if the placeholder is not present, i.e. has been set to its default value.
+
+[NOTE]
+The default value used in the `PropertyDescriptors` methods should match what the value becomes in the browser when the attribute or property is not set. Otherwise the value will not be correctly sent to the browser when the user sets the value to the default value.
