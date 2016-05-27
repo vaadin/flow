@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
+import com.vaadin.util.ReflectTools;
 
 /**
  * A composite encapsulates a {@link Component} tree to allow creation of new
@@ -81,15 +82,7 @@ public abstract class Composite<T extends Component> extends Component {
                             + MUST_OVERRIDE_INIT_CONTENT);
         }
 
-        try {
-            return (T) contentType.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException(
-                    "Cannot create content of type " + contentType + ". "
-                            + "Make sure the type has a default constructor and that it isn't a non-static inner class, "
-                            + "or override initContent() to manually create the content.",
-                    e);
-        }
+        return (T) ReflectTools.createInstance(contentType);
     }
 
     private static Class<? extends Component> findContentType(
