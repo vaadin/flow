@@ -32,6 +32,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
     private final String tag;
     private final Map<String, BindingValueProvider> properties = new HashMap<>();
     private final Map<String, BindingValueProvider> attributes = new HashMap<>();
+    private final Map<String, BindingValueProvider> classNames = new HashMap<>();
     private final List<TemplateNodeBuilder> children = new ArrayList<>();
     private final Map<String, String> eventHandlers = new HashMap<>();
 
@@ -49,7 +50,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
     @Override
     public ElementTemplateNode build(TemplateNode parent) {
         return new ElementTemplateNode(parent, getTag(), getProperties(),
-                getAttributes(), getEventHandlers(), children);
+                getAttributes(), getClassNames(), getEventHandlers(), children);
     }
 
     /**
@@ -104,6 +105,27 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
     }
 
     /**
+     * Adds a class name binding to this builder.
+     *
+     * @param name
+     *            the class name, not <code>null</code>
+     * @param binding
+     *            the binding that will determine whether the class name is
+     *            active, not <code>null</code>
+     * @return this element template builder
+     */
+    public ElementTemplateBuilder setClassName(String name,
+            BindingValueProvider binding) {
+        assert name != null;
+        assert binding != null;
+        assert !classNames.containsKey(
+                name) : "There is already a class name named " + name;
+
+        classNames.put(name, binding);
+        return this;
+    }
+
+    /**
      * Gets the property bindings that have been defined using
      * {@link #setProperty(String, BindingValueProvider)}.
      *
@@ -121,6 +143,16 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
      */
     public Map<String, BindingValueProvider> getAttributes() {
         return Collections.unmodifiableMap(attributes);
+    }
+
+    /**
+     * Gets the class name bindings that have been defined using
+     * {@link #setClassName(String, BindingValueProvider)}.
+     *
+     * @return a map of class name bindings, not <code>null</code>
+     */
+    public Map<String, BindingValueProvider> getClassNames() {
+        return Collections.unmodifiableMap(classNames);
     }
 
     /**
