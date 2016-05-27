@@ -17,16 +17,25 @@ package com.vaadin.humminbird.tutorial.template;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
 
 @CodeFor("tutorial-template-event-handlers.asciidoc")
 public class EventHandlers {
+    public interface MyModel extends TemplateModel {
+        public void setHelloText(String helloText);
+    }
+
     public class MyTemplate extends Template {
+
+        @Override
+        public MyModel getModel() {
+            return (MyModel) super.getModel();
+        }
+
         @EventHandler
         private void sayHello(String name) {
-            getElement().getNode().getFeature(ModelMap.class)
-                    .setValue("helloText", "Hello " + name);
+            getModel().setHelloText("Hello " + name);
         }
     }
 }
