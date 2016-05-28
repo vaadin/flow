@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.annotations.HtmlTemplate;
+import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
@@ -35,6 +36,7 @@ import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.ui.ComponentTest.TestComponent;
 
 /**
  * @author Vaadin Ltd
@@ -57,8 +59,27 @@ public class TemplateTest {
 
     public static class TemplateParentView extends InlineTemplate {
         public TemplateParentView() {
-            super("<div><h1>Header</h1>@child@</div>");
+            super("<div id='main'><h1 id='header'>Header</h1>@child@</div>");
         }
+    }
+
+    @Tag("H1")
+    public static class H1TestComponent extends Component {
+
+    }
+
+    public static class TemplateUsingStreamConstructor
+            extends TemplateParentView {
+
+        @Id("header")
+        protected H1TestComponent header;
+    }
+
+    public static class TemplateWithParentComponentMapping
+            extends TemplateUsingStreamConstructor {
+
+        @Id("main")
+        private TestComponent main;
     }
 
     @HtmlTemplate("samePackage.html")
@@ -79,6 +100,8 @@ public class TemplateTest {
     @HtmlTemplate("/root.html")
     private static class AnnotatedRootPathTemplate extends Template {
 
+        @Id("root")
+        private TestComponent root;
     }
 
     private static class InheritedAnnotationTemplate
@@ -195,6 +218,29 @@ public class TemplateTest {
     @Test(expected = TemplateParseException.class)
     public void templateInputStreamWithInclude() {
         new InlineTemplate("<div>@include bar.html@</div>");
+    }
+
+    @Test
+    public void mapComponentsDefaultConstructor() {
+        AnnotatedRootPathTemplate t = new AnnotatedRootPathTemplate();
+        Assert.assertNotNull(t.root);
+        Assert.assertEquals("div", t.root.getElement().getTag());
+    }
+
+    @Test
+    public void mapComponentsStreamConstructor() {
+        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
+        Assert.assertNotNull(t.header);
+        Assert.assertEquals("h1", t.header.getElement().getTag());
+    }
+
+    @Test
+    public void mapComponentsParentClass() {
+        TemplateWithParentComponentMapping t = new TemplateWithParentComponentMapping();
+        Assert.assertNotNull(t.header);
+        Assert.assertEquals("h1", t.header.getElement().getTag());
+        Assert.assertNotNull(t.main);
+        Assert.assertEquals("div", t.main.getElement().getTag());
 
     }
 }

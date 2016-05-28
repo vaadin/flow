@@ -15,24 +15,25 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.html.Button;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Template;
 
 public class BasicTemplateView extends Template implements View {
+
+    @Id("container")
+    private Div container;
+
     public BasicTemplateView() {
-        // Child 0 is whitespace, child 1 is bar, child 2 is more whitespace
-        Element container = getElement().getChild(3);
-        assert "container".equals(container.getAttribute("id"));
+        assert container != null;
 
-        Element button = ElementFactory
-                .createButton("Element added to template (click to remove)");
-        button.addEventListener("click", e -> button.removeFromParent());
-
-        container.appendChild(button);
+        Button button = new Button(
+                "Element added to template (click to remove)");
+        button.addClickListener(e -> container.remove(button));
+        container.add(button);
 
         Button childSlotContent = new Button(
                 "Child slot content (click to remove)");

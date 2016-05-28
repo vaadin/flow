@@ -16,6 +16,7 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -102,11 +103,11 @@ public abstract class Component implements HasElement, Serializable,
                 throw new IllegalStateException("@" + Tag.class.getSimpleName()
                         + " value cannot be empty.");
             }
-            e = new Element(tagName.get());
+            e = new Element(tagName.get().toLowerCase(Locale.ENGLISH));
         } else {
             if (tagName.isPresent()) {
                 String elementTag = wrapData.element.getTag();
-                if (!tagName.get().equals(elementTag)) {
+                if (!tagName.get().equalsIgnoreCase(elementTag)) {
                     throw new IllegalArgumentException(
                             "A component specified to use a " + tagName.get()
                                     + " element cannot use an element with tag name "

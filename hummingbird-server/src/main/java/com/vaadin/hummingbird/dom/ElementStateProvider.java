@@ -343,7 +343,11 @@ public interface ElementStateProvider extends Serializable {
      * @param component
      *            the component to map the element to
      */
-    void setComponent(StateNode node, Component component);
+    default void setComponent(StateNode node, Component component) {
+        assert node != null;
+        assert component != null;
+        node.getFeature(ComponentMapping.class).setComponent(component);
+    }
 
     /**
      * Gets the component this element is mapped to.

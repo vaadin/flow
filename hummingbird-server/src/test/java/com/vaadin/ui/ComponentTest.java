@@ -123,6 +123,7 @@ public class ComponentTest {
 
     }
 
+    @Tag("div")
     public static class TestComponent extends TracksAttachDetachComponent {
 
         public TestComponent() {

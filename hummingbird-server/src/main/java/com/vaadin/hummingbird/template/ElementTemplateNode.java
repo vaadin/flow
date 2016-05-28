@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 
@@ -211,5 +213,25 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
         }
 
         // Super class takes care of the children
+    }
+
+    @Override
+    public Optional<Element> findElementById(StateNode stateNode, String id) {
+        if (attributes.containsKey("id")) {
+            BindingValueProvider binding = attributes.get("id");
+            if (id.equals(binding.getValue(stateNode))) {
+                return Optional.of(getElement(0, stateNode));
+            }
+        }
+
+        for (int i = 0; i < getChildCount(); i++) {
+            TemplateNode child = getChild(i);
+            Optional<Element> e = child.findElementById(stateNode, id);
+            if (e.isPresent()) {
+                return e;
+            }
+        }
+
+        return Optional.empty();
     }
 }
