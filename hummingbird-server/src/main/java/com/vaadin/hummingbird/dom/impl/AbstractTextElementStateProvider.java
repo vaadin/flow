@@ -27,9 +27,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.server.StreamResource;
-import com.vaadin.ui.Component;
 
 /**
  * Abstract element state provider for text nodes. Operations that are not
@@ -156,13 +154,6 @@ public abstract class AbstractTextElementStateProvider
     @Override
     public Set<String> getSynchronizedPropertyEvents(StateNode node) {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void setComponent(StateNode node, Component component) {
-        assert node != null;
-        assert component != null;
-        node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
     @Override
