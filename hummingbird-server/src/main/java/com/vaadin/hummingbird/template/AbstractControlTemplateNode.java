@@ -15,6 +15,11 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.Optional;
+
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
+
 /**
  * A template node that generates a different number of child element depending
  * on state node contents.
@@ -34,4 +39,8 @@ public abstract class AbstractControlTemplateNode extends TemplateNode {
         assert parent != null : "A control node can't be the root of a template";
     }
 
+    @Override
+    public Optional<Element> findElementById(StateNode stateNode, String id) {
+        return Optional.empty();
+    }
 }

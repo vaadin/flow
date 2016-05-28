@@ -15,8 +15,9 @@
  */
 package com.vaadin.humminbird.tutorial.template;
 
+import com.vaadin.annotations.Id;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Label;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Template;
@@ -26,15 +27,12 @@ public class TemplateComponent extends Template {
 
     public class MainPage extends Template {
 
-        public void setContent(Component content) {
+        @Id("content")
+        private Div container;
 
-            //@formatter:off - custom line wrapping
-            Element contentContainer = getElement().getChildren().filter(
-                    element -> "content".equals(element.getAttribute("id"))).
-                    findFirst().get();
-           //@formatter:on
-            contentContainer.removeAllChildren();
-            contentContainer.appendChild(content.getElement());
+        public void setContent(Component content) {
+            container.removeAll();
+            container.add(content);
         }
     }
 

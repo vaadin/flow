@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +36,14 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
 import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
+import com.vaadin.ui.TemplateTest.TestSpan;
 
 public class ComponentTest {
+
+    @After
+    public void checkThreadLocal() {
+        Assert.assertNull(Component.elementToMapTo.get());
+    }
 
     @Tag("div")
     public static class TestDiv extends Component {
@@ -48,6 +55,32 @@ public class ComponentTest {
 
         public TestComponentWhichHasComponentField() {
             getElement().appendChild(button.getElement());
+        }
+    }
+
+    public static class TestComponentWhichUsesElementConstructor
+            extends Component {
+        public TestComponentWhichUsesElementConstructor() {
+            super(new Element("my-element"));
+        }
+    }
+
+    public static class TestComponentWhichUsesNullElementConstructor
+            extends Component {
+        public TestComponentWhichUsesNullElementConstructor() {
+            super(null);
+        }
+    }
+
+    @Tag("div")
+    public static class TestComponentWhichMapsComponentInConstructor
+            extends Component {
+
+        TestSpan span;
+
+        public TestComponentWhichMapsComponentInConstructor() {
+            super();
+            span = Component.from(getElement().getChild(0), TestSpan.class);
         }
     }
 
@@ -731,6 +764,16 @@ public class ComponentTest {
         Component.from(button.getElement(), TestButton.class);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void mapToNullComponentType() {
+        Component.from(new Element("div"), null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapFromNullElement() {
+        Component.from(null, TestButton.class);
+    }
+
     @Test
     public void mapToComponentWhichCreatesComponentInConstructor() {
         Element e = new Element("div");
@@ -753,6 +796,39 @@ public class ComponentTest {
         Assert.assertEquals(e, c.getElement());
         Assert.assertNotEquals(e, buttonElement);
         Assert.assertEquals("button", buttonElement.getTag());
+    }
+
+    @Test
+    public void mapToComponentWithElementConstructor() {
+        Element e = new Element("my-element");
+        TestComponentWhichUsesElementConstructor c = Component.from(e,
+                TestComponentWhichUsesElementConstructor.class);
+
+        Assert.assertSame(e, c.getElement());
+        Assert.assertSame(c, e.getComponent().get());
+    }
+
+    @Test
+    public void mapToComponentWithNullElementConstructor() {
+        Element e = new Element("div");
+        TestComponentWhichUsesNullElementConstructor c = Component.from(e,
+                TestComponentWhichUsesNullElementConstructor.class);
+
+        Assert.assertSame(e, c.getElement());
+        Assert.assertSame(c, e.getComponent().get());
+    }
+
+    @Test
+    public void mapToComponentWhichMapsToComponentInConstructor() {
+        Element div = new Element("div").setAttribute("id", "root");
+        Element span = new Element("span").setAttribute("id", "child");
+        div.appendChild(span);
+
+        TestComponentWhichMapsComponentInConstructor c = Component.from(div,
+                TestComponentWhichMapsComponentInConstructor.class);
+
+        Assert.assertEquals(div, c.getElement());
+        Assert.assertEquals(span, c.span.getElement());
     }
 
 }
