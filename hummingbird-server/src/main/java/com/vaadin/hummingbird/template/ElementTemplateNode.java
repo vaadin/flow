@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 
@@ -245,5 +247,28 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
 
             return Optional.of(json);
         }
+    }
+
+    @Override
+    public Optional<Element> findElement(StateNode stateNode, String id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        if (attributes.containsKey("id")) {
+            BindingValueProvider binding = attributes.get("id");
+            if (id.equals(binding.getValue(stateNode))) {
+                return Optional.of(getElement(0, stateNode));
+            }
+        }
+
+        for (int i = 0; i < getChildCount(); i++) {
+            TemplateNode child = getChild(i);
+            Optional<Element> e = child.findElement(stateNode, id);
+            if (e.isPresent()) {
+                return e;
+            }
+        }
+
+        return Optional.empty();
     }
 }

@@ -20,10 +20,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.annotations.HtmlTemplate;
+import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
@@ -35,6 +38,7 @@ import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.ui.ComponentTest.TestComponent;
 
 /**
  * @author Vaadin Ltd
@@ -61,6 +65,64 @@ public class TemplateTest {
         }
     }
 
+    @Tag("H1")
+    public static class H1TestComponent extends Component {
+
+    }
+
+    public static class TemplateUsingStreamConstructor extends InlineTemplate {
+
+        @Id("header")
+        protected H1TestComponent header;
+
+        public TemplateUsingStreamConstructor() {
+            super("<div><h1 id='header'>Header</h1>@child@<div id='footer'></div></div>");
+        }
+
+    }
+
+    public static class SimpleTemplate extends InlineTemplate {
+        public SimpleTemplate() {
+            super("<h1 id='root'></h1>");
+        }
+
+    }
+
+    public static class TemplateMapToRoot extends SimpleTemplate {
+
+        @Id("root")
+        protected H1TestComponent root;
+
+    }
+
+    public static class TemplateMapInvalidFieldType extends SimpleTemplate {
+
+        @Id("root")
+        protected String root;
+
+    }
+
+    public static class TemplateNonExistingIdField extends SimpleTemplate {
+
+        @Id("foo")
+        protected TestComponent root;
+
+    }
+
+    public static class TemplateEmptyIdField extends SimpleTemplate {
+
+        @Id("")
+        protected TestComponent root;
+
+    }
+
+    public static class TemplateWithParentComponentMapping
+            extends TemplateUsingStreamConstructor {
+
+        @Id("footer")
+        private TestComponent footer;
+    }
+
     @HtmlTemplate("samePackage.html")
     private static class AnnotatedRelativePathTemplate extends Template {
 
@@ -78,12 +140,22 @@ public class TemplateTest {
 
     @HtmlTemplate("/root.html")
     private static class AnnotatedRootPathTemplate extends Template {
-
     }
 
     private static class InheritedAnnotationTemplate
             extends AnnotatedAbsolutePathTemplate {
 
+    }
+
+    @Tag("SPAN")
+    public static class TestSpan extends Component {
+
+    }
+
+    @HtmlTemplate("../hummingbird/template/main.html")
+    private static class TemplateDefaultConstructor extends Template {
+        @Id("main")
+        private TestSpan span;
     }
 
     @Test
@@ -195,6 +267,55 @@ public class TemplateTest {
     @Test(expected = TemplateParseException.class)
     public void templateInputStreamWithInclude() {
         new InlineTemplate("<div>@include bar.html@</div>");
-
     }
+
+    @Test
+    public void mapComponentsDefaultConstructor() {
+        TemplateDefaultConstructor t = new TemplateDefaultConstructor();
+        Assert.assertNotNull(t.span);
+        Assert.assertEquals("span", t.span.getElement().getTag());
+    }
+
+    @Test
+    public void mapComponentsStreamConstructor() {
+        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
+        Assert.assertNotNull(t.header);
+        Assert.assertEquals("h1", t.header.getElement().getTag());
+    }
+
+    @Test
+    public void mapComponentsParentClass() {
+        TemplateWithParentComponentMapping t = new TemplateWithParentComponentMapping();
+        Assert.assertNotNull(t.header);
+        Assert.assertEquals("h1", t.header.getElement().getTag());
+        Assert.assertNotNull(t.footer);
+        Assert.assertEquals("div", t.footer.getElement().getTag());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapTemplateRoot() {
+        new TemplateMapToRoot();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapInvalidFieldType() {
+        new TemplateMapInvalidFieldType();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapNonExistingId() {
+        new TemplateNonExistingIdField();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapEmptyId() {
+        new TemplateEmptyIdField();
+    }
+
+    @Before
+    @After
+    public void checkThreadLocal() {
+        Assert.assertNull(Component.elementToMapTo.get());
+    }
+
 }

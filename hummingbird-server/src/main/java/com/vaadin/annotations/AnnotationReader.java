@@ -17,6 +17,7 @@
 package com.vaadin.annotations;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -123,6 +124,22 @@ public class AnnotationReader {
     }
 
     /**
+     * Helper to get an annotation for a field.
+     *
+     * @param field
+     *            the field to check
+     * @param annotationType
+     *            the annotation type to look for
+     * @return an <code>Optional</code> annotation of the given type, or an
+     *         empty Optional if the field does not have the given annotation
+     */
+    public static <T extends Annotation> Optional<T> getAnnotationFor(
+            Field field, Class<T> annotationType) {
+        T annotation = field.getAnnotation(annotationType);
+        return Optional.ofNullable(annotation);
+    }
+
+    /**
      * Helper to get an annotation for a class. If the annotation is not present
      * on the target class, its super classes and implemented interfaces are
      * also searched for the annotation.
@@ -201,4 +218,5 @@ public class AnnotationReader {
 
         return annotations;
     }
+
 }
