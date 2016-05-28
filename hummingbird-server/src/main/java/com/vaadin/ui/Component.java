@@ -48,7 +48,7 @@ public abstract class Component implements HasElement, Serializable,
      * existing element.
      */
     static class MapToExistingElement {
-        private Element element = null;
+        Element element = null;
         private boolean mapElementToComponent = false;
 
         public MapToExistingElement(Element element,
@@ -81,42 +81,27 @@ public abstract class Component implements HasElement, Serializable,
      * instead of creating a new element.
      */
     protected Component() {
-        boolean mapElementToComponent = true;
-        MapToExistingElement wrapData = elementToMapTo.get();
-        // Clear to be sure that the element is only used for one component
-        elementToMapTo.remove();
-        Element e;
-
-        Optional<String> tagName = AnnotationReader
+        Optional<String> tagNameAnnotation = AnnotationReader
                 .getAnnotationFor(getClass(), Tag.class).map(Tag::value);
-
-        if (wrapData == null) {
-            if (!tagName.isPresent()) {
-                throw new IllegalStateException(getClass().getSimpleName()
-                        + " (or a super class) must be annotated with @"
-                        + Tag.class.getName()
-                        + " if the default constructor is used.");
-            }
-
-            if (tagName.get().isEmpty()) {
-                throw new IllegalStateException("@" + Tag.class.getSimpleName()
-                        + " value cannot be empty.");
-            }
-            e = new Element(tagName.get());
-        } else {
-            if (tagName.isPresent()) {
-                String elementTag = wrapData.element.getTag();
-                if (!tagName.get().equals(elementTag)) {
-                    throw new IllegalArgumentException(
-                            "A component specified to use a " + tagName.get()
-                                    + " element cannot use an element with tag name "
-                                    + elementTag);
-                }
-            }
-            e = wrapData.element;
-            mapElementToComponent = wrapData.mapElementToComponent;
+        if (!tagNameAnnotation.isPresent()) {
+            throw new IllegalStateException(getClass().getSimpleName()
+                    + " (or a super class) must be annotated with @"
+                    + Tag.class.getName()
+                    + " if the default constructor is used.");
         }
-        setElement(this, e, mapElementToComponent);
+
+        String tagName = tagNameAnnotation.get();
+        if (tagName.isEmpty()) {
+            throw new IllegalStateException("@" + Tag.class.getSimpleName()
+                    + " value cannot be empty.");
+        }
+
+        if (elementToMapTo.get() != null) {
+            mapToElement(Optional.of(tagName));
+        } else {
+            Element e = new Element(tagName);
+            setElement(this, e);
+        }
     }
 
     /**
@@ -132,9 +117,29 @@ public abstract class Component implements HasElement, Serializable,
      *            the root element for the component
      */
     protected Component(Element element) {
-        if (element != null) {
+        if (elementToMapTo.get() != null) {
+            mapToElement(Optional.ofNullable(element).map(Element::getTag));
+        } else if (element != null) {
             setElement(this, element, true);
         }
+    }
+
+    private void mapToElement(Optional<String> tagName) {
+        MapToExistingElement wrapData = elementToMapTo.get();
+        assert wrapData != null;
+
+        // Clear to be sure that the element is only used for one component
+        elementToMapTo.remove();
+
+        // Sanity check: validate that tag name matches
+        String elementTag = wrapData.element.getTag();
+        if (tagName.isPresent()
+                && !tagName.get().equalsIgnoreCase(elementTag)) {
+            throw new IllegalArgumentException("A component specified to use a "
+                    + tagName + " element cannot use an element with tag name "
+                    + elementTag);
+        }
+        setElement(this, wrapData.element, wrapData.mapElementToComponent);
     }
 
     /**

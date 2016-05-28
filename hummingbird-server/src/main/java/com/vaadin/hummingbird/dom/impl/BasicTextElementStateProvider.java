@@ -20,7 +20,6 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
-import com.vaadin.ui.Component;
 
 /**
  * Handles storing and retrieval of the state information for a text node using
@@ -85,13 +84,6 @@ public class BasicTextElementStateProvider
     @Override
     public Element getParent(StateNode node) {
         return BasicElementStateProvider.get().getParent(node);
-    }
-
-    @Override
-    public void setComponent(StateNode node, Component component) {
-        assert node != null;
-        assert component != null;
-        node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
 }
