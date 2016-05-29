@@ -20,6 +20,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -196,8 +197,9 @@ public class RouterConfigurationTest {
         Assert.assertNotNull(configuration.resolveRoute(new Location("foo")));
         configuration.removeRoute("*");
 
-        // Should resolve to null only after removing all the routes
-        Assert.assertNull(configuration.resolveRoute(new Location("foo")));
+        // Should resolve to empty optional only after removing all the routes
+        Assert.assertFalse(
+                configuration.resolveRoute(new Location("foo")).isPresent());
     }
 
     private static NavigationHandler createNoopHandler() {
@@ -315,9 +317,9 @@ public class RouterConfigurationTest {
         configuration.setRoute(strongerRoute, strongerHandler);
         configuration.setRoute(weakerRoute, weakerHandler);
 
-        NavigationHandler handler = configuration
+        Optional<NavigationHandler> handler = configuration
                 .resolveRoute(new Location(location));
-        Assert.assertSame(handler, strongerHandler);
+        Assert.assertSame(handler.get(), strongerHandler);
 
         // Do the same again with setRoute run in the opposite order
         configuration = createConfiguration();
@@ -326,7 +328,7 @@ public class RouterConfigurationTest {
         configuration.setRoute(strongerRoute, strongerHandler);
 
         handler = configuration.resolveRoute(new Location(location));
-        Assert.assertSame(handler, strongerHandler);
+        Assert.assertSame(handler.get(), strongerHandler);
     }
 
     private static void assertMatches(String location, String route) {
@@ -345,10 +347,9 @@ public class RouterConfigurationTest {
         RouterConfiguration configuration = createConfiguration();
         configuration.setRoute(route, createNoopHandler());
 
-        NavigationHandler resolveRoute = configuration
+        Optional<NavigationHandler> resolveRoute = configuration
                 .resolveRoute(new Location(location));
-        boolean condition = resolveRoute != null;
-        return condition;
+        return resolveRoute.isPresent();
     }
 
     private static RouterConfiguration createConfiguration() {
