@@ -15,27 +15,18 @@
  */
 package com.vaadin.humminbird.tutorial.template;
 
-import com.vaadin.annotations.EventHandler;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
 
-@CodeFor("tutorial-template-event-handlers.asciidoc")
-public class EventHandlers {
-    public interface MyModel extends TemplateModel {
-        public void setHelloText(String helloText);
-    }
+@CodeFor("tutorial-template-class-name-binding.asciidoc")
+public class TemplateClassBinding {
+    static class A {
+        public interface MyModel extends TemplateModel {
+            public void setError(boolean error);
 
-    public class MyTemplate extends Template {
-
-        @Override
-        public MyModel getModel() {
-            return (MyModel) super.getModel();
-        }
-
-        @EventHandler
-        private void sayHello(String name) {
-            getModel().setHelloText("Hello " + name);
+            public void setRequired(boolean required);
+            // + getters
         }
     }
+
 }
