@@ -397,11 +397,7 @@ public class ServerRpcHandler implements Serializable {
     private static JsonArray unwrapVarArgs(JsonArray argsFromClient,
             Method method) {
         int paramCount = method.getParameterCount();
-        if (argsFromClient.length() == paramCount - 1) {
-            JsonArray array = Json.createArray();
-            array.set(0, Json.createArray());
-            return array;
-        } else if (argsFromClient.length() == paramCount) {
+        if (argsFromClient.length() == paramCount) {
             if (argsFromClient.get(paramCount - 1).getType()
                     .equals(JsonType.ARRAY)) {
                 return argsFromClient;

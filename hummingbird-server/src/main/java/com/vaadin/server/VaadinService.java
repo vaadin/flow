@@ -215,16 +215,10 @@ public abstract class VaadinService implements Serializable {
                         + "If an inner class is used, it must be static.");
             }
 
-            RouterConfigurator configurator = (RouterConfigurator) configuratorClass
-                    .newInstance();
+            RouterConfigurator configurator = (RouterConfigurator) ReflectTools
+                    .createInstance(configuratorClass);
 
             getRouter().reconfigure(configurator);
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new ServiceException(
-                    "Could not create router configurator "
-                            + configuratorClassName
-                            + ". Please make sure it is a public non-abstract class with a public no-args constructor.",
-                    e);
         } catch (ClassNotFoundException e) {
             throw new ServiceException(
                     "Could not find router class " + configuratorClassName, e);

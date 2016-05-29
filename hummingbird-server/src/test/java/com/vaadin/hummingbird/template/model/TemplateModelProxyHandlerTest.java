@@ -3,49 +3,49 @@ package com.vaadin.hummingbird.template.model;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.template.model.TemplateModelTest.MyModel;
-import com.vaadin.hummingbird.template.model.TemplateModelTest.TestTemplate;
+import com.vaadin.hummingbird.template.model.TemplateModelTest.EmptyModel;
+import com.vaadin.hummingbird.template.model.TemplateModelTest.EmptyModelTemplate;
 import com.vaadin.ui.UI;
 
 public class TemplateModelProxyHandlerTest {
 
     @Test
     public void testEquals() {
-        TestTemplate testTemplate1 = new TestTemplate();
-        TestTemplate testTemplate2 = new TestTemplate();
-        TemplateModel m1 = testTemplate1.getModel();
-        TemplateModel m2 = testTemplate2.getModel();
+        EmptyModelTemplate emptyModelTemplate1 = new EmptyModelTemplate();
+        EmptyModelTemplate emptyModelTemplate2 = new EmptyModelTemplate();
+        TemplateModel m1 = emptyModelTemplate1.getModel();
+        TemplateModel m2 = emptyModelTemplate2.getModel();
 
         Assert.assertFalse(m1.equals(null));
         Assert.assertFalse(m1.equals("foobar"));
         Assert.assertFalse(m1.equals(m2));
         Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
-                testTemplate1.getElement().getNode(), MyModel.class)));
+                emptyModelTemplate1.getElement().getNode(), EmptyModel.class)));
         Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
-                testTemplate1.getElement().getNode(), TemplateModel.class)));
+                emptyModelTemplate1.getElement().getNode(), TemplateModel.class)));
         Assert.assertTrue(m2.equals(m2));
     }
 
     @Test
     public void testHashCode() {
-        TestTemplate testTemplate1 = new TestTemplate();
-        TestTemplate testTemplate2 = new TestTemplate();
-        TemplateModel m1 = testTemplate1.getModel();
-        TemplateModel m2 = testTemplate2.getModel();
+        EmptyModelTemplate emptyModelTemplate1 = new EmptyModelTemplate();
+        EmptyModelTemplate emptyModelTemplate2 = new EmptyModelTemplate();
+        TemplateModel m1 = emptyModelTemplate1.getModel();
+        TemplateModel m2 = emptyModelTemplate2.getModel();
 
         Assert.assertNotEquals(m1.hashCode(), m2.hashCode());
     }
 
     @Test
     public void testToString() {
-        TestTemplate testTemplate1 = new TestTemplate();
-        TestTemplate testTemplate2 = new TestTemplate();
-        TemplateModel m1 = testTemplate1.getModel();
-        TemplateModel m2 = testTemplate2.getModel();
+        EmptyModelTemplate emptyModelTemplate1 = new EmptyModelTemplate();
+        EmptyModelTemplate emptyModelTemplate2 = new EmptyModelTemplate();
+        TemplateModel m1 = emptyModelTemplate1.getModel();
+        TemplateModel m2 = emptyModelTemplate2.getModel();
 
         // add templates to UI so that their state nodes get an id which is used
         // in toString()
-        new UI().add(testTemplate1, testTemplate2);
+        new UI().add(emptyModelTemplate1, emptyModelTemplate2);
 
         Assert.assertEquals(m1.toString(), m1.toString());
         Assert.assertNotEquals(m1.toString(), m2.toString());

@@ -311,6 +311,28 @@ public class ServerRpcHandlerTest {
     }
 
     @Test
+    public void methodWithSeveralArgsAndVarArg_acceptNoValues() {
+        JsonArray array = Json.createArray();
+
+        JsonArray firstArg = Json.createArray();
+        firstArg.set(0, 5.6d);
+        firstArg.set(1, 78.36d);
+
+        array.set(0, firstArg);
+
+        MethodWithParameters component = new MethodWithParameters();
+        ServerRpcHandler.invokeMethod(component, component.getClass(),
+                "method2", array);
+
+        Assert.assertArrayEquals(
+                new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
+                component.doubleArg);
+
+        Assert.assertNotNull(component.varArg);
+        Assert.assertEquals(0, component.varArg.length);
+    }
+
+    @Test
     public void methodWithVarArg_acceptOneValue() {
         JsonArray array = Json.createArray();
 
