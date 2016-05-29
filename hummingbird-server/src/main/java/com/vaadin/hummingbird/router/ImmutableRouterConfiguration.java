@@ -49,10 +49,10 @@ public interface ImmutableRouterConfiguration {
      *
      * @param location
      *            the location to resolve, not <code>null</code>
-     * @return a navigation handler or handling the route, or <code>null</code>
-     *         if no configured route matched the location
+     * @return a navigation handler or handling the route, or empty optional if
+     *         no configured route matched the location
      */
-    NavigationHandler resolveRoute(Location location);
+    Optional<NavigationHandler> resolveRoute(Location location);
 
     /**
      * Gets the parent type configured for the given view type.
@@ -69,7 +69,7 @@ public interface ImmutableRouterConfiguration {
     /**
      * Gets the parent types configured for the given view type.
      * <p>
-     * The returned strean includes the parent view as returned by
+     * The returned stream includes the parent view as returned by
      * {@link #getParentView(Class)} and recursively up until a view which does
      * not have a parent view.
      *

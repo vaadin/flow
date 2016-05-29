@@ -62,7 +62,7 @@ public class RouterConfiguration
      * Creates a new empty immutable configuration.
      */
     public RouterConfiguration() {
-        resolver = e -> null;
+        resolver = e -> Optional.empty();
         routeTreeRoot = new RouteTreeNode();
         parentViewTypes = new HashMap<>();
         viewToRoute = new HashMap<>();
@@ -145,15 +145,15 @@ public class RouterConfiguration
      *
      * @param location
      *            the location to resolve, not <code>null</code>
-     * @return a navigation handler or handling the route, or <code>null</code>
-     *         if no configured route matched the location
+     * @return a navigation handler or handling the route, or empty optional if
+     *         no configured route matched the location
      */
     @Override
-    public NavigationHandler resolveRoute(Location location) {
+    public Optional<NavigationHandler> resolveRoute(Location location) {
         assert location != null;
 
         // Start the recursion
-        return resolveRoute(routeTreeRoot, location);
+        return Optional.ofNullable(resolveRoute(routeTreeRoot, location));
     }
 
     private static NavigationHandler resolveRoute(RouteTreeNode node,

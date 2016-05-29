@@ -16,7 +16,6 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import javax.servlet.annotation.WebServlet;
@@ -50,11 +49,12 @@ public class RouterTestServlet extends VaadinServlet {
             configuration.setResolver(new Resolver() {
 
                 @Override
-                public NavigationHandler resolve(
+                public Optional<NavigationHandler> resolve(
                         NavigationEvent navigationEvent) {
                     if (navigationEvent.getLocation().getFirstSegment()
                             .equals("")) {
-                        return new StaticViewRenderer(NormalView.class);
+                        return Optional
+                                .of(new StaticViewRenderer(NormalView.class));
                     }
 
                     Optional<Class<? extends View>> res = getViewClasses()
@@ -62,18 +62,15 @@ public class RouterTestServlet extends VaadinServlet {
                                     .equals(navigationEvent.getLocation()
                                             .getFirstSegment()))
                             .findAny();
-                    return res.map(
-                            new Function<Class<? extends View>, NavigationHandler>() {
-                                @Override
-                                public NavigationHandler apply(
-                                        Class<? extends View> c) {
-                                    return new StaticViewRenderer(c,
-                                            Layout.class);
-                                }
-                            }).orElseGet(() -> {
-                                return new StaticViewRenderer(
-                                        DefaultErrorView.class);
-                            });
+                    Optional<NavigationHandler> result = res
+                            .map(clazz -> new StaticViewRenderer(clazz,
+                                    Layout.class));
+                    if (result.isPresent()) {
+                        return result;
+                    } else {
+                        return Optional.of(
+                                new StaticViewRenderer(DefaultErrorView.class));
+                    }
                 }
             });
 
