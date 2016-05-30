@@ -35,6 +35,9 @@ public interface TestElementTemplateNode
     public void setAttributes(JsonObject attributes);
 
     @JsProperty
+    public void setClassNames(JsonObject classNames);
+
+    @JsProperty
     public void setEventHandlers(JsonObject handlers);
 
     @JsOverlay
@@ -58,6 +61,17 @@ public interface TestElementTemplateNode
     }
 
     @JsOverlay
+    public default void addClassName(String name, String staticValue) {
+        doGetClassNames().put(name,
+                TestBinding.createStatic(staticValue).asJson());
+    }
+
+    @JsOverlay
+    public default void addClassName(String name, TestBinding binding) {
+        doGetClassNames().put(name, binding.asJson());
+    }
+
+    @JsOverlay
     public default void addEventHandler(String name, String handler) {
         JsonObject eventHandlers = getEventHandlers();
         if (eventHandlers == null) {
@@ -75,6 +89,16 @@ public interface TestElementTemplateNode
             setProperties(properties);
         }
         return properties;
+    }
+
+    @JsOverlay
+    public default JsonObject doGetClassNames() {
+        JsonObject classNames = getClassNames();
+        if (classNames == null) {
+            classNames = Json.createObject();
+            setClassNames(classNames);
+        }
+        return classNames;
     }
 
     @JsOverlay
