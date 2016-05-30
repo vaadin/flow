@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.template.TemplateNode;
 
 /**
@@ -56,9 +57,7 @@ public class TemplateOverridesMap extends NodeMap {
         StateNode overrideNode = (StateNode) get(key);
 
         if (overrideNode == null && create) {
-            overrideNode = new StateNode(OverrideElementData.class,
-                    ElementChildrenList.class, ParentGeneratorHolder.class,
-                    ComponentMapping.class, ElementPropertyMap.class);
+            overrideNode = TemplateElementStateProvider.createOverrideNode();
 
             overrideNode.getFeature(OverrideElementData.class)
                     .setTemplateNode(templateNode);

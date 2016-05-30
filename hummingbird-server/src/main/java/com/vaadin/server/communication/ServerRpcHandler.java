@@ -503,7 +503,7 @@ public class ServerRpcHandler implements Serializable {
      *            JSON containing all information needed to execute all
      *            requested RPC calls.
      */
-    private void handleInvocations(UI ui, int lastSyncIdSeenByClient,
+    void handleInvocations(UI ui, int lastSyncIdSeenByClient,
             JsonArray invocationsData) {
 
         for (int i = 0; i < invocationsData.length(); i++) {

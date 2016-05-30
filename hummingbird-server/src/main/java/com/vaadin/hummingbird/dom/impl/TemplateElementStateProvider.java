@@ -34,8 +34,12 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
+import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
@@ -131,6 +135,13 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             .concat(Stream.of(requiredFeatures), Stream.of(rootOnlyFeatures))
             .toArray(Class[]::new);
 
+    @SuppressWarnings("unchecked")
+    private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
+            .of(OverrideElementData.class, ElementChildrenList.class,
+                    ParentGeneratorHolder.class, ComponentMapping.class,
+                    ElementPropertyMap.class, ElementListenerMap.class)
+            .toArray(Class[]::new);
+
     private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
     private ElementTemplateNode templateNode;
 
@@ -143,6 +154,15 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     public TemplateElementStateProvider(ElementTemplateNode templateNode) {
         assert templateNode != null;
         this.templateNode = templateNode;
+    }
+
+    /**
+     * Gets the template node for this state provider.
+     *
+     * @return the template node
+     */
+    public ElementTemplateNode getTemplateNode() {
+        return templateNode;
     }
 
     @Override
@@ -302,7 +322,10 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     public EventRegistrationHandle addEventListener(StateNode node,
             String eventType, DomEventListener listener,
             String[] eventDataExpressions) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        ElementListenerMap listeners = getOrCreateOverrideNode(node)
+                .getFeature(ElementListenerMap.class);
+
+        return listeners.add(eventType, listener, eventDataExpressions);
     }
 
     @Override
@@ -451,6 +474,16 @@ public class TemplateElementStateProvider implements ElementStateProvider {
      */
     public static StateNode createSubModelNode() {
         return new StateNode(requiredFeatures);
+    }
+
+    /**
+     * Creates a new state node with all features needed for a state node use as
+     * an override node.
+     *
+     * @return a new state node, not <code>null</code>
+     */
+    public static StateNode createOverrideNode() {
+        return new StateNode(overrideNodeFeatures);
     }
 
     private void checkModifiableProperty(String name) {

@@ -18,6 +18,7 @@ package com.vaadin.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -38,6 +39,7 @@ import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.server.communication.ServerRpcHandlerTest;
 import com.vaadin.ui.ComponentTest.TestComponent;
 
 /**
@@ -330,6 +332,34 @@ public class TemplateTest {
     @After
     public void checkThreadLocal() {
         Assert.assertNull(Component.elementToMapTo.get());
+    }
+
+    @Test
+    public void rootElementEventListener() throws Exception {
+        UI ui = new UI();
+        Template t = new InlineTemplate("<root><child></child></root>");
+        Element element = t.getElement();
+        ui.add(t);
+        AtomicInteger invoked = new AtomicInteger(0);
+        element.addEventListener("test-event", e -> {
+            invoked.incrementAndGet();
+        });
+        ServerRpcHandlerTest.sendElementEvent(element, ui, "test-event", null);
+        Assert.assertEquals(1, invoked.get());
+    }
+
+    @Test
+    public void childElementEventListener() throws Exception {
+        UI ui = new UI();
+        Template t = new InlineTemplate("<root><child></child></root>");
+        Element element = t.getElement().getChild(0);
+        ui.add(t);
+        AtomicInteger invoked = new AtomicInteger(0);
+        element.addEventListener("test-event", e -> {
+            invoked.incrementAndGet();
+        });
+        ServerRpcHandlerTest.sendElementEvent(element, ui, "test-event", null);
+        Assert.assertEquals(1, invoked.get());
     }
 
 }

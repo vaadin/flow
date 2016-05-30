@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -711,4 +712,18 @@ public class TemplateElementStateProviderTest {
 
         return Element.get(stateNode);
     }
+
+    public static Optional<StateNode> getOverrideNode(Element element) {
+        StateNode node = element.getNode();
+        if (!node.hasFeature(TemplateOverridesMap.class)) {
+            return Optional.empty();
+        } else {
+            ElementStateProvider stateProvider = element.getStateProvider();
+            assert stateProvider instanceof TemplateElementStateProvider;
+            return Optional.of(node.getFeature(TemplateOverridesMap.class)
+                    .get(((TemplateElementStateProvider) stateProvider)
+                            .getTemplateNode(), false));
+        }
+    }
+
 }
