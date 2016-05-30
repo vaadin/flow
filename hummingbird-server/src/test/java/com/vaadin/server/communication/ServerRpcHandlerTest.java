@@ -15,17 +15,24 @@
  */
 package com.vaadin.server.communication;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
+import com.vaadin.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -38,6 +45,8 @@ import elemental.json.JsonValue;
  *
  */
 public class ServerRpcHandlerTest {
+
+    private static final String TEST_PROPERTY = "test-property";
 
     @Tag("a")
     public static class ComponentWithMethod extends Component {
@@ -401,6 +410,49 @@ public class ServerRpcHandlerTest {
         }
     }
 
+    @Test
+    public void testElementEventNoData() throws Exception {
+        TestComponent c = new TestComponent();
+        Element element = c.getElement();
+        UI ui = new UI();
+        ui.add(c);
+        AtomicInteger invocations = new AtomicInteger(0);
+
+        element.addEventListener("test-event",
+                e -> invocations.incrementAndGet());
+        sendElementEvent(element, ui, "test-event", null);
+        Assert.assertEquals(1, invocations.get());
+    }
+
+    @Test
+    public void testElementEventData() throws Exception {
+        TestComponent c = new TestComponent();
+        Element element = c.getElement();
+        UI ui = new UI();
+        ui.add(c);
+        AtomicInteger invocationData = new AtomicInteger(0);
+
+        element.addEventListener("test-event", e -> invocationData
+                .addAndGet((int) e.getEventData().getNumber("nr")));
+        JsonObject eventData = Json.createObject();
+        eventData.put("nr", 123);
+        sendElementEvent(element, ui, "test-event", eventData);
+        Assert.assertEquals(123, invocationData.get());
+    }
+
+    @Test
+    public void testSynchronizeProperty() throws Exception {
+        TestComponent c = new TestComponent();
+        Element element = c.getElement();
+        UI ui = new UI();
+        ui.add(c);
+        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value1");
+        Assert.assertEquals("value1", element.getPropertyRaw(TEST_PROPERTY));
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value2");
+        Assert.assertEquals("value2", element.getPropertyRaw(TEST_PROPERTY));
+    }
+
     public static void sendElementEvent(Element element, UI ui,
             String eventType, JsonObject eventData) throws Exception {
         JsonArray invocationsData = Json.createArray();
@@ -428,6 +480,29 @@ public class ServerRpcHandlerTest {
     private static StateNode getInvocationNode(Element element) {
         return TemplateElementStateProviderTest.getOverrideNode(element)
                 .orElse(element.getNode());
+    }
+
+    public static void sendSynchronizePropertyEvent(Element element, UI ui,
+            String propertyName, String newValue)
+            throws InvalidUIDLSecurityKeyException, IOException {
+        JsonArray invocationsData = Json.createArray();
+        invocationsData.set(0,
+                createSyncPropertyInvocation(element, propertyName, newValue));
+
+        new ServerRpcHandler().handleInvocations(ui, 1, invocationsData);
+    }
+
+    public static JsonObject createSyncPropertyInvocation(Element element,
+            String property, Serializable value) {
+        JsonObject message = Json.createObject();
+        message.put(JsonConstants.RPC_TYPE,
+                JsonConstants.RPC_TYPE_PROPERTY_SYNC);
+        StateNode node = getInvocationNode(element);
+        message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_PROPERTY, property);
+        message.put(JsonConstants.RPC_PROPERTY_VALUE,
+                JsonCodec.encodeWithoutTypeInfo(value));
+        return message;
     }
 
 }

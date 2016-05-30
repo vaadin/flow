@@ -61,8 +61,8 @@ public class BasicTemplateView extends Template implements View {
     }
 
     @EventHandler
-    private void setModelBoolean() {
-        setModelValue(Boolean.FALSE);
+    private void setModelBoolean(boolean value) {
+        setModelValue(value);
     }
 
     private void setModelValue(Serializable value) {
