@@ -23,9 +23,12 @@ import com.vaadin.ui.Template;
  * Interface for a {@link Template}'s model. Extending this interface and adding
  * getters and setters makes it possible to easily bind data to a template.
  * <p>
- * Currently supported property types:
+ * Supported property types:
  * <ul>
- * <li>NONE</li>
+ * <li>boolean &amp; Boolean</li>
+ * <li>int &amp; Integer</li>
+ * <li>double &amp; Double</li>
+ * <li>String</li>
  * </ul>
  *
  * @author Vaadin Ltd
