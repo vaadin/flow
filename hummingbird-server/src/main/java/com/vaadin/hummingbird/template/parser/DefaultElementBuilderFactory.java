@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.template.parser;
 
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
@@ -51,7 +52,8 @@ public class DefaultElementBuilderFactory
         ElementTemplateBuilder builder = new ElementTemplateBuilder(
                 element.tagName());
 
-        element.attributes().forEach(attr -> setBinding(attr, builder));
+        element.attributes()
+                .forEach(attr -> setBinding(attr, builder, element));
 
         element.childNodes().stream().map(builderProducer::apply)
                 .filter(Optional::isPresent).map(Optional::get)
@@ -65,29 +67,44 @@ public class DefaultElementBuilderFactory
         return true;
     }
 
-    private void setBinding(Attribute attribute,
-            ElementTemplateBuilder builder) {
+    private void setBinding(Attribute attribute, ElementTemplateBuilder builder,
+            Element element) {
         String name = attribute.getKey();
 
         if (name.startsWith("(")) {
             if (!name.endsWith(")")) {
-                StringBuilder msg = new StringBuilder(
-                        "Event listener registration should be in the form (click)='...' but template contains '");
-                msg.append(attribute.toString()).append("'.");
-                throw new TemplateParseException(msg.toString());
+                throw new TemplateParseException(
+                        "Event listener registration should be in the form (click)='...' but template contains '"
+                                + attribute.toString() + "'.");
             }
             String key = extractKey(name, 1);
             builder.addEventHandler(key, attribute.getValue());
         } else if (name.startsWith("[")) {
             if (!name.endsWith("]")) {
-                StringBuilder msg = new StringBuilder(
-                        "Property binding should be in the form [property]='value' but template contains '");
-                msg.append(attribute.toString()).append("'.");
-                throw new TemplateParseException(msg.toString());
+                throw new TemplateParseException(
+                        "Property binding should be in the form [property]='value' but template contains '"
+                                + attribute.toString() + "'.");
             }
             String key = extractKey(name, 1);
-            builder.setProperty(key, new ModelValueBindingProvider(
-                    stripForLoopVariableIfNeeded(attribute.getValue())));
+            ModelValueBindingProvider binding = new ModelValueBindingProvider(
+                    stripForLoopVariableIfNeeded(attribute.getValue()));
+            if (key.startsWith("class.")) {
+                String className = key.substring("class.".length());
+
+                String classAttribute = element.attr("class");
+                if (classAttribute != null
+                        && Stream.of(classAttribute.split("\\s+"))
+                                .anyMatch(className::equals)) {
+                    throw new TemplateParseException(
+                            "The class attribute can't contain '" + className
+                                    + "' when there's also a binding for [class."
+                                    + className + "]");
+                }
+
+                builder.setClassName(className, binding);
+            } else {
+                builder.setProperty(key, binding);
+            }
         } else {
             /*
              * Regular attribute names in the template, i.e. name not starting

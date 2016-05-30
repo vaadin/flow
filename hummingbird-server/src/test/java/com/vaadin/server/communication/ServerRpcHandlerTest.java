@@ -102,6 +102,17 @@ public class ServerRpcHandlerTest {
         }
     }
 
+    public static class MethodWithVarArgParameter extends ComponentWithMethod {
+
+        private String[] varArg;
+
+        @EventHandler
+        protected void method(String... args) {
+            varArg = args;
+        }
+
+    }
+
     public static class ComponentWithMethodThrowingException
             extends ComponentWithMethod {
 
@@ -217,32 +228,31 @@ public class ServerRpcHandlerTest {
     public void methodWithDoubleArrayIsInvoked() {
         JsonArray array = Json.createArray();
 
-        JsonArray firstArg = Json.createArray();
-        firstArg.set(0, 1);
-        firstArg.set(1, 2);
+        JsonArray arg = Json.createArray();
 
-        array.set(0, firstArg);
+        JsonArray first = Json.createArray();
+        first.set(0, 1);
+        first.set(1, 2);
 
-        JsonArray secondArg = Json.createArray();
-        secondArg.set(0, 3);
-        secondArg.set(1, 4);
+        arg.set(0, first);
 
-        array.set(1, secondArg);
+        JsonArray second = Json.createArray();
+        second.set(0, 3);
+        second.set(1, 4);
+
+        arg.set(1, second);
+
+        array.set(0, arg);
 
         MethodWithParameters component = new MethodWithParameters();
         ServerRpcHandler.invokeMethod(component, component.getClass(),
                 "method3", array);
 
-        Assert.assertArrayEquals(
-                new int[] { (int) firstArg.getNumber(0),
-                        (int) firstArg.getNumber(1) },
-                component.doubleArray[0]);
+        Assert.assertArrayEquals(new int[] { (int) first.getNumber(0),
+                (int) first.getNumber(1) }, component.doubleArray[0]);
 
-        Assert.assertArrayEquals(
-                new int[] { (int) secondArg.getNumber(0),
-                        (int) secondArg.getNumber(1) },
-                component.doubleArray[1]);
-
+        Assert.assertArrayEquals(new int[] { (int) second.getNumber(0),
+                (int) second.getNumber(1) }, component.doubleArray[1]);
     }
 
     @Test
@@ -287,6 +297,69 @@ public class ServerRpcHandlerTest {
         Assert.assertNotNull(component.varArg);
         Assert.assertArrayEquals(new Integer[] { (int) secondArg.getNumber(0),
                 null, (int) secondArg.getNumber(2) }, component.varArg);
+    }
+
+    @Test
+    public void methodWithVarArg_acceptNoValues() {
+        JsonArray array = Json.createArray();
+
+        MethodWithVarArgParameter component = new MethodWithVarArgParameter();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                array);
+
+        Assert.assertEquals(0, component.varArg.length);
+    }
+
+    @Test
+    public void methodWithSeveralArgsAndVarArg_acceptNoValues() {
+        JsonArray array = Json.createArray();
+
+        JsonArray firstArg = Json.createArray();
+        firstArg.set(0, 5.6d);
+        firstArg.set(1, 78.36d);
+
+        array.set(0, firstArg);
+
+        MethodWithParameters component = new MethodWithParameters();
+        ServerRpcHandler.invokeMethod(component, component.getClass(),
+                "method2", array);
+
+        Assert.assertArrayEquals(
+                new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
+                component.doubleArg);
+
+        Assert.assertNotNull(component.varArg);
+        Assert.assertEquals(0, component.varArg.length);
+    }
+
+    @Test
+    public void methodWithVarArg_acceptOneValue() {
+        JsonArray array = Json.createArray();
+
+        array.set(0, "foo");
+
+        MethodWithVarArgParameter component = new MethodWithVarArgParameter();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                array);
+
+        Assert.assertEquals(1, component.varArg.length);
+        Assert.assertEquals("foo", component.varArg[0]);
+    }
+
+    @Test
+    public void methodWithVarArg_arrayIsCorrectlyHandled() {
+        JsonArray array = Json.createArray();
+
+        JsonArray value = Json.createArray();
+        value.set(0, "foo");
+        array.set(0, value);
+
+        MethodWithVarArgParameter component = new MethodWithVarArgParameter();
+        ServerRpcHandler.invokeMethod(component, component.getClass(), "method",
+                array);
+
+        Assert.assertArrayEquals(new String[] { value.getString(0) },
+                component.varArg);
     }
 
     @Test(expected = IllegalArgumentException.class)
