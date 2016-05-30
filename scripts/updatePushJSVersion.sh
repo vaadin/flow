@@ -1,9 +1,15 @@
 #!/bin/bash
 
+
+if [ "$#" != "1" ]
+then
+    echo "Usage: $0 <js version>"
+    exit 1
+fi
+VERSION=$1
 DIR=`dirname $0`
 GID=com.vaadin.external.atmosphere.client
 AID=jquery
-VERSION=2.2.6.vaadin4
 
 ARTIFACT=$GID:$AID:$VERSION:war
 mvn dependency:copy -Dartifact=$ARTIFACT -DoutputDirectory=$DIR/vaadinPush
@@ -30,4 +36,3 @@ java -jar $DIR/vaadinPush/yuicompressor-2.4.8.jar  $DIR/../hummingbird-push/src/
 
 rm -f $DIR/vaadinPush/yuicompressor-2.4.8.jar
 rm -f $DIR/vaadinPush/$AID-$VERSION.war
-
