@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Resolves the details in a navigation event to find a handler for the event.
@@ -30,7 +31,8 @@ public interface Resolver extends Serializable {
      *
      * @param navigationEvent
      *            the navigation event to resolve
-     * @return the navigation handler that should handle the event
+     * @return an optional navigation handler that should handle the event or an
+     *         empty optional if no handler matched the event
      */
-    NavigationHandler resolve(NavigationEvent navigationEvent);
+    Optional<NavigationHandler> resolve(NavigationEvent navigationEvent);
 }
