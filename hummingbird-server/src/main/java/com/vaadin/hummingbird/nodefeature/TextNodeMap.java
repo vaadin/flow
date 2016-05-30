@@ -23,7 +23,7 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
  *
  * @author Vaadin Ltd
  */
-public class TextNodeMap extends NodeMap {
+public class TextNodeMap extends NodeValue<String> {
 
     /**
      * Creates a new text node map for the given node.
@@ -35,6 +35,11 @@ public class TextNodeMap extends NodeMap {
         super(node);
     }
 
+    @Override
+    protected String getKey() {
+        return NodeFeatures.TEXT;
+    }
+
     /**
      * Sets the text of this node.
      *
@@ -44,7 +49,7 @@ public class TextNodeMap extends NodeMap {
     public void setText(String text) {
         assert text != null;
 
-        put(NodeFeatures.TEXT, text, true);
+        setValue(text);
     }
 
     /**
@@ -53,10 +58,12 @@ public class TextNodeMap extends NodeMap {
      * @return the text, not null
      */
     public String getText() {
-        // Text should be set upon creation, before first use
-        assert contains(NodeFeatures.TEXT);
+        String value = getValue();
 
-        return (String) get(NodeFeatures.TEXT);
+        // Text should be set upon creation, before first use
+        assert value != null;
+
+        return value;
     }
 
 }

@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.template.TemplateNode;
  *
  * @author Vaadin Ltd
  */
-public class OverrideElementData extends NodeMap {
+public class OverrideElementData extends NodeValue<Integer> {
 
     /**
      * Name of the key used for storing the id of the template node that the
@@ -45,6 +45,11 @@ public class OverrideElementData extends NodeMap {
         super(node);
     }
 
+    @Override
+    protected String getKey() {
+        return TEMPLATE_NODE_ID_PROPERTY;
+    }
+
     /**
      * Sets the template node that the overridden element corresponds to. The
      * template node is needed for defining the parent element for elements in
@@ -56,9 +61,9 @@ public class OverrideElementData extends NodeMap {
      */
     public void setTemplateNode(TemplateNode templateNode) {
         assert templateNode != null;
-        assert !contains(TEMPLATE_NODE_ID_PROPERTY);
+        assert getValue() == null;
 
-        put(TEMPLATE_NODE_ID_PROPERTY, Integer.valueOf(templateNode.getId()));
+        setValue(Integer.valueOf(templateNode.getId()));
     }
 
     /**
@@ -69,12 +74,12 @@ public class OverrideElementData extends NodeMap {
      * @return the template node
      */
     public TemplateNode getTemplateNode() {
-        Object nodeId = get(TEMPLATE_NODE_ID_PROPERTY);
+        Integer nodeId = getValue();
         if (nodeId == null) {
             return null;
         }
 
-        return TemplateNode.get(((Integer) nodeId).intValue());
+        return TemplateNode.get(nodeId.intValue());
     }
 
 }

@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.change;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.nodefeature.NodeMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -44,8 +44,11 @@ public class MapPutChange extends NodeFeatureChange {
      * @param value
      *            the new value
      */
-    public MapPutChange(NodeMap map, String key, Object value) {
+    public MapPutChange(NodeFeature map, String key, Object value) {
         super(map);
+
+        assert key != null;
+
         this.key = key;
         this.value = value;
     }
