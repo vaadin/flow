@@ -126,6 +126,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             ComponentMapping.class, TemplateMap.class,
             ParentGeneratorHolder.class, TemplateEventHandlerNames.class };
 
+    @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] rootNodeFeatures = Stream
             .concat(Stream.of(requiredFeatures), Stream.of(rootOnlyFeatures))
             .toArray(Class[]::new);
@@ -263,29 +264,29 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void insertChild(StateNode node, int index, Element child) {
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .insertChild(overrideNode, index, child));
     }
 
     @Override
     public void removeChild(StateNode node, int index) {
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .removeChild(overrideNode, index));
     }
 
     @Override
     public void removeChild(StateNode node, Element child) {
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .removeChild(overrideNode, child));
     }
 
     @Override
     public void removeAllChildren(StateNode node) {
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .removeAllChildren(overrideNode));
     }
 
-    private void modifyChildren(StateNode node,
+    private void modifyOverrideNode(StateNode node,
             BiConsumer<BasicElementStateProvider, StateNode> modifier) {
         if (templateNode.getChildCount() != 0) {
             throw new IllegalStateException(
@@ -306,29 +307,48 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Object getProperty(StateNode node, String name) {
-        return templateNode.getPropertyBinding(name)
-                .map(binding -> binding.getValue(node)).orElse(null);
+        if (templateNode.getPropertyBinding(name).isPresent()) {
+            return templateNode.getPropertyBinding(name)
+                    .map(binding -> binding.getValue(node)).orElse(null);
+        } else {
+            return getOverrideNode(node)
+                    .map(overrideNode -> BasicElementStateProvider.get()
+                            .getProperty(overrideNode, name))
+                    .orElse(null);
+        }
     }
 
     @Override
     public void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        checkModifiableProperty(name);
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
+                .setProperty(overrideNode, name, value, emitChange));
     }
 
     @Override
     public void removeProperty(StateNode node, String name) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        checkModifiableProperty(name);
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
+                .removeProperty(overrideNode, name));
     }
 
     @Override
     public boolean hasProperty(StateNode node, String name) {
-        return templateNode.getPropertyBinding(name).isPresent();
+        return templateNode.getPropertyBinding(name).isPresent()
+                || getOverrideNode(node)
+                        .map(overrideNode -> BasicElementStateProvider.get()
+                                .hasProperty(overrideNode, name))
+                        .orElse(false);
     }
 
     @Override
     public Stream<String> getPropertyNames(StateNode node) {
-        return templateNode.getPropertyNames();
+        Stream<String> regularProperties = getOverrideNode(node)
+                .map(BasicElementStateProvider.get()::getPropertyNames)
+                .orElse(Stream.empty());
+        return Stream.concat(templateNode.getPropertyNames(),
+                regularProperties);
     }
 
     @Override
@@ -409,5 +429,13 @@ public class TemplateElementStateProvider implements ElementStateProvider {
      */
     public static StateNode createSubModelNode() {
         return new StateNode(requiredFeatures);
+    }
+
+    private void checkModifiableProperty(String name) {
+        if (templateNode.getPropertyBinding(name).isPresent()) {
+            throw new IllegalArgumentException(String.format(
+                    "Can't modify property '%s' with binding defined in a template",
+                    name));
+        }
     }
 }
