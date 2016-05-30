@@ -24,7 +24,7 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
  *
  * @author Vaadin Ltd
  */
-public class ElementData extends NodeMap {
+public class ElementData extends NodeValue<String> {
 
     /**
      * Creates a new element data map for the given node.
@@ -37,6 +37,11 @@ public class ElementData extends NodeMap {
         super(node);
     }
 
+    @Override
+    protected String getKey() {
+        return NodeFeatures.TAG;
+    }
+
     /**
      * Sets the tag name of the element.
      *
@@ -44,7 +49,7 @@ public class ElementData extends NodeMap {
      *            the tag name
      */
     public void setTag(String tag) {
-        put(NodeFeatures.TAG, tag);
+        setValue(tag);
     }
 
     /**
@@ -53,7 +58,7 @@ public class ElementData extends NodeMap {
      * @return the tag name
      */
     public String getTag() {
-        return (String) get(NodeFeatures.TAG);
+        return getValue();
     }
 
 }
