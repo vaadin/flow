@@ -13,26 +13,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.router;
+package com.vaadin.annotations;
 
-import java.io.Serializable;
-import java.util.Optional;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import com.vaadin.ui.Template;
 
 /**
- * Resolves the details in a navigation event to find a handler for the event.
+ * Defines the id of an element to map to inside a {@link Template}.
  *
  * @author Vaadin Ltd
  */
-@FunctionalInterface
-public interface Resolver extends Serializable {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+@Documented
+public @interface Id {
     /**
-     * Resolves the details in the given navigation event to find a handler for
-     * the event.
+     * The id of the element to map to.
      *
-     * @param navigationEvent
-     *            the navigation event to resolve
-     * @return an optional navigation handler that should handle the event or an
-     *         empty optional if no handler matched the event
+     * @return the id of the element to map to
      */
-    Optional<NavigationHandler> resolve(NavigationEvent navigationEvent);
+    String value();
 }

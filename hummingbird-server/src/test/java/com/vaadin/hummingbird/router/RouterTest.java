@@ -36,10 +36,9 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinServletService;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
-import com.vaadin.util.CurrentInstance;
 import com.vaadin.ui.UI;
+import com.vaadin.util.CurrentInstance;
 
 public class RouterTest {
 
@@ -65,16 +64,17 @@ public class RouterTest {
         private final AtomicReference<NavigationEvent> handledEvent = new AtomicReference<>();
 
         @Override
-        public NavigationHandler resolve(NavigationEvent eventToResolve) {
+        public Optional<NavigationHandler> resolve(
+                NavigationEvent eventToResolve) {
             Assert.assertNull(resolvedLocation.get());
             resolvedLocation.set(eventToResolve.getLocation());
-            return new NavigationHandler() {
+            return Optional.of(new NavigationHandler() {
                 @Override
                 public void handle(NavigationEvent eventToHandle) {
                     Assert.assertNull(handledEvent.get());
                     handledEvent.set(eventToHandle);
                 }
-            };
+            });
         }
     }
 
@@ -144,7 +144,7 @@ public class RouterTest {
         service.setCurrentInstances(request, response);
 
         Router router = new Router();
-        router.reconfigure(c -> c.setResolver(event -> null));
+        router.reconfigure(c -> c.setResolver(event -> Optional.empty()));
 
         router.navigate(ui, new Location(""));
 
@@ -167,7 +167,7 @@ public class RouterTest {
         UI ui = new RouterTestUI();
 
         Router router = new Router();
-        router.reconfigure(c -> c.setResolver(event -> null));
+        router.reconfigure(c -> c.setResolver(event -> Optional.empty()));
 
         router.navigate(ui, new Location(""));
 
@@ -250,9 +250,10 @@ public class RouterTest {
         AtomicReference<String> usedHandler = new AtomicReference<>();
 
         router.reconfigure(configuration -> {
-            configuration.setResolver(resolveEvent -> handlerEvent -> {
-                usedHandler.set("resolver");
-            });
+            configuration
+                    .setResolver(resolveEvent -> Optional.of(handlerEvent -> {
+                        usedHandler.set("resolver");
+                    }));
 
             configuration.setRoute("*", e -> {
                 usedHandler.set("route");
@@ -271,7 +272,7 @@ public class RouterTest {
         AtomicReference<String> usedHandler = new AtomicReference<>();
 
         router.reconfigure(configuration -> {
-            configuration.setResolver(resolveEvent -> null);
+            configuration.setResolver(resolveEvent -> Optional.empty());
 
             configuration.setRoute("*", e -> {
                 usedHandler.set("route");

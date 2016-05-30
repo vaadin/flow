@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.servlet;
 
+import java.util.Optional;
+
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -40,15 +42,15 @@ public class ViewTestServlet extends VaadinServlet {
         public void configure(RouterConfiguration configuration) {
             configuration.setResolver(new Resolver() {
                 @Override
-                public NavigationHandler resolve(
+                public Optional<NavigationHandler> resolve(
                         NavigationEvent navigationEvent) {
                     try {
-                        return new StaticViewRenderer(
+                        return Optional.of(new StaticViewRenderer(
                                 viewLocator.findViewClass(navigationEvent
                                         .getLocation().getFirstSegment()),
-                                ViewTestLayout.class);
+                                ViewTestLayout.class));
                     } catch (ClassNotFoundException e) {
-                        return null;
+                        return Optional.empty();
                     }
                 }
             });
