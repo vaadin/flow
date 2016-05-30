@@ -193,8 +193,9 @@ public class ElementUtil {
                     && component.getChildren().findFirst()
                             .get() == currentComponent.get();
             if (!isCompositeReplacingItsContent) {
-                throw new IllegalStateException(
-                        "A component is already attached to this element");
+                throw new IllegalStateException("A component of type "
+                        + currentComponent.get().getClass().getName()
+                        + " is already attached to this element");
             }
         }
         element.getStateProvider().setComponent(element.getNode(), component);

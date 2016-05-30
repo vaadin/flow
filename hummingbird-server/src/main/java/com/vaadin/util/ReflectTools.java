@@ -162,9 +162,6 @@ public class ReflectTools implements Serializable {
 
     /**
      * Sets the value of a java field.
-     * <p>
-     * Uses setter if present, otherwise tries to access even private fields
-     * directly.
      *
      * @param object
      *            The object containing the field
@@ -172,35 +169,34 @@ public class ReflectTools implements Serializable {
      *            The field we want to set the value for
      * @param value
      *            The value to set
-     * @throws IllegalAccessException
-     *             If the value could not be assigned to the field
      * @throws IllegalArgumentException
-     *             If the value could not be assigned to the field
-     * @throws InvocationTargetException
      *             If the value could not be assigned to the field
      */
     public static void setJavaFieldValue(Object object,
             java.lang.reflect.Field field, Object value)
-            throws IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException {
-        PropertyDescriptor pd;
-        try {
-            pd = new PropertyDescriptor(field.getName(), object.getClass());
-            Method setter = pd.getWriteMethod();
-            if (setter != null) {
-                // Exceptions are thrown forward if this fails
-                setter.invoke(object, value);
-            }
-        } catch (IntrospectionException e1) {
-            // Ignore this and try to set directly using the field
-        }
-
+            throws IllegalArgumentException {
         // Try to set the value directly to the field or throw an exception
         if (!field.isAccessible()) {
             // Try to gain access even if field is private
             field.setAccessible(true);
         }
-        field.set(object, value);
+        try {
+            field.set(object, value);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(
+                    "Unable to assign the new value to the field "
+                            + field.getName() + " in "
+                            + object.getClass().getName()
+                            + ". Make sure the field type and value type are compatible.",
+                    e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(
+                    "Unable to assign the new value to the field "
+                            + field.getName() + " in "
+                            + object.getClass().getName()
+                            + ". Make sure the field is not final.",
+                    e);
+        }
     }
 
     /**
