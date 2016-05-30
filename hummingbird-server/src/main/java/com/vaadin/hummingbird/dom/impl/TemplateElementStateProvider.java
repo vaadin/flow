@@ -16,8 +16,11 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
+import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -37,8 +40,10 @@ import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
+import com.vaadin.hummingbird.template.BindingValueProvider;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.util.JavaScriptSemantics;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Template;
@@ -50,6 +55,66 @@ import com.vaadin.ui.Template;
  * @author Vaadin Ltd
  */
 public class TemplateElementStateProvider implements ElementStateProvider {
+
+    private static class BoundClassList extends AbstractSet<String>
+            implements ClassList {
+
+        private final Set<String> defaultClasses;
+        private final ElementTemplateNode templateNode;
+        private final StateNode node;
+
+        public BoundClassList(ElementTemplateNode templateNode,
+                StateNode node) {
+            this.templateNode = templateNode;
+            this.node = node;
+
+            String[] attributeClasses = templateNode
+                    .getAttributeBinding("class")
+                    .map(binding -> binding.getValue(node, "").split("\\s+"))
+                    .orElse(new String[0]);
+            defaultClasses = new LinkedHashSet<>(
+                    Arrays.asList(attributeClasses));
+            // Remove defaults that are always overridden by bindings
+            templateNode.getClassNames().forEach(defaultClasses::remove);
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            if (o instanceof String) {
+                return contains((String) o);
+            } else {
+                return false;
+            }
+        }
+
+        private boolean contains(String className) {
+            Optional<BindingValueProvider> binding = templateNode
+                    .getClassNameBinding(className);
+            if (binding.isPresent()) {
+                Object bindingValue = binding.get().getValue(node);
+                return JavaScriptSemantics.isTrueish(bindingValue);
+            } else {
+                return defaultClasses.contains(className);
+            }
+        }
+
+        @Override
+        public Stream<String> stream() {
+            return Stream.concat(defaultClasses.stream(),
+                    templateNode.getClassNames().filter(this::contains));
+        }
+
+        @Override
+        public Iterator<String> iterator() {
+            return stream().iterator();
+        }
+
+        @Override
+        public int size() {
+            return (int) stream().count();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
             TemplateOverridesMap.class, ModelMap.class };
@@ -283,12 +348,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public ClassList getClassList(StateNode node) {
-        // Should eventually be based on [class.foo]=bar in the template
-        String[] attributeClasses = templateNode.getAttributeBinding("class")
-                .map(binding -> binding.getValue(node, "").split("\\s+"))
-                .orElse(new String[0]);
-
-        return new ImmutableClassList(Arrays.asList(attributeClasses));
+        return new BoundClassList(templateNode, node);
     }
 
     @Override
