@@ -264,35 +264,39 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void insertChild(StateNode node, int index, Element child) {
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .insertChild(overrideNode, index, child));
     }
 
     @Override
     public void removeChild(StateNode node, int index) {
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .removeChild(overrideNode, index));
     }
 
     @Override
     public void removeChild(StateNode node, Element child) {
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .removeChild(overrideNode, child));
     }
 
     @Override
     public void removeAllChildren(StateNode node) {
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .removeAllChildren(overrideNode));
     }
 
-    private void modifyOverrideNode(StateNode node,
+    private void modifyChildren(StateNode node,
             BiConsumer<BasicElementStateProvider, StateNode> modifier) {
         if (templateNode.getChildCount() != 0) {
             throw new IllegalStateException(
                     "Can't add or remove children when there are children defined by the template.");
         }
+        modifyOverrideNode(node, modifier);
+    }
 
+    private void modifyOverrideNode(StateNode node,
+            BiConsumer<BasicElementStateProvider, StateNode> modifier) {
         StateNode overrideNode = getOrCreateOverrideNode(node);
 
         modifier.accept(BasicElementStateProvider.get(), overrideNode);
@@ -388,17 +392,39 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
+    public Optional<Component> getComponent(StateNode node) {
+        assert node != null;
+
+        if (isTemplateRoot()) {
+            return ElementStateProvider.super.getComponent(node);
+        } else {
+            Optional<StateNode> overrideNode = getOverrideNode(node);
+            return overrideNode.flatMap(
+                    n -> n.getFeature(ComponentMapping.class).getComponent());
+        }
+    }
+
+    private boolean isTemplateRoot() {
+        return !templateNode.getParent().isPresent();
+    }
+
+    @Override
     public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
 
-        if (!(component instanceof Template)) {
-            throw new IllegalArgumentException(
-                    "Component for template element must extend "
-                            + Template.class.getName());
+        if (isTemplateRoot()) {
+            if (!(component instanceof Template)) {
+                throw new IllegalArgumentException(
+                        "The component for a template root must extend "
+                                + Template.class.getName());
+            }
+            ElementStateProvider.super.setComponent(node, component);
+        } else {
+            getOrCreateOverrideNode(node).getFeature(ComponentMapping.class)
+                    .setComponent(component);
         }
 
-        node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
     private Optional<StateNode> getOverrideNode(StateNode node) {
