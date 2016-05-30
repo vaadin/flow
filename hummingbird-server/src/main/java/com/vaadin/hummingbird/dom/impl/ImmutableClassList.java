@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.dom.impl;
 import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 import com.vaadin.hummingbird.dom.ClassList;
@@ -41,16 +42,11 @@ public class ImmutableClassList extends AbstractSet<String>
      *            the values of the class list
      */
     public ImmutableClassList(Collection<String> values) {
-        this.values = new ArrayList<>(values);
+        this.values = Collections.unmodifiableList(new ArrayList<>(values));
     }
 
     @Override
     public boolean add(String e) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
-    }
-
-    @Override
-    public boolean set(String className, boolean set) {
         throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 

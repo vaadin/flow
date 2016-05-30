@@ -47,15 +47,6 @@ public class ElementClassList extends SerializableNodeList<String> {
                         "Class name cannot contain spaces");
             }
         }
-
-        @Override
-        public boolean set(String className, boolean set) {
-            if (set) {
-                return add(className);
-            } else {
-                return remove(className);
-            }
-        }
     }
 
     /**

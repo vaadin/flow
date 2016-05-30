@@ -356,63 +356,67 @@ public class ServerRpcHandler implements Serializable {
 
     private static Object[] decodeArgs(Method method,
             JsonArray argsFromClient) {
-        if (argsFromClient.length() < method.getParameterCount()) {
-            String msg = String.format(
-                    "The number of received values (%d) is smaller "
-                            + "than the number of arguments (%d) in the method '%s' "
-                            + "' declared in '%s'",
-                    argsFromClient.length(), method.getParameterCount(),
-                    method.getName(), method.getDeclaringClass().getName());
-            throw new IllegalArgumentException(msg);
-        }
-        if (method.getParameterCount() == 0) {
-            if (argsFromClient.length() > 0) {
-                String msg = String.format(
-                        "Method '%s'  declared in '%s'"
-                                + " has no parameters and may not be applied to "
-                                + "received argument values whose length is %d",
-                        method.getName(), method.getDeclaringClass().getName(),
-                        argsFromClient.length());
-                throw new IllegalArgumentException(msg);
+        int methodArgs = method.getParameterCount();
+        int clientValuesCount = argsFromClient.length();
+        JsonArray argValues;
+        if (method.isVarArgs()) {
+            if (clientValuesCount >= methodArgs - 1) {
+                argValues = unwrapVarArgs(argsFromClient, method);
             } else {
-                return new Object[0];
+                String msg = String.format(
+                        "The number of received values (%d) is not enough "
+                                + "to call the method '%s' declared in '%s' which "
+                                + "has vararg parameter and the number of arguments %d",
+                        argsFromClient.length(), method.getName(),
+                        method.getDeclaringClass().getName(),
+                        method.getParameterCount());
+                throw new IllegalArgumentException(msg);
+            }
+        } else {
+            if (methodArgs == clientValuesCount) {
+                argValues = argsFromClient;
+            } else {
+                String msg = String.format(
+                        "The number of received values (%d) is not equal "
+                                + "to the number of arguments (%d) in the method '%s' "
+                                + "' declared in '%s'",
+                        argsFromClient.length(), method.getParameterCount(),
+                        method.getName(), method.getDeclaringClass().getName());
+                throw new IllegalArgumentException(msg);
             }
         }
         List<Object> decoded = new ArrayList<>(method.getParameterCount());
-        boolean hasVarargs = argsFromClient.length() != method
-                .getParameterCount();
-        int argsCount = hasVarargs ? method.getParameterCount() - 1
-                : method.getParameterCount();
         Class<?>[] methodParameterTypes = method.getParameterTypes();
-        for (int i = 0; i < argsCount; i++) {
+        for (int i = 0; i < argValues.length(); i++) {
             Class<?> type = methodParameterTypes[i];
-            decoded.add(decodeArg(method, type, i, argsFromClient.get(i)));
+            decoded.add(decodeArg(method, type, i, argValues.get(i)));
         }
-        if (hasVarargs) {
-            Class<?> type = methodParameterTypes[methodParameterTypes.length
-                    - 1];
-            if (!type.isArray()) {
-                String msg = String.format(
-                        "The number of received values is greater than "
-                                + "arguments length in the method '%s' "
-                                + "declared in '%s' and the last argument of the method "
-                                + "has type '%s' which is not vararg and does not have an array type",
-                        method.getName(), method.getDeclaringClass().getName(),
-                        type.getName());
-                throw new IllegalArgumentException(msg);
+        return decoded.toArray(new Object[method.getParameterCount()]);
+    }
+
+    private static JsonArray unwrapVarArgs(JsonArray argsFromClient,
+            Method method) {
+        int paramCount = method.getParameterCount();
+        if (argsFromClient.length() == paramCount) {
+            if (argsFromClient.get(paramCount - 1).getType()
+                    .equals(JsonType.ARRAY)) {
+                return argsFromClient;
             }
-            JsonArray rest = Json.createArray();
-            int newIndex = 0;
-            for (int i = method.getParameterCount() - 1; i < argsFromClient
-                    .length(); i++) {
-                JsonValue value = argsFromClient.get(i);
+        }
+        JsonArray result = Json.createArray();
+        JsonArray rest = Json.createArray();
+        int newIndex = 0;
+        for (int i = 0; i < argsFromClient.length(); i++) {
+            JsonValue value = argsFromClient.get(i);
+            if (i < paramCount - 1) {
+                result.set(i, value);
+            } else {
                 rest.set(newIndex, value);
                 newIndex++;
             }
-            decoded.add(decodeArray(method, type,
-                    method.getParameterCount() - 1, rest));
         }
-        return decoded.toArray(new Object[method.getParameterCount()]);
+        result.set(paramCount - 1, rest);
+        return result;
     }
 
     private static Object decodeArg(Method method, Class<?> type, int index,

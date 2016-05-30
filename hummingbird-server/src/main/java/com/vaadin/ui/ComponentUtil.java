@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
+import com.vaadin.ui.Component.MapToExistingElement;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Utility methods for {@link Component}.
@@ -215,4 +217,43 @@ public interface ComponentUtil {
         }
     }
 
+    /**
+     * Creates a new component instance using the given element, maps the
+     * component to the element and optionally maps the element to the component
+     * (if <code>mapComponent</code> is <code>true</code>).
+     * <p>
+     * This is a helper method for Element#as and Component#from.
+     *
+     * @see Component#from(Element, Class)
+     * @see Element#as(Class)
+     *
+     * @param element
+     *            the element
+     * @param componentType
+     *            the component type
+     * @param mapComponent
+     *            <code>true</code> to also map the element to the component,
+     *            <code>false</code> to only map the component to the element
+     * @return a new component instance of the given type
+     */
+    static <T> T componentFromElement(Element element, Class<T> componentType,
+            boolean mapComponent) {
+        if (element == null) {
+            throw new IllegalArgumentException("Element to use cannot be null");
+        }
+        if (componentType == null) {
+            throw new IllegalArgumentException("Component type cannot be null");
+        }
+        MapToExistingElement wrapData = new MapToExistingElement(element,
+                mapComponent);
+
+        try {
+            Component.elementToMapTo.set(wrapData);
+            return ReflectTools.createInstance(componentType);
+        } finally {
+            // This should always be cleared in Component
+            assert Component.elementToMapTo.get() == null;
+        }
+
+    }
 }

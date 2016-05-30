@@ -24,7 +24,6 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Composite;
 
 /**
@@ -194,8 +193,9 @@ public class ElementUtil {
                     && component.getChildren().findFirst()
                             .get() == currentComponent.get();
             if (!isCompositeReplacingItsContent) {
-                throw new IllegalStateException(
-                        "A component is already attached to this element");
+                throw new IllegalStateException("A component of type "
+                        + currentComponent.get().getClass().getName()
+                        + " is already attached to this element");
             }
         }
         element.getStateProvider().setComponent(element.getNode(), component);
@@ -214,38 +214,6 @@ public class ElementUtil {
      */
     public static Optional<Component> getComponent(Element element) {
         return element.getStateProvider().getComponent(element.getNode());
-    }
-
-    /**
-     * Checks if the component mapping of the element of the provided component
-     * actually refers to the the provided component, either directly or through
-     * a chain of composites.
-     * <p>
-     * Meant for internal use only.
-     *
-     * @param component
-     *            the component to check
-     * @return <code>true</code> if the mapping is correct, <code>false</code>
-     *         otherwise
-     */
-    public static boolean isComponentElementMappedCorrectly(
-            Component component) {
-        Element element = component.getElement();
-
-        Component mappedComponent = ElementUtil.getComponent(element).get();
-        if (mappedComponent == component) {
-            return true;
-        }
-
-        if (mappedComponent instanceof Composite) {
-            // If "this" is the content of a composite, getComponent will return
-            // the composite
-            return ComponentUtil.isCompositeContent(
-                    (Composite<?>) mappedComponent, component);
-        } else {
-            return false;
-        }
-
     }
 
     /**

@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +36,70 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
 import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
+import com.vaadin.ui.TemplateTest.TestSpan;
 
 public class ComponentTest {
+
+    @After
+    public void checkThreadLocal() {
+        Assert.assertNull(Component.elementToMapTo.get());
+    }
+
+    @Tag("div")
+    public static class TestDiv extends Component {
+    }
+
+    @Tag("div")
+    public static class TestComponentWhichHasComponentField extends Component {
+        private TestButton button = new TestButton();
+
+        public TestComponentWhichHasComponentField() {
+            getElement().appendChild(button.getElement());
+        }
+    }
+
+    public static class TestComponentWhichUsesElementConstructor
+            extends Component {
+        public TestComponentWhichUsesElementConstructor() {
+            super(new Element("my-element"));
+        }
+    }
+
+    public static class TestComponentWhichUsesNullElementConstructor
+            extends Component {
+        public TestComponentWhichUsesNullElementConstructor() {
+            super(null);
+        }
+    }
+
+    @Tag("div")
+    public static class TestComponentWhichMapsComponentInConstructor
+            extends Component {
+
+        TestSpan span;
+
+        public TestComponentWhichMapsComponentInConstructor() {
+            super();
+            span = Component.from(getElement().getChild(0), TestSpan.class);
+        }
+    }
+
+    @Tag("div")
+    public static class TestComponentWhichCreatesComponentInConstructor
+            extends Component {
+
+        public TestComponentWhichCreatesComponentInConstructor() {
+            getElement().appendChild(new TestButton().getElement());
+        }
+    }
+
+    @Tag("button")
+    public static class TestButton extends Component {
+    }
+
+    @Tag("button")
+    public static class TestOtherButton extends Component {
+    }
 
     private Component divWithTextComponent;
     private Component parentDivComponent;
@@ -618,4 +681,154 @@ public class ComponentTest {
         ui.add(c);
         Assert.assertFalse(initialAttach.get());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void wrapNullComponentType() {
+        new Element("div").as(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void wrapWrongTag() {
+        Element foo = new Element("foo");
+        foo.as(TestDiv.class);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void wrappedComponentGetParent() {
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        div.as(TestDiv.class);
+        button.as(TestButton.class).getParent();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void wrappedComponentGetChildren() {
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        button.as(TestButton.class);
+        div.as(TestDiv.class).getChildren();
+    }
+
+    @Test
+    public void componentFromHierarchy() {
+        Element div = new Element("div");
+        Element button = new Element("button");
+        div.appendChild(button);
+
+        TestDiv testDiv = Component.from(div, TestDiv.class);
+        TestButton testButton = Component.from(button, TestButton.class);
+        Assert.assertEquals(testButton.getParent().get(), testDiv);
+        Assert.assertTrue(testDiv.getChildren().anyMatch(c -> c == testButton));
+    }
+
+    @Test
+    public void wrappedComponentUsesElement() {
+        Element div = new Element("div");
+        div.setAttribute("id", "foo");
+        Assert.assertEquals(Optional.of("foo"), div.as(TestDiv.class).getId());
+
+    }
+
+    @Test
+    public void wrappedComponentModifyElement() {
+        Element div = new Element("div");
+        div.as(TestDiv.class).setId("foo");
+        Assert.assertEquals("foo", div.getAttribute("id"));
+    }
+
+    @Test
+    public void wrapToExistingComponent() {
+        TestButton button = new TestButton();
+        TestButton button2 = button.getElement().as(TestButton.class);
+        button.setId("id1");
+        Assert.assertEquals(Optional.of("id1"), button2.getId());
+        Assert.assertEquals(Optional.of("id1"), button.getId());
+    }
+
+    @Test
+    public void wrapDifferentTypeToExistingComponent() {
+        TestButton button = new TestButton();
+        TestOtherButton button2 = button.getElement().as(TestOtherButton.class);
+        button.setId("id1");
+        Assert.assertEquals(Optional.of("id1"), button2.getId());
+        Assert.assertEquals(Optional.of("id1"), button.getId());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapToExistingComponent() {
+        TestButton button = new TestButton();
+        Component.from(button.getElement(), TestButton.class);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapToNullComponentType() {
+        Component.from(new Element("div"), null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapFromNullElement() {
+        Component.from(null, TestButton.class);
+    }
+
+    @Test
+    public void mapToComponentWhichCreatesComponentInConstructor() {
+        Element e = new Element("div");
+        TestComponentWhichCreatesComponentInConstructor c = Component.from(e,
+                TestComponentWhichCreatesComponentInConstructor.class);
+        Element buttonElement = c.getElement().getChild(0);
+
+        Assert.assertEquals(e, c.getElement());
+        Assert.assertNotEquals(e, buttonElement);
+        Assert.assertEquals("button", buttonElement.getTag());
+    }
+
+    @Test
+    public void mapToComponentWhichHasComponentField() {
+        Element e = new Element("div");
+        TestComponentWhichHasComponentField c = Component.from(e,
+                TestComponentWhichHasComponentField.class);
+        Element buttonElement = c.getElement().getChild(0);
+
+        Assert.assertEquals(e, c.getElement());
+        Assert.assertNotEquals(e, buttonElement);
+        Assert.assertEquals("button", buttonElement.getTag());
+    }
+
+    @Test
+    public void mapToComponentWithElementConstructor() {
+        Element e = new Element("my-element");
+        TestComponentWhichUsesElementConstructor c = Component.from(e,
+                TestComponentWhichUsesElementConstructor.class);
+
+        Assert.assertSame(e, c.getElement());
+        Assert.assertSame(c, e.getComponent().get());
+    }
+
+    @Test
+    public void mapToComponentWithNullElementConstructor() {
+        Element e = new Element("div");
+        TestComponentWhichUsesNullElementConstructor c = Component.from(e,
+                TestComponentWhichUsesNullElementConstructor.class);
+
+        Assert.assertSame(e, c.getElement());
+        Assert.assertSame(c, e.getComponent().get());
+    }
+
+    @Test
+    public void mapToComponentWhichMapsToComponentInConstructor() {
+        Element div = new Element("div").setAttribute("id", "root");
+        Element span = new Element("span").setAttribute("id", "child");
+        div.appendChild(span);
+
+        TestComponentWhichMapsComponentInConstructor c = Component.from(div,
+                TestComponentWhichMapsComponentInConstructor.class);
+
+        Assert.assertEquals(div, c.getElement());
+        Assert.assertEquals(span, c.span.getElement());
+    }
+
 }

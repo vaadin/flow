@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# Must use gsed on Mac
-#SED=sed
-SED=gsed
+. `dirname $0`/sed.sh
 
 rootdir=`dirname $0`/..
 
