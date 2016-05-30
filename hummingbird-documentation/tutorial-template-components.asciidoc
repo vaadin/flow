@@ -1,10 +1,9 @@
 = Adding Components to a Template
 
-You can add child components to templates using the Element API.
+You can add child components to templates using the `Component` or `Element` API as long as the template element does not have any children.
 
-Here is the content of the HTML template file which has a placeholder `div` element 
-with a `"content"` identifier. This element is used in the java code below to set a `Component` 
-as a child for it. 
+Here is the content of the HTML template file which has a placeholder `div` element with a `"content"` identifier. This element is mapped to a `Div` component in Java code below to set a `Component` as a child for it.
+
 [source,html]
 ----
 <div>
@@ -17,18 +16,18 @@ as a child for it.
 </div>
 ----
 
-You can implement the method that sets a `Component` as the content for your template component. 
+You can implement the method that sets a `Component` as the content for your template component.
 
 [source,java]
 ----
 public class MainPage extends Template {
 
+    @Id("content")
+    private Div container;
+
     public void setContent(Component content) {
-        Element contentContainer = getElement().getChildren().filter(
-                element -> "content".equals(element.getAttribute("id"))).
-                findFirst().get();
-        contentContainer.removeAllChildren();
-        contentContainer.appendChild(content.getElement());
+        container.removeAll();
+        container.add(content);
     }
 }
 ----
@@ -41,6 +40,8 @@ MainPage page = new MainPage();
 page.setContent(new Label("Hello!"));
 ----
 
-[TIP] An HTML snippet must represent a single root HTML element.
-[TIP] You can use only empty elements to modify their content. So in the example above the `"content"` element is eligible for modification but the `"header"` element isn't. 
+[NOTE]
+An alternative way of implementing `MainPage` would be to iterate the Element tree and using `Element.appendChild`. Mapping an element to a `Component` is in many cases easier and has insignificant overhead.
 
+[TIP]
+You can use only add new elements to template elements without children or text content. In the example above the `"content"` element is eligible for modification but the `"header"` element is not as it contains text.

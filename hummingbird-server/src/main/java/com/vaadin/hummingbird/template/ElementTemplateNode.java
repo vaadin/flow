@@ -21,8 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 
@@ -244,6 +247,34 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
             map.forEach((name, value) -> json.put(name, toJson.apply(value)));
 
             return Optional.of(json);
+        }
+    }
+
+    @Override
+    public Optional<Element> findElement(StateNode stateNode, String id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        if (attributes.containsKey("id")) {
+            BindingValueProvider binding = attributes.get("id");
+            if (id.equals(binding.getValue(stateNode))) {
+                return Optional.of(getElement(0, stateNode));
+            }
+        }
+
+        List<Element> elements = children.stream()
+                .map(child -> child.findElement(stateNode, id))
+                .filter(Optional::isPresent).map(Optional::get)
+                .collect(Collectors.toList());
+
+        if (elements.isEmpty()) {
+            return Optional.empty();
+        } else if (elements.size() == 1) {
+            return Optional.of(elements.get(0));
+        } else {
+            throw new IllegalArgumentException("Multiple (" + elements.size()
+                    + ") elements were found when looking for an element with id '"
+                    + id + "'");
         }
     }
 }

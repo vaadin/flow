@@ -388,17 +388,39 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
+    public Optional<Component> getComponent(StateNode node) {
+        assert node != null;
+
+        if (isTemplateRoot()) {
+            return ElementStateProvider.super.getComponent(node);
+        } else {
+            Optional<StateNode> overrideNode = getOverrideNode(node);
+            return overrideNode.flatMap(
+                    n -> n.getFeature(ComponentMapping.class).getComponent());
+        }
+    }
+
+    private boolean isTemplateRoot() {
+        return !templateNode.getParent().isPresent();
+    }
+
+    @Override
     public void setComponent(StateNode node, Component component) {
         assert node != null;
         assert component != null;
 
-        if (!(component instanceof Template)) {
-            throw new IllegalArgumentException(
-                    "Component for template element must extend "
-                            + Template.class.getName());
+        if (isTemplateRoot()) {
+            if (!(component instanceof Template)) {
+                throw new IllegalArgumentException(
+                        "The component for a template root must extend "
+                                + Template.class.getName());
+            }
+            ElementStateProvider.super.setComponent(node, component);
+        } else {
+            getOrCreateOverrideNode(node).getFeature(ComponentMapping.class)
+                    .setComponent(component);
         }
 
-        node.getFeature(ComponentMapping.class).setComponent(component);
     }
 
     private Optional<StateNode> getOverrideNode(StateNode node) {
