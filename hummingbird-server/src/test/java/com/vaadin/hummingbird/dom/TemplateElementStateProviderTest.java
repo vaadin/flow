@@ -527,6 +527,21 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    public void setRegularProperty_templateHasAttribute_hasPropertyAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setProperty("foo", "newvalue");
+
+        Assert.assertTrue(element.hasProperty("foo"));
+        Assert.assertEquals("newvalue", element.getProperty("foo"));
+        Set<String> props = element.getPropertyNames()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("foo"));
+    }
+
+    @Test
     public void removeRegularProperty_templateHasBoundProperty_hasPropertyAndHasProperValue() {
         TemplateNode node = TemplateParser.parse("<div [foo]='bar'></div>",
                 new NullTemplateResolver());
