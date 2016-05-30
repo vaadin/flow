@@ -46,6 +46,7 @@ import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 import com.vaadin.hummingbird.template.AbstractElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.util.JavaScriptSemantics;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
@@ -1059,20 +1060,8 @@ public class Element implements Serializable {
         Object value = getPropertyRaw(name);
         if (value == null) {
             return defaultValue;
-        } else if (value instanceof Boolean) {
-            return ((Boolean) value).booleanValue();
-        } else if (value instanceof JsonValue) {
-            return ((JsonValue) value).asBoolean();
-        } else if (value instanceof Number) {
-            double number = ((Number) value).doubleValue();
-            // Special comparison to keep sonarqube happy
-            return !Double.isNaN(number)
-                    && Double.doubleToLongBits(number) != 0;
-        } else if (value instanceof String) {
-            return !((String) value).isEmpty();
         } else {
-            throw new IllegalStateException(
-                    "Unsupported property type: " + value.getClass());
+            return JavaScriptSemantics.isTrueish(value);
         }
     }
 

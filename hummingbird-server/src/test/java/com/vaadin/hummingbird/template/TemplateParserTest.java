@@ -36,6 +36,9 @@ public class TemplateParserTest {
 
         Assert.assertEquals("div", rootNode.getTag());
 
+        Assert.assertEquals(0, rootNode.getPropertyNames().count());
+        Assert.assertEquals(0, rootNode.getClassNames().count());
+
         Assert.assertEquals(1, rootNode.getAttributeNames().count());
         Assert.assertEquals("bar",
                 rootNode.getAttributeBinding("id").get().getValue(null));
@@ -90,6 +93,7 @@ public class TemplateParserTest {
         Assert.assertEquals("input", rootNode.getTag());
 
         Assert.assertEquals(0, rootNode.getAttributeNames().count());
+        Assert.assertEquals(0, rootNode.getClassNames().count());
         Assert.assertEquals(1, rootNode.getPropertyNames().count());
 
         Optional<BindingValueProvider> binding = rootNode
@@ -108,6 +112,33 @@ public class TemplateParserTest {
     @Test(expected = TemplateParseException.class)
     public void parseTemplateIncorrectProperty() {
         parse("<input [value='foo'></input>");
+    }
+
+    @Test
+    public void parseClassName() {
+        ElementTemplateNode rootNode = (ElementTemplateNode) parse(
+                "<input [class.foo]=bar></input>");
+
+        Assert.assertEquals(0, rootNode.getAttributeNames().count());
+        Assert.assertEquals(0, rootNode.getPropertyNames().count());
+        Assert.assertEquals(1, rootNode.getClassNames().count());
+
+        Optional<BindingValueProvider> binding = rootNode
+                .getClassNameBinding("foo");
+        Assert.assertTrue(binding.isPresent());
+
+        StateNode node = new StateNode(ModelMap.class);
+
+        Assert.assertNull(binding.get().getValue(node));
+
+        node.getFeature(ModelMap.class).setValue("bar", "value");
+
+        Assert.assertEquals("value", binding.get().getValue(node));
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseClassOverlaps() {
+        parse("<input class=foo [class.foo]=bar>");
     }
 
     @Test(expected = TemplateParseException.class)
