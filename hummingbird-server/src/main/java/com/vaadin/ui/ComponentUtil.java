@@ -247,16 +247,12 @@ public interface ComponentUtil {
         MapToExistingElement wrapData = new MapToExistingElement(element,
                 mapComponent);
 
-        MapToExistingElement oldWrappedElement = Component.elementToMapTo.get();
         try {
             Component.elementToMapTo.set(wrapData);
             return ReflectTools.createInstance(componentType);
         } finally {
-            // Component.elementToWrap is cleared in Component constructor right
-            // after it has been used
-            if (oldWrappedElement != null) {
-                Component.elementToMapTo.set(oldWrappedElement);
-            }
+            // This should always be cleared in Component
+            assert Component.elementToMapTo.get() == null;
         }
 
     }

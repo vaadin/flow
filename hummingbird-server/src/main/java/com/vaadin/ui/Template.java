@@ -18,8 +18,13 @@ package com.vaadin.ui;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlTemplate;
+import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
@@ -35,6 +40,7 @@ import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
 import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 import com.vaadin.hummingbird.template.parser.TemplateResolver;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Component for declaratively defined element structures. The structure of a
@@ -78,6 +84,7 @@ public abstract class Template extends Component implements HasChildView {
         } else {
             setTemplateElement(annotation.value());
         }
+
     }
 
     /**
@@ -141,6 +148,72 @@ public abstract class Template extends Component implements HasChildView {
         } catch (IOException e) {
             throw new TemplateParseException("Error reading template", e);
         }
+
+        mapComponents(getClass());
+    }
+
+    private void mapComponents(Class<?> cls) {
+        if (cls.getSuperclass() != Template.class) {
+            // Parent fields
+            mapComponents(cls.getSuperclass());
+        }
+
+        Stream<Field> annotatedComponentFields = Stream
+                .of(cls.getDeclaredFields())
+                .filter(field -> !field.isSynthetic());
+
+        annotatedComponentFields.forEach(this::maybeMapComponentField);
+    }
+
+    private void maybeMapComponentField(Field field) {
+        Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
+                Id.class);
+        if (!idAnnotation.isPresent()) {
+            return;
+        }
+        String id = idAnnotation.get().value();
+
+        if (!Component.class.isAssignableFrom(field.getType())) {
+            throw new IllegalArgumentException("The field '" + field.getName()
+                    + "' in " + getClass().getName() + " has an @"
+                    + Id.class.getSimpleName()
+                    + " annotation but the field type '"
+                    + field.getType().getName() + "' does not extend "
+                    + Component.class.getSimpleName());
+        }
+
+        String fieldName = field.getName();
+        @SuppressWarnings("unchecked")
+        Class<? extends Component> componentType = (Class<? extends Component>) field
+                .getType();
+
+        Optional<Element> element = getElementById(id);
+        if (!element.isPresent()) {
+            throw new IllegalArgumentException("No element with id '" + id
+                    + "' found while binding field '" + fieldName + "' in "
+                    + getClass().getName());
+        }
+
+        if (element.get().equals(getElement())) {
+            throw new IllegalArgumentException(
+                    "Cannot map the root element of the template. This is always mapped to the template instance itself ("
+                            + getClass().getName() + ")");
+        }
+        Component c = Component.from(element.get(), componentType);
+        ReflectTools.setJavaFieldValue(this, field, c);
+    }
+
+    /**
+     * Finds an element with the given id inside this template.
+     *
+     * @param id
+     *            the id to look for
+     * @return an optional element with the id, or an empty Optional if no
+     *         element with the given id was found
+     */
+    private Optional<Element> getElementById(String id) {
+        return stateNode.getFeature(TemplateMap.class).getRootTemplate()
+                .findElement(stateNode, id);
     }
 
     @Override
@@ -174,7 +247,6 @@ public abstract class Template extends Component implements HasChildView {
         Class<? extends TemplateModel> modelType = TemplateModelTypeParser
                 .getType(getClass());
 
-        return TemplateModelProxyHandler
-                .createModelProxy(stateNode, modelType);
+        return TemplateModelProxyHandler.createModelProxy(stateNode, modelType);
     }
 }
