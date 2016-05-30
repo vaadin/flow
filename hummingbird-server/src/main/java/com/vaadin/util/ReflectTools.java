@@ -26,6 +26,8 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.regex.Pattern;
 
+import com.vaadin.shared.util.SharedUtil;
+
 /**
  * An util class with helpers for reflection operations. Used internally by
  * Vaadin and should not be used by application developers. Subject to change at
@@ -267,6 +269,24 @@ public class ReflectTools implements Serializable {
                 && (GETTER_STARTS.matcher(methodName).find()
                         || (IS_STARTS.matcher(methodName).find()
                                 && returnType == boolean.class));
+    }
+
+    /**
+     * Parses the property name from the given getter or setter method.
+     *
+     * @see #isSetter(Method)
+     * @see #isGetter(Method)
+     * @param method
+     *            the method to parse
+     * @return the name of the property
+     */
+    public static String getPropertyNameFromMethod(Method method) {
+        String methodName = method.getName();
+        assert Pattern.compile("^(set|get|is)\\p{Lu}").matcher(methodName)
+                .find() : "Method is not a valid getter or setter";
+
+        String propertyName = methodName.replaceFirst("^(set|get|is)", "");
+        return SharedUtil.firstToLower(propertyName);
     }
 
     /**

@@ -23,6 +23,9 @@ import com.vaadin.ui.Template;
  * Interface for a {@link Template}'s model. Extending this interface and adding
  * getters and setters makes it possible to easily bind data to a template.
  * <p>
+ * It is also possible to import a Bean's properties to the model using
+ * {@link #importBean(Object)}.
+ * <p>
  * Supported property types:
  * <ul>
  * <li>boolean &amp; Boolean</li>
@@ -35,4 +38,23 @@ import com.vaadin.ui.Template;
  */
 public interface TemplateModel extends Serializable {
 
+    /**
+     * Import a Bean to this template model.
+     * <p>
+     * The given Bean is searched for getter methods and the values that the
+     * getters return are set to model values with the corresponding key.
+     * <p>
+     * E.g. the <code>firstName</code> property in the bean (has a
+     * <code>getFirstName</code> getter method) will be imported to template
+     * model with the <code>firstName</code> key.
+     * <p>
+     * NOTE: nested beans are not supported.
+     *
+     * @param bean
+     *            the bean to import
+     * @see {@link TemplateModel} for supported property types
+     */
+    default void importBean(Object bean) {
+        TemplateModelBeanUtil.importBeanIntoModel(this, bean);
+    }
 }
