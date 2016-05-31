@@ -16,6 +16,7 @@
 package com.vaadin.ui;
 
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,6 +30,7 @@ import org.junit.Test;
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
@@ -41,6 +43,7 @@ import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.hummingbird.template.TemplateParseException;
 import com.vaadin.server.communication.rpc.EventRpcHandler;
+import com.vaadin.server.communication.rpc.PropertySyncRpcHandler;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.ComponentTest.TestComponent;
 
@@ -52,6 +55,10 @@ import elemental.json.JsonObject;
  *
  */
 public class TemplateTest {
+
+    private static final String NEW_VALUE = "newValue";
+    private static final String DUMMY_EVENT = "dummy-event";
+    private static final String TEST_PROPERTY = "test-property";
 
     private static class TestTemplate extends Template {
         TestTemplate() {
@@ -367,10 +374,54 @@ public class TemplateTest {
         Assert.assertEquals(1, invoked.get());
     }
 
+    public void templateSynchronizeRootElement() throws Exception {
+        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
+        Element element = t.getElement();
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT);
+        UI ui = new UI();
+        ui.add(t);
+        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+        Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
+        Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
+    }
+
+    @Test
+    public void templateSynchronizeNonRootElement() throws Exception {
+        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
+        Element element = t.header.getElement();
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT);
+        UI ui = new UI();
+        ui.add(t);
+        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
+        Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
+        Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
+    }
+
     private static void sendElementEvent(Element element, UI ui,
             String eventType, JsonObject eventData) throws Exception {
         new EventRpcHandler().handle(ui,
                 createElementEventInvocation(element, eventType, eventData));
+    }
+
+    private static void sendSynchronizePropertyEvent(Element element, UI ui,
+            String eventType, Serializable value) throws Exception {
+        new PropertySyncRpcHandler().handle(ui,
+                createSyncPropertyInvocation(element, eventType, value));
+    }
+
+    private static JsonObject createSyncPropertyInvocation(Element element,
+            String property, Serializable value) {
+        StateNode node = getInvocationNode(element);
+        // Copied from ServerConnector
+        JsonObject message = Json.createObject();
+        message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_PROPERTY, property);
+        message.put(JsonConstants.RPC_PROPERTY_VALUE,
+                JsonCodec.encodeWithoutTypeInfo(value));
+
+        return message;
     }
 
     private static JsonObject createElementEventInvocation(Element element,
