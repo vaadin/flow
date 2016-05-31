@@ -391,7 +391,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testBindOverrideNode_properties_afterBind() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        int id = 83;
+        int id = 68;
 
         StateNode overrideNode = createSimpleOverrideNode(id);
 
@@ -403,6 +403,60 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
+    }
+
+    public void testBindOverrideNode_attributes_beforeBind() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        int id = 48;
+
+        StateNode overrideNode = createSimpleOverrideNode(id);
+        NodeMap attrs = overrideNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+        attrs.getProperty("foo").setValue("bar");
+
+        Element element = createElement(templateNode, id);
+
+        Reactive.flush();
+
+        assertEquals("bar", element.getAttribute("foo"));
+    }
+
+    public void testBindOverrideNode_attributes_afterBind() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        int id = 45;
+
+        StateNode overrideNode = createSimpleOverrideNode(id);
+
+        Element element = createElement(templateNode, id);
+
+        NodeMap props = overrideNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+        props.getProperty("foo").setValue("bar");
+
+        Reactive.flush();
+
+        assertEquals("bar", element.getAttribute("foo"));
+    }
+
+    public void testTemplateAttributes_bindOverrideNodeAttribute() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addAttribute("attr1", "value1");
+        templateNode.addAttribute("attr2", "value2");
+
+        int id = 37;
+
+        StateNode overrideNode = createSimpleOverrideNode(id);
+
+        Element element = createElement(templateNode, id);
+
+        NodeMap props = overrideNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+        props.getProperty("attr2").setValue("foo");
+
+        Reactive.flush();
+
+        assertEquals("value1", element.getAttribute("attr1"));
+        assertEquals("foo", element.getAttribute("attr2"));
     }
 
     public void testChildSlot() {
