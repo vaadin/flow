@@ -15,6 +15,7 @@
  */
 package com.vaadin.shared.util;
 
+import java.beans.Introspector;
 import java.io.Serializable;
 import java.util.Locale;
 
@@ -155,16 +156,7 @@ public class SharedUtil implements Serializable {
      * @return The string with initial character turned into lower case
      */
     public static String firstToLower(String string) {
-        if (string == null) {
-            return null;
-        }
-
-        if (string.length() <= 1) {
-            return string.toLowerCase(Locale.ENGLISH);
-        }
-
-        return string.substring(0, 1).toLowerCase(Locale.ENGLISH)
-                + string.substring(1);
+        return Introspector.decapitalize(string);
     }
 
     /**
@@ -298,7 +290,7 @@ public class SharedUtil implements Serializable {
      * {@literal foo} becomes {@literal foo} {@literal fooBar} becomes
      * {@literal foo-bar} {@literal MyBeanContainer} becomes
      * {@literal -my-bean-container} {@literal AwesomeURLFactory} becomes
-     * {@literal -awesome-uRL-factory} {@literal someUriAction} becomes
+     * {@literal -awesome-URL-factory} {@literal someUriAction} becomes
      * {@literal some-uri-action}
      *
      * @param camelCaseString

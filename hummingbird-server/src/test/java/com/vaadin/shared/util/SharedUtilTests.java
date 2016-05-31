@@ -121,7 +121,7 @@ public class SharedUtilTests {
                 SharedUtil.camelCaseToDashSeparated("fooBarBaz"));
         Assert.assertEquals("-my-bean-container",
                 SharedUtil.camelCaseToDashSeparated("MyBeanContainer"));
-        Assert.assertEquals("-awesome-uRL-factory",
+        Assert.assertEquals("-awesome-URL-factory",
                 SharedUtil.camelCaseToDashSeparated("AwesomeURLFactory"));
         Assert.assertEquals("some-uri-action",
                 SharedUtil.camelCaseToDashSeparated("someUriAction"));
