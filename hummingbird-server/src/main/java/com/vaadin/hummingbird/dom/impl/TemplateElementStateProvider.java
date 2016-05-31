@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
@@ -33,6 +34,7 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
@@ -141,12 +143,11 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
             .of(OverrideElementData.class, ElementChildrenList.class,
                     ParentGeneratorHolder.class, ComponentMapping.class,
-                    ElementPropertyMap.class, ElementListenerMap.class,
-                    SynchronizedPropertiesList.class,
+                    ElementAttributeMap.class, ElementPropertyMap.class,
+                    ElementListenerMap.class, SynchronizedPropertiesList.class,
                     SynchronizedPropertyEventsList.class)
             .toArray(Class[]::new);
 
-    private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
     private ElementTemplateNode templateNode;
 
     /**
@@ -201,8 +202,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         boolean useOverrideNodeAttribute = provider
                 .orElse(null) instanceof StaticBindingValueProvider
                 && getOverrideNode(node).isPresent()
-                && BasicElementStateProvider.get()
-                        .hasAttribute(getOverrideNode(node).get(), attribute);
+                && getOverrideNode(node).get()
+                        .getFeature(ElementAttributeMap.class)
+                        .isTracked(attribute);
         if (!provider.isPresent() || useOverrideNodeAttribute) {
             return getOverrideNode(node)
                     .map(overrideNode -> BasicElementStateProvider.get()
@@ -217,28 +219,41 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     public boolean hasAttribute(StateNode node, String attribute) {
         Optional<BindingValueProvider> provider = templateNode
                 .getAttributeBinding(attribute);
-        if (provider.isPresent()) {
-            return true;
+        boolean useOverrideNodeAttribute = provider
+                .orElse(null) instanceof StaticBindingValueProvider
+                && getOverrideNode(node).isPresent()
+                && getOverrideNode(node).get()
+                        .getFeature(ElementAttributeMap.class)
+                        .isTracked(attribute);
+        if (!provider.isPresent() || useOverrideNodeAttribute) {
+            Optional<StateNode> overrideNode = getOverrideNode(node);
+            return overrideNode.isPresent() && BasicElementStateProvider.get()
+                    .hasAttribute(overrideNode.get(), attribute);
         }
-        Optional<StateNode> overrideNode = getOverrideNode(node);
-        return overrideNode.isPresent() && BasicElementStateProvider.get()
-                .hasAttribute(overrideNode.get(), attribute);
+        return provider.isPresent();
     }
 
     @Override
     public void removeAttribute(StateNode node, String attribute) {
         checkModifiableAttribute(attribute);
         modifyChildren(node, (provider, overrideNode) -> provider
-                .removeProperty(overrideNode, attribute));
+                .removeAttribute(overrideNode, attribute));
     }
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        Stream<String> regularAttributes = getOverrideNode(node)
+        Optional<StateNode> overrideNode = getOverrideNode(node);
+        Stream<String> regularAttributes = overrideNode
                 .map(BasicElementStateProvider.get()::getAttributeNames)
                 .orElse(Stream.empty());
-        return Stream.concat(templateNode.getAttributeNames(),
-                regularAttributes);
+        Stream<String> bound = templateNode.getAttributeNames();
+        if (overrideNode.isPresent()) {
+            ElementAttributeMap attributes = overrideNode.get()
+                    .getFeature(ElementAttributeMap.class);
+            Predicate<String> isOverriden = attributes::isTracked;
+            bound = bound.filter(isOverriden.negate());
+        }
+        return Stream.concat(bound, regularAttributes).distinct();
     }
 
     @Override
