@@ -244,6 +244,10 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
+    protected void changed(String key) {
+
+    }
+
     private void setUnChanged(String key) {
         assert key != null;
         getChangeTracker().remove(key);

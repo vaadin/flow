@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
@@ -33,6 +34,7 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
@@ -141,12 +143,11 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
             .of(OverrideElementData.class, ElementChildrenList.class,
                     ParentGeneratorHolder.class, ComponentMapping.class,
-                    ElementPropertyMap.class, ElementListenerMap.class,
-                    SynchronizedPropertiesList.class,
+                    ElementAttributeMap.class, ElementPropertyMap.class,
+                    ElementListenerMap.class, SynchronizedPropertiesList.class,
                     SynchronizedPropertyEventsList.class)
             .toArray(Class[]::new);
 
-    private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
     private ElementTemplateNode templateNode;
 
     /**
@@ -196,49 +197,46 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public String getAttribute(StateNode node, String attribute) {
+        Optional<StateNode> overrideNode = getOverrideNode(node);
+        if (overrideNode.isPresent()) {
+            return BasicElementStateProvider.get()
+                    .getAttribute(overrideNode.get(), attribute);
+        }
         Optional<BindingValueProvider> provider = templateNode
                 .getAttributeBinding(attribute);
-        boolean useOverrideNodeAttribute = provider
-                .orElse(null) instanceof StaticBindingValueProvider
-                && getOverrideNode(node).isPresent()
-                && BasicElementStateProvider.get()
-                        .hasAttribute(getOverrideNode(node).get(), attribute);
-        if (!provider.isPresent() || useOverrideNodeAttribute) {
-            return getOverrideNode(node)
-                    .map(overrideNode -> BasicElementStateProvider.get()
-                            .getAttribute(overrideNode, attribute))
-                    .orElse(null);
-        }
         return provider.map(binding -> binding.getValue(node, ""))
                 .map(Object::toString).orElse(null);
     }
 
     @Override
     public boolean hasAttribute(StateNode node, String attribute) {
-        Optional<BindingValueProvider> provider = templateNode
-                .getAttributeBinding(attribute);
-        if (provider.isPresent()) {
-            return true;
-        }
         Optional<StateNode> overrideNode = getOverrideNode(node);
-        return overrideNode.isPresent() && BasicElementStateProvider.get()
-                .hasAttribute(overrideNode.get(), attribute);
+        if (overrideNode.isPresent()) {
+            return BasicElementStateProvider.get()
+                    .hasAttribute(overrideNode.get(), attribute);
+        }
+        return templateNode.getAttributeBinding(attribute).isPresent();
     }
 
     @Override
     public void removeAttribute(StateNode node, String attribute) {
         checkModifiableAttribute(attribute);
         modifyChildren(node, (provider, overrideNode) -> provider
-                .removeProperty(overrideNode, attribute));
+                .removeAttribute(overrideNode, attribute));
     }
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        Stream<String> regularAttributes = getOverrideNode(node)
-                .map(BasicElementStateProvider.get()::getAttributeNames)
-                .orElse(Stream.empty());
-        return Stream.concat(templateNode.getAttributeNames(),
-                regularAttributes);
+        Stream<String> bound = templateNode.getAttributeNames();
+        Optional<StateNode> overrideNode = getOverrideNode(node);
+        if (overrideNode.isPresent()) {
+            Predicate<String> isStaticBinding = this::isStaticBindingAttribute;
+            return Stream.concat(bound.filter(isStaticBinding.negate()),
+                    BasicElementStateProvider.get()
+                            .getAttributeNames(overrideNode.get()));
+        } else {
+            return bound;
+        }
     }
 
     @Override
@@ -476,8 +474,21 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     private StateNode getOrCreateOverrideNode(StateNode node) {
-        return node.getFeature(TemplateOverridesMap.class).get(templateNode,
-                true);
+        Optional<StateNode> stateNode = getOverrideNode(node);
+        if (!stateNode.isPresent()) {
+            stateNode = Optional.of(node.getFeature(TemplateOverridesMap.class)
+                    .get(templateNode, true));
+            StateNode overrideNode = stateNode.get();
+            // transfer all attribute binding values as initial values to
+            // override node
+            templateNode.getAttributeNames()
+                    .forEach(attribute -> BasicElementStateProvider.get()
+                            .setAttribute(overrideNode, attribute,
+                                    templateNode.getAttributeBinding(attribute)
+                                            .get()
+                                            .getValue(overrideNode, null)));
+        }
+        return stateNode.get();
     }
 
     /**
@@ -543,5 +554,14 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                     "Can't modify attribute '%s' with binding defined in a template",
                     name));
         }
+    }
+
+    private boolean isStaticBindingAttribute(String attribute) {
+        Optional<BindingValueProvider> binding = templateNode
+                .getAttributeBinding(attribute);
+        if (binding.isPresent()) {
+            return binding.get() instanceof StaticBindingValueProvider;
+        }
+        return false;
     }
 }

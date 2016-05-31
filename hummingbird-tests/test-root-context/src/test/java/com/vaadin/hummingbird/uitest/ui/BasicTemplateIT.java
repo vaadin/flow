@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -25,10 +26,14 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
 public class BasicTemplateIT extends PhantomJSTest {
+
+    @Before
+    public void setUp() {
+        open();
+    }
+
     @Test
     public void testBasicTemplate() {
-        open();
-
         WebElement bar = findElement(By.className("bar"));
 
         Assert.assertEquals("baz", bar.getText());
@@ -74,6 +79,15 @@ public class BasicTemplateIT extends PhantomJSTest {
 
         findElement(By.id("clearModel")).click();
         assertModelValue("", false);
+    }
+
+    @Test
+    public void setTemplateAttributes() {
+        findElement(By.id("setAttributes")).click();
+
+        WebElement input = findElement(By.id("input"));
+        Assert.assertEquals("updated", input.getAttribute("value"));
+        Assert.assertEquals("placeholder", input.getAttribute("placeholder"));
     }
 
     private void assertModelValue(String text, boolean classPresent) {
