@@ -244,6 +244,10 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
+    protected void changed(String key) {
+        // no op. subclasses may override it.
+    }
+
     private void setUnChanged(String key) {
         assert key != null;
         getChangeTracker().remove(key);
@@ -251,6 +255,7 @@ public abstract class NodeMap extends NodeFeature {
 
     private void setChanged(String key) {
         assert key != null;
+        changed(key);
 
         getNode().markAsDirty();
 
