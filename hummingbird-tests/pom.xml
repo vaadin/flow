@@ -80,6 +80,11 @@
 					<webAppConfig>
 						<webInfIncludeJarPattern>.*/hummingbird-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
 						<containerIncludeJarPattern>^$</containerIncludeJarPattern>
+						<resourceBases>
+							<!-- Make the frontend directory containing the Bower files available
+								for jetty:run when run from command line (Eclipse profile handles Eclipse) -->
+							<resourceBase>${project.basedir}/frontend</resourceBase>
+						</resourceBases>
 					</webAppConfig>
 					<scanIntervalSeconds>-1</scanIntervalSeconds>
 					<httpConnector>
@@ -162,6 +167,7 @@
 									<!-- these paths are relative to the project where the profile is 
 										triggered -->
 									<resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+									<resourceBase>${project.basedir}/frontend</resourceBase>
 									<resourceBase>${project.basedir}/../../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
 									<resourceBase>${project.basedir}/../../hummingbird-client/target/classes/META-INF/resources</resourceBase>
 									<resourceBase>${project.basedir}/../../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
