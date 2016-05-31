@@ -1,6 +1,7 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Handling User Events in a Template
 
+== Client Side Event Handlers
 Template defines a special syntax `(event-name)="javascriptCode"` for attaching client side event handlers to elements:
 
 [source,html]
@@ -11,13 +12,15 @@ Template defines a special syntax `(event-name)="javascriptCode"` for attaching 
 Clicking on the `<button>` will now show an alert in the browser. You can listen to any event using the `(event-name)` syntax, it does not matter if it is a built-in browser event or a custom event from e.g. a web component.
 
 == Communicating with the Server
-To forward data to the server from a template event handler, you have two options:
-1. Fire a custom event to which you listen on the server
-2. Use `$server.myEventHandler(myParameters)` to directly invoke a method in the server side template class
+To get an event to the server from a template, you have two options:
 
-In this tutorial, the focus is on option 2. For option 1, see <<tutorial-event-listener#,Listening to User Events>> and online resources for firing custom events from JavaScript.
+1. Use a client side listener which calls the server, e.g. `(event)=$server.myEventHandler(myParameters)` to invoke the `myEventHandler` method in the server side `Template` class.
+2. Find a reference to the element in the server `Template` class and attach a listener. This is similar to what is done in <<tutorial-event-listener#,Listening to User Events>>
 
-If you have a template which looks like:
+
+=== Client Side Event Listener
+In the following template a click listener is attached to the button and the event handler calls the `sayHello` method on the server:
+
 [source,html]
 ----
 <div>
@@ -30,7 +33,8 @@ If you have a template which looks like:
 [NOTE]
 We can use `name.value` because the `<input>` element has `id="name"` and the browser makes these elements available in the global namespace using their id.
 
-You can define a published method in a `Template` class as follows:
+The server side template class defines the published `sayHello` method using the `@EventHandler` annotation:
+
 [source,java]
 ----
 public class MyTemplate extends Template {
@@ -49,7 +53,7 @@ public class MyTemplate extends Template {
 }
 ----
 
-The `sayHello` method will be invoked whenever `$server.sayHello` is called on the client side and the given parameters will be passed to the method on the server. In this case the event handler updates the template model so that a "Hello <name>" message is shown.
+The `sayHello` method is invoked whenever `$server.sayHello` is called on the client side and the given parameters will be passed to the method on the server. In this case the event handler updates the template model so that a "Hello <name>" message is shown.
 
 [NOTE]
 Only `String`, `int`, `Integer`, `double`, `Double`, `boolean`, `Boolean`, `JsonValue` and arrays of all those types are supported parameter types.
@@ -57,3 +61,43 @@ Only `String`, `int`, `Integer`, `double`, `Double`, `boolean`, `Boolean`, `Json
 The `@EventHandler` method can have any access modifier (`private`/`protected`/`public`) but must return `void`.
 [NOTE]
 The `$server` variable is only available in template event handlers.
+
+=== Server Side Event Listener
+If you are attaching the event listener on the server side, you can use the same template as above but without any listener code:
+
+[source,html]
+----
+<div>
+  <input id="name" />
+  <button id="button">Say hello</button>
+  <span>{{helloText}}</span>
+</div>
+----
+
+The server side `Template` will instead map the `<button>` element to a `Button` component and add a click listener to it:
+
+The server side template class defines the published `sayHello` method using the `@EventHandler` annotation:
+
+[source,java]
+----
+public class MyTemplate extends Template {
+  public interface MyModel extends TemplateModel {
+      public void setHelloText(String helloText);
+  }
+  @Override
+  public MyModel getModel() {
+      return (MyModel) super.getModel();
+  }
+
+  @Id("button")
+  private Button button;
+  @Id("name")
+  private Input name;
+
+  public MyTemplate() {
+    button.addClickListener(e->{
+      getModel().setHelloText("Hello " + name.getValue());
+    });
+  }
+}
+----
