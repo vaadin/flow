@@ -31,6 +31,7 @@ import com.vaadin.annotations.Id;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
@@ -39,8 +40,12 @@ import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.hummingbird.template.TemplateParseException;
-import com.vaadin.server.communication.ServerRpcHandlerTest;
+import com.vaadin.server.communication.rpc.EventRpcHandler;
+import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.ComponentTest.TestComponent;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * @author Vaadin Ltd
@@ -344,7 +349,7 @@ public class TemplateTest {
         element.addEventListener("test-event", e -> {
             invoked.incrementAndGet();
         });
-        ServerRpcHandlerTest.sendElementEvent(element, ui, "test-event", null);
+        sendElementEvent(element, ui, "test-event", null);
         Assert.assertEquals(1, invoked.get());
     }
 
@@ -358,8 +363,34 @@ public class TemplateTest {
         element.addEventListener("test-event", e -> {
             invoked.incrementAndGet();
         });
-        ServerRpcHandlerTest.sendElementEvent(element, ui, "test-event", null);
+        sendElementEvent(element, ui, "test-event", null);
         Assert.assertEquals(1, invoked.get());
+    }
+
+    private static void sendElementEvent(Element element, UI ui,
+            String eventType, JsonObject eventData) throws Exception {
+        new EventRpcHandler().handle(ui,
+                createElementEventInvocation(element, eventType, eventData));
+    }
+
+    private static JsonObject createElementEventInvocation(Element element,
+            String eventType, JsonObject eventData) {
+        StateNode node = getInvocationNode(element);
+        // Copied from ServerConnector
+        JsonObject message = Json.createObject();
+        message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
+
+        if (eventData != null) {
+            message.put(JsonConstants.RPC_EVENT_DATA, eventData);
+        }
+
+        return message;
+    }
+
+    private static StateNode getInvocationNode(Element element) {
+        return TemplateElementStateProviderTest.getOverrideNode(element)
+                .orElse(element.getNode());
     }
 
 }
