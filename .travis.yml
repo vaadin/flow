@@ -14,6 +14,9 @@ branches:
 cache:
   directories:
   - $HOME/.m2
+  - hummingbird-tests/test-root-context/node
+  - hummingbird-tests/test-root-context/node_modules
+  - hummingbird-tests/test-root-context/bower_components
 before_cache:
   # remove all build artifacts
   - rm -rf $HOME/.m2/repository/com/vaadin/hummingbird
