@@ -528,6 +528,21 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    public void setRegularProperty_templateHasAttribute_hasPropertyAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setProperty("foo", "newValue");
+
+        Assert.assertTrue(element.hasProperty("foo"));
+        Assert.assertEquals("newValue", element.getProperty("foo"));
+        Set<String> props = element.getPropertyNames()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("foo"));
+    }
+
+    @Test
     public void removeRegularProperty_templateHasBoundProperty_hasPropertyAndHasProperValue() {
         TemplateNode node = TemplateParser.parse("<div [foo]='bar'></div>",
                 new NullTemplateResolver());
@@ -552,6 +567,19 @@ public class TemplateElementStateProviderTest {
         element.removeProperty("prop");
 
         Assert.assertFalse(element.hasProperty("prop"));
+        List<String> props = element.getPropertyNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(0, props.size());
+    }
+
+    @Test
+    public void removeProperty_templateHasAttribute_hasNoProperty() {
+        TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.removeProperty("foo");
+
+        Assert.assertFalse(element.hasProperty("foo"));
         List<String> props = element.getPropertyNames()
                 .collect(Collectors.toList());
         Assert.assertEquals(0, props.size());

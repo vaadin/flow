@@ -182,7 +182,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public void setAttribute(StateNode node, String attribute, String value) {
         checkModifiableAttribute(attribute);
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .setAttribute(overrideNode, attribute, value));
     }
 
@@ -190,7 +190,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     public void setAttribute(StateNode node, String attribute,
             StreamResource resource) {
         checkModifiableAttribute(attribute);
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .setAttribute(overrideNode, attribute, resource));
     }
 
@@ -228,7 +228,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public void removeAttribute(StateNode node, String attribute) {
         checkModifiableAttribute(attribute);
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .removeProperty(overrideNode, attribute));
     }
 
@@ -317,38 +317,26 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void insertChild(StateNode node, int index, Element child) {
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .insertChild(overrideNode, index, child));
     }
 
     @Override
     public void removeChild(StateNode node, int index) {
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .removeChild(overrideNode, index));
     }
 
     @Override
     public void removeChild(StateNode node, Element child) {
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .removeChild(overrideNode, child));
     }
 
     @Override
     public void removeAllChildren(StateNode node) {
-        modifyOverrideNode(node, (provider, overrideNode) -> provider
+        modifyChildren(node, (provider, overrideNode) -> provider
                 .removeAllChildren(overrideNode));
-    }
-
-    private void modifyOverrideNode(StateNode node,
-            BiConsumer<BasicElementStateProvider, StateNode> modifier) {
-        if (templateNode.getChildCount() != 0) {
-            throw new IllegalStateException(
-                    "Can't add or remove children when there are children defined by the template.");
-        }
-
-        StateNode overrideNode = getOrCreateOverrideNode(node);
-
-        modifier.accept(BasicElementStateProvider.get(), overrideNode);
     }
 
     @Override
@@ -364,8 +352,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public Object getProperty(StateNode node, String name) {
         if (templateNode.getPropertyBinding(name).isPresent()) {
-            return templateNode.getPropertyBinding(name)
-                    .map(binding -> binding.getValue(node)).orElse(null);
+            return templateNode.getPropertyBinding(name).get().getValue(node);
         } else {
             return getOverrideNode(node)
                     .map(overrideNode -> BasicElementStateProvider.get()
@@ -521,6 +508,22 @@ public class TemplateElementStateProvider implements ElementStateProvider {
      */
     public static StateNode createOverrideNode() {
         return new StateNode(overrideNodeFeatures);
+    }
+
+    private void modifyChildren(StateNode node,
+            BiConsumer<BasicElementStateProvider, StateNode> modifier) {
+        if (templateNode.getChildCount() != 0) {
+            throw new IllegalStateException(
+                    "Can't add or remove children when there are children defined by the template.");
+        }
+        modifyOverrideNode(node, modifier);
+    }
+
+    private void modifyOverrideNode(StateNode node,
+            BiConsumer<BasicElementStateProvider, StateNode> modifier) {
+        StateNode overrideNode = getOrCreateOverrideNode(node);
+
+        modifier.accept(BasicElementStateProvider.get(), overrideNode);
     }
 
     private void checkModifiableProperty(String name) {

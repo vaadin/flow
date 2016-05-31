@@ -372,6 +372,39 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("override", element.getId());
     }
 
+    public void testBindOverrideNode_properties_beforeBind() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        int id = 83;
+
+        StateNode overrideNode = createSimpleOverrideNode(id);
+        NodeMap props = overrideNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        props.getProperty("foo").setValue("bar");
+
+        Element element = createElement(templateNode, id);
+
+        Reactive.flush();
+
+        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
+    }
+
+    public void testBindOverrideNode_properties_afterBind() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        int id = 83;
+
+        StateNode overrideNode = createSimpleOverrideNode(id);
+
+        Element element = createElement(templateNode, id);
+
+        NodeMap props = overrideNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        props.getProperty("foo").setValue("bar");
+
+        Reactive.flush();
+
+        assertEquals("bar", WidgetUtil.getJsProperty(element, "foo"));
+    }
+
     public void testChildSlot() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
