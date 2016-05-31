@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
@@ -39,6 +40,22 @@ public class TemplateComponentMappingIT extends PhantomJSTest {
                 + "" + "server: button was clicked\n" //
                 + "client: span was clicked\n" //
                 + "server: span was clicked", getLog());
+    }
+
+    @Test
+    public void synchronizedProperty() {
+        open();
+        WebElement input = findElement(
+                By.id(TemplateComponentMappingView.INPUT_ID));
+        input.sendKeys(Keys.BACK_SPACE, Keys.BACK_SPACE, Keys.BACK_SPACE,
+                "Hello");
+        blurInput();
+        Assert.assertEquals("client: input was changed to Hello\n" //
+                + "server: input value changed to Hello", getLog());
+    }
+
+    private void blurInput() {
+        findElement(By.xpath("//body")).click();
     }
 
     private String getLog() {

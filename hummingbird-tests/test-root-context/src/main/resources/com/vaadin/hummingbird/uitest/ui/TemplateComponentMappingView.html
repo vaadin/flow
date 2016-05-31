@@ -8,10 +8,15 @@
 		var logClick = function(element) {
 			log('client: ' + element.id + ' was clicked');
 		}
+		var logChange = function(element) {
+			log('client: ' + element.id + ' was changed to ' + element.value);
+		}
 	</script>
 	<div>Main page</div>
 	<span id="span" (click)="logClick($event.target);">Span</span>
 	<button id="button" (click)="logClick($event.target);">Button</button>
+	<hr />
+	<input id="input" value="foo" (change)="logChange($event.target);"></input>
 	<hr />
 	<div id="log"></div>
 </div>
