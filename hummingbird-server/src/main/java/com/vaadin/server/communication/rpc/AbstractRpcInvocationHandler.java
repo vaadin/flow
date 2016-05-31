@@ -34,41 +34,20 @@ public abstract class AbstractRpcInvocationHandler
 
     @Override
     public void handle(UI ui, JsonObject invocationJson) {
-        StateNode node = getNode(ui, invocationJson);
-        if (node == null) {
-            return;
-        }
-        handleNode(node, invocationJson);
-    }
-
-    /**
-     * Gets a node by {@code invocationJson} RPC data for the given {@code ui}.
-     * 
-     * @param ui
-     *            the UI containing the node, not {@code null}
-     * @param invocationJson
-     *            the RPC data to find the node, not {@code null}
-     * @return the StateNode from the UI tree if it's found and attached,
-     *         {@code null} otherwise
-     */
-    protected StateNode getNode(UI ui, JsonObject invocationJson) {
-        assert ui != null;
-        assert invocationJson != null;
+        assert invocationJson.hasKey(JsonConstants.RPC_NODE);
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
-
         if (node == null) {
             getLogger().warning("Got an RPC for non-existent node: "
                     + getNodeId(invocationJson));
-            return null;
+            return;
         }
-
         if (!node.isAttached()) {
             getLogger().warning("Got an RPC for detached node: "
                     + getNodeId(invocationJson));
-            return null;
+            return;
         }
-        return node;
+        handleNode(node, invocationJson);
     }
 
     protected abstract void handleNode(StateNode node,

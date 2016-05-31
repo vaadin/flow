@@ -26,6 +26,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.TemplateTest.H1TestComponent;
 import com.vaadin.ui.UI;
 
@@ -76,6 +77,19 @@ public class PropertySyncRpcHandlerTest {
         sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, NEW_VALUE);
         Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
         Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
+    }
+
+    @Test
+    public void testSynchronizeProperty() throws Exception {
+        TestComponent c = new TestComponent();
+        Element element = c.getElement();
+        UI ui = new UI();
+        ui.add(c);
+        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value1");
+        Assert.assertEquals("value1", element.getPropertyRaw(TEST_PROPERTY));
+        sendSynchronizePropertyEvent(element, ui, TEST_PROPERTY, "value2");
+        Assert.assertEquals("value2", element.getPropertyRaw(TEST_PROPERTY));
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,

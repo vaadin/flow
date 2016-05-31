@@ -41,7 +41,6 @@ public class PropertySyncRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     protected void handleNode(StateNode node, JsonObject invocationJson) {
-        assert invocationJson.hasKey(JsonConstants.RPC_NODE);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
 
