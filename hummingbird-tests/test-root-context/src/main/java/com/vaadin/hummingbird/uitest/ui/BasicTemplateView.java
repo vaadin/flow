@@ -30,6 +30,8 @@ public class BasicTemplateView extends Template implements View {
 
     @Id("container")
     private Div container;
+    @Id("clearModel")
+    private Button clearModel;
 
     public BasicTemplateView() {
         assert container != null;
@@ -49,11 +51,8 @@ public class BasicTemplateView extends Template implements View {
         });
         getElement().getNode().getFeature(TemplateMap.class)
                 .setChild(childSlotContent.getElement().getNode());
-    }
 
-    @EventHandler
-    private void clearModel() {
-        setModelValue(null);
+        clearModel.addClickListener(e -> setModelValue(null));
     }
 
     @EventHandler

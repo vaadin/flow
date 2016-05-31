@@ -21,7 +21,12 @@ import org.junit.Test;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
+import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -394,6 +399,35 @@ public class ServerRpcHandlerTest {
         } catch (RuntimeException e) {
             Assert.assertTrue(e.getCause() instanceof NullPointerException);
         }
+    }
+
+    public static void sendElementEvent(Element element, UI ui,
+            String eventType, JsonObject eventData) throws Exception {
+        JsonArray invocationsData = Json.createArray();
+        invocationsData.set(0,
+                createElementEventInvocation(element, eventType, eventData));
+        new ServerRpcHandler().handleInvocations(ui, 1, invocationsData);
+    }
+
+    public static JsonObject createElementEventInvocation(Element element,
+            String eventType, JsonObject eventData) {
+        StateNode node = getInvocationNode(element);
+        // Copied from ServerConnector
+        JsonObject message = Json.createObject();
+        message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
+        message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
+
+        if (eventData != null) {
+            message.put(JsonConstants.RPC_EVENT_DATA, eventData);
+        }
+
+        return message;
+    }
+
+    private static StateNode getInvocationNode(Element element) {
+        return TemplateElementStateProviderTest.getOverrideNode(element)
+                .orElse(element.getNode());
     }
 
 }

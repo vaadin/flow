@@ -34,8 +34,12 @@ import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
+import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
@@ -126,8 +130,16 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             ComponentMapping.class, TemplateMap.class,
             ParentGeneratorHolder.class, TemplateEventHandlerNames.class };
 
+    @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] rootNodeFeatures = Stream
             .concat(Stream.of(requiredFeatures), Stream.of(rootOnlyFeatures))
+            .toArray(Class[]::new);
+
+    @SuppressWarnings("unchecked")
+    private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
+            .of(OverrideElementData.class, ElementChildrenList.class,
+                    ParentGeneratorHolder.class, ComponentMapping.class,
+                    ElementPropertyMap.class, ElementListenerMap.class)
             .toArray(Class[]::new);
 
     private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
@@ -142,6 +154,15 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     public TemplateElementStateProvider(ElementTemplateNode templateNode) {
         assert templateNode != null;
         this.templateNode = templateNode;
+    }
+
+    /**
+     * Gets the template node for this state provider.
+     *
+     * @return the template node
+     */
+    public ElementTemplateNode getTemplateNode() {
+        return templateNode;
     }
 
     @Override
@@ -263,29 +284,29 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void insertChild(StateNode node, int index, Element child) {
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .insertChild(overrideNode, index, child));
     }
 
     @Override
     public void removeChild(StateNode node, int index) {
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .removeChild(overrideNode, index));
     }
 
     @Override
     public void removeChild(StateNode node, Element child) {
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .removeChild(overrideNode, child));
     }
 
     @Override
     public void removeAllChildren(StateNode node) {
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .removeAllChildren(overrideNode));
     }
 
-    private void modifyChildren(StateNode node,
+    private void modifyOverrideNode(StateNode node,
             BiConsumer<BasicElementStateProvider, StateNode> modifier) {
         if (templateNode.getChildCount() != 0) {
             throw new IllegalStateException(
@@ -301,34 +322,56 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     public EventRegistrationHandle addEventListener(StateNode node,
             String eventType, DomEventListener listener,
             String[] eventDataExpressions) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        ElementListenerMap listeners = getOrCreateOverrideNode(node)
+                .getFeature(ElementListenerMap.class);
+
+        return listeners.add(eventType, listener, eventDataExpressions);
     }
 
     @Override
     public Object getProperty(StateNode node, String name) {
-        return templateNode.getPropertyBinding(name)
-                .map(binding -> binding.getValue(node)).orElse(null);
+        if (templateNode.getPropertyBinding(name).isPresent()) {
+            return templateNode.getPropertyBinding(name)
+                    .map(binding -> binding.getValue(node)).orElse(null);
+        } else {
+            return getOverrideNode(node)
+                    .map(overrideNode -> BasicElementStateProvider.get()
+                            .getProperty(overrideNode, name))
+                    .orElse(null);
+        }
     }
 
     @Override
     public void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        checkModifiableProperty(name);
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
+                .setProperty(overrideNode, name, value, emitChange));
     }
 
     @Override
     public void removeProperty(StateNode node, String name) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        checkModifiableProperty(name);
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
+                .removeProperty(overrideNode, name));
     }
 
     @Override
     public boolean hasProperty(StateNode node, String name) {
-        return templateNode.getPropertyBinding(name).isPresent();
+        return templateNode.getPropertyBinding(name).isPresent()
+                || getOverrideNode(node)
+                        .map(overrideNode -> BasicElementStateProvider.get()
+                                .hasProperty(overrideNode, name))
+                        .orElse(false);
     }
 
     @Override
     public Stream<String> getPropertyNames(StateNode node) {
-        return templateNode.getPropertyNames();
+        Stream<String> regularProperties = getOverrideNode(node)
+                .map(BasicElementStateProvider.get()::getPropertyNames)
+                .orElse(Stream.empty());
+        return Stream.concat(templateNode.getPropertyNames(),
+                regularProperties);
     }
 
     @Override
@@ -431,5 +474,23 @@ public class TemplateElementStateProvider implements ElementStateProvider {
      */
     public static StateNode createSubModelNode() {
         return new StateNode(requiredFeatures);
+    }
+
+    /**
+     * Creates a new state node with all features needed for a state node use as
+     * an override node.
+     *
+     * @return a new state node, not <code>null</code>
+     */
+    public static StateNode createOverrideNode() {
+        return new StateNode(overrideNodeFeatures);
+    }
+
+    private void checkModifiableProperty(String name) {
+        if (templateNode.getPropertyBinding(name).isPresent()) {
+            throw new IllegalArgumentException(String.format(
+                    "Can't modify property '%s' with binding defined in a template",
+                    name));
+        }
     }
 }
