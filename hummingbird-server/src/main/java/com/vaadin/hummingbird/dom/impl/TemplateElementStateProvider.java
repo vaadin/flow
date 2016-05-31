@@ -215,7 +215,14 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public boolean hasAttribute(StateNode node, String attribute) {
-        return templateNode.getAttributeBinding(attribute).isPresent();
+        Optional<BindingValueProvider> provider = templateNode
+                .getAttributeBinding(attribute);
+        if (provider.isPresent()) {
+            return true;
+        }
+        Optional<StateNode> overrideNode = getOverrideNode(node);
+        return overrideNode.isPresent() && BasicElementStateProvider.get()
+                .hasAttribute(overrideNode.get(), attribute);
     }
 
     @Override
@@ -227,7 +234,11 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        return templateNode.getAttributeNames();
+        Stream<String> regularAttributes = getOverrideNode(node)
+                .map(BasicElementStateProvider.get()::getAttributeNames)
+                .orElse(Stream.empty());
+        return Stream.concat(templateNode.getAttributeNames(),
+                regularAttributes);
     }
 
     @Override
