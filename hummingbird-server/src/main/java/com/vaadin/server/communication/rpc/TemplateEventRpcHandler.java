@@ -32,7 +32,6 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
@@ -58,14 +57,9 @@ public class TemplateEventRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    public void handle(UI ui, JsonObject invocationJson) {
+    public void handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson
                 .hasKey(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
-
-        StateNode node = getNode(ui, invocationJson);
-        if (node == null) {
-            return;
-        }
         String methodName = invocationJson
                 .getString(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
         if (methodName == null) {

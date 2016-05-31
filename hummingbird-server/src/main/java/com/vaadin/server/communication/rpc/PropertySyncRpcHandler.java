@@ -21,7 +21,6 @@ import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.ui.UI;
 
 import elemental.json.JsonObject;
 
@@ -41,15 +40,11 @@ public class PropertySyncRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    public void handle(UI ui, JsonObject invocationJson) {
+    protected void handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_NODE);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
 
-        StateNode node = getNode(ui, invocationJson);
-        if (node == null) {
-            return;
-        }
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
         Serializable value = JsonCodec.decodeWithoutTypeInfo(
                 invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));

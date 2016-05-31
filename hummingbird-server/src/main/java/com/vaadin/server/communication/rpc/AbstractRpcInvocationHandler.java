@@ -32,6 +32,15 @@ import elemental.json.JsonObject;
 public abstract class AbstractRpcInvocationHandler
         implements RpcInvocationHandler {
 
+    @Override
+    public void handle(UI ui, JsonObject invocationJson) {
+        StateNode node = getNode(ui, invocationJson);
+        if (node == null) {
+            return;
+        }
+        handleNode(node, invocationJson);
+    }
+
     /**
      * Gets a node by {@code invocationJson} RPC data for the given {@code ui}.
      * 
@@ -62,11 +71,14 @@ public abstract class AbstractRpcInvocationHandler
         return node;
     }
 
-    private Logger getLogger() {
+    protected abstract void handleNode(StateNode node,
+            JsonObject invocationJson);
+
+    private static Logger getLogger() {
         return Logger.getLogger(AbstractRpcInvocationHandler.class.getName());
     }
 
-    private int getNodeId(JsonObject invocationJson) {
+    private static int getNodeId(JsonObject invocationJson) {
         return (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
     }
 }

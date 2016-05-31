@@ -20,7 +20,6 @@ import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -40,14 +39,9 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    public void handle(UI ui, JsonObject invocationJson) {
+    public void handleNode(StateNode node, JsonObject invocationJson) {
         assert invocationJson.hasKey(JsonConstants.RPC_NODE);
         assert invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE);
-
-        StateNode node = getNode(ui, invocationJson);
-        if (node == null) {
-            return;
-        }
 
         String eventType = invocationJson
                 .getString(JsonConstants.RPC_EVENT_TYPE);

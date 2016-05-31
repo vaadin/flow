@@ -31,7 +31,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
-public class NavigationRpcHandler extends AbstractRpcInvocationHandler {
+public class NavigationRpcHandler implements RpcInvocationHandler {
 
     @Override
     public String getRpcType() {
