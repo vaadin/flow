@@ -21,9 +21,9 @@ import com.vaadin.ui.ComponentEvent;
 
 /**
  * Generic listener for component events.
- * 
+ *
  * @author Vaadin Ltd
- * 
+ *
  * @param <T>
  *            component event type
  */
@@ -33,7 +33,7 @@ public interface ComponentEventListener<T extends ComponentEvent<?>>
 
     /**
      * Invoked when a component event has been fired.
-     * 
+     *
      * @param event
      *            component event
      */

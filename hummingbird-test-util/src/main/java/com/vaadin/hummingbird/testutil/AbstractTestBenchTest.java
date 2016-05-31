@@ -62,7 +62,26 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     protected void open(String... parameters) {
-        String url = getTestURL();
+        String url = getTestURL(parameters);
+
+        getDriver().get(url);
+    }
+
+    /**
+     * Returns the URL to be used for the test.
+     *
+     * @param parameters
+     *            query string parameters to add to the url
+     *
+     * @return the URL for the test
+     */
+    protected String getTestURL(String... parameters) {
+        String url = getRootURL();
+        while (url.endsWith("/")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        url = url + getTestPath();
+
         if (parameters != null && parameters.length != 0) {
             if (!url.contains("?")) {
                 url += "?";
@@ -73,20 +92,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             url += Arrays.stream(parameters).collect(Collectors.joining("&"));
         }
 
-        getDriver().get(url);
-    }
-
-    /**
-     * Returns the URL to be used for the test.
-     *
-     * @return the URL for the test
-     */
-    protected String getTestURL() {
-        String url = getRootURL();
-        while (url.endsWith("/")) {
-            url = url.substring(0, url.length() - 1);
-        }
-        return url + getTestPath();
+        return url;
     }
 
     /**

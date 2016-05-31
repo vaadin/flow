@@ -15,25 +15,34 @@
  */
 package com.vaadin.hummingbird.dom;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
+import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
-import com.vaadin.hummingbird.nodefeature.TemplateMetadataFeature;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
@@ -42,11 +51,20 @@ import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
+import com.vaadin.hummingbird.template.parser.TemplateResolver;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
 public class TemplateElementStateProviderTest {
+
+    public static class NullTemplateResolver implements TemplateResolver {
+        @Override
+        public InputStream resolve(String relativeFilename) throws IOException {
+            throw new IOException("Null resolver is used");
+        }
+    }
+
     @Test
     public void testEmptyElement() {
         ElementTemplateBuilder builder = new ElementTemplateBuilder("div");
@@ -427,10 +445,201 @@ public class TemplateElementStateProviderTest {
 
         Assert.assertEquals("foo bar", element.getAttribute("class"));
 
+        assertClassList(element.getClassList(), "foo", "bar");
+    }
+
+    @Test
+    public void dynamicClassNames() {
+        Element element = createElement(
+                "<div class='foo' [class.bar]=hasBar [class.baz]=hasBaz></div>");
         ClassList classList = element.getClassList();
-        Assert.assertEquals(2, classList.size());
-        Assert.assertTrue(classList.contains("foo"));
-        Assert.assertTrue(classList.contains("bar"));
+
+        Assert.assertEquals("foo", element.getAttribute("class"));
+
+        assertClassList(classList, "foo");
+        assertNotClassList(classList, "bar", "baz");
+
+        ModelMap modelMap = element.getNode().getFeature(ModelMap.class);
+
+        modelMap.setValue("hasBar", "");
+        modelMap.setValue("hasBaz", "yes");
+        assertClassList(classList, "foo", "baz");
+        assertNotClassList(classList, "bar");
+
+        modelMap.setValue("hasBar", 5);
+        modelMap.setValue("hasBaz", 0);
+        assertClassList(classList, "foo", "bar");
+        assertNotClassList(classList, "baz");
+
+        modelMap.setValue("hasBar", false);
+        modelMap.setValue("hasBaz", true);
+        assertClassList(classList, "foo", "baz");
+        assertNotClassList(classList, "bar");
+    }
+
+    @Test
+    public void setProperty_regularProperty_elementDelegatesPropertyToOverrideNode() {
+        TemplateNode node = TemplateParser.parse("<div></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setProperty("prop", "foo");
+
+        StateNode overrideNode = element.getNode()
+                .getFeature(TemplateOverridesMap.class).get(node, false);
+        Assert.assertTrue(BasicElementStateProvider.get()
+                .hasProperty(overrideNode, "prop"));
+        Assert.assertEquals("foo", BasicElementStateProvider.get()
+                .getProperty(overrideNode, "prop"));
+        List<String> props = BasicElementStateProvider.get()
+                .getPropertyNames(overrideNode).collect(Collectors.toList());
+        Assert.assertEquals(1, props.size());
+        Assert.assertEquals("prop", props.get(0));
+    }
+
+    @Test
+    public void setProperty_regularProperty_hasPropertyAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setProperty("prop", "foo");
+
+        Assert.assertTrue(element.hasProperty("prop"));
+        Assert.assertEquals("foo", element.getProperty("prop"));
+        List<String> props = element.getPropertyNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, props.size());
+        Assert.assertEquals("prop", props.get(0));
+    }
+
+    @Test
+    public void setRegularProperty_templateHasBoundProperty_hasPropertyAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div [foo]='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setProperty("prop", "foo");
+
+        Assert.assertTrue(element.hasProperty("prop"));
+        Assert.assertEquals("foo", element.getProperty("prop"));
+        Set<String> props = element.getPropertyNames()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(2, props.size());
+        Assert.assertTrue(props.contains("foo"));
+        Assert.assertTrue(props.contains("prop"));
+    }
+
+    @Test
+    public void removeRegularProperty_templateHasBoundProperty_hasPropertyAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div [foo]='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setProperty("prop", "foo");
+
+        element.removeProperty("prop");
+
+        Assert.assertFalse(element.hasProperty("prop"));
+        Set<String> props = element.getPropertyNames()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("foo"));
+    }
+
+    @Test
+    public void removeProperty_regularProperty_hasNoProperty() {
+        TemplateNode node = TemplateParser.parse("<div></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setProperty("prop", "foo");
+        element.removeProperty("prop");
+
+        Assert.assertFalse(element.hasProperty("prop"));
+        List<String> props = element.getPropertyNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(0, props.size());
+    }
+
+    @Test
+    public void removeProperty_regularProperty_elementDelegatesPropertyToOverrideNode() {
+        TemplateNode node = TemplateParser.parse("<div></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.removeProperty("prop");
+
+        StateNode overrideNode = element.getNode()
+                .getFeature(TemplateOverridesMap.class).get(node, false);
+        Assert.assertFalse(BasicElementStateProvider.get()
+                .hasProperty(overrideNode, "prop"));
+        List<String> props = BasicElementStateProvider.get()
+                .getPropertyNames(overrideNode).collect(Collectors.toList());
+        Assert.assertEquals(0, props.size());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setProperty_boundProperty_throwException() {
+        Element element = createElement("<div [prop]='value'></div>");
+        element.setProperty("prop", "foo");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeProperty_boundProperty_throwException() {
+        Element element = createElement("<div [prop]='value'></div>");
+        element.removeProperty("prop");
+    }
+
+    private void assertClassList(ClassList classList, String... expectedNames) {
+        HashSet<String> expectedSet = new HashSet<>(
+                Arrays.asList(expectedNames));
+
+        Assert.assertEquals(expectedNames.length, classList.size());
+        Assert.assertEquals(expectedNames.length, classList.stream().count());
+        Assert.assertEquals(expectedNames.length,
+                iteratorToStream(classList.iterator()).count());
+
+        for (String className : expectedNames) {
+            Assert.assertTrue(classList.contains(className));
+        }
+
+        Assert.assertEquals(expectedSet, classList);
+        Assert.assertEquals(classList, expectedSet);
+
+        // Does classList.iterator() contain the right values?
+        Assert.assertEquals(expectedSet, new HashSet<>(classList));
+
+        // Does classList.stream() contain the right values?
+        Assert.assertEquals(expectedSet,
+                classList.stream().collect(Collectors.toSet()));
+    }
+
+    private Stream<String> iteratorToStream(Iterator<String> iterator) {
+        return StreamSupport.stream(Spliterators
+                .spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+    }
+
+    private void assertNotClassList(ClassList classList,
+            String... forbiddenClassNames) {
+        for (String className : forbiddenClassNames) {
+            Assert.assertFalse(classList.contains(className));
+        }
+
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void classListAddThrows() {
+        // Not allowed until we explicitly support override node data for
+        // ClassList
+        createElement("<input>").getClassList().add("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void classListRemoveThrows() {
+        createElement("<input class=foo>").getClassList().remove("foo");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void classListIteratorRemoveThrows() {
+        Iterator<String> iterator = createElement("<input class=foo>")
+                .getClassList().iterator();
+        iterator.next();
+        iterator.remove();
     }
 
     @Test
@@ -460,7 +669,7 @@ public class TemplateElementStateProviderTest {
         assertHasFeatures(TemplateElementStateProvider.createRootNode(),
                 ModelMap.class, TemplateOverridesMap.class, TemplateMap.class,
                 ComponentMapping.class, ParentGeneratorHolder.class,
-                TemplateMetadataFeature.class);
+                TemplateEventHandlerNames.class);
     }
 
     @Test
@@ -489,7 +698,8 @@ public class TemplateElementStateProviderTest {
     }
 
     private static Element createElement(String template) {
-        return createElement(TemplateParser.parse(template));
+        return createElement(
+                TemplateParser.parse(template, new NullTemplateResolver()));
     }
 
     private static Element createElement(TemplateNodeBuilder builder) {
@@ -502,4 +712,18 @@ public class TemplateElementStateProviderTest {
 
         return Element.get(stateNode);
     }
+
+    public static Optional<StateNode> getOverrideNode(Element element) {
+        StateNode node = element.getNode();
+        if (!node.hasFeature(TemplateOverridesMap.class)) {
+            return Optional.empty();
+        } else {
+            ElementStateProvider stateProvider = element.getStateProvider();
+            assert stateProvider instanceof TemplateElementStateProvider;
+            return Optional.of(node.getFeature(TemplateOverridesMap.class)
+                    .get(((TemplateElementStateProvider) stateProvider)
+                            .getTemplateNode(), false));
+        }
+    }
+
 }

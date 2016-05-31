@@ -32,7 +32,7 @@ import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
  * The factory that handles *ngFor template elements.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -51,6 +51,7 @@ public class ForElementBuilderFactory
 
     @Override
     public TemplateNodeBuilder createBuilder(Element element,
+            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         String ngFor = element.attr(NG_FOR);
         element.removeAttr(NG_FOR);

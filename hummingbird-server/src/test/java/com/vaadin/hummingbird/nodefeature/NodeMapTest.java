@@ -158,7 +158,7 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.put("key", "value");
         collectChanges(nodeMap);
 
-        nodeMap.resetChanges();
+        nodeMap.generateChangesFromEmpty();
 
         List<NodeChange> changes = collectChanges(nodeMap);
         Assert.assertEquals(1, changes.size());
@@ -171,7 +171,7 @@ public class NodeMapTest extends AbstractNodeFeatureTest<ElementPropertyMap> {
         nodeMap.put("key", "value");
         collectChanges(nodeMap);
 
-        nodeMap.resetChanges();
+        nodeMap.generateChangesFromEmpty();
         nodeMap.remove("key");
 
         List<NodeChange> changes = collectChanges(nodeMap);

@@ -23,7 +23,7 @@ import elemental.json.JsonObject;
 /**
  * Abstract binding value provider implementation which provides method to
  * produce initial JsonObject for {@link #toJson()} method.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -43,14 +43,14 @@ public abstract class AbstractBindingValueProvider
      * <p>
      * The properties correspond to the client side generic Binding class which
      * has two methods
-     * 
+     *
      * <pre>
      * <code>  
      *  String getType();
      *  String getValue();
      *  </code>
      * </pre>
-     * 
+     *
      * @param type
      *            the binding type
      * @param value

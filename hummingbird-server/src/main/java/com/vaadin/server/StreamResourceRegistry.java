@@ -118,9 +118,9 @@ public class StreamResourceRegistry implements Serializable {
      * <p>
      * The URI won't be handled (and won't work) if {@code resource} is not
      * registered in the session.
-     * 
+     *
      * @see #registerResource(StreamResource)
-     * 
+     *
      * @param resource
      *            stream resource
      * @return resource URI

@@ -62,7 +62,8 @@ public class WidgetUtil {
      * @return the corresponding absolute URL as a string
      */
     public static String getAbsoluteUrl(String url) {
-        AnchorElement a = Browser.getDocument().createAnchorElement();
+        AnchorElement a = (AnchorElement) Browser.getDocument()
+                .createElement("a");
         a.setHref(url);
         return a.getHref();
     }
@@ -91,9 +92,9 @@ public class WidgetUtil {
      */
     public static native <T extends JavaScriptObject> T crazyJsoCast(
             Object value)
-            /*-{
-                return value;
-            }-*/;
+    /*-{
+        return value;
+    }-*/;
 
     /**
      * Converts a JSON value to a formatted string.
@@ -137,9 +138,9 @@ public class WidgetUtil {
      */
     public static native void setJsProperty(Object object, String name,
             Object value)
-            /*-{
-                object[name] = value;
-            }-*/;
+    /*-{
+        object[name] = value;
+    }-*/;
 
     /**
      * Retrieves the value of a JavaScript property.
@@ -217,5 +218,19 @@ public class WidgetUtil {
     public static native JsonObject createJsonObjectWithoutPrototype()
     /*-{
       return $wnd.Object.create(null);
+    }-*/;
+
+    /**
+     * Gets the boolean value of the provided value based on JavaScript
+     * semantics.
+     *
+     * @param value
+     *            the value to check for truthness
+     * @return <code>true</code> if the provided value is trueish according to
+     *         JavaScript semantics, otherwise <code>false</code>
+     */
+    public static native boolean isTrueish(Object value)
+    /*-{
+        return !!value;
     }-*/;
 }

@@ -20,13 +20,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * A template AST node representing a regular element.
@@ -45,6 +50,7 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
 
     private final HashMap<String, BindingValueProvider> properties;
     private final HashMap<String, BindingValueProvider> attributes;
+    private final HashMap<String, BindingValueProvider> classNames;
     private final HashMap<String, String> eventHandlers;
 
     /**
@@ -61,6 +67,9 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
      * @param attributes
      *            a map of attribute bindings for this node, not
      *            <code>null</code>
+     * @param classNames
+     *            a map of class name bindings for this node, not
+     *            <code>null</code>
      * @param eventHandlers
      *            a map of event handlers for this node, not <code>null</code>
      * @param childBuilders
@@ -69,11 +78,14 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
     public ElementTemplateNode(TemplateNode parent, String tag,
             Map<String, BindingValueProvider> properties,
             Map<String, BindingValueProvider> attributes,
+            Map<String, BindingValueProvider> classNames,
             Map<String, String> eventHandlers,
             List<TemplateNodeBuilder> childBuilders) {
         super(parent);
         assert tag != null;
         assert properties != null;
+        assert attributes != null;
+        assert classNames != null;
         assert childBuilders != null;
         assert eventHandlers != null;
 
@@ -82,6 +94,7 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
         // Defensive copies
         this.properties = new HashMap<>(properties);
         this.attributes = new HashMap<>(attributes);
+        this.classNames = new HashMap<>(classNames);
         this.eventHandlers = new HashMap<>(eventHandlers);
 
         children = new ArrayList<>(childBuilders.size());
@@ -114,6 +127,15 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
      */
     public Stream<String> getAttributeNames() {
         return attributes.keySet().stream();
+    }
+
+    /**
+     * Gets all the class names that have a binding for this element.
+     *
+     * @return the class names
+     */
+    public Stream<String> getClassNames() {
+        return classNames.keySet().stream();
     }
 
     /**
@@ -150,6 +172,18 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
     }
 
     /**
+     * Gets the class binding for the given name.
+     *
+     * @param name
+     *            the class name
+     * @return an optional template binding for the class name, empty if there
+     *         is no class binding with the given name
+     */
+    public Optional<BindingValueProvider> getClassNameBinding(String name) {
+        return Optional.ofNullable(classNames.get(name));
+    }
+
+    /**
      * Gets the event handler expression for the given event name, if present.
      *
      * @param event
@@ -182,34 +216,65 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
 
         json.put("tag", tag);
 
-        if (!properties.isEmpty()) {
-            JsonObject propertiesJson = Json.createObject();
+        bindingsToJson(properties).ifPresent(
+                propertiesJson -> json.put("properties", propertiesJson));
 
-            properties.forEach((name, binding) -> propertiesJson.put(name,
-                    binding.toJson()));
+        bindingsToJson(attributes).ifPresent(
+                attributesJson -> json.put("attributes", attributesJson));
 
-            json.put("properties", propertiesJson);
-        }
+        bindingsToJson(classNames).ifPresent(
+                classNamesJson -> json.put("classNames", classNamesJson));
 
-        if (!attributes.isEmpty()) {
-            JsonObject attributesJson = Json.createObject();
-
-            attributes.forEach((name, binding) -> attributesJson.put(name,
-                    binding.toJson()));
-
-            json.put("attributes", attributesJson);
-        }
-
-        if (!eventHandlers.isEmpty()) {
-            JsonObject eventsJson = Json.createObject();
-
-            eventHandlers.forEach(
-                    (event, handler) -> eventsJson.put(event, handler));
-
-            json.put("eventHandlers", eventsJson);
-
-        }
+        mapToJson(eventHandlers, Json::create)
+                .ifPresent(eventHandlersJson -> json.put("eventHandlers",
+                        eventHandlersJson));
 
         // Super class takes care of the children
+    }
+
+    private static Optional<JsonObject> bindingsToJson(
+            Map<String, BindingValueProvider> bindings) {
+        return mapToJson(bindings, BindingValueProvider::toJson);
+    }
+
+    private static <T> Optional<JsonObject> mapToJson(Map<String, T> map,
+            Function<T, JsonValue> toJson) {
+        if (map.isEmpty()) {
+            return Optional.empty();
+        } else {
+            JsonObject json = Json.createObject();
+
+            map.forEach((name, value) -> json.put(name, toJson.apply(value)));
+
+            return Optional.of(json);
+        }
+    }
+
+    @Override
+    public Optional<Element> findElement(StateNode stateNode, String id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Id cannot be null");
+        }
+        if (attributes.containsKey("id")) {
+            BindingValueProvider binding = attributes.get("id");
+            if (id.equals(binding.getValue(stateNode))) {
+                return Optional.of(getElement(0, stateNode));
+            }
+        }
+
+        List<Element> elements = children.stream()
+                .map(child -> child.findElement(stateNode, id))
+                .filter(Optional::isPresent).map(Optional::get)
+                .collect(Collectors.toList());
+
+        if (elements.isEmpty()) {
+            return Optional.empty();
+        } else if (elements.size() == 1) {
+            return Optional.of(elements.get(0));
+        } else {
+            throw new IllegalArgumentException("Multiple (" + elements.size()
+                    + ") elements were found when looking for an element with id '"
+                    + id + "'");
+        }
     }
 }

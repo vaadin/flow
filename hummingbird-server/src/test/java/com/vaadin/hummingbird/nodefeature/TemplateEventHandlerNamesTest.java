@@ -32,11 +32,13 @@ import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
+import elemental.json.JsonValue;
+
 /**
  * @author Vaadin Ltd
  *
  */
-public class TemplateMetadataFeatureTest {
+public class TemplateEventHandlerNamesTest {
 
     static class Template1 extends InlineTemplate {
         public Template1() {
@@ -49,10 +51,58 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class TemplateWithMethodParameters extends Template1 {
+    static class TemplateWithBadParametersMethod extends Template1 {
 
         @EventHandler
-        protected void method(String arg) {
+        protected void method1(char arg) {
+
+        }
+    }
+
+    static class TemplateWithGoodParametersMethods extends Template1 {
+
+        @EventHandler
+        protected void method1(String arg) {
+
+        }
+
+        @EventHandler
+        protected void method2(Integer arg) {
+
+        }
+
+        @EventHandler
+        protected void method3(Boolean arg) {
+
+        }
+
+        @EventHandler
+        protected void method4(JsonValue arg) {
+
+        }
+
+        @EventHandler
+        protected void method5(Integer[] arg) {
+
+        }
+
+        @EventHandler
+        protected void method6(String... arg) {
+
+        }
+
+        @EventHandler
+        protected void method7(int arg) {
+
+        }
+
+        @EventHandler
+        protected void method8(double arg) {
+
+        }
+
+        @EventHandler
+        protected void method9(boolean arg) {
 
         }
     }
@@ -93,7 +143,7 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
-    static class ChildTemplateOverridingMethod extends Template1 {
+    static class ChildTemplateWithOverriddenMethod extends Template1 {
 
         @Override
         @EventHandler
@@ -103,7 +153,7 @@ public class TemplateMetadataFeatureTest {
     }
 
     static class ChildTemplateOfIncorrectTemplate
-            extends TemplateWithMethodParameters {
+            extends TemplateWithBadParametersMethod {
 
         @Override
         @EventHandler
@@ -112,27 +162,35 @@ public class TemplateMetadataFeatureTest {
         }
     }
 
+    static class ChildTemplateWithOverloadedMethod extends Template1 {
+
+        @EventHandler
+        protected void method(int i) {
+
+        }
+    }
+
     @Test
     public void noValuesBeforeAttach() {
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
+                TemplateEventHandlerNames.class);
         stateNode.getFeature(ComponentMapping.class)
                 .setComponent(new Template1());
 
-        TemplateMetadataFeature feature = stateNode
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = stateNode
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(0, feature.size());
     }
 
     @Test
-    public void attach_metadataContainsTemplateMethod() {
+    public void attach_handlersContainsTemplateMethod() {
         UI ui = new UI();
 
         Template template = new Template1();
         ui.add(template);
 
-        TemplateMetadataFeature feature = template.getElement().getNode()
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(Template1.class).findFirst().get(),
@@ -140,11 +198,43 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void attach_methodHasArg_ExceptionIsThrown() {
+    public void attach_methodHasBadArg_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new TemplateWithMethodParameters();
+        Template template = new TemplateWithBadParametersMethod();
         ui.add(template);
+    }
+
+    @Test
+    public void attach_twoMethodsWithTheSameName_ExceptionIsThrown() {
+        UI ui = new UI();
+
+        Template template = new ChildTemplateWithOverriddenMethod();
+        ui.add(template);
+    }
+
+    @Test
+    public void attach_methodHasGoodArg_ExceptionIsThrown() {
+        UI ui = new UI();
+
+        Template template = new TemplateWithGoodParametersMethods();
+        ui.add(template);
+
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
+        Assert.assertEquals(10, feature.size());
+
+        HashSet<String> methods = getDeclaredMethods(
+                TemplateWithGoodParametersMethods.class)
+                        .collect(Collectors.toCollection(HashSet::new));
+        methods.add(getDeclaredMethods(Template1.class).findFirst().get());
+
+        for (int i = 0; i < feature.size(); i++) {
+            methods.remove(feature.get(i));
+        }
+        Assert.assertTrue(
+                "Feature doesn't contain methods: " + methods.toString(),
+                methods.isEmpty());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -164,14 +254,14 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test
-    public void attach_methodWithUncheckedException_metadataContainsTemplateMethod() {
+    public void attach_methodWithUncheckedException_handlersContainsTemplateMethod() {
         UI ui = new UI();
 
         Template template = new TemplateWithMethodDeclaringUncheckedException();
         ui.add(template);
 
-        TemplateMetadataFeature feature = template.getElement().getNode()
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(2, feature.size());
         Assert.assertEquals(getDeclaredMethods(
                 TemplateWithMethodDeclaringUncheckedException.class).findFirst()
@@ -180,14 +270,14 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test
-    public void attach_metadataContainsAllTemplateMethods() {
+    public void attach_handlersContainsAllTemplateMethods() {
         UI ui = new UI();
 
         Template template = new ChildTemplateWithMultipleMethods();
         ui.add(template);
 
-        TemplateMetadataFeature feature = template.getElement().getNode()
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(3, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
@@ -204,17 +294,17 @@ public class TemplateMetadataFeatureTest {
     }
 
     @Test
-    public void attach_metadataContainsOnlyOneTemplateMethod() {
+    public void attach_handlersContainsOnlyOneTemplateMethod() {
         UI ui = new UI();
 
-        Template template = new ChildTemplateOverridingMethod();
+        Template template = new ChildTemplateWithOverriddenMethod();
         ui.add(template);
 
-        TemplateMetadataFeature feature = template.getElement().getNode()
-                .getFeature(TemplateMetadataFeature.class);
+        TemplateEventHandlerNames feature = template.getElement().getNode()
+                .getFeature(TemplateEventHandlerNames.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
-                getDeclaredMethods(ChildTemplateOverridingMethod.class)
+                getDeclaredMethods(ChildTemplateWithOverriddenMethod.class)
                         .findFirst().get(),
                 feature.get(0));
     }
@@ -227,11 +317,19 @@ public class TemplateMetadataFeatureTest {
         ui.add(template);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void attach_overloadedMethod_ExceptionIsThrown() {
+        UI ui = new UI();
+
+        Template template = new ChildTemplateWithOverloadedMethod();
+        ui.add(template);
+    }
+
     @Test(expected = AssertionError.class)
     public void attach_noFeature() {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
-        StateNode stateNode = new StateNode(TemplateMetadataFeature.class);
+        StateNode stateNode = new StateNode(TemplateEventHandlerNames.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
     }
@@ -241,7 +339,7 @@ public class TemplateMetadataFeatureTest {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateMetadataFeature.class);
+                TemplateEventHandlerNames.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
     }

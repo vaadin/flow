@@ -46,7 +46,6 @@ import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.template.AbstractControlTemplateNode;
 import com.vaadin.server.StreamResource;
-import com.vaadin.ui.Component;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -363,19 +362,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
     public Set<String> getSynchronizedPropertyEvents(StateNode node) {
         return node.getFeature(SynchronizedPropertyEventsList.class)
                 .getSynchronizedPropertyEvents();
-    }
-
-    @Override
-    public void setComponent(StateNode node, Component component) {
-        assert node != null;
-        assert component != null;
-        node.getFeature(ComponentMapping.class).setComponent(component);
-    }
-
-    @Override
-    public Optional<Component> getComponent(StateNode node) {
-        assert node != null;
-        return node.getFeature(ComponentMapping.class).getComponent();
     }
 
     @Override

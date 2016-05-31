@@ -26,7 +26,7 @@ import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 
 /**
  * The factory that handles "@child@" template.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -42,6 +42,7 @@ public class ChildTextNodeBuilderFactory
 
     @Override
     public TemplateNodeBuilder createBuilder(TextNode node,
+            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         return new ChildSlotBuilder();
     }

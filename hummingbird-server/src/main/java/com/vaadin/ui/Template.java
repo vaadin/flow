@@ -15,10 +15,16 @@
  */
 package com.vaadin.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.Optional;
+import java.util.stream.Stream;
 
+import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlTemplate;
+import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
@@ -26,9 +32,15 @@ import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.RelativeFileResolver;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.hummingbird.template.model.TemplateModel;
+import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
+import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
+import com.vaadin.hummingbird.template.parser.TemplateResolver;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Component for declaratively defined element structures. The structure of a
@@ -57,6 +69,8 @@ public abstract class Template extends Component implements HasChildView {
     private final StateNode stateNode = TemplateElementStateProvider
             .createRootNode();
 
+    private TemplateModel model;
+
     /**
      * Creates a new template.
      */
@@ -70,6 +84,7 @@ public abstract class Template extends Component implements HasChildView {
         } else {
             setTemplateElement(annotation.value());
         }
+
     }
 
     /**
@@ -97,28 +112,32 @@ public abstract class Template extends Component implements HasChildView {
         // Will set element later
         super(null);
 
-        setTemplateElement(inputStream);
+        // No support for @include@ when using this constructor right now
+        setTemplateElement(inputStream, relativeFilename -> {
+            throw new IOException("No template resolver defined");
+        });
     }
 
-    private void setTemplateElement(String templateFileName) {
-        if (templateFileName == null) {
+    private void setTemplateElement(String templateFileNameAndPath) {
+        if (templateFileNameAndPath == null) {
             throw new IllegalArgumentException(
                     "HTML template file name cannot be null");
         }
-        InputStream templateContentStream = getClass()
-                .getResourceAsStream(templateFileName);
-        if (templateContentStream == null) {
-            throw new IllegalArgumentException(
-                    templateFileName + " not found on the classpath");
-        }
-        setTemplateElement(templateContentStream);
+        RelativeFileResolver templateResolver = new RelativeFileResolver(
+                getClass(), templateFileNameAndPath);
+
+        String templateFileName = new File(templateFileNameAndPath).getName();
+        InputStream templateContentStream = templateResolver
+                .resolve(templateFileName);
+        setTemplateElement(templateContentStream, templateResolver);
     }
 
-    private void setTemplateElement(InputStream inputStream) {
+    private void setTemplateElement(InputStream inputStream,
+            TemplateResolver templateResolver) {
         try (InputStream templateContentStream = inputStream) {
 
             TemplateNode templateRoot = TemplateParser
-                    .parse(templateContentStream);
+                    .parse(templateContentStream, templateResolver);
 
             stateNode.getFeature(TemplateMap.class)
                     .setRootTemplate(templateRoot);
@@ -129,6 +148,72 @@ public abstract class Template extends Component implements HasChildView {
         } catch (IOException e) {
             throw new TemplateParseException("Error reading template", e);
         }
+
+        mapComponents(getClass());
+    }
+
+    private void mapComponents(Class<?> cls) {
+        if (cls.getSuperclass() != Template.class) {
+            // Parent fields
+            mapComponents(cls.getSuperclass());
+        }
+
+        Stream<Field> annotatedComponentFields = Stream
+                .of(cls.getDeclaredFields())
+                .filter(field -> !field.isSynthetic());
+
+        annotatedComponentFields.forEach(this::maybeMapComponentField);
+    }
+
+    private void maybeMapComponentField(Field field) {
+        Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
+                Id.class);
+        if (!idAnnotation.isPresent()) {
+            return;
+        }
+        String id = idAnnotation.get().value();
+
+        if (!Component.class.isAssignableFrom(field.getType())) {
+            throw new IllegalArgumentException("The field '" + field.getName()
+                    + "' in " + getClass().getName() + " has an @"
+                    + Id.class.getSimpleName()
+                    + " annotation but the field type '"
+                    + field.getType().getName() + "' does not extend "
+                    + Component.class.getSimpleName());
+        }
+
+        String fieldName = field.getName();
+        @SuppressWarnings("unchecked")
+        Class<? extends Component> componentType = (Class<? extends Component>) field
+                .getType();
+
+        Optional<Element> element = getElementById(id);
+        if (!element.isPresent()) {
+            throw new IllegalArgumentException("No element with id '" + id
+                    + "' found while binding field '" + fieldName + "' in "
+                    + getClass().getName());
+        }
+
+        if (element.get().equals(getElement())) {
+            throw new IllegalArgumentException(
+                    "Cannot map the root element of the template. This is always mapped to the template instance itself ("
+                            + getClass().getName() + ")");
+        }
+        Component c = Component.from(element.get(), componentType);
+        ReflectTools.setJavaFieldValue(this, field, c);
+    }
+
+    /**
+     * Finds an element with the given id inside this template.
+     *
+     * @param id
+     *            the id to look for
+     * @return an optional element with the id, or an empty Optional if no
+     *         element with the given id was found
+     */
+    private Optional<Element> getElementById(String id) {
+        return stateNode.getFeature(TemplateMap.class).getRootTemplate()
+                .findElement(stateNode, id);
     }
 
     @Override
@@ -139,5 +224,29 @@ public abstract class Template extends Component implements HasChildView {
         } else {
             templateMap.setChild(childView.getElement().getNode());
         }
+    }
+
+    /**
+     * Returns the {@link TemplateModel model} of this template.
+     * <p>
+     * The type of the model will be the type that this method returns in the
+     * instance it is invoked on - meaning that you should override this method
+     * and return your own model type that extends {@link TemplateModel}.
+     *
+     * @return the model of this template
+     * @see TemplateModel
+     */
+    protected TemplateModel getModel() {
+        if (model == null) {
+            model = createTemplateModelInstance();
+        }
+        return model;
+    }
+
+    private TemplateModel createTemplateModelInstance() {
+        Class<? extends TemplateModel> modelType = TemplateModelTypeParser
+                .getType(getClass());
+
+        return TemplateModelProxyHandler.createModelProxy(stateNode, modelType);
     }
 }

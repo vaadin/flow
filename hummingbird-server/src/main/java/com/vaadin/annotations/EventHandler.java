@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * Makes annotated method available as an event handler method which will be
  * invoked once its client side reference is invoked using notation
  * "$server.method()".
- * 
+ *
  * @author Vaadin Ltd
  *
  */

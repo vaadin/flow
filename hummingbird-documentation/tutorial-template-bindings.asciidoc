@@ -29,3 +29,7 @@ The next example creates an image link where the `linkTarget` property from the 
 
 [WARNING]
 `[name]="binding"` defines that the element _property_ named `name` should get it's value from the model property named `binding`, whereas `name="binding"` (i.e. without brackets) defines that the element _attribute_ named `name` should have the value `binding` regardless of any value in the model.
+
+== Binding Class Names
+
+There is special support for binding class names in a template, see <<tutorial-template-class-name-binding#,Binding Class Names in a Template>>.

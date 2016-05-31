@@ -18,7 +18,9 @@ package com.vaadin.hummingbird.nodefeature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -38,9 +40,7 @@ public abstract class NodeMap extends NodeFeature {
     private static final Serializable REMOVED_MARKER = new UniqueSerializable() {
     };
 
-    private HashMap<String, Serializable> values = new HashMap<>();
-
-    private HashMap<String, Serializable> changes = new HashMap<>();
+    private HashMap<String, Serializable> values;
 
     /**
      * Creates a new map feature for the given node.
@@ -65,6 +65,12 @@ public abstract class NodeMap extends NodeFeature {
         doPut(key, value, true);
     }
 
+    private void ensureValues() {
+        if (values == null) {
+            values = new HashMap<>();
+        }
+    }
+
     /**
      * Stores a value with the given key, replacing any value previously stored
      * with the same key.
@@ -87,6 +93,7 @@ public abstract class NodeMap extends NodeFeature {
         } else {
             setUnChanged(key);
         }
+        ensureValues();
         Object oldValue = values.put(key, value);
 
         detatchPotentialChild(oldValue);
@@ -104,6 +111,9 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected Object get(String key) {
         setAccessed(key);
+        if (values == null) {
+            return null;
+        }
         return values.get(key);
     }
 
@@ -185,6 +195,9 @@ public abstract class NodeMap extends NodeFeature {
      * @return a set containing all the defined keys
      */
     protected Set<String> keySet() {
+        if (values == null) {
+            return Collections.emptySet();
+        }
         return values.keySet();
     }
 
@@ -198,6 +211,9 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected boolean contains(String key) {
         setAccessed(key);
+        if (values == null) {
+            return false;
+        }
         return values.containsKey(key);
     }
 
@@ -209,8 +225,14 @@ public abstract class NodeMap extends NodeFeature {
      */
     protected void remove(String key) {
         setChanged(key);
+        if (values == null) {
+            return;
+        }
         Object oldValue = values.remove(key);
         detatchPotentialChild(oldValue);
+        if (values.isEmpty()) {
+            values = null;
+        }
     }
 
     /**
@@ -224,7 +246,7 @@ public abstract class NodeMap extends NodeFeature {
 
     private void setUnChanged(String key) {
         assert key != null;
-        changes.remove(key);
+        getChangeTracker().remove(key);
     }
 
     private void setChanged(String key) {
@@ -232,9 +254,11 @@ public abstract class NodeMap extends NodeFeature {
 
         getNode().markAsDirty();
 
+        Map<String, Serializable> changes = getChangeTracker();
+
         if (!changes.containsKey(key)) {
             // Record this as changed for the collection logic
-            if (values.containsKey(key)) {
+            if (values != null && values.containsKey(key)) {
                 Serializable oldValue = values.get(key);
                 changes.put(key, oldValue);
             } else {
@@ -245,6 +269,10 @@ public abstract class NodeMap extends NodeFeature {
         // TODO notify listeners
     }
 
+    private HashMap<String, Serializable> getChangeTracker() {
+        return getNode().getChangeTracker(this, HashMap::new);
+    }
+
     private void setAccessed(String key) {
         assert key != null;
 
@@ -253,8 +281,8 @@ public abstract class NodeMap extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        changes.forEach((key, earlierValue) -> {
-            boolean containsNow = values.containsKey(key);
+        getChangeTracker().forEach((key, earlierValue) -> {
+            boolean containsNow = values != null && values.containsKey(key);
             boolean containedEarlier = earlierValue != REMOVED_MARKER;
             if (containedEarlier && !containsNow) {
                 collector.accept(new MapRemoveChange(this, key));
@@ -267,17 +295,26 @@ public abstract class NodeMap extends NodeFeature {
                 }
             }
         });
-        changes.clear();
     }
 
     @Override
-    public void resetChanges() {
-        changes.clear();
+    public void generateChangesFromEmpty() {
+        if (values == null) {
+            return;
+        }
+        assert !values.isEmpty();
+
+        Map<String, Serializable> changes = getChangeTracker();
         values.keySet().forEach(k -> changes.put(k, REMOVED_MARKER));
     }
 
     @Override
     public void forEachChild(Consumer<StateNode> action) {
+        if (values == null) {
+            return;
+        }
+        assert !values.isEmpty();
+
         values.values().stream().filter(v -> v instanceof StateNode)
                 .forEach(v -> action.accept((StateNode) v));
     }

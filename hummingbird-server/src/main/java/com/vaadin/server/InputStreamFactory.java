@@ -24,7 +24,7 @@ import java.io.Serializable;
  * <p>
  * The instance of this class should generate {@link InputStream} for the
  * resource.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -41,7 +41,7 @@ public interface InputStreamFactory extends Serializable {
      * your {@link InputStream} initialization.
      * <p>
      * Return value may not be null.
-     * 
+     *
      * @return data input stream. May not be null.
      */
     InputStream createInputStream();
@@ -59,7 +59,7 @@ public interface InputStreamFactory extends Serializable {
      * case one should override {@link #requiresLock()} method to return
      * {@code false}. E.g. if {@link InputStream} instance is remote URL input
      * stream then you don't want to lock session on reading data from it.
-     * 
+     *
      * @return {@code true} if data from the input stream should be read under
      *         the session lock, {@code false} otherwise
      */

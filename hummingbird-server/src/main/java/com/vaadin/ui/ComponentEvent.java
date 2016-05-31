@@ -23,7 +23,7 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
  * An event whose source is a {@link Component}.
  * <p>
  * Typically used together with {@link ComponentEventBus}.
- * 
+ *
  * @param <T>
  *            the event source type
  *

@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 
@@ -342,7 +343,11 @@ public interface ElementStateProvider extends Serializable {
      * @param component
      *            the component to map the element to
      */
-    void setComponent(StateNode node, Component component);
+    default void setComponent(StateNode node, Component component) {
+        assert node != null;
+        assert component != null;
+        node.getFeature(ComponentMapping.class).setComponent(component);
+    }
 
     /**
      * Gets the component this element is mapped to.
@@ -352,6 +357,9 @@ public interface ElementStateProvider extends Serializable {
      * @return an optional component, or an empty optional if no component has
      *         been mapped to this node
      */
-    Optional<Component> getComponent(StateNode node);
+    default Optional<Component> getComponent(StateNode node) {
+        assert node != null;
+        return node.getFeature(ComponentMapping.class).getComponent();
+    }
 
 }

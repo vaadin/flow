@@ -29,6 +29,14 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.Document;
+
+import com.helger.css.ECSSVersion;
+import com.helger.css.decl.CSSDeclaration;
+import com.helger.css.decl.CSSDeclarationList;
+import com.helger.css.reader.CSSReaderDeclarationList;
+import com.helger.css.reader.errorhandler.CollectingCSSParseErrorHandler;
+import com.helger.css.writer.CSSWriterSettings;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
@@ -38,8 +46,10 @@ import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
 import com.vaadin.hummingbird.template.AbstractElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.util.JavaScriptSemantics;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -147,6 +157,8 @@ public class Element implements Serializable {
      * {@link Element#getStyle()}.
      */
     private static class StyleAttributeHandler implements CustomAttribute {
+        private static final String ERROR_PARSING_STYLE = "Error parsing style '%s': %s";
+
         @Override
         public boolean hasAttribute(Element element) {
             return element.getStyle().getNames().findAny().isPresent();
@@ -160,14 +172,36 @@ public class Element implements Serializable {
             Style style = element.getStyle();
 
             return style.getNames().map(styleName -> {
-                return styleName + ":" + style.get(styleName);
+                return StyleUtil.stylePropertyToAttribute(styleName) + ":"
+                        + style.get(styleName);
             }).collect(Collectors.joining(";"));
         }
 
         @Override
         public void setAttribute(Element element, String attributeValue) {
-            throw new UnsupportedOperationException(
-                    "Styles must be set using Element.getStyles()");
+            Style style = element.getStyle();
+            CollectingCSSParseErrorHandler errorCollector = new CollectingCSSParseErrorHandler();
+            CSSDeclarationList parsed = CSSReaderDeclarationList.readFromString(
+                    attributeValue, ECSSVersion.LATEST, errorCollector);
+            if (errorCollector.hasParseErrors()) {
+                throw new IllegalArgumentException(String.format(
+                        ERROR_PARSING_STYLE, attributeValue, errorCollector
+                                .getAllParseErrors().get(0).getErrorMessage()));
+            }
+            if (parsed == null) {
+                // Did not find any styles
+                throw new IllegalArgumentException(
+                        String.format(ERROR_PARSING_STYLE, attributeValue,
+                                "No styles found"));
+            }
+            for (CSSDeclaration declaration : parsed.getAllDeclarations()) {
+                String key = declaration.getProperty();
+                String value = declaration.getExpression().getAsCSSString(
+                        new CSSWriterSettings(ECSSVersion.LATEST)
+                                .setOptimizedOutput(true),
+                        0);
+                style.set(StyleUtil.styleAttributeToProperty(key), value);
+            }
         }
 
         @Override
@@ -1026,20 +1060,8 @@ public class Element implements Serializable {
         Object value = getPropertyRaw(name);
         if (value == null) {
             return defaultValue;
-        } else if (value instanceof Boolean) {
-            return ((Boolean) value).booleanValue();
-        } else if (value instanceof JsonValue) {
-            return ((JsonValue) value).asBoolean();
-        } else if (value instanceof Number) {
-            double number = ((Number) value).doubleValue();
-            // Special comparison to keep sonarqube happy
-            return !Double.isNaN(number)
-                    && Double.doubleToLongBits(number) != 0;
-        } else if (value instanceof String) {
-            return !((String) value).isEmpty();
         } else {
-            throw new IllegalStateException(
-                    "Unsupported property type: " + value.getClass());
+            return JavaScriptSemantics.isTrueish(value);
         }
     }
 
@@ -1513,5 +1535,48 @@ public class Element implements Serializable {
 
         return getNode().addDetachListener(
                 () -> detachListener.onDetach(new ElementDetachEvent(this)));
+    }
+
+    @Override
+    public String toString() {
+        return getOuterHTML();
+    }
+
+    /**
+     * Gets the outer HTML for the element.
+     * <p>
+     * This operation recursively iterates the element and all children and
+     * should not be called unnecessarily.
+     *
+     * @return the outer HTML for the element
+     */
+    public String getOuterHTML() {
+        return ElementUtil.toJsoup(new Document(""), this).outerHtml();
+    }
+
+    /**
+     * Creates a new component instance using this element.
+     * <p>
+     * You can use this method when you have an element instance and want to use
+     * it through the API of a {@link Component} class.
+     * <p>
+     * This method makes the component instance use the underlying element but
+     * does not attach the new component instance to the element so that
+     * {@link Element#getComponent()} would return the component instance. This
+     * means that {@link #getParent()}, {@link #getChildren()} and possibly
+     * other methods which rely on {@link Element} -&gt; {@link Component}
+     * mappings will not work.
+     * <p>
+     * To also map the element to the {@link Component} instance, use
+     * {@link Component#from(Element, Class)}
+     *
+     * @see Component#from(Element, Class)
+     *
+     * @param componentType
+     *            the component type
+     * @return the component instance connected to the given element
+     */
+    public <T> T as(Class<T> componentType) {
+        return ComponentUtil.componentFromElement(this, componentType, false);
     }
 }

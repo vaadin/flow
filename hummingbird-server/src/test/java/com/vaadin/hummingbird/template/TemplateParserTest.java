@@ -21,16 +21,23 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest.NullTemplateResolver;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
+import com.vaadin.hummingbird.template.parser.TemplateResolver;
 
 public class TemplateParserTest {
+    private TemplateResolver nullTemplateResolver = new NullTemplateResolver();
+
     @Test
     public void parseBasicTemplate() {
-        ElementTemplateNode rootNode = (ElementTemplateNode) TemplateParser
-                .parse("<div id=bar>baz<input></div>");
+        ElementTemplateNode rootNode = (ElementTemplateNode) parse(
+                "<div id=bar>baz<input></div>");
 
         Assert.assertEquals("div", rootNode.getTag());
+
+        Assert.assertEquals(0, rootNode.getPropertyNames().count());
+        Assert.assertEquals(0, rootNode.getClassNames().count());
 
         Assert.assertEquals(1, rootNode.getAttributeNames().count());
         Assert.assertEquals("bar",
@@ -48,10 +55,14 @@ public class TemplateParserTest {
         Assert.assertEquals(0, inputChild.getChildCount());
     }
 
+    private TemplateNode parse(String html) {
+        return TemplateParser.parse(html, nullTemplateResolver);
+    }
+
     @Test
     public void parseParameterizedTextTemplate() {
-        ElementTemplateNode rootNode = (ElementTemplateNode) TemplateParser
-                .parse("<div id='foo'>{{bar}}<input></div>");
+        ElementTemplateNode rootNode = (ElementTemplateNode) parse(
+                "<div id='foo'>{{bar}}<input></div>");
 
         Assert.assertEquals("div", rootNode.getTag());
 
@@ -76,12 +87,13 @@ public class TemplateParserTest {
 
     @Test
     public void parseTemplateProperty() {
-        ElementTemplateNode rootNode = (ElementTemplateNode) TemplateParser
-                .parse("<input [value]='foo'></input>");
+        ElementTemplateNode rootNode = (ElementTemplateNode) parse(
+                "<input [value]='foo'></input>");
 
         Assert.assertEquals("input", rootNode.getTag());
 
         Assert.assertEquals(0, rootNode.getAttributeNames().count());
+        Assert.assertEquals(0, rootNode.getClassNames().count());
         Assert.assertEquals(1, rootNode.getPropertyNames().count());
 
         Optional<BindingValueProvider> binding = rootNode
@@ -99,23 +111,50 @@ public class TemplateParserTest {
 
     @Test(expected = TemplateParseException.class)
     public void parseTemplateIncorrectProperty() {
-        TemplateParser.parse("<input [value='foo'></input>");
+        parse("<input [value='foo'></input>");
+    }
+
+    @Test
+    public void parseClassName() {
+        ElementTemplateNode rootNode = (ElementTemplateNode) parse(
+                "<input [class.foo]=bar></input>");
+
+        Assert.assertEquals(0, rootNode.getAttributeNames().count());
+        Assert.assertEquals(0, rootNode.getPropertyNames().count());
+        Assert.assertEquals(1, rootNode.getClassNames().count());
+
+        Optional<BindingValueProvider> binding = rootNode
+                .getClassNameBinding("foo");
+        Assert.assertTrue(binding.isPresent());
+
+        StateNode node = new StateNode(ModelMap.class);
+
+        Assert.assertNull(binding.get().getValue(node));
+
+        node.getFeature(ModelMap.class).setValue("bar", "value");
+
+        Assert.assertEquals("value", binding.get().getValue(node));
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseClassOverlaps() {
+        parse("<input class=foo [class.foo]=bar>");
     }
 
     @Test(expected = TemplateParseException.class)
     public void parseEmptyTemplate() {
-        TemplateParser.parse("Just some text, no HTML");
+        parse("Just some text, no HTML");
     }
 
     @Test(expected = TemplateParseException.class)
     public void parseMultipleRoots() {
-        TemplateParser.parse("<br><input>");
+        parse("<br><input>");
     }
 
     @Test
     public void parseWithWhitespacePadding() {
-        ElementTemplateNode rootNode = (ElementTemplateNode) TemplateParser
-                .parse(" \n<input \r> \t ");
+        ElementTemplateNode rootNode = (ElementTemplateNode) parse(
+                " \n<input \r> \t ");
 
         Assert.assertEquals("input", rootNode.getTag());
         Assert.assertEquals(0, rootNode.getPropertyNames().count());
@@ -125,7 +164,7 @@ public class TemplateParserTest {
     @Test
     public void parseChildSlot() {
         // intentional whitespace
-        TemplateNode rootNode = TemplateParser.parse("<div> @child@</div>");
+        TemplateNode rootNode = parse("<div> @child@</div>");
 
         Assert.assertEquals(1, rootNode.getChildCount());
 
@@ -135,21 +174,21 @@ public class TemplateParserTest {
 
     @Test(expected = TemplateParseException.class)
     public void multipleChildSlots() {
-        TemplateParser.parse("<div>@child@<span>@child@</span></div>");
+        parse("<div>@child@<span>@child@</span></div>");
     }
 
     @Test
     public void parseTopComment() {
-        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
-                .parse("<!-- comment --><div></div>");
+        ElementTemplateNode node = (ElementTemplateNode) parse(
+                "<!-- comment --><div></div>");
         Assert.assertEquals(0, node.getChildCount());
         Assert.assertEquals("div", node.getTag());
     }
 
     @Test
     public void parseInnerComment() {
-        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
-                .parse("<div> <!-- comment --> <input> </div>");
+        ElementTemplateNode node = (ElementTemplateNode) parse(
+                "<div> <!-- comment --> <input> </div>");
         Assert.assertEquals(4, node.getChildCount());
         Assert.assertEquals("div", node.getTag());
         Assert.assertEquals("input",
@@ -158,19 +197,18 @@ public class TemplateParserTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void ngForElementAsRoot() {
-        TemplateParser.parse(
-                "<a class='item' *ngFor='let  item      of list'>{{item.text}}</a>");
+        parse("<a class='item' *ngFor='let  item      of list'>{{item.text}}</a>");
+
     }
 
     @Test(expected = TemplateParseException.class)
     public void ngForElementMissingCollection() {
-        TemplateParser.parse(
-                "<div><a class='item' *ngFor='let item'>{{item.text}}</a></div>");
+        parse("<div><a class='item' *ngFor='let item'>{{item.text}}</a></div>");
     }
 
     @Test
     public void ngForElement() {
-        TemplateNode node = TemplateParser.parse(
+        TemplateNode node = parse(
                 "<div><a class='item' *ngFor='let  item      of list'>{{item.text}}</a></div>");
         ForTemplateNode forNode = (ForTemplateNode) node.getChild(0);
         Assert.assertEquals("list", forNode.getCollectionVariable());
@@ -179,7 +217,7 @@ public class TemplateParserTest {
 
     @Test(expected = TemplateParseException.class)
     public void nestedNgForElement() {
-        TemplateParser.parse("<ul>" //
+        parse("<ul>" //
                 + "  <li class='item' *ngFor='let  item      of list'>" //
                 + "    <a  *ngFor='let  link      of item.links' [href]='link.href'>{{link.text}}</a>" //
                 + "  </li>" //
@@ -188,8 +226,8 @@ public class TemplateParserTest {
 
     @Test
     public void parseEventHandler() {
-        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
-                .parse("<button (click)='handle($event)'>");
+        ElementTemplateNode node = (ElementTemplateNode) parse(
+                "<button (click)='handle($event)'>");
         Assert.assertEquals(1, node.getEventNames().count());
         Optional<String> event = node.getEventNames().findAny();
         Assert.assertTrue(event.isPresent());
@@ -202,8 +240,7 @@ public class TemplateParserTest {
 
     @Test(expected = TemplateParseException.class)
     public void parseWrongEventHandler() {
-        ElementTemplateNode node = (ElementTemplateNode) TemplateParser
-                .parse("<button (click='handle($event)'>");
+        parse("<button (click='handle($event)'>");
     }
 
 }

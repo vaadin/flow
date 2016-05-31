@@ -35,7 +35,7 @@ public class InvalidateEvent {
 
     /**
      * Gets the invalidated computation.
-     * 
+     *
      * @return the invalidated computation
      */
     public Computation getSource() {

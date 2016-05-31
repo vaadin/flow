@@ -20,7 +20,7 @@ import java.util.HashMap;
 
 /**
  * The {@link Attributes} class represents a set of attributes.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

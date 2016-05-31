@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -151,7 +152,7 @@ public abstract class TemplateNode implements Serializable {
                 children.set(i, Json.create(child.getId()));
             }
 
-            json.put("children", children);
+            json.put(JsonConstants.CHILD_TEMPLATE_KEY, children);
         }
 
         return json;
@@ -196,5 +197,24 @@ public abstract class TemplateNode implements Serializable {
      * @return the parent element, not <code>null</code>
      */
     public abstract Element getParentElement(StateNode node);
+
+    /**
+     * Finds an element with the given id.
+     * <p>
+     * Nodes which generate multiple elements, e.g. *ngFor, are ignored by this
+     * method.
+     *
+     * @param stateNode
+     *
+     * @param stateNode
+     *            the template state node
+     * @param id
+     *            the id too look for
+     * @return an optional element with the id, or an empty Optional if no
+     *         element with the given id was found
+     */
+    public Optional<Element> findElement(StateNode stateNode, String id) {
+        return Optional.empty();
+    }
 
 }

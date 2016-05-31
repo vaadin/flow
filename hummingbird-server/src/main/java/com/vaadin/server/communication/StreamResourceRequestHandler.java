@@ -39,7 +39,7 @@ import com.vaadin.server.VaadinSession;
 
 /**
  * Handles {@link StreamResource} instances registered in {@link VaadinSession}.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -101,7 +101,7 @@ public class StreamResourceRequestHandler implements RequestHandler {
     /**
      * Generates URI string for a dynamic resource using its {@code id} and
      * {@code name}.
-     * 
+     *
      * @param id
      *            unique resource id
      * @param name

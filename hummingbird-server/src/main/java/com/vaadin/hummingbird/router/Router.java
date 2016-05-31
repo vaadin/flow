@@ -18,9 +18,12 @@ package com.vaadin.hummingbird.router;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinResponse;
+import com.vaadin.server.VaadinService;
 import com.vaadin.ui.UI;
 
 /**
@@ -83,11 +86,11 @@ public class Router implements Serializable {
         ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
             String newLocation = e.getLocation();
 
-            navigate(ui, new Location(newLocation));
+            navigate(ui, new Location(newLocation), false);
         });
 
         Location location = new Location(path);
-        navigate(ui, location);
+        navigate(ui, location, true);
     }
 
     /**
@@ -99,6 +102,10 @@ public class Router implements Serializable {
      *            the location to navigate to
      */
     public void navigate(UI ui, Location location) {
+        navigate(ui, location, false);
+    }
+
+    private void navigate(UI ui, Location location, boolean initialRequest) {
         // Read volatile field only once per navigation
         ImmutableRouterConfiguration currentConfig = configuration;
         assert currentConfig.isConfigured();
@@ -106,32 +113,40 @@ public class Router implements Serializable {
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
                 ui);
 
-        NavigationHandler handler = currentConfig.getResolver()
+        Optional<NavigationHandler> handler = currentConfig.getResolver()
                 .resolve(navigationEvent);
 
-        if (handler == null) {
+        if (!handler.isPresent()) {
             handler = currentConfig.resolveRoute(location);
         }
 
         // Redirect foo/bar <-> foo/bar if there is no mapping for the given
         // location but there is a mapping for the other
-        if (handler == null && !"".equals(location.getPath())) {
+        if (!handler.isPresent() && !location.getPath().isEmpty()) {
             Location toggledLocation = toggleEndingSlash(location);
-            NavigationHandler toggledHandler = currentConfig
+            Optional<NavigationHandler> toggledHandler = currentConfig
                     .resolveRoute(toggledLocation);
-            if (toggledHandler != null) {
-                handler = new InternalRedirectHandler(toggledLocation);
+            if (toggledHandler.isPresent()) {
+                handler = Optional
+                        .of(new InternalRedirectHandler(toggledLocation));
             }
         }
 
-        if (handler == null) {
+        if (!handler.isPresent()) {
             Class<? extends View> errorView = configuration.getErrorView();
-            handler = new StaticViewRenderer(errorView,
-                    configuration.getParentViewsAsList(errorView));
+            handler = Optional.of(new StaticViewRenderer(errorView,
+                    configuration.getParentViewsAsList(errorView)));
+
+            // for initial request return 404 access code
+            if (initialRequest) {
+                VaadinResponse response = VaadinService.getCurrentResponse();
+                if (response != null) {
+                    response.setStatus(404);
+                }
+            }
         }
 
-        handler.handle(navigationEvent);
-
+        handler.get().handle(navigationEvent);
     }
 
     // Non-private to enable testing

@@ -26,6 +26,8 @@ import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.JsSet;
+import com.vaadin.client.hummingbird.dom.DomApi;
+import com.vaadin.client.hummingbird.dom.DomElement.DomTokenList;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
@@ -37,7 +39,6 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
-import elemental.dom.DOMTokenList;
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.Event;
@@ -49,7 +50,7 @@ import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -335,18 +336,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             assert child
                     .getParentElement() == context.element : "Invalid element parent";
 
-            context.element.removeChild(child);
+            DomApi.wrap(context.element).removeChild(child);
         }
 
         JsArray<?> add = event.getAdd();
         if (add.length() != 0) {
             int insertIndex = event.getIndex();
-            elemental.dom.NodeList childNodes = context.element.getChildNodes();
+            JsArray<Node> childNodes = DomApi.wrap(context.element)
+                    .getChildNodes();
 
             Node beforeRef;
             if (insertIndex < childNodes.length()) {
                 // Insert before the node current at the target index
-                beforeRef = childNodes.item(insertIndex);
+                beforeRef = childNodes.get(insertIndex);
             } else {
                 // Insert at the end
                 beforeRef = null;
@@ -357,9 +359,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 Node childNode = context.binderContext
                         .createAndBind((StateNode) newChildObject);
 
-                context.element.insertBefore(childNode, beforeRef);
+                DomApi.wrap(context.element).insertBefore(childNode, beforeRef);
 
-                beforeRef = childNode.getNextSibling();
+                beforeRef = DomApi.wrap(childNode).getNextSibling();
             }
         }
     }
@@ -470,11 +472,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         NodeList classNodeList = node.getList(NodeFeatures.CLASS_LIST);
 
         for (int i = 0; i < classNodeList.length(); i++) {
-            element.getClassList().add((String) classNodeList.get(i));
+            DomApi.wrap(element).getClassList()
+                    .add((String) classNodeList.get(i));
         }
 
         return classNodeList.addSpliceListener(e -> {
-            DOMTokenList classList = element.getClassList();
+            DomTokenList classList = DomApi.wrap(element).getClassList();
 
             JsArray<?> remove = e.getRemove();
             for (int i = 0; i < remove.length(); i++) {

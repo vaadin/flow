@@ -21,10 +21,10 @@ import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
  * Abstract template builder factory.
- * 
+ *
  * @param <T>
  *            the node type which factory is able to handle
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -51,7 +51,7 @@ public abstract class AbstractTemplateBuilderFactory<T extends Node>
 
     /**
      * Returns {@code true} if the factory can handle the {@code node}.
-     * 
+     *
      * @param node
      *            the node to check against
      * @return {@code true} if the factory can handle the {@code node}
@@ -86,7 +86,7 @@ public abstract class AbstractTemplateBuilderFactory<T extends Node>
 
     /**
      * Extract template parameter key from the {@code parameterString}.
-     * 
+     *
      * @param parameterString
      *            the parameter string enclosing a parameter
      * @param enclosingLength

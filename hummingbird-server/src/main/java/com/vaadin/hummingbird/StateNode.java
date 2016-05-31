@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
@@ -42,6 +43,8 @@ import com.vaadin.server.Command;
  */
 public class StateNode implements Serializable {
     private final Map<Class<? extends NodeFeature>, NodeFeature> features = new HashMap<>();
+
+    private Map<Class<? extends NodeFeature>, Serializable> changes;
 
     private ArrayList<Command> attachListeners;
 
@@ -269,7 +272,9 @@ public class StateNode implements Serializable {
                 collector.accept(new NodeAttachChange(this));
 
                 // Make all changes show up as if the node was recently attached
-                features.values().forEach(NodeFeature::resetChanges);
+                clearChanges();
+                features.values()
+                        .forEach(NodeFeature::generateChangesFromEmpty);
             } else {
                 collector.accept(new NodeDetachChange(this));
             }
@@ -278,8 +283,22 @@ public class StateNode implements Serializable {
         }
 
         if (isAttached) {
-            features.values().forEach(n -> n.collectChanges(collector));
+            features.values().stream().filter(this::hasChangeTracker)
+                    .forEach(feature -> feature.collectChanges(collector));
+            clearChanges();
         }
+    }
+
+    private boolean hasChangeTracker(NodeFeature nodeFeature) {
+        return changes != null && changes.containsKey(nodeFeature.getClass());
+    }
+
+    /**
+     * Clears all changes recorded for this node. This method is public only for
+     * testing purposes.
+     */
+    public void clearChanges() {
+        changes = null;
     }
 
     /**
@@ -344,6 +363,7 @@ public class StateNode implements Serializable {
 
     private void handleOnAttach() {
         assert isAttached();
+        boolean initialAttach = false;
 
         int newId = owner.register(this);
 
@@ -351,6 +371,7 @@ public class StateNode implements Serializable {
             if (id == -1) {
                 // Didn't have an id previously, set one now
                 id = newId;
+                initialAttach = true;
             } else if (newId != id) {
                 throw new IllegalStateException(
                         "Can't change id once it has been assigned");
@@ -360,7 +381,7 @@ public class StateNode implements Serializable {
         // Ensure attach change is sent
         markAsDirty();
 
-        fireAttachListeners();
+        fireAttachListeners(initialAttach);
     }
 
     private void handleOnDetach() {
@@ -431,14 +452,14 @@ public class StateNode implements Serializable {
         }
     }
 
-    private void fireAttachListeners() {
+    private void fireAttachListeners(boolean initialAttach) {
         if (attachListeners != null) {
             ArrayList<Command> copy = new ArrayList<>(attachListeners);
 
             copy.forEach(Command::execute);
         }
 
-        features.values().forEach(NodeFeature::onAttach);
+        features.values().forEach(f -> f.onAttach(initialAttach));
     }
 
     private void fireDetachListeners() {
@@ -449,5 +470,26 @@ public class StateNode implements Serializable {
         }
 
         features.values().forEach(NodeFeature::onDetach);
+    }
+
+    /**
+     * Gets or creates a change tracker object for the provided feature.
+     *
+     * @param feature
+     *            the feature for which to get a change tracker
+     * @param factory
+     *            a factory method used to create a new tracker if there isn't
+     *            already one
+     * @return the change tracker to use
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Serializable> T getChangeTracker(NodeFeature feature,
+            Supplier<T> factory) {
+        if (changes == null) {
+            changes = new HashMap<>();
+        }
+
+        return (T) changes.computeIfAbsent(feature.getClass(),
+                k -> factory.get());
     }
 }
