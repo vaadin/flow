@@ -48,6 +48,45 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.0</version>
+				<configuration>
+					<nodeVersion>v6.2.0</nodeVersion>
+					<npmVersion>3.9.3</npmVersion>
+					<installDirectory>${project.rootdir}/node</installDirectory>
+					<workingDirectory>src/main/webapp</workingDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<id>node-and-npm</id>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>npminstallbower</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>install bower@1.7.9</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>bower</id>
+						<goals>
+							<goal>bower</goal>
+						</goals>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
+					</execution>
+				</executions>
+
+			</plugin>
+
 		</plugins>
 	</build>
 </project>

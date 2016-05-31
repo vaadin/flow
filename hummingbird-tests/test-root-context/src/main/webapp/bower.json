@@ -1,0 +1,22 @@
+{
+  "name": "test-root-context",
+  "homepage": "https://github.com/vaadin/hummingbird",
+  "authors": [
+    "Artur Signell <artur@vaadin.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "Apache2",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "paper-slider": "1.0.11",
+    "progress-bubble": "1.3.0"
+  }
+}
