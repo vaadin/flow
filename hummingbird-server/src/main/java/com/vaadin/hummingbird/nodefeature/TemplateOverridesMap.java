@@ -58,7 +58,7 @@ public class TemplateOverridesMap extends NodeMap {
         if (overrideNode == null && create) {
             overrideNode = new StateNode(OverrideElementData.class,
                     ElementChildrenList.class, ParentGeneratorHolder.class,
-                    ComponentMapping.class);
+                    ElementPropertyMap.class, ComponentMapping.class);
 
             overrideNode.getFeature(OverrideElementData.class)
                     .setTemplateNode(templateNode);
