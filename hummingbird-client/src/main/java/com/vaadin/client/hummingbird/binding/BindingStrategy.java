@@ -26,10 +26,10 @@ import elemental.dom.Node;
  * Only one strategy may be applicable for the given {@link StateNode} instance.
  * Once the applicable strategy is identified it's used to produce a
  * {@link Node} based on the {@link StateNode} instance and bind it.
- * 
+ *
  * @param <T>
  *            a DOM node type which strategy is applicable for
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -37,7 +37,7 @@ public interface BindingStrategy<T extends Node> {
 
     /**
      * Creates a DOM node for the {@code node}.
-     * 
+     *
      * @param node
      *            the state node for which to create a DOM node, not
      *            {@code null}
@@ -47,18 +47,18 @@ public interface BindingStrategy<T extends Node> {
 
     /**
      * Returns {@code true} is the strategy is applicable to the {@code node}.
-     * 
+     *
      * @param node
      *            the state node to check against of
      * @return {@code true} if the strategy is applicable to the node
-     * 
+     *
      */
     boolean isApplicable(StateNode node);
 
     /**
      * Binds a DOM node to the {@code stateNode} using {@code context} to create
      * and bind nodes of other types.
-     * 
+     *
      * @param stateNode
      *            the state node to bind, not {@code null}
      * @param domNode
@@ -72,7 +72,7 @@ public interface BindingStrategy<T extends Node> {
     /**
      * Gets the tag value from the {@link NodeFeatures#ELEMENT_DATA} feature for
      * the {@code node}.
-     * 
+     *
      * @param node
      *            the state node
      * @return tag of the {@code node}

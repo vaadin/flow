@@ -21,6 +21,7 @@ import com.vaadin.client.hummingbird.util.ClientJsonCodec;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -88,18 +89,22 @@ public class ServerConnector {
 
     /**
      * Sends a template event message to the server.
-     * 
+     *
      * @param node
      *            the node that listened to the event
      * @param methodName
      *            the event handler method name to execute on the server side
+     * @param argsArray
+     *            the arguments array for the method
      */
-    public void sendTemplateEventMessage(StateNode node, String methodName) {
+    public void sendTemplateEventMessage(StateNode node, String methodName,
+            JsonArray argsArray) {
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE,
                 JsonConstants.RPC_TYPE_TEMPLATE_EVENT);
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME, methodName);
+        message.put(JsonConstants.RPC_TEMPLATE_EVENT_ARGS, argsArray);
         sendMessage(message);
     }
 

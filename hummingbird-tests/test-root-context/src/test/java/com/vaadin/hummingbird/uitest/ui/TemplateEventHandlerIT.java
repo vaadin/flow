@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
@@ -38,5 +39,40 @@ public class TemplateEventHandlerIT extends PhantomJSTest {
         findElement(By.id("event-receiver")).click();
 
         Assert.assertTrue(isElementPresent(By.id("event-handler")));
+    }
+
+    @Test
+    public void sendArgumentsToServer() {
+        findElement(By.id("arg-receiver")).click();
+
+        Assert.assertTrue(isElementPresent(By.id("event-arguments")));
+
+        WebElement msg = findElement(By.id("event-msg-arg"));
+        Assert.assertEquals("arg-receiver", msg.getText());
+
+        WebElement size = findElement(By.id("event-int-arg"));
+        Assert.assertEquals("3", size.getText());
+
+        WebElement value = findElement(By.id("event-double-arg"));
+        Assert.assertEquals("6.2", value.getText());
+
+        WebElement visible = findElement(By.id("event-boolean-arg"));
+        Assert.assertEquals("true", visible.getText());
+
+        WebElement array = findElement(By.id("event-array-arg"));
+        Assert.assertEquals("2.1,6.7", array.getText());
+
+        WebElement varArg = findElement(By.id("event-vararg-arg"));
+        Assert.assertEquals("foo,bar", varArg.getText());
+    }
+
+    @Test
+    public void sendJsonToServer() {
+        findElement(By.id("json-receiver")).click();
+
+        Assert.assertTrue(isElementPresent(By.id("event-json")));
+
+        WebElement msg = findElement(By.id("json-arg"));
+        Assert.assertEquals("{\"foo\":\"bar\"}", msg.getText());
     }
 }

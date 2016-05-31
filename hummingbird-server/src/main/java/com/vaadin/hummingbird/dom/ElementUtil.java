@@ -19,8 +19,11 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Node;
+import org.jsoup.nodes.TextNode;
+
 import com.vaadin.ui.Component;
-import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Composite;
 
 /**
@@ -190,8 +193,9 @@ public class ElementUtil {
                     && component.getChildren().findFirst()
                             .get() == currentComponent.get();
             if (!isCompositeReplacingItsContent) {
-                throw new IllegalStateException(
-                        "A component is already attached to this element");
+                throw new IllegalStateException("A component of type "
+                        + currentComponent.get().getClass().getName()
+                        + " is already attached to this element");
             }
         }
         element.getStateProvider().setComponent(element.getNode(), component);
@@ -213,35 +217,35 @@ public class ElementUtil {
     }
 
     /**
-     * Checks if the component mapping of the element of the provided component
-     * actually refers to the the provided component, either directly or through
-     * a chain of composites.
-     * <p>
-     * Meant for internal use only.
+     * Converts the given element and its children to a JSoup node with
+     * children.
      *
-     * @param component
-     *            the component to check
-     * @return <code>true</code> if the mapping is correct, <code>false</code>
-     *         otherwise
+     * @param document
+     *            A JSoup document
+     * @param element
+     *            The element to convert
+     * @return A JSoup node containing the converted element
      */
-    public static boolean isComponentElementMappedCorrectly(
-            Component component) {
-        Element element = component.getElement();
-
-        Component mappedComponent = ElementUtil.getComponent(element).get();
-        if (mappedComponent == component) {
-            return true;
+    public static Node toJsoup(Document document, Element element) {
+        if (element.isTextNode()) {
+            return new TextNode(element.getOwnTextContent(),
+                    document.baseUri());
         }
 
-        if (mappedComponent instanceof Composite) {
-            // If "this" is the content of a composite, getComponent will return
-            // the composite
-            return ComponentUtil.isCompositeContent(
-                    (Composite<?>) mappedComponent, component);
-        } else {
-            return false;
+        org.jsoup.nodes.Element target = document
+                .createElement(element.getTag());
+        if (element.hasProperty("innerHTML")) {
+            target.html((String) element.getPropertyRaw("innerHTML"));
         }
+
+        element.getAttributeNames().forEach(name -> {
+            target.attr(name, element.getAttribute(name));
+        });
+
+        element.getChildren()
+                .forEach(child -> target.appendChild(toJsoup(document, child)));
+
+        return target;
 
     }
-
 }

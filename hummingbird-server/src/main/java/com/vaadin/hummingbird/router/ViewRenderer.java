@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.router.RouteLocation.RouteSegmentVisitor;
 import com.vaadin.ui.UI;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Handles navigation events by rendering a view of a specific type in the
@@ -75,40 +76,34 @@ public abstract class ViewRenderer implements NavigationHandler {
 
         checkDuplicates(viewType, parentViewTypes);
 
-        try {
-            // Instances currently in use that we want to reuse if possible
-            Map<Class<? extends View>, View> availableInstances = ui
-                    .getActiveViewChain().stream()
-                    .collect(Collectors.toMap(i -> i.getClass(), i -> i));
+        // Instances currently in use that we want to reuse if possible
+        Map<Class<? extends View>, View> availableInstances = ui
+                .getActiveViewChain().stream()
+                .collect(Collectors.toMap(i -> i.getClass(), i -> i));
 
-            View viewInstance = reuseOrCreate(viewType, availableInstances);
+        View viewInstance = reuseOrCreate(viewType, availableInstances);
 
-            List<View> viewChain = new ArrayList<>();
-            viewChain.add(viewInstance);
+        List<View> viewChain = new ArrayList<>();
+        viewChain.add(viewInstance);
 
-            for (Class<? extends HasChildView> parentType : parentViewTypes) {
-                viewChain.add(reuseOrCreate(parentType, availableInstances));
-            }
-
-            LocationChangeEvent locationChangeEvent = createEvent(event,
-                    viewChain);
-
-            // Notify view and parent views about the new location
-            viewChain.forEach(
-                    view -> view.onLocationChange(locationChangeEvent));
-
-            @SuppressWarnings("unchecked")
-            List<HasChildView> parentViews = (List<HasChildView>) (List<?>) viewChain
-                    .subList(1, viewChain.size());
-
-            // Show the new view and parent views
-            ui.getInternals().showView(event.getLocation(), viewInstance,
-                    parentViews);
-
-            updatePageTitle(event, locationChangeEvent);
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new IllegalStateException("Cannot instantiate view", e);
+        for (Class<? extends HasChildView> parentType : parentViewTypes) {
+            viewChain.add(reuseOrCreate(parentType, availableInstances));
         }
+
+        LocationChangeEvent locationChangeEvent = createEvent(event, viewChain);
+
+        // Notify view and parent views about the new location
+        viewChain.forEach(view -> view.onLocationChange(locationChangeEvent));
+
+        @SuppressWarnings("unchecked")
+        List<HasChildView> parentViews = (List<HasChildView>) (List<?>) viewChain
+                .subList(1, viewChain.size());
+
+        // Show the new view and parent views
+        ui.getInternals().showView(event.getLocation(), viewInstance,
+                parentViews);
+
+        updatePageTitle(event, locationChangeEvent);
     }
 
     /**
@@ -225,11 +220,10 @@ public abstract class ViewRenderer implements NavigationHandler {
     }
 
     private static <T extends View> T reuseOrCreate(Class<T> type,
-            Map<Class<? extends View>, View> availableInstances)
-            throws InstantiationException, IllegalAccessException {
+            Map<Class<? extends View>, View> availableInstances) {
         T instance = type.cast(availableInstances.remove(type));
         if (instance == null) {
-            instance = type.newInstance();
+            instance = ReflectTools.createInstance(type);
         }
         return instance;
     }

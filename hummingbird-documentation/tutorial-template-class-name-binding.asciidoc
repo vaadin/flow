@@ -1,0 +1,27 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Binding Class Names in a Template
+
+This is a tutorial for class name bindings in a template, for a generic tutorial on bindings see <<tutorial-template-bindings#,Binding Model Data in a Template>>.
+
+Template offers more fine grained binding for class names compared to other properties. You can bind individual class names to individual model properties as follows:
+
+[source,html]
+----
+<input [class.invalid-value]="error" [class.required]="required" />
+----
+
+The model looks like
+
+[source,java]
+----
+public interface MyModel extends TemplateModel {
+  public void setError(boolean error);
+  public void setRequired(boolean required);
+  // + getters
+}
+----
+
+This will set the `invalid-value` class on the `<input>` whenever the `error` part of the model is true. Similarly the element will get a `required` class when `required` is set to `true` in the model.
+
+[NOTE]
+The syntax is `[class.<class name>]="property in model"` and the model property type should always be a `boolean`.

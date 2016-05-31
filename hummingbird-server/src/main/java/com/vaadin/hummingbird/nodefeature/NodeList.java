@@ -16,9 +16,6 @@
 
 package com.vaadin.hummingbird.nodefeature;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.ArrayList;
@@ -42,7 +39,7 @@ import com.vaadin.hummingbird.change.NodeChange;
  * @param <T>
  *            the type of the items in the list
  */
-public abstract class NodeList<T> extends NodeFeature {
+public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     /**
      * Provides access to a {@link NodeList} as a {@link Set}.
@@ -50,8 +47,8 @@ public abstract class NodeList<T> extends NodeFeature {
      * @param <T>
      *            the type of objects in the list (and set)
      */
-    protected abstract static class SetView<T> extends AbstractSet<T>
-            implements Serializable {
+    protected abstract static class SetView<T extends Serializable>
+            extends AbstractSet<T> implements Serializable {
 
         private NodeList<T> nodeList;
 
@@ -106,9 +103,7 @@ public abstract class NodeList<T> extends NodeFeature {
         }
     }
 
-    private transient List<T> values = new ArrayList<>();
-
-    private transient List<ListSpliceChange> changes = new ArrayList<>();
+    private List<T> values;
 
     /**
      * Creates a new list for the given node.
@@ -127,7 +122,16 @@ public abstract class NodeList<T> extends NodeFeature {
      */
     protected int size() {
         setAccessed();
+        if (values == null) {
+            return 0;
+        }
         return values.size();
+    }
+
+    private void ensureValues() {
+        if (values == null) {
+            values = new ArrayList<>();
+        }
     }
 
     /**
@@ -139,6 +143,9 @@ public abstract class NodeList<T> extends NodeFeature {
      */
     protected T get(int index) {
         setAccessed();
+        if (values == null) {
+            throw new IndexOutOfBoundsException();
+        }
         return values.get(index);
     }
 
@@ -149,6 +156,7 @@ public abstract class NodeList<T> extends NodeFeature {
      *            the item to add
      */
     protected void add(T item) {
+        ensureValues();
         add(values.size(), item);
     }
 
@@ -161,6 +169,7 @@ public abstract class NodeList<T> extends NodeFeature {
      *            the item to insert
      */
     protected void add(int index, T item) {
+        ensureValues();
         values.add(index, item);
 
         addChange(new ListSpliceChange(this, isNodeValues(), index, 0,
@@ -175,18 +184,38 @@ public abstract class NodeList<T> extends NodeFeature {
      * @return the element previously at the specified position
      */
     protected T remove(int index) {
+        if (values == null) {
+            throw new IndexOutOfBoundsException();
+        }
+
         T removed = values.remove(index);
 
         addChange(new ListSpliceChange(this, isNodeValues(), index, 1,
                 Collections.emptyList()));
+
+        if (values.isEmpty()) {
+            values = null;
+        }
         return removed;
+    }
+
+    /**
+     * Gets or creates the list used to track changes that should be sent to the
+     * client.
+     * <p>
+     * This method is non-private for testing purposes.
+     *
+     * @return the list to track changes in
+     */
+    protected ArrayList<ListSpliceChange> getChangeTracker() {
+        return getNode().getChangeTracker(this, ArrayList::new);
     }
 
     private void addChange(ListSpliceChange change) {
         getNode().markAsDirty();
 
         // XXX combine with previous changes if possible
-        changes.add(change);
+        getChangeTracker().add(change);
 
         // TODO Fire some listeners
     }
@@ -197,8 +226,7 @@ public abstract class NodeList<T> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        changes.forEach(collector);
-        changes.clear();
+        getChangeTracker().forEach(collector);
     }
 
     @Override
@@ -206,11 +234,11 @@ public abstract class NodeList<T> extends NodeFeature {
     }
 
     @Override
-    public void resetChanges() {
-        changes.clear();
-        if (!values.isEmpty()) {
-            changes.add(new ListSpliceChange(this, isNodeValues(), 0, 0,
-                    new ArrayList<>(values)));
+    public void generateChangesFromEmpty() {
+        if (values != null) {
+            assert !values.isEmpty();
+            getChangeTracker().add(new ListSpliceChange(this, isNodeValues(), 0,
+                    0, new ArrayList<>(values)));
         }
     }
 
@@ -242,6 +270,9 @@ public abstract class NodeList<T> extends NodeFeature {
      */
     protected int indexOf(T value) {
         setAccessed();
+        if (values == null) {
+            return -1;
+        }
         return values.indexOf(value);
     }
 
@@ -251,6 +282,9 @@ public abstract class NodeList<T> extends NodeFeature {
      * @return an iterator returning all items
      */
     protected Iterator<T> iterator() {
+        if (values == null) {
+            return Collections.<T> emptyList().iterator();
+        }
         Iterator<T> arrayIterator = values.iterator();
         return new Iterator<T>() {
             int index = -1;
@@ -275,74 +309,4 @@ public abstract class NodeList<T> extends NodeFeature {
             }
         };
     }
-
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void readObject(ObjectInputStream stream)
-            throws IOException, ClassNotFoundException {
-        stream.defaultReadObject();
-
-        changes = (List<ListSpliceChange>) stream.readObject();
-        values = (List<T>) stream.readObject();
-
-        postReadChanges(changes);
-        postReadList((List) values);
-    }
-
-    /**
-     * Called after deserializing the internal value list.
-     * <p>
-     * Extending classes can override this method to do in-place transformations
-     * of the list.
-     *
-     * @param list
-     *            the list which was deserialized
-     */
-    protected void postReadList(List<Object> list) {
-    }
-
-    /**
-     * Called after deserializing the internal changes list.
-     * <p>
-     * Extending classes can override this method to do inplace transformations
-     * of the list, if needed.
-     *
-     * @param list
-     *            the list which was deserialized
-     */
-    protected void postReadChanges(List<ListSpliceChange> list) {
-    }
-
-    /**
-     * Called before serializing the internal values list.
-     * <p>
-     * Extending classes can override this method and to do transformations on a
-     * copy of the list, if needed. No modifications can be done to the list
-     * itself.
-     *
-     * @return the original list or a modified copy of the list
-     */
-    protected Serializable preWriteValues(List<T> list) {
-        return (Serializable) list;
-    }
-
-    /**
-     * Called before serializing the internal changes list.
-     * <p>
-     * Extending classes can override this method and to do transformations on a
-     * copy of the list, if needed. No modifications can be done to the list
-     * itself.
-     *
-     * @return the original list or a modified copy of the list
-     */
-    protected Serializable preWriteChanges(List<ListSpliceChange> list) {
-        return (Serializable) list;
-    }
-
-    private void writeObject(ObjectOutputStream stream) throws IOException {
-        stream.defaultWriteObject();
-
-        stream.writeObject(preWriteChanges(changes));
-        stream.writeObject(preWriteValues(values));
-    }
-
 }

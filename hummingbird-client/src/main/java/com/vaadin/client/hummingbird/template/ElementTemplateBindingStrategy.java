@@ -21,6 +21,7 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.util.NativeFunction;
@@ -37,7 +38,7 @@ import jsinterop.annotations.JsFunction;
 
 /**
  * Element template binding strategy.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -73,6 +74,8 @@ public class ElementTemplateBindingStrategy
                 stateNode.getTree(), templateId);
         bindProperties(stateNode, templateNode, element);
 
+        bindClassNames(stateNode, templateNode, element);
+
         JsonObject attributes = templateNode.getAttributes();
         if (attributes != null) {
             for (String name : attributes.keys()) {
@@ -84,14 +87,14 @@ public class ElementTemplateBindingStrategy
             }
         }
 
-        JsArray<Double> children = templateNode.getChildren();
+        JsArray<Double> children = templateNode.getChildrenIds();
         if (children != null) {
             for (int i = 0; i < children.length(); i++) {
                 int childTemplateId = children.get(i).intValue();
 
                 Node child = createAndBind(stateNode, childTemplateId, context);
 
-                element.appendChild(child);
+                DomApi.wrap(element).appendChild(child);
             }
         }
 
@@ -139,14 +142,20 @@ public class ElementTemplateBindingStrategy
 
     private void bindProperties(StateNode stateNode,
             ElementTemplateNode templateNode, Element element) {
-        JsonObject properties = templateNode.getProperties();
-        if (properties != null) {
-            for (String name : properties.keys()) {
-                Binding binding = WidgetUtil.crazyJsCast(properties.get(name));
-                bind(stateNode, binding, value -> WidgetUtil
-                        .setJsProperty(element, name, value.orElse(null)));
+        bind(stateNode, templateNode.getProperties(),
+                (name, value) -> WidgetUtil.setJsProperty(element, name,
+                        value.orElse(null)));
+    }
+
+    private void bindClassNames(StateNode stateNode,
+            ElementTemplateNode templateNode, Element element) {
+        bind(stateNode, templateNode.getClassNames(), (name, value) -> {
+            if (WidgetUtil.isTrueish(value.orElse(null))) {
+                DomApi.wrap(element).getClassList().add(name);
+            } else {
+                DomApi.wrap(element).getClassList().remove(name);
             }
-        }
+        });
     }
 
     private void bindOverrideNode(Element element, MapProperty overrideProperty,
@@ -163,8 +172,9 @@ public class ElementTemplateBindingStrategy
     private JavaScriptObject createServerProxy(StateNode node) {
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
-        if (node.hasFeature(NodeFeatures.TEMPLATE_METADATA)) {
-            NodeList list = node.getList(NodeFeatures.TEMPLATE_METADATA);
+        if (node.hasFeature(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES)) {
+            NodeList list = node
+                    .getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES);
             for (int i = 0; i < list.length(); i++) {
                 attachServerProxyMethod(proxy, node, list.get(i).toString());
             }
@@ -176,8 +186,9 @@ public class ElementTemplateBindingStrategy
             StateNode node, String methodName)
     /*-{
         proxy[methodName] = $entry(function() {
+            var args = Array.prototype.slice.call(arguments);
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
-            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName);
+            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
         });
     }-*/;
 

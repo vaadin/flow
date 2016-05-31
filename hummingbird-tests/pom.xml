@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.7-SNAPSHOT</version>
+		<version>0.0.8-SNAPSHOT</version>
 	</parent>
 	<artifactId>hummingbird-tests</artifactId>
 	<name>Hummingbird tests</name>
@@ -35,12 +35,12 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird</artifactId>
-			<version>0.0.7-SNAPSHOT</version>
+			<version>0.0.8-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-test-util</artifactId>
-			<version>0.0.7-SNAPSHOT</version>
+			<version>0.0.8-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -161,6 +161,7 @@
 								<resourceBases>
 									<!-- these paths are relative to the project where the profile is 
 										triggered -->
+									<resourceBase>${project.basedir}/src/main/webapp</resourceBase>
 									<resourceBase>${project.basedir}/../../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
 									<resourceBase>${project.basedir}/../../hummingbird-client/target/classes/META-INF/resources</resourceBase>
 									<resourceBase>${project.basedir}/../../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>

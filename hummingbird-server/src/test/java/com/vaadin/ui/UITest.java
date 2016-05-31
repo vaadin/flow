@@ -6,18 +6,27 @@ import java.util.List;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinResponse;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
+import com.vaadin.util.CurrentInstance;
 
 public class UITest {
+
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
+    }
 
     @Test
     public void elementIsBody() {
@@ -29,14 +38,17 @@ public class UITest {
     private static UI createAndInitTestUI(String initialLocation) {
         UI ui = new UI();
 
-        initUI(ui, initialLocation);
+        initUI(ui, initialLocation, null);
 
         return ui;
     }
 
-    private static void initUI(UI ui, String initialLocation) {
+    private static void initUI(UI ui, String initialLocation,
+            ArgumentCaptor<Integer> statusCodeCaptor) {
         try {
             VaadinRequest request = Mockito.mock(VaadinRequest.class);
+            VaadinResponse response = Mockito.mock(VaadinResponse.class);
+
             String pathInfo;
             if (initialLocation.isEmpty()) {
                 pathInfo = null;
@@ -50,6 +62,7 @@ public class UITest {
             VaadinServlet servlet = new VaadinServlet();
             servlet.init(servletConfig);
             VaadinService service = servlet.getService();
+            service.setCurrentInstances(request, response);
 
             service.getRouter().reconfigure(c -> {
             });
@@ -59,6 +72,10 @@ public class UITest {
             ui.getInternals().setSession(session);
 
             ui.doInit(request, 0);
+
+            if (statusCodeCaptor != null) {
+                Mockito.verify(response).setStatus(statusCodeCaptor.capture());
+            }
         } catch (ServletException e) {
             throw new RuntimeException(e);
         }
@@ -108,7 +125,7 @@ public class UITest {
     }
 
     @Test
-    public void testUiInitWithConfiguredRouter() {
+    public void testUiInitWithConfiguredRouter_noRouteMatches_404ViewAndCodeReturned() {
         UI ui = new UI() {
             @Override
             protected void init(VaadinRequest request) {
@@ -116,11 +133,15 @@ public class UITest {
             }
         };
 
-        initUI(ui, "");
+        ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
+                .forClass(Integer.class);
+
+        initUI(ui, "", statusCodeCaptor);
 
         Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
         Assert.assertFalse(
                 ui.getElement().getTextContent().contains("UI.init"));
+        Assert.assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
     }
 
     @Test
@@ -162,7 +183,7 @@ public class UITest {
         UI ui = new UI();
         List<AttachEvent> events = new ArrayList<>();
         ui.addAttachListener(events::add);
-        initUI(ui, "");
+        initUI(ui, "", null);
 
         Assert.assertEquals(1, events.size());
         Assert.assertEquals(ui, events.get(0).getSource());
@@ -173,7 +194,7 @@ public class UITest {
         UI ui = new UI();
         List<DetachEvent> events = new ArrayList<>();
         ui.addDetachListener(events::add);
-        initUI(ui, "");
+        initUI(ui, "", null);
 
         ui.getSession().access(() -> ui.getInternals().setSession(null));
         Assert.assertEquals(1, events.size());

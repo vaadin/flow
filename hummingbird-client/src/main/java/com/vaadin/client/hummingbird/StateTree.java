@@ -16,10 +16,13 @@
 package com.vaadin.client.hummingbird;
 
 import com.vaadin.client.Registry;
+import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 /**
@@ -160,18 +163,23 @@ public class StateTree {
     }
 
     /**
-     * Sends a request to call server side method with {@code methodName}.
-     * 
+     * Sends a request to call server side method with {@code methodName} using
+     * {@code argsArray} as argument values.
+     *
      * @param node
      *            the node referring to the server side instance containing the
      *            method
      * @param methodName
      *            the method name
+     * @param argsArray
+     *            the arguments array for the method
      */
-    public void sendTemplateEventToServer(StateNode node, String methodName) {
+    public void sendTemplateEventToServer(StateNode node, String methodName,
+            JsArray<?> argsArray) {
         assert assertValidNode(node);
-        registry.getServerConnector().sendTemplateEventMessage(node,
-                methodName);
+        JsonArray array = WidgetUtil.crazyJsCast(argsArray);
+        registry.getServerConnector().sendTemplateEventMessage(node, methodName,
+                array);
     }
 
     /**
@@ -222,6 +230,8 @@ public class StateTree {
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE, "template");
             nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS,
                     "synchronizedPropertyEvents");
+            nodeFeatureDebugName.set(NodeFeatures.SYNCHRONIZED_PROPERTIES,
+                    "synchronizedProperties");
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_OVERRIDES,
                     "templateOverrides");
             nodeFeatureDebugName.set(NodeFeatures.OVERRIDE_DATA,

@@ -20,15 +20,25 @@ import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.router.ViewRendererTest.ErrorView;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
+import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinResponse;
+import com.vaadin.server.VaadinService;
+import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
 import com.vaadin.ui.UI;
+import com.vaadin.util.CurrentInstance;
 
 public class RouterTest {
 
@@ -54,17 +64,23 @@ public class RouterTest {
         private final AtomicReference<NavigationEvent> handledEvent = new AtomicReference<>();
 
         @Override
-        public NavigationHandler resolve(NavigationEvent eventToResolve) {
+        public Optional<NavigationHandler> resolve(
+                NavigationEvent eventToResolve) {
             Assert.assertNull(resolvedLocation.get());
             resolvedLocation.set(eventToResolve.getLocation());
-            return new NavigationHandler() {
+            return Optional.of(new NavigationHandler() {
                 @Override
                 public void handle(NavigationEvent eventToHandle) {
                     Assert.assertNull(handledEvent.get());
                     handledEvent.set(eventToHandle);
                 }
-            };
+            });
         }
+    }
+
+    @After
+    public void tearDown() {
+        CurrentInstance.clearAll();
     }
 
     @Test
@@ -116,11 +132,42 @@ public class RouterTest {
     }
 
     @Test
-    public void testResolveError() {
+    public void testResolveError() throws ServletException {
+        UI ui = new RouterTestUI();
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+
+        ServletConfig servletConfig = new MockServletConfig();
+        VaadinServlet servlet = new VaadinServlet();
+        servlet.init(servletConfig);
+        VaadinService service = servlet.getService();
+        service.setCurrentInstances(request, response);
+
+        Router router = new Router();
+        router.reconfigure(c -> c.setResolver(event -> Optional.empty()));
+
+        router.navigate(ui, new Location(""));
+
+        Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+        // 404 code should be sent ONLY on initial request
+        Mockito.verifyZeroInteractions(response);
+
+        // to verify that the setup has been correct and the mocks work,
+        // test the case where 404 should be sent
+        router.initializeUI(ui, request);
+
+        ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
+                .forClass(Integer.class);
+        Mockito.verify(response).setStatus(statusCodeCaptor.capture());
+        Assert.assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
+    }
+
+    @Test
+    public void testResolverError_noCurrentResponse() {
         UI ui = new RouterTestUI();
 
         Router router = new Router();
-        router.reconfigure(c -> c.setResolver(event -> null));
+        router.reconfigure(c -> c.setResolver(event -> Optional.empty()));
 
         router.navigate(ui, new Location(""));
 
@@ -203,9 +250,10 @@ public class RouterTest {
         AtomicReference<String> usedHandler = new AtomicReference<>();
 
         router.reconfigure(configuration -> {
-            configuration.setResolver(resolveEvent -> handlerEvent -> {
-                usedHandler.set("resolver");
-            });
+            configuration
+                    .setResolver(resolveEvent -> Optional.of(handlerEvent -> {
+                        usedHandler.set("resolver");
+                    }));
 
             configuration.setRoute("*", e -> {
                 usedHandler.set("route");
@@ -224,7 +272,7 @@ public class RouterTest {
         AtomicReference<String> usedHandler = new AtomicReference<>();
 
         router.reconfigure(configuration -> {
-            configuration.setResolver(resolveEvent -> null);
+            configuration.setResolver(resolveEvent -> Optional.empty());
 
             configuration.setRoute("*", e -> {
                 usedHandler.set("route");

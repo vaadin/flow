@@ -25,7 +25,7 @@ public class NodeUnregisterEvent {
 
     /**
      * Creates a new node unregister event.
-     * 
+     *
      * @param node
      *            the unregistered node
      */
@@ -35,7 +35,7 @@ public class NodeUnregisterEvent {
 
     /**
      * Gets the unregistered node.
-     * 
+     *
      * @return the unregistered node
      */
     public StateNode getNode() {

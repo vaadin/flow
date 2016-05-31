@@ -18,13 +18,14 @@ package com.vaadin.client.hummingbird.template;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
+import com.vaadin.client.hummingbird.dom.DomApi;
 
 import elemental.client.Browser;
 import elemental.dom.Text;
 
 /**
  * Text template binding strategy.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -47,7 +48,7 @@ public class TextTemplateBindingStrategy
         TextTemplateNode templateNode = (TextTemplateNode) getTemplateNode(
                 stateNode.getTree(), templateId);
         Binding binding = templateNode.getTextBinding();
-        bind(stateNode, binding, value -> node
+        bind(stateNode, binding, value -> DomApi.wrap(node)
                 .setTextContent(value.map(Object::toString).orElse("")));
     }
 

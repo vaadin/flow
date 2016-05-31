@@ -23,7 +23,7 @@ import java.io.Serializable;
  * Output stream consumer. Implementation of this interface should write data
  * into {@link OutputStream} instance provided as an argument to its
  * {@link #accept(OutputStream, VaadinSession)} method.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -37,7 +37,7 @@ public interface StreamResourceWriter extends Serializable {
      * Note that the method is not called under the session lock. It means that
      * if implementation requires access to the application/session data then
      * the session has to be locked explicitly.
-     * 
+     *
      * @param stream
      *            data output stream
      * @param session

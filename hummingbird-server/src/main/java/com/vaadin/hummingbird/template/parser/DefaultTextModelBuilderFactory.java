@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.template.TextTemplateBuilder;
 
 /**
  * The factory that is default for JSOUP {@link TextNode}s.
- * 
+ *
  * @author Vaadin Ltd
  *
  */
@@ -44,6 +44,7 @@ public class DefaultTextModelBuilderFactory
 
     @Override
     public TemplateNodeBuilder createBuilder(TextNode node,
+            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         String text = node.text();
         if (text.startsWith("{{") && text.endsWith("}}")) {
