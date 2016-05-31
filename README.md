@@ -27,6 +27,11 @@ Import the Project into the Workspace
 1. Select the *hummingbird* folder (where you cloned the project)
 1. Ensure all projects are checked
 1. Click “finish” to complete the import
+1. Disable HTML and XML validation in the workspace to avoid validating Bower dependencies
+ 1. *Eclipse* -> *Preferences* -> *Validation*
+ 1. Uncheck *Build* for *HTML Syntax Validator*
+ 1. Uncheck *Build* for *XML Validator*
+
 
 Note that the first compilation takes a while to finish as Maven downloads dependencies used in the projects.
 

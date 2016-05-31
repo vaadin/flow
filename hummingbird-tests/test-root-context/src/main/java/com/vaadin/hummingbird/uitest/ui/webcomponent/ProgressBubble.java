@@ -26,7 +26,7 @@ import com.vaadin.ui.HasText;
  * @author Vaadin Ltd
  */
 @Tag("progress-bubble")
-@HtmlImport(PolyGit.BASE_URL + "progress-bubble/progress-bubble.html")
+@HtmlImport("/bower_components/progress-bubble/progress-bubble.html")
 public class ProgressBubble extends Component
         implements HasValue, HasMax, HasText {
 
