@@ -19,6 +19,7 @@ import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.html.Span;
 import com.vaadin.ui.Template;
 
@@ -38,6 +39,8 @@ public class TemplateComponentMappingView extends Template {
     private Span span;
     @Id(BUTTON_ID)
     private Button button;
+    @Id(INPUT_ID)
+    private Input input;
 
     public TemplateComponentMappingView() {
         span.getElement().addEventListener("click",
@@ -45,6 +48,11 @@ public class TemplateComponentMappingView extends Template {
         button.addClickListener(e -> {
             logClick(e.getSource().getElement());
         });
+        input.addChangeListener(e -> {
+            log(e.getSource().getId().get() + " value changed to "
+                    + input.getValue());
+        });
+        input.getElement().setProperty("value", "baz");
     }
 
     private void logClick(Element source) {

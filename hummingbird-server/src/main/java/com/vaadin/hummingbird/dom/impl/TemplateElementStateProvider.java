@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.dom.impl;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -41,6 +40,8 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
+import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
+import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
@@ -139,7 +140,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
             .of(OverrideElementData.class, ElementChildrenList.class,
                     ParentGeneratorHolder.class, ComponentMapping.class,
-                    ElementPropertyMap.class, ElementListenerMap.class)
+                    ElementPropertyMap.class, ElementListenerMap.class,
+                    SynchronizedPropertiesList.class,
+                    SynchronizedPropertyEventsList.class)
             .toArray(Class[]::new);
 
     private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
@@ -402,12 +405,16 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Set<String> getSynchronizedProperties(StateNode node) {
-        return Collections.emptySet();
+        return getOrCreateOverrideNode(node)
+                .getFeature(SynchronizedPropertiesList.class)
+                .getSynchronizedProperties();
     }
 
     @Override
     public Set<String> getSynchronizedPropertyEvents(StateNode node) {
-        return Collections.emptySet();
+        return getOrCreateOverrideNode(node)
+                .getFeature(SynchronizedPropertyEventsList.class)
+                .getSynchronizedPropertyEvents();
     }
 
     @Override
