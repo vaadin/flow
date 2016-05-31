@@ -25,6 +25,20 @@
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<webResources>
+						<resource>
+							<!-- this is relative to the pom.xml directory -->
+							<directory>.</directory>
+							<include>bower_components/**</include>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+
 			<!-- This module is mapped to default web context -->
 			<plugin>
 				<groupId>org.eclipse.jetty</groupId>
@@ -45,6 +59,41 @@
 						<goals>
 							<goal>stop</goal>
 						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.0</version>
+				<configuration>
+					<nodeVersion>v6.2.0</nodeVersion>
+					<npmVersion>3.9.3</npmVersion>
+				</configuration>
+				<executions>
+					<execution>
+						<id>install-node-and-npm</id>
+						<goals>
+							<goal>install-node-and-npm</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>install-bower</id>
+						<goals>
+							<goal>npm</goal>
+						</goals>
+						<configuration>
+							<arguments>install bower@1.7.9</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>bower</id>
+						<goals>
+							<goal>bower</goal>
+						</goals>
+						<configuration>
+							<arguments>install</arguments>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
