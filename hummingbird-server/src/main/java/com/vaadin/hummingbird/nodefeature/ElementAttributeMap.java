@@ -17,7 +17,9 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.NodeOwner;
@@ -39,6 +41,8 @@ public class ElementAttributeMap extends NodeMap {
     private HashMap<String, StreamResourceRegistration> resourceRegistrations;
 
     private HashMap<String, EventRegistrationHandle> pendingResources;
+
+    private Set<String> tracked;
 
     /**
      * Creates a new element attribute map for the given node.
@@ -123,6 +127,21 @@ public class ElementAttributeMap extends NodeMap {
             registerResource(attribute, resource);
         } else {
             deferRegistration(attribute, resource);
+        }
+    }
+
+    public boolean isTracked(String key) {
+        return tracked != null && tracked.contains(key);
+    }
+
+    @Override
+    protected void changed(String key) {
+        // track attributes changes only for override node
+        if (getNode().hasFeature(OverrideElementData.class)) {
+            if (tracked == null) {
+                tracked = new HashSet<>();
+            }
+            tracked.add(key);
         }
     }
 
