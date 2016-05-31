@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.dom.impl;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -41,11 +40,14 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
+import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
+import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.BindingValueProvider;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
+import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.util.JavaScriptSemantics;
 import com.vaadin.server.StreamResource;
@@ -139,7 +141,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
             .of(OverrideElementData.class, ElementChildrenList.class,
                     ParentGeneratorHolder.class, ComponentMapping.class,
-                    ElementPropertyMap.class, ElementListenerMap.class)
+                    ElementPropertyMap.class, ElementListenerMap.class,
+                    SynchronizedPropertiesList.class,
+                    SynchronizedPropertyEventsList.class)
             .toArray(Class[]::new);
 
     private static final String CANT_MODIFY_MESSAGE = "Can't modify element defined in a template";
@@ -177,19 +181,35 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute, String value) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        checkModifiableAttribute(attribute);
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
+                .setAttribute(overrideNode, attribute, value));
     }
 
     @Override
     public void setAttribute(StateNode node, String attribute,
             StreamResource resource) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        checkModifiableAttribute(attribute);
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
+                .setAttribute(overrideNode, attribute, resource));
     }
 
     @Override
     public String getAttribute(StateNode node, String attribute) {
-        return templateNode.getAttributeBinding(attribute)
-                .map(binding -> binding.getValue(node, ""))
+        Optional<BindingValueProvider> provider = templateNode
+                .getAttributeBinding(attribute);
+        boolean useOverrideNodeAttribute = provider
+                .orElse(null) instanceof StaticBindingValueProvider
+                && getOverrideNode(node).isPresent()
+                && BasicElementStateProvider.get()
+                        .hasAttribute(getOverrideNode(node).get(), attribute);
+        if (!provider.isPresent() || useOverrideNodeAttribute) {
+            return getOverrideNode(node)
+                    .map(overrideNode -> BasicElementStateProvider.get()
+                            .getAttribute(overrideNode, attribute))
+                    .orElse(null);
+        }
+        return provider.map(binding -> binding.getValue(node, ""))
                 .map(Object::toString).orElse(null);
     }
 
@@ -200,7 +220,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public void removeAttribute(StateNode node, String attribute) {
-        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
+        checkModifiableAttribute(attribute);
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
+                .removeProperty(overrideNode, attribute));
     }
 
     @Override
@@ -402,12 +424,16 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Set<String> getSynchronizedProperties(StateNode node) {
-        return Collections.emptySet();
+        return getOrCreateOverrideNode(node)
+                .getFeature(SynchronizedPropertiesList.class)
+                .getSynchronizedProperties();
     }
 
     @Override
     public Set<String> getSynchronizedPropertyEvents(StateNode node) {
-        return Collections.emptySet();
+        return getOrCreateOverrideNode(node)
+                .getFeature(SynchronizedPropertyEventsList.class)
+                .getSynchronizedPropertyEvents();
     }
 
     @Override
@@ -490,6 +516,17 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         if (templateNode.getPropertyBinding(name).isPresent()) {
             throw new IllegalArgumentException(String.format(
                     "Can't modify property '%s' with binding defined in a template",
+                    name));
+        }
+    }
+
+    private void checkModifiableAttribute(String name) {
+        Optional<BindingValueProvider> provider = templateNode
+                .getAttributeBinding(name);
+        if (provider.isPresent()
+                && !(provider.get() instanceof StaticBindingValueProvider)) {
+            throw new IllegalArgumentException(String.format(
+                    "Can't modify attribute '%s' with binding defined in a template",
                     name));
         }
     }

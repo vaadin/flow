@@ -48,6 +48,10 @@ import com.vaadin.ui.ComponentTest.TestComponent;
  */
 public class TemplateTest {
 
+    private static final String NEW_VALUE = "newValue";
+    private static final String DUMMY_EVENT = "dummy-event";
+    private static final String TEST_PROPERTY = "test-property";
+
     private static class TestTemplate extends Template {
         TestTemplate() {
             super(new ByteArrayInputStream(
@@ -360,6 +364,33 @@ public class TemplateTest {
         });
         ServerRpcHandlerTest.sendElementEvent(element, ui, "test-event", null);
         Assert.assertEquals(1, invoked.get());
+    }
+
+    public void templateSynchronizeRootElement() throws Exception {
+        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
+        Element element = t.getElement();
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT);
+        UI ui = new UI();
+        ui.add(t);
+        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
+        ServerRpcHandlerTest.sendSynchronizePropertyEvent(element, ui,
+                TEST_PROPERTY, NEW_VALUE);
+        Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
+        Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
+    }
+
+    @Test
+    public void templateSynchronizeNonRootElement() throws Exception {
+        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
+        Element element = t.header.getElement();
+        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT);
+        UI ui = new UI();
+        ui.add(t);
+        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
+        ServerRpcHandlerTest.sendSynchronizePropertyEvent(element, ui,
+                TEST_PROPERTY, NEW_VALUE);
+        Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
+        Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
     }
 
 }
