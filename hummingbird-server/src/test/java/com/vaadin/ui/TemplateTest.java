@@ -18,7 +18,6 @@ package com.vaadin.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -39,7 +38,6 @@ import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.hummingbird.template.TemplateParseException;
-import com.vaadin.server.communication.ServerRpcHandlerTest;
 import com.vaadin.ui.ComponentTest.TestComponent;
 
 /**
@@ -47,10 +45,6 @@ import com.vaadin.ui.ComponentTest.TestComponent;
  *
  */
 public class TemplateTest {
-
-    private static final String NEW_VALUE = "newValue";
-    private static final String DUMMY_EVENT = "dummy-event";
-    private static final String TEST_PROPERTY = "test-property";
 
     private static class TestTemplate extends Template {
         TestTemplate() {
@@ -336,61 +330,6 @@ public class TemplateTest {
     @After
     public void checkThreadLocal() {
         Assert.assertNull(Component.elementToMapTo.get());
-    }
-
-    @Test
-    public void rootElementEventListener() throws Exception {
-        UI ui = new UI();
-        Template t = new InlineTemplate("<root><child></child></root>");
-        Element element = t.getElement();
-        ui.add(t);
-        AtomicInteger invoked = new AtomicInteger(0);
-        element.addEventListener("test-event", e -> {
-            invoked.incrementAndGet();
-        });
-        ServerRpcHandlerTest.sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invoked.get());
-    }
-
-    @Test
-    public void childElementEventListener() throws Exception {
-        UI ui = new UI();
-        Template t = new InlineTemplate("<root><child></child></root>");
-        Element element = t.getElement().getChild(0);
-        ui.add(t);
-        AtomicInteger invoked = new AtomicInteger(0);
-        element.addEventListener("test-event", e -> {
-            invoked.incrementAndGet();
-        });
-        ServerRpcHandlerTest.sendElementEvent(element, ui, "test-event", null);
-        Assert.assertEquals(1, invoked.get());
-    }
-
-    public void templateSynchronizeRootElement() throws Exception {
-        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
-        Element element = t.getElement();
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT);
-        UI ui = new UI();
-        ui.add(t);
-        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
-        ServerRpcHandlerTest.sendSynchronizePropertyEvent(element, ui,
-                TEST_PROPERTY, NEW_VALUE);
-        Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
-        Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
-    }
-
-    @Test
-    public void templateSynchronizeNonRootElement() throws Exception {
-        TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
-        Element element = t.header.getElement();
-        element.synchronizeProperty(TEST_PROPERTY, DUMMY_EVENT);
-        UI ui = new UI();
-        ui.add(t);
-        Assert.assertFalse(element.hasProperty(TEST_PROPERTY));
-        ServerRpcHandlerTest.sendSynchronizePropertyEvent(element, ui,
-                TEST_PROPERTY, NEW_VALUE);
-        Assert.assertTrue(element.hasProperty(TEST_PROPERTY));
-        Assert.assertEquals(NEW_VALUE, element.getProperty(TEST_PROPERTY));
     }
 
 }
