@@ -197,9 +197,17 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public String getAttribute(StateNode node, String attribute) {
+        Optional<BindingValueProvider> provider = templateNode
+                .getAttributeBinding(attribute);
+        String boundValue = provider.map(binding -> binding.getValue(node, ""))
+                .map(Object::toString).orElse(null);
+        if (provider.isPresent()
+                && !(provider.get() instanceof StaticBindingValueProvider)) {
+            return boundValue;
+        }
         /*
-         * Always fetch an attribute from override node first if it exists. In
-         * contrast with properties attributes may be defined in the template
+         * Always fetch an attribute from the override node first if it exists.
+         * In contrast with properties attributes may be defined in the template
          * inlined. But this definition may be overriden and overriden value
          * should be used if any.
          */
@@ -208,10 +216,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             return BasicElementStateProvider.get()
                     .getAttribute(overrideNode.get(), attribute);
         }
-        Optional<BindingValueProvider> provider = templateNode
-                .getAttributeBinding(attribute);
-        return provider.map(binding -> binding.getValue(node, ""))
-                .map(Object::toString).orElse(null);
+        return boundValue;
     }
 
     @Override

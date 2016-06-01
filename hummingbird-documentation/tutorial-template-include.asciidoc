@@ -1,0 +1,55 @@
+= Including Templates in Templates
+
+An HTML template can be split into several HTML files to make maintenance easier. You can e.g. create separate files for your main view, header and footer as follows:
+
+[source,html]
+.main.html
+----
+<div>
+  @include header.html@
+  <div id="content">Here goes the content</div>
+  @include footer.html@
+</div>
+----
+
+[source,html]
+.header.html
+----
+<div>
+  <span>Menu item 1</span>
+  <span>Menu item 2</span>
+  <span>Menu item 3</span>
+</div>
+----
+
+[source,html]
+.footer.html
+----
+<div>
+  <span>Footer goes here</span>
+</div>
+----
+
+The end result will be exactly the same as if your main template looked like:
+
+[source,html]
+.main.all-in-one.html
+----
+<div>
+  <div>
+    <span>Menu item 1</span>
+    <span>Menu item 2</span>
+    <span>Menu item 3</span>
+  </div>
+  <div id="content">Here goes the content</div>
+  <div>
+    <span>Footer goes here</span>
+  </div>
+</div>
+----
+
+[NOTE]
+Included HTML templates, just like other templates, must have a single root element.
+
+[NOTE]
+If you use paths in the `@include path/file.html@` statement, the paths are always relative to the HTML file which contains the `@include`.

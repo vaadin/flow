@@ -17,15 +17,9 @@ package com.vaadin.hummingbird.uitest.ui.webcomponent;
 
 import java.util.ArrayList;
 
-import javax.servlet.annotation.WebServlet;
-
-import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
-import com.vaadin.hummingbird.router.RouterConfiguration;
-import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.server.VaadinServlet;
 
 /**
  * Example on how to use a web component.
@@ -68,23 +62,5 @@ public class ProgressBubbleView extends Div implements View {
 
         add(makeProgress, increaseMax);
         bubbles.forEach(this::add);
-    }
-
-    /**
-     * Servlet for the application.
-     */
-    @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
-    @VaadinServletConfiguration(routerConfigurator = RouterConf.class, productionMode = false)
-    public static class MyUIServlet extends VaadinServlet {
-    }
-
-    /**
-     * Router configuration for the demo.
-     */
-    public static class RouterConf implements RouterConfigurator {
-        @Override
-        public void configure(RouterConfiguration configuration) {
-            configuration.setRoute("", ProgressBubbleView.class);
-        }
     }
 }

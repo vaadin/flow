@@ -41,13 +41,15 @@ public class ComponentAttach {
     @Tag("div")
     public class ShoppingCartSummaryLabel extends Component {
 
+        private final Consumer<EventObject> eventHandler = this::onCartSummaryUpdate;
+
         @Override
         protected void onAttach(AttachEvent attachEvent) {
             //@formatter:off - custom line wrapping
             ShopEventBus eventBus = attachEvent.getSession().getAttribute(ShopEventBus.class);
             //@formatter:on
             // registering to event bus for updates from other components
-            eventBus.register(this::onCartSummaryUpdate);
+            eventBus.register(eventHandler);
         }
 
         @Override
@@ -56,7 +58,7 @@ public class ComponentAttach {
             ShopEventBus eventBus = detachEvent.getSession().getAttribute(ShopEventBus.class);
             // @formatter:on
             // after detaching don't need any updates
-            eventBus.unregister(this::onCartSummaryUpdate);
+            eventBus.unregister(eventHandler);
         }
 
         private void onCartSummaryUpdate(EventObject event) {
