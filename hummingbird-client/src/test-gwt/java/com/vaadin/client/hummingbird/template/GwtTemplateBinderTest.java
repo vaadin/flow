@@ -48,6 +48,10 @@ import elemental.json.JsonObject;
 
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
+    /**
+     * 
+     */
+    private static final String MODEL_KEY = "key";
     private Registry registry;
     private StateTree tree;
     private StateNode stateNode;
@@ -147,10 +151,10 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop", TestBinding
-                .createBinding(ModelValueBindingProvider.TYPE, "key"));
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-        map.getProperty("key").setValue("foo");
+        map.getProperty(MODEL_KEY).setValue("foo");
         Node domNode = createElement(templateNode);
 
         Reactive.flush();
@@ -162,15 +166,15 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop", TestBinding
-                .createBinding(ModelValueBindingProvider.TYPE, "key"));
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-        map.getProperty("key").setValue("foo");
+        map.getProperty(MODEL_KEY).setValue("foo");
         Node domNode = createElement(templateNode);
 
         Reactive.flush();
 
-        map.getProperty("key").setValue("bar");
+        map.getProperty(MODEL_KEY).setValue("bar");
 
         Reactive.flush();
 
@@ -181,10 +185,10 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop", TestBinding
-                .createBinding(ModelValueBindingProvider.TYPE, "key"));
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-        map.getProperty("key").setValue("foo");
+        map.getProperty(MODEL_KEY).setValue("foo");
         Node domNode = createElement(templateNode);
 
         assertEquals(null, WidgetUtil.getJsProperty(domNode, "prop"));
@@ -199,7 +203,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         templateNode.addProperty("prop", TestBinding
-                .createBinding(ModelValueBindingProvider.TYPE, "key"));
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
         Node domNode = createElement(templateNode);
 
         Reactive.flush();
@@ -207,16 +211,80 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals(null, WidgetUtil.getJsProperty(domNode, "prop"));
     }
 
+    public void testAttributeBindingTemplate() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addAttribute("attr", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+        map.getProperty(MODEL_KEY).setValue("foo");
+        Element domNode = createElement(templateNode);
+
+        Reactive.flush();
+
+        assertEquals("foo", domNode.getAttribute("attr"));
+    }
+
+    public void testUpdateAttributeBindingTemplate() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addAttribute("attr", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+        map.getProperty(MODEL_KEY).setValue("foo");
+        Element domNode = createElement(templateNode);
+
+        Reactive.flush();
+
+        map.getProperty(MODEL_KEY).setValue("bar");
+
+        Reactive.flush();
+
+        assertEquals("bar", domNode.getAttribute("attr"));
+    }
+
+    public void testUnregister_sttributeBindingUpdateIsNotDone() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addAttribute("attr", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+        map.getProperty(MODEL_KEY).setValue("foo");
+        Element domNode = createElement(templateNode);
+
+        assertEquals(null, domNode.getAttribute("attr"));
+
+        stateNode.unregister();
+
+        Reactive.flush();
+        assertEquals(null, domNode.getAttribute("attr"));
+    }
+
+    public void testAttributeBindingNoValueTemplate() {
+        TestElementTemplateNode templateNode = TestElementTemplateNode
+                .create("div");
+        templateNode.addAttribute("attr", TestBinding
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
+        Element domNode = createElement(templateNode);
+
+        Reactive.flush();
+
+        assertEquals(null, domNode.getAttribute("attr"));
+    }
+
     public void testClassNameBinding() {
         MapProperty property = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
-                .getProperty("key");
+                .getProperty(MODEL_KEY);
 
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
 
         templateNode.addClassName("static", "true");
         templateNode.addClassName("dynamic", TestBinding
-                .createBinding(ModelValueBindingProvider.TYPE, "key"));
+                .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
 
         Element element = createElement(templateNode);
 
@@ -253,9 +321,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     public void testTextValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
-                .create(TestBinding.createTextValueBinding("key"));
+                .create(TestBinding.createTextValueBinding(MODEL_KEY));
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-        map.getProperty("key").setValue("foo");
+        map.getProperty(MODEL_KEY).setValue("foo");
         Node domNode = createText(templateNode);
 
         Reactive.flush();
@@ -265,14 +333,14 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     public void testUpdateTextValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
-                .create(TestBinding.createTextValueBinding("key"));
+                .create(TestBinding.createTextValueBinding(MODEL_KEY));
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-        map.getProperty("key").setValue("foo");
+        map.getProperty(MODEL_KEY).setValue("foo");
         Node domNode = createText(templateNode);
 
         Reactive.flush();
 
-        map.getProperty("key").setValue("bar");
+        map.getProperty(MODEL_KEY).setValue("bar");
 
         Reactive.flush();
 
@@ -281,9 +349,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     public void testUnregister_textBinsingUpdateIsNotDone() {
         TestTextTemplate templateNode = TestTextTemplate
-                .create(TestBinding.createTextValueBinding("key"));
+                .create(TestBinding.createTextValueBinding(MODEL_KEY));
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-        map.getProperty("key").setValue("foo");
+        map.getProperty(MODEL_KEY).setValue("foo");
         Node domNode = createText(templateNode);
 
         assertEquals("", domNode.getTextContent());
@@ -296,7 +364,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     public void testTextNoValueTemplate() {
         TestTextTemplate templateNode = TestTextTemplate
-                .create(TestBinding.createTextValueBinding("key"));
+                .create(TestBinding.createTextValueBinding(MODEL_KEY));
         Node domNode = createText(templateNode);
 
         Reactive.flush();
