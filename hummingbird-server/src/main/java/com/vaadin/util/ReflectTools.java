@@ -25,6 +25,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import com.vaadin.shared.util.SharedUtil;
 
@@ -274,6 +275,34 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Return all the getter methods from the given type.
+     * <p>
+     * Any getter methods from {@link Object} are excluded.
+     *
+     * @param type
+     *            the type to get getters from
+     * @return a stream of getter methods
+     */
+    public static Stream<Method> getGetterMethods(Class<?> type) {
+        return Stream.of(type.getMethods()).filter(ReflectTools::isGetter)
+                .filter(ReflectTools::isNotObjectMethod);
+    }
+
+    /**
+     * Returns whether the given method is <b>NOT</b> declared in {@link Object}
+     * .
+     *
+     * @param method
+     *            the method to check
+     * @return <code>true</code> if method is NOT declared in Object,
+     *         <code>false</code> if it is
+     */
+    public static boolean isNotObjectMethod(Method method) {
+        Class<?> declaringClass = method.getDeclaringClass();
+        return declaringClass != Object.class;
+    }
+
+    /**
      * Parses the property name from the given getter or setter method.
      * <p>
      * If the given method does not have a valid setter or getter name, this
@@ -287,8 +316,8 @@ public class ReflectTools implements Serializable {
      */
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
-        assert Pattern.compile("^(set|get|is)\\p{Lu}").matcher(methodName)
-                .find() : "Method is not a valid getter or setter";
+        assert isGetter(method)
+                || isSetter(method) : "Method is not a valid getter or setter";
 
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
                 .replaceFirst("");

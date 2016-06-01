@@ -1,7 +1,6 @@
 package com.vaadin.hummingbird.template.model;
 
 import java.io.ByteArrayInputStream;
-import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -9,6 +8,7 @@ import java.util.ArrayList;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.ui.Template;
@@ -20,62 +20,59 @@ public class TemplateModelTest {
     }
 
     public interface BasicTypeModel extends TemplateModel {
-        public boolean getBooleanPrimitive();
+        boolean getBooleanPrimitive();
 
-        public boolean isBooleanPrimitive();
+        boolean isBooleanPrimitive();
 
-        public void setBooleanPrimitive(boolean b);
+        void setBooleanPrimitive(boolean b);
 
-        public Boolean getBoolean();
+        Boolean getBoolean();
 
-        public void setBoolean(Boolean b);
+        void setBoolean(Boolean b);
 
-        public int getInt();
+        int getInt();
 
-        public void setInt(int i);
+        void setInt(int i);
 
-        public Integer getInteger();
+        Integer getInteger();
 
-        public void setInteger(Integer i);
+        void setInteger(Integer i);
 
-        public double getDoublePrimitive();
+        double getDoublePrimitive();
 
-        public void setDoublePrimitive(double d);
+        void setDoublePrimitive(double d);
 
-        public Double getDouble();
+        Double getDouble();
 
-        public void setDouble(Double d);
+        void setDouble(Double d);
 
-        public String getString();
+        String getString();
 
-        public void setString(String s);
+        void setString(String s);
     }
 
     public interface NotSupportedModel extends TemplateModel {
-        public void setLong(long l);
+        void setLong(long l);
 
-        public long getLong();
+        long getLong();
 
-        public void setBean(Bean b);
+        void setFoo();
 
-        public Bean getBean();
+        int setFoo(int foo);
 
-        public void setFoo();
+        int getFoo(int foo);
 
-        public int setFoo(int foo);
+        void getFoo();
 
-        public int getFoo(int foo);
+        void setFoo(int x, int y);
 
-        public void getFoo();
+        void setfoo(int i);
 
-        public void setFoo(int x, int y);
-
-        public void setfoo(int i);
-
-        public int isbar();
+        int isbar();
     }
 
-    public static class Bean implements Serializable {
+    public interface BeanModel extends TemplateModel {
+        void setBean(Bean bean);
     }
 
     public static class NoModelTemplate extends Template {
@@ -108,6 +105,13 @@ public class TemplateModelTest {
         @Override
         public NotSupportedModel getModel() {
             return (NotSupportedModel) super.getModel();
+        }
+    }
+
+    static class BeanModelTemplate extends NoModelTemplate {
+        @Override
+        public BeanModel getModel() {
+            return (BeanModel) super.getModel();
         }
     }
 
@@ -300,6 +304,37 @@ public class TemplateModelTest {
         Assert.assertEquals("foobar", model.getString());
     }
 
+    @Test
+    public void testBeanInModel() {
+        BeanModelTemplate template = new BeanModelTemplate();
+        BeanModel model = template.getModel();
+
+        Bean bean = new Bean();
+        bean.setBooleanObject(Boolean.TRUE);
+        bean.setBooleanValue(true);
+        bean.setIntValue(1);
+        bean.setIntObject(Integer.valueOf(2));
+        bean.setDoubleValue(1.0d);
+        bean.setDoubleObject(Double.valueOf(2.0d));
+        bean.setString("foobar");
+
+        StateNode stateNode = (StateNode) template.getElement().getNode()
+                .getFeature(ModelMap.class).getValue("bean");
+
+        Assert.assertNull(stateNode);
+
+        model.setBean(bean);
+
+        stateNode = (StateNode) template.getElement().getNode()
+                .getFeature(ModelMap.class).getValue("bean");
+
+        // enough to verify that TemplateModelBeanUtil.importBeanIntoModel is
+        // triggered, since TemplatemodelBeanUtilTests covers the bean import
+        Assert.assertNotNull(stateNode);
+        ModelMap modelMap = stateNode.getFeature(ModelMap.class);
+        Assert.assertNotNull(modelMap);
+    }
+
     @Test(expected = UnsupportedOperationException.class)
     public void testUnsupportedPrimitiveSetter() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
@@ -309,27 +344,11 @@ public class TemplateModelTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void testUnsupportedTypeSetter() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
-
-        model.setBean(new Bean());
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
     public void testUnsupportedPrimitiveGetter() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
 
         model.getLong();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void testUnsupportedTypeGetter() {
-        NotSupportedModelTemplate template = new NotSupportedModelTemplate();
-        NotSupportedModel model = template.getModel();
-
-        model.getBean();
     }
 
     @Test(expected = UnsupportedOperationException.class)
