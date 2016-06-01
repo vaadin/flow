@@ -287,8 +287,8 @@ public class ReflectTools implements Serializable {
      */
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
-        assert Pattern.compile("^(set|get|is)\\p{Lu}").matcher(methodName)
-                .find() : "Method is not a valid getter or setter";
+        assert isGetter(method)
+                || isSetter(method) : "Method is not a valid getter or setter";
 
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
                 .replaceFirst("");
