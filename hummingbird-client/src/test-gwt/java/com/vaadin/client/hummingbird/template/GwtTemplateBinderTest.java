@@ -48,9 +48,6 @@ import elemental.json.JsonObject;
 
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
-    /**
-     * 
-     */
     private static final String MODEL_KEY = "key";
     private Registry registry;
     private StateTree tree;

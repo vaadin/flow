@@ -15,23 +15,10 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.hummingbird.html.Button;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.ui.Template;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class AttributeBindingTemplateView extends AbstractDivView {
-
-    @Override
-    protected void onShow() {
-        Template template = new InlineTemplate(
-                "<input type='text' [attr.value]='foo'>");
-        Button button = new Button("Click to update 'value' attribute",
-                event -> template.getElement().getNode()
-                        .getFeature(ModelMap.class).setValue("foo", "bar"));
-        add(template, button);
-    }
+@HtmlTemplate("main.html")
+public class TemplateIncludeView extends Template {
+    // No code needed, just includes the template
 }

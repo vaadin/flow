@@ -13,26 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.humminbird.tutorial.template;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
+import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 
-import com.vaadin.hummingbird.testutil.PhantomJSTest;
-
-/**
- * @author Vaadin Ltd
- *
- */
-public class AttributeBindingTemplateIT extends PhantomJSTest {
-
-    @Test
-    public void setAttribute() {
-        open();
-
-        findElement(By.tagName("button")).click();
-        String value = findElement(By.tagName("input")).getAttribute("value");
-        Assert.assertEquals("bar", value);
-    }
+@CodeFor("tutorial-template-include.asciidoc")
+public class TemplateInclude {
+    // Needed by the test although there is no Java code in the tutorial
 }

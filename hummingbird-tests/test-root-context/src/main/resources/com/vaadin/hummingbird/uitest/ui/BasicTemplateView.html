@@ -7,4 +7,6 @@
 	<button id="modelText" (click)="$server.setModelText()">Set text model value</button>
 	<button id="modelBoolean" (click)="$server.setModelBoolean()">Set text boolean value</button>
 	<div id="bindings" [title]="modelValue" [class.name]="modelValue">{{modelValue}}</div>
+	<input id='attributeBinding' type='text' [attr.value]='foo'>
+	<button id="updateAttributeBinding" (click)="$server.updateAttributeBinding()">Update attribute binding</button>
 </div>

@@ -104,8 +104,7 @@ public class DefaultElementBuilderFactory
             } else if (key.startsWith("attr.")) {
                 String attributeName = key.substring("attr.".length());
 
-                String attributeValue = element.attr(attributeName);
-                if (!attributeValue.isEmpty()) {
+                if (element.hasAttr(attributeName)) {
                     throw new TemplateParseException(String.format(
                             "The '%s' attribute can't present when there "
                                     + "is also a binding for [attr.%s]",

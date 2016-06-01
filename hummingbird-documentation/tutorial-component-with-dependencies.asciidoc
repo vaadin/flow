@@ -29,23 +29,31 @@ and release any resources used by the component.
 @Tag("div")
 public class ShoppingCartSummaryLabel extends Component {
 
+  private final Consumer<EventObject> eventHandler = this::onCartSummaryUpdate;
+
   @Override
   protected void onAttach(AttachEvent attachEvent) {
     ShopEventBus eventBus = attachEvent.getSession().getAttribute(ShopEventBus.class);
     // registering to event bus for updates from other components
-    eventBus.register(this::onCartSummaryUpdate);
+    eventBus.register(eventHandler);
   }
 
   @Override
   protected void onDetach(DetachEvent detachEvent) {
     ShopEventBus eventBus = detachEvent.getSession().getAttribute(ShopEventBus.class);
     // after detaching don't need any updates
-    eventBus.unregister(this::onCartSummaryUpdate);
+    eventBus.unregister(eventHandler);
   }
 
   private void onCartSummaryUpdate(EventObject event) {
     // update cart summary ...
   }
+}
+
+interface ShopEventBus {
+  void register(Consumer<EventObject> eventHandler);
+
+  void unregister(Consumer<EventObject> eventHandler);
 }
 ----
 

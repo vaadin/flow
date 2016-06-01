@@ -140,7 +140,12 @@ public class TemplateParserTest {
 
     @Test(expected = TemplateParseException.class)
     public void parseTemplateIncorrectAttribute() {
-        parse("<input [attr.value]='foo' value='bar'></input>");
+        parse("<input [attr.value]='foo' value='bar'>");
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseTemplateIncorrectEmptyAttribute() {
+        parse("<input [attr.value]='foo' value>");
     }
 
     @Test
