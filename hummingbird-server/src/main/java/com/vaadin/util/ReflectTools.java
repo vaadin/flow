@@ -26,6 +26,8 @@ import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.regex.Pattern;
 
+import com.vaadin.shared.util.SharedUtil;
+
 /**
  * An util class with helpers for reflection operations. Used internally by
  * Vaadin and should not be used by application developers. Subject to change at
@@ -39,6 +41,8 @@ public class ReflectTools implements Serializable {
             .compile("^(get)\\p{Lu}");
     private static final Pattern IS_STARTS = Pattern.compile("^(is)\\p{Lu}");
     private static final Pattern SETTER_STARTS = Pattern.compile("^set\\p{Lu}");
+    private static final Pattern SETTER_GETTER_STARTS = Pattern
+            .compile("^(set|get|is)");
     static final String CREATE_INSTANCE_FAILED = "Unable to create an instance of {0}. Make sure it has a no-arg constructor";
     static final String CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS = "Unable to create an instance of {0}. Make sure the class is static if it is an inner class.";
     static final String CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION = "Unable to create an instance of {0}. Make sure the class is public and that is has a public no-arg constructor.";
@@ -267,6 +271,28 @@ public class ReflectTools implements Serializable {
                 && (GETTER_STARTS.matcher(methodName).find()
                         || (IS_STARTS.matcher(methodName).find()
                                 && returnType == boolean.class));
+    }
+
+    /**
+     * Parses the property name from the given getter or setter method.
+     * <p>
+     * If the given method does not have a valid setter or getter name, this
+     * method may produce unexpected results.
+     *
+     * @see #isSetter(Method)
+     * @see #isGetter(Method)
+     * @param method
+     *            the method to parse
+     * @return the name of the property
+     */
+    public static String getPropertyName(Method method) {
+        String methodName = method.getName();
+        assert Pattern.compile("^(set|get|is)\\p{Lu}").matcher(methodName)
+                .find() : "Method is not a valid getter or setter";
+
+        String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
+                .replaceFirst("");
+        return SharedUtil.firstToLower(propertyName);
     }
 
     /**
