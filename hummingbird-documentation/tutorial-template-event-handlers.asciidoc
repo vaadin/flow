@@ -75,8 +75,6 @@ If you use a server side event listener, you can use the same template as above 
 
 The server side `Template` will instead map the `<button>` element to a `Button` component and add a click listener to it:
 
-The server side template class defines the published `sayHello` method using the `@EventHandler` annotation:
-
 [source,java]
 ----
 public class MyTemplate extends Template {
