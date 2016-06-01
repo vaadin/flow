@@ -183,7 +183,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public void setAttribute(StateNode node, String attribute, String value) {
         checkModifiableAttribute(attribute);
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .setAttribute(overrideNode, attribute, value));
     }
 
@@ -197,6 +197,12 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public String getAttribute(StateNode node, String attribute) {
+        /*
+         * Always fetch an attribute from override node first if it exists. In
+         * contrast with properties attributes may be defined in the template
+         * inlined. But this definition may be overriden and overriden value
+         * should be used if any.
+         */
         Optional<StateNode> overrideNode = getOverrideNode(node);
         if (overrideNode.isPresent()) {
             return BasicElementStateProvider.get()
@@ -479,9 +485,16 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             stateNode = Optional.of(node.getFeature(TemplateOverridesMap.class)
                     .get(templateNode, true));
             StateNode overrideNode = stateNode.get();
-            // transfer all attribute binding values as initial values to
-            // override node
+            /*
+             * Transfer all static attribute binding values as initial values to
+             * override node. It allows to get attribute values from overridden
+             * node ONLY once it's created (and don't ask StaticBinding value).
+             * If it's not created then StaticBinding value is used as an
+             * attribute value. This approach allows to track removed attributes
+             * (since such attribute will always be asked from override node).
+             */
             templateNode.getAttributeNames()
+                    .filter(this::isStaticBindingAttribute)
                     .forEach(attribute -> BasicElementStateProvider.get()
                             .setAttribute(overrideNode, attribute,
                                     templateNode.getAttributeBinding(attribute)

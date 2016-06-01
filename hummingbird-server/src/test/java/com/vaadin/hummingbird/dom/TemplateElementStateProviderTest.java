@@ -577,6 +577,8 @@ public class TemplateElementStateProviderTest {
         TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
                 new NullTemplateResolver());
         Element element = createElement(node);
+        Assert.assertFalse(element.hasProperty("foo"));
+        element.setProperty("foo", "bar");
         element.removeProperty("foo");
 
         Assert.assertFalse(element.hasProperty("foo"));
