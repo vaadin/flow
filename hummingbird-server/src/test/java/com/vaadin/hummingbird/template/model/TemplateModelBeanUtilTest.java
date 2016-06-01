@@ -1,15 +1,20 @@
 package com.vaadin.hummingbird.template.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.NoModelTemplate;
 import com.vaadin.ui.Template;
 
 public class TemplateModelBeanUtilTest {
 
-    public static class BeanWithInvalidProperty {
+    public static class BeanWithUnsupportedProperty {
+        // not a bean
         private StringBuilder sb;
 
         public StringBuilder getSb() {
@@ -18,6 +23,30 @@ public class TemplateModelBeanUtilTest {
 
         public void setSb(StringBuilder sb) {
             this.sb = sb;
+        }
+    }
+
+    public static class BeanWithList {
+        private List<Bean> beans;
+
+        public List<Bean> getBeans() {
+            return beans;
+        }
+
+        public void setBeans(List<Bean> beans) {
+            this.beans = beans;
+        }
+    }
+
+    public static class BeanWithNestedBean {
+        private Bean bean;
+
+        public Bean getBean() {
+            return bean;
+        }
+
+        public void setBean(Bean bean) {
+            this.bean = bean;
         }
     }
 
@@ -80,7 +109,7 @@ public class TemplateModelBeanUtilTest {
     }
 
     @Test
-    public void testBeanToModelImportNull() {
+    public void testBeanToModelImportNullAndDefaultValues() {
         Bean bean = new Bean();
         BeanTemplate beanTemplate = new BeanTemplate();
         BeanModel beanModel = beanTemplate.getModel();
@@ -90,12 +119,22 @@ public class TemplateModelBeanUtilTest {
         verifyBeanToModelMap(bean, beanTemplate);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testInvalidBeanProperty() {
         NoModelTemplate template = new NoModelTemplate();
-        BeanWithInvalidProperty bean = new BeanWithInvalidProperty();
+        BeanWithUnsupportedProperty bean = new BeanWithUnsupportedProperty();
         // won't crash if both are null
         bean.setSb(new StringBuilder());
+
+        template.getModel().importBean(bean);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testBeanWithListProperty() {
+        NoModelTemplate template = new NoModelTemplate();
+        BeanWithList bean = new BeanWithList();
+        // won't crash if both are null
+        bean.setBeans(new ArrayList<>());
 
         template.getModel().importBean(bean);
     }
@@ -114,6 +153,7 @@ public class TemplateModelBeanUtilTest {
 
         bean.setIntValue(5);
         bean.setString("foobar");
+
         Assert.assertNotEquals(bean.getIntValue(), model.getIntValue());
         Assert.assertNotEquals(bean.getString(), model.getString());
 
@@ -127,6 +167,39 @@ public class TemplateModelBeanUtilTest {
 
         verifyBeanToModelViaInterface(bean, model);
         verifyBeanToModelMap(bean, template);
+    }
+
+    @Test
+    public void testNestedBean() {
+        BeanWithNestedBean beanWithNestedBean = new BeanWithNestedBean();
+        beanWithNestedBean.setBean(new Bean());
+
+        BeanTemplate template = new BeanTemplate();
+        BeanModel model = template.getModel();
+        model.importBean(beanWithNestedBean);
+
+        verifyBeanToModelMap(beanWithNestedBean.getBean(),
+                ((StateNode) template.getElement().getNode()
+                        .getFeature(ModelMap.class).getValue("bean"))
+                                .getFeature(ModelMap.class));
+
+        Bean bean2 = new Bean();
+        bean2.setBooleanObject(Boolean.FALSE);
+        bean2.setBooleanValue(false);
+        bean2.setIntValue(5);
+        bean2.setIntObject(Integer.valueOf(123));
+        bean2.setDoubleValue(10.0d);
+        bean2.setDoubleObject(Double.valueOf(20.0d));
+        bean2.setString("shazbot");
+
+        beanWithNestedBean.setBean(bean2);
+
+        model.importBean(beanWithNestedBean);
+
+        verifyBeanToModelMap(beanWithNestedBean.getBean(),
+                ((StateNode) template.getElement().getNode()
+                        .getFeature(ModelMap.class).getValue("bean"))
+                                .getFeature(ModelMap.class));
     }
 
     private void verifyBeanToModelViaInterface(Bean bean, BeanModel model) {
@@ -143,6 +216,10 @@ public class TemplateModelBeanUtilTest {
     private void verifyBeanToModelMap(Bean bean, Template template) {
         ModelMap model = template.getElement().getNode()
                 .getFeature(ModelMap.class);
+        verifyBeanToModelMap(bean, model);
+    }
+
+    private void verifyBeanToModelMap(Bean bean, ModelMap model) {
         Assert.assertEquals(bean.getBooleanObject(),
                 model.getValue("booleanObject"));
         Assert.assertEquals(bean.getDoubleObject(),
