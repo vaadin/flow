@@ -78,31 +78,35 @@ public class TemplateModelTest {
     public static class Bean implements Serializable {
     }
 
-    static class NoModelTemplate extends Template {
+    public static class NoModelTemplate extends Template {
         public NoModelTemplate() {
             super(new ByteArrayInputStream(
                     "<div>foo</div>".getBytes(StandardCharsets.UTF_8)));
         }
 
+        @Override
+        public TemplateModel getModel() {
+            return super.getModel();
+        }
     }
 
     static class EmptyModelTemplate extends NoModelTemplate {
         @Override
-        protected EmptyModel getModel() {
+        public EmptyModel getModel() {
             return (EmptyModel) super.getModel();
         }
     }
 
     static class BasicTypeModelTemplate extends NoModelTemplate {
         @Override
-        protected BasicTypeModel getModel() {
+        public BasicTypeModel getModel() {
             return (BasicTypeModel) super.getModel();
         };
     }
 
     static class NotSupportedModelTemplate extends NoModelTemplate {
         @Override
-        protected NotSupportedModel getModel() {
+        public NotSupportedModel getModel() {
             return (NotSupportedModel) super.getModel();
         }
     }
