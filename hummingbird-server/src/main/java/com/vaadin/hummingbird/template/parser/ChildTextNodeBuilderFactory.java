@@ -21,6 +21,7 @@ import java.util.function.Function;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
+import com.vaadin.hummingbird.processor.annotations.ServiceProvider;
 import com.vaadin.hummingbird.template.ChildSlotBuilder;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 
@@ -30,6 +31,7 @@ import com.vaadin.hummingbird.template.TemplateNodeBuilder;
  * @author Vaadin Ltd
  *
  */
+@ServiceProvider(TemplateNodeBuilderFactory.class)
 public class ChildTextNodeBuilderFactory
         extends AbstractTemplateBuilderFactory<TextNode> {
 

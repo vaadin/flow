@@ -30,6 +30,7 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.processor.annotations.ServiceProvider;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
@@ -49,6 +50,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
+@ServiceProvider(RpcInvocationHandler.class)
 public class TemplateEventRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override

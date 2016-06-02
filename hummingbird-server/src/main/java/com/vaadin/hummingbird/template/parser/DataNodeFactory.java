@@ -21,6 +21,7 @@ import java.util.function.Function;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Node;
 
+import com.vaadin.hummingbird.processor.annotations.ServiceProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
@@ -31,9 +32,10 @@ import com.vaadin.hummingbird.template.TextTemplateBuilder;
  *
  * @author Vaadin Ltd
  */
+@ServiceProvider(TemplateNodeBuilderFactory.class)
 public class DataNodeFactory extends AbstractTemplateBuilderFactory<DataNode> {
 
-    protected DataNodeFactory() {
+    public DataNodeFactory() {
         super(DataNode.class);
     }
 

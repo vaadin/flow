@@ -23,6 +23,7 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
+import com.vaadin.hummingbird.processor.annotations.ServiceProvider;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
@@ -35,8 +36,10 @@ import com.vaadin.hummingbird.template.TemplateParseException;
  * @author Vaadin Ltd
  *
  */
+@ServiceProvider(DefaultNodeBuilderFactory.class)
 public class DefaultElementBuilderFactory
-        extends AbstractTemplateBuilderFactory<Element> {
+        extends AbstractTemplateBuilderFactory<Element>
+        implements DefaultNodeBuilderFactory<Element> {
 
     /**
      * Creates a new factory.
@@ -92,16 +95,26 @@ public class DefaultElementBuilderFactory
                 String className = key.substring("class.".length());
 
                 String classAttribute = element.attr("class");
-                if (classAttribute != null
-                        && Stream.of(classAttribute.split("\\s+"))
-                                .anyMatch(className::equals)) {
-                    throw new TemplateParseException(
-                            "The class attribute can't contain '" + className
-                                    + "' when there's also a binding for [class."
-                                    + className + "]");
+                if (Stream.of(classAttribute.split("\\s+"))
+                        .anyMatch(className::equals)) {
+                    throw new TemplateParseException(String.format(
+                            "The class attribute can't contain '%s' "
+                                    + "when there's also a binding for [class.%s]",
+                            className, className));
                 }
 
                 builder.setClassName(className, binding);
+            } else if (key.startsWith("attr.")) {
+                String attributeName = key.substring("attr.".length());
+
+                if (element.hasAttr(attributeName)) {
+                    throw new TemplateParseException(String.format(
+                            "The '%s' attribute can't present when there "
+                                    + "is also a binding for [attr.%s]",
+                            attributeName, attributeName));
+                }
+
+                builder.setAttribute(attributeName, binding);
             } else {
                 builder.setProperty(key, binding);
             }
