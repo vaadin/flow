@@ -115,6 +115,40 @@ public class TemplateParserTest {
     }
 
     @Test
+    public void parseTemplateAttribute() {
+        ElementTemplateNode rootNode = (ElementTemplateNode) parse(
+                "<input [attr.value]='foo'></input>");
+
+        Assert.assertEquals("input", rootNode.getTag());
+
+        Assert.assertEquals(1, rootNode.getAttributeNames().count());
+        Assert.assertEquals(0, rootNode.getClassNames().count());
+        Assert.assertEquals(0, rootNode.getPropertyNames().count());
+
+        Optional<BindingValueProvider> binding = rootNode
+                .getAttributeBinding("value");
+        Assert.assertTrue(binding.isPresent());
+
+        StateNode node = new StateNode(ModelMap.class);
+
+        Assert.assertNull(binding.get().getValue(node));
+
+        node.getFeature(ModelMap.class).setValue("foo", "bar");
+
+        Assert.assertEquals("bar", binding.get().getValue(node));
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseTemplateIncorrectAttribute() {
+        parse("<input [attr.value]='foo' value='bar'>");
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseTemplateIncorrectEmptyAttribute() {
+        parse("<input [attr.value]='foo' value>");
+    }
+
+    @Test
     public void parseClassName() {
         ElementTemplateNode rootNode = (ElementTemplateNode) parse(
                 "<input [class.foo]=bar></input>");

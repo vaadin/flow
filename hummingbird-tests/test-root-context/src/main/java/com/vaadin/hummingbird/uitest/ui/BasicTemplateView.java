@@ -75,6 +75,12 @@ public class BasicTemplateView extends Template implements View {
         input.setPlaceholder("placeholder");
     }
 
+    @EventHandler
+    private void updateAttributeBinding() {
+        getElement().getNode().getFeature(ModelMap.class).setValue("foo",
+                "bar");
+    }
+
     private void setModelValue(Serializable value) {
         // Directly manipulating the node feature to enable testing the same
         // bindings with different types

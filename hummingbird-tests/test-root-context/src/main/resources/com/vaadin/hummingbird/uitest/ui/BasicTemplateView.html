@@ -9,4 +9,6 @@
 	<div id="bindings" [title]="modelValue" [class.name]="modelValue">{{modelValue}}</div>
 	<input id="input" type="text" value="text">
 	<button id="setAttributes" (click)="$server.setAttributes()">Set attributes for input</button>
+	<input id='attributeBinding' type='text' [attr.value]='foo'>
+	<button id="updateAttributeBinding" (click)="$server.updateAttributeBinding()">Update attribute binding</button>
 </div>
