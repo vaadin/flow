@@ -58,4 +58,5 @@ public interface TemplateModel extends Serializable {
         // NOOP invocation handler passes this method call to
         // TemplateModelBeanUtil
     }
+
 }

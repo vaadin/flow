@@ -630,6 +630,21 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    public void removeAttribute_templateHasBoundAttribute_hasNoAttributeAndHasBoundAttribute() {
+        TemplateNode node = TemplateParser.parse(
+                "<div [attr.foo]='bar' attr='foo'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.removeAttribute("attr");
+
+        Assert.assertFalse(element.hasAttribute("attr"));
+        Assert.assertTrue(element.hasAttribute("foo"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, attrs.size());
+    }
+
+    @Test
     public void removeAttribute_templateHasOneMoreAttribute_hasNoAttribute() {
         TemplateNode node = TemplateParser.parse(
                 "<div foo='bar' attr='value'></div>",
@@ -651,7 +666,21 @@ public class TemplateElementStateProviderTest {
         TemplateNode node = TemplateParser.parse("<div></div>",
                 new NullTemplateResolver());
         Element element = createElement(node);
-        element.setProperty("attr", "foo");
+        element.setAttribute("attr", "foo");
+        element.removeAttribute("attr");
+
+        Assert.assertFalse(element.hasAttribute("attr"));
+        List<String> props = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(0, props.size());
+    }
+
+    @Test
+    public void removeAttribute_regularAttributeAndTemplateHasChildren_hasNoAttributeAndNoException() {
+        TemplateNode node = TemplateParser.parse("<div><span></span></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
         element.removeAttribute("attr");
 
         Assert.assertFalse(element.hasAttribute("attr"));
@@ -692,6 +721,41 @@ public class TemplateElementStateProviderTest {
                 .collect(Collectors.toList());
         Assert.assertEquals(1, attrs.size());
         Assert.assertEquals("attr", attrs.get(0));
+    }
+
+    @Test
+    public void setAttribute_regularAttributeAndTemplateHasChildren_hasAttributeAndHasProperValueAndNoException() {
+        TemplateNode node = TemplateParser.parse("<div><span></span></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
+
+        Assert.assertTrue(element.hasAttribute("attr"));
+        Assert.assertEquals("foo", element.getAttribute("attr"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, attrs.size());
+        Assert.assertEquals("attr", attrs.get(0));
+    }
+
+    @Test
+    public void getBoundAttribute_setRegularAttribute_hasAttributeAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse(
+                "<div [attr.attr]='foo'></div>", new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("foo", "bar");
+        element.getNode().getFeature(ModelMap.class).setValue("foo",
+                "someValue");
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertTrue(element.hasAttribute("attr"));
+        Assert.assertEquals("bar", element.getAttribute("foo"));
+        Assert.assertEquals("someValue", element.getAttribute("attr"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(2, attrs.size());
+        Assert.assertTrue(attrs.contains("attr"));
+        Assert.assertTrue(attrs.contains("foo"));
     }
 
     @Test
@@ -742,6 +806,18 @@ public class TemplateElementStateProviderTest {
         List<String> attrs = BasicElementStateProvider.get()
                 .getAttributeNames(overrideNode).collect(Collectors.toList());
         Assert.assertEquals(0, attrs.size());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setAttribute_boundAttribute_throwException() {
+        Element element = createElement("<div [attr.attr]='value'></div>");
+        element.setAttribute("attr", "foo");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeAttribute_boundAttribute_throwException() {
+        Element element = createElement("<div [attr.attr]='value'></div>");
+        element.removeAttribute("attr");
     }
 
     private void assertClassList(ClassList classList, String... expectedNames) {

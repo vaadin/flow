@@ -191,7 +191,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     public void setAttribute(StateNode node, String attribute,
             StreamResource resource) {
         checkModifiableAttribute(attribute);
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .setAttribute(overrideNode, attribute, resource));
     }
 
@@ -206,10 +206,13 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             return boundValue;
         }
         /*
-         * Always fetch an attribute from the override node first if it exists.
-         * In contrast with properties attributes may be defined in the template
-         * inlined. But this definition may be overriden and overriden value
-         * should be used if any.
+         * For non-static bindings always fetch an attribute from the override
+         * node first if it exists. In contrast with properties attributes may
+         * be defined in the template inlined. But this definition may be
+         * overriden and overriden value should be used if any.
+         * 
+         * All static bindings attributes have been copied to override node at
+         * its creation time.
          */
         Optional<StateNode> overrideNode = getOverrideNode(node);
         if (overrideNode.isPresent()) {
@@ -222,31 +225,47 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @Override
     public boolean hasAttribute(StateNode node, String attribute) {
         Optional<StateNode> overrideNode = getOverrideNode(node);
+        Optional<BindingValueProvider> provider = templateNode
+                .getAttributeBinding(attribute);
+        if (provider.isPresent()
+                && !(provider.get() instanceof StaticBindingValueProvider)) {
+            return provider.isPresent();
+        }
+        /*
+         * For non-static bindings always check an attribute from the override
+         * node first if it exists. In contrast with properties attributes may
+         * be defined in the template inlined. But this definition may be
+         * overriden and overriden value should be used if any.
+         * 
+         * All static bindings attributes have been copied to override node at
+         * its creation time.
+         */
         if (overrideNode.isPresent()) {
             return BasicElementStateProvider.get()
                     .hasAttribute(overrideNode.get(), attribute);
         }
-        return templateNode.getAttributeBinding(attribute).isPresent();
+        return provider.isPresent();
     }
 
     @Override
     public void removeAttribute(StateNode node, String attribute) {
         checkModifiableAttribute(attribute);
-        modifyChildren(node, (provider, overrideNode) -> provider
+        modifyOverrideNode(node, (provider, overrideNode) -> provider
                 .removeAttribute(overrideNode, attribute));
     }
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        Stream<String> bound = templateNode.getAttributeNames();
+        Stream<String> templateAttributesd = templateNode.getAttributeNames();
         Optional<StateNode> overrideNode = getOverrideNode(node);
         if (overrideNode.isPresent()) {
             Predicate<String> isStaticBinding = this::isStaticBindingAttribute;
-            return Stream.concat(bound.filter(isStaticBinding.negate()),
+            return Stream.concat(
+                    templateAttributesd.filter(isStaticBinding.negate()),
                     BasicElementStateProvider.get()
                             .getAttributeNames(overrideNode.get()));
         } else {
-            return bound;
+            return templateAttributesd;
         }
     }
 
