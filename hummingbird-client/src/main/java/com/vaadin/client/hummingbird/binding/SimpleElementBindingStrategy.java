@@ -230,12 +230,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void updateAttribute(MapProperty mapProperty, Element element) {
         String name = mapProperty.getName();
-
-        if (mapProperty.hasValue()) {
-            element.setAttribute(name, String.valueOf(mapProperty.getValue()));
-        } else {
-            element.removeAttribute(name);
-        }
+        WidgetUtil.updateAttribute(element, name, mapProperty.getValue());
     }
 
     private EventRemover bindSynchronizedPropertyEvents(

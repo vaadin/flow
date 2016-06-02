@@ -20,6 +20,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 
 import elemental.client.Browser;
+import elemental.dom.Element;
 import elemental.html.AnchorElement;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -110,6 +111,29 @@ public class WidgetUtil {
         } else {
             // Don't use JsonUtil.stringify here or SDM will break
             return json.toJson();
+        }
+    }
+
+    /**
+     * Updates the {@code attribute} value for the {@code element} to the given
+     * {@code value}.
+     * <p>
+     * If {@code value} is {@code null} then {@code attribute} is removed,
+     * otherwise {@code value.toString()} is set as its value.
+     * 
+     * @param element
+     *            the DOM element owning attribute
+     * @param attribute
+     *            the attribute to update
+     * @param value
+     *            the value to update
+     */
+    public static void updateAttribute(Element element, String attribute,
+            Object value) {
+        if (value == null) {
+            element.removeAttribute(attribute);
+        } else {
+            element.setAttribute(attribute, value.toString());
         }
     }
 

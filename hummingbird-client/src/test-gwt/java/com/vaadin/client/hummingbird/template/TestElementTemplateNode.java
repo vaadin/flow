@@ -61,6 +61,11 @@ public interface TestElementTemplateNode
     }
 
     @JsOverlay
+    public default void addAttribute(String name, TestBinding binding) {
+        doGetAttributes().put(name, binding.asJson());
+    }
+
+    @JsOverlay
     public default void addClassName(String name, String staticValue) {
         doGetClassNames().put(name,
                 TestBinding.createStatic(staticValue).asJson());
@@ -102,12 +107,18 @@ public interface TestElementTemplateNode
     }
 
     @JsOverlay
-    public default void addAttribute(String name, String staticValue) {
+    public default JsonObject doGetAttributes() {
         JsonObject attributes = getAttributes();
         if (attributes == null) {
             attributes = Json.createObject();
             setAttributes(attributes);
         }
-        attributes.put(name, TestBinding.createStatic(staticValue).asJson());
+        return attributes;
+    }
+
+    @JsOverlay
+    public default void addAttribute(String name, String staticValue) {
+        doGetAttributes().put(name,
+                TestBinding.createStatic(staticValue).asJson());
     }
 }

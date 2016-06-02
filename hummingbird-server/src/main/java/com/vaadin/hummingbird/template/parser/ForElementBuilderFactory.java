@@ -25,6 +25,7 @@ import java.util.function.Function;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
+import com.vaadin.hummingbird.processor.annotations.ServiceProvider;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.ForTemplateBuilder;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
@@ -36,6 +37,7 @@ import com.vaadin.hummingbird.template.TemplateParseException;
  * @author Vaadin Ltd
  *
  */
+@ServiceProvider(TemplateNodeBuilderFactory.class)
 public class ForElementBuilderFactory
         extends AbstractTemplateBuilderFactory<Element> {
 

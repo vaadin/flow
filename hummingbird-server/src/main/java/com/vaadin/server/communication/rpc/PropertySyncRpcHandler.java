@@ -20,6 +20,7 @@ import java.io.Serializable;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.processor.annotations.ServiceProvider;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
@@ -32,6 +33,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  *
  */
+@ServiceProvider(RpcInvocationHandler.class)
 public class PropertySyncRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override

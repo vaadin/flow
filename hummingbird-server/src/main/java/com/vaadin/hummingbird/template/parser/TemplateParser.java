@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 import org.jsoup.Jsoup;
@@ -93,17 +94,15 @@ public class TemplateParser {
 
     private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
         Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
-        factories.add(new ChildTextNodeBuilderFactory());
-        factories.add(new TemplateIncludeBuilderFactory());
-        factories.add(new ForElementBuilderFactory());
-        factories.add(new DataNodeFactory());
+        ServiceLoader.load(TemplateNodeBuilderFactory.class).iterator()
+                .forEachRemaining(factories::add);
         return factories;
     }
 
     private static Collection<TemplateNodeBuilderFactory<?>> loadDefaultFactories() {
         Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
-        factories.add(new DefaultTextModelBuilderFactory());
-        factories.add(new DefaultElementBuilderFactory());
+        ServiceLoader.load(DefaultNodeBuilderFactory.class).iterator()
+                .forEachRemaining(factories::add);
         return factories;
     }
 
