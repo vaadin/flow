@@ -24,7 +24,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentEvent;
 
 @Tag("paper-slider")
-@HtmlImport(PolyGit.BASE_URL + "paper-slider/paper-slider.html")
+@HtmlImport("/bower_components/paper-slider/paper-slider.html")
 public class PaperSlider extends Component implements HasValue {
     @DomEvent("value-change")
     public static class ValueChangeEvent extends ComponentEvent<PaperSlider> {

@@ -528,6 +528,21 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    public void setRegularProperty_templateHasAttribute_hasPropertyAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setProperty("foo", "newValue");
+
+        Assert.assertTrue(element.hasProperty("foo"));
+        Assert.assertEquals("newValue", element.getProperty("foo"));
+        Set<String> props = element.getPropertyNames()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(1, props.size());
+        Assert.assertTrue(props.contains("foo"));
+    }
+
+    @Test
     public void removeRegularProperty_templateHasBoundProperty_hasPropertyAndHasProperValue() {
         TemplateNode node = TemplateParser.parse("<div [foo]='bar'></div>",
                 new NullTemplateResolver());
@@ -558,10 +573,26 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    public void removeProperty_templateHasAttribute_hasNoProperty() {
+        TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        Assert.assertFalse(element.hasProperty("foo"));
+        element.setProperty("foo", "bar");
+        element.removeProperty("foo");
+
+        Assert.assertFalse(element.hasProperty("foo"));
+        List<String> props = element.getPropertyNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(0, props.size());
+    }
+
+    @Test
     public void removeProperty_regularProperty_elementDelegatesPropertyToOverrideNode() {
         TemplateNode node = TemplateParser.parse("<div></div>",
                 new NullTemplateResolver());
         Element element = createElement(node);
+        element.setProperty("prop", "foo");
         element.removeProperty("prop");
 
         StateNode overrideNode = element.getNode()
@@ -583,6 +614,210 @@ public class TemplateElementStateProviderTest {
     public void removeProperty_boundProperty_throwException() {
         Element element = createElement("<div [prop]='value'></div>");
         element.removeProperty("prop");
+    }
+
+    @Test
+    public void removeAttribute_templateHasAttribute_hasNoAttribute() {
+        TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.removeAttribute("foo");
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(0, attrs.size());
+    }
+
+    @Test
+    public void removeAttribute_templateHasBoundAttribute_hasNoAttributeAndHasBoundAttribute() {
+        TemplateNode node = TemplateParser.parse(
+                "<div [attr.foo]='bar' attr='foo'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.removeAttribute("attr");
+
+        Assert.assertFalse(element.hasAttribute("attr"));
+        Assert.assertTrue(element.hasAttribute("foo"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, attrs.size());
+    }
+
+    @Test
+    public void removeAttribute_templateHasOneMoreAttribute_hasNoAttribute() {
+        TemplateNode node = TemplateParser.parse(
+                "<div foo='bar' attr='value'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.removeAttribute("foo");
+
+        Assert.assertFalse(element.hasAttribute("foo"));
+        Assert.assertTrue(element.hasAttribute("attr"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, attrs.size());
+        Assert.assertEquals("attr", attrs.get(0));
+        Assert.assertEquals("value", element.getAttribute("attr"));
+    }
+
+    @Test
+    public void removeAttribute_regularAttribute_hasNoAttribute() {
+        TemplateNode node = TemplateParser.parse("<div></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
+        element.removeAttribute("attr");
+
+        Assert.assertFalse(element.hasAttribute("attr"));
+        List<String> props = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(0, props.size());
+    }
+
+    @Test
+    public void removeAttribute_regularAttributeAndTemplateHasChildren_hasNoAttributeAndNoException() {
+        TemplateNode node = TemplateParser.parse("<div><span></span></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
+        element.removeAttribute("attr");
+
+        Assert.assertFalse(element.hasAttribute("attr"));
+        List<String> props = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(0, props.size());
+    }
+
+    @Test
+    public void setAttribute_regularAttribute_elementDelegatesAttributeToOverrideNode() {
+        TemplateNode node = TemplateParser.parse("<div></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
+
+        StateNode overrideNode = element.getNode()
+                .getFeature(TemplateOverridesMap.class).get(node, false);
+        Assert.assertTrue(BasicElementStateProvider.get()
+                .hasAttribute(overrideNode, "attr"));
+        Assert.assertEquals("foo", BasicElementStateProvider.get()
+                .getAttribute(overrideNode, "attr"));
+        List<String> attrs = BasicElementStateProvider.get()
+                .getAttributeNames(overrideNode).collect(Collectors.toList());
+        Assert.assertEquals(1, attrs.size());
+        Assert.assertEquals("attr", attrs.get(0));
+    }
+
+    @Test
+    public void setAttribute_regularAttribute_hasAttributeAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
+
+        Assert.assertTrue(element.hasAttribute("attr"));
+        Assert.assertEquals("foo", element.getAttribute("attr"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, attrs.size());
+        Assert.assertEquals("attr", attrs.get(0));
+    }
+
+    @Test
+    public void setAttribute_regularAttributeAndTemplateHasChildren_hasAttributeAndHasProperValueAndNoException() {
+        TemplateNode node = TemplateParser.parse("<div><span></span></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
+
+        Assert.assertTrue(element.hasAttribute("attr"));
+        Assert.assertEquals("foo", element.getAttribute("attr"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(1, attrs.size());
+        Assert.assertEquals("attr", attrs.get(0));
+    }
+
+    @Test
+    public void getBoundAttribute_setRegularAttribute_hasAttributeAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse(
+                "<div [attr.attr]='foo'></div>", new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("foo", "bar");
+        element.getNode().getFeature(ModelMap.class).setValue("foo",
+                "someValue");
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertTrue(element.hasAttribute("attr"));
+        Assert.assertEquals("bar", element.getAttribute("foo"));
+        Assert.assertEquals("someValue", element.getAttribute("attr"));
+        List<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toList());
+        Assert.assertEquals(2, attrs.size());
+        Assert.assertTrue(attrs.contains("attr"));
+        Assert.assertTrue(attrs.contains("foo"));
+    }
+
+    @Test
+    public void setRegularAttribute_templateHasAttribute_hasAttributeAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("foo", "newValue");
+
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertEquals("newValue", element.getAttribute("foo"));
+        Set<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(1, attrs.size());
+        Assert.assertTrue(attrs.contains("foo"));
+    }
+
+    @Test
+    public void setRegularAttribute_templateHasDifferentAttribute_hasAttributeAndHasProperValue() {
+        TemplateNode node = TemplateParser.parse("<div foo='bar'></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
+
+        Assert.assertTrue(element.hasAttribute("attr"));
+        Assert.assertTrue(element.hasAttribute("foo"));
+        Assert.assertEquals("foo", element.getAttribute("attr"));
+        Assert.assertEquals("bar", element.getAttribute("foo"));
+        Set<String> attrs = element.getAttributeNames()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(2, attrs.size());
+        Assert.assertTrue(attrs.contains("foo"));
+        Assert.assertTrue(attrs.contains("attr"));
+    }
+
+    @Test
+    public void removeAttribute_regularAttribute_elementDelegatesAttributeToOverrideNode() {
+        TemplateNode node = TemplateParser.parse("<div></div>",
+                new NullTemplateResolver());
+        Element element = createElement(node);
+        element.setAttribute("attr", "foo");
+        element.removeAttribute("attr");
+
+        StateNode overrideNode = element.getNode()
+                .getFeature(TemplateOverridesMap.class).get(node, false);
+        Assert.assertFalse(BasicElementStateProvider.get()
+                .hasAttribute(overrideNode, "attr"));
+        List<String> attrs = BasicElementStateProvider.get()
+                .getAttributeNames(overrideNode).collect(Collectors.toList());
+        Assert.assertEquals(0, attrs.size());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setAttribute_boundAttribute_throwException() {
+        Element element = createElement("<div [attr.attr]='value'></div>");
+        element.setAttribute("attr", "foo");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void removeAttribute_boundAttribute_throwException() {
+        Element element = createElement("<div [attr.attr]='value'></div>");
+        element.removeAttribute("attr");
     }
 
     private void assertClassList(ClassList classList, String... expectedNames) {
