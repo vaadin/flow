@@ -21,6 +21,7 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.View;
@@ -32,6 +33,9 @@ public class BasicTemplateView extends Template implements View {
     private Div container;
     @Id("clearModel")
     private Button clearModel;
+
+    @Id("input")
+    private Input input;
 
     public BasicTemplateView() {
         assert container != null;
@@ -63,6 +67,12 @@ public class BasicTemplateView extends Template implements View {
     @EventHandler
     private void setModelBoolean() {
         setModelValue(Boolean.FALSE);
+    }
+
+    @EventHandler
+    private void setAttributes() {
+        input.setValue("updated");
+        input.setPlaceholder("placeholder");
     }
 
     @EventHandler

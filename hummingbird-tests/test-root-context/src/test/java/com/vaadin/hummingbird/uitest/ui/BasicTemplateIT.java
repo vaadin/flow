@@ -25,6 +25,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
 public class BasicTemplateIT extends PhantomJSTest {
+
     @Test
     public void testBasicTemplate() {
         open();
@@ -79,6 +80,12 @@ public class BasicTemplateIT extends PhantomJSTest {
         String value = findElement(By.id("attributeBinding"))
                 .getAttribute("value");
         Assert.assertEquals("bar", value);
+
+        findElement(By.id("setAttributes")).click();
+
+        WebElement input = findElement(By.id("input"));
+        Assert.assertEquals("updated", input.getAttribute("value"));
+        Assert.assertEquals("placeholder", input.getAttribute("placeholder"));
     }
 
     private void assertModelValue(String text, boolean classPresent) {
