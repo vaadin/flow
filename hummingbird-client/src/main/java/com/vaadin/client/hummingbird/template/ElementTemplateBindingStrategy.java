@@ -26,7 +26,6 @@ import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -76,16 +75,7 @@ public class ElementTemplateBindingStrategy
 
         bindClassNames(stateNode, templateNode, element);
 
-        JsonObject attributes = templateNode.getAttributes();
-        if (attributes != null) {
-            for (String name : attributes.keys()) {
-                Binding binding = WidgetUtil.crazyJsCast(attributes.get(name));
-                // Nothing to "bind" yet with only static bindings
-                assert binding.getType()
-                        .equals(StaticBindingValueProvider.TYPE);
-                element.setAttribute(name, getStaticBindingValue(binding));
-            }
-        }
+        bindAttributes(stateNode, templateNode, element);
 
         JsArray<Double> children = templateNode.getChildrenIds();
         if (children != null) {
@@ -123,6 +113,13 @@ public class ElementTemplateBindingStrategy
              */
             stateNode.addUnregisterListener(e -> remover.remove());
         }
+    }
+
+    private void bindAttributes(StateNode stateNode,
+            ElementTemplateNode templateNode, Element element) {
+        bind(stateNode, templateNode.getAttributes(),
+                (name, value) -> WidgetUtil.updateAttribute(element, name,
+                        value.orElse(null)));
     }
 
     private void registerEventHandlers(StateNode stateNode,
