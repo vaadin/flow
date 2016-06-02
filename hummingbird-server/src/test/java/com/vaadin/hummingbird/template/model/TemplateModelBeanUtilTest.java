@@ -2,6 +2,7 @@ package com.vaadin.hummingbird.template.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -174,8 +175,8 @@ public class TemplateModelBeanUtilTest {
         BeanWithNestedBean beanWithNestedBean = new BeanWithNestedBean();
         beanWithNestedBean.setBean(new Bean());
 
-        BeanTemplate template = new BeanTemplate();
-        BeanModel model = template.getModel();
+        NoModelTemplate template = new NoModelTemplate();
+        TemplateModel model = template.getModel();
         model.importBean(beanWithNestedBean);
 
         verifyBeanToModelMap(beanWithNestedBean.getBean(),
@@ -200,6 +201,84 @@ public class TemplateModelBeanUtilTest {
                 ((StateNode) template.getElement().getNode()
                         .getFeature(ModelMap.class).getValue("bean"))
                                 .getFeature(ModelMap.class));
+    }
+
+    @Test
+    public void testBeanPropertyFilter() {
+        Bean bean = new Bean();
+        bean.setBooleanObject(Boolean.TRUE);
+        bean.setBooleanValue(true);
+        bean.setIntValue(1);
+        bean.setIntObject(Integer.valueOf(2));
+        bean.setDoubleValue(1.0d);
+        bean.setDoubleObject(Double.valueOf(2.0d));
+        bean.setString("foobar");
+
+        BeanTemplate beanTemplate = new BeanTemplate();
+        BeanModel beanModel = beanTemplate.getModel();
+
+        ArrayList<String> properties = new ArrayList<>();
+
+        // filter out everything except the "string" & intValue property
+        Predicate<String> capturingFilter = propertyName -> {
+            properties.add(propertyName);
+            return propertyName.equals("string")
+                    || propertyName.equals("intValue");
+
+        };
+        beanModel.importBean(bean, capturingFilter);
+
+        Assert.assertEquals(bean.getString(), beanModel.getString());
+        Assert.assertEquals(bean.getIntValue(), beanModel.getIntValue());
+
+        ModelMap modelMap = beanTemplate.getElement().getNode()
+                .getFeature(ModelMap.class);
+
+        String[] expectedProperties = new String[] { "string", "intValue",
+                "intObject", "doubleObject", "doubleValue", "booleanValue",
+                "booleanObject" };
+        for (String s : expectedProperties) {
+            Assert.assertTrue(properties.contains(s));
+        }
+
+        Assert.assertNull(modelMap.getValue("booleanObject"));
+        Assert.assertNull(modelMap.getValue("booleanValue"));
+        Assert.assertNull(modelMap.getValue("intObject"));
+        Assert.assertNull(modelMap.getValue("doubleObject"));
+        Assert.assertNull(modelMap.getValue("doubleValue"));
+    }
+
+    @Test
+    public void testNestedBeanPropertyFilter() {
+        Bean bean = new Bean();
+        bean.setBooleanObject(Boolean.TRUE);
+        bean.setBooleanValue(true);
+        bean.setIntValue(1);
+        bean.setIntObject(Integer.valueOf(2));
+        bean.setDoubleValue(1.0d);
+        bean.setDoubleObject(Double.valueOf(2.0d));
+        bean.setString("foobar");
+
+        BeanWithNestedBean beanWithNestedBean = new BeanWithNestedBean();
+        beanWithNestedBean.setBean(bean);
+
+        ArrayList<String> properties = new ArrayList<>();
+        Predicate<String> capturingFilter = propertyName -> {
+            properties.add(propertyName);
+            return propertyName.equals("bean")
+                    || propertyName.equals("bean.string");
+        };
+
+        NoModelTemplate template = new NoModelTemplate();
+        template.getModel().importBean(beanWithNestedBean, capturingFilter);
+
+        String[] expectedProperties = new String[] { "bean", "bean.string",
+                "bean.intValue", "bean.intObject", "bean.doubleObject",
+                "bean.doubleValue", "bean.booleanValue", "bean.booleanObject" };
+        for (String s : expectedProperties) {
+            Assert.assertTrue("Could not find property " + s,
+                    properties.contains(s));
+        }
     }
 
     private void verifyBeanToModelViaInterface(Bean bean, BeanModel model) {
