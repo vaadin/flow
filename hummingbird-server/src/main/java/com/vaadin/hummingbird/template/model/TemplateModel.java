@@ -58,4 +58,17 @@ public interface TemplateModel extends Serializable {
         // NOOP invocation handler passes this method call to
         // TemplateModelBeanUtil
     }
+
+    /**
+     * Gets a proxy of the given part of the model as a bean of the given type.
+     * Any changes made to the returned instance are reflected back into the
+     * model.
+     * <p>
+     * You can use this for a type-safe way of updating a bean in the model. You
+     * should not use this to update a database entity based on updated values
+     * in the model.
+     **/
+    default <T> T getProxy(String modelPath, Class<T> beanType) {
+
+    }
 }
