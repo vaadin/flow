@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,6 +38,8 @@ public class TemplateModelBeanUtil {
 
     private static final Class<?>[] SUPPORTED_PROPERTY_TYPES = new Class[] {
             Boolean.class, Double.class, Integer.class, String.class };
+
+    private static final Predicate<String> NOOP_FILTER = string -> true;
 
     /**
      * Internal implementation of Pair / Tuple that encapsulates a value and the
@@ -61,6 +64,11 @@ public class TemplateModelBeanUtil {
 
     static void importBeanIntoModel(Supplier<StateNode> stateNodeSupplier,
             Object bean) {
+        importBeanIntoModel(stateNodeSupplier, bean, NOOP_FILTER);
+    }
+
+    static void importBeanIntoModel(Supplier<StateNode> stateNodeSupplier,
+            Object bean, Predicate<String> filter) {
         if (bean == null) {
             throw new IllegalArgumentException("Bean cannot be null");
         }
@@ -68,37 +76,59 @@ public class TemplateModelBeanUtil {
         Method[] getterMethods = ReflectTools.getGetterMethods(bean.getClass())
                 .toArray(Method[]::new);
         if (getterMethods.length == 0) {
-            throw new IllegalArgumentException(
-                    "Given object of type "
-                            + bean.getClass().getName()
-                            + " is not a Bean - it has no public getter methods!");
+            throw new IllegalArgumentException("Given object of type "
+                    + bean.getClass().getName()
+                    + " is not a Bean - it has no public getter methods!");
         }
 
+        Predicate<Method> methodBasedFilter = method -> filter
+                .test(ReflectTools.getPropertyName(method));
+
         Stream<ModelPropertyWrapper> values = Stream.of(getterMethods)
+                .filter(methodBasedFilter)
                 .map(method -> mapBeanValueToProperty(method, bean));
 
         // don't resolve the state node used until all the bean values have been
         // resolved properly
         ModelMap modelMap = stateNodeSupplier.get().getFeature(ModelMap.class);
 
-        values.forEach(wrapper -> setModelValue(wrapper, modelMap));
+        values.forEach(wrapper -> setModelValue(wrapper, modelMap, filter));
     }
 
     static void importBeanIntoModel(StateNode parentNode, Object bean,
             String beanPath) {
+        importBeanIntoModel(parentNode, bean, beanPath, NOOP_FILTER);
+    }
 
-        importBeanIntoModel(() -> resolveStateNode(parentNode, beanPath), bean);
+    static void importBeanIntoModel(StateNode parentNode, Object bean,
+            String beanPath, Predicate<String> filter) {
+        // don't wrap filter if it is a NOOP
+        if (filter == NOOP_FILTER) {
+            importBeanIntoModel(() -> resolveStateNode(parentNode, beanPath),
+                    bean, filter);
+        } else {
+            // prefix nested the bean's property names
+            String parentPath = beanPath + ".";
+            Predicate<String> parentAwareFilter = propertyName -> filter
+                    .test(parentPath + propertyName);
+            importBeanIntoModel(() -> resolveStateNode(parentNode, beanPath),
+                    bean, parentAwareFilter);
+        }
     }
 
     private static void setModelValue(ModelPropertyWrapper modelPropertyWrapper,
-            ModelMap targetModelMap) {
+            ModelMap targetModelMap, Predicate<String> filter) {
         setModelValue(targetModelMap, modelPropertyWrapper.propertyName,
-                modelPropertyWrapper.type,
-                modelPropertyWrapper.value);
+                modelPropertyWrapper.type, modelPropertyWrapper.value, filter);
     }
 
     static void setModelValue(ModelMap modelMap, String propertyName,
             Type expectedType, Object value) {
+        setModelValue(modelMap, propertyName, expectedType, value, NOOP_FILTER);
+    }
+
+    static void setModelValue(ModelMap modelMap, String propertyName,
+            Type expectedType, Object value, Predicate<String> filter) {
         Object oldValue = modelMap.getValue(propertyName);
         // this might cause scenario where invalid type is not
         // caught because
@@ -114,7 +144,7 @@ public class TemplateModelBeanUtil {
 
         if (expectedType instanceof Class<?>) {
             setModelValueBasicType(modelMap, propertyName,
-                    (Class<?>) expectedType, value);
+                    (Class<?>) expectedType, value, filter);
             return;
         }
 
@@ -122,7 +152,8 @@ public class TemplateModelBeanUtil {
     }
 
     private static void setModelValueBasicType(ModelMap modelMap,
-            String propertyName, Class<?> expectedType, Object value) {
+            String propertyName, Class<?> expectedType, Object value,
+            Predicate<String> filter) {
         if (isSupportedNonPrimitiveType(expectedType)) {
             modelMap.setValue(propertyName, (Serializable) value);
             return;
@@ -139,7 +170,8 @@ public class TemplateModelBeanUtil {
             throw createUnsupportedTypeException(expectedType, propertyName);
         } else {
             // handle other types as beans
-            importBeanIntoModel(modelMap.getNode(), value, propertyName);
+            importBeanIntoModel(modelMap.getNode(), value, propertyName,
+                    filter);
             return;
         }
     }
