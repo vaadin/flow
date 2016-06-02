@@ -74,6 +74,11 @@ public class BasicTemplateIT extends PhantomJSTest {
 
         findElement(By.id("clearModel")).click();
         assertModelValue("", false);
+
+        findElement(By.id("updateAttributeBinding")).click();
+        String value = findElement(By.id("attributeBinding"))
+                .getAttribute("value");
+        Assert.assertEquals("bar", value);
     }
 
     private void assertModelValue(String text, boolean classPresent) {

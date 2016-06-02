@@ -23,6 +23,7 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -30,11 +31,7 @@ import java.util.stream.Collectors;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
-import com.vaadin.server.communication.rpc.EventRpcHandler;
-import com.vaadin.server.communication.rpc.NavigationRpcHandler;
-import com.vaadin.server.communication.rpc.PropertySyncRpcHandler;
 import com.vaadin.server.communication.rpc.RpcInvocationHandler;
-import com.vaadin.server.communication.rpc.TemplateEventRpcHandler;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
@@ -394,10 +391,8 @@ public class ServerRpcHandler implements Serializable {
 
     private static List<RpcInvocationHandler> loadHandlers() {
         List<RpcInvocationHandler> list = new ArrayList<>();
-        list.add(new EventRpcHandler());
-        list.add(new NavigationRpcHandler());
-        list.add(new PropertySyncRpcHandler());
-        list.add(new TemplateEventRpcHandler());
+        ServiceLoader.load(RpcInvocationHandler.class).iterator()
+                .forEachRemaining(list::add);
         return list;
     }
 
