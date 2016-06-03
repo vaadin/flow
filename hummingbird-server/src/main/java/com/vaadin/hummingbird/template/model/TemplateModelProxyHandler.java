@@ -31,12 +31,14 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.util.ReflectTools;
 
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.method.ParameterList;
+import net.bytebuddy.description.type.TypeDescription.Generic;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
-import net.bytebuddy.matcher.ElementMatchers;
 
 /**
  * Invocation handler for {@link TemplateModel} proxy objects.
@@ -68,33 +70,7 @@ public class TemplateModelProxyHandler implements InvocationHandler {
                     modelType.getClassLoader(), new Class[] { modelType },
                     new TemplateModelProxyHandler(stateNode)));
         } else {
-            Class<? extends T> proxy = new ByteBuddy().subclass(modelType)
-                    .method(ElementMatchers.any())
-                    .intercept(MethodDelegation
-                            .to(new TemplateModelProxyHandler(stateNode))
-                            .filter(ElementMatchers.not(ElementMatchers
-                                    .isDeclaredBy(Object.class))))
-                    .make().load(modelType.getClassLoader(),
-                            ClassLoadingStrategy.Default.WRAPPER)
-                    .getLoaded();
-            Optional<Constructor<?>> defaultCtor = Stream
-                    .of(modelType.getConstructors())
-                    .filter((c) -> c.getParameterCount() == 0).findFirst();
-            if (defaultCtor.isPresent()
-                    && Modifier.isPublic(defaultCtor.get().getModifiers())) {
-                try {
-                    return proxy.newInstance();
-                } catch (InstantiationException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
-            } else {
-                // TODO : report error
-            }
-            return null;
+            return makeClassProxy(stateNode, modelType);
         }
     }
 
@@ -126,6 +102,57 @@ public class TemplateModelProxyHandler implements InvocationHandler {
         return intercept(method, args);
     }
 
+    private static <T> T makeClassProxy(StateNode stateNode,
+            Class<T> modelType) {
+        Class<? extends T> proxy = new ByteBuddy().subclass(modelType)
+                .method(TemplateModelProxyHandler::isAccessor)
+                .intercept(MethodDelegation
+                        .to(new TemplateModelProxyHandler(stateNode)))
+                .make().load(modelType.getClassLoader(),
+                        ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
+        Optional<Constructor<?>> defaultCtor = Stream
+                .of(modelType.getConstructors())
+                .filter((c) -> c.getParameterCount() == 0).findFirst();
+        if (defaultCtor.isPresent()
+                && Modifier.isPublic(defaultCtor.get().getModifiers())) {
+            try {
+                return proxy.newInstance();
+            } catch (InstantiationException e) {
+                throw new RuntimeException(String.format(
+                        "Exception is thrown during class '%s' instantiation",
+                        modelType.getName()), e);
+            } catch (IllegalAccessException e) {
+                // this should not happen
+                throw new RuntimeException(String.format(
+                        "Default public constructor in class '%s' "
+                                + "is not accessable. Implementation is wrong",
+                        modelType.getName()), e);
+            }
+        } else {
+            throw new IllegalStateException(String.format(
+                    "Class '%s' doesn't declare public default constructor. "
+                            + "Don't know how to instantiate it.",
+                    modelType.getName()));
+        }
+    }
+
+    private static boolean isAccessor(MethodDescription method) {
+        if (method.getDeclaringType().represents(Object.class)) {
+            return false;
+        }
+        String methodName = method.getName();
+        Generic returnType = method.getReturnType();
+        ParameterList<?> args = method.getParameters();
+
+        boolean isSetter = Generic.VOID.equals(returnType) && args.size() == 1
+                && ReflectTools.isSetterName(methodName);
+        boolean isGetter = !Generic.VOID.equals(returnType) && args.size() == 0
+                && ReflectTools.isGetterName(methodName,
+                        returnType.represents(boolean.class));
+        return isSetter || isGetter;
+    }
+
     private static boolean isTemplateModelDefaultMethod(Method method) {
         return method.isDefault()
                 && method.getDeclaringClass() == TemplateModel.class;
@@ -151,8 +178,12 @@ public class TemplateModelProxyHandler implements InvocationHandler {
         } else if ("getProxy".equals(method.getName())) {
             return TemplateModelBeanUtil.getProxy(stateNode, args);
         }
-        assert false;
-        return null;
+        // should not happen
+        throw new IllegalArgumentException(
+                String.format(
+                        "Unknown default TemplateModel method '%s'. "
+                                + "Implementation is not available",
+                        method.getName()));
     }
 
     private Object handleGetter(Method method) {

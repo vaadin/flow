@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -106,6 +107,7 @@ public class TemplateModelTest {
         public void setVisible(boolean visible) {
             this.visible = visible;
         }
+
     }
 
     public interface SubBeansModel extends TemplateModel {
@@ -363,33 +365,35 @@ public class TemplateModelTest {
         BeanModelTemplate template = new BeanModelTemplate();
         BeanModel model = template.getModel();
 
-        Bean bean = new Bean();
-        bean.setBooleanObject(Boolean.TRUE);
-        bean.setBooleanValue(true);
-        bean.setIntValue(1);
-        bean.setIntObject(Integer.valueOf(2));
-        bean.setDoubleValue(1.0d);
-        bean.setDoubleObject(Double.valueOf(2.0d));
+        AtomicInteger beanTriggered = new AtomicInteger();
+        Bean bean = new Bean() {
+            @Override
+            public String getString() {
+                beanTriggered.incrementAndGet();
+                return super.getString();
+            }
+        };
         bean.setString("foobar");
-
-        model.setBean(bean);
 
         StateNode stateNode = (StateNode) template.getElement().getNode()
                 .getFeature(ModelMap.class).getValue("bean");
-        ModelMap modelMap = stateNode.getFeature(ModelMap.class);
 
-        Assert.assertEquals(bean.getBooleanObject(),
-                modelMap.getValue("booleanObject"));
-        Assert.assertEquals(bean.isBooleanValue(),
-                modelMap.getValue("booleanValue"));
-        Assert.assertEquals(bean.getIntObject(),
-                modelMap.getValue("intObject"));
-        Assert.assertEquals(bean.getIntValue(), modelMap.getValue("intValue"));
-        Assert.assertEquals(bean.getDoubleObject(),
-                modelMap.getValue("doubleObject"));
-        Assert.assertEquals(bean.getDoubleValue(),
-                modelMap.getValue("doubleValue"));
-        Assert.assertEquals(bean.getString(), modelMap.getValue("string"));
+        Assert.assertNull(stateNode);
+        Assert.assertEquals(0, beanTriggered.get());
+
+        model.setBean(bean);
+
+        stateNode = (StateNode) template.getElement().getNode()
+                .getFeature(ModelMap.class).getValue("bean");
+
+        // enough to verify that TemplateModelBeanUtil.importBeanIntoModel is
+        // triggered, since TemplatemodelBeanUtilTests covers the bean import
+        Assert.assertNotNull(stateNode);
+        Assert.assertEquals(1, beanTriggered.get());
+
+        ModelMap modelMap = stateNode.getFeature(ModelMap.class);
+        Assert.assertNotNull(modelMap);
+        Assert.assertEquals("foobar", modelMap.getValue("string"));
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -465,7 +469,7 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void getProxyInterface_proxyIsNotNullAndProxyValueEqualsModelValue() {
+    public void getProxyInterface_getValueFromProxy_proxyIsNotNullAndProxyValueEqualsModelValue() {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
         SubBeanIface proxy = model.getProxy("bean", SubBeanIface.class);
@@ -482,7 +486,7 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void getProxyClass_proxyIsNotNullAndProxyValueEqualsModelValue() {
+    public void getProxyClass_getValueFromProxy_proxyIsNotNullAndProxyValueEqualsModelValue() {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
         SubBean proxy = model.getProxy("beanClass", SubBean.class);
@@ -499,7 +503,7 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void getProxyInterface_subproperty_proxyIsNotNullAndProxyValueEqualsModelValue() {
+    public void getProxyInterface_getSubpropertyValueFromProxy_proxyIsNotNullAndProxyValueEqualsModelValue() {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
         SubSubBeanIface proxy = model.getProxy("bean.bean",
@@ -557,7 +561,7 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void getProxyInterface_subproperty_proxyIsNotNullAndValueSetToModel() {
+    public void getProxyInterface_getSubpropertyValueFromProxy_proxyIsNotNullAndValueSetToModel() {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
         SubSubBeanIface proxy = model.getProxy("bean.bean",

@@ -43,12 +43,15 @@ public class TemplateModelBeanUtil {
      * Internal implementation of Pair / Tuple that encapsulates a value and the
      * method that it was retrieved from.
      */
-    private static final class BeanValueWrapper {
-        private Method beanGetter;
+    private static final class ModelPropertyWrapper {
+        private String propertyName;
+        private Type type;
         private Object value;
 
-        public BeanValueWrapper(Method beanGetter, Object value) {
-            this.beanGetter = beanGetter;
+        public ModelPropertyWrapper(String propertyName, Type type,
+                Object value) {
+            this.propertyName = propertyName;
+            this.type = type;
             this.value = value;
         }
     }
@@ -63,7 +66,7 @@ public class TemplateModelBeanUtil {
             throw new IllegalArgumentException("Bean cannot be null");
         }
 
-        Method[] getterMethods = getGetterMethods(bean.getClass())
+        Method[] getterMethods = ReflectTools.getGetterMethods(bean.getClass())
                 .toArray(Method[]::new);
         if (getterMethods.length == 0) {
             throw new IllegalArgumentException("Given object of type "
@@ -71,7 +74,7 @@ public class TemplateModelBeanUtil {
                     + " is not a Bean - it has no public getter methods!");
         }
 
-        Stream<BeanValueWrapper> values = Stream.of(getterMethods)
+        Stream<ModelPropertyWrapper> values = Stream.of(getterMethods)
                 .map(method -> mapBeanValueToProperty(method, bean));
 
         // don't resolve the state node used until all the bean values have been
@@ -79,6 +82,42 @@ public class TemplateModelBeanUtil {
         ModelMap modelMap = stateNodeSupplier.get().getFeature(ModelMap.class);
 
         values.forEach(wrapper -> setModelValue(wrapper, modelMap));
+    }
+
+    static void importBeanIntoModel(StateNode parentNode, Object bean,
+            String beanPath) {
+
+        importBeanIntoModel(() -> resolveStateNode(parentNode, beanPath), bean);
+    }
+
+    private static void setModelValue(ModelPropertyWrapper modelPropertyWrapper,
+            ModelMap targetModelMap) {
+        setModelValue(targetModelMap, modelPropertyWrapper.propertyName,
+                modelPropertyWrapper.type, modelPropertyWrapper.value);
+    }
+
+    static void setModelValue(ModelMap modelMap, String propertyName,
+            Type expectedType, Object value) {
+        Object oldValue = modelMap.getValue(propertyName);
+        // this might cause scenario where invalid type is not
+        // caught because
+        // both values are null
+        if (Objects.equals(value, oldValue)) {
+            return;
+        }
+
+        if (Boolean.class == expectedType) {
+            modelMap.setValue(propertyName, parseBooleanValue(value));
+            return;
+        }
+
+        if (expectedType instanceof Class<?>) {
+            setModelValueBasicType(modelMap, propertyName,
+                    (Class<?>) expectedType, value);
+            return;
+        }
+
+        throw createUnsupportedTypeException(expectedType, propertyName);
     }
 
     static Object getProxy(StateNode stateNode, Object[] args) {
@@ -89,7 +128,6 @@ public class TemplateModelBeanUtil {
         }
         assert args[0] instanceof String;
         assert args[1] instanceof Class<?>;
-
         String modelPath = (String) args[0];
         Class<?> beanClass = (Class<?>) args[1];
 
@@ -110,46 +148,9 @@ public class TemplateModelBeanUtil {
                 beanClass);
     }
 
-    static void importBeanIntoModel(StateNode parentNode, Object bean,
-            String beanPath) {
-
-        importBeanIntoModel(() -> resolveStateNode(parentNode, beanPath), bean);
-    }
-
-    private static void setModelValue(BeanValueWrapper beanValueWrapper,
-            ModelMap targetModelMap) {
-        setModelValue(targetModelMap,
-                ReflectTools.getPropertyName(beanValueWrapper.beanGetter),
-                beanValueWrapper.beanGetter.getGenericReturnType(),
-                beanValueWrapper.value);
-    }
-
-    static void setModelValue(ModelMap modelMap, String propertyName,
-            Type expectedType, Object value) {
-        Object oldValue = modelMap.getValue(propertyName);
-        // this might cause scenario where invalid type is not caught because
-        // both values are null
-        if (Objects.equals(value, oldValue)) {
-            return;
-        }
-
-        if (Boolean.class == expectedType) {
-            modelMap.setValue(propertyName, parseBooleanValue(value));
-            return;
-        }
-
-        if (expectedType instanceof Class<?>) {
-            setModelValueBasicType(modelMap, propertyName,
-                    (Class<?>) expectedType, value);
-            return;
-        }
-
-        throwUnsupportedTypeException(expectedType, propertyName);
-    }
-
     private static void setModelValueBasicType(ModelMap modelMap,
             String propertyName, Class<?> expectedType, Object value) {
-        if (isSupportedType(expectedType)) {
+        if (isSupportedNonPrimitiveType(expectedType)) {
             modelMap.setValue(propertyName, (Serializable) value);
             return;
         }
@@ -162,16 +163,14 @@ public class TemplateModelBeanUtil {
                 return;
             }
             // not supported primitive, throw exception for now
+            throw createUnsupportedTypeException(expectedType, propertyName);
         } else {
             // handle other types as beans
             importBeanIntoModel(modelMap.getNode(), value, propertyName);
             return;
         }
-
-        throwUnsupportedTypeException(expectedType, propertyName);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     static Object getModelValue(ModelMap modelMap, String propertyName,
             Type returnType) {
         Object value = modelMap.getValue(propertyName);
@@ -180,34 +179,41 @@ public class TemplateModelBeanUtil {
         }
 
         if (returnType instanceof Class<?>) {
-            Class<?> returnClazz = (Class<?>) returnType;
-
-            if (isSupportedType(returnClazz)) {
-                return value;
-            }
-
-            // primitives have different "default" values than their boxed
-            // versions, e.g. boolean is false and Boolean is null
-            if (returnClazz.isPrimitive()
-                    && isSupportedPrimitiveType(returnClazz)) {
-                return value != null ? value
-                        : getPrimitiveDefaultValue(returnClazz);
-            } else if (!returnClazz.isPrimitive() && returnType instanceof Class
-                    && value instanceof StateNode) {
-                return TemplateModelProxyHandler.createModelProxy(
-                        (StateNode) value, (Class) returnType);
-            }
-
+            return getModelValueBasicType(value, propertyName,
+                    (Class<?>) returnType);
         }
 
-        return throwUnsupportedTypeException(returnType, propertyName);
+        throw createUnsupportedTypeException(returnType, propertyName);
     }
 
-    private static BeanValueWrapper mapBeanValueToProperty(Method getterMethod,
-            Object bean) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static Object getModelValueBasicType(Object value,
+            String propertyName, Class<?> returnClazz) {
+        if (isSupportedNonPrimitiveType(returnClazz)) {
+            return value;
+        }
+
+        // primitives have different "default" values than their boxed
+        // versions, e.g. boolean is false and Boolean is null
+        if (returnClazz.isPrimitive()
+                && isSupportedPrimitiveType(returnClazz)) {
+            return value != null ? value
+                    : getPrimitiveDefaultValue(returnClazz);
+        } else if (!returnClazz.isPrimitive() && returnClazz instanceof Class
+                && value instanceof StateNode) {
+            return TemplateModelProxyHandler.createModelProxy((StateNode) value,
+                    (Class) returnClazz);
+        }
+        throw createUnsupportedTypeException(returnClazz, propertyName);
+    }
+
+    private static ModelPropertyWrapper mapBeanValueToProperty(
+            Method getterMethod, Object bean) {
         try {
             Object value = getterMethod.invoke(bean, (Object[]) null);
-            return new BeanValueWrapper(getterMethod, value);
+            return new ModelPropertyWrapper(
+                    ReflectTools.getPropertyName(getterMethod),
+                    getterMethod.getGenericReturnType(), value);
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException("Given method was not accesible "
                     + bean.getClass().getName() + "::" + getterMethod.getName(),
@@ -222,7 +228,7 @@ public class TemplateModelBeanUtil {
         }
     }
 
-    static StateNode resolveStateNode(StateNode parentNode,
+    private static StateNode resolveStateNode(StateNode parentNode,
             String childNodePath) {
         ModelMap parentLevel = parentNode.getFeature(ModelMap.class);
         if (parentLevel.hasValue(childNodePath)) {
@@ -240,21 +246,11 @@ public class TemplateModelBeanUtil {
         }
     }
 
-    private static Stream<Method> getGetterMethods(Class<?> bean) {
-        return Stream.of(bean.getMethods()).filter(ReflectTools::isGetter)
-                .filter(TemplateModelBeanUtil::isNotObjectMethod);
-    }
-
     private static StateNode createModelMap(ModelMap parent,
             String propertyName) {
         StateNode node = new StateNode(ModelMap.class);
         parent.setValue(propertyName, node);
         return node;
-    }
-
-    private static boolean isNotObjectMethod(Method method) {
-        Class<?> declaringClass = method.getDeclaringClass();
-        return declaringClass != Object.class;
     }
 
     private static String getSupportedTypesString() {
@@ -263,20 +259,20 @@ public class TemplateModelBeanUtil {
                 + " (and corresponding primitive types)";
     }
 
-    private static boolean isSupportedType(Class<?> clazz) {
+    private static boolean isSupportedNonPrimitiveType(Class<?> clazz) {
         return Stream.of(SUPPORTED_PROPERTY_TYPES)
                 .anyMatch(type -> type.isAssignableFrom(clazz));
     }
 
     private static boolean isSupportedPrimitiveType(Class<?> primitiveType) {
-        return isSupportedType(
+        return isSupportedNonPrimitiveType(
                 ReflectTools.convertPrimitiveType(primitiveType));
     }
 
-    private static Object throwUnsupportedTypeException(Type type,
-            String propertyName) {
-        throw new UnsupportedOperationException(
-                "Template model does not yet support type " + type.getTypeName()
+    private static UnsupportedOperationException createUnsupportedTypeException(
+            Type type, String propertyName) {
+        return new UnsupportedOperationException(
+                "Template model does not support type " + type.getTypeName()
                         + " (" + propertyName + "), supported types are:"
                         + getSupportedTypesString());
     }
@@ -299,7 +295,7 @@ public class TemplateModelBeanUtil {
             return false;
         }
         throw new UnsupportedOperationException(
-                "Template model does not yet support primitive type "
+                "Template model does not support primitive type "
                         + primitiveType.getName()
                         + ", all supported types are: "
                         + getSupportedTypesString());
