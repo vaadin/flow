@@ -34,6 +34,9 @@ public class MainPage extends Template {
 }
 ----
 
+The `@Id` annotation is used here to map a component to an element defined in the template with the `"content"` identifier.
+An html component instance mapped to the appropriate template element and declared type 
+is created automatically and injected into the `container` field. 
 Now you can set any `Component` as a content for the `MainPage` class:
 
 [source,java]
@@ -44,6 +47,9 @@ page.setContent(new Label("Hello!"));
 
 [NOTE]
 An alternative way of implementing `MainPage` would be to iterate the Element tree and using `Element.appendChild`. Mapping an element to a `Component` is in many cases easier and has insignificant overhead.
+
+[NOTE]
+The declared type used in `@Id` injection declaration must have a default constructor to be able to instantiate it. 
 
 [TIP]
 You can use only add new elements to template elements without children or text content. In the example above the `"content"` element is eligible for modification but the `"header"` element is not as it contains text.
