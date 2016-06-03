@@ -23,6 +23,7 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,6 +75,21 @@ public class TemplateModelProxyHandler implements InvocationHandler {
         }
     }
 
+    /**
+     * Processes a method invocation on a Byte buddy proxy instance and returns
+     * the result. This method will be invoked on an invocation handler when a
+     * method is invoked on a proxy instance that it is associated with.
+     * 
+     * @param method
+     *            the {@code Method} instance corresponding to the proxied
+     *            method invoked on the proxy instance.
+     *
+     * @param args
+     *            an array of objects containing the values of the arguments
+     *            passed in the method invocation on the proxy instance.
+     * @return the value to return from the method invocation on the proxy
+     *         instance.
+     */
     @RuntimeType
     public Object intercept(@Origin Method method,
             @AllArguments Object[] args) {
@@ -113,7 +129,7 @@ public class TemplateModelProxyHandler implements InvocationHandler {
                 .getLoaded();
         Optional<Constructor<?>> defaultCtor = Stream
                 .of(modelType.getConstructors())
-                .filter((c) -> c.getParameterCount() == 0).findFirst();
+                .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
         if (defaultCtor.isPresent()
                 && Modifier.isPublic(defaultCtor.get().getModifiers())) {
             try {
@@ -147,7 +163,7 @@ public class TemplateModelProxyHandler implements InvocationHandler {
 
         boolean isSetter = Generic.VOID.equals(returnType) && args.size() == 1
                 && ReflectTools.isSetterName(methodName);
-        boolean isGetter = !Generic.VOID.equals(returnType) && args.size() == 0
+        boolean isGetter = !Generic.VOID.equals(returnType) && args.isEmpty()
                 && ReflectTools.isGetterName(methodName,
                         returnType.represents(boolean.class));
         return isSetter || isGetter;
@@ -169,11 +185,22 @@ public class TemplateModelProxyHandler implements InvocationHandler {
                                 .collect(Collectors.joining(", ")));
     }
 
+    @SuppressWarnings("unchecked")
     private Object handleTemplateModelDefaultMethods(Method method,
             Object[] args) {
-        // currently the only import method
-        if ("importBean".equals(method.getName()) && args.length == 1) {
-            TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode, args[0]);
+        if ("importBean".equals(method.getName())) {
+            switch (args.length) {
+            case 1:
+                TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
+                        args[0], "", propertyName -> true);
+                break;
+            case 2:
+                TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
+                        args[0], "", (Predicate<String>) args[1]);
+                break;
+            default:
+                assert false;
+            }
             return null;
         } else if ("getProxy".equals(method.getName())) {
             return TemplateModelBeanUtil.getProxy(stateNode, args);
@@ -184,6 +211,7 @@ public class TemplateModelProxyHandler implements InvocationHandler {
                         "Unknown default TemplateModel method '%s'. "
                                 + "Implementation is not available",
                         method.getName()));
+
     }
 
     private Object handleGetter(Method method) {
@@ -201,7 +229,7 @@ public class TemplateModelProxyHandler implements InvocationHandler {
         Type declaredValueType = method.getGenericParameterTypes()[0];
 
         TemplateModelBeanUtil.setModelValue(modelMap, propertyName,
-                declaredValueType, value);
+                declaredValueType, value, "", string -> true);
         return null;
     }
 
