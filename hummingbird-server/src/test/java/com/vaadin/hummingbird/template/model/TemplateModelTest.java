@@ -507,8 +507,8 @@ public class TemplateModelTest {
         SubBeansModel model = template.getModel();
         SubBeanIface proxy = model.getProxy("bean", SubBeanIface.class);
 
-        verifyBeanValue(template, () -> proxy.getValue(), "bean", "value",
-                "foo");
+        setModelPropertyAndVerifyGetter(template, () -> proxy.getValue(),
+                "bean", "value", "foo");
     }
 
     @Test
@@ -518,8 +518,8 @@ public class TemplateModelTest {
         SubSubBeanIface proxy = model.getProxy("bean.bean",
                 SubSubBeanIface.class);
 
-        verifyBeanValue(template, () -> proxy.getValue(), "bean", "bean",
-                "value", 2);
+        setModelPropertyAndVerifyGetter(template, () -> proxy.getValue(),
+                "bean.bean", "value", 2);
     }
 
     @Test
@@ -528,8 +528,8 @@ public class TemplateModelTest {
         SubBeansModel model = template.getModel();
         SubBean proxy = model.getProxy("bean.beanClass", SubBean.class);
 
-        verifyBeanValue(template, () -> proxy.isVisible(), "bean", "beanClass",
-                "visible", true);
+        setModelPropertyAndVerifyGetter(template, () -> proxy.isVisible(),
+                "bean.beanClass", "visible", true);
     }
 
     @Test
@@ -539,8 +539,8 @@ public class TemplateModelTest {
         SubSubBeanIface proxy = model.getProxy("beanClass.bean",
                 SubSubBeanIface.class);
 
-        verifyBeanValue(template, () -> proxy.getValue(), "beanClass", "bean",
-                "value", 5);
+        setModelPropertyAndVerifyGetter(template, () -> proxy.getValue(),
+                "beanClass.bean", "value", 5);
     }
 
     @Test
@@ -559,8 +559,8 @@ public class TemplateModelTest {
         SubBeansModel model = template.getModel();
         SubBean proxy = model.getProxy("beanClass", SubBean.class);
 
-        verifyBeanValue(template, () -> proxy.isVisible(), "beanClass",
-                "visible", true);
+        setModelPropertyAndVerifyGetter(template, () -> proxy.isVisible(),
+                "beanClass", "visible", true);
     }
 
     @Test
@@ -585,7 +585,7 @@ public class TemplateModelTest {
         subBean.setValue("foo");
 
         verifyModel(template, "bean", "value", "foo");
-        verifyModel(template, "bean", "bean", "value", 3);
+        verifyModel(template, "bean.bean", "value", 3);
     }
 
     @Test
@@ -599,7 +599,7 @@ public class TemplateModelTest {
         subBean.setValue("foo");
 
         verifyModel(template, "bean", "value", "foo");
-        verifyModel(template, "bean", "beanClass", "visible", true);
+        verifyModel(template, "bean.beanClass", "visible", true);
     }
 
     @Test
@@ -614,7 +614,7 @@ public class TemplateModelTest {
         subBean.setVisible(true);
 
         verifyModel(template, "beanClass", "visible", true);
-        verifyModel(template, "beanClass", "bean", "value", 3);
+        verifyModel(template, "beanClass.bean", "value", 3);
     }
 
     @Test
@@ -629,7 +629,7 @@ public class TemplateModelTest {
         subBean.setVisible(true);
 
         verifyModel(template, "beanClass", "visible", true);
-        verifyModel(template, "beanClass", "subBean", "value", 5d);
+        verifyModel(template, "beanClass.subBean", "value", 5d);
     }
 
     @Test
@@ -660,69 +660,38 @@ public class TemplateModelTest {
         Assert.assertEquals(4, subProxy.getValue());
     }
 
-    private void verifyBeanValue(Template template, Supplier<Object> getter,
-            String beanPath, String property, Serializable expected) {
-        Serializable bean = template.getElement().getNode()
-                .getFeature(ModelMap.class).getValue(beanPath);
-        Assert.assertNotNull(bean);
-        Assert.assertTrue(bean instanceof StateNode);
-        StateNode node = (StateNode) bean;
-        verifyBeanValue(node.getFeature(ModelMap.class), getter, property,
-                expected);
-    }
+    private void setModelPropertyAndVerifyGetter(Template template,
+            Supplier<Object> getter, String beanPath, String property,
+            Serializable expected) {
+        StateNode node = template.getElement().getNode();
+        String[] path = beanPath.split("\\.");
+        for (int i = 0; i < path.length; i++) {
+            Serializable bean = node.getFeature(ModelMap.class)
+                    .getValue(path[i]);
+            Assert.assertNotNull(bean);
+            Assert.assertTrue(bean instanceof StateNode);
+            node = (StateNode) bean;
+        }
 
-    private void verifyBeanValue(ModelMap feature, Supplier<Object> getter,
-            String property, Serializable expected) {
+        ModelMap feature = node.getFeature(ModelMap.class);
         feature.setValue(property, expected);
         Assert.assertEquals(expected, getter.get());
     }
 
-    private void verifyBeanValue(Template template, Supplier<Object> getter,
-            String beanPath1, String beanPath2, String property,
-            Serializable expected) {
-        Serializable bean = template.getElement().getNode()
-                .getFeature(ModelMap.class).getValue(beanPath1);
-        Assert.assertNotNull(bean);
-        Assert.assertTrue(bean instanceof StateNode);
-        StateNode node = (StateNode) bean;
-
-        ModelMap feature = node.getFeature(ModelMap.class);
-        bean = feature.getValue(beanPath2);
-        Assert.assertNotNull(bean);
-        Assert.assertTrue(bean instanceof StateNode);
-        node = (StateNode) bean;
-        verifyBeanValue(node.getFeature(ModelMap.class), getter, property,
-                expected);
-    }
-
     private void verifyModel(Template template, String beanPath,
             String property, Serializable expected) {
-        Serializable bean = template.getElement().getNode()
-                .getFeature(ModelMap.class).getValue(beanPath);
-        Assert.assertNotNull(bean);
-        Assert.assertTrue(bean instanceof StateNode);
-        StateNode node = (StateNode) bean;
+        StateNode node = template.getElement().getNode();
+        String[] path = beanPath.split("\\.");
+        for (int i = 0; i < path.length; i++) {
+            Serializable bean = node.getFeature(ModelMap.class)
+                    .getValue(path[i]);
+            Assert.assertNotNull(bean);
+            Assert.assertTrue(bean instanceof StateNode);
+            node = (StateNode) bean;
+        }
         ModelMap feature = node.getFeature(ModelMap.class);
         Assert.assertNotNull(feature);
         Assert.assertEquals(expected, feature.getValue(property));
     }
 
-    private void verifyModel(Template template, String beanPath1,
-            String beanPath2, String property, Serializable expected) {
-        Serializable bean = template.getElement().getNode()
-                .getFeature(ModelMap.class).getValue(beanPath1);
-        Assert.assertNotNull(bean);
-        Assert.assertTrue(bean instanceof StateNode);
-        StateNode node = (StateNode) bean;
-        ModelMap feature = node.getFeature(ModelMap.class);
-        Assert.assertNotNull(feature);
-
-        bean = feature.getValue(beanPath2);
-        Assert.assertNotNull(bean);
-        Assert.assertTrue(bean instanceof StateNode);
-        node = (StateNode) bean;
-        feature = node.getFeature(ModelMap.class);
-
-        Assert.assertEquals(expected, feature.getValue(property));
-    }
 }
