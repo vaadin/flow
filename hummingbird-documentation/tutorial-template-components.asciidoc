@@ -1,3 +1,4 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
 = Adding Components to a Template
 
 You can add child components to templates using the `Component` or `Element` API as long as the template element does not have any children.
