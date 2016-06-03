@@ -32,6 +32,7 @@ import com.vaadin.ui.Template;
  * <li>int &amp; Integer</li>
  * <li>double &amp; Double</li>
  * <li>String</li>
+ * <li>Java Beans with only properties of the forementioned types</li>
  * </ul>
  *
  * @author Vaadin Ltd
@@ -42,13 +43,12 @@ public interface TemplateModel extends Serializable {
      * Import a Bean to this template model.
      * <p>
      * The given Bean is searched for getter methods and the values that the
-     * getters return are set as model values with the corresponding key.
+     * getters return are set (copied) as model values with the corresponding
+     * key.
      * <p>
      * E.g. the <code>firstName</code> property in the bean (has a
-     * <code>getFirstName()</code> getter method) will be imported to a template
-     * model with the <code>firstName</code> key.
-     * <p>
-     * NOTE: nested beans are not supported.
+     * <code>getFirstName()</code> getter method) will be imported to the
+     * template model with the <code>firstName</code> key.
      *
      * @param bean
      *            the bean to import
@@ -69,6 +69,8 @@ public interface TemplateModel extends Serializable {
      * in the model.
      **/
     default <T> T getProxy(String modelPath, Class<T> beanType) {
-
+        // The method is handled by proxy handler
+        return null;
     }
+
 }

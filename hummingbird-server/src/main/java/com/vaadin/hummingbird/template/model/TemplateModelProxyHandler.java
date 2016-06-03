@@ -15,12 +15,14 @@
  */
 package com.vaadin.hummingbird.template.model;
 
-import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,15 +30,20 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.util.ReflectTools;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.Origin;
+import net.bytebuddy.implementation.bind.annotation.RuntimeType;
+import net.bytebuddy.matcher.ElementMatchers;
+
 /**
  * Invocation handler for {@link TemplateModel} proxy objects.
  *
  * @author Vaadin Ltd
  */
 public class TemplateModelProxyHandler implements InvocationHandler {
-
-    private static final Class<?>[] SUPPORTED_PROPERTY_TYPES = new Class[] {
-            Boolean.class, Double.class, Integer.class, String.class };
 
     private final StateNode stateNode;
 
@@ -54,11 +61,54 @@ public class TemplateModelProxyHandler implements InvocationHandler {
      *            the type of the template's model
      * @return a proxy object
      */
-    public static <T extends TemplateModel> T createModelProxy(
-            StateNode stateNode, Class<T> modelType) {
-        return modelType.cast(Proxy.newProxyInstance(modelType.getClassLoader(),
-                new Class[] { modelType },
-                new TemplateModelProxyHandler(stateNode)));
+    public static <T> T createModelProxy(StateNode stateNode,
+            Class<T> modelType) {
+        if (modelType.isInterface()) {
+            return modelType.cast(Proxy.newProxyInstance(
+                    modelType.getClassLoader(), new Class[] { modelType },
+                    new TemplateModelProxyHandler(stateNode)));
+        } else {
+            Class<? extends T> proxy = new ByteBuddy().subclass(modelType)
+                    .method(ElementMatchers.any())
+                    .intercept(MethodDelegation
+                            .to(new TemplateModelProxyHandler(stateNode))
+                            .filter(ElementMatchers.not(ElementMatchers
+                                    .isDeclaredBy(Object.class))))
+                    .make().load(modelType.getClassLoader(),
+                            ClassLoadingStrategy.Default.WRAPPER)
+                    .getLoaded();
+            Optional<Constructor<?>> defaultCtor = Stream
+                    .of(modelType.getConstructors())
+                    .filter((c) -> c.getParameterCount() == 0).findFirst();
+            if (defaultCtor.isPresent()
+                    && Modifier.isPublic(defaultCtor.get().getModifiers())) {
+                try {
+                    return proxy.newInstance();
+                } catch (InstantiationException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (IllegalAccessException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                // TODO : report error
+            }
+            return null;
+        }
+    }
+
+    @RuntimeType
+    public Object intercept(@Origin Method method,
+            @AllArguments Object[] args) {
+        if (ReflectTools.isGetter(method)) {
+            return handleGetter(method);
+        } else if (ReflectTools.isSetter(method)) {
+            return handleSetter(method, args[0]);
+        }
+
+        throw new UnsupportedOperationException(
+                getUnsupportedMethodMessage(method, args));
     }
 
     @Override
@@ -69,19 +119,16 @@ public class TemplateModelProxyHandler implements InvocationHandler {
             return handleObjectMethod(method, args);
         }
 
-        if ("importBean".equals(method.getName())) {
-            TemplateModelBeanUtil.importBeanIntoModel(this, args[0]);
-            return null;
+        if (isTemplateModelDefaultMethod(method)) {
+            return handleTemplateModelDefaultMethods(method, args);
         }
 
-        if (ReflectTools.isGetter(method)) {
-            return handleGetter(method);
-        } else if (ReflectTools.isSetter(method)) {
-            return handleSetter(method, args[0]);
-        }
+        return intercept(method, args);
+    }
 
-        throw new UnsupportedOperationException(
-                getUnsupportedMethodMessage(method, args));
+    private static boolean isTemplateModelDefaultMethod(Method method) {
+        return method.isDefault()
+                && method.getDeclaringClass() == TemplateModel.class;
     }
 
     private static String getUnsupportedMethodMessage(Method unsupportedMethod,
@@ -95,72 +142,36 @@ public class TemplateModelProxyHandler implements InvocationHandler {
                                 .collect(Collectors.joining(", ")));
     }
 
+    private Object handleTemplateModelDefaultMethods(Method method,
+            Object[] args) {
+        // currently the only import method
+        if ("importBean".equals(method.getName()) && args.length == 1) {
+            TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode, args[0]);
+            return null;
+        } else if ("getProxy".equals(method.getName())) {
+            return TemplateModelBeanUtil.getProxy(stateNode, args);
+        }
+        assert false;
+        return null;
+    }
+
     private Object handleGetter(Method method) {
         ModelMap modelMap = getModelMap();
         String propertyName = ReflectTools.getPropertyName(method);
         Type returnType = method.getGenericReturnType();
 
-        Object value = modelMap.getValue(propertyName);
-        if (Boolean.class == returnType) {
-            return parseBooleanValue(value);
-        }
-
-        if (returnType instanceof Class<?>) {
-            Class<?> returnClazz = (Class<?>) returnType;
-            if (isSupportedPrimitiveType(returnClazz)) {
-                return value != null ? value
-                        : getPrimitiveDefaultValue(returnClazz);
-            }
-
-            if (isSupportedType(returnClazz)) {
-                return value;
-            }
-        }
-
-        // only boolean, integer, double and string are currently supported
-        throw new UnsupportedOperationException(
-                "Template model does not yet support type "
-                        + returnType.getTypeName() + " (" + method.getName()
-                        + "), supported types are:"
-                        + getSupportedTypesString());
+        return TemplateModelBeanUtil.getModelValue(modelMap, propertyName,
+                returnType);
     }
 
     private Object handleSetter(Method method, Object value) {
+        ModelMap modelMap = getModelMap();
         String propertyName = ReflectTools.getPropertyName(method);
         Type declaredValueType = method.getGenericParameterTypes()[0];
-        return setModelValue(propertyName, declaredValueType, value);
-    }
 
-    Object setModelValue(String propertyName, Type expectedType, Object value) {
-        ModelMap modelMap = getModelMap();
-        Object oldValue = modelMap.getValue(propertyName);
-        // this might cause scenario where invalid type is not caught because
-        // both values are null
-        if (Objects.equals(value, oldValue)) {
-            return null;
-        }
-
-        if (Boolean.class == expectedType) {
-            modelMap.setValue(propertyName, parseBooleanValue(value));
-            return null;
-        }
-
-        if (expectedType instanceof Class<?>) {
-            Class<?> clazz = (Class<?>) expectedType;
-
-            if (isSupportedType(clazz) || isSupportedPrimitiveType(clazz)) {
-                // all currently supported types are serializable
-                modelMap.setValue(propertyName, (Serializable) value);
-
-                return null;
-            }
-
-        }
-
-        throw new UnsupportedOperationException(
-                "Template model does not yet support type "
-                        + expectedType.getTypeName() + ", supported types are:"
-                        + getSupportedTypesString());
+        TemplateModelBeanUtil.setModelValue(modelMap, propertyName,
+                declaredValueType, value);
+        return null;
     }
 
     private Object handleObjectMethod(Method method, Object[] args) {
@@ -193,25 +204,6 @@ public class TemplateModelProxyHandler implements InvocationHandler {
         return stateNode.getFeature(ModelMap.class);
     }
 
-    private static boolean isSupportedType(Class<?> clazz) {
-        return Stream.of(SUPPORTED_PROPERTY_TYPES)
-                .anyMatch(type -> type.isAssignableFrom(clazz));
-    }
-
-    private static boolean isSupportedPrimitiveType(Class<?> clazz) {
-        return clazz.isPrimitive() && (clazz == int.class
-                || clazz == double.class || clazz == boolean.class);
-    }
-
-    private static Boolean parseBooleanValue(Object modelValue) {
-        if (modelValue instanceof String) {
-            throw new UnsupportedOperationException(
-                    "Template Model does not support parsing String to Boolean.");
-        } else {
-            return (Boolean) modelValue;
-        }
-    }
-
     private static boolean isTemplateModelProxy(Object proxy) {
         return Proxy.isProxyClass(proxy.getClass())
                 && Proxy.getInvocationHandler(
@@ -221,27 +213,6 @@ public class TemplateModelProxyHandler implements InvocationHandler {
     private static StateNode getStateNodeForProxy(Object proxy) {
         InvocationHandler handler = Proxy.getInvocationHandler(proxy);
         return ((TemplateModelProxyHandler) handler).stateNode;
-    }
-
-    private static String getSupportedTypesString() {
-        return Stream.of(SUPPORTED_PROPERTY_TYPES).map(Class::getName)
-                .collect(Collectors.joining(", "))
-                + " (and corresponding primitive types)";
-    }
-
-    private static Object getPrimitiveDefaultValue(Class<?> primitiveType) {
-        if (primitiveType == int.class) {
-            return Integer.valueOf(0);
-        } else if (primitiveType == double.class) {
-            return Double.valueOf(0);
-        } else if (primitiveType == boolean.class) {
-            return false;
-        }
-        throw new UnsupportedOperationException(
-                "Template model does not yet support primitive type "
-                        + primitiveType.getName()
-                        + ", all supported types are: "
-                        + getSupportedTypesString());
     }
 
 }
