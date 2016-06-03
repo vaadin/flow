@@ -145,6 +145,30 @@ public class StateTreeTest {
     }
 
     @Test
+    public void testDirtyNodeCollectionOrder() {
+        StateNode rootNode = tree.getRootNode();
+        List<StateNode> nodes = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            StateNode node = StateNodeTest.createEmptyNode("node" + i);
+            nodes.add(node);
+            StateNodeTest.setParent(node, rootNode);
+        }
+
+        nodes.forEach(StateNode::markAsDirty);
+        ArrayList<StateNode> expected = new ArrayList<>();
+        expected.add(rootNode);
+        expected.addAll(nodes);
+
+        Assert.assertArrayEquals(expected.toArray(),
+                tree.collectDirtyNodes().toArray());
+
+        nodes.forEach(StateNode::markAsDirty);
+        expected = new ArrayList<>(nodes);
+        Assert.assertArrayEquals(expected.toArray(),
+                tree.collectDirtyNodes().toArray());
+    }
+
+    @Test
     public void testDetachInChanges() {
         StateNode node1 = tree.getRootNode();
         StateNode node2 = StateNodeTest.createEmptyNode();

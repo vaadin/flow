@@ -17,9 +17,8 @@
 package com.vaadin.hummingbird;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.change.NodeChange;
@@ -57,7 +56,7 @@ public class StateTree implements NodeOwner {
         }
     }
 
-    private Set<StateNode> dirtyNodes = new HashSet<>();
+    private LinkedHashSet<StateNode> dirtyNodes = new LinkedHashSet<>();
 
     private final Map<Integer, StateNode> idToNode = new HashMap<>();
     private int nextId = 1;
@@ -169,11 +168,11 @@ public class StateTree implements NodeOwner {
      * Gets all the nodes that have been marked as dirty since the last time
      * this method was invoked.
      *
-     * @return a set of dirty nodes
+     * @return a set of dirty nodes, in the order they were marked dirty
      */
-    public Set<StateNode> collectDirtyNodes() {
-        Set<StateNode> collectedNodes = dirtyNodes;
-        dirtyNodes = new HashSet<>();
+    public LinkedHashSet<StateNode> collectDirtyNodes() {
+        LinkedHashSet<StateNode> collectedNodes = dirtyNodes;
+        dirtyNodes = new LinkedHashSet<>();
         return collectedNodes;
     }
 
