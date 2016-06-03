@@ -23,6 +23,7 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -169,11 +170,22 @@ public class TemplateModelProxyHandler implements InvocationHandler {
                                 .collect(Collectors.joining(", ")));
     }
 
+    @SuppressWarnings("unchecked")
     private Object handleTemplateModelDefaultMethods(Method method,
             Object[] args) {
-        // currently the only import method
-        if ("importBean".equals(method.getName()) && args.length == 1) {
-            TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode, args[0]);
+        if ("importBean".equals(method.getName())) {
+            switch (args.length) {
+            case 1:
+                TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
+                        args[0], "", propertyName -> true);
+                break;
+            case 2:
+                TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
+                        args[0], "", (Predicate<String>) args[1]);
+                break;
+            default:
+                assert false;
+            }
             return null;
         } else if ("getProxy".equals(method.getName())) {
             return TemplateModelBeanUtil.getProxy(stateNode, args);
@@ -184,6 +196,7 @@ public class TemplateModelProxyHandler implements InvocationHandler {
                         "Unknown default TemplateModel method '%s'. "
                                 + "Implementation is not available",
                         method.getName()));
+
     }
 
     private Object handleGetter(Method method) {
@@ -201,7 +214,7 @@ public class TemplateModelProxyHandler implements InvocationHandler {
         Type declaredValueType = method.getGenericParameterTypes()[0];
 
         TemplateModelBeanUtil.setModelValue(modelMap, propertyName,
-                declaredValueType, value);
+                declaredValueType, value, "", string -> true);
         return null;
     }
 

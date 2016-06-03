@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.template.model;
 
 import java.io.Serializable;
+import java.util.function.Predicate;
 
 import com.vaadin.ui.Template;
 
@@ -40,9 +41,9 @@ import com.vaadin.ui.Template;
 public interface TemplateModel extends Serializable {
 
     /**
-     * Import a Bean to this template model.
+     * Import a bean to this template model.
      * <p>
-     * The given Bean is searched for getter methods and the values that the
+     * The given bean is searched for getter methods and the values that the
      * getters return are set (copied) as model values with the corresponding
      * key.
      * <p>
@@ -71,6 +72,31 @@ public interface TemplateModel extends Serializable {
     default <T> T getProxy(String modelPath, Class<T> beanType) {
         // The method is handled by proxy handler
         return null;
+    }
+
+    /**
+     * Import a bean properties passing the given filter to this template model.
+     * <p>
+     * The given filter should decide based on the bean property name whether
+     * that property should be imported to the model. For nested bean
+     * properties, the <em>dot annotation</em> is used.
+     * <p>
+     * For example, when the given <code>bean</code> is of type Person, and it
+     * has a property <code>Address address</code>, the properties inside the
+     * <code>Address</code> are passed to the given filter prefixed with
+     * <code>address.</code>. e.g. <code>address.postCode</code>.
+     *
+     *
+     * @param bean
+     *            the to import
+     * @param propertyNameFilter
+     *            the filter to apply to the bean's properties
+     * @see #importBean(Object)
+     * @see TemplateModel supported property types
+     */
+    default void importBean(Object bean, Predicate<String> propertyNameFilter) {
+        // NOOP invocation handler passes this method call to
+        // TemplateModelBeanUtil
     }
 
 }

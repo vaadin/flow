@@ -273,7 +273,7 @@ public class TemplateModelTest {
         Assert.assertEquals(null, model.getBoolean());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = ClassCastException.class)
     public void testBooleanParseString() {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
