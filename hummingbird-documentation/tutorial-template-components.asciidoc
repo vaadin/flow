@@ -2,6 +2,7 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 = Adding Components to a Template
 
 You can add child components to templates using the `Component` or `Element` API as long as the template element does not have any children.
+If you want to include other templates inside a template, you should see <<tutorial-template-include#,Including Templates in Templates>>.
 
 Here is the content of the HTML template file which has a placeholder `div` element with a `"content"` identifier. This element is mapped to a `Div` component in Java code below to set a `Component` as a child for it.
 
