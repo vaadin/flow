@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.StringTokenizer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -45,13 +46,13 @@ public class TemplateModelBeanUtil {
      */
     private static final class ModelPropertyWrapper {
         private String propertyName;
-        private Type type;
+        private Type propertyType;
         private Object value;
 
-        public ModelPropertyWrapper(String propertyName, Type type,
+        public ModelPropertyWrapper(String propertyName, Type propertyType,
                 Object value) {
             this.propertyName = propertyName;
-            this.type = type;
+            this.propertyType = propertyType;
             this.value = value;
         }
     }
@@ -61,7 +62,10 @@ public class TemplateModelBeanUtil {
     }
 
     static void importBeanIntoModel(Supplier<StateNode> stateNodeSupplier,
-            Object bean) {
+            Object bean, String pathPrefix, Predicate<String> filter) {
+        assert pathPrefix != null
+                && (pathPrefix.isEmpty() || pathPrefix.endsWith("."));
+
         if (bean == null) {
             throw new IllegalArgumentException("Bean cannot be null");
         }
@@ -74,30 +78,32 @@ public class TemplateModelBeanUtil {
                     + " is not a Bean - it has no public getter methods!");
         }
 
+        Predicate<Method> methodBasedFilter = method -> filter
+                .test(pathPrefix + ReflectTools.getPropertyName(method));
+
         Stream<ModelPropertyWrapper> values = Stream.of(getterMethods)
+                .filter(methodBasedFilter)
                 .map(method -> mapBeanValueToProperty(method, bean));
 
         // don't resolve the state node used until all the bean values have been
         // resolved properly
         ModelMap modelMap = stateNodeSupplier.get().getFeature(ModelMap.class);
 
-        values.forEach(wrapper -> setModelValue(wrapper, modelMap));
-    }
-
-    static void importBeanIntoModel(StateNode parentNode, Object bean,
-            String beanPath) {
-
-        importBeanIntoModel(() -> resolveStateNode(parentNode, beanPath), bean);
+        values.forEach(wrapper -> setModelValue(wrapper, modelMap, pathPrefix,
+                filter));
     }
 
     private static void setModelValue(ModelPropertyWrapper modelPropertyWrapper,
-            ModelMap targetModelMap) {
+            ModelMap targetModelMap, String pathPrefix,
+            Predicate<String> filter) {
         setModelValue(targetModelMap, modelPropertyWrapper.propertyName,
-                modelPropertyWrapper.type, modelPropertyWrapper.value);
+                modelPropertyWrapper.propertyType, modelPropertyWrapper.value,
+                pathPrefix, filter);
     }
 
     static void setModelValue(ModelMap modelMap, String propertyName,
-            Type expectedType, Object value) {
+            Type expectedType, Object value, String pathPrefix,
+            Predicate<String> filter) {
         Object oldValue = modelMap.getValue(propertyName);
         // this might cause scenario where invalid type is not
         // caught because
@@ -106,14 +112,9 @@ public class TemplateModelBeanUtil {
             return;
         }
 
-        if (Boolean.class == expectedType) {
-            modelMap.setValue(propertyName, parseBooleanValue(value));
-            return;
-        }
-
         if (expectedType instanceof Class<?>) {
             setModelValueBasicType(modelMap, propertyName,
-                    (Class<?>) expectedType, value);
+                    (Class<?>) expectedType, value, pathPrefix, filter);
             return;
         }
 
@@ -149,7 +150,8 @@ public class TemplateModelBeanUtil {
     }
 
     private static void setModelValueBasicType(ModelMap modelMap,
-            String propertyName, Class<?> expectedType, Object value) {
+            String propertyName, Class<?> expectedType, Object value,
+            String pathPrefix, Predicate<String> filter) {
         if (isSupportedNonPrimitiveType(expectedType)) {
             modelMap.setValue(propertyName, (Serializable) value);
             return;
@@ -166,7 +168,10 @@ public class TemplateModelBeanUtil {
             throw createUnsupportedTypeException(expectedType, propertyName);
         } else {
             // handle other types as beans
-            importBeanIntoModel(modelMap.getNode(), value, propertyName);
+            String newPathPrefix = pathPrefix + propertyName + ".";
+            importBeanIntoModel(
+                    () -> resolveStateNode(modelMap.getNode(), propertyName),
+                    value, newPathPrefix, filter);
             return;
         }
     }
@@ -174,10 +179,6 @@ public class TemplateModelBeanUtil {
     static Object getModelValue(ModelMap modelMap, String propertyName,
             Type returnType) {
         Object value = modelMap.getValue(propertyName);
-        if (Boolean.class == returnType) {
-            return parseBooleanValue(value);
-        }
-
         if (returnType instanceof Class<?>) {
             return getModelValueBasicType(value, propertyName,
                     (Class<?>) returnType);
@@ -186,7 +187,6 @@ public class TemplateModelBeanUtil {
         throw createUnsupportedTypeException(returnType, propertyName);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     private static Object getModelValueBasicType(Object value,
             String propertyName, Class<?> returnClazz) {
         if (isSupportedNonPrimitiveType(returnClazz)) {
@@ -199,10 +199,9 @@ public class TemplateModelBeanUtil {
                 && isSupportedPrimitiveType(returnClazz)) {
             return value != null ? value
                     : getPrimitiveDefaultValue(returnClazz);
-        } else if (!returnClazz.isPrimitive() && returnClazz instanceof Class
-                && value instanceof StateNode) {
+        } else if (!returnClazz.isPrimitive() && value instanceof StateNode) {
             return TemplateModelProxyHandler.createModelProxy((StateNode) value,
-                    (Class) returnClazz);
+                    returnClazz);
         }
         throw createUnsupportedTypeException(returnClazz, propertyName);
     }
@@ -275,15 +274,6 @@ public class TemplateModelBeanUtil {
                 "Template model does not support type " + type.getTypeName()
                         + " (" + propertyName + "), supported types are:"
                         + getSupportedTypesString());
-    }
-
-    private static Boolean parseBooleanValue(Object modelValue) {
-        if (modelValue instanceof String) {
-            throw new UnsupportedOperationException(
-                    "Template Model does not support parsing String to Boolean.");
-        } else {
-            return (Boolean) modelValue;
-        }
     }
 
     private static Object getPrimitiveDefaultValue(Class<?> primitiveType) {

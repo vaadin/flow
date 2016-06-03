@@ -101,7 +101,18 @@ public class TemplateModelTest {
         void setValue(int value);
     }
 
-    public static class SubBean {
+    public static class SuperBean {
+
+        public void setSubBean(SubSubBean bean) {
+
+        }
+
+        public SubSubBean getSubBean() {
+            return null;
+        }
+    }
+
+    public static class SubBean extends SuperBean {
 
         private boolean visible;
 
@@ -120,7 +131,16 @@ public class TemplateModelTest {
         public SubSubBeanIface getBean() {
             return null;
         }
+    }
 
+    public static class SubSubBean {
+        public Double getValue() {
+            return null;
+        }
+
+        public void setValue(Double value) {
+
+        }
     }
 
     public interface SubBeansModel extends TemplateModel {
@@ -273,7 +293,7 @@ public class TemplateModelTest {
         Assert.assertEquals(null, model.getBoolean());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = ClassCastException.class)
     public void testBooleanParseString() {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
@@ -544,7 +564,7 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void getProxy_setValueToProxy_proxyIsNotNullAndValueSetToModel() {
+    public void getProxyClass_setValueToProxy_proxyIsNotNullAndValueSetToModel() {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
         SubBean proxy = model.getProxy("beanClass", SubBean.class);
@@ -554,7 +574,7 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void getProxyInterface_getSubpropertyValueFromProxy_proxyIsNotNullAndValueSetToModel() {
+    public void getProxyInterface_getSubIfacePropertyValueFromProxy_proxyIsNotNullAndValueSetToModel() {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
         SubSubBeanIface proxy = model.getProxy("bean.bean",
@@ -569,7 +589,51 @@ public class TemplateModelTest {
     }
 
     @Test
-    public void getProxyInterface_setSubBean_proxyIsCorrectAndValueSetToModel() {
+    public void getProxyInterface_getSubClassPropertyValueFromProxy_proxyIsNotNullAndValueSetToModel() {
+        SubBeansTemplate template = new SubBeansTemplate();
+        SubBeansModel model = template.getModel();
+        SubBean proxy = model.getProxy("bean.beanClass", SubBean.class);
+        proxy.setVisible(true);
+
+        SubBeanIface subBean = model.getProxy("bean", SubBeanIface.class);
+        subBean.setValue("foo");
+
+        verifyModel(template, "bean", "value", "foo");
+        verifyModel(template, "bean", "beanClass", "visible", true);
+    }
+
+    @Test
+    public void getProxyClass_getSubIfacePropertyValueFromProxy_proxyIsNotNullAndValueSetToModel() {
+        SubBeansTemplate template = new SubBeansTemplate();
+        SubBeansModel model = template.getModel();
+        SubSubBeanIface proxy = model.getProxy("beanClass.bean",
+                SubSubBeanIface.class);
+        proxy.setValue(3);
+
+        SubBean subBean = model.getProxy("beanClass", SubBean.class);
+        subBean.setVisible(true);
+
+        verifyModel(template, "beanClass", "visible", true);
+        verifyModel(template, "beanClass", "bean", "value", 3);
+    }
+
+    @Test
+    public void getProxyClass_getSubClassPropertyValueFromProxy_proxyIsNotNullAndValueSetToModel() {
+        SubBeansTemplate template = new SubBeansTemplate();
+        SubBeansModel model = template.getModel();
+        SubSubBean proxy = model.getProxy("beanClass.subBean",
+                SubSubBean.class);
+        proxy.setValue(5d);
+
+        SubBean subBean = model.getProxy("beanClass", SubBean.class);
+        subBean.setVisible(true);
+
+        verifyModel(template, "beanClass", "visible", true);
+        verifyModel(template, "beanClass", "subBean", "value", 5d);
+    }
+
+    @Test
+    public void getProxyInterface_setSubBeanIface_proxyIsCorrectAndValueSetToModel() {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
         SubBeanIface proxy = model.getProxy("bean", SubBeanIface.class);
