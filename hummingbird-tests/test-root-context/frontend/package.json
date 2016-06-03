@@ -1,0 +1,15 @@
+{
+  "name": "test-root-context",
+  "version": "1.0.0",
+  "description": "This file exists only to define the Bower version",
+  "main": "",
+  "dependencies": {
+    "bower": "^1.7.9"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}
