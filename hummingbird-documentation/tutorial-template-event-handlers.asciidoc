@@ -98,3 +98,6 @@ public class MyTemplate extends Template {
   }
 }
 ----
+
+The `@Id` annotation is used here to map an element defined in the template with an appropriate identifier.
+See <<tutorial-template-components#,Adding Components to a Template>> for the details.
