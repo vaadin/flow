@@ -122,7 +122,8 @@ public interface TemplateModel extends Serializable {
      */
     default <T> T getProxy(String modelPath, Class<T> beanType) {
         // The method is handled by proxy handler
-        return null;
+        throw new UnsupportedOperationException(
+                "The method implementation is povided by proxy handler");
     }
 
     /**
