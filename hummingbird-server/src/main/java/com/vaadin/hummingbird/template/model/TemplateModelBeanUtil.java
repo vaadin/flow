@@ -20,9 +20,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Objects;
-import java.util.StringTokenizer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -39,6 +39,8 @@ public class TemplateModelBeanUtil {
 
     private static final Class<?>[] SUPPORTED_PROPERTY_TYPES = new Class[] {
             Boolean.class, Double.class, Integer.class, String.class };
+
+    private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
 
     /**
      * Internal implementation of Pair / Tuple that encapsulates a value and the
@@ -138,15 +140,13 @@ public class TemplateModelBeanUtil {
         }
 
         StateNode node = stateNode;
-        StringTokenizer tokenizer = new StringTokenizer(modelPath, ".");
-        String last = null;
-        while (tokenizer.hasMoreTokens()) {
-            String name = tokenizer.nextToken();
-            node = resolveStateNode(node, name);
-            last = name;
+
+        String[] path = DOT_PATTERN.split(modelPath);
+        for (int i = 0; i < path.length; i++) {
+            node = resolveStateNode(node, path[i]);
         }
-        return getModelValue(node.getParent().getFeature(ModelMap.class), last,
-                beanClass);
+        return getModelValue(node.getParent().getFeature(ModelMap.class),
+                path[path.length - 1], beanClass);
     }
 
     private static void setModelValueBasicType(ModelMap modelMap,
