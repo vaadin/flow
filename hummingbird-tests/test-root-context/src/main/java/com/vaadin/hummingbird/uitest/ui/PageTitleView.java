@@ -11,7 +11,7 @@ public class PageTitleView extends AbstractDivView {
 
         Input input = new Input();
         input.setId("input");
-        input.setValue("");
+        input.clear();
 
         Div updateButton = new Div();
         updateButton.setId("button");
