@@ -148,6 +148,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                     SynchronizedPropertyEventsList.class)
             .toArray(Class[]::new);
 
+    private static final Predicate<? super String> specialAttributeFilter = name -> !"class"
+            .equals(name) && !"style".equals(name);
+
     private ElementTemplateNode templateNode;
 
     /**
@@ -210,7 +213,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
          * node first if it exists. In contrast with properties attributes may
          * be defined in the template inlined. But this definition may be
          * overriden and overriden value should be used if any.
-         * 
+         *
          * All static bindings attributes have been copied to override node at
          * its creation time.
          */
@@ -236,7 +239,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
          * node first if it exists. In contrast with properties attributes may
          * be defined in the template inlined. But this definition may be
          * overriden and overriden value should be used if any.
-         * 
+         *
          * All static bindings attributes have been copied to override node at
          * its creation time.
          */
@@ -256,7 +259,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        Stream<String> templateAttributes = templateNode.getAttributeNames();
+        Stream<String> templateAttributes = templateNode.getAttributeNames()
+                .filter(specialAttributeFilter);
         Optional<StateNode> overrideNode = getOverrideNode(node);
         if (overrideNode.isPresent()) {
             Predicate<String> isStaticBinding = this::isStaticBindingAttribute;
@@ -519,6 +523,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
              */
             templateNode.getAttributeNames()
                     .filter(this::isStaticBindingAttribute)
+                    .filter(specialAttributeFilter)
                     .forEach(attribute -> BasicElementStateProvider.get()
                             .setAttribute(overrideNode, attribute,
                                     templateNode.getAttributeBinding(attribute)

@@ -219,6 +219,8 @@ public class Element implements Serializable {
     private static final Map<String, CustomAttribute> customAttributes = new HashMap<>();
 
     static {
+        // When adding stuff here, make sure the custom attribute is also
+        // handled for template elements (including getAttributeNames())
         customAttributes.put("class", new ClassAttributeHandler());
         customAttributes.put("style", new StyleAttributeHandler());
     }
