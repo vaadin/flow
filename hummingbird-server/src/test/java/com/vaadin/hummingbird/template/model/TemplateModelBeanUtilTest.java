@@ -296,6 +296,34 @@ public class TemplateModelBeanUtilTest {
         Assert.assertFalse(nestedBeanModelMap.hasValue("doubleValue"));
     }
 
+    @Test
+    public void importBean_getterThrowsExcpetion_noModelStateNodeCreatedAndImportFails() {
+        Bean bean = new Bean() {
+
+            @Override
+            public String getString() {
+                throw new NullPointerException();
+            }
+        };
+        BeanWithNestedBean beanWithNestedBean = new BeanWithNestedBean();
+        beanWithNestedBean.setBean(bean);
+
+        NoModelTemplate template = new NoModelTemplate();
+        TemplateModel model = template.getModel();
+
+        ModelMap map = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+
+        Assert.assertFalse(map.hasValue("bean"));
+
+        try {
+            model.importBean(beanWithNestedBean);
+            Assert.fail();
+        } catch (IllegalStateException e) {
+            Assert.assertFalse(map.hasValue("bean"));
+        }
+    }
+
     private void verifyBeanToModelViaInterface(Bean bean, BeanModel model) {
         Assert.assertEquals(bean.getBooleanObject(), model.getBooleanObject());
         Assert.assertEquals(bean.getDoubleObject(), model.getDoubleObject());
