@@ -93,7 +93,7 @@ public class CompositeView extends AbstractDivView {
         serverInput.setId(SERVER_INPUT_ID);
         Button serverInputButton = new Button("Set", e -> {
             nameField.setName(serverInput.getValue());
-            serverInput.setValue("");
+            serverInput.clear();
         });
         serverInputButton.setId(SERVER_INPUT_BUTTON_ID);
         add(new Text("Enter a value to set the name on the server"),
