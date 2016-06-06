@@ -100,6 +100,15 @@ public class Input extends HtmlComponent implements ChangeNotifier {
     }
 
     /**
+     * Clears the input field.
+     * <p>
+     * This is the same as setting the value to <code>""</code>.
+     */
+    public void clear() {
+        setValue("");
+    }
+
+    /**
      * Sets the type of this input.
      *
      * @see <a href=
@@ -121,4 +130,5 @@ public class Input extends HtmlComponent implements ChangeNotifier {
     public String getType() {
         return get(typeDescriptor);
     }
+
 }
