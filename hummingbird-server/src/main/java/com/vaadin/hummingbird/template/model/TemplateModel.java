@@ -33,7 +33,8 @@ import com.vaadin.ui.Template;
  * <li>int &amp; Integer</li>
  * <li>double &amp; Double</li>
  * <li>String</li>
- * <li>Java Beans with only properties of the forementioned types</li>
+ * <li>Java Bean with only properties of supported types</li>
+ * <li>List of Java Beans
  * </ul>
  *
  * @author Vaadin Ltd

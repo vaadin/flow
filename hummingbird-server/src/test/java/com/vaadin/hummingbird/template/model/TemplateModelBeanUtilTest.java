@@ -1,13 +1,17 @@
 package com.vaadin.hummingbird.template.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.NoModelTemplate;
 import com.vaadin.ui.Template;
@@ -35,6 +39,30 @@ public class TemplateModelBeanUtilTest {
         }
 
         public void setBeans(List<Bean> beans) {
+            this.beans = beans;
+        }
+    }
+
+    public static class BeanWithPrimitiveList {
+        private List<String> strings;
+
+        public List<String> getStrings() {
+            return strings;
+        }
+
+        public void setStrings(List<String> strings) {
+            this.strings = strings;
+        }
+    }
+
+    public static class BeanWithSet {
+        private Set<Bean> beans;
+
+        public Set<Bean> getBeans() {
+            return beans;
+        }
+
+        public void setBeans(Set<Bean> beans) {
             this.beans = beans;
         }
     }
@@ -131,11 +159,51 @@ public class TemplateModelBeanUtilTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
+    public void testBeanWithSetProperty() {
+        NoModelTemplate template = new NoModelTemplate();
+        BeanWithSet bean = new BeanWithSet();
+        // won't crash if both are null
+        bean.setBeans(new HashSet<>());
+
+        template.getModel().importBean(bean);
+    }
+
+    @Test
     public void testBeanWithListProperty() {
         NoModelTemplate template = new NoModelTemplate();
         BeanWithList bean = new BeanWithList();
+
+        Bean listItem1 = new Bean();
+        listItem1.setString("item1");
+        Bean listItem2 = new Bean();
+        listItem2.setString("item2");
+
+        bean.setBeans(Arrays.asList(listItem1, listItem2));
+
+        template.getModel().importBean(bean);
+
+        ModelMap modelMap = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+        StateNode beansNode = (StateNode) modelMap.getValue("beans");
+
+        Assert.assertTrue(beansNode.hasFeature(ModelList.class));
+
+        ModelList modelList = beansNode.getFeature(ModelList.class);
+
+        Assert.assertEquals(2, modelList.size());
+
+        verifyBeanToModelMap(listItem1,
+                modelList.get(0).getFeature(ModelMap.class));
+        verifyBeanToModelMap(listItem2,
+                modelList.get(1).getFeature(ModelMap.class));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testBeanWithPrimitiveList() {
+        NoModelTemplate template = new NoModelTemplate();
+        BeanWithPrimitiveList bean = new BeanWithPrimitiveList();
         // won't crash if both are null
-        bean.setBeans(new ArrayList<>());
+        bean.setStrings(new ArrayList<>());
 
         template.getModel().importBean(bean);
     }

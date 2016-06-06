@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
@@ -22,6 +25,7 @@ import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.server.Command;
 
 /**
@@ -30,21 +34,46 @@ import com.vaadin.server.Command;
  */
 public class ForTemplateView extends Div implements View {
 
+    public static class Item {
+        private String text;
+        private String key;
+
+        public Item(String text, String key) {
+            this.text = text;
+            this.key = key;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public String getKey() {
+            return key;
+        }
+    }
+
+    public interface ItemListModel extends TemplateModel {
+        void setItems(List<Item> modelList);
+    }
+
     public ForTemplateView() {
-        InlineTemplate template = new InlineTemplate("<ul><div></div>"
-                + "<li *ngFor='let item of items' class='a'>{{item.text}}"
-                + "<input [value]='item.key'></li><div></div></ul>");
+        InlineTemplate<ItemListModel> template = new InlineTemplate<>(
+                "<ul><div></div>"
+                        + "<li *ngFor='let item of items' class='a'>{{item.text}}"
+                        + "<input [value]='item.key'></li><div></div></ul>",
+                ItemListModel.class);
 
-        StateNode modelListNode = new StateNode(ModelList.class);
+        List<Item> items = new ArrayList<>();
+        items.add(new Item("item1", "text1"));
+        items.add(new Item("item2", "text2"));
+        template.getModel().setItems(items);
 
-        ModelList modelList = modelListNode.getFeature(ModelList.class);
-        modelList.add(createModelItem("item1", "text1"));
-        modelList.add(createModelItem("item2", "text2"));
-
-        template.getElement().getNode().getFeature(ModelMap.class)
-                .setValue("items", modelListNode);
         add(template);
 
+        // Still needs low-level ModelList for updates
+        StateNode modelListNode = (StateNode) template.getElement().getNode()
+                .getFeature(ModelMap.class).getValue("items");
+        ModelList modelList = modelListNode.getFeature(ModelList.class);
         add(createButton("Append", "append",
                 () -> modelList.add(createModelItem("appended", "append"))));
         add(createButton("Update first", "update-first",
