@@ -15,6 +15,10 @@
  */
 package com.vaadin.hummingbird.template.parser;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -23,6 +27,7 @@ import org.jsoup.nodes.TextNode;
 
 import com.vaadin.hummingbird.template.TemplateIncludeBuilder;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
+import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
  * The factory that handles "@include relative/path/to/filename.html@" template.
@@ -47,37 +52,55 @@ public class TemplateIncludeBuilderFactory
     public TemplateNodeBuilder createBuilder(TextNode node,
             TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
-        Optional<String> path = getIncludePath(node);
-        assert path.isPresent();
-        return new TemplateIncludeBuilder(path.get(), templateResolver);
+        Collection<String> paths = getIncludePaths(node);
+        assert !paths.isEmpty();
+        return new TemplateIncludeBuilder(templateResolver,
+                paths.toArray(new String[paths.size()]));
     }
 
     @Override
     protected boolean canHandle(TextNode node) {
-        return getIncludePath(node).isPresent();
+        return !getIncludePaths(node).isEmpty();
     }
 
     /**
-     * Gets the include path from a text node with an "@include path/to/file@"
-     * directive.
+     * Gets the include paths from a text node with an "@include path/to/file@"
+     * directives.
      *
      * @param node
-     *            the text node which possibly contains an include directive
-     * @return an optional file with path, or an empty optional if the text node
-     *         does not contain an include file with path
+     *            the text node which possibly contains include directives
+     * @return a collection of file paths, if the text node does not contain an
+     *         include file with path then the collection is empty
      */
-    static Optional<String> getIncludePath(TextNode node) {
+    static Collection<String> getIncludePaths(TextNode node) {
         String nodeText = node.text().trim();
         if (!nodeText.startsWith(PREFIX)) {
-            return Optional.empty();
+            return Collections.emptyList();
         }
         if (!nodeText.endsWith(SUFFIX)) {
-            return Optional.empty();
+            return Collections.emptyList();
         }
 
-        String path = nodeText.substring(PREFIX.length(),
-                nodeText.length() - "@".length());
-        return Optional.of(path.trim());
+        List<String> paths = new ArrayList<>();
+        int endIndex = nodeText.indexOf(SUFFIX, PREFIX.length());
+        while (endIndex != -1) {
+            if (!nodeText.startsWith(PREFIX)) {
+                reportBadDirective(node, nodeText);
+            }
+            paths.add(nodeText.substring(PREFIX.length(), endIndex).trim());
+            nodeText = nodeText.substring(endIndex + 1).trim();
+            endIndex = nodeText.indexOf(SUFFIX, PREFIX.length());
+        }
+        if (!nodeText.isEmpty()) {
+            reportBadDirective(node, nodeText);
+        }
+        return paths;
+    }
+
+    private static void reportBadDirective(TextNode node, String nodeText) {
+        throw new TemplateParseException(String.format(
+                "Unexpected include directive subcontent '%s' in text node %s",
+                nodeText, node.text().trim()));
     }
 
 }

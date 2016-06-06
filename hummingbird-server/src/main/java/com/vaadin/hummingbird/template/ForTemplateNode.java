@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.Collection;
+
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ModelList;
@@ -65,7 +67,9 @@ public class ForTemplateNode extends AbstractControlTemplateNode {
         super(parent);
         this.collectionVariable = collectionVariable;
         this.loopVariable = loopVariable;
-        childNode = childBuilder.build(this);
+        Collection<ElementTemplateNode> nodes = childBuilder.build(this);
+        assert nodes.size() == 1;
+        childNode = nodes.iterator().next();
     }
 
     @Override

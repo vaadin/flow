@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.Collection;
+
 /**
  * Mutable builder for immutable template nodes.
  *
@@ -23,17 +25,17 @@ package com.vaadin.hummingbird.template;
 @FunctionalInterface
 public interface TemplateNodeBuilder {
     /**
-     * Creates a template node based on the current configuration of this
-     * builder. The provided parent reference might not be fully constructed
-     * when this method is called, so the implementation should only store the
-     * reference for later use.
+     * Creates a collection of template nodes (usually only one) based on the
+     * current configuration of this builder. The provided parent reference
+     * might not be fully constructed when this method is called, so the
+     * implementation should only store the reference for later use.
      *
      * @param parent
      *            the node to set as the parent of the built node, or
      *            <code>null</code> if the if the created node will be the root
      *            of a template tree
      *
-     * @return a new template node, not <code>null</code>
+     * @return a collection of new template nodes, not <code>null</code>
      */
-    TemplateNode build(TemplateNode parent);
+    Collection<? extends TemplateNode> build(TemplateNode parent);
 }

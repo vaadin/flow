@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Builder for text template nodes.
  *
@@ -46,7 +49,7 @@ public class TextTemplateBuilder implements TemplateNodeBuilder {
     }
 
     @Override
-    public TemplateNode build(TemplateNode parent) {
-        return new TextTemplateNode(parent, binding);
+    public Collection<? extends TemplateNode> build(TemplateNode parent) {
+        return Collections.singleton(new TextTemplateNode(parent, binding));
     }
 }

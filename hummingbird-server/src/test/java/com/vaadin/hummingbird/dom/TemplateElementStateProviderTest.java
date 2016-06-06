@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -938,7 +939,9 @@ public class TemplateElementStateProviderTest {
     }
 
     private static Element createElement(TemplateNodeBuilder builder) {
-        return createElement(builder.build(null));
+        Collection<? extends TemplateNode> nodes = builder.build(null);
+        Assert.assertEquals(1, nodes.size());
+        return createElement(nodes.iterator().next());
     }
 
     public static Element createElement(TemplateNode templateNode) {

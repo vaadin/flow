@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.template;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -48,9 +49,10 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
     }
 
     @Override
-    public ElementTemplateNode build(TemplateNode parent) {
-        return new ElementTemplateNode(parent, getTag(), getProperties(),
-                getAttributes(), getClassNames(), getEventHandlers(), children);
+    public Collection<ElementTemplateNode> build(TemplateNode parent) {
+        return Collections.singleton(new ElementTemplateNode(parent, getTag(),
+                getProperties(), getAttributes(), getClassNames(),
+                getEventHandlers(), children));
     }
 
     /**

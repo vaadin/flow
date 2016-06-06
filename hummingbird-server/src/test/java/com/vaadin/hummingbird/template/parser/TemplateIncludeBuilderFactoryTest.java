@@ -15,16 +15,18 @@
  */
 package com.vaadin.hummingbird.template.parser;
 
-import java.util.Optional;
+import java.util.Collection;
 
 import org.jsoup.nodes.TextNode;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.template.TemplateParseException;
+
 public class TemplateIncludeBuilderFactoryTest {
 
     @Test
-    public void parseInclude() {
+    public void parseSimpleInclude() {
         assertIncludePath("foo.html", "@include foo.html@");
         assertIncludePath("foo.html", "@include foo.html @");
         assertIncludePath("foo.html", "@include foo.html @ ");
@@ -35,10 +37,47 @@ public class TemplateIncludeBuilderFactoryTest {
         assertIncludePath("fooäbar.html", "@include fooäbar.html@");
     }
 
+    @Test
+    public void parseMutlipleInclude() {
+        Collection<String> parsed = TemplateIncludeBuilderFactory
+                .getIncludePaths(new TextNode(
+                        " @include foo.html@ @include bar.html @", ""));
+        Assert.assertEquals(2, parsed.size());
+        Assert.assertTrue(parsed.contains("foo.html"));
+        Assert.assertTrue(parsed.contains("bar.html"));
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseInclude_middleIsBroken() {
+        TemplateIncludeBuilderFactory.getIncludePaths(new TextNode(
+                "@include foo.html@ wrong @include bar.html@", ""));
+    }
+
+    @Test(expected = TemplateParseException.class)
+    public void parseInclude_endIsBroken() {
+        TemplateIncludeBuilderFactory.getIncludePaths(new TextNode(
+                "@include foo.html@  @include bar.html@ wrong@", ""));
+    }
+
+    @Test
+    public void parseInclude_isNotInclude() {
+        assertIsNotIclude("include foo.html@  @include bar.html@");
+        assertIsNotIclude("@include foo.html@  @include bar.html ");
+    }
+
+    private void assertIsNotIclude(String directive) {
+        Collection<String> parsed = TemplateIncludeBuilderFactory
+                .getIncludePaths(new TextNode(directive, ""));
+        Assert.assertEquals(0, parsed.size());
+
+        Assert.assertFalse(new TemplateIncludeBuilderFactory()
+                .canHandle(new TextNode(directive, "")));
+    }
+
     private void assertIncludePath(String expected, String includeText) {
-        Optional<String> parsed = TemplateIncludeBuilderFactory
-                .getIncludePath(new TextNode(includeText, ""));
-        Assert.assertTrue(parsed.isPresent());
-        Assert.assertEquals(expected, parsed.get());
+        Collection<String> parsed = TemplateIncludeBuilderFactory
+                .getIncludePaths(new TextNode(includeText, ""));
+        Assert.assertEquals(1, parsed.size());
+        Assert.assertEquals(expected, parsed.iterator().next());
     }
 }

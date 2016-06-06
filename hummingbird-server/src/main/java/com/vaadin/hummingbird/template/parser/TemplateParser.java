@@ -126,7 +126,10 @@ public class TemplateParser {
         Optional<TemplateNodeBuilder> templateBuilder = createBuilder(
                 children.get(0), templateResolver);
         assert templateBuilder.isPresent();
-        return templateBuilder.get().build(null);
+        Collection<? extends TemplateNode> nodes = templateBuilder.get()
+                .build(null);
+        assert nodes.size() == 1;
+        return nodes.iterator().next();
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

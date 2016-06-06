@@ -18,6 +18,9 @@ package com.vaadin.hummingbird.template;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 import com.vaadin.hummingbird.template.parser.TemplateResolver;
@@ -29,38 +32,43 @@ import com.vaadin.hummingbird.template.parser.TemplateResolver;
  */
 public class TemplateIncludeBuilder implements TemplateNodeBuilder {
 
-    private String relativeFilename;
+    private String[] relativeFilenames;
     private TemplateResolver templateResolver;
 
     /**
      * Creates a new builder for the given filename using the given resolver.
      *
-     * @param relativeFilename
-     *            the file name for the included file
+     * @param relativeFilenames
+     *            the file names for the included file
      * @param templateResolver
      *            the resolver to use to find the file
      */
-    public TemplateIncludeBuilder(String relativeFilename,
-            TemplateResolver templateResolver) {
-        this.relativeFilename = relativeFilename;
+    public TemplateIncludeBuilder(TemplateResolver templateResolver,
+            String... relativeFilenames) {
+        this.relativeFilenames = relativeFilenames;
         this.templateResolver = templateResolver;
     }
 
     @Override
-    public TemplateNode build(TemplateNode parent) {
+    public Collection<? extends TemplateNode> build(TemplateNode parent) {
         assert parent instanceof AbstractElementTemplateNode : "@include@ parent must be an instance of "
                 + AbstractElementTemplateNode.class;
 
+        return Stream.of(relativeFilenames).map(this::parseInclude)
+                .collect(Collectors.toList());
+    }
+
+    private TemplateNode parseInclude(String includeFileName) {
         // Need a new resolver so that includes from the included file are
         // relative to that file (directory)
         DelegateResolver subResolver = new DelegateResolver(templateResolver,
-                getFolder(relativeFilename));
+                getFolder(includeFileName));
         try (InputStream templateContentStream = templateResolver
-                .resolve(relativeFilename)) {
+                .resolve(includeFileName)) {
             return TemplateParser.parse(templateContentStream, subResolver);
         } catch (IOException e) {
             throw new TemplateParseException(
-                    "Unable to read template include for '" + relativeFilename
+                    "Unable to read template include for '" + includeFileName
                             + "'",
                     e);
         }
