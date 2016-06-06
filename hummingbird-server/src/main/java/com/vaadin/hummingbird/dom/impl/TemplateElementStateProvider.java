@@ -123,21 +123,13 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
-            TemplateOverridesMap.class, ModelMap.class };
-
-    // Node features only needed for a state node that represents the root of a
+    // Node features needed for a state node that represents the root of a
     // template
     @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] rootOnlyFeatures = new Class[] {
+    private static Class<? extends NodeFeature>[] rootNodeFeatures = new Class[] {
             ComponentMapping.class, TemplateMap.class,
-            ParentGeneratorHolder.class, TemplateEventHandlerNames.class };
-
-    @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] rootNodeFeatures = Stream
-            .concat(Stream.of(requiredFeatures), Stream.of(rootOnlyFeatures))
-            .toArray(Class[]::new);
+            ParentGeneratorHolder.class, TemplateEventHandlerNames.class,
+            TemplateOverridesMap.class, ModelMap.class };
 
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
@@ -172,7 +164,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public boolean supports(StateNode node) {
-        return Stream.of(requiredFeatures).allMatch(node::hasFeature);
+        return node.hasFeature(TemplateOverridesMap.class);
     }
 
     @Override
@@ -210,7 +202,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
          * node first if it exists. In contrast with properties attributes may
          * be defined in the template inlined. But this definition may be
          * overriden and overriden value should be used if any.
-         * 
+         *
          * All static bindings attributes have been copied to override node at
          * its creation time.
          */
@@ -236,7 +228,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
          * node first if it exists. In contrast with properties attributes may
          * be defined in the template inlined. But this definition may be
          * overriden and overriden value should be used if any.
-         * 
+         *
          * All static bindings attributes have been copied to override node at
          * its creation time.
          */
@@ -544,8 +536,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
      *
      * @return a new state node, not <code>null</code>
      */
-    public static StateNode createSubModelNode() {
-        return new StateNode(requiredFeatures);
+    public static StateNode createSubModelNode(
+            Class<? extends NodeFeature> dataFeature) {
+        return new StateNode(TemplateOverridesMap.class, dataFeature);
     }
 
     /**
