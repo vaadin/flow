@@ -1,0 +1,25 @@
+{
+  "csrfToken": "${securityKey}",
+  "rpc": [
+    {
+      "type": "event",
+      "node": 4,
+      "event": "click",
+      "data": {
+        "event.shiftKey": false,
+        "event.metaKey": false,
+        "event.detail": 1,
+        "event.clientX": 25,
+        "event.ctrlKey": false,
+        "event.clientY": 13,
+        "event.altKey": false,
+        "event.button": 0,
+        "event.screenY": 138,
+        "event.screenX": 25
+      }
+    }
+  ],
+  "syncId": ${syncId},
+  "clientId": ${clientId},
+  "wsver": "9.9.9.INTERNAL-DEBUG-BUILD"
+}
