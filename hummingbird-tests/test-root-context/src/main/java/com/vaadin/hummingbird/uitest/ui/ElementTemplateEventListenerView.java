@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
  * @author Vaadin Ltd
@@ -25,9 +26,10 @@ import com.vaadin.hummingbird.router.View;
 public class ElementTemplateEventListenerView extends Div implements View {
 
     public ElementTemplateEventListenerView() {
-        add(new InlineTemplate(
+        add(new InlineTemplate<>(
                 "<div (click)='$event.target.id=\"foo\"' class='target'>"
-                        + "Template element with event listener</div>"));
+                        + "Template element with event listener</div>",
+                TemplateModel.class));
     }
 
 }

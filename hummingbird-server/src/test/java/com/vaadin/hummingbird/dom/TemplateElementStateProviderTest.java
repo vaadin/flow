@@ -881,7 +881,7 @@ public class TemplateElementStateProviderTest {
     public void requiredNodeFeatures() {
         @SuppressWarnings("unchecked")
         Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
-                ModelMap.class, TemplateOverridesMap.class };
+                TemplateOverridesMap.class };
 
         TemplateElementStateProvider provider = (TemplateElementStateProvider) createElement(
                 "<div></div").getStateProvider();
@@ -909,7 +909,8 @@ public class TemplateElementStateProviderTest {
 
     @Test
     public void subModelNodeFeatures() {
-        assertHasFeatures(TemplateElementStateProvider.createSubModelNode(),
+        assertHasFeatures(
+                TemplateElementStateProvider.createSubModelNode(ModelMap.class),
                 ModelMap.class, TemplateOverridesMap.class);
     }
 
