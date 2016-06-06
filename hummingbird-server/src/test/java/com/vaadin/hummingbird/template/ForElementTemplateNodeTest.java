@@ -175,7 +175,7 @@ public class ForElementTemplateNodeTest {
 
         for (Map<String, String> item : map) {
             StateNode modelItem = TemplateElementStateProvider
-                    .createSubModelNode();
+                    .createSubModelNode(ModelMap.class);
             ModelMap modelItemMap = modelItem.getFeature(ModelMap.class);
             for (String itemKey : item.keySet()) {
                 modelItemMap.setValue(itemKey, item.get(itemKey));
