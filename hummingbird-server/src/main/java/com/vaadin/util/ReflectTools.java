@@ -251,7 +251,36 @@ public class ReflectTools implements Serializable {
         final Type[] argTypes = method.getParameterTypes();
 
         return returnType == void.class && argTypes.length == 1
-                && SETTER_STARTS.matcher(methodName).find();
+                && isSetterName(methodName);
+    }
+
+    /**
+     * Checks whether the given method name is a valid setter name according to
+     * the JavaBeans Specification.
+     *
+     * @param methodName
+     *            the method name to check
+     * @return <code>true</code> if the method name is a setter name,
+     *         <code>false</code> if not
+     */
+    public static boolean isSetterName(String methodName) {
+        return SETTER_STARTS.matcher(methodName).find();
+    }
+
+    /**
+     * Checks whether the given method name is a valid getter name according to
+     * the JavaBeans Specification.
+     *
+     * @param methodName
+     *            the method name to check
+     * @param isBoolean
+     *            whether the method is getter for boolean type
+     * @return <code>true</code> if the method name is a getter name,
+     *         <code>false</code> if not
+     */
+    public static boolean isGetterName(String methodName, boolean isBoolean) {
+        return GETTER_STARTS.matcher(methodName).find()
+                || (IS_STARTS.matcher(methodName).find() && isBoolean);
     }
 
     /**
@@ -269,9 +298,7 @@ public class ReflectTools implements Serializable {
         final Type[] argTypes = method.getParameterTypes();
 
         return returnType != void.class && argTypes.length == 0
-                && (GETTER_STARTS.matcher(methodName).find()
-                        || (IS_STARTS.matcher(methodName).find()
-                                && returnType == boolean.class));
+                && isGetterName(methodName, returnType == boolean.class);
     }
 
     /**
