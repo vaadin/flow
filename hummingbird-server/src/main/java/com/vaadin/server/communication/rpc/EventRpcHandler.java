@@ -19,6 +19,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
+import com.vaadin.hummingbird.processor.annotations.ServiceProvider;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -31,6 +32,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  *
  */
+@ServiceProvider(RpcInvocationHandler.class)
 public class EventRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override

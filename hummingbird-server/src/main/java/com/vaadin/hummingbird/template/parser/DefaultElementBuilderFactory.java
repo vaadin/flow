@@ -23,6 +23,7 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
+import com.vaadin.hummingbird.processor.annotations.ServiceProvider;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
@@ -35,8 +36,10 @@ import com.vaadin.hummingbird.template.TemplateParseException;
  * @author Vaadin Ltd
  *
  */
+@ServiceProvider(DefaultNodeBuilderFactory.class)
 public class DefaultElementBuilderFactory
-        extends AbstractTemplateBuilderFactory<Element> {
+        extends AbstractTemplateBuilderFactory<Element>
+        implements DefaultNodeBuilderFactory<Element> {
 
     /**
      * Creates a new factory.
