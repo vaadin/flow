@@ -18,7 +18,9 @@ package com.vaadin.hummingbird.template.model;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -27,7 +29,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -62,19 +67,21 @@ public class TemplateModelBeanUtil {
     }
 
     static void importBeanIntoModel(Supplier<StateNode> stateNodeSupplier,
-            Object bean, String pathPrefix, Predicate<String> filter) {
+            Class<?> beanType, Object bean, String pathPrefix,
+            Predicate<String> filter) {
         assert pathPrefix != null
                 && (pathPrefix.isEmpty() || pathPrefix.endsWith("."));
+        assert beanType != null;
 
         if (bean == null) {
             throw new IllegalArgumentException("Bean cannot be null");
         }
 
-        Method[] getterMethods = ReflectTools.getGetterMethods(bean.getClass())
+        Method[] getterMethods = ReflectTools.getGetterMethods(beanType)
                 .toArray(Method[]::new);
         if (getterMethods.length == 0) {
-            throw new IllegalArgumentException("Given object of type "
-                    + bean.getClass().getName()
+            throw new IllegalArgumentException("Given type "
+                    + beanType.getName()
                     + " is not a Bean - it has no public getter methods!");
         }
 
@@ -117,6 +124,10 @@ public class TemplateModelBeanUtil {
             setModelValueBasicType(modelMap, propertyName,
                     (Class<?>) expectedType, value, pathPrefix, filter);
             return;
+        } else if (expectedType instanceof ParameterizedType) {
+            setModelValueParameterizedType(modelMap, propertyName, expectedType,
+                    value);
+            return;
         }
 
         throw createUnsupportedTypeException(expectedType, propertyName);
@@ -143,10 +154,54 @@ public class TemplateModelBeanUtil {
             // handle other types as beans
             String newPathPrefix = pathPrefix + propertyName + ".";
             importBeanIntoModel(
-                    () -> resolveStateNode(modelMap.getNode(), propertyName),
-                    value, newPathPrefix, filter);
+                    () -> resolveStateNode(modelMap.getNode(), propertyName,
+                            ModelMap.class),
+                    expectedType, value, newPathPrefix, filter);
             return;
         }
+    }
+
+    private static void setModelValueParameterizedType(ModelMap modelMap,
+            String propertyName, Type expectedType, Object value) {
+        ParameterizedType pt = (ParameterizedType) expectedType;
+
+        if (pt.getRawType() != List.class) {
+            throw createUnsupportedTypeException(expectedType, propertyName);
+        }
+
+        Type itemType = pt.getActualTypeArguments()[0];
+        if (!(itemType instanceof Class<?>)) {
+            throw createUnsupportedTypeException(expectedType, propertyName);
+        }
+
+        Class<?> itemClass = (Class<?>) itemType;
+
+        if (isSupportedNonPrimitiveType(itemClass)) {
+            throw createUnsupportedTypeException(expectedType, propertyName);
+        }
+
+        importListIntoModel(modelMap.getNode(), (List<?>) value, itemClass,
+                propertyName);
+    }
+
+    private static void importListIntoModel(StateNode parentNode, List<?> list,
+            Class<?> itemType, String propertyName) {
+
+        // Collect all child nodes before trying to resolve the list node
+        List<StateNode> childNodes = new ArrayList<>();
+        for (Object bean : list) {
+            StateNode childNode = TemplateElementStateProvider
+                    .createSubModelNode(ModelMap.class);
+            importBeanIntoModel(() -> childNode, itemType, bean, "",
+                    path -> true);
+            childNodes.add(childNode);
+        }
+
+        ModelList modelList = resolveStateNode(parentNode, propertyName,
+                ModelList.class).getFeature(ModelList.class);
+        modelList.clear();
+
+        modelList.addAll(childNodes);
     }
 
     static Object getModelValue(ModelMap modelMap, String propertyName,
@@ -201,26 +256,27 @@ public class TemplateModelBeanUtil {
     }
 
     private static StateNode resolveStateNode(StateNode parentNode,
-            String childNodePath) {
+            String childNodePath, Class<? extends NodeFeature> childFeature) {
         ModelMap parentLevel = parentNode.getFeature(ModelMap.class);
         if (parentLevel.hasValue(childNodePath)) {
             Serializable value = parentLevel.getValue(childNodePath);
             if (value instanceof StateNode
-                    && ((StateNode) value).hasFeature(ModelMap.class)) {
+                    && ((StateNode) value).hasFeature(childFeature)) {
                 // reuse old one
                 return (StateNode) value;
             } else {
                 // just override
-                return createModelMap(parentLevel, childNodePath);
+                return createSubModel(parentLevel, childNodePath, childFeature);
             }
         } else {
-            return createModelMap(parentLevel, childNodePath);
+            return createSubModel(parentLevel, childNodePath, childFeature);
         }
     }
 
-    private static StateNode createModelMap(ModelMap parent,
-            String propertyName) {
-        StateNode node = new StateNode(ModelMap.class);
+    private static StateNode createSubModel(ModelMap parent,
+            String propertyName, Class<? extends NodeFeature> childFeature) {
+        StateNode node = TemplateElementStateProvider
+                .createSubModelNode(childFeature);
         parent.setValue(propertyName, node);
         return node;
     }
@@ -246,7 +302,8 @@ public class TemplateModelBeanUtil {
         return new UnsupportedOperationException(
                 "Template model does not support type " + type.getTypeName()
                         + " (" + propertyName + "), supported types are:"
-                        + getSupportedTypesString());
+                        + getSupportedTypesString()
+                        + ", beans and lists of beans.");
     }
 
     private static Object getPrimitiveDefaultValue(Class<?> primitiveType) {
