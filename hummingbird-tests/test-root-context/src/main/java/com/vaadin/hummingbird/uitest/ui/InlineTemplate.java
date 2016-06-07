@@ -18,26 +18,47 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
 
 /**
  * @author Vaadin Ltd
  *
+ * @param <T>
+ *            the model type for this inline template
  */
-public class InlineTemplate extends Template {
+public class InlineTemplate<T extends TemplateModel> extends Template {
+
+    private Class<T> modelType;
 
     /**
-     * Creates a template instance with the given template HTML text.
+     * Creates a template instance with the given template HTML text and model
+     * type.
      * <p>
      * Note: super constructor uses the {@code String} parameter as a file path,
      * not as a content.
      *
      * @param templateHtml
      *            the template HTML
+     * @param modelType
+     *            the type of the model to use with this template
      */
-    public InlineTemplate(String templateHtml) {
+    public InlineTemplate(String templateHtml, Class<T> modelType) {
         super(new ByteArrayInputStream(
                 templateHtml.getBytes(StandardCharsets.UTF_8)));
+        this.modelType = modelType;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public T getModel() {
+        // Exposed as public
+        return (T) super.getModel();
+    }
+
+    @Override
+    protected Class<? extends TemplateModel> getModelType() {
+        return modelType;
     }
 
 }
