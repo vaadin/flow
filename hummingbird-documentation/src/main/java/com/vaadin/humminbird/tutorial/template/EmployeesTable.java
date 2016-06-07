@@ -1,43 +1,48 @@
 package com.vaadin.humminbird.tutorial.template;
 
+import java.util.List;
+
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
-import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.nodefeature.ModelList;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
 
 @CodeFor("tutorial-template-for.asciidoc")
 public class EmployeesTable extends Template {
 
-    public void addEmployee(String name, String title, String email) {
-        // create a new item representing an employee in inside the model
-        StateNode employeeItem = new StateNode(ModelMap.class);
+    public class Employee {
+        private String name;
+        private String title;
+        private String email;
 
-        // populate the values for the employee item
-        ModelMap employeeModel = employeeItem.getFeature(ModelMap.class);
-        employeeModel.setValue("name", name);
-        employeeModel.setValue("title", title);
-        employeeModel.setValue("email", email);
-
-        // add the new item to the list of employees
-        getEmployeesList().add(employeeItem);
-    }
-
-    // helper for fetching the employees list from the model
-    private ModelList getEmployeesList() {
-        StateNode employees = (StateNode) getModelMap().getValue("employees");
-
-        // create the employees list if necessary
-        if (employees == null) {
-            employees = new StateNode(ModelList.class);
-            getModelMap().setValue("employees", employees);
+        public Employee(String name, String title, String email) {
+            this.name = name;
+            this.title = title;
+            this.email = email;
         }
 
-        return employees.getFeature(ModelList.class);
+        public String getName() {
+            return name;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getEmail() {
+            return email;
+        }
     }
 
-    // helper for accessing the model of the template
-    private ModelMap getModelMap() {
-        return getElement().getNode().getFeature(ModelMap.class);
+    public interface EmployeesModel extends TemplateModel {
+        public void setEmployees(List<Employee> employees);
+    }
+
+    @Override
+    protected EmployeesModel getModel() {
+        return (EmployeesModel) super.getModel();
+    }
+
+    public void setEmployees(List<Employee> employees) {
+        getModel().setEmployees(employees);
     }
 }
