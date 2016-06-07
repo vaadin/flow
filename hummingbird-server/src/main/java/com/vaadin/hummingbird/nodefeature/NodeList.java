@@ -19,6 +19,7 @@ package com.vaadin.hummingbird.nodefeature;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -158,6 +159,29 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     protected void add(T item) {
         ensureValues();
         add(values.size(), item);
+    }
+
+    /**
+     * Adds all provided items to the end of the list.
+     *
+     * @param items
+     *            a collection of items to add, not null
+     */
+    protected void addAll(Collection<? extends T> items) {
+        assert items != null;
+        if (items.isEmpty()) {
+            return;
+        }
+
+        ArrayList<? extends T> itemsList = new ArrayList<>(items);
+
+        ensureValues();
+
+        int startIndex = values.size();
+        values.addAll(itemsList);
+
+        addChange(new ListSpliceChange(this, isNodeValues(), startIndex, 0,
+                itemsList));
     }
 
     /**

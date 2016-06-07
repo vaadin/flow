@@ -38,6 +38,7 @@ import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
@@ -123,21 +124,13 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
-            TemplateOverridesMap.class, ModelMap.class };
-
-    // Node features only needed for a state node that represents the root of a
+    // Node features needed for a state node that represents the root of a
     // template
     @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] rootOnlyFeatures = new Class[] {
+    private static Class<? extends NodeFeature>[] rootNodeFeatures = new Class[] {
             ComponentMapping.class, TemplateMap.class,
-            ParentGeneratorHolder.class, TemplateEventHandlerNames.class };
-
-    @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] rootNodeFeatures = Stream
-            .concat(Stream.of(requiredFeatures), Stream.of(rootOnlyFeatures))
-            .toArray(Class[]::new);
+            ParentGeneratorHolder.class, TemplateEventHandlerNames.class,
+            TemplateOverridesMap.class, ModelMap.class };
 
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
@@ -175,7 +168,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public boolean supports(StateNode node) {
-        return Stream.of(requiredFeatures).allMatch(node::hasFeature);
+        return node.hasFeature(TemplateOverridesMap.class);
     }
 
     @Override
@@ -547,10 +540,18 @@ public class TemplateElementStateProvider implements ElementStateProvider {
      * Creates a new state node with all features needed for a state node use as
      * a sub model.
      *
+     * @param modelFeature
+     *            the feature type to use for storing the model data, not
+     *            <code>null</code>
+     *
      * @return a new state node, not <code>null</code>
      */
-    public static StateNode createSubModelNode() {
-        return new StateNode(requiredFeatures);
+    public static StateNode createSubModelNode(
+            Class<? extends NodeFeature> modelFeature) {
+        assert modelFeature == ModelMap.class
+                || modelFeature == ModelList.class;
+
+        return new StateNode(TemplateOverridesMap.class, modelFeature);
     }
 
     /**

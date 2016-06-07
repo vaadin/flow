@@ -33,7 +33,8 @@ import com.vaadin.ui.Template;
  * <li>int &amp; Integer</li>
  * <li>double &amp; Double</li>
  * <li>String</li>
- * <li>Java Beans with only properties of the forementioned types</li>
+ * <li>Java Bean with only properties of supported types</li>
+ * <li>List of Java Beans</li>
  * </ul>
  *
  * @author Vaadin Ltd
@@ -58,6 +59,72 @@ public interface TemplateModel extends Serializable {
     default void importBean(Object bean) {
         // NOOP invocation handler passes this method call to
         // TemplateModelBeanUtil
+    }
+
+    /**
+     * Gets a proxy of the given part of the model as a bean of the given type.
+     * Any changes made to the returned instance are reflected back into the
+     * model.
+     * <p>
+     * You can use this for a type-safe way of updating a bean in the model. You
+     * should not use this to update a database entity based on updated values
+     * in the model.
+     * <p>
+     * The {@code modelPath} represents subproperty of the model. The path is
+     * dot separated property names. So with the following model declaration the
+     * path "person" represents {@code getPerson()} return value and the path
+     * "person.address" represents {@code getPerson().getAddress()} return
+     * value.
+     * 
+     * <pre>
+     * <code>
+     * public class Address {
+     *    private String street; 
+     *    public String getStreet(){
+     *        return street;
+     *    }
+     *    
+     *    public void setStreet(String street){
+     *        this.street = street;
+     *    }
+     * }
+     * 
+     * public class Person {
+     *    private String name;
+     *    private Address address;
+     *    
+     *    public String getName(){
+     *        return name;
+     *    }
+     *    
+     *    public void setName(String name){
+     *        this.name = name;
+     *    }
+     *    
+     *    public void setAddress(Address address){
+     *       this.address = address;
+     *    }
+     *    
+     *    public Address getAddress(){
+     *       return address;
+     *    }
+     * }
+     * interface MyModel extends TemplateModel {
+     *      Person getPerson();
+     * }
+     * </code>
+     * </pre>
+     * 
+     * @param modelPath
+     *            dot separated path denoting subproperty bean
+     * @param beanType
+     *            requested bean type
+     * @return proxy instance of requested type for the {@code modelPath}
+     */
+    default <T> T getProxy(String modelPath, Class<T> beanType) {
+        // The method is handled by proxy handler
+        throw new UnsupportedOperationException(
+                "The method implementation is povided by proxy handler");
     }
 
     /**

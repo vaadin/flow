@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.util.Collection;
+
 import com.vaadin.hummingbird.StateNode;
 
 /**
@@ -53,5 +55,15 @@ public class ModelList extends StateNodeNodeList {
     @Override
     public StateNode remove(int index) {
         return super.remove(index);
+    }
+
+    @Override
+    public void clear() {
+        super.clear();
+    }
+
+    @Override
+    public void addAll(Collection<? extends StateNode> items) {
+        super.addAll(items);
     }
 }
