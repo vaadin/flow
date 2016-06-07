@@ -27,7 +27,7 @@ import java.util.Optional;
 public class ChildSlotBuilder implements TemplateNodeBuilder {
 
     @Override
-    public Collection<? extends TemplateNode> build(TemplateNode parent) {
+    public Collection<TemplateNode> build(TemplateNode parent) {
         assert parent instanceof AbstractElementTemplateNode : "Child slot parent must be an instance of "
                 + AbstractElementTemplateNode.class;
 

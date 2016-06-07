@@ -67,9 +67,11 @@ public class ForTemplateNode extends AbstractControlTemplateNode {
         super(parent);
         this.collectionVariable = collectionVariable;
         this.loopVariable = loopVariable;
-        Collection<ElementTemplateNode> nodes = childBuilder.build(this);
+        Collection<TemplateNode> nodes = childBuilder.build(this);
         assert nodes.size() == 1;
-        childNode = nodes.iterator().next();
+        TemplateNode node = nodes.iterator().next();
+        assert node instanceof AbstractElementTemplateNode;
+        childNode = (AbstractElementTemplateNode) node;
     }
 
     @Override

@@ -33,9 +33,10 @@ public class TemplateBuilderTest {
                 .addChild(new TextTemplateBuilder(
                         new StaticBindingValueProvider("baz")));
 
-        Collection<ElementTemplateNode> nodes = builder.build(null);
+        Collection<TemplateNode> nodes = builder.build(null);
         Assert.assertFalse(nodes.isEmpty());
-        ElementTemplateNode node = nodes.iterator().next();
+        ElementTemplateNode node = (ElementTemplateNode) nodes.iterator()
+                .next();
 
         Assert.assertFalse(node.getParent().isPresent());
         Assert.assertEquals("div", node.getTag());

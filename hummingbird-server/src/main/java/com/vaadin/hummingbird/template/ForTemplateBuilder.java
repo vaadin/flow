@@ -50,7 +50,7 @@ public class ForTemplateBuilder implements TemplateNodeBuilder {
     }
 
     @Override
-    public Collection<? extends TemplateNode> build(TemplateNode parent) {
+    public Collection<TemplateNode> build(TemplateNode parent) {
         if (parent == null) {
             throw new IllegalArgumentException(
                     "A for loop cannot be the root element in a template");

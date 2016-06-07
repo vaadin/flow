@@ -49,7 +49,7 @@ public class TextTemplateBuilder implements TemplateNodeBuilder {
     }
 
     @Override
-    public Collection<? extends TemplateNode> build(TemplateNode parent) {
+    public Collection<TemplateNode> build(TemplateNode parent) {
         return Collections.singleton(new TextTemplateNode(parent, binding));
     }
 }

@@ -37,5 +37,5 @@ public interface TemplateNodeBuilder {
      *
      * @return a collection of new template nodes, not <code>null</code>
      */
-    Collection<? extends TemplateNode> build(TemplateNode parent);
+    Collection<TemplateNode> build(TemplateNode parent);
 }
