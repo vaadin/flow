@@ -32,7 +32,6 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.template.model.TemplateModelUtil.ModelPathResolver;
 import com.vaadin.util.ReflectTools;
 
 /**
