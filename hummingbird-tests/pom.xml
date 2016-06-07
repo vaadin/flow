@@ -17,6 +17,7 @@
 		<module>test-root-context</module>
 		<module>test-subcontext</module>
 		<module>test-performance</module>
+		<module>test-scalability</module>
 	</modules>
 
 	<properties>
