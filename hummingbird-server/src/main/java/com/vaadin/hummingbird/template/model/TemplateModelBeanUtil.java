@@ -91,9 +91,10 @@ public class TemplateModelBeanUtil {
         Predicate<Method> methodBasedFilter = method -> filter
                 .test(pathPrefix + ReflectTools.getPropertyName(method));
 
-        Stream<ModelPropertyWrapper> values = Stream.of(getterMethods)
+        List<ModelPropertyWrapper> values = Stream.of(getterMethods)
                 .filter(methodBasedFilter)
-                .map(method -> mapBeanValueToProperty(method, bean));
+                .map(method -> mapBeanValueToProperty(method, bean))
+                .collect(Collectors.toList());
 
         // don't resolve the state node used until all the bean values have been
         // resolved properly
