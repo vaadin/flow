@@ -16,11 +16,14 @@
 package com.vaadin.hummingbird.template.model;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +31,16 @@ import java.util.stream.Stream;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.util.ReflectTools;
+
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.method.MethodDescription;
+import net.bytebuddy.description.method.ParameterList;
+import net.bytebuddy.description.type.TypeDescription.Generic;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.Origin;
+import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 
 /**
  * Invocation handler for {@link TemplateModel} proxy objects.
@@ -53,11 +66,43 @@ public class TemplateModelProxyHandler
      *            the type of the template's model
      * @return a proxy object
      */
-    public static <T extends TemplateModel> T createModelProxy(
-            StateNode stateNode, Class<T> modelType) {
-        return modelType.cast(Proxy.newProxyInstance(modelType.getClassLoader(),
-                new Class[] { modelType },
-                new TemplateModelProxyHandler(stateNode)));
+    public static <T> T createModelProxy(StateNode stateNode,
+            Class<T> modelType) {
+        if (modelType.isInterface()) {
+            return modelType.cast(Proxy.newProxyInstance(
+                    modelType.getClassLoader(), new Class[] { modelType },
+                    new TemplateModelProxyHandler(stateNode)));
+        } else {
+            return makeClassProxy(stateNode, modelType);
+        }
+    }
+
+    /**
+     * Processes a method invocation on a Byte buddy proxy instance and returns
+     * the result. This method will be invoked on an invocation handler when a
+     * method is invoked on a proxy instance that it is associated with.
+     * 
+     * @param method
+     *            the {@code Method} instance corresponding to the proxied
+     *            method invoked on the proxy instance.
+     *
+     * @param args
+     *            an array of objects containing the values of the arguments
+     *            passed in the method invocation on the proxy instance.
+     * @return the value to return from the method invocation on the proxy
+     *         instance.
+     */
+    @RuntimeType
+    public Object intercept(@Origin Method method,
+            @AllArguments Object[] args) {
+        if (ReflectTools.isGetter(method)) {
+            return handleGetter(method);
+        } else if (ReflectTools.isSetter(method)) {
+            return handleSetter(method, args[0]);
+        }
+
+        throw new UnsupportedOperationException(
+                getUnsupportedMethodMessage(method, args));
     }
 
     @Override
@@ -69,18 +114,61 @@ public class TemplateModelProxyHandler
         }
 
         if (isTemplateModelDefaultMethod(method)) {
-            handleTemplateModelDefaultMethods(method, args);
-            return null;
+            return handleTemplateModelDefaultMethods(method, args);
         }
 
-        if (ReflectTools.isGetter(method)) {
-            return handleGetter(method);
-        } else if (ReflectTools.isSetter(method)) {
-            return handleSetter(method, args[0]);
-        }
+        return intercept(method, args);
+    }
 
-        throw new UnsupportedOperationException(
-                getUnsupportedMethodMessage(method, args));
+    private static <T> T makeClassProxy(StateNode stateNode,
+            Class<T> modelType) {
+        Class<? extends T> proxy = new ByteBuddy().subclass(modelType)
+                .method(TemplateModelProxyHandler::isAccessor)
+                .intercept(MethodDelegation
+                        .to(new TemplateModelProxyHandler(stateNode)))
+                .make().load(modelType.getClassLoader(),
+                        ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
+        Optional<Constructor<?>> defaultCtor = Stream
+                .of(modelType.getConstructors())
+                .filter(ctor -> ctor.getParameterCount() == 0).findFirst();
+        if (defaultCtor.isPresent()
+                && Modifier.isPublic(defaultCtor.get().getModifiers())) {
+            try {
+                return proxy.newInstance();
+            } catch (InstantiationException e) {
+                throw new RuntimeException(String.format(
+                        "Exception is thrown during class '%s' instantiation",
+                        modelType.getName()), e);
+            } catch (IllegalAccessException e) {
+                // this should not happen
+                throw new RuntimeException(String.format(
+                        "Default public constructor in class '%s' "
+                                + "is not accessable. Implementation is wrong",
+                        modelType.getName()), e);
+            }
+        } else {
+            throw new IllegalStateException(String.format(
+                    "Class '%s' doesn't declare public default constructor. "
+                            + "Don't know how to instantiate it.",
+                    modelType.getName()));
+        }
+    }
+
+    private static boolean isAccessor(MethodDescription method) {
+        if (method.getDeclaringType().represents(Object.class)) {
+            return false;
+        }
+        String methodName = method.getName();
+        Generic returnType = method.getReturnType();
+        ParameterList<?> args = method.getParameters();
+
+        boolean isSetter = Generic.VOID.equals(returnType) && args.size() == 1
+                && ReflectTools.isSetterName(methodName);
+        boolean isGetter = !Generic.VOID.equals(returnType) && args.isEmpty()
+                && ReflectTools.isGetterName(methodName,
+                        returnType.represents(boolean.class));
+        return isSetter || isGetter;
     }
 
     private static boolean isTemplateModelDefaultMethod(Method method) {
@@ -100,7 +188,7 @@ public class TemplateModelProxyHandler
     }
 
     @SuppressWarnings("unchecked")
-    private void handleTemplateModelDefaultMethods(Method method,
+    private Object handleTemplateModelDefaultMethods(Method method,
             Object[] args) {
         if ("importBean".equals(method.getName())) {
             Object bean = args[0];
@@ -119,9 +207,19 @@ public class TemplateModelProxyHandler
                         beanType, bean, "", (Predicate<String>) args[1]);
                 break;
             default:
-                break;
+                assert false;
             }
+            return null;
+        } else if ("getProxy".equals(method.getName())) {
+            return TemplateModelBeanUtil.getProxy(stateNode, args);
         }
+        // should not happen
+        throw new IllegalArgumentException(
+                String.format(
+                        "Unknown default TemplateModel method '%s'. "
+                                + "Implementation is not available",
+                        method.getName()));
+
     }
 
     private Object handleGetter(Method method) {

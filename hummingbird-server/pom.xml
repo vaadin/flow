@@ -96,6 +96,14 @@
 			<scope>test</scope>
 		</dependency>
 
+        <!-- Byte code generation -->
+		<dependency>
+			<groupId>net.bytebuddy</groupId>
+			<artifactId>byte-buddy</artifactId>
+			<version>1.4.0</version>
+		</dependency>
+		
+
 		<!-- For manual testing with PostgreSQL (see SQLTestConstants) -->
 		<!-- <dependency> <groupId>postgresql</groupId> <artifactId>postgresql</artifactId> 
 			<version>9.1-901.jdbc3</version> <scope>test</scope> </dependency> -->

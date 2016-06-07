@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,6 +45,8 @@ public class TemplateModelBeanUtil {
 
     private static final Class<?>[] SUPPORTED_PROPERTY_TYPES = new Class[] {
             Boolean.class, Double.class, Integer.class, String.class };
+
+    private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
 
     /**
      * Internal implementation of Pair / Tuple that encapsulates a value and the
@@ -130,6 +133,32 @@ public class TemplateModelBeanUtil {
         }
 
         throw createUnsupportedTypeException(expectedType, propertyName);
+    }
+
+    static Object getProxy(StateNode stateNode, Object[] args) {
+        assert args.length == 2;
+        if (args[0] == null || args[1] == null) {
+            throw new IllegalArgumentException(
+                    "Method getProxy() may not accept null arguments");
+        }
+        assert args[0] instanceof String;
+        assert args[1] instanceof Class<?>;
+        String modelPath = (String) args[0];
+        Class<?> beanClass = (Class<?>) args[1];
+
+        if (modelPath.isEmpty()) {
+            return TemplateModelProxyHandler.createModelProxy(stateNode,
+                    beanClass);
+        }
+
+        StateNode node = stateNode;
+
+        String[] path = DOT_PATTERN.split(modelPath);
+        for (int i = 0; i < path.length; i++) {
+            node = resolveStateNode(node, path[i], ModelMap.class);
+        }
+        return getModelValue(node.getParent().getFeature(ModelMap.class),
+                path[path.length - 1], beanClass);
     }
 
     private static void setModelValueBasicType(ModelMap modelMap,
@@ -226,10 +255,10 @@ public class TemplateModelBeanUtil {
                 && isSupportedPrimitiveType(returnClazz)) {
             return value != null ? value
                     : getPrimitiveDefaultValue(returnClazz);
+        } else if (!returnClazz.isPrimitive() && value instanceof StateNode) {
+            return TemplateModelProxyHandler.createModelProxy((StateNode) value,
+                    returnClazz);
         }
-        // not supported primitive, throw exception for now
-        // or #731 consider as a "sub" model or nested bean and return a
-        // new proxy to model
         throw createUnsupportedTypeException(returnClazz, propertyName);
     }
 
