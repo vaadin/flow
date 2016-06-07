@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.template.model;
 
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -46,7 +47,8 @@ import net.bytebuddy.implementation.bind.annotation.RuntimeType;
  *
  * @author Vaadin Ltd
  */
-public class TemplateModelProxyHandler implements InvocationHandler {
+public class TemplateModelProxyHandler
+        implements InvocationHandler, Serializable {
 
     private final StateNode stateNode;
 
@@ -189,14 +191,20 @@ public class TemplateModelProxyHandler implements InvocationHandler {
     private Object handleTemplateModelDefaultMethods(Method method,
             Object[] args) {
         if ("importBean".equals(method.getName())) {
+            Object bean = args[0];
+            Class<? extends Object> beanType = bean.getClass();
+
             switch (args.length) {
             case 1:
+                // void importBean(Object bean)
                 TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
-                        args[0], "", propertyName -> true);
+                        beanType, bean, "", propertyName -> true);
                 break;
             case 2:
+                // void importBean(Object bean, Predicate<String>
+                // propertyNameFilter)
                 TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
-                        args[0], "", (Predicate<String>) args[1]);
+                        beanType, bean, "", (Predicate<String>) args[1]);
                 break;
             default:
                 assert false;

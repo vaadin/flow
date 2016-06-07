@@ -663,23 +663,19 @@ public class TemplateModelTest {
     private void setModelPropertyAndVerifyGetter(Template template,
             Supplier<Object> getter, String beanPath, String property,
             Serializable expected) {
-        StateNode node = template.getElement().getNode();
-        String[] path = beanPath.split("\\.");
-        for (int i = 0; i < path.length; i++) {
-            Serializable bean = node.getFeature(ModelMap.class)
-                    .getValue(path[i]);
-            Assert.assertNotNull(bean);
-            Assert.assertTrue(bean instanceof StateNode);
-            node = (StateNode) bean;
-        }
-
-        ModelMap feature = node.getFeature(ModelMap.class);
+        ModelMap feature = getModelMap(template, beanPath);
         feature.setValue(property, expected);
         Assert.assertEquals(expected, getter.get());
     }
 
     private void verifyModel(Template template, String beanPath,
             String property, Serializable expected) {
+        ModelMap feature = getModelMap(template, beanPath);
+        Assert.assertNotNull(feature);
+        Assert.assertEquals(expected, feature.getValue(property));
+    }
+
+    private ModelMap getModelMap(Template template, String beanPath) {
         StateNode node = template.getElement().getNode();
         String[] path = beanPath.split("\\.");
         for (int i = 0; i < path.length; i++) {
@@ -690,8 +686,7 @@ public class TemplateModelTest {
             node = (StateNode) bean;
         }
         ModelMap feature = node.getFeature(ModelMap.class);
-        Assert.assertNotNull(feature);
-        Assert.assertEquals(expected, feature.getValue(property));
+        return feature;
     }
 
 }

@@ -23,6 +23,7 @@ import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.HtmlContainer;
 import com.vaadin.hummingbird.html.Label;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 import elemental.json.JsonValue;
 
@@ -32,10 +33,11 @@ import elemental.json.JsonValue;
  */
 public class TemplateEventHandlerView extends Div implements View {
 
-    public static class EventReceiver extends InlineTemplate {
+    public static class EventReceiver extends InlineTemplate<TemplateModel> {
 
         EventReceiver() {
-            super("<div id='event-receiver' (click)='$server.method()'>Click to send event to the server</div>");
+            super("<div id='event-receiver' (click)='$server.method()'>Click to send event to the server</div>",
+                    TemplateModel.class);
         }
 
         @EventHandler
@@ -50,12 +52,13 @@ public class TemplateEventHandlerView extends Div implements View {
         }
     }
 
-    public static class ArgReceiver extends InlineTemplate {
+    public static class ArgReceiver extends InlineTemplate<TemplateModel> {
 
         ArgReceiver() {
             super("<div id='arg-receiver' (click)="
                     + "'$server.method($event.target.id, 3, 6.2, true, [2.1, 6.7],\"foo\",\"bar\" )'>"
-                    + "Click to send event to the server</div>");
+                    + "Click to send event to the server</div>",
+                    TemplateModel.class);
         }
 
         @EventHandler
@@ -87,11 +90,13 @@ public class TemplateEventHandlerView extends Div implements View {
         }
     }
 
-    public static class JsonValueReceiver extends InlineTemplate {
+    public static class JsonValueReceiver
+            extends InlineTemplate<TemplateModel> {
 
         JsonValueReceiver() {
             super("<div id='json-receiver' (click)='$server.method({\"foo\":\"bar\"})'>"
-                    + "Click to send json to the server</div>");
+                    + "Click to send json to the server</div>",
+                    TemplateModel.class);
         }
 
         @EventHandler
