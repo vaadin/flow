@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
@@ -47,6 +48,12 @@ public abstract class StateNodeNodeList extends NodeList<StateNode> {
 
         super.add(index, item);
         attachPotentialChild(item);
+    }
+
+    @Override
+    protected void addAll(Collection<? extends StateNode> items) {
+        super.addAll(items);
+        items.stream().forEach(this::attachPotentialChild);
     }
 
     @Override

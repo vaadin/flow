@@ -15,7 +15,7 @@
  */
 package com.vaadin.hummingbird.template;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Mutable builder for immutable template nodes.
@@ -37,5 +37,5 @@ public interface TemplateNodeBuilder {
      *
      * @return a collection of new template nodes, not <code>null</code>
      */
-    Collection<? extends TemplateNode> build(TemplateNode parent);
+    List<TemplateNode> build(TemplateNode parent);
 }

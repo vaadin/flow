@@ -21,7 +21,9 @@ import org.jsoup.nodes.TextNode;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.hummingbird.template.TextTemplateNode;
 
 public class TemplateIncludeBuilderFactoryTest {
 
@@ -38,7 +40,7 @@ public class TemplateIncludeBuilderFactoryTest {
     }
 
     @Test
-    public void parseMutlipleInclude() {
+    public void parseMultlipleInclude() {
         Collection<String> parsed = TemplateIncludeBuilderFactory
                 .getIncludePaths(new TextNode(
                         " @include foo.html@ @include bar.html @", ""));
@@ -61,11 +63,23 @@ public class TemplateIncludeBuilderFactoryTest {
 
     @Test
     public void parseInclude_isNotInclude() {
-        assertIsNotIclude("include foo.html@  @include bar.html@");
-        assertIsNotIclude("@include foo.html@  @include bar.html ");
+        assertIsNotInclude("include foo.html@  @include bar.html@");
+        assertIsNotInclude("@include foo.html@  @include bar.html ");
     }
 
-    private void assertIsNotIclude(String directive) {
+    @Test
+    public void parseNotInclude() {
+        TemplateNode node = TemplateParser
+                .parse("<div>foo@include.com, baz@foo.com</div>", null);
+        Assert.assertEquals(1, node.getChildCount());
+        TemplateNode child = node.getChild(0);
+        Assert.assertTrue(child instanceof TextTemplateNode);
+        TextTemplateNode text = (TextTemplateNode) child;
+        Assert.assertEquals("foo@include.com, baz@foo.com",
+                text.getTextBinding().getValue(null));
+    }
+
+    private void assertIsNotInclude(String directive) {
         Collection<String> parsed = TemplateIncludeBuilderFactory
                 .getIncludePaths(new TextNode(directive, ""));
         Assert.assertEquals(0, parsed.size());

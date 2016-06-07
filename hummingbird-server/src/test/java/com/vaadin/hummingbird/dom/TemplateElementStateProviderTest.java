@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -882,7 +881,7 @@ public class TemplateElementStateProviderTest {
     public void requiredNodeFeatures() {
         @SuppressWarnings("unchecked")
         Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
-                ModelMap.class, TemplateOverridesMap.class };
+                TemplateOverridesMap.class };
 
         TemplateElementStateProvider provider = (TemplateElementStateProvider) createElement(
                 "<div></div").getStateProvider();
@@ -910,7 +909,8 @@ public class TemplateElementStateProviderTest {
 
     @Test
     public void subModelNodeFeatures() {
-        assertHasFeatures(TemplateElementStateProvider.createSubModelNode(),
+        assertHasFeatures(
+                TemplateElementStateProvider.createSubModelNode(ModelMap.class),
                 ModelMap.class, TemplateOverridesMap.class);
     }
 
@@ -939,9 +939,9 @@ public class TemplateElementStateProviderTest {
     }
 
     private static Element createElement(TemplateNodeBuilder builder) {
-        Collection<? extends TemplateNode> nodes = builder.build(null);
+        List<TemplateNode> nodes = builder.build(null);
         Assert.assertEquals(1, nodes.size());
-        return createElement(nodes.iterator().next());
+        return createElement(nodes.get(0));
     }
 
     public static Element createElement(TemplateNode templateNode) {

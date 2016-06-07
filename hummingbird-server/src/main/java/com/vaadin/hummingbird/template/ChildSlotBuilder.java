@@ -15,8 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -27,13 +27,13 @@ import java.util.Optional;
 public class ChildSlotBuilder implements TemplateNodeBuilder {
 
     @Override
-    public Collection<? extends TemplateNode> build(TemplateNode parent) {
+    public List<TemplateNode> build(TemplateNode parent) {
         assert parent instanceof AbstractElementTemplateNode : "Child slot parent must be an instance of "
                 + AbstractElementTemplateNode.class;
 
         verifyOnlyChildNode(parent);
 
-        return Collections.singleton(
+        return Collections.singletonList(
                 new ChildSlotNode((AbstractElementTemplateNode) parent));
     }
 

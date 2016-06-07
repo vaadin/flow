@@ -15,8 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Builder for {@link ForTemplateNode}.
@@ -50,7 +50,7 @@ public class ForTemplateBuilder implements TemplateNodeBuilder {
     }
 
     @Override
-    public Collection<? extends TemplateNode> build(TemplateNode parent) {
+    public List<TemplateNode> build(TemplateNode parent) {
         if (parent == null) {
             throw new IllegalArgumentException(
                     "A for loop cannot be the root element in a template");
@@ -58,7 +58,7 @@ public class ForTemplateBuilder implements TemplateNodeBuilder {
 
         assert parent instanceof AbstractElementTemplateNode;
 
-        return Collections.singleton(
+        return Collections.singletonList(
                 new ForTemplateNode((AbstractElementTemplateNode) parent,
                         collectionVariable, loopVariable, childBuilder));
     }

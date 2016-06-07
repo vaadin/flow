@@ -78,8 +78,10 @@ public class TemplateNodeTest {
         StateNode node = TemplateElementStateProvider.createRootNode();
         StateNode listNode = new StateNode(ModelList.class);
         node.getFeature(ModelMap.class).setValue("items", listNode);
-        StateNode item1 = TemplateElementStateProvider.createSubModelNode();
-        StateNode item2 = TemplateElementStateProvider.createSubModelNode();
+        StateNode item1 = TemplateElementStateProvider
+                .createSubModelNode(ModelMap.class);
+        StateNode item2 = TemplateElementStateProvider
+                .createSubModelNode(ModelMap.class);
         listNode.getFeature(ModelList.class).add(item1);
         listNode.getFeature(ModelList.class).add(item2);
 

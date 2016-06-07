@@ -48,7 +48,12 @@ public class SerializationTest {
                 view.onLocationChange(new LocationChangeEvent(new Router(), ui,
                         new Location(""), Collections.emptyList(),
                         Collections.emptyMap()));
-                Assert.assertNotNull(serializeDeserialize(view));
+                try {
+                    Assert.assertNotNull(serializeDeserialize(view));
+                } catch (Exception e) {
+                    throw new AssertionError(
+                            "Can't serialize view " + viewClass.getName(), e);
+                }
             }
         } finally {
             UI.setCurrent(null);

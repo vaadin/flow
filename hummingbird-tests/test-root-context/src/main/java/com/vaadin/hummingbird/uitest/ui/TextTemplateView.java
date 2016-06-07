@@ -19,6 +19,7 @@ import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
  * @author Vaadin Ltd
@@ -28,14 +29,14 @@ public class TextTemplateView extends Div implements View {
 
     public TextTemplateView() {
         Button button = new Button();
-        InlineTemplate text = new InlineTemplate(
-                "<div id='text'>{{name}}</div>");
+        InlineTemplate<TemplateModel> text = new InlineTemplate<>(
+                "<div id='text'>{{name}}</div>", TemplateModel.class);
         setName(text, "Foo");
         button.addClickListener(event -> setName(text, "Bar"));
         add(button, text);
     }
 
-    private void setName(InlineTemplate template, String name) {
+    private void setName(InlineTemplate<?> template, String name) {
         template.getElement().getNode().getFeature(ModelMap.class)
                 .setValue("name", name);
     }
