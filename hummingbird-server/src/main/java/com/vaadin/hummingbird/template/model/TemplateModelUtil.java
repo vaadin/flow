@@ -1,0 +1,52 @@
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.hummingbird.template.model;
+
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
+
+/**
+ * Helper methods for {@link TemplateModel}.
+ */
+public class TemplateModelUtil {
+
+    private TemplateModelUtil() {
+        // Util methods only
+    }
+
+    /**
+     * Creates a sub model node with the given model feature and attaches it to
+     * the parent with the given name.
+     *
+     * @param parent
+     *            the parent model map
+     * @param propertyName
+     *            the name to use when attaching
+     * @param childFeature
+     *            the feature (ModelMap or ModelList) to use
+     * @return a new state node with the given feature
+     */
+    public static StateNode createSubModel(ModelMap parent, String propertyName,
+            Class<? extends NodeFeature> childFeature) {
+        StateNode node = TemplateElementStateProvider
+                .createSubModelNode(childFeature);
+        parent.setValue(propertyName, node);
+        return node;
+    }
+
+}
