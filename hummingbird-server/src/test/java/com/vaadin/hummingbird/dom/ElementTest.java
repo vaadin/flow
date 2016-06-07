@@ -172,6 +172,19 @@ public class ElementTest {
         Assert.assertEquals("", e.getAttribute("foo"));
     }
 
+    @Test
+    public void setBooleanAttribute() {
+        Element e = ElementFactory.createDiv();
+
+        e.setAttribute("foo", true);
+        Assert.assertEquals("", e.getAttribute("foo"));
+        Assert.assertTrue(e.hasAttribute("foo"));
+
+        e.setAttribute("foo", false);
+        Assert.assertEquals(null, e.getAttribute("foo"));
+        Assert.assertFalse(e.hasAttribute("foo"));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void setNullAttribute() {
         Element e = ElementFactory.createDiv();
