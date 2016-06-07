@@ -424,6 +424,35 @@ public class Element implements Serializable {
     }
 
     /**
+     * Sets the given attribute to the given boolean value. Setting the value to
+     * <code>true</code> will internally set the value to <code>""</code>, which
+     * will be rendered as {@literal <div name>}, i.e. without any explicit
+     * value. Setting the value to <code>false</code> is a shorthand for
+     * removing the attribute.
+     * <p>
+     * Use {@link #hasAttribute(String)} to check whether a boolean attribute
+     * has been set.
+     * <p>
+     * Attribute names are considered case insensitive and all names will be
+     * converted to lower case automatically.
+     *
+     * @see #setAttribute(String, String)
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param value
+     *            the value of the attribute
+     * @return this element
+     */
+    public Element setAttribute(String attribute, boolean value) {
+        if (value) {
+            return setAttribute(attribute, "");
+        } else {
+            return removeAttribute(attribute);
+        }
+    }
+
+    /**
      * Sets the given attribute to the given {@link StreamResource} value.
      * <p>
      * Attribute names are considered case insensitive and all names will be
