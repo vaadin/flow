@@ -75,36 +75,36 @@ public interface TemplateModel extends Serializable {
      * path "person" represents {@code getPerson()} return value and the path
      * "person.address" represents {@code getPerson().getAddress()} return
      * value.
-     * 
+     *
      * <pre>
      * <code>
      * public class Address {
-     *    private String street; 
+     *    private String street;
      *    public String getStreet(){
      *        return street;
      *    }
-     *    
+     *
      *    public void setStreet(String street){
      *        this.street = street;
      *    }
      * }
-     * 
+     *
      * public class Person {
      *    private String name;
      *    private Address address;
-     *    
+     *
      *    public String getName(){
      *        return name;
      *    }
-     *    
+     *
      *    public void setName(String name){
      *        this.name = name;
      *    }
-     *    
+     *
      *    public void setAddress(Address address){
      *       this.address = address;
      *    }
-     *    
+     *
      *    public Address getAddress(){
      *       return address;
      *    }
@@ -114,7 +114,7 @@ public interface TemplateModel extends Serializable {
      * }
      * </code>
      * </pre>
-     * 
+     *
      * @param modelPath
      *            dot separated path denoting subproperty bean
      * @param beanType

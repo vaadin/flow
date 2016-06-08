@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +32,6 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -45,8 +43,6 @@ public class TemplateModelBeanUtil {
 
     private static final Class<?>[] SUPPORTED_PROPERTY_TYPES = new Class[] {
             Boolean.class, Double.class, Integer.class, String.class };
-
-    private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
 
     /**
      * Internal implementation of Pair / Tuple that encapsulates a value and the
@@ -148,18 +144,18 @@ public class TemplateModelBeanUtil {
         Class<?> beanClass = (Class<?>) args[1];
 
         if (modelPath.isEmpty()) {
+            // get the whole model as a bean
             return TemplateModelProxyHandler.createModelProxy(stateNode,
                     beanClass);
         }
 
-        StateNode node = stateNode;
+        ModelPathResolver resolver = new ModelPathResolver(modelPath);
+        ModelMap parentMap = resolver.resolveModelMap(stateNode);
+        // Create the state node for the bean if it does not exist
+        ModelPathResolver.resolveStateNode(parentMap.getNode(),
+                resolver.getPropertyName(), ModelMap.class);
 
-        String[] path = DOT_PATTERN.split(modelPath);
-        for (int i = 0; i < path.length; i++) {
-            node = resolveStateNode(node, path[i], ModelMap.class);
-        }
-        return getModelValue(node.getParent().getFeature(ModelMap.class),
-                path[path.length - 1], beanClass);
+        return getModelValue(parentMap, resolver.getPropertyName(), beanClass);
     }
 
     private static void setModelValueBasicType(ModelMap modelMap,
@@ -183,8 +179,8 @@ public class TemplateModelBeanUtil {
             // handle other types as beans
             String newPathPrefix = pathPrefix + propertyName + ".";
             importBeanIntoModel(
-                    () -> resolveStateNode(modelMap.getNode(), propertyName,
-                            ModelMap.class),
+                    () -> ModelPathResolver.resolveStateNode(modelMap.getNode(),
+                            propertyName, ModelMap.class),
                     expectedType, value, newPathPrefix, filter);
             return;
         }
@@ -226,8 +222,9 @@ public class TemplateModelBeanUtil {
             childNodes.add(childNode);
         }
 
-        ModelList modelList = resolveStateNode(parentNode, propertyName,
-                ModelList.class).getFeature(ModelList.class);
+        ModelList modelList = ModelPathResolver
+                .resolveStateNode(parentNode, propertyName, ModelList.class)
+                .getFeature(ModelList.class);
         modelList.clear();
 
         modelList.addAll(childNodes);
@@ -282,32 +279,6 @@ public class TemplateModelBeanUtil {
                             + ", getters should not throw exceptions.",
                     e);
         }
-    }
-
-    private static StateNode resolveStateNode(StateNode parentNode,
-            String childNodePath, Class<? extends NodeFeature> childFeature) {
-        ModelMap parentLevel = parentNode.getFeature(ModelMap.class);
-        if (parentLevel.hasValue(childNodePath)) {
-            Serializable value = parentLevel.getValue(childNodePath);
-            if (value instanceof StateNode
-                    && ((StateNode) value).hasFeature(childFeature)) {
-                // reuse old one
-                return (StateNode) value;
-            } else {
-                // just override
-                return createSubModel(parentLevel, childNodePath, childFeature);
-            }
-        } else {
-            return createSubModel(parentLevel, childNodePath, childFeature);
-        }
-    }
-
-    private static StateNode createSubModel(ModelMap parent,
-            String propertyName, Class<? extends NodeFeature> childFeature) {
-        StateNode node = TemplateElementStateProvider
-                .createSubModelNode(childFeature);
-        parent.setValue(propertyName, node);
-        return node;
     }
 
     private static String getSupportedTypesString() {
