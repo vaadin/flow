@@ -65,7 +65,7 @@ public class DefaultTextModelBuiderFactoryTest {
     }
 
     @Test
-    public void parseMultlipleInclude() {
+    public void parseMultipleInclude() {
         assertIncludePath(" @include foo.html@  @include bar.html @ ",
                 "foo.html", "bar.html");
     }

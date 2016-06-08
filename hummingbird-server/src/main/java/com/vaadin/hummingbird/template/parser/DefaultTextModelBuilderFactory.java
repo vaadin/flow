@@ -44,9 +44,11 @@ import com.vaadin.hummingbird.template.TextTemplateBuilder;
 public class DefaultTextModelBuilderFactory
         extends AbstractTemplateBuilderFactory<TextNode> {
 
-    private static final String CHILD = "@child@";
-    private static final String INCLUDE_SUFFIX = "@";
-    private static final String INCLUDE_PREFIX = INCLUDE_SUFFIX + "include ";
+    private static final String TEXT_BINDING_SUFFIX = "}}";
+    private static final String TEXT_BINDING_PREFIX = "{{";
+    private static final String AT_DELIMITER = "@";
+    private static final String CHILD = AT_DELIMITER + "child" + AT_DELIMITER;
+    private static final String INCLUDE_PREFIX = AT_DELIMITER + "include ";
 
     /**
      * Creates a new factory.
@@ -76,7 +78,7 @@ public class DefaultTextModelBuilderFactory
             return;
         }
 
-        int bindingIndex = text.indexOf("{{");
+        int bindingIndex = text.indexOf(TEXT_BINDING_PREFIX);
         int childIndex = text.indexOf(CHILD);
         int includeIndex = text.indexOf(INCLUDE_PREFIX);
 
@@ -121,7 +123,7 @@ public class DefaultTextModelBuilderFactory
     private Runnable getIncludeHandler(String text,
             List<TemplateNodeBuilder> builders,
             TemplateResolver templateResolver, int includeIndex) {
-        int index = text.indexOf(INCLUDE_SUFFIX,
+        int index = text.indexOf(AT_DELIMITER,
                 INCLUDE_PREFIX.length() + includeIndex);
         if (index >= 0) {
             return () -> handleInclude(text, builders, templateResolver,
@@ -138,14 +140,14 @@ public class DefaultTextModelBuilderFactory
                 .substring(INCLUDE_PREFIX.length() + includeIndex, suffixIndex)
                 .trim()));
 
-        collectBuilders(text.substring(suffixIndex + 1), builders,
-                templateResolver);
+        collectBuilders(text.substring(suffixIndex + AT_DELIMITER.length()),
+                builders, templateResolver);
     }
 
     private Runnable createBindingHandler(String text,
             List<TemplateNodeBuilder> builders,
             TemplateResolver templateResolver, int bindingIndex) {
-        int index = text.indexOf("}}", bindingIndex);
+        int index = text.indexOf(TEXT_BINDING_SUFFIX, bindingIndex);
         if (index >= 0) {
             return () -> handleBinding(text, builders, templateResolver,
                     bindingIndex, index);
@@ -158,11 +160,13 @@ public class DefaultTextModelBuilderFactory
             int suffixIndex) {
         handleStaticPrefix(text, builders, bindingIndex);
         builders.add(new TextTemplateBuilder(
-                new ModelValueBindingProvider(stripForLoopVariableIfNeeded(
-                        text.substring(bindingIndex + 2, suffixIndex)))));
+                new ModelValueBindingProvider(stripForLoopVariableIfNeeded(text
+                        .substring(bindingIndex + TEXT_BINDING_PREFIX.length(),
+                                suffixIndex)))));
 
-        collectBuilders(text.substring(suffixIndex + 2), builders,
-                templateResolver);
+        collectBuilders(
+                text.substring(suffixIndex + TEXT_BINDING_SUFFIX.length()),
+                builders, templateResolver);
     }
 
     private void handleStaticPrefix(String text,
