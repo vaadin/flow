@@ -184,6 +184,16 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
+        if (key.contains(".")) {
+            String[] modelPathParts = key.split("\\.");
+            // The last part is the propertyName
+            for (int i = 0; i < modelPathParts.length - 1; i++) {
+                StateNode n = (StateNode) model.getProperty(modelPathParts[i])
+                        .getValue();
+                model = n.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            }
+            key = modelPathParts[modelPathParts.length - 1];
+        }
         return model.getProperty(key);
     }
 
