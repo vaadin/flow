@@ -32,7 +32,6 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -88,9 +87,10 @@ public class TemplateModelBeanUtil {
         Predicate<Method> methodBasedFilter = method -> filter
                 .test(pathPrefix + ReflectTools.getPropertyName(method));
 
-        Stream<ModelPropertyWrapper> values = Stream.of(getterMethods)
+        List<ModelPropertyWrapper> values = Stream.of(getterMethods)
                 .filter(methodBasedFilter)
-                .map(method -> mapBeanValueToProperty(method, bean));
+                .map(method -> mapBeanValueToProperty(method, bean))
+                .collect(Collectors.toList());
 
         // don't resolve the state node used until all the bean values have been
         // resolved properly
@@ -132,6 +132,32 @@ public class TemplateModelBeanUtil {
         throw createUnsupportedTypeException(expectedType, propertyName);
     }
 
+    static Object getProxy(StateNode stateNode, Object[] args) {
+        assert args.length == 2;
+        if (args[0] == null || args[1] == null) {
+            throw new IllegalArgumentException(
+                    "Method getProxy() may not accept null arguments");
+        }
+        assert args[0] instanceof String;
+        assert args[1] instanceof Class<?>;
+        String modelPath = (String) args[0];
+        Class<?> beanClass = (Class<?>) args[1];
+
+        if (modelPath.isEmpty()) {
+            // get the whole model as a bean
+            return TemplateModelProxyHandler.createModelProxy(stateNode,
+                    beanClass);
+        }
+
+        ModelPathResolver resolver = new ModelPathResolver(modelPath);
+        ModelMap parentMap = resolver.resolveModelMap(stateNode);
+        // Create the state node for the bean if it does not exist
+        ModelPathResolver.resolveStateNode(parentMap.getNode(),
+                resolver.getPropertyName(), ModelMap.class);
+
+        return getModelValue(parentMap, resolver.getPropertyName(), beanClass);
+    }
+
     private static void setModelValueBasicType(ModelMap modelMap,
             String propertyName, Class<?> expectedType, Object value,
             String pathPrefix, Predicate<String> filter) {
@@ -153,8 +179,8 @@ public class TemplateModelBeanUtil {
             // handle other types as beans
             String newPathPrefix = pathPrefix + propertyName + ".";
             importBeanIntoModel(
-                    () -> resolveStateNode(modelMap.getNode(), propertyName,
-                            ModelMap.class),
+                    () -> ModelPathResolver.resolveStateNode(modelMap.getNode(),
+                            propertyName, ModelMap.class),
                     expectedType, value, newPathPrefix, filter);
             return;
         }
@@ -196,8 +222,9 @@ public class TemplateModelBeanUtil {
             childNodes.add(childNode);
         }
 
-        ModelList modelList = resolveStateNode(parentNode, propertyName,
-                ModelList.class).getFeature(ModelList.class);
+        ModelList modelList = ModelPathResolver
+                .resolveStateNode(parentNode, propertyName, ModelList.class)
+                .getFeature(ModelList.class);
         modelList.clear();
 
         modelList.addAll(childNodes);
@@ -226,10 +253,10 @@ public class TemplateModelBeanUtil {
                 && isSupportedPrimitiveType(returnClazz)) {
             return value != null ? value
                     : getPrimitiveDefaultValue(returnClazz);
+        } else if (!returnClazz.isPrimitive() && value instanceof StateNode) {
+            return TemplateModelProxyHandler.createModelProxy((StateNode) value,
+                    returnClazz);
         }
-        // not supported primitive, throw exception for now
-        // or #731 consider as a "sub" model or nested bean and return a
-        // new proxy to model
         throw createUnsupportedTypeException(returnClazz, propertyName);
     }
 
@@ -252,32 +279,6 @@ public class TemplateModelBeanUtil {
                             + ", getters should not throw exceptions.",
                     e);
         }
-    }
-
-    private static StateNode resolveStateNode(StateNode parentNode,
-            String childNodePath, Class<? extends NodeFeature> childFeature) {
-        ModelMap parentLevel = parentNode.getFeature(ModelMap.class);
-        if (parentLevel.hasValue(childNodePath)) {
-            Serializable value = parentLevel.getValue(childNodePath);
-            if (value instanceof StateNode
-                    && ((StateNode) value).hasFeature(childFeature)) {
-                // reuse old one
-                return (StateNode) value;
-            } else {
-                // just override
-                return createSubModel(parentLevel, childNodePath, childFeature);
-            }
-        } else {
-            return createSubModel(parentLevel, childNodePath, childFeature);
-        }
-    }
-
-    private static StateNode createSubModel(ModelMap parent,
-            String propertyName, Class<? extends NodeFeature> childFeature) {
-        StateNode node = TemplateElementStateProvider
-                .createSubModelNode(childFeature);
-        parent.setValue(propertyName, node);
-        return node;
     }
 
     private static String getSupportedTypesString() {

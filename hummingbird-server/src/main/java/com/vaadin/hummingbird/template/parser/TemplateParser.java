@@ -93,8 +93,6 @@ public class TemplateParser {
 
     private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
         Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
-        factories.add(new ChildTextNodeBuilderFactory());
-        factories.add(new TemplateIncludeBuilderFactory());
         factories.add(new ForElementBuilderFactory());
         factories.add(new DataNodeFactory());
         return factories;

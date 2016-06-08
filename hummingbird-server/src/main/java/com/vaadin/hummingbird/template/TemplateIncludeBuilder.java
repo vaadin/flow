@@ -18,9 +18,8 @@ package com.vaadin.hummingbird.template;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 import com.vaadin.hummingbird.template.parser.TemplateResolver;
@@ -32,20 +31,20 @@ import com.vaadin.hummingbird.template.parser.TemplateResolver;
  */
 public class TemplateIncludeBuilder implements TemplateNodeBuilder {
 
-    private String[] relativeFilenames;
+    private String relativeFilename;
     private TemplateResolver templateResolver;
 
     /**
      * Creates a new builder for the given filename using the given resolver.
      *
-     * @param relativeFilenames
-     *            the file names for the included file
+     * @param relativeFilename
+     *            the file name for the included file
      * @param templateResolver
      *            the resolver to use to find the file
      */
     public TemplateIncludeBuilder(TemplateResolver templateResolver,
-            String... relativeFilenames) {
-        this.relativeFilenames = relativeFilenames;
+            String relativeFilename) {
+        this.relativeFilename = relativeFilename;
         this.templateResolver = templateResolver;
     }
 
@@ -54,8 +53,7 @@ public class TemplateIncludeBuilder implements TemplateNodeBuilder {
         assert parent instanceof AbstractElementTemplateNode : "@include@ parent must be an instance of "
                 + AbstractElementTemplateNode.class;
 
-        return Stream.of(relativeFilenames).map(this::parseInclude)
-                .collect(Collectors.toList());
+        return Collections.singletonList(parseInclude(relativeFilename));
     }
 
     private TemplateNode parseInclude(String includeFileName) {

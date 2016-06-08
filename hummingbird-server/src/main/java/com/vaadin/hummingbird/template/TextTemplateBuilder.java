@@ -39,15 +39,6 @@ public class TextTemplateBuilder implements TemplateNodeBuilder {
         this.binding = binding;
     }
 
-    /**
-     * Gets the text content binding.
-     *
-     * @return the text content binding, not <code>null</code>
-     */
-    public BindingValueProvider getBinding() {
-        return binding;
-    }
-
     @Override
     public List<TemplateNode> build(TemplateNode parent) {
         return Collections.singletonList(new TextTemplateNode(parent, binding));
