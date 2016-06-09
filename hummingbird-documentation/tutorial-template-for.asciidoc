@@ -50,7 +50,9 @@ The name of the method should match the name in the `*ngFor` definition; data fo
 ----
 public class EmployeesTable extends Template {
   public interface EmployeesModel extends TemplateModel {
-      public void setEmployees(List<Employee> employees);
+      void setEmployees(List<Employee> employees);
+      
+      List<Employee> getEmployees();
   }
 
   @Override
@@ -60,6 +62,10 @@ public class EmployeesTable extends Template {
 
   public void setEmployees(List<Employee> employees) {
       getModel().setEmployees(employees);
+  }
+  
+  public List<Employee> getEmployees() {
+      return getModel().getEmployees();
   }
 }
 ----
@@ -90,5 +96,39 @@ public class Employee {
     public String getEmail() {
         return email;
     }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }
 ----
+
+[NOTE]
+Setters are not requires here. It's enough to have getters only to populate the model.
+
+== Updating the Items
+
+The beans that you set to the model using `setEmployees()` method are used to populate the model only.
+It means that any update made to the bean will not update the model. 
+To be able to update the model items you should use `getEmployees()` method which returns bean proxies which are connected to the model.
+So that any change made to the proxy instance will reflect on the model.
+
+Here is the way to update the title for all items:
+
+[source,java]
+----
+public void updateTitle() {
+    getEmployees().stream().forEach(employee -> employee.setTitle("Mr."));
+}
+----
+
+[NOTE]
+You can also use `setEmployees()` method with a new list of updated beans to repopulate the model. But this is not convenient.
