@@ -2,7 +2,6 @@ package com.vaadin.hummingbird.template.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -236,11 +235,9 @@ public class TemplateModelTest {
         TemplateModel modelProxy = emptyModelTemplate.getModel();
         TemplateModel modelProxy2 = emptyModelTemplate.getModel();
 
-        Assert.assertTrue(Proxy.isProxyClass(modelProxy.getClass()));
         Assert.assertTrue(modelProxy == modelProxy2);
 
         modelProxy2 = new EmptyModelTemplate().getModel();
-        Assert.assertTrue(Proxy.isProxyClass(modelProxy2.getClass()));
         Assert.assertNotSame(modelProxy, modelProxy2);
     }
 
