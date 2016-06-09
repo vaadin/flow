@@ -83,6 +83,25 @@ public class DependencyIT extends PhantomJSTest {
                 messages.get(messages.size() - 1));
     }
 
+    @Test
+    public void loadingUnavailableResources() {
+        open();
+        findElement(By.id("loadUnavailableResources")).click();
+
+        List<WebElement> errors = findElements(By.className("v-system-error"));
+        Assert.assertEquals(3, errors.size());
+        Assert.assertEquals("Error loading http://localhost:8888/not-found.css",
+                errors.get(0).getText());
+        // The order for these can be random because of
+        // https://github.com/vaadin/hummingbird/issues/896
+        // Assert.assertEquals("Error loading
+        // http://localhost:8888/not-found.js",
+        // errors.get(1).getText());
+        // Assert.assertEquals(
+        // "Error loading http://localhost:8888/not-found.html",
+        // errors.get(2).getText());
+    }
+
     private List<String> getMessages() {
         List<WebElement> elements = findElements(By.className("message"));
         List<String> messages = new ArrayList<>();
