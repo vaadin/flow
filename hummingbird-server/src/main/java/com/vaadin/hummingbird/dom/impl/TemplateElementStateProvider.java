@@ -141,6 +141,9 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                     SynchronizedPropertyEventsList.class)
             .toArray(Class[]::new);
 
+    private static final Predicate<? super String> excludeCustomAttributes = name -> !CustomAttribute
+            .getNames().contains(name);
+
     private ElementTemplateNode templateNode;
 
     /**
@@ -249,7 +252,11 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        Stream<String> templateAttributes = templateNode.getAttributeNames();
+        // Exclude custom attributes since those are included on demand by
+        // Element.getAttributeNames().
+        Stream<String> templateAttributes = templateNode.getAttributeNames()
+                .filter(excludeCustomAttributes);
+
         Optional<StateNode> overrideNode = getOverrideNode(node);
         if (overrideNode.isPresent()) {
             Predicate<String> isStaticBinding = this::isStaticBindingAttribute;
@@ -512,6 +519,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
              */
             templateNode.getAttributeNames()
                     .filter(this::isStaticBindingAttribute)
+                    .filter(excludeCustomAttributes)
                     .forEach(attribute -> BasicElementStateProvider.get()
                             .setAttribute(overrideNode, attribute,
                                     templateNode.getAttributeBinding(attribute)
