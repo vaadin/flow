@@ -16,30 +16,22 @@
 package com.vaadin.hummingbird.dom;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.jsoup.nodes.Document;
 
-import com.helger.css.ECSSVersion;
-import com.helger.css.decl.CSSDeclaration;
-import com.helger.css.decl.CSSDeclarationList;
-import com.helger.css.reader.CSSReaderDeclarationList;
-import com.helger.css.reader.errorhandler.CollectingCSSParseErrorHandler;
-import com.helger.css.writer.CSSWriterSettings;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.CustomAttribute;
 import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
@@ -65,163 +57,11 @@ import elemental.json.JsonValue;
 public class Element implements Serializable {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
-    /**
-     * Callbacks for handling attributes with special semantics. This is used
-     * for e.g. <code>class</code> which is assembled from a separate list of
-     * tokens instead of being stored as a regular attribute string.
-     */
-    private interface CustomAttribute extends Serializable {
-        /**
-         * Checks what {@link Element#hasAttribute(String)} should return for
-         * this attribute.
-         *
-         * @param element
-         *            the element to check
-         * @return <code>true</code> if the element has a value for this
-         *         attribute, otherwise <code>false</code>
-         */
-        boolean hasAttribute(Element element);
-
-        /**
-         * Gets the value that should be returned by
-         * {@link Element#getAttribute(String)} for this attribute.
-         *
-         * @param element
-         *            the element to check.
-         * @return the attribute value
-         */
-        String getAttribute(Element element);
-
-        /**
-         * Sets the value when {@link Element#setAttribute(String, String)} is
-         * called for this attribute.
-         *
-         * @param element
-         *            the element to check.
-         * @param value
-         *            the new attribute value
-         */
-        void setAttribute(Element element, String value);
-
-        /**
-         * Removes the attribute when {@link Element#removeAttribute(String)} is
-         * called for this attribute.
-         *
-         * @param element
-         *            the element to check.
-         */
-        void removeAttribute(Element element);
-    }
-
-    /**
-     * Emulates the <code>class</code> attribute by delegating to
-     * {@link Element#getClassList()}.
-     */
-    private static class ClassAttributeHandler implements CustomAttribute {
-        @Override
-        public boolean hasAttribute(Element element) {
-            return !element.getClassList().isEmpty();
-        }
-
-        @Override
-        public String getAttribute(Element element) {
-            Set<String> classList = element.getClassList();
-            if (classList.isEmpty()) {
-                return null;
-            } else {
-                return classList.stream().collect(Collectors.joining(" "));
-            }
-        }
-
-        @Override
-        public void setAttribute(Element element, String value) {
-            Set<String> classList = element.getClassList();
-            classList.clear();
-
-            if ("".equals(value)) {
-                return;
-            }
-
-            String[] parts = value.split("\\s+");
-            classList.addAll(Arrays.asList(parts));
-        }
-
-        @Override
-        public void removeAttribute(Element element) {
-            element.getClassList().clear();
-        }
-    }
-
-    /**
-     * Emulates the <code>style</code> attribute by delegating to
-     * {@link Element#getStyle()}.
-     */
-    private static class StyleAttributeHandler implements CustomAttribute {
-        private static final String ERROR_PARSING_STYLE = "Error parsing style '%s': %s";
-
-        @Override
-        public boolean hasAttribute(Element element) {
-            return element.getStyle().getNames().findAny().isPresent();
-        }
-
-        @Override
-        public String getAttribute(Element element) {
-            if (!hasAttribute(element)) {
-                return null;
-            }
-            Style style = element.getStyle();
-
-            return style.getNames().map(styleName -> {
-                return StyleUtil.stylePropertyToAttribute(styleName) + ":"
-                        + style.get(styleName);
-            }).collect(Collectors.joining(";"));
-        }
-
-        @Override
-        public void setAttribute(Element element, String attributeValue) {
-            Style style = element.getStyle();
-            CollectingCSSParseErrorHandler errorCollector = new CollectingCSSParseErrorHandler();
-            CSSDeclarationList parsed = CSSReaderDeclarationList.readFromString(
-                    attributeValue, ECSSVersion.LATEST, errorCollector);
-            if (errorCollector.hasParseErrors()) {
-                throw new IllegalArgumentException(String.format(
-                        ERROR_PARSING_STYLE, attributeValue, errorCollector
-                                .getAllParseErrors().get(0).getErrorMessage()));
-            }
-            if (parsed == null) {
-                // Did not find any styles
-                throw new IllegalArgumentException(
-                        String.format(ERROR_PARSING_STYLE, attributeValue,
-                                "No styles found"));
-            }
-            for (CSSDeclaration declaration : parsed.getAllDeclarations()) {
-                String key = declaration.getProperty();
-                String value = declaration.getExpression().getAsCSSString(
-                        new CSSWriterSettings(ECSSVersion.LATEST)
-                                .setOptimizedOutput(true),
-                        0);
-                style.set(StyleUtil.styleAttributeToProperty(key), value);
-            }
-        }
-
-        @Override
-        public void removeAttribute(Element element) {
-            element.getStyle().clear();
-        }
-    }
-
     static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
 
     static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
 
     static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
-
-    private static final Map<String, CustomAttribute> customAttributes = new HashMap<>();
-
-    static {
-        customAttributes.put("class", new ClassAttributeHandler());
-        customAttributes.put("style", new StyleAttributeHandler());
-    }
 
     // Can't set $name as a property, use $replacement instead.
     private static final Map<String, String> illegalPropertyReplacements = new HashMap<>();
@@ -413,10 +253,10 @@ public class Element implements Serializable {
     public Element setAttribute(String attribute, String value) {
         String lowerCaseAttribute = validateAttribute(attribute, value);
 
-        CustomAttribute customAttribute = customAttributes
+        Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
-        if (customAttribute != null) {
-            customAttribute.setAttribute(this, value);
+        if (customAttribute.isPresent()) {
+            customAttribute.get().setAttribute(this, value);
         } else {
             stateProvider.setAttribute(getNode(), lowerCaseAttribute, value);
         }
@@ -474,9 +314,9 @@ public class Element implements Serializable {
     public Element setAttribute(String attribute, StreamResource resource) {
         String lowerCaseAttribute = validateAttribute(attribute, resource);
 
-        CustomAttribute customAttribute = customAttributes
+        Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
-        if (customAttribute == null) {
+        if (!customAttribute.isPresent()) {
             stateProvider.setAttribute(node, attribute, resource);
         } else {
             throw new IllegalArgumentException("Can't set " + attribute
@@ -516,13 +356,11 @@ public class Element implements Serializable {
         }
 
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        CustomAttribute customAttribute = customAttributes
-                .get(lowerCaseAttribute);
-        if (customAttribute != null) {
-            return customAttribute.getAttribute(this);
-        } else {
-            return stateProvider.getAttribute(getNode(), lowerCaseAttribute);
-        }
+
+        return CustomAttribute.get(lowerCaseAttribute)
+                .map(attr -> attr.getAttribute(this))
+                .orElseGet(() -> stateProvider.getAttribute(getNode(),
+                        lowerCaseAttribute));
     }
 
     /**
@@ -544,10 +382,11 @@ public class Element implements Serializable {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        CustomAttribute customAttribute = customAttributes
+
+        Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
-        if (customAttribute != null) {
-            return customAttribute.hasAttribute(this);
+        if (customAttribute.isPresent()) {
+            return customAttribute.get().hasAttribute(this);
         } else {
             return stateProvider.hasAttribute(getNode(), lowerCaseAttribute);
         }
@@ -568,16 +407,15 @@ public class Element implements Serializable {
      */
     public Stream<String> getAttributeNames() {
         assert stateProvider.getAttributeNames(getNode())
-                .filter(customAttributes::containsKey)
-                .filter(name -> customAttributes.get(name).hasAttribute(this))
+                .map(CustomAttribute::get).filter(Optional::isPresent)
+                .filter(attr -> attr.get().hasAttribute(this))
                 .count() == 0 : "Overlap between stored attributes and existing custom attributes";
 
         Stream<String> regularNames = stateProvider
                 .getAttributeNames(getNode());
 
-        Stream<String> customNames = customAttributes.entrySet().stream()
-                .filter(e -> e.getValue().hasAttribute(this))
-                .map(Entry::getKey);
+        Stream<String> customNames = CustomAttribute.getNames().stream().filter(
+                name -> CustomAttribute.get(name).get().hasAttribute(this));
 
         return Stream.concat(regularNames, customNames);
     }
@@ -603,10 +441,10 @@ public class Element implements Serializable {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
         String lowerCaseAttribute = attribute.toLowerCase(Locale.ENGLISH);
-        CustomAttribute customAttribute = customAttributes
+        Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
-        if (customAttribute != null) {
-            customAttribute.removeAttribute(this);
+        if (customAttribute.isPresent()) {
+            customAttribute.get().removeAttribute(this);
         } else {
             stateProvider.removeAttribute(getNode(), lowerCaseAttribute);
         }
