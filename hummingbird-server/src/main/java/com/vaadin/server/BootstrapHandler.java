@@ -391,13 +391,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static String getBootstrapJS(BootstrapContext context) {
-        boolean isDebug = !context.getSession().getConfiguration()
+        boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
         String result = getBootstrapJS();
         JsonObject appConfig = context.getApplicationParameters();
 
         int indent = 0;
-        if (isDebug) {
+        if (!productionMode) {
             indent = 4;
         }
         JsonValue initialUIDL = getInitialUidl(context.getUI());
@@ -410,7 +410,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         initialUIDLString = scriptEndTagPattern.matcher(initialUIDLString)
                 .replaceAll("<\\\\x2F$1");
 
-        if (isDebug) {
+        if (!productionMode) {
             // only used in debug mode by profiler
             result = result.replace("{{GWT_STAT_EVENTS}}", GWT_STAT_EVENTS_JS);
         } else {
@@ -633,11 +633,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static String getClientEngineUrl(BootstrapContext context) {
-        // when NOT in production, use nocache version of client engine if it
+        // use nocache version of client engine if it
         // has been compiled by SDM or eclipse
+        // In production mode, this should really be loaded by the static block
+        // so emit a warning if we get here (tests will always get here)
         final boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
-        if (!productionMode && BootstrapHandler.class.getResource(
+
+        boolean resolveNow = !productionMode || clientEngineFile == null;
+        if (resolveNow && BootstrapHandler.class.getResource(
                 "/META-INF/resources/" + CLIENT_ENGINE_NOCACHE_FILE) != null) {
             return context.getUriResolver().resolveVaadinUri(
                     "context://" + CLIENT_ENGINE_NOCACHE_FILE);

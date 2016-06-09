@@ -120,12 +120,6 @@
 				widgetsets[widgetset].pendingApps.push(appId);
 			}
 	
-			if (getConfig("debug")) {
-				/* TODO debug state is now global for the entire page, but should
-				somehow only be set for the current application */
-				window.hummingbird.debug = true;
-			}
-			
 			return app;
 		},
 		getAppIds: function() {

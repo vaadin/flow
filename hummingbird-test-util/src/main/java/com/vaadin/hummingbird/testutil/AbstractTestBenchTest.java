@@ -67,6 +67,18 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         getDriver().get(url);
     }
 
+    protected void openProduction(String... parameters) {
+        String url = getTestURL(parameters);
+        if (!url.contains("/view/")) {
+            throw new IllegalArgumentException(
+                    "Production mode is only available for /view/ URLs");
+        }
+        url = url.replace("/view/", "/view-production/");
+        driver.get(url);
+
+        getDriver().get(url);
+    }
+
     /**
      * Returns the URL to be used for the test.
      *
