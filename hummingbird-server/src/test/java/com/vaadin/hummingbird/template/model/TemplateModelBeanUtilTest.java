@@ -170,7 +170,7 @@ public class TemplateModelBeanUtilTest {
         template.getModel().importBean(bean);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidModelException.class)
     public void testBeanWithSetProperty() {
         NoModelTemplate template = new NoModelTemplate();
         BeanWithSet bean = new BeanWithSet();
@@ -180,7 +180,7 @@ public class TemplateModelBeanUtilTest {
         template.getModel().importBean(bean);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidModelException.class)
     public void testBeanWithNestedListProperty() {
         NoModelTemplate template = new NoModelTemplate();
         BeanWithNestedList bean = new BeanWithNestedList();
@@ -220,7 +220,7 @@ public class TemplateModelBeanUtilTest {
                 modelList.get(1).getFeature(ModelMap.class));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidModelException.class)
     public void testBeanWithPrimitiveList() {
         NoModelTemplate template = new NoModelTemplate();
         BeanWithPrimitiveList bean = new BeanWithPrimitiveList();

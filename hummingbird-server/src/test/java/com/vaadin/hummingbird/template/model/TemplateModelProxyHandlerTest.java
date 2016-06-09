@@ -83,7 +83,7 @@ public class TemplateModelProxyHandlerTest {
         Assert.assertEquals("foo", proxy.toString());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void noDefaultConstructor_throwsException() {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
