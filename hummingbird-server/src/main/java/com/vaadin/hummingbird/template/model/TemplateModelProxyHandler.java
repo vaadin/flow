@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.template.model;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -24,7 +25,6 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,7 +81,7 @@ public class TemplateModelProxyHandler
      * Processes a method invocation on a Byte buddy proxy instance and returns
      * the result. This method will be invoked on an invocation handler when a
      * method is invoked on a proxy instance that it is associated with.
-     * 
+     *
      * @param method
      *            the {@code Method} instance corresponding to the proxied
      *            method invoked on the proxy instance.
@@ -114,7 +114,7 @@ public class TemplateModelProxyHandler
         }
 
         if (isTemplateModelDefaultMethod(method)) {
-            return handleTemplateModelDefaultMethods(method, args);
+            return callDefaultMethod(method, proxy, args);
         }
 
         return intercept(method, args);
@@ -187,39 +187,19 @@ public class TemplateModelProxyHandler
                                 .collect(Collectors.joining(", ")));
     }
 
-    @SuppressWarnings("unchecked")
-    private Object handleTemplateModelDefaultMethods(Method method,
-            Object[] args) {
-        if ("importBean".equals(method.getName())) {
-            Object bean = args[0];
-            Class<? extends Object> beanType = bean.getClass();
+    private static Object callDefaultMethod(Method method, Object proxy,
+            Object[] args) throws Throwable {
+        // Approach described in
+        // https://zeroturnaround.com/rebellabs/recognize-and-conquer-java-proxies-default-methods-and-method-handles/
 
-            switch (args.length) {
-            case 1:
-                // void importBean(Object bean)
-                TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
-                        beanType, bean, "", propertyName -> true);
-                break;
-            case 2:
-                // void importBean(Object bean, Predicate<String>
-                // propertyNameFilter)
-                TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
-                        beanType, bean, "", (Predicate<String>) args[1]);
-                break;
-            default:
-                assert false;
-            }
-            return null;
-        } else if ("getProxy".equals(method.getName())) {
-            return TemplateModelBeanUtil.getProxy(stateNode, args);
-        }
-        // should not happen
-        throw new IllegalArgumentException(
-                String.format(
-                        "Unknown default TemplateModel method '%s'. "
-                                + "Implementation is not available",
-                        method.getName()));
-
+        Class<?> declaringClass = method.getDeclaringClass();
+        Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
+                .getDeclaredConstructor(Class.class, int.class);
+        constructor.setAccessible(true);
+        return constructor
+                .newInstance(declaringClass, MethodHandles.Lookup.PRIVATE)
+                .unreflectSpecial(method, declaringClass).bindTo(proxy)
+                .invokeWithArguments(args);
     }
 
     private Object handleGetter(Method method) {
@@ -277,7 +257,14 @@ public class TemplateModelProxyHandler
                         proxy) instanceof TemplateModelProxyHandler;
     }
 
-    private static StateNode getStateNodeForProxy(Object proxy) {
+    /**
+     * Gets the state node that a proxy is bound to.
+     * 
+     * @param proxy
+     *            the template model proxy
+     * @return the state node of the proxy
+     */
+    public static StateNode getStateNodeForProxy(Object proxy) {
         InvocationHandler handler = Proxy.getInvocationHandler(proxy);
         return ((TemplateModelProxyHandler) handler).stateNode;
     }
