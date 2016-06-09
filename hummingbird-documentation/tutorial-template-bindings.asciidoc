@@ -42,3 +42,25 @@ Many elements require you to use the property instead of the attribute to be abl
 == Binding Class Names
 
 There is special support for binding class names in a template, see <<tutorial-template-class-name-binding#,Binding Class Names in a Template>>.
+
+== Using JavaScript in Bindings
+
+Bindings are  not limited to to binding to a part of the model but can be any valid JavaScript expression. This can be useful for e.g. formatting text
+
+[source,html]
+----
+Username: <span>{{firstName.toLowerCase() + "123"}}</div>
+----
+
+JavaScript can also be used for really simple logic in a template binding, like hiding an element if there are no items:
+
+[source,html]
+----
+<div [class.hidden]="itemCount == 0">Items available: {{itemCount}}</div>
+----
+
+[NOTE]
+More complex logic is usually much more manageable if written outside the binding.
+
+[NOTE]
+The binding will be evaluated as JavaScript both on the server and on the client so do not rely on browser API being available.
