@@ -273,13 +273,11 @@ public class ResourceLoader {
             addOnloadHandler(linkTag, new ResourceLoadListener() {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
-                    Console.log("Loaded HTML import " + url);
                     fireLoad(event);
                 }
 
                 @Override
                 public void onError(ResourceLoadEvent event) {
-                    Console.error("Failed to load HTML import " + url);
                     fireError(event);
                 }
             }, event);
@@ -461,6 +459,8 @@ public class ResourceLoader {
     }
 
     private void fireError(ResourceLoadEvent event) {
+        Console.error("Error loading " + event.getResourceUrl());
+        showLoadingError(event);
         String resource = event.getResourceUrl();
 
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
@@ -475,7 +475,20 @@ public class ResourceLoader {
         }
     }
 
+    private void showLoadingError(ResourceLoadEvent event) {
+        Document document = Browser.getDocument();
+        Element errorContainer = document.createDivElement();
+        errorContainer.setClassName("v-system-error");
+        errorContainer
+                .setTextContent("Error loading " + event.getResourceUrl());
+        errorContainer.addEventListener("click", e -> {
+            errorContainer.getParentElement().removeChild(errorContainer);
+        });
+        document.getBody().appendChild(errorContainer);
+    }
+
     private void fireLoad(ResourceLoadEvent event) {
+        Console.log("Loaded " + event.getResourceUrl());
         String resource = event.getResourceUrl();
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
         loadedResources.add(resource);
