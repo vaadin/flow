@@ -31,10 +31,25 @@ public class EmployeesTable extends Template {
         public String getEmail() {
             return email;
         }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
     }
 
     public interface EmployeesModel extends TemplateModel {
-        public void setEmployees(List<Employee> employees);
+        void setEmployees(List<Employee> employees);
+
+        List<Employee> getEmployees();
     }
 
     @Override
@@ -44,5 +59,13 @@ public class EmployeesTable extends Template {
 
     public void setEmployees(List<Employee> employees) {
         getModel().setEmployees(employees);
+    }
+
+    public List<Employee> getEmployees() {
+        return getModel().getEmployees();
+    }
+
+    public void updateTitle() {
+        getEmployees().stream().forEach(employee -> employee.setTitle("Mr."));
     }
 }
