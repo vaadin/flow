@@ -331,7 +331,8 @@ public class MessageHandler {
                     TreeChangeProcessor.processChanges(tree,
                             json.getArray("changes"));
 
-                    if (registry.getApplicationConfiguration().isDebugMode()) {
+                    if (!registry.getApplicationConfiguration()
+                            .isProductionMode()) {
                         JsonObject debugJson = tree.getRootNode()
                                 .getDebugJson();
                         Console.log("StateTree after applying changes:");
@@ -419,7 +420,8 @@ public class MessageHandler {
             }
 
         };
-        DependencyLoader.runWhenDependenciesLoaded(DomApi::updateApiImplementation);
+        DependencyLoader
+                .runWhenDependenciesLoaded(DomApi::updateApiImplementation);
         DependencyLoader.runWhenDependenciesLoaded(c);
     }
 
