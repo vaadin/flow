@@ -148,29 +148,8 @@ public class Bootstrapper implements EntryPoint {
                 jsoConfiguration.getConfigError("sessExpMsg"));
 
         // Debug or production mode?
-        conf.setDebugMode(isDebugMode());
+        conf.setProductionMode(!jsoConfiguration.getConfigBoolean("debug"));
     }
-
-    /**
-     * Checks if debug mode is active (not disabled from server and debug flag
-     * present).
-     *
-     * @return {@code true} if debug mode is active, {@code false} otherwise
-     */
-    private static boolean isDebugMode() {
-        return isDebugAvailable() && LocationParser.getParameter(
-                Browser.getDocument().getLocation().getSearch(),
-                "debug") != null;
-    }
-
-    private static native boolean isDebugAvailable()
-    /*-{
-        if($wnd.hummingbird.debug) {
-            return true;
-        } else {
-            return false;
-        }
-    }-*/;
 
     /**
      * Gets the configuration object for a specific application from the
