@@ -9,6 +9,19 @@ public class Bean {
     private Double doubleObject;
     private String string;
 
+    public Bean() {
+    }
+
+    public Bean(int value) {
+        intValue = value;
+        intObject = intValue;
+        doubleValue = value;
+        doubleObject = doubleValue;
+        booleanValue = value != 0;
+        booleanObject = booleanValue;
+        string = String.valueOf(value);
+    }
+
     public String getString() {
         return string;
     }
@@ -64,4 +77,5 @@ public class Bean {
     public void setDoubleObject(Double doubleObject) {
         this.doubleObject = doubleObject;
     }
+
 }
