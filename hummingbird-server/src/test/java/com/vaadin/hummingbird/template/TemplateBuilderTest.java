@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -31,7 +33,9 @@ public class TemplateBuilderTest {
                 .addChild(new TextTemplateBuilder(
                         new StaticBindingValueProvider("baz")));
 
-        ElementTemplateNode node = builder.build(null);
+        List<TemplateNode> nodes = builder.build(null);
+        Assert.assertFalse(nodes.isEmpty());
+        ElementTemplateNode node = (ElementTemplateNode) nodes.get(0);
 
         Assert.assertFalse(node.getParent().isPresent());
         Assert.assertEquals("div", node.getTag());

@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Builder for text template nodes.
  *
@@ -36,17 +39,8 @@ public class TextTemplateBuilder implements TemplateNodeBuilder {
         this.binding = binding;
     }
 
-    /**
-     * Gets the text content binding.
-     *
-     * @return the text content binding, not <code>null</code>
-     */
-    public BindingValueProvider getBinding() {
-        return binding;
-    }
-
     @Override
-    public TemplateNode build(TemplateNode parent) {
-        return new TextTemplateNode(parent, binding);
+    public List<TemplateNode> build(TemplateNode parent) {
+        return Collections.singletonList(new TextTemplateNode(parent, binding));
     }
 }

@@ -200,9 +200,13 @@ public class TemplateParserTest {
         // intentional whitespace
         TemplateNode rootNode = parse("<div> @child@</div>");
 
-        Assert.assertEquals(1, rootNode.getChildCount());
+        Assert.assertEquals(2, rootNode.getChildCount());
 
-        TemplateNode childSlot = rootNode.getChild(0);
+        Assert.assertEquals(TextTemplateNode.class,
+                rootNode.getChild(0).getClass());
+
+        TemplateNode childSlot = rootNode.getChild(1);
+
         Assert.assertEquals(ChildSlotNode.class, childSlot.getClass());
     }
 
