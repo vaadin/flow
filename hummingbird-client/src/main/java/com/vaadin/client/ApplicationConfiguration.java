@@ -40,7 +40,7 @@ public class ApplicationConfiguration {
     private boolean widgetsetVersionSent = false;
 
     private JavaScriptObject versionInfo;
-    private boolean debugMode = false;
+    private boolean productionMode = false;
     private String servletVersion;
     private String atmosphereVersion;
     private String atmosphereJSVersion;
@@ -262,32 +262,34 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Checks if we are running in debug mode.
+     * Checks if we are running in production mode.
      * <p>
-     * With debug mode enabled, a lot more information is logged to the browser
-     * console. In production you should always disable debug mode, because
-     * logging and other debug features can have a significant performance
-     * impact.
+     * With production mode disabled, a lot more information is logged to the
+     * browser console. In production you should always enable production mode,
+     * because logging and other debug features can have a significant
+     * performance impact.
      *
-     * @return {@code true} if debug mode is enabled, {@code false} otherwise
+     * @return {@code true} if production mode is enabled, {@code false}
+     *         otherwise
      */
-    public boolean isDebugMode() {
-        return debugMode;
+    public boolean isProductionMode() {
+        return productionMode;
     }
 
     /**
-     * Sets whether we are running in debug mode.
+     * Sets whether we are running in production mode.
      * <p>
-     * With debug mode enabled, a lot more information is logged to the browser
-     * console. In production you should always disable debug mode, because
-     * logging and other debug features can have a significant performance
-     * impact.
+     * With production mode disabled, a lot more information is logged to the
+     * browser console. In production you should always enable production mode,
+     * because logging and other debug features can have a significant
+     * performance impact.
      *
-     * @param debugMode
-     *            {@code true} if debug mode is enabled, {@code false} otherwise
+     * @param productionMode
+     *            {@code true} if production mode is enabled, {@code false}
+     *            otherwise
      */
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
+    public void setProductionMode(boolean productionMode) {
+        this.productionMode = productionMode;
     }
 
     /**
