@@ -33,7 +33,7 @@ public class DependencyLoaderTest {
 
     public static class MockResourceLoader extends ResourceLoader {
         protected MockResourceLoader() {
-            super(false);
+            super(new Registry(), false);
         }
 
         List<String> loadingStyles = new ArrayList<>();
