@@ -15,10 +15,16 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Hr;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.server.DeploymentConfiguration;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.server.WebBrowser;
 import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Html;
@@ -39,108 +45,98 @@ public class InfoView extends Div implements View {
     }
 
     private void update(UI ui) {
+        VaadinSession session = ui.getSession();
+        WebBrowser webBrowser = session.getBrowser();
+        DeploymentConfiguration deploymentConfiguration = session
+                .getConfiguration();
+        List<String> device = new ArrayList<>();
+        List<String> os = new ArrayList<>();
+        List<String> browser = new ArrayList<>();
+
         removeAll();
         add(new Button("Refresh", e -> {
             update(ui);
         }));
-        info("<b>Browser</b>");
-        WebBrowser webBrowser = ui.getSession().getBrowser();
-        info("Address: " + webBrowser.getAddress());
-        String os = "";
-        String browser = "";
-        String device = "";
 
-        if (webBrowser.isAndroid()) {
-            device += "Android ";
-        }
-        if (webBrowser.isIOS()) {
-            device += "iOS ";
-        }
-        if (webBrowser.isIPad()) {
-            device += "iPad ";
-        }
-        if (webBrowser.isIPhone()) {
-            device += "iPhone ";
-        }
-        if (webBrowser.isWindowsPhone()) {
-            device += "Windows Phone ";
-        }
-        if (webBrowser.isLinux()) {
-            os += "Linux ";
-        }
-        if (webBrowser.isMacOSX()) {
-            os += "Mac ";
-        }
-        if (webBrowser.isWindows()) {
-            os += "Windows ";
-        }
-        if (webBrowser.isTouchDevice()) {
-            browser += "Touch device ";
-        }
-        if (webBrowser.isChrome()) {
-            browser += "Chrome ";
-        }
-        if (webBrowser.isEdge()) {
-            browser += "Edge ";
-        }
-        if (webBrowser.isFirefox()) {
-            browser += "Firefox ";
-        }
-        if (webBrowser.isIE()) {
-            browser += "IE ";
-        }
-        if (webBrowser.isPhantomJS()) {
-            browser += "PhantomJS ";
-        }
-        if (webBrowser.isSafari()) {
-            browser += "Safari ";
-        }
-        info("Browser: " + browser.trim());
-        info("Device: " + device.trim());
-        info("Os: " + os.trim());
+        header("Browser");
+        info("Address", webBrowser.getAddress());
+
+        add(device, "Android", webBrowser.isAndroid());
+        add(device, "iOS", webBrowser.isIOS());
+        add(device, "iPad", webBrowser.isIPad());
+        add(device, "iPhone", webBrowser.isIPhone());
+        add(device, "Windows Phone", webBrowser.isWindowsPhone());
+
+        info("Device", device.stream().collect(Collectors.joining(", ")));
+
+        add(os, "Linux", webBrowser.isLinux());
+        add(os, "Mac", webBrowser.isMacOSX());
+        add(os, "Windows", webBrowser.isWindows());
+
+        info("Os", os.stream().collect(Collectors.joining(", ")));
+
+        add(browser, "Touch device", webBrowser.isTouchDevice());
+        add(browser, "Chrome", webBrowser.isChrome());
+        add(browser, "Edge", webBrowser.isEdge());
+        add(browser, "Firefox", webBrowser.isFirefox());
+        add(browser, "IE", webBrowser.isIE());
+        add(browser, "PhantomJS", webBrowser.isPhantomJS());
+        add(browser, "Safari", webBrowser.isSafari());
+
+        info("Browser", browser.stream().collect(Collectors.joining(", ")));
 
         if (webBrowser.isTooOldToFunctionProperly()) {
-            info("Too old to function properly ");
+            header("Browser is too old to function properly");
         }
-        info("User-agent: " + webBrowser.getBrowserApplication());
-        info("Browser major: " + webBrowser.getBrowserMajorVersion());
-        info("Browser minor: " + webBrowser.getBrowserMinorVersion());
-        info("Screen height: " + webBrowser.getScreenHeight());
-        info("Screen width: " + webBrowser.getScreenWidth());
-        info("Locale: " + webBrowser.getLocale());
+        info("User-agent", webBrowser.getBrowserApplication());
+        info("Browser major", webBrowser.getBrowserMajorVersion());
+        info("Browser minor", webBrowser.getBrowserMinorVersion());
+        info("Screen height", webBrowser.getScreenHeight());
+        info("Screen width", webBrowser.getScreenWidth());
+        info("Locale", webBrowser.getLocale());
 
-        if (webBrowser.isSecureConnection()) {
-            info("Secure connection (https): ");
-        }
-        add(new Hr());
-        info("<b>Push configuration</b>");
-        info("Push mode: " + ui.getPushConfiguration().getPushMode());
-        info("Push transport: " + ui.getPushConfiguration().getTransport());
+        info("Secure connection (https)", webBrowser.isSecureConnection());
 
-        add(new Hr());
-        info("<b>Deployment configuration</b>");
-        info("Heartbeat interval: "
-                + ui.getSession().getConfiguration().getHeartbeatInterval());
-        info("Router configurator class: " + ui.getSession().getConfiguration()
-                .getRouterConfiguratorClassName());
-        info("UI class: "
-                + ui.getSession().getConfiguration().getUIClassName());
-        info("Close idle sessions: "
-                + ui.getSession().getConfiguration().isCloseIdleSessions());
-        info("Send URLs as parameters: "
-                + ui.getSession().getConfiguration().isSendUrlsAsParameters());
-        info("Sync id enabled: "
-                + ui.getSession().getConfiguration().isSyncIdCheckEnabled());
-        info("XSRF protection enabled: "
-                + ui.getSession().getConfiguration().isXsrfProtectionEnabled());
-        info("Production mode: "
-                + ui.getSession().getConfiguration().isProductionMode());
+        separator();
+
+        header("Push configuration");
+        info("Push mode", ui.getPushConfiguration().getPushMode());
+        info("Push transport", ui.getPushConfiguration().getTransport());
+
+        separator();
+
+        header("Deployment configuration");
+        info("Heartbeat interval",
+                deploymentConfiguration.getHeartbeatInterval());
+        info("Router configurator class",
+                deploymentConfiguration.getRouterConfiguratorClassName());
+        info("UI class", deploymentConfiguration.getUIClassName());
+        info("Close idle sessions",
+                deploymentConfiguration.isCloseIdleSessions());
+        info("Send URLs as parameters",
+                deploymentConfiguration.isSendUrlsAsParameters());
+        info("Sync id enabled", deploymentConfiguration.isSyncIdCheckEnabled());
+        info("XSRF protection enabled",
+                deploymentConfiguration.isXsrfProtectionEnabled());
+        info("Production mode", deploymentConfiguration.isProductionMode());
 
     }
 
-    private void info(String string) {
-        Html html = new Html("<div>" + string + "</div>");
-        add(html);
+    private void add(List<String> collection, String value, boolean add) {
+        if (add) {
+            collection.add(value);
+        }
+    }
 
+    private void separator() {
+        add(new Hr());
+    }
+
+    private void header(String header) {
+        new Html("<div><b>" + header + "</b></div>");
+    }
+
+    private void info(String header, Object value) {
+        add(new Html("<div>" + header + ": " + value + "</div>"));
     }
 }
