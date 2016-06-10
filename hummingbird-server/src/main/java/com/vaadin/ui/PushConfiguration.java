@@ -174,7 +174,7 @@ class PushConfigurationImpl implements PushConfiguration {
     PushConfigurationImpl(UI ui) {
         this.ui = ui;
         getPushConfigurationMap().setTransport(Transport.WEBSOCKET_XHR);
-        getPushConfigurationMap().setTransport(Transport.LONG_POLLING);
+        getPushConfigurationMap().setFallbackTransport(Transport.LONG_POLLING);
         getPushConfigurationMap().setPushMode(PushMode.DISABLED);
     }
 
