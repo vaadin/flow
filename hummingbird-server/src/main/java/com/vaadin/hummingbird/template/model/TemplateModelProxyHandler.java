@@ -266,13 +266,25 @@ public class TemplateModelProxyHandler implements Serializable {
      * @return the state node of the proxy
      */
     public static StateNode getStateNodeForProxy(Object proxy) {
-        if (proxy instanceof ModelProxy) {
+        if (isProxy(proxy)) {
             ModelProxy model = (ModelProxy) proxy;
             return model.$stateNode();
         } else {
             throw new IllegalArgumentException(
                     "Proxy is not a proper template model proxy");
         }
+    }
+
+    /**
+     * Checks if the given object is a proxy created by this class.
+     *
+     * @param proxy
+     *            the object to check
+     * @return <code>true</code> if the given object is a proxy object,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isProxy(Object proxy) {
+        return proxy instanceof ModelProxy;
     }
 
 }

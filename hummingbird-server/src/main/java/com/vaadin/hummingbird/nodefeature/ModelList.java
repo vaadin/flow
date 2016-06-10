@@ -53,6 +53,11 @@ public class ModelList extends StateNodeNodeList {
     }
 
     @Override
+    public void add(int index, StateNode item) {
+        super.add(index, item);
+    }
+
+    @Override
     public StateNode remove(int index) {
         return super.remove(index);
     }
