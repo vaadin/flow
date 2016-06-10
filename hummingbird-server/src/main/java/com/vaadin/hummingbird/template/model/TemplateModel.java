@@ -112,6 +112,34 @@ public interface TemplateModel extends Serializable {
     }
 
     /**
+     * Gets a proxy of the given part of the model as a list of beans of the
+     * given type. Any changes made to the returned instance are reflected back
+     * into the model.
+     * <p>
+     * You can use this to update the collection or the contents of the
+     * collection in the model.
+     * <p>
+     * The {@code modelPath} is a dot separated set of property names,
+     * representing the location of the list in the model. The root of the model
+     * is "" and the path "persons" represents what {@code List
+     * <Person> getPersons()} would return.
+     *
+     * @param modelPath
+     *            a dot separated path describing the location of the list in
+     *            the model
+     * @param beanType
+     *            requested bean type
+     * @return a proxy instance of the list found at the given {@code modelPath}
+     */
+    default <T> List<T> getListProxy(String modelPath, Class<T> itemType) {
+        StateNode stateNode = TemplateModelProxyHandler
+                .getStateNodeForProxy(this);
+
+        return (List<T>) TemplateModelBeanUtil.getListProxy(stateNode,
+                modelPath, itemType);
+    }
+
+    /**
      * Import a bean properties passing the given filter to this template model.
      * <p>
      * The given filter should decide based on the bean property name whether

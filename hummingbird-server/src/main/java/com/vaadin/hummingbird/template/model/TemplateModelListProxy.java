@@ -1,0 +1,126 @@
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.hummingbird.template.model;
+
+import java.util.AbstractList;
+import java.util.ListIterator;
+
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelList;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
+
+/**
+ * A list implementation which uses a {@link ModelList} in a {@link StateNode}
+ * as the data source.
+ *
+ * @author Vaadin Ltd
+ * @param <T>
+ *            the type of items in the list
+ */
+public class TemplateModelListProxy<T> extends AbstractList<T> {
+    private StateNode stateNode;
+    private Class<T> itemType;
+
+    /**
+     * Creates a new proxy for the given node and item type.
+     *
+     * @param stateNode
+     *            the state node containing the model list
+     * @param itemType
+     *            the type of items in the list
+     */
+    public TemplateModelListProxy(StateNode stateNode, Class<T> itemType) {
+        this.stateNode = stateNode;
+        this.itemType = itemType;
+    }
+
+    @Override
+    public T get(int index) {
+        StateNode modelNode = getModelList().get(index);
+        return TemplateModelProxyHandler.createModelProxy(modelNode, itemType);
+    }
+
+    @Override
+    public T set(int index, T object) {
+        T old = remove(index);
+        add(index, object);
+        return old;
+    };
+
+    @Override
+    public void add(int index, T object) {
+        StateNode stateNode = TemplateElementStateProvider
+                .createSubModelNode(ModelMap.class);
+        TemplateModelBeanUtil.importBean(stateNode, "", itemType, object, "",
+                e -> true);
+        getModelList().add(index, stateNode);
+    };
+
+    @Override
+    public int indexOf(Object o) {
+        if (o == null) {
+            return super.indexOf(o);
+        }
+        if (!TemplateModelProxyHandler.isProxy(o)) {
+            throw new IllegalArgumentException(
+                    "Only proxy objects can be used together with proxy lists");
+        }
+
+        StateNode node = TemplateModelProxyHandler.getStateNodeForProxy(o);
+
+        ListIterator<T> it = listIterator();
+        while (it.hasNext()) {
+            Object other = it.next();
+            StateNode otherNode = TemplateModelProxyHandler
+                    .getStateNodeForProxy(other);
+
+            if (node.equals(otherNode)) {
+                return it.previousIndex();
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        int i = indexOf(o);
+        if (i == -1) {
+            return false;
+        }
+
+        remove(i);
+        return true;
+    }
+
+    @Override
+    public T remove(int index) {
+        T oldValue = get(index);
+
+        getModelList().remove(index);
+        return oldValue;
+    };
+
+    @Override
+    public int size() {
+        return getModelList().size();
+    }
+
+    private ModelList getModelList() {
+        return stateNode.getFeature(ModelList.class);
+    }
+
+}

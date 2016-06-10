@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 
 public class ModelPathResolverTest {
@@ -114,6 +115,29 @@ public class ModelPathResolverTest {
         ModelPathResolver resolver = ModelPathResolver
                 .forProperty("foo.bar.baz");
         Assert.assertEquals("baz", resolver.getPropertyName());
+    }
+
+    @Test
+    public void resolveList() {
+        ModelPathResolver resolver = ModelPathResolver.forPath("list");
+        ModelList modelList = resolver.resolveModelList(root);
+        Assert.assertEquals(modelList,
+                ((StateNode) root.getFeature(ModelMap.class).getValue("list"))
+                        .getFeature(ModelList.class));
+    }
+
+    @Test
+    public void resolveSubList() {
+        ModelPathResolver resolver = ModelPathResolver.forPath("foo.bar.list");
+        ModelList modelList = resolver.resolveModelList(root);
+
+        StateNode foo = (StateNode) root.getFeature(ModelMap.class)
+                .getValue("foo");
+        StateNode bar = (StateNode) foo.getFeature(ModelMap.class)
+                .getValue("bar");
+        StateNode list = (StateNode) bar.getFeature(ModelMap.class)
+                .getValue("list");
+        Assert.assertEquals(modelList, list.getFeature(ModelList.class));
     }
 
 }

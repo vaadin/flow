@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -115,7 +116,7 @@ public class TemplateModelBeanUtilTest {
         NoModelTemplate template = new NoModelTemplate();
         template.getModel().importBean("namespace", bean, INCLUDE_ALL);
 
-        verifyBeanToModelMap(bean, template, "namespace");
+        assertBeanEqualsModelMap(bean, template, "namespace");
     }
 
     @Test
@@ -133,8 +134,8 @@ public class TemplateModelBeanUtilTest {
         BeanModel beanModel = beanTemplate.getModel();
         beanTemplate.getModel().importBean("", bean, INCLUDE_ALL);
 
-        verifyBeanToModelViaInterface(bean, beanModel);
-        verifyBeanToModelMap(bean, beanTemplate, "");
+        assertBeanEqualsModelViaInterface(bean, beanModel);
+        assertBeanEqualsModelMap(bean, beanTemplate, "");
 
         Bean bean2 = new Bean();
         bean2.setBooleanObject(Boolean.FALSE);
@@ -147,8 +148,8 @@ public class TemplateModelBeanUtilTest {
 
         beanTemplate.getModel().importBean("", bean2, INCLUDE_ALL);
 
-        verifyBeanToModelViaInterface(bean2, beanModel);
-        verifyBeanToModelMap(bean2, beanTemplate, "");
+        assertBeanEqualsModelViaInterface(bean2, beanModel);
+        assertBeanEqualsModelMap(bean2, beanTemplate, "");
     }
 
     @Test
@@ -158,8 +159,8 @@ public class TemplateModelBeanUtilTest {
         BeanModel beanModel = beanTemplate.getModel();
         beanTemplate.getModel().importBean("namespace", bean, INCLUDE_ALL);
 
-        verifyBeanToModelViaInterface(bean, beanModel);
-        verifyBeanToModelMap(bean, beanTemplate, "namespace");
+        assertBeanEqualsModelViaInterface(bean, beanModel);
+        assertBeanEqualsModelMap(bean, beanTemplate, "namespace");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -193,7 +194,7 @@ public class TemplateModelBeanUtilTest {
     }
 
     @Test
-    public void testBeanWithListProperty() {
+    public void testSetBeanWithListProperty() {
         NoModelTemplate template = new NoModelTemplate();
         BeanWithList bean = new BeanWithList();
 
@@ -216,9 +217,9 @@ public class TemplateModelBeanUtilTest {
 
         Assert.assertEquals(2, modelList.size());
 
-        verifyBeanToModelMap(listItem1,
+        assertBeanEqualsModelMap(listItem1,
                 modelList.get(0).getFeature(ModelMap.class));
-        verifyBeanToModelMap(listItem2,
+        assertBeanEqualsModelMap(listItem2,
                 modelList.get(1).getFeature(ModelMap.class));
     }
 
@@ -246,9 +247,9 @@ public class TemplateModelBeanUtilTest {
 
         Assert.assertEquals(2, modelList.size());
 
-        verifyBeanToModelMap(listItem1,
+        assertBeanEqualsModelMap(listItem1,
                 modelList.get(0).getFeature(ModelMap.class));
-        verifyBeanToModelMap(listItem2,
+        assertBeanEqualsModelMap(listItem2,
                 modelList.get(1).getFeature(ModelMap.class));
     }
 
@@ -325,8 +326,8 @@ public class TemplateModelBeanUtilTest {
         BeanModel model = template.getModel();
         model.importBean("", bean, INCLUDE_ALL);
 
-        verifyBeanToModelViaInterface(bean, model);
-        verifyBeanToModelMap(bean, template, "");
+        assertBeanEqualsModelViaInterface(bean, model);
+        assertBeanEqualsModelMap(bean, template, "");
 
         bean.setIntValue(5);
         bean.setString("foobar");
@@ -342,8 +343,8 @@ public class TemplateModelBeanUtilTest {
 
         model.importBean("", bean, INCLUDE_ALL);
 
-        verifyBeanToModelViaInterface(bean, model);
-        verifyBeanToModelMap(bean, template, "");
+        assertBeanEqualsModelViaInterface(bean, model);
+        assertBeanEqualsModelMap(bean, template, "");
     }
 
     @Test
@@ -358,7 +359,7 @@ public class TemplateModelBeanUtilTest {
 
         ModelMap modelMap = ModelPathResolver.forPath("namespace.bean")
                 .resolveModelMap(stateNode);
-        verifyBeanToModelMap(beanWithNestedBean.getBean(), modelMap);
+        assertBeanEqualsModelMap(beanWithNestedBean.getBean(), modelMap);
 
         // ((StateNode) template.getElement().getNode()
         // .getFeature(ModelMap.class).getValue("bean"))
@@ -377,7 +378,7 @@ public class TemplateModelBeanUtilTest {
 
         model.importBean("namespace", beanWithNestedBean, INCLUDE_ALL);
 
-        verifyBeanToModelMap(beanWithNestedBean.getBean(), modelMap);
+        assertBeanEqualsModelMap(beanWithNestedBean.getBean(), modelMap);
     }
 
     @Test
@@ -499,7 +500,30 @@ public class TemplateModelBeanUtilTest {
         }
     }
 
-    private void verifyBeanToModelViaInterface(Bean bean, BeanModel model) {
+    @Test
+    public void getProxyList() {
+        NoModelTemplate template = new NoModelTemplate();
+        TemplateModel model = template.getModel();
+
+        List<Bean> beans = new ArrayList<>();
+        beans.add(new Bean(1));
+        beans.add(new Bean(2));
+        beans.add(new Bean(3));
+        model.importBeans("list", beans, Bean.class, propertyName -> true);
+        assertModelListEquals(model, "list", new Bean(1), new Bean(2),
+                new Bean(3));
+    }
+
+    private void assertListEqualsModelList(List<Bean> list,
+            ModelList modelList) {
+        Assert.assertEquals(list.size(), modelList.size());
+        for (int i = 0; i < list.size(); i++) {
+            assertBeanEqualsModelMap(list.get(i),
+                    modelList.get(i).getFeature(ModelMap.class));
+        }
+    }
+
+    private void assertBeanEqualsModelViaInterface(Bean bean, BeanModel model) {
         Assert.assertEquals(bean.getBooleanObject(), model.getBooleanObject());
         Assert.assertEquals(bean.getDoubleObject(), model.getDoubleObject());
         Assert.assertEquals(bean.getIntObject(), model.getIntObject());
@@ -510,14 +534,14 @@ public class TemplateModelBeanUtilTest {
         Assert.assertEquals(bean.getString(), model.getString());
     }
 
-    private void verifyBeanToModelMap(Bean bean, Template template,
+    private void assertBeanEqualsModelMap(Bean bean, Template template,
             String namespace) {
         ModelMap modelMap = ModelPathResolver.forPath(namespace)
                 .resolveModelMap(template.getElement().getNode());
-        verifyBeanToModelMap(bean, modelMap);
+        assertBeanEqualsModelMap(bean, modelMap);
     }
 
-    private void verifyBeanToModelMap(Bean bean, ModelMap model) {
+    private void assertBeanEqualsModelMap(Bean bean, ModelMap model) {
         Assert.assertEquals(bean.getBooleanObject(),
                 model.getValue("booleanObject"));
         Assert.assertEquals(bean.getDoubleObject(),
@@ -538,5 +562,155 @@ public class TemplateModelBeanUtilTest {
             Assert.assertFalse(propertyName.contains("foo.bar"));
             return true;
         });
+    }
+
+    @Test
+    public void getListOfBeans() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 3);
+        assertListContentsEquals(proxyList, new Bean(1), new Bean(2),
+                new Bean(3));
+    }
+
+    private List<Bean> importAndGetBeans(String modelPath, TemplateModel model,
+            int nrOfBeans) {
+        List<Bean> beans = new ArrayList<>();
+        for (int i = 0; i < nrOfBeans; i++) {
+            Bean bean = new Bean(i + 1);
+            beans.add(bean);
+        }
+        TemplateModelBeanUtil.importBeans(
+                TemplateModelProxyHandler.getStateNodeForProxy(model),
+                modelPath, beans, Bean.class, propertyName -> true);
+        return model.getListProxy(modelPath, Bean.class);
+    }
+
+    @Test
+    public void addBeanToListOfBeans() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 1);
+
+        proxyList.add(new Bean(2));
+
+        assertModelListEquals(model, "list", new Bean(1), new Bean(2));
+        assertListProxyEquals(model, "list", new Bean(1), new Bean(2));
+    }
+
+    @Test
+    public void insertBeanIntoListOfBeans() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 1);
+
+        proxyList.add(0, new Bean(0));
+
+        assertModelListEquals(model, "list", new Bean(0), new Bean(1));
+        assertListProxyEquals(model, "list", new Bean(0), new Bean(1));
+    }
+
+    @Test
+    public void removeBeanByIndexFromListOfBeans() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 3);
+
+        proxyList.remove(1); // Remove bean2
+
+        assertModelListEquals(model, "list", new Bean(1), new Bean(3));
+        assertListProxyEquals(model, "list", new Bean(1), new Bean(3));
+    }
+
+    @Test
+    public void removeBeanFromListOfBeansReturnsProxy() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 3);
+
+        Bean removed = proxyList.remove(1); // Remove bean2
+        Assert.assertTrue(TemplateModelProxyHandler.isProxy(removed));
+    }
+
+    @Test
+    public void indexOfBeanInListOfBeans() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 2);
+
+        Assert.assertEquals(0, proxyList.indexOf(proxyList.get(0)));
+        Assert.assertEquals(1, proxyList.indexOf(proxyList.get(1)));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void indexOfNonProxyBeanInListOfBeans() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 2);
+        proxyList.indexOf(new Bean(1));
+    }
+
+    @Test
+    public void indexOfProxyBeanNotInList() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 2);
+        Bean removedBean = proxyList.remove(1);
+        Assert.assertEquals(-1, proxyList.indexOf(removedBean));
+    }
+
+    @Test
+    public void removeBeanByInstanceFromListOfBeans() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 3);
+
+        proxyList.remove(proxyList.get(1));
+
+        assertModelListEquals(model, "list", new Bean(1), new Bean(3));
+        assertListProxyEquals(model, "list", new Bean(1), new Bean(3));
+    }
+
+    @Test
+    public void setBeanInstanceInListOfBeans() {
+        TemplateModel model = new NoModelTemplate().getModel();
+        List<Bean> proxyList = importAndGetBeans("list", model, 3);
+
+        proxyList.set(1, new Bean(4));
+
+        assertModelListEquals(model, "list", new Bean(1), new Bean(4),
+                new Bean(3));
+        assertListProxyEquals(model, "list", new Bean(1), new Bean(4),
+                new Bean(3));
+    }
+
+    private void assertModelListEquals(TemplateModel model, String modelPath,
+            Bean... beans) {
+        StateNode stateNode = TemplateModelProxyHandler
+                .getStateNodeForProxy(model);
+        ModelList modelList = ModelPathResolver.forPath(modelPath)
+                .resolveModelList(stateNode);
+        assertModelListContentsEquals(modelList, beans);
+    }
+
+    private void assertListProxyEquals(TemplateModel model, String modelPath,
+            Bean... beans) {
+        assertListContentsEquals(model.getListProxy(modelPath, Bean.class),
+                beans);
+
+    }
+
+    private <T> void assertModelListContentsEquals(ModelList list,
+            Bean... beans) {
+        Assert.assertEquals(beans.length, list.size());
+        for (int i = 0; i < beans.length; i++) {
+            ModelMap map = list.get(i).getFeature(ModelMap.class);
+            Bean modelProxy = TemplateModelProxyHandler
+                    .createModelProxy(map.getNode(), Bean.class);
+            Assert.assertThat(modelProxy,
+                    Matchers.samePropertyValuesAs(beans[i]));
+        }
+
+    }
+
+    static <T> void assertListContentsEquals(List<T> list, T... beans) {
+        Assert.assertEquals(beans.length, list.size());
+        for (int i = 0; i < beans.length; i++) {
+            Assert.assertThat(list.get(i),
+                    Matchers.samePropertyValuesAs(beans[i]));
+            Assert.assertNotSame(beans[i], list.get(i));
+        }
+
     }
 }
