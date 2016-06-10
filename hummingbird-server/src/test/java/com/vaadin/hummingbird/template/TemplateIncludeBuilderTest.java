@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,16 +51,17 @@ public class TemplateIncludeBuilderTest {
         Element element = template.getElement();
         Assert.assertEquals("div", element.getTag());
 
-        Assert.assertEquals("span", element.getChild(1).getTag());
+        List<Element> children = filterOutTextChildren(element);
+        Assert.assertEquals("span", children.get(0).getTag());
         Assert.assertEquals("Main template",
                 element.getChild(1).getTextContent());
 
-        Element subTemplateElement = element.getChild(2);
+        Element subTemplateElement = children.get(1);
         Assert.assertEquals("div", subTemplateElement.getTag());
-        Assert.assertEquals("span", subTemplateElement.getChild(1).getTag());
-        Assert.assertEquals("Sub template",
-                subTemplateElement.getChild(1).getTextContent());
 
+        Element span = filterOutTextChildren(subTemplateElement).get(0);
+        Assert.assertEquals("span", span.getTag());
+        Assert.assertEquals("Sub template", span.getTextContent());
     }
 
     @Test
@@ -78,15 +82,26 @@ public class TemplateIncludeBuilderTest {
         MultipleIncludeTemplate template = new MultipleIncludeTemplate();
         Element element = template.getElement();
         Assert.assertEquals("root-template", element.getTag());
-        Element firstSubTemplateElement = element.getChild(0);
+        Element firstSubTemplateElement = filterOutTextChildren(element).get(0);
         Assert.assertEquals("includes-from-parent",
                 firstSubTemplateElement.getTag());
-        Element secondSubTemplateElement = firstSubTemplateElement.getChild(0);
+        Element secondSubTemplateElement = filterOutTextChildren(
+                firstSubTemplateElement).get(0);
         Assert.assertEquals("div", secondSubTemplateElement.getTag());
-        Assert.assertEquals("span",
-                secondSubTemplateElement.getChild(1).getTag());
-        Assert.assertEquals("Sub template",
-                secondSubTemplateElement.getChild(1).getTextContent());
+        Element span = filterOutTextChildren(secondSubTemplateElement).get(0);
+        Assert.assertEquals("span", span.getTag());
+        Assert.assertEquals("Sub template", span.getTextContent());
 
+    }
+
+    private List<Element> filterOutTextChildren(Element element) {
+        List<Element> result = new ArrayList<>();
+        for (int i = 0; i < element.getChildCount(); i++) {
+            Element child = element.getChild(i);
+            if (!child.isTextNode()) {
+                result.add(child);
+            }
+        }
+        return result;
     }
 }
