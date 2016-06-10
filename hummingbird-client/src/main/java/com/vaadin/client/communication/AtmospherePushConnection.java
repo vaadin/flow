@@ -669,37 +669,37 @@ public class AtmospherePushConnection implements PushConnection {
 
     private final native JavaScriptObject doConnect(String uri,
             JavaScriptObject config)
-            /*-{
-                var self = this;
+    /*-{
+        var self = this;
 
-                config.url = uri;
-                config.onOpen = $entry(function(response) {
-                    self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
-                });
-                config.onReopen = $entry(function(response) {
-                    self.@com.vaadin.client.communication.AtmospherePushConnection::onReopen(*)(response);
-                });
-                config.onMessage = $entry(function(response) {
-                    self.@com.vaadin.client.communication.AtmospherePushConnection::onMessage(*)(response);
-                });
-                config.onError = $entry(function(response) {
-                    self.@com.vaadin.client.communication.AtmospherePushConnection::onError(*)(response);
-                });
-                config.onTransportFailure = $entry(function(reason,request) {
-                    self.@com.vaadin.client.communication.AtmospherePushConnection::onTransportFailure(*)(reason);
-                });
-                config.onClose = $entry(function(response) {
-                    self.@com.vaadin.client.communication.AtmospherePushConnection::onClose(*)(response);
-                });
-                config.onReconnect = $entry(function(request, response) {
-                    self.@com.vaadin.client.communication.AtmospherePushConnection::onReconnect(*)(request, response);
-                });
-                config.onClientTimeout = $entry(function(request) {
-                    self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
-                });
+        config.url = uri;
+        config.onOpen = $entry(function(response) {
+            self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
+        });
+        config.onReopen = $entry(function(response) {
+            self.@com.vaadin.client.communication.AtmospherePushConnection::onReopen(*)(response);
+        });
+        config.onMessage = $entry(function(response) {
+            self.@com.vaadin.client.communication.AtmospherePushConnection::onMessage(*)(response);
+        });
+        config.onError = $entry(function(response) {
+            self.@com.vaadin.client.communication.AtmospherePushConnection::onError(*)(response);
+        });
+        config.onTransportFailure = $entry(function(reason,request) {
+            self.@com.vaadin.client.communication.AtmospherePushConnection::onTransportFailure(*)(reason);
+        });
+        config.onClose = $entry(function(response) {
+            self.@com.vaadin.client.communication.AtmospherePushConnection::onClose(*)(response);
+        });
+        config.onReconnect = $entry(function(request, response) {
+            self.@com.vaadin.client.communication.AtmospherePushConnection::onReconnect(*)(request, response);
+        });
+        config.onClientTimeout = $entry(function(request) {
+            self.@com.vaadin.client.communication.AtmospherePushConnection::onClientTimeout(*)(request);
+        });
 
-                return $wnd.jQueryVaadin.atmosphere.subscribe(config);
-            }-*/;
+        return $wnd.jQueryVaadin.atmosphere.subscribe(config);
+    }-*/;
 
     private native void doPush(JavaScriptObject socket, String message)
     /*-{
@@ -753,10 +753,10 @@ public class AtmospherePushConnection implements PushConnection {
 
     private String getVersionedPushJs() {
         String pushJs;
-        if (registry.getApplicationConfiguration().isDebugMode()) {
-            pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-        } else {
+        if (registry.getApplicationConfiguration().isProductionMode()) {
             pushJs = ApplicationConstants.VAADIN_PUSH_JS;
+        } else {
+            pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
         // Parameter appended to bypass caches after version upgrade.
         pushJs += "?v=" + Version.getFullVersion();
