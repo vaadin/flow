@@ -196,7 +196,16 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
-        if (key.matches("/^[\\w\\.]+$/g") && key.contains(".")) {
+        if (key.matches("^[\\w\\.]+$") && key.contains(".")) {
+            /*
+             * This is temporary legacy logic to support subproperties. JS
+             * evaluation should be used in any case. But at the moment JS
+             * evaluation doesn't work with subproperties so they are handled
+             * here.
+             * 
+             * TODO: remove this and update JS evaluation to support
+             * subproperties.
+             */
             String[] modelPathParts = key.split("\\.");
             // The last part is the propertyName
             for (int i = 0; i < modelPathParts.length - 1; i++) {
