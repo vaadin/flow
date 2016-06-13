@@ -23,8 +23,8 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 
+import com.vaadin.hummingbird.template.AbstractBindingValueProvider;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
-import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TemplateParseException;
@@ -86,7 +86,7 @@ public class DefaultElementBuilderFactory
                                 + attribute.toString() + "'.");
             }
             String key = extractKey(name, 1);
-            ModelValueBindingProvider binding = new ModelValueBindingProvider(
+            AbstractBindingValueProvider binding = createExpressionBinding(
                     stripForLoopVariableIfNeeded(attribute.getValue()));
             if (key.startsWith("class.")) {
                 String className = key.substring("class.".length());

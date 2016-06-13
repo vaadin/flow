@@ -485,8 +485,8 @@ public class TemplateElementStateProviderTest {
                 "<div class='foo' [class.bar]=hasBar [class.baz]=hasBaz></div>");
         ClassList classList = element.getClassList();
 
-        // Explicitly set "hasBar" and "hasBaz" property to null. So model has
-        // property "foo".
+        // Explicitly set "hasBar" and "hasBaz" properties to null. So model has
+        // properties "hasBar" and "hasBaz".
         // See #970
         element.getNode().getFeature(ModelMap.class).setValue("hasBar", null);
         element.getNode().getFeature(ModelMap.class).setValue("hasBaz", null);

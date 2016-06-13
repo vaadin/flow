@@ -55,13 +55,4 @@ public class ModelValueBindingTest {
                 object.get(BindingValueProvider.VALUE_PROPERTY).asString());
     }
 
-    @Test
-    public void setTemplateProperty_useJsExpression() {
-        ModelValueBindingProvider binding = new ModelValueBindingProvider(
-                "bar +'foo'");
-        StateNode node = new StateNode(ModelMap.class);
-        node.getFeature(ModelMap.class).setValue("bar", "modelValue");
-
-        Assert.assertEquals("modelValuefoo", binding.getValue(node));
-    }
 }
