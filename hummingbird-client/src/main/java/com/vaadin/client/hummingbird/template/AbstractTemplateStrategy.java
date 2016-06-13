@@ -196,7 +196,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
-        if (key.matches("/^[\\w\\.]+$/g") && key.contains(".")) {
+        if (key.matches("^[\\w\\.]+$") && key.contains(".")) {
             String[] modelPathParts = key.split("\\.");
             // The last part is the propertyName
             for (int i = 0; i < modelPathParts.length - 1; i++) {

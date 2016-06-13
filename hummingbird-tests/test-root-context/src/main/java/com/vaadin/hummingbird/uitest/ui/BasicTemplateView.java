@@ -40,6 +40,9 @@ public class BasicTemplateView extends Template implements View {
     public BasicTemplateView() {
         assert container != null;
 
+        setModelValue(null);
+        setModelValue("foo", null);
+
         Button button = new Button(
                 "Element added to template (click to remove)");
         button.addClickListener(e -> container.remove(button));
@@ -84,7 +87,11 @@ public class BasicTemplateView extends Template implements View {
     private void setModelValue(Serializable value) {
         // Directly manipulating the node feature to enable testing the same
         // bindings with different types
-        getElement().getNode().getFeature(ModelMap.class).setValue("modelValue",
+        setModelValue("modelValue", value);
+    }
+
+    private void setModelValue(String property, Serializable value) {
+        getElement().getNode().getFeature(ModelMap.class).setValue(property,
                 value);
     }
 }
