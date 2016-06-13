@@ -220,6 +220,59 @@ public class TemplateModelBeanUtilTest {
                 modelList.get(1).getFeature(ModelMap.class));
     }
 
+    @Test
+    public void testImportBeans() {
+        NoModelTemplate template = new NoModelTemplate();
+
+        Bean listItem1 = new Bean();
+        listItem1.setString("item1");
+        Bean listItem2 = new Bean();
+        listItem2.setString("item2");
+
+        List<Bean> beans = Arrays.asList(listItem1, listItem2);
+
+        template.getModel().importBeans("beans", beans, Bean.class,
+                name -> true);
+
+        ModelMap modelMap = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+        StateNode beansNode = (StateNode) modelMap.getValue("beans");
+
+        Assert.assertTrue(beansNode.hasFeature(ModelList.class));
+
+        ModelList modelList = beansNode.getFeature(ModelList.class);
+
+        Assert.assertEquals(2, modelList.size());
+
+        verifyBeanToModelMap(listItem1,
+                modelList.get(0).getFeature(ModelMap.class));
+        verifyBeanToModelMap(listItem2,
+                modelList.get(1).getFeature(ModelMap.class));
+    }
+
+    @Test
+    public void testImportFilteredBeans() {
+        NoModelTemplate template = new NoModelTemplate();
+
+        Bean bean = new Bean();
+        bean.setString("item1");
+        bean.setBooleanValue(true);
+
+        List<Bean> beans = Arrays.asList(bean);
+
+        template.getModel().importBeans("beans", beans, Bean.class,
+                name -> "booleanValue".equals(name));
+
+        ModelMap modelMap = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+        StateNode beansNode = (StateNode) modelMap.getValue("beans");
+        ModelList beansModel = beansNode.getFeature(ModelList.class);
+        ModelMap beanModel = beansModel.get(0).getFeature(ModelMap.class);
+
+        Assert.assertFalse(beanModel.hasValue("string"));
+        Assert.assertTrue(beanModel.hasValue("booleanValue"));
+    }
+
     @Test(expected = InvalidTemplateModelException.class)
     public void testBeanWithPrimitiveList() {
         NoModelTemplate template = new NoModelTemplate();

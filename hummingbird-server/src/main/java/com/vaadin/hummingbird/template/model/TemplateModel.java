@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.template.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.function.Predicate;
 
 import com.vaadin.hummingbird.StateNode;
@@ -153,6 +154,29 @@ public interface TemplateModel extends Serializable {
                 .getStateNodeForProxy(this);
         TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
                 bean.getClass(), bean, "", propertyNameFilter);
+    }
+
+    /**
+     * Imports a list of beans to this template model.
+     *
+     * @param modelPath
+     *            the path defining which part of the model to import into
+     * @param beans
+     *            the beans to import
+     * @param beanType
+     *            the type of the beans to import
+     * @param propertyNameFilter
+     *            a filter determining which bean properties to import
+     *
+     * @see #importBean(Object)
+     * @see TemplateModel supported property types
+     */
+    default <T> void importBeans(String modelPath, List<? extends T> beans,
+            Class<T> beanType, Predicate<String> propertyNameFilter) {
+        StateNode stateNode = TemplateModelProxyHandler
+                .getStateNodeForProxy(this);
+        TemplateModelBeanUtil.importBeans(stateNode, modelPath, beans, beanType,
+                propertyNameFilter);
     }
 
 }
