@@ -244,7 +244,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      * {@code templateId}.
      *
      * @param tree
-     *            state tree which owns the template sregistry
+     *            state tree which owns the template registry
      * @param templateId
      *            template id
      * @return template node by the id

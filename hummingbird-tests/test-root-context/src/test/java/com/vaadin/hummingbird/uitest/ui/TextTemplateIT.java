@@ -31,7 +31,7 @@ import com.vaadin.hummingbird.testutil.PhantomJSTest;
 public class TextTemplateIT extends PhantomJSTest {
 
     @Test
-    public void checkText() {
+    public void checkTextBinding() {
         open();
 
         // Test plain text binding (no JS expression)
@@ -53,8 +53,11 @@ public class TextTemplateIT extends PhantomJSTest {
         Assert.assertEquals("No name", jsTextDiv.getText());
         Assert.assertEquals("No name", getLastLabel("js-text"));
 
-        Assert.assertEquals("Hello Foo", textDiv.getText());
-        Assert.assertEquals("Hello Foo", getLastLabel("plain-text"));
+        button = findElement(By.id("set-expression-name"));
+        button.click();
+
+        Assert.assertEquals("Hello Foo", jsTextDiv.getText());
+        Assert.assertEquals("Hello Foo", getLastLabel("js-text"));
     }
 
     /**

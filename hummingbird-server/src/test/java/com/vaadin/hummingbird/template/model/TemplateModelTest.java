@@ -530,6 +530,18 @@ public class TemplateModelTest {
     }
 
     @Test
+    public void getProxyClass_sameClasses() {
+        SubBeansModel model1 = new SubBeansTemplate().getModel();
+        model1.setBeanClass(new SubBean());
+
+        SubBeansModel model2 = new SubBeansTemplate().getModel();
+        model2.setBeanClass(new SubBean());
+
+        Assert.assertSame(model1.getBeanClass().getClass(),
+                model2.getBeanClass().getClass());
+    }
+
+    @Test
     public void getProxyClass_getSubIfacePropertyValueFromProxy_proxyIsNotNullAndProxyValueEqualsModelValue() {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
