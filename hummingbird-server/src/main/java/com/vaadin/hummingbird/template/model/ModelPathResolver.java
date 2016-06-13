@@ -29,16 +29,61 @@ import com.vaadin.hummingbird.nodefeature.NodeFeature;
 public class ModelPathResolver {
     private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
     private String[] modelPathParts;
+    private boolean pathContainsPropertyName;
 
     /**
      * Constructs a representation of the given model path.
      *
      * @param modelPath
-     *            the path, in the format
-     *            {@literal parent1.parent2.propertyName}.
+     *            the path, in the format {@literal path1.path2} or
+     *            {@literal path1.path2.propertyName}, depending on
+     *            <code>containsPropertyName</code>
+     * @param pathContainsPropertyName
+     *            <code>true</code> if <code>modelPath</code> ends with a
+     *            property, <code>false</code> if modelPath contains no property
+     *            information
      */
-    public ModelPathResolver(String modelPath) {
-        modelPathParts = DOT_PATTERN.split(modelPath);
+    private ModelPathResolver(String modelPath,
+            boolean pathContainsPropertyName) {
+        this.pathContainsPropertyName = pathContainsPropertyName;
+        if (modelPath.endsWith(".")) {
+            throw new IllegalArgumentException(
+                    "The model path must not end with a dot");
+        }
+        if ("".equals(modelPath)) {
+            if (pathContainsPropertyName) {
+                throw new IllegalArgumentException("The given model path \""
+                        + modelPath
+                        + "\" denotes a property and must therefore contain a dot");
+            }
+            modelPathParts = new String[0];
+        } else {
+            modelPathParts = DOT_PATTERN.split(modelPath);
+        }
+    }
+
+    /**
+     * Creates a new resolver for the given path of type
+     * {@literal path1.path2.path3}.
+     *
+     * @param path
+     *            the model path, without property information
+     * @return a resolver for the given path
+     */
+    public static ModelPathResolver forPath(String path) {
+        return new ModelPathResolver(path, false);
+    }
+
+    /**
+     * Creates a new resolver for the given path of type
+     * {@literal parent1.parent2.property}.
+     *
+     * @param pathWithProperty
+     *            the model path, ending with a property name
+     * @return a resolver for the given path
+     */
+    public static ModelPathResolver forProperty(String pathWithProperty) {
+        return new ModelPathResolver(pathWithProperty, true);
     }
 
     /**
@@ -53,8 +98,12 @@ public class ModelPathResolver {
     public ModelMap resolveModelMap(StateNode stateNode) {
         Class<ModelMap> childFeature = ModelMap.class;
         StateNode node = stateNode;
-        // The last part is the propertyName
-        for (int i = 0; i < modelPathParts.length - 1; i++) {
+        int lastIndex = modelPathParts.length - 1;
+        if (pathContainsPropertyName) {
+            lastIndex--;
+        }
+
+        for (int i = 0; i <= lastIndex; i++) {
             node = resolveStateNode(node, modelPathParts[i], childFeature);
         }
         return node.getFeature(childFeature);
@@ -66,6 +115,10 @@ public class ModelPathResolver {
      * @return the property name
      */
     public String getPropertyName() {
+        if (!pathContainsPropertyName) {
+            return "";
+        }
+
         return modelPathParts[modelPathParts.length - 1];
     }
 
