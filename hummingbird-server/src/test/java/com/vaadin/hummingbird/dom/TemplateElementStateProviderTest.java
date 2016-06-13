@@ -970,7 +970,9 @@ public class TemplateElementStateProviderTest {
     }
 
     private static Element createElement(TemplateNodeBuilder builder) {
-        return createElement(builder.build(null));
+        List<TemplateNode> nodes = builder.build(null);
+        Assert.assertEquals(1, nodes.size());
+        return createElement(nodes.get(0));
     }
 
     public static Element createElement(TemplateNode templateNode) {
