@@ -69,7 +69,7 @@ public abstract class Template extends Component implements HasChildView {
     private final StateNode stateNode = TemplateElementStateProvider
             .createRootNode();
 
-    private TemplateModel model;
+    private transient TemplateModel model;
 
     /**
      * Creates a new template.
