@@ -25,16 +25,18 @@ import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.binding.BindingStrategy;
 import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 
 import elemental.dom.Node;
 import elemental.json.JsonObject;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Abstract binding strategy to handle template nodes.
@@ -136,9 +138,9 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     protected void bind(StateNode stateNode, Binding binding,
             Consumer<Optional<Object>> executor) {
         if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
-            Computation computation = Reactive.runWhenDepedenciesChange(
-                    () -> executor.accept(Optional.ofNullable(
-                            getModelProperty(stateNode, binding).getValue())));
+            Computation computation = Reactive
+                    .runWhenDepedenciesChange(() -> executor
+                            .accept(getModelPropertyValue(stateNode, binding)));
             stateNode.addUnregisterListener(event -> computation.stop());
         } else {
             // Only static bindings is known as a final call
@@ -171,16 +173,26 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         }
     }
 
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    private interface ModelValueSupplier {
+        Object get(NodeMap model);
+    }
+
     /**
-     * Gets the model property from the {@code node} for the {@code binding}.
+     * Gets the model property value from the {@code node} for the
+     * {@code binding}.
      *
      * @param node
      *            the state node, not {@code null}
      * @param binding
      *            binding data, not {@code null}
-     * @return map property for the binding
+     * @return map property value for the binding, or an empty optional if no
+     *         value for the binding
      */
-    protected MapProperty getModelProperty(StateNode node, Binding binding) {
+    protected Optional<Object> getModelPropertyValue(StateNode node,
+            Binding binding) {
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
@@ -193,8 +205,26 @@ public abstract class AbstractTemplateStrategy<T extends Node>
                 model = n.getMap(NodeFeatures.TEMPLATE_MODELMAP);
             }
             key = modelPathParts[modelPathParts.length - 1];
+            return Optional.ofNullable(model.getProperty(key));
+        } else {
+            JsArray<String> properties = JsCollections.array();
+            JsArray<Object> values = JsCollections.array();
+            model.forEachProperty((value, property) -> {
+                properties.push(property);
+                values.push(value.getValue());
+            });
+            String[] args = new String[properties.length() + 1];
+            for (int i = 0; i < properties.length(); i++) {
+                args[i] = properties.get(i);
+            }
+            args[properties.length()] = "return " + key;
+            NativeFunction function = new NativeFunction(args);
+            return Optional.ofNullable(function.apply(null, values));
         }
-        return model.getProperty(key);
+    }
+
+    private static Object getModelValue(NodeMap model, String name) {
+        return model.getProperty(name).getValue();
     }
 
     /**

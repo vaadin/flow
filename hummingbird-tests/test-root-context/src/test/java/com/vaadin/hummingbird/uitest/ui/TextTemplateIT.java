@@ -15,8 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.List;
+
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -29,25 +30,38 @@ import com.vaadin.hummingbird.testutil.PhantomJSTest;
  */
 public class TextTemplateIT extends PhantomJSTest {
 
-    @Before
-    public void setUp() {
-        open();
-    }
-
     @Test
-    public void initialText() {
+    public void checkText() {
+        open();
+
+        // Test plain text binding (no JS expression)
         WebElement textDiv = findElement(By.id("text"));
 
         Assert.assertEquals("Foo", textDiv.getText());
-    }
+        Assert.assertEquals("Foo", getLastLabel("plain-text"));
 
-    @Test
-    public void updateText() {
-        WebElement button = findElement(By.cssSelector("button"));
+        WebElement button = findElement(By.id("set-simple-name"));
         button.click();
 
-        WebElement textDiv = findElement(By.id("text"));
-
         Assert.assertEquals("Bar", textDiv.getText());
+        Assert.assertEquals("Bar", getLastLabel("plain-text"));
+
+        // Test JS expression text binding
+
+        WebElement jsTextDiv = findElement(By.id("js-expression"));
+
+        Assert.assertEquals("No name", jsTextDiv.getText());
+        Assert.assertEquals("No name", getLastLabel("js-text"));
+
+        Assert.assertEquals("Hello Foo", textDiv.getText());
+        Assert.assertEquals("Hello Foo", getLastLabel("plain-text"));
+    }
+
+    /**
+     * Last label contains server side text value.
+     */
+    private String getLastLabel(String cssStyle) {
+        List<WebElement> labels = findElements(By.cssSelector("." + cssStyle));
+        return labels.get(labels.size() - 1).getText();
     }
 }
