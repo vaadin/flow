@@ -157,7 +157,7 @@ public class TemplateModelBeanUtil {
                     .createModelProxy(stateNode, beanClass));
         }
 
-        ModelPathResolver resolver = new ModelPathResolver(modelPath);
+        ModelPathResolver resolver = ModelPathResolver.forProperty(modelPath);
         ModelMap parentMap = resolver.resolveModelMap(stateNode);
         // Create the state node for the bean if it does not exist
         ModelPathResolver.resolveStateNode(parentMap.getNode(),
