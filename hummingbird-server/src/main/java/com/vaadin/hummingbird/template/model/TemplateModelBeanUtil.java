@@ -221,32 +221,46 @@ public class TemplateModelBeanUtil {
             throw createUnsupportedTypeException(expectedType, propertyName);
         }
 
-        Class<?> itemClass = (Class<?>) itemType;
-
-        if (isSupportedBasicType(itemClass)) {
-            // Can only use beans in lists, at least for now
-            throw createUnsupportedTypeException(expectedType, propertyName);
-        }
-
-        importListIntoModel(modelMap.getNode(), (List<?>) value, itemClass,
-                propertyName);
+        importBeans(modelMap.getNode(), propertyName, (List<?>) value,
+                (Class<?>) itemType, name -> true);
     }
 
-    private static void importListIntoModel(StateNode parentNode, List<?> list,
-            Class<?> itemType, String propertyName) {
+    /**
+     * Imports a list of beans into the model.
+     *
+     * @param stateNode
+     *            the state node to import into
+     * @param modelPath
+     *            the path defining which part of the model to import into
+     * @param beans
+     *            the beans to import
+     * @param beanType
+     *            the type of the beans to import
+     * @param propertyNameFilter
+     *            a filter determining which bean properties to import
+     */
+    public static void importBeans(StateNode stateNode, String modelPath,
+            List<?> beans, Class<?> beanType,
+            Predicate<String> propertyNameFilter) {
+        if (isSupportedBasicType(beanType)) {
+            // Can only use beans in lists, at least for now
+            throw new InvalidTemplateModelException(
+                    "Cannot import list into " + modelPath + " since "
+                            + beanType.getName() + " it not a bean.");
+        }
 
         // Collect all child nodes before trying to resolve the list node
         List<StateNode> childNodes = new ArrayList<>();
-        for (Object bean : list) {
+        for (Object bean : beans) {
             StateNode childNode = TemplateElementStateProvider
                     .createSubModelNode(ModelMap.class);
-            importBeanIntoModel(() -> childNode, itemType, bean, "",
-                    path -> true);
+            importBeanIntoModel(() -> childNode, beanType, bean, "",
+                    propertyNameFilter);
             childNodes.add(childNode);
         }
 
         ModelList modelList = ModelPathResolver
-                .resolveStateNode(parentNode, propertyName, ModelList.class)
+                .resolveStateNode(stateNode, modelPath, ModelList.class)
                 .getFeature(ModelList.class);
         modelList.clear();
 
