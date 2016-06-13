@@ -44,25 +44,6 @@ import com.vaadin.ui.Template;
 public interface TemplateModel extends Serializable {
 
     /**
-     * Import a bean to this template model.
-     * <p>
-     * The given bean is searched for getter methods and the values that the
-     * getters return are set (copied) as model values with the corresponding
-     * key.
-     * <p>
-     * E.g. the <code>firstName</code> property in the bean (has a
-     * <code>getFirstName()</code> getter method) will be imported to the
-     * template model with the <code>firstName</code> key.
-     *
-     * @param bean
-     *            the bean to import
-     * @see TemplateModel supported property types
-     */
-    default void importBean(Object bean) {
-        importBean(bean, name -> true);
-    }
-
-    /**
      * Gets a proxy of the given part of the model as a bean of the given type.
      * Any changes made to the returned instance are reflected back into the
      * model.
@@ -71,11 +52,11 @@ public interface TemplateModel extends Serializable {
      * should not use this to update a database entity based on updated values
      * in the model.
      * <p>
-     * The {@code modelPath} represents subproperty of the model. The path is
-     * dot separated property names. So with the following model declaration the
-     * path "person" represents {@code getPerson()} return value and the path
-     * "person.address" represents {@code getPerson().getAddress()} return
-     * value.
+     * The {@code modelPath} is a dot separated set of property names,
+     * representing the location of the bean in the model. The root of the model
+     * is "" and the path "person" represents what {@code getPerson()} would
+     * return. The path "person.address" represents what
+     * {@code getPerson().getAddress()} would return.
      *
      * <pre>
      * <code>
@@ -117,10 +98,11 @@ public interface TemplateModel extends Serializable {
      * </pre>
      *
      * @param modelPath
-     *            dot separated path denoting subproperty bean
+     *            a dot separated path describing the location of the bean in
+     *            the model
      * @param beanType
      *            requested bean type
-     * @return proxy instance of requested type for the {@code modelPath}
+     * @return a proxy instance of the bean found at the given {@code modelPath}
      */
     default <T> T getProxy(String modelPath, Class<T> beanType) {
         StateNode stateNode = TemplateModelProxyHandler
@@ -141,19 +123,23 @@ public interface TemplateModel extends Serializable {
      * <code>Address</code> are passed to the given filter prefixed with
      * <code>address.</code>. e.g. <code>address.postCode</code>.
      *
-     *
+     * @param modelPath
+     *            a dot separated path describing the location of the bean in
+     *            the model
      * @param bean
      *            the to import
      * @param propertyNameFilter
      *            the filter to apply to the bean's properties
-     * @see #importBean(Object)
+     * @see #importBean(String, Object, Predicate)
      * @see TemplateModel supported property types
      */
-    default void importBean(Object bean, Predicate<String> propertyNameFilter) {
+    default void importBean(String modelPath, Object bean,
+            Predicate<String> propertyNameFilter) {
         StateNode stateNode = TemplateModelProxyHandler
                 .getStateNodeForProxy(this);
-        TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
-                bean.getClass(), bean, "", propertyNameFilter);
+
+        TemplateModelBeanUtil.importBean(stateNode, modelPath, bean.getClass(),
+                bean, "", propertyNameFilter);
     }
 
     /**
