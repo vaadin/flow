@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -41,8 +42,14 @@ import com.vaadin.util.ReflectTools;
  */
 public class TemplateModelBeanUtil {
 
-    private static final Class<?>[] SUPPORTED_PROPERTY_TYPES = new Class[] {
+    private static final Class<?>[] SUPPORTED_NON_PRIMITIVE_TYPES = new Class[] {
             Boolean.class, Double.class, Integer.class, String.class };
+    private static final Class<?>[] SUPPORTED_PRIMITIVE_TYPES = new Class[] {
+            boolean.class, double.class, int.class };
+    private static final Set<Class<?>> SUPPORTED_BASIC_TYPES = Stream
+            .concat(Stream.of(SUPPORTED_NON_PRIMITIVE_TYPES),
+                    Stream.of(SUPPORTED_PRIMITIVE_TYPES))
+            .collect(Collectors.toSet());
 
     /**
      * Internal implementation of Pair / Tuple that encapsulates a value and the
@@ -109,27 +116,24 @@ public class TemplateModelBeanUtil {
     }
 
     static void setModelValue(ModelMap modelMap, String propertyName,
-            Type expectedType, Object value, String pathPrefix,
+            Type modelType, Object value, String filterPrefix,
             Predicate<String> filter) {
         Object oldValue = modelMap.getValue(propertyName);
         // this might cause scenario where invalid type is not
-        // caught because
-        // both values are null
+        // caught because both values are null
         if (Objects.equals(value, oldValue)) {
             return;
         }
 
-        if (expectedType instanceof Class<?>) {
-            setModelValueBasicType(modelMap, propertyName,
-                    (Class<?>) expectedType, value, pathPrefix, filter);
-            return;
-        } else if (expectedType instanceof ParameterizedType) {
-            setModelValueParameterizedType(modelMap, propertyName, expectedType,
+        if (modelType instanceof Class<?>) {
+            setModelValueClass(modelMap, propertyName, (Class<?>) modelType,
+                    value, filterPrefix, filter);
+        } else if (modelType instanceof ParameterizedType) {
+            setModelValueParameterizedType(modelMap, propertyName, modelType,
                     value);
-            return;
+        } else {
+            throw createUnsupportedTypeException(modelType, propertyName);
         }
-
-        throw createUnsupportedTypeException(expectedType, propertyName);
     }
 
     /**
@@ -163,31 +167,44 @@ public class TemplateModelBeanUtil {
                 resolver.getPropertyName(), beanClass));
     }
 
-    private static void setModelValueBasicType(ModelMap modelMap,
-            String propertyName, Class<?> expectedType, Object value,
-            String pathPrefix, Predicate<String> filter) {
-        if (isSupportedNonPrimitiveType(expectedType)) {
-            modelMap.setValue(propertyName, (Serializable) value);
-            return;
-        }
+    /**
+     * Sets the value inside the given model map, identified by the given
+     * <code>propertyName</code>, to the given value, interpreted as the given
+     * type.
+     *
+     * @param modelMap
+     *            the map containing the property
+     * @param propertyName
+     *            the name of the property to set
+     * @param modelType
+     *            the type of the value in the model
+     * @param value
+     *            the value to set
+     * @param filterPrefix
+     *            the filtering prefix to apply, if the value is a bean
+     * @param filter
+     *            the filter to apply on individual properties, if the value is
+     *            a bean
+     */
+    private static void setModelValueClass(ModelMap modelMap,
+            String propertyName, Class<?> modelType, Object value,
+            String filterPrefix, Predicate<String> filter) {
+        assert modelMap != null;
+        assert propertyName != null && !propertyName.contains(".");
 
-        // primitives have different "default" values than their boxed
-        // versions, e.g. boolean is false and Boolean is null
-        if (expectedType.isPrimitive()) {
-            if (isSupportedPrimitiveType(expectedType)) {
-                modelMap.setValue(propertyName, (Serializable) value);
-                return;
-            }
-            // not supported primitive, throw exception for now
-            throw createUnsupportedTypeException(expectedType, propertyName);
+        Class<?> modelClass = modelType;
+        if (isSupportedBasicType(modelClass)) {
+            modelMap.setValue(propertyName, (Serializable) value);
+        } else if (modelClass.isPrimitive()) {
+            // Unsupported primitive
+            throw createUnsupportedTypeException(modelType, propertyName);
         } else {
-            // handle other types as beans
-            String newPathPrefix = pathPrefix + propertyName + ".";
+            // Something else, interpret as a bean
+            String newFilterPrefix = filterPrefix + propertyName + ".";
             importBeanIntoModel(
                     () -> ModelPathResolver.resolveStateNode(modelMap.getNode(),
                             propertyName, ModelMap.class),
-                    expectedType, value, newPathPrefix, filter);
-            return;
+                    modelClass, value, newFilterPrefix, filter);
         }
     }
 
@@ -206,7 +223,8 @@ public class TemplateModelBeanUtil {
 
         Class<?> itemClass = (Class<?>) itemType;
 
-        if (isSupportedNonPrimitiveType(itemClass)) {
+        if (isSupportedBasicType(itemClass)) {
+            // Can only use beans in lists, at least for now
             throw createUnsupportedTypeException(expectedType, propertyName);
         }
 
@@ -248,17 +266,13 @@ public class TemplateModelBeanUtil {
 
     private static Object getModelValueBasicType(Object value,
             String propertyName, Class<?> returnClazz) {
-        if (isSupportedNonPrimitiveType(returnClazz)) {
-            return value;
-        }
-
-        // primitives have different "default" values than their boxed
-        // versions, e.g. boolean is false and Boolean is null
-        if (returnClazz.isPrimitive()
-                && isSupportedPrimitiveType(returnClazz)) {
-            return value != null ? value
-                    : getPrimitiveDefaultValue(returnClazz);
-        } else if (!returnClazz.isPrimitive() && value instanceof StateNode) {
+        if (isSupportedBasicType(returnClazz)) {
+            if (returnClazz.isPrimitive() && value == null) {
+                return getPrimitiveDefaultValue(returnClazz);
+            } else {
+                return value;
+            }
+        } else if (value instanceof StateNode) {
             return TemplateModelProxyHandler.createModelProxy((StateNode) value,
                     returnClazz);
         }
@@ -287,19 +301,13 @@ public class TemplateModelBeanUtil {
     }
 
     private static String getSupportedTypesString() {
-        return Stream.of(SUPPORTED_PROPERTY_TYPES).map(Class::getName)
+        return SUPPORTED_BASIC_TYPES.stream().map(Class::getName)
                 .collect(Collectors.joining(", "))
                 + " (and corresponding primitive types)";
     }
 
-    private static boolean isSupportedNonPrimitiveType(Class<?> clazz) {
-        return Stream.of(SUPPORTED_PROPERTY_TYPES)
-                .anyMatch(type -> type.isAssignableFrom(clazz));
-    }
-
-    private static boolean isSupportedPrimitiveType(Class<?> primitiveType) {
-        return isSupportedNonPrimitiveType(
-                ReflectTools.convertPrimitiveType(primitiveType));
+    private static boolean isSupportedBasicType(Class<?> clazz) {
+        return SUPPORTED_BASIC_TYPES.contains(clazz);
     }
 
     private static InvalidTemplateModelException createUnsupportedTypeException(
@@ -319,6 +327,8 @@ public class TemplateModelBeanUtil {
         } else if (primitiveType == boolean.class) {
             return false;
         }
+        assert !isSupportedBasicType(primitiveType);
+
         throw new InvalidTemplateModelException(
                 "Template model does not support primitive type "
                         + primitiveType.getName()
