@@ -196,7 +196,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
         String key = binding.getValue();
         assert key != null;
-        if (key.contains(".")) {
+        if (key.matches("/^[\\w\\.]+$/g") && key.contains(".")) {
             String[] modelPathParts = key.split("\\.");
             // The last part is the propertyName
             for (int i = 0; i < modelPathParts.length - 1; i++) {
@@ -205,7 +205,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
                 model = n.getMap(NodeFeatures.TEMPLATE_MODELMAP);
             }
             key = modelPathParts[modelPathParts.length - 1];
-            return Optional.ofNullable(model.getProperty(key));
+            return Optional.ofNullable(model.getProperty(key).getValue());
         } else {
             JsArray<String> properties = JsCollections.array();
             JsArray<Object> values = JsCollections.array();
@@ -244,7 +244,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      * {@code templateId}.
      *
      * @param tree
-     *            state tree which owns the template sregistry
+     *            state tree which owns the template registry
      * @param templateId
      *            template id
      * @return template node by the id

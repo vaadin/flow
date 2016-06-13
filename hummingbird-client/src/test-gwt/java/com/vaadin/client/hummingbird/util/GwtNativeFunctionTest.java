@@ -35,7 +35,6 @@ public class GwtNativeFunctionTest extends ClientEngineTestBase {
         int result = adder.add(3, 4);
 
         assertEquals(7, result);
-
     }
 
     public void testApply() {
@@ -47,5 +46,4 @@ public class GwtNativeFunctionTest extends ClientEngineTestBase {
 
         assertEquals("[object HTMLDocument] myString 42", result);
     }
-
 }

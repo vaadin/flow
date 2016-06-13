@@ -366,10 +366,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     }
 
     public void testTextNoValueTemplate() {
-        // create binding with expression : : key ? key+'bar' :'foo'
         TestTextTemplate templateNode = TestTextTemplate
-                .create(TestBinding.createTextValueBinding(
-                        MODEL_KEY + " ? " + MODEL_KEY + "+'bar' : 'foo'"));
+                .create(TestBinding.createTextValueBinding(MODEL_KEY));
         Node domNode = createText(templateNode);
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
@@ -377,13 +375,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         Reactive.flush();
 
-        assertEquals("foo", domNode.getTextContent());
-
-        map.getProperty(MODEL_KEY).setValue("value");
-
-        Reactive.flush();
-
-        assertEquals("valuebar", domNode.getTextContent());
+        assertEquals("", domNode.getTextContent());
     }
 
     public void testBindOverrideNodeWhenCreated() {
@@ -918,8 +910,10 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     }
 
     public void testJSExpressionInBinding() {
+        // create binding with expression : : key ? key+'bar' :'foo'
         TestTextTemplate templateNode = TestTextTemplate
-                .create(TestBinding.createTextValueBinding(MODEL_KEY));
+                .create(TestBinding.createTextValueBinding(
+                        MODEL_KEY + " ? " + MODEL_KEY + "+'@bar.com' : 'foo'"));
         Node domNode = createText(templateNode);
 
         NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
@@ -927,7 +921,13 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         Reactive.flush();
 
-        assertEquals("", domNode.getTextContent());
+        assertEquals("foo", domNode.getTextContent());
+
+        map.getProperty(MODEL_KEY).setValue("value");
+
+        Reactive.flush();
+
+        assertEquals("value@bar.com", domNode.getTextContent());
     }
 
     /**
