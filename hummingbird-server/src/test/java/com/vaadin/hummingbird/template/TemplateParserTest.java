@@ -77,6 +77,9 @@ public class TemplateParserTest {
 
         StateNode node = new StateNode(ModelMap.class);
 
+        // Explicitly set "bar" property to null. So model has property "bar".
+        // See #970
+        node.getFeature(ModelMap.class).setValue("bar", null);
         Assert.assertNull(binding.getValue(node));
 
         String value = "someValue";
@@ -101,6 +104,10 @@ public class TemplateParserTest {
         Assert.assertTrue(binding.isPresent());
 
         StateNode node = new StateNode(ModelMap.class);
+
+        // Explicitly set "foo" property to null. So model has property "foo".
+        // See #970
+        node.getFeature(ModelMap.class).setValue("foo", null);
 
         Assert.assertNull(binding.get().getValue(node));
 
@@ -131,6 +138,9 @@ public class TemplateParserTest {
 
         StateNode node = new StateNode(ModelMap.class);
 
+        // Explicitly set "foo" property to null. So model has property "foo".
+        // See #970
+        node.getFeature(ModelMap.class).setValue("foo", null);
         Assert.assertNull(binding.get().getValue(node));
 
         node.getFeature(ModelMap.class).setValue("foo", "bar");
@@ -163,6 +173,9 @@ public class TemplateParserTest {
 
         StateNode node = new StateNode(ModelMap.class);
 
+        // Explicitly set "bar" property to null. So model has property "bar".
+        // See #970
+        node.getFeature(ModelMap.class).setValue("bar", null);
         Assert.assertNull(binding.get().getValue(node));
 
         node.getFeature(ModelMap.class).setValue("bar", "value");

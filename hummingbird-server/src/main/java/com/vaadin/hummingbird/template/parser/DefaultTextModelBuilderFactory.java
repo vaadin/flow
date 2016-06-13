@@ -29,7 +29,6 @@ import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
 
 import com.vaadin.hummingbird.template.ChildSlotBuilder;
-import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateIncludeBuilder;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
@@ -160,7 +159,7 @@ public class DefaultTextModelBuilderFactory
             int suffixIndex) {
         handleStaticPrefix(text, builders, bindingIndex);
         builders.add(new TextTemplateBuilder(
-                new ModelValueBindingProvider(stripForLoopVariableIfNeeded(text
+                createExpressionBinding(stripForLoopVariableIfNeeded(text
                         .substring(bindingIndex + TEXT_BINDING_PREFIX.length(),
                                 suffixIndex)))));
 
