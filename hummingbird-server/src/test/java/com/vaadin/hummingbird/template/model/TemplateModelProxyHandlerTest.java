@@ -29,6 +29,8 @@ public class TemplateModelProxyHandlerTest {
         TemplateModel m1 = emptyModelTemplate1.getModel();
         TemplateModel m2 = emptyModelTemplate2.getModel();
 
+        Assert.assertSame(m1.getClass(), m2.getClass());
+
         Assert.assertFalse(m1.equals(null));
         Assert.assertFalse(m1.equals("foobar"));
         Assert.assertFalse(m1.equals(m2));
