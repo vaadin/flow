@@ -132,21 +132,25 @@ public class TemplateModelBeanUtil {
         throw createUnsupportedTypeException(expectedType, propertyName);
     }
 
-    static Object getProxy(StateNode stateNode, Object[] args) {
-        assert args.length == 2;
-        if (args[0] == null || args[1] == null) {
-            throw new IllegalArgumentException(
-                    "Method getProxy() may not accept null arguments");
-        }
-        assert args[0] instanceof String;
-        assert args[1] instanceof Class<?>;
-        String modelPath = (String) args[0];
-        Class<?> beanClass = (Class<?>) args[1];
+    /**
+     * Creates a proxy for the given part of a model.
+     *
+     * @param stateNode
+     *            the state node containing the model, not <code>null</code>
+     * @param modelPath
+     *            the part of the model to create a proxy for, not
+     *            <code>null</code>
+     * @param beanClass
+     *            the type of the proxy to create, not <code>null</code>
+     * @return the model proxy, not <code>null</code>
+     */
+    public static <T> T getProxy(StateNode stateNode, String modelPath,
+            Class<T> beanClass) {
 
         if (modelPath.isEmpty()) {
             // get the whole model as a bean
-            return TemplateModelProxyHandler.createModelProxy(stateNode,
-                    beanClass);
+            return beanClass.cast(TemplateModelProxyHandler
+                    .createModelProxy(stateNode, beanClass));
         }
 
         ModelPathResolver resolver = new ModelPathResolver(modelPath);
@@ -155,7 +159,8 @@ public class TemplateModelBeanUtil {
         ModelPathResolver.resolveStateNode(parentMap.getNode(),
                 resolver.getPropertyName(), ModelMap.class);
 
-        return getModelValue(parentMap, resolver.getPropertyName(), beanClass);
+        return beanClass.cast(getModelValue(parentMap,
+                resolver.getPropertyName(), beanClass));
     }
 
     private static void setModelValueBasicType(ModelMap modelMap,
@@ -297,9 +302,9 @@ public class TemplateModelBeanUtil {
                 ReflectTools.convertPrimitiveType(primitiveType));
     }
 
-    private static UnsupportedOperationException createUnsupportedTypeException(
+    private static InvalidTemplateModelException createUnsupportedTypeException(
             Type type, String propertyName) {
-        return new UnsupportedOperationException(
+        return new InvalidTemplateModelException(
                 "Template model does not support type " + type.getTypeName()
                         + " (" + propertyName + "), supported types are:"
                         + getSupportedTypesString()
@@ -314,7 +319,7 @@ public class TemplateModelBeanUtil {
         } else if (primitiveType == boolean.class) {
             return false;
         }
-        throw new UnsupportedOperationException(
+        throw new InvalidTemplateModelException(
                 "Template model does not support primitive type "
                         + primitiveType.getName()
                         + ", all supported types are: "
