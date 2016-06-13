@@ -77,6 +77,9 @@ public class TemplateParserTest {
 
         StateNode node = new StateNode(ModelMap.class);
 
+        // Explicitly set "bar" property to null. So model has property "foo".
+        // See #970
+        node.getFeature(ModelMap.class).setValue("bar", null);
         Assert.assertNull(binding.getValue(node));
 
         String value = "someValue";
@@ -101,6 +104,10 @@ public class TemplateParserTest {
         Assert.assertTrue(binding.isPresent());
 
         StateNode node = new StateNode(ModelMap.class);
+
+        // Explicitly set "foo" property to null. So model has property "foo".
+        // See #970
+        node.getFeature(ModelMap.class).setValue("foo", null);
 
         Assert.assertNull(binding.get().getValue(node));
 
@@ -131,6 +138,9 @@ public class TemplateParserTest {
 
         StateNode node = new StateNode(ModelMap.class);
 
+        // Explicitly set "foo" property to null. So model has property "foo".
+        // See #970
+        node.getFeature(ModelMap.class).setValue("foo", null);
         Assert.assertNull(binding.get().getValue(node));
 
         node.getFeature(ModelMap.class).setValue("foo", "bar");
@@ -163,6 +173,9 @@ public class TemplateParserTest {
 
         StateNode node = new StateNode(ModelMap.class);
 
+        // Explicitly set "bar" property to null. So model has property "foo".
+        // See #970
+        node.getFeature(ModelMap.class).setValue("bar", null);
         Assert.assertNull(binding.get().getValue(node));
 
         node.getFeature(ModelMap.class).setValue("bar", "value");
@@ -200,9 +213,13 @@ public class TemplateParserTest {
         // intentional whitespace
         TemplateNode rootNode = parse("<div> @child@</div>");
 
-        Assert.assertEquals(1, rootNode.getChildCount());
+        Assert.assertEquals(2, rootNode.getChildCount());
 
-        TemplateNode childSlot = rootNode.getChild(0);
+        Assert.assertEquals(TextTemplateNode.class,
+                rootNode.getChild(0).getClass());
+
+        TemplateNode childSlot = rootNode.getChild(1);
+
         Assert.assertEquals(ChildSlotNode.class, childSlot.getClass());
     }
 

@@ -485,6 +485,11 @@ public class TemplateElementStateProviderTest {
                 "<div class='foo' [class.bar]=hasBar [class.baz]=hasBaz></div>");
         ClassList classList = element.getClassList();
 
+        // Explicitly set "hasBar" and "hasBaz" property to null. So model has
+        // property "foo".
+        // See #970
+        element.getNode().getFeature(ModelMap.class).setValue("hasBar", null);
+        element.getNode().getFeature(ModelMap.class).setValue("hasBaz", null);
         Assert.assertEquals("foo", element.getAttribute("class"));
 
         assertClassList(classList, "foo");
@@ -970,7 +975,9 @@ public class TemplateElementStateProviderTest {
     }
 
     private static Element createElement(TemplateNodeBuilder builder) {
-        return createElement(builder.build(null));
+        List<TemplateNode> nodes = builder.build(null);
+        Assert.assertEquals(1, nodes.size());
+        return createElement(nodes.get(0));
     }
 
     public static Element createElement(TemplateNode templateNode) {

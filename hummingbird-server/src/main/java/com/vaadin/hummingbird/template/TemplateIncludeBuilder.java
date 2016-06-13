@@ -18,6 +18,8 @@ package com.vaadin.hummingbird.template;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
+import java.util.List;
 
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 import com.vaadin.hummingbird.template.parser.TemplateResolver;
@@ -40,27 +42,31 @@ public class TemplateIncludeBuilder implements TemplateNodeBuilder {
      * @param templateResolver
      *            the resolver to use to find the file
      */
-    public TemplateIncludeBuilder(String relativeFilename,
-            TemplateResolver templateResolver) {
+    public TemplateIncludeBuilder(TemplateResolver templateResolver,
+            String relativeFilename) {
         this.relativeFilename = relativeFilename;
         this.templateResolver = templateResolver;
     }
 
     @Override
-    public TemplateNode build(TemplateNode parent) {
+    public List<TemplateNode> build(TemplateNode parent) {
         assert parent instanceof AbstractElementTemplateNode : "@include@ parent must be an instance of "
                 + AbstractElementTemplateNode.class;
 
+        return Collections.singletonList(parseInclude(relativeFilename));
+    }
+
+    private TemplateNode parseInclude(String includeFileName) {
         // Need a new resolver so that includes from the included file are
         // relative to that file (directory)
         DelegateResolver subResolver = new DelegateResolver(templateResolver,
-                getFolder(relativeFilename));
+                getFolder(includeFileName));
         try (InputStream templateContentStream = templateResolver
-                .resolve(relativeFilename)) {
+                .resolve(includeFileName)) {
             return TemplateParser.parse(templateContentStream, subResolver);
         } catch (IOException e) {
             throw new TemplateParseException(
-                    "Unable to read template include for '" + relativeFilename
+                    "Unable to read template include for '" + includeFileName
                             + "'",
                     e);
         }

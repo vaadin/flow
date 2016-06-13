@@ -48,9 +48,10 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
     }
 
     @Override
-    public ElementTemplateNode build(TemplateNode parent) {
-        return new ElementTemplateNode(parent, getTag(), getProperties(),
-                getAttributes(), getClassNames(), getEventHandlers(), children);
+    public List<TemplateNode> build(TemplateNode parent) {
+        return Collections.singletonList(new ElementTemplateNode(parent,
+                getTag(), getProperties(), getAttributes(), getClassNames(),
+                getEventHandlers(), children));
     }
 
     /**

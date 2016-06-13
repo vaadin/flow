@@ -107,10 +107,11 @@ public class ModelValueBindingProvider extends AbstractBindingValueProvider {
 
         @Override
         public boolean containsKey(Object key) {
-            // always return true even if there is no value for the key. Method
-            // {@code key} will return null anyway. But if {@code containsKey}
-            // returns {@code false} then script engine will fail.
-            return true;
+            assert key != null;
+            if (key instanceof String) {
+                return map.hasValue(key.toString());
+            }
+            return false;
         }
 
         @Override

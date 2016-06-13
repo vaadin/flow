@@ -48,6 +48,11 @@ public class ModelMap extends NodeMap {
      */
     public void setValue(String key, Serializable value) {
         assert key != null;
+        if (key.contains(".")) {
+            throw new IllegalArgumentException(
+                    "Model map key may not contain dots");
+        }
+
         put(key, value);
     }
 
@@ -82,5 +87,4 @@ public class ModelMap extends NodeMap {
     public boolean hasValue(String key) {
         return super.contains(key);
     }
-
 }
