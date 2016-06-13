@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -72,12 +71,35 @@ public class TemplateModelBeanUtil {
         // NOOP
     }
 
-    static void importBeanIntoModel(Supplier<StateNode> stateNodeSupplier,
-            Class<?> beanType, Object bean, String pathPrefix,
+    /**
+     * Imports a bean into the given path in the model.
+     *
+     * @param stateNode
+     *            the state node containing a model map, to which
+     *            <code>modelPath</code> is relative
+     * @param modelPath
+     *            the path to import the bean to, relative to
+     *            <code>modelNode</code>. <code>""</code> to import directly
+     *            into the given model map
+     * @param beanType
+     *            the type of the bean to import
+     * @param bean
+     *            the bean to import
+     * @param filterPrefix
+     *            the prefix to use when filtering
+     * @param filter
+     *            the filter to apply to each property name to decide whether to
+     *            include the property (<code>filter</code> returns true) or
+     *            ignore the property (<code>filter</code> returns false)
+     */
+    static void importBean(StateNode modelNode, String modelPath,
+            Class<?> beanType, Object bean, String filterPrefix,
             Predicate<String> filter) {
-        assert pathPrefix != null
-                && (pathPrefix.isEmpty() || pathPrefix.endsWith("."));
+        assert modelNode != null;
+        assert modelPath != null;
         assert beanType != null;
+        assert filterPrefix != null
+                && (filterPrefix.isEmpty() || filterPrefix.endsWith("."));
 
         if (bean == null) {
             throw new IllegalArgumentException("Bean cannot be null");
@@ -88,22 +110,23 @@ public class TemplateModelBeanUtil {
         if (getterMethods.length == 0) {
             throw new IllegalArgumentException("Given type "
                     + beanType.getName()
-                    + " is not a Bean - it has no public getter methods!");
+                    + " is not a bean - it has no public getter methods!");
         }
 
         Predicate<Method> methodBasedFilter = method -> filter
-                .test(pathPrefix + ReflectTools.getPropertyName(method));
+                .test(filterPrefix + ReflectTools.getPropertyName(method));
 
         List<ModelPropertyWrapper> values = Stream.of(getterMethods)
                 .filter(methodBasedFilter)
                 .map(method -> mapBeanValueToProperty(method, bean))
                 .collect(Collectors.toList());
 
-        // don't resolve the state node used until all the bean values have been
+        // Resolve the state node only after all the bean values have been
         // resolved properly
-        ModelMap modelMap = stateNodeSupplier.get().getFeature(ModelMap.class);
+        ModelMap modelMap = ModelPathResolver.forPath(modelPath)
+                .resolveModelMap(modelNode);
 
-        values.forEach(wrapper -> setModelValue(wrapper, modelMap, pathPrefix,
+        values.forEach(wrapper -> setModelValue(wrapper, modelMap, filterPrefix,
                 filter));
     }
 
@@ -200,11 +223,14 @@ public class TemplateModelBeanUtil {
             throw createUnsupportedTypeException(modelType, propertyName);
         } else {
             // Something else, interpret as a bean
+
+            // If this is a sub bean, e.g. getPerson().getAddress() being
+            // imported into "item", then filterPrefix will be "item.person."
+            // and "propertyName" will be "address"
             String newFilterPrefix = filterPrefix + propertyName + ".";
-            importBeanIntoModel(
-                    () -> ModelPathResolver.resolveStateNode(modelMap.getNode(),
-                            propertyName, ModelMap.class),
-                    modelClass, value, newFilterPrefix, filter);
+
+            importBean(modelMap.getNode(), propertyName, modelClass, value,
+                    newFilterPrefix, filter);
         }
     }
 
@@ -254,8 +280,7 @@ public class TemplateModelBeanUtil {
         for (Object bean : beans) {
             StateNode childNode = TemplateElementStateProvider
                     .createSubModelNode(ModelMap.class);
-            importBeanIntoModel(() -> childNode, beanType, bean, "",
-                    propertyNameFilter);
+            importBean(childNode, "", beanType, bean, "", propertyNameFilter);
             childNodes.add(childNode);
         }
 
