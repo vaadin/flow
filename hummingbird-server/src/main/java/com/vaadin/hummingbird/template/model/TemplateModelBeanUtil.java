@@ -152,7 +152,7 @@ public class TemplateModelBeanUtil {
         if (modelType instanceof Class<?>) {
             setModelValueClass(modelMap, propertyName, (Class<?>) modelType,
                     value, filterPrefix, filter);
-        } else if (modelType instanceof ParameterizedType) {
+        } else if (isSupportedParameterizedType(modelType)) {
             setModelValueParameterizedType(modelMap, propertyName, modelType,
                     value);
         } else {
@@ -243,10 +243,6 @@ public class TemplateModelBeanUtil {
             String propertyName, Type expectedType, Object value) {
         ParameterizedType pt = (ParameterizedType) expectedType;
 
-        if (pt.getRawType() != List.class) {
-            throw createUnsupportedTypeException(expectedType, propertyName);
-        }
-
         Type itemType = pt.getActualTypeArguments()[0];
         if (!(itemType instanceof Class<?>)) {
             throw createUnsupportedTypeException(expectedType, propertyName);
@@ -321,13 +317,16 @@ public class TemplateModelBeanUtil {
             return;
         }
         Type type = ReflectTools.getPropertyType(method);
+        if (isSupportedParameterizedType(type)) {
+            model.setValue(property, null);
+            return;
+        }
         if (!(type instanceof Class<?>)) {
             return;
         }
         Class<?> clazz = (Class<?>) type;
         if (!isSupportedBasicType(clazz)) {
-            if (ReflectTools.getGetterMethods(clazz).count() != 0
-                    || ReflectTools.getSetterMethods(clazz).count() != 0) {
+            if (ReflectTools.getGetterMethods(clazz).count() != 0) {
                 model.setValue(property, null);
             }
             return;
@@ -384,6 +383,11 @@ public class TemplateModelBeanUtil {
 
     private static boolean isSupportedBasicType(Class<?> clazz) {
         return SUPPORTED_BASIC_TYPES.contains(clazz);
+    }
+
+    private static boolean isSupportedParameterizedType(Type type) {
+        return type instanceof ParameterizedType
+                && ((ParameterizedType) type).getRawType().equals(List.class);
     }
 
     private static InvalidTemplateModelException createUnsupportedTypeException(

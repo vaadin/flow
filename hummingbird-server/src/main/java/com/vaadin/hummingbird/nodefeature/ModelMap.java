@@ -87,5 +87,4 @@ public class ModelMap extends NodeMap {
     public boolean hasValue(String key) {
         return super.contains(key);
     }
-
 }
