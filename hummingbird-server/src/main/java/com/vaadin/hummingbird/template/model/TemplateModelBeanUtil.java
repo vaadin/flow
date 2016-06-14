@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -72,12 +71,35 @@ public class TemplateModelBeanUtil {
         // NOOP
     }
 
-    static void importBeanIntoModel(Supplier<StateNode> stateNodeSupplier,
-            Class<?> beanType, Object bean, String pathPrefix,
+    /**
+     * Imports a bean into the given path in the model.
+     *
+     * @param stateNode
+     *            the state node containing a model map, to which
+     *            <code>modelPath</code> is relative
+     * @param modelPath
+     *            the path to import the bean to, relative to
+     *            <code>modelNode</code>. <code>""</code> to import directly
+     *            into the given model map
+     * @param beanType
+     *            the type of the bean to import
+     * @param bean
+     *            the bean to import
+     * @param filterPrefix
+     *            the prefix to use when filtering
+     * @param filter
+     *            the filter to apply to each property name to decide whether to
+     *            include the property (<code>filter</code> returns true) or
+     *            ignore the property (<code>filter</code> returns false)
+     */
+    static void importBean(StateNode modelNode, String modelPath,
+            Class<?> beanType, Object bean, String filterPrefix,
             Predicate<String> filter) {
-        assert pathPrefix != null
-                && (pathPrefix.isEmpty() || pathPrefix.endsWith("."));
+        assert modelNode != null;
+        assert modelPath != null;
         assert beanType != null;
+        assert filterPrefix != null
+                && (filterPrefix.isEmpty() || filterPrefix.endsWith("."));
 
         if (bean == null) {
             throw new IllegalArgumentException("Bean cannot be null");
@@ -88,22 +110,23 @@ public class TemplateModelBeanUtil {
         if (getterMethods.length == 0) {
             throw new IllegalArgumentException("Given type "
                     + beanType.getName()
-                    + " is not a Bean - it has no public getter methods!");
+                    + " is not a bean - it has no public getter methods!");
         }
 
         Predicate<Method> methodBasedFilter = method -> filter
-                .test(pathPrefix + ReflectTools.getPropertyName(method));
+                .test(filterPrefix + ReflectTools.getPropertyName(method));
 
         List<ModelPropertyWrapper> values = Stream.of(getterMethods)
                 .filter(methodBasedFilter)
                 .map(method -> mapBeanValueToProperty(method, bean))
                 .collect(Collectors.toList());
 
-        // don't resolve the state node used until all the bean values have been
+        // Resolve the state node only after all the bean values have been
         // resolved properly
-        ModelMap modelMap = stateNodeSupplier.get().getFeature(ModelMap.class);
+        ModelMap modelMap = ModelPathResolver.forPath(modelPath)
+                .resolveModelMap(modelNode);
 
-        values.forEach(wrapper -> setModelValue(wrapper, modelMap, pathPrefix,
+        values.forEach(wrapper -> setModelValue(wrapper, modelMap, filterPrefix,
                 filter));
     }
 
@@ -121,7 +144,8 @@ public class TemplateModelBeanUtil {
         Object oldValue = modelMap.getValue(propertyName);
         // this might cause scenario where invalid type is not
         // caught because both values are null
-        if (Objects.equals(value, oldValue)) {
+        if (modelMap.hasValue(propertyName)
+                && Objects.equals(value, oldValue)) {
             return;
         }
 
@@ -157,7 +181,7 @@ public class TemplateModelBeanUtil {
                     .createModelProxy(stateNode, beanClass));
         }
 
-        ModelPathResolver resolver = new ModelPathResolver(modelPath);
+        ModelPathResolver resolver = ModelPathResolver.forProperty(modelPath);
         ModelMap parentMap = resolver.resolveModelMap(stateNode);
         // Create the state node for the bean if it does not exist
         ModelPathResolver.resolveStateNode(parentMap.getNode(),
@@ -200,11 +224,18 @@ public class TemplateModelBeanUtil {
             throw createUnsupportedTypeException(modelType, propertyName);
         } else {
             // Something else, interpret as a bean
+
+            // If this is a sub bean, e.g. getPerson().getAddress() being
+            // imported into "item", then filterPrefix will be "item.person."
+            // and "propertyName" will be "address"
             String newFilterPrefix = filterPrefix + propertyName + ".";
-            importBeanIntoModel(
-                    () -> ModelPathResolver.resolveStateNode(modelMap.getNode(),
-                            propertyName, ModelMap.class),
-                    modelClass, value, newFilterPrefix, filter);
+
+            if (value == null) {
+                modelMap.setValue(propertyName, null);
+            } else {
+                importBean(modelMap.getNode(), propertyName, modelClass, value,
+                        newFilterPrefix, filter);
+            }
         }
     }
 
@@ -221,32 +252,45 @@ public class TemplateModelBeanUtil {
             throw createUnsupportedTypeException(expectedType, propertyName);
         }
 
-        Class<?> itemClass = (Class<?>) itemType;
-
-        if (isSupportedBasicType(itemClass)) {
-            // Can only use beans in lists, at least for now
-            throw createUnsupportedTypeException(expectedType, propertyName);
-        }
-
-        importListIntoModel(modelMap.getNode(), (List<?>) value, itemClass,
-                propertyName);
+        importBeans(modelMap.getNode(), propertyName, (List<?>) value,
+                (Class<?>) itemType, name -> true);
     }
 
-    private static void importListIntoModel(StateNode parentNode, List<?> list,
-            Class<?> itemType, String propertyName) {
+    /**
+     * Imports a list of beans into the model.
+     *
+     * @param stateNode
+     *            the state node to import into
+     * @param modelPath
+     *            the path defining which part of the model to import into
+     * @param beans
+     *            the beans to import
+     * @param beanType
+     *            the type of the beans to import
+     * @param propertyNameFilter
+     *            a filter determining which bean properties to import
+     */
+    public static void importBeans(StateNode stateNode, String modelPath,
+            List<?> beans, Class<?> beanType,
+            Predicate<String> propertyNameFilter) {
+        if (isSupportedBasicType(beanType)) {
+            // Can only use beans in lists, at least for now
+            throw new InvalidTemplateModelException(
+                    "Cannot import list into " + modelPath + " since "
+                            + beanType.getName() + " it not a bean.");
+        }
 
         // Collect all child nodes before trying to resolve the list node
         List<StateNode> childNodes = new ArrayList<>();
-        for (Object bean : list) {
+        for (Object bean : beans) {
             StateNode childNode = TemplateElementStateProvider
                     .createSubModelNode(ModelMap.class);
-            importBeanIntoModel(() -> childNode, itemType, bean, "",
-                    path -> true);
+            importBean(childNode, "", beanType, bean, "", propertyNameFilter);
             childNodes.add(childNode);
         }
 
         ModelList modelList = ModelPathResolver
-                .resolveStateNode(parentNode, propertyName, ModelList.class)
+                .resolveStateNode(stateNode, modelPath, ModelList.class)
                 .getFeature(ModelList.class);
         modelList.clear();
 
