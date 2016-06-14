@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -76,6 +77,12 @@ public class TemplateModelTest {
 
     public interface BeanModel extends TemplateModel {
         void setBean(Bean bean);
+    }
+
+    public interface ListBeanModel extends TemplateModel {
+        void setBeans(List<Bean> beans);
+
+        List<Bean> getBeans();
     }
 
     public interface SubBeanIface {
@@ -200,6 +207,13 @@ public class TemplateModelTest {
         @Override
         public BeanModel getModel() {
             return (BeanModel) super.getModel();
+        }
+    }
+
+    static class ListBeanModelTemplate extends NoModelTemplate {
+        @Override
+        public ListBeanModel getModel() {
+            return (ListBeanModel) super.getModel();
         }
     }
 
@@ -698,4 +712,16 @@ public class TemplateModelTest {
         return feature;
     }
 
+    @Test
+    public void getListFromModel() {
+        ListBeanModelTemplate template = new ListBeanModelTemplate();
+        ArrayList<Bean> beans = new ArrayList<>();
+        beans.add(new Bean(100));
+        beans.add(new Bean(200));
+        beans.add(new Bean(300));
+        template.getModel().setBeans(beans);
+        TemplateModelBeanUtilTest.assertListContentsEquals(
+                template.getModel().getBeans(), new Bean(100), new Bean(200),
+                new Bean(300));
+    }
 }
