@@ -246,7 +246,8 @@ public abstract class Template extends Component implements HasChildView {
     private TemplateModel createTemplateModelInstance() {
         Class<? extends TemplateModel> modelType = getModelType();
 
-        return TemplateModelProxyHandler.createModelProxy(stateNode, modelType);
+        return TemplateModelProxyHandler.createTemplateModelProxy(stateNode,
+                modelType);
     }
 
     /**

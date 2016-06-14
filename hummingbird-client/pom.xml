@@ -41,6 +41,13 @@
 			<artifactId>gwt-elemental</artifactId>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

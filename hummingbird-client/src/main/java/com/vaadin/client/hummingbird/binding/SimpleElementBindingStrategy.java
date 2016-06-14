@@ -304,19 +304,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindChildren(BindingContext context) {
-        return context.binderContext
-                .populateChildren(context.element, context.node,
-                        NodeFeatures.ELEMENT_CHILDREN,
-                        context.binderContext::createAndBind)
-                .addSpliceListener(e -> {
-                    /*
-                     * Handle lazily so we can create the children we need to
-                     * insert. The change that gives a child node an element tag
-                     * name might not yet have been applied at this point.
-                     */
-                    Reactive.addFlushListener(
-                            () -> handleChildrenSplice(e, context));
-                });
+        NodeList children = context.node.getList(NodeFeatures.ELEMENT_CHILDREN);
+
+        for (int i = 0; i < children.length(); i++) {
+            StateNode childNode = (StateNode) children.get(i);
+
+            Node child = context.binderContext.createAndBind(childNode);
+
+            DomApi.wrap(context.element).appendChild(child);
+        }
+
+        return children.addSpliceListener(e -> {
+            /*
+             * Handle lazily so we can create the children we need to insert.
+             * The change that gives a child node an element tag name might not
+             * yet have been applied at this point.
+             */
+            Reactive.addFlushListener(() -> handleChildrenSplice(e, context));
+        });
     }
 
     private void handleChildrenSplice(ListSpliceEvent event,
@@ -328,8 +333,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             assert child != null : "Can't find element to remove";
 
-            assert child
-                    .getParentElement() == context.element : "Invalid element parent";
+            assert DomApi.wrap(child)
+                    .getParentNode() == context.element : "Invalid element parent";
 
             DomApi.wrap(context.element).removeChild(child);
         }
