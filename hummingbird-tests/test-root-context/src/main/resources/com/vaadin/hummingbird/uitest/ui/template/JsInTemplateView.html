@@ -1,0 +1,11 @@
+<div>
+	<div>
+		First name: <span id="firstName">{{firstName}}</span> Username: <span
+			id="userName">{{firstName.toLowerCase() + "123"}}</span>
+	</div>
+	<div id="itemCount" [class.hidden]="itemCount == 0">Items
+		available: {{itemCount}}</div>
+
+	<button id="updateModel" (click)="$server.updateModel()">Update
+		model</button>
+</div>
