@@ -790,13 +790,15 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         String htmlBeforeUregister = element.getOuterHTML();
 
+        stateNode.unregister();
+
+        Reactive.flush();
+
         StateNode varNode1 = new StateNode(3, tree);
         varNode1.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
                 .setValue("bar");
 
         modelList.add(1, varNode);
-
-        stateNode.unregister();
 
         Reactive.flush();
 
@@ -907,6 +909,54 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals(Node.COMMENT_NODE, childNodes.item(1).getNodeType());
 
         assertEquals("bar", li.getTextContent());
+    }
+
+    public void testNgFor_notRecreate() {
+        TestElementTemplateNode parent = TestElementTemplateNode.create("div");
+        String textVar = "text";
+        String collectionVar = "items";
+        // create 3 children for the parent: <div/><li
+        // *ngFor>{{text}}</li><span/>
+        StateNode modelNode = createNgForModelNode(parent, "div", "li", "span",
+                collectionVar, textVar);
+
+        StateNode childNode1 = new StateNode(2, tree);
+        childNode1.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("foo");
+
+        modelNode.getList(NodeFeatures.TEMPLATE_MODELLIST).add(0, childNode1);
+
+        Element parentElement = createElement(parent);
+
+        Reactive.flush();
+
+        Element firstLi = parentElement.querySelector("li");
+        assertEquals("LI", firstLi.getTagName());
+
+        firstLi.setAttribute("class", "custom");
+
+        StateNode childNode2 = new StateNode(2, tree);
+        childNode2.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(textVar)
+                .setValue("foo");
+
+        modelNode.getList(NodeFeatures.TEMPLATE_MODELLIST).add(1, childNode2);
+
+        Reactive.flush();
+
+        // Original DOM element should not have been recreated
+        firstLi = parentElement.querySelector("li");
+        assertEquals("LI", firstLi.getTagName());
+        assertEquals("custom", firstLi.getAttribute("class"));
+
+        // Remove one item from index 1
+        modelNode.getList(NodeFeatures.TEMPLATE_MODELLIST).splice(1, 1);
+
+        Reactive.flush();
+
+        // Original DOM element should not have been recreated
+        firstLi = parentElement.querySelector("li");
+        assertEquals("LI", firstLi.getTagName());
+        assertEquals("custom", firstLi.getAttribute("class"));
     }
 
     public void testJSExpressionInBinding() {
