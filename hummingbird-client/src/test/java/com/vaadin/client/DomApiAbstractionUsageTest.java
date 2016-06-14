@@ -15,6 +15,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -63,6 +64,26 @@ public class DomApiAbstractionUsageTest {
         }
 
         @Override
+        public FieldVisitor visitField(int access, String name, String desc,
+                String signature, Object value) {
+            // Trim array markers (not efficient, but straightforward)
+            while (desc.startsWith("[")) {
+                desc = desc.substring(1);
+            }
+
+            if (desc.startsWith("L")) {
+                // Lcom/foo/Foo;
+                String typeName = desc.substring(1, desc.length() - 1);
+                Class<?> type = DomApiAbstractionUsageTest.getClass(typeName);
+                if (DomNode.class.isAssignableFrom(type)) {
+                    Assert.fail(className + "." + name
+                            + " references a wrapped node");
+                }
+            }
+            return null;
+        }
+
+        @Override
         public MethodVisitor visitMethod(int access, String methodName,
                 String desc, String signature, String[] exceptions) {
             if (whitelistedClass) {
@@ -107,30 +128,33 @@ public class DomApiAbstractionUsageTest {
 
     private static void verifyMethod(String callingMethod,
             String targetClassName, String targetMethod) {
+        // Won't care about overhead of loading all
+        // classes since this is just a test
+        Class<?> targetClass = getClass(targetClassName);
+
+        if (!Node.class.isAssignableFrom(targetClass)) {
+            return;
+        }
+
+        if (ignoredElementalClasses.contains(targetClass)) {
+            return;
+        }
+
+        if (Element.class == targetClass
+                && ignoredElementMethods.contains(targetMethod)) {
+            return;
+        }
+
+        Assert.fail(callingMethod + " calls " + targetClass.getName() + "."
+                + targetMethod);
+    }
+
+    private static Class<?> getClass(String targetClassName) {
         try {
-            // Won't care about overhead of loading all
-            // classes since this is just a test
-            Class<?> targetClass = Class.forName(
-                    targetClassName.replace('/', '.'), false,
+            return Class.forName(targetClassName.replace('/', '.'), false,
                     DomApiAbstractionUsageTest.class.getClassLoader());
-
-            if (!Node.class.isAssignableFrom(targetClass)) {
-                return;
-            }
-
-            if (ignoredElementalClasses.contains(targetClass)) {
-                return;
-            }
-
-            if (Element.class == targetClass
-                    && ignoredElementMethods.contains(targetMethod)) {
-                return;
-            }
-
-            Assert.fail(callingMethod + " calls " + targetClass.getName() + "."
-                    + targetMethod);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(targetClassName, e);
         }
     }
 
