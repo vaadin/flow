@@ -16,8 +16,10 @@
 package com.vaadin.hummingbird.template.model;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.function.Predicate;
 
+import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Template;
 
 /**
@@ -57,8 +59,7 @@ public interface TemplateModel extends Serializable {
      * @see TemplateModel supported property types
      */
     default void importBean(Object bean) {
-        // NOOP invocation handler passes this method call to
-        // TemplateModelBeanUtil
+        importBean(bean, name -> true);
     }
 
     /**
@@ -122,9 +123,10 @@ public interface TemplateModel extends Serializable {
      * @return proxy instance of requested type for the {@code modelPath}
      */
     default <T> T getProxy(String modelPath, Class<T> beanType) {
-        // The method is handled by proxy handler
-        throw new UnsupportedOperationException(
-                "The method implementation is povided by proxy handler");
+        StateNode stateNode = TemplateModelProxyHandler
+                .getStateNodeForProxy(this);
+
+        return TemplateModelBeanUtil.getProxy(stateNode, modelPath, beanType);
     }
 
     /**
@@ -148,8 +150,33 @@ public interface TemplateModel extends Serializable {
      * @see TemplateModel supported property types
      */
     default void importBean(Object bean, Predicate<String> propertyNameFilter) {
-        // NOOP invocation handler passes this method call to
-        // TemplateModelBeanUtil
+        StateNode stateNode = TemplateModelProxyHandler
+                .getStateNodeForProxy(this);
+        TemplateModelBeanUtil.importBeanIntoModel(() -> stateNode,
+                bean.getClass(), bean, "", propertyNameFilter);
+    }
+
+    /**
+     * Imports a list of beans to this template model.
+     *
+     * @param modelPath
+     *            the path defining which part of the model to import into
+     * @param beans
+     *            the beans to import
+     * @param beanType
+     *            the type of the beans to import
+     * @param propertyNameFilter
+     *            a filter determining which bean properties to import
+     *
+     * @see #importBean(Object)
+     * @see TemplateModel supported property types
+     */
+    default <T> void importBeans(String modelPath, List<? extends T> beans,
+            Class<T> beanType, Predicate<String> propertyNameFilter) {
+        StateNode stateNode = TemplateModelProxyHandler
+                .getStateNodeForProxy(this);
+        TemplateModelBeanUtil.importBeans(stateNode, modelPath, beans, beanType,
+                propertyNameFilter);
     }
 
 }
