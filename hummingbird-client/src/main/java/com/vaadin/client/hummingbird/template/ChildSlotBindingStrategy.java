@@ -26,7 +26,6 @@ import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
-import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
@@ -68,11 +67,11 @@ public class ChildSlotBindingStrategy extends AbstractTemplateStrategy<Node> {
 
         private void updateChildSlot(StateNode oldChildNode,
                 StateNode newChildNode) {
-            Element parent = anchor.getParentElement();
+            Node parent = DomApi.wrap(anchor).getParentNode();
 
             if (oldChildNode != null) {
                 Node oldChild = oldChildNode.getDomNode();
-                assert oldChild.getParentElement() == parent;
+                assert DomApi.wrap(oldChild).getParentNode() == parent;
 
                 DomApi.wrap(parent).removeChild(oldChild);
             }
