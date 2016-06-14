@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Label;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.model.TemplateModel;
@@ -28,16 +29,33 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
 public class TextTemplateView extends Div implements View {
 
     public TextTemplateView() {
-        Button button = new Button();
+        Button button = new Button("Update simple name");
+        button.setId("set-simple-name");
         InlineTemplate<TemplateModel> text = new InlineTemplate<>(
                 "<div id='text'>{{name}}</div>", TemplateModel.class);
-        setName(text, "Foo");
-        button.addClickListener(event -> setName(text, "Bar"));
+        setName(text, "Foo", "plain-text");
+        button.addClickListener(event -> setName(text, "Bar", "plain-text"));
         add(button, text);
+
+        InlineTemplate<TemplateModel> jsExpression = new InlineTemplate<>(
+                "<div id='js-expression'>{{name ? 'Hello ' + name: 'No name'}}</div>",
+                TemplateModel.class);
+        setName(jsExpression, null, "js-text");
+        Button updateJsExpression = new Button("Update JS expression");
+        updateJsExpression.setId("set-expression-name");
+        updateJsExpression.addClickListener(
+                event -> setName(jsExpression, "Foo", "js-text"));
+        add(updateJsExpression, jsExpression);
     }
 
-    private void setName(InlineTemplate<?> template, String name) {
+    private void setName(InlineTemplate<?> template, String name,
+            String serverSideClass) {
         template.getElement().getNode().getFeature(ModelMap.class)
                 .setValue("name", name);
+        String property = template.getElement().getTextContent();
+        Label label = new Label(property);
+        label.addClassName(serverSideClass);
+        add(label);
     }
+
 }

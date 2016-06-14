@@ -99,6 +99,8 @@ public class TemplateModelBeanUtilTest {
         }
     }
 
+    private static final Predicate<String> INCLUDE_ALL = propertyName -> true;
+
     @Test
     public void testBeanToModelMapImport() {
         Bean bean = new Bean();
@@ -111,9 +113,9 @@ public class TemplateModelBeanUtilTest {
         bean.setString("foobar");
 
         NoModelTemplate template = new NoModelTemplate();
-        template.getModel().importBean(bean);
+        template.getModel().importBean("namespace", bean, INCLUDE_ALL);
 
-        verifyBeanToModelMap(bean, template);
+        verifyBeanToModelMap(bean, template, "namespace");
     }
 
     @Test
@@ -129,10 +131,10 @@ public class TemplateModelBeanUtilTest {
 
         BeanTemplate beanTemplate = new BeanTemplate();
         BeanModel beanModel = beanTemplate.getModel();
-        beanTemplate.getModel().importBean(bean);
+        beanTemplate.getModel().importBean("", bean, INCLUDE_ALL);
 
         verifyBeanToModelViaInterface(bean, beanModel);
-        verifyBeanToModelMap(bean, beanTemplate);
+        verifyBeanToModelMap(bean, beanTemplate, "");
 
         Bean bean2 = new Bean();
         bean2.setBooleanObject(Boolean.FALSE);
@@ -143,10 +145,10 @@ public class TemplateModelBeanUtilTest {
         bean2.setDoubleObject(Double.valueOf(20.0d));
         bean2.setString("shazbot");
 
-        beanTemplate.getModel().importBean(bean2);
+        beanTemplate.getModel().importBean("", bean2, INCLUDE_ALL);
 
         verifyBeanToModelViaInterface(bean2, beanModel);
-        verifyBeanToModelMap(bean2, beanTemplate);
+        verifyBeanToModelMap(bean2, beanTemplate, "");
     }
 
     @Test
@@ -154,10 +156,10 @@ public class TemplateModelBeanUtilTest {
         Bean bean = new Bean();
         BeanTemplate beanTemplate = new BeanTemplate();
         BeanModel beanModel = beanTemplate.getModel();
-        beanTemplate.getModel().importBean(bean);
+        beanTemplate.getModel().importBean("namespace", bean, INCLUDE_ALL);
 
         verifyBeanToModelViaInterface(bean, beanModel);
-        verifyBeanToModelMap(bean, beanTemplate);
+        verifyBeanToModelMap(bean, beanTemplate, "namespace");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -167,27 +169,27 @@ public class TemplateModelBeanUtilTest {
         // won't crash if both are null
         bean.setSb(new StringBuilder());
 
-        template.getModel().importBean(bean);
+        template.getModel().importBean("namespace", bean, INCLUDE_ALL);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testBeanWithSetProperty() {
         NoModelTemplate template = new NoModelTemplate();
         BeanWithSet bean = new BeanWithSet();
         // won't crash if both are null
         bean.setBeans(new HashSet<>());
 
-        template.getModel().importBean(bean);
+        template.getModel().importBean("namespace", bean, INCLUDE_ALL);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testBeanWithNestedListProperty() {
         NoModelTemplate template = new NoModelTemplate();
         BeanWithNestedList bean = new BeanWithNestedList();
         // won't crash if both are null
         bean.setBeans(new ArrayList<>());
 
-        template.getModel().importBean(bean);
+        template.getModel().importBean("namespace", bean, INCLUDE_ALL);
     }
 
     @Test
@@ -202,7 +204,37 @@ public class TemplateModelBeanUtilTest {
 
         bean.setBeans(Arrays.asList(listItem1, listItem2));
 
-        template.getModel().importBean(bean);
+        template.getModel().importBean("namespace", bean, INCLUDE_ALL);
+
+        ModelMap modelMap = ModelPathResolver.forPath("namespace")
+                .resolveModelMap(template.getElement().getNode());
+        StateNode beansNode = (StateNode) modelMap.getValue("beans");
+
+        Assert.assertTrue(beansNode.hasFeature(ModelList.class));
+
+        ModelList modelList = beansNode.getFeature(ModelList.class);
+
+        Assert.assertEquals(2, modelList.size());
+
+        verifyBeanToModelMap(listItem1,
+                modelList.get(0).getFeature(ModelMap.class));
+        verifyBeanToModelMap(listItem2,
+                modelList.get(1).getFeature(ModelMap.class));
+    }
+
+    @Test
+    public void testImportBeans() {
+        NoModelTemplate template = new NoModelTemplate();
+
+        Bean listItem1 = new Bean();
+        listItem1.setString("item1");
+        Bean listItem2 = new Bean();
+        listItem2.setString("item2");
+
+        List<Bean> beans = Arrays.asList(listItem1, listItem2);
+
+        template.getModel().importBeans("beans", beans, Bean.class,
+                name -> true);
 
         ModelMap modelMap = template.getElement().getNode()
                 .getFeature(ModelMap.class);
@@ -220,14 +252,68 @@ public class TemplateModelBeanUtilTest {
                 modelList.get(1).getFeature(ModelMap.class));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
+    public void testImportFilteredBeans() {
+        NoModelTemplate template = new NoModelTemplate();
+
+        Bean bean = new Bean();
+        bean.setString("item1");
+        bean.setBooleanValue(true);
+
+        List<Bean> beans = Arrays.asList(bean);
+
+        template.getModel().importBeans("beans", beans, Bean.class,
+                name -> "booleanValue".equals(name));
+
+        ModelMap modelMap = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+        StateNode beansNode = (StateNode) modelMap.getValue("beans");
+        ModelList beansModel = beansNode.getFeature(ModelList.class);
+        ModelMap beanModel = beansModel.get(0).getFeature(ModelMap.class);
+
+        Assert.assertFalse(beanModel.hasValue("string"));
+        Assert.assertTrue(beanModel.hasValue("booleanValue"));
+    }
+
+    @Test
+    public void testImportFilteredSubBeans() {
+        NoModelTemplate template = new NoModelTemplate();
+
+        Bean childBean = new Bean();
+        childBean.setString("item1");
+        childBean.setBooleanValue(true);
+
+        BeanWithNestedBean parentBean = new BeanWithNestedBean();
+        parentBean.setBean(childBean);
+
+        List<BeanWithNestedBean> beans = Arrays.asList(parentBean);
+
+        template.getModel().importBeans("beans", beans,
+                BeanWithNestedBean.class,
+                name -> "bean.booleanValue".equals(name)
+                        || !name.startsWith("bean."));
+
+        ModelMap modelMap = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+        StateNode beansNode = (StateNode) modelMap.getValue("beans");
+        ModelList beansModel = beansNode.getFeature(ModelList.class);
+        ModelMap parentBeanModel = beansModel.get(0).getFeature(ModelMap.class);
+
+        StateNode childBeanNode = (StateNode) parentBeanModel.getValue("bean");
+        ModelMap childBeanModel = childBeanNode.getFeature(ModelMap.class);
+
+        Assert.assertFalse(childBeanModel.hasValue("string"));
+        Assert.assertTrue(childBeanModel.hasValue("booleanValue"));
+    }
+
+    @Test(expected = InvalidTemplateModelException.class)
     public void testBeanWithPrimitiveList() {
         NoModelTemplate template = new NoModelTemplate();
         BeanWithPrimitiveList bean = new BeanWithPrimitiveList();
         // won't crash if both are null
         bean.setStrings(new ArrayList<>());
 
-        template.getModel().importBean(bean);
+        template.getModel().importBean("namespace", bean, INCLUDE_ALL);
     }
 
     @Test
@@ -237,10 +323,10 @@ public class TemplateModelBeanUtilTest {
 
         BeanTemplate template = new BeanTemplate();
         BeanModel model = template.getModel();
-        model.importBean(bean);
+        model.importBean("", bean, INCLUDE_ALL);
 
         verifyBeanToModelViaInterface(bean, model);
-        verifyBeanToModelMap(bean, template);
+        verifyBeanToModelMap(bean, template, "");
 
         bean.setIntValue(5);
         bean.setString("foobar");
@@ -254,10 +340,10 @@ public class TemplateModelBeanUtilTest {
         Assert.assertNotEquals(bean.getIntValue(), model.getIntValue());
         Assert.assertNotEquals(bean.getString(), model.getString());
 
-        model.importBean(bean);
+        model.importBean("", bean, INCLUDE_ALL);
 
         verifyBeanToModelViaInterface(bean, model);
-        verifyBeanToModelMap(bean, template);
+        verifyBeanToModelMap(bean, template, "");
     }
 
     @Test
@@ -266,13 +352,17 @@ public class TemplateModelBeanUtilTest {
         beanWithNestedBean.setBean(new Bean());
 
         NoModelTemplate template = new NoModelTemplate();
+        StateNode stateNode = template.getElement().getNode();
         TemplateModel model = template.getModel();
-        model.importBean(beanWithNestedBean);
+        model.importBean("namespace", beanWithNestedBean, INCLUDE_ALL);
 
-        verifyBeanToModelMap(beanWithNestedBean.getBean(),
-                ((StateNode) template.getElement().getNode()
-                        .getFeature(ModelMap.class).getValue("bean"))
-                                .getFeature(ModelMap.class));
+        ModelMap modelMap = ModelPathResolver.forPath("namespace.bean")
+                .resolveModelMap(stateNode);
+        verifyBeanToModelMap(beanWithNestedBean.getBean(), modelMap);
+
+        // ((StateNode) template.getElement().getNode()
+        // .getFeature(ModelMap.class).getValue("bean"))
+        // .getFeature(ModelMap.class));
 
         Bean bean2 = new Bean();
         bean2.setBooleanObject(Boolean.FALSE);
@@ -285,12 +375,9 @@ public class TemplateModelBeanUtilTest {
 
         beanWithNestedBean.setBean(bean2);
 
-        model.importBean(beanWithNestedBean);
+        model.importBean("namespace", beanWithNestedBean, INCLUDE_ALL);
 
-        verifyBeanToModelMap(beanWithNestedBean.getBean(),
-                ((StateNode) template.getElement().getNode()
-                        .getFeature(ModelMap.class).getValue("bean"))
-                                .getFeature(ModelMap.class));
+        verifyBeanToModelMap(beanWithNestedBean.getBean(), modelMap);
     }
 
     @Test
@@ -316,7 +403,7 @@ public class TemplateModelBeanUtilTest {
                     || propertyName.equals("intValue");
 
         };
-        beanModel.importBean(bean, capturingFilter);
+        beanModel.importBean("", bean, capturingFilter);
 
         Assert.assertEquals(bean.getString(), beanModel.getString());
         Assert.assertEquals(bean.getIntValue(), beanModel.getIntValue());
@@ -360,7 +447,8 @@ public class TemplateModelBeanUtilTest {
         };
 
         NoModelTemplate template = new NoModelTemplate();
-        template.getModel().importBean(beanWithNestedBean, capturingFilter);
+        template.getModel().importBean("namespace", beanWithNestedBean,
+                capturingFilter);
 
         String[] expectedProperties = new String[] { "bean", "bean.string",
                 "bean.intValue", "bean.intObject", "bean.doubleObject",
@@ -370,13 +458,10 @@ public class TemplateModelBeanUtilTest {
                     properties.contains(s));
         }
 
-        ModelMap modelMap = template.getElement().getNode()
-                .getFeature(ModelMap.class);
+        ModelMap nestedBeanModelMap = ModelPathResolver
+                .forPath("namespace.bean")
+                .resolveModelMap(template.getElement().getNode());
 
-        StateNode nestedBeanNode = (StateNode) modelMap.getValue("bean");
-        Assert.assertNotNull(nestedBeanNode);
-
-        ModelMap nestedBeanModelMap = nestedBeanNode.getFeature(ModelMap.class);
         Assert.assertEquals(bean.getString(),
                 nestedBeanModelMap.getValue("string"));
         Assert.assertFalse(nestedBeanModelMap.hasValue("booleanObject"));
@@ -407,7 +492,7 @@ public class TemplateModelBeanUtilTest {
         Assert.assertFalse(map.hasValue("bean"));
 
         try {
-            model.importBean(beanWithNestedBean);
+            model.importBean("namespace", beanWithNestedBean, INCLUDE_ALL);
             Assert.fail();
         } catch (IllegalStateException e) {
             Assert.assertFalse(map.hasValue("bean"));
@@ -425,10 +510,11 @@ public class TemplateModelBeanUtilTest {
         Assert.assertEquals(bean.getString(), model.getString());
     }
 
-    private void verifyBeanToModelMap(Bean bean, Template template) {
-        ModelMap model = template.getElement().getNode()
-                .getFeature(ModelMap.class);
-        verifyBeanToModelMap(bean, model);
+    private void verifyBeanToModelMap(Bean bean, Template template,
+            String namespace) {
+        ModelMap modelMap = ModelPathResolver.forPath(namespace)
+                .resolveModelMap(template.getElement().getNode());
+        verifyBeanToModelMap(bean, modelMap);
     }
 
     private void verifyBeanToModelMap(Bean bean, ModelMap model) {
@@ -443,5 +529,14 @@ public class TemplateModelBeanUtilTest {
                 model.getValue("doubleValue"));
         Assert.assertEquals(bean.getIntValue(), model.getValue("intValue"));
         Assert.assertEquals(bean.getString(), model.getValue("string"));
+    }
+
+    @Test
+    public void filterNotAffectedByImportPath() {
+        NoModelTemplate template = new NoModelTemplate();
+        template.getModel().importBean("foo.bar", new Bean(), propertyName -> {
+            Assert.assertFalse(propertyName.contains("foo.bar"));
+            return true;
+        });
     }
 }

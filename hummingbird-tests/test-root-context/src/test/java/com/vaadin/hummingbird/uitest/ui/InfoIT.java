@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -22,19 +25,29 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-public class TemplateIncludeIT extends PhantomJSTest {
+public class InfoIT extends PhantomJSTest {
 
     @Test
-    public void ensureCorrectDom() {
+    public void productionModeServlet() {
+        openProduction();
+        Assert.assertEquals("true", getInfoValue("Production mode"));
+
+    }
+
+    @Test
+    public void nonProductionModeServlet() {
         open();
-        WebElement root = findElement(By.id("root"));
-        String outerHtml = root.getAttribute("outerHTML");
-        String expected = "<div id=\"root\">" //
-                + "<div id=\"header\"> <span>Menu item 1</span> <span>Menu item 2</span> <span>Menu item 3</span> </div>" //
-                + "<div id=\"content\">Here goes the content</div>" //
-                + "<div id=\"footer\"> <span>Footer goes here</span> </div></div>";
-        expected = expected.replace("> <", "><");
-        outerHtml = outerHtml.replace("> <", "><");
-        Assert.assertEquals(expected, outerHtml);
+        Assert.assertEquals("false", getInfoValue("Production mode"));
+
+    }
+
+    private String getInfoValue(String string) {
+        String prefix = string + ": ";
+        List<WebElement> divs = findElement(By.className("infoContainer"))
+                .findElements(By.tagName("div"));
+        Optional<String> infoText = divs.stream().map(WebElement::getText)
+                .filter(text -> text.startsWith(prefix)).findFirst();
+
+        return infoText.get().replace(prefix, "");
     }
 }

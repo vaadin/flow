@@ -15,32 +15,26 @@
  */
 package com.vaadin.hummingbird.template;
 
-import java.util.Collections;
-import java.util.List;
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 
 /**
- * Builder for text template nodes.
- *
  * @author Vaadin Ltd
+ *
  */
-public class TextTemplateBuilder implements TemplateNodeBuilder {
+public class JsExpressionBindingProviderTest {
 
-    private BindingValueProvider binding;
+    @Test
+    public void setTemplateProperty_useJsExpression() {
+        JsExpressionBindingProvider binding = new JsExpressionBindingProvider(
+                "bar +'foo'");
+        StateNode node = new StateNode(ModelMap.class);
+        node.getFeature(ModelMap.class).setValue("bar", "modelValue");
 
-    /**
-     * Creates a new text template builder.
-     *
-     * @param binding
-     *            the text content binding
-     */
-    public TextTemplateBuilder(BindingValueProvider binding) {
-        assert binding != null;
-
-        this.binding = binding;
+        Assert.assertEquals("modelValuefoo", binding.getValue(node));
     }
 
-    @Override
-    public List<TemplateNode> build(TemplateNode parent) {
-        return Collections.singletonList(new TextTemplateNode(parent, binding));
-    }
 }
