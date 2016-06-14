@@ -203,6 +203,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
         Node domNode = createElement(templateNode);
 
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+        map.getProperty(MODEL_KEY).setValue(null);
+
         Reactive.flush();
 
         assertEquals(null, WidgetUtil.getJsProperty(domNode, "prop"));
@@ -266,6 +269,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         templateNode.addAttribute("attr", TestBinding
                 .createBinding(ModelValueBindingProvider.TYPE, MODEL_KEY));
         Element domNode = createElement(templateNode);
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+        map.getProperty(MODEL_KEY).setValue(null);
 
         Reactive.flush();
 
@@ -363,6 +369,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding(MODEL_KEY));
         Node domNode = createText(templateNode);
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+        map.getProperty(MODEL_KEY).setValue(null);
 
         Reactive.flush();
 
@@ -898,6 +907,27 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals(Node.COMMENT_NODE, childNodes.item(1).getNodeType());
 
         assertEquals("bar", li.getTextContent());
+    }
+
+    public void testJSExpressionInBinding() {
+        // create binding with expression : : key ? key+'bar' :'foo'
+        TestTextTemplate templateNode = TestTextTemplate
+                .create(TestBinding.createTextValueBinding(
+                        MODEL_KEY + " ? " + MODEL_KEY + "+'@bar.com' : 'foo'"));
+        Node domNode = createText(templateNode);
+
+        NodeMap map = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+        map.getProperty(MODEL_KEY).setValue(null);
+
+        Reactive.flush();
+
+        assertEquals("foo", domNode.getTextContent());
+
+        map.getProperty(MODEL_KEY).setValue("value");
+
+        Reactive.flush();
+
+        assertEquals("value@bar.com", domNode.getTextContent());
     }
 
     /**
