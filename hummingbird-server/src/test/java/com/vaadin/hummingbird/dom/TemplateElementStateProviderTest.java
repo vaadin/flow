@@ -1008,7 +1008,7 @@ public class TemplateElementStateProviderTest {
 
         Element element = createElement(builder);
         StateNode stateNode = element.getNode();
-        ModelPathResolver r = new ModelPathResolver(modelPath);
+        ModelPathResolver r = ModelPathResolver.forProperty(modelPath);
         r.resolveModelMap(stateNode).setValue(r.getPropertyName(), "John");
 
         Assert.assertEquals("John", element.getProperty("prop"));

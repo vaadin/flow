@@ -232,10 +232,6 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         }
     }
 
-    private static Object getModelValue(NodeMap model, String name) {
-        return model.getProperty(name).getValue();
-    }
-
     /**
      * Gets static biding value for the {@code binding}.
      *
