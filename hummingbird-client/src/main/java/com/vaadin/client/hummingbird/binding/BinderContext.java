@@ -15,15 +15,11 @@
  */
 package com.vaadin.client.hummingbird.binding;
 
-import java.util.function.Function;
 import java.util.function.Predicate;
 
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.client.hummingbird.dom.DomApi;
-import com.vaadin.client.hummingbird.nodefeature.NodeList;
 
-import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
@@ -72,75 +68,4 @@ public interface BinderContext {
      */
     <T extends BindingStrategy<?>> JsArray<T> getStrategies(
             Predicate<BindingStrategy<?>> predicate);
-
-    /**
-     * Populates a list of child nodes and appends them into the given element.
-     * The children are fetched from the given {@link StateNode}'s
-     * {@link NodeList}, found with the given featureId. Nodes are created using
-     * the given factory.
-     * <p>
-     * This is just a shorthand for
-     * {@link #populateChildren(Element, StateNode, int, Function, Node)} with
-     * the {@code null} value for the last parameter
-     *
-     * @see #populateChildren(Element, StateNode, int, Function, Node)
-     *
-     * @param parent
-     *            parent Element, not {@code null}
-     * @param node
-     *            StateNode to ask a feature for, not {@code null}
-     * @param featureId
-     *            feature identifier of the {@code node}
-     * @param factory
-     *            node factory which is used to produce and bind an HTML node
-     *            based on child StateNode from the feature NodeList, not
-     *            {@code null}
-     * @return the bound children list
-     */
-    default NodeList populateChildren(Element parent, StateNode node,
-            int featureId, Function<StateNode, Node> factory) {
-        return populateChildren(parent, node, featureId, factory, null);
-    }
-
-    /**
-     * Populates a list of child nodes and appends them into the given element.
-     * The children are fetched from the given {@link StateNode}'s
-     * {@link NodeList}, found with the given featureId. Nodes are created using
-     * the given factory.
-     * <p>
-     * The {@code beforeNode} parameter is used to add children to the
-     * {@code parent} before the {@code beforeNode}. It can be {@code null}.
-     *
-     * @see #populateChildren(Element, StateNode, int, Function)
-     *
-     * @param parent
-     *            parent Element, not {@code null}
-     * @param node
-     *            StateNode to ask a feature for, not {@code null}
-     * @param featureId
-     *            feature identifier of the {@code node}
-     * @param factory
-     *            node factory which is used to produce and bind an HTML node
-     *            based on child StateNode from the feature NodeList, not
-     *            {@code null}
-     * @param beforeNode
-     *            node which is used as a bottom line for added children
-     * @return the bound children list
-     */
-    default NodeList populateChildren(Element parent, StateNode node,
-            int featureId, Function<StateNode, Node> factory, Node beforeNode) {
-        assert node != null;
-        assert parent != null;
-        assert factory != null;
-        NodeList children = node.getList(featureId);
-
-        for (int i = 0; i < children.length(); i++) {
-            StateNode childNode = (StateNode) children.get(i);
-
-            Node child = factory.apply(childNode);
-
-            DomApi.wrap(parent).insertBefore(child, beforeNode);
-        }
-        return children;
-    }
 }

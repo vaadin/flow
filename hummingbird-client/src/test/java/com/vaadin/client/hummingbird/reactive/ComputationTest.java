@@ -198,4 +198,19 @@ public class ComputationTest {
         Assert.assertEquals("No dependency was registered", 1,
                 computeCount.get());
     }
+
+    @Test
+    public void fireInvalidateEventsWhenStopping() {
+        CountingComputation computation = new CountingComputation(router);
+
+        AtomicInteger invalidateCount = new AtomicInteger();
+
+        computation.onNextInvalidate(e -> invalidateCount.incrementAndGet());
+
+        computation.stop();
+
+        Assert.assertEquals(0, computeCount.get());
+        Assert.assertEquals(1, invalidateCount.get());
+    }
+
 }

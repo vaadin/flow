@@ -18,6 +18,7 @@ package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.hummingbird.dom.DomApi;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -120,7 +121,7 @@ public class WidgetUtil {
      * <p>
      * If {@code value} is {@code null} then {@code attribute} is removed,
      * otherwise {@code value.toString()} is set as its value.
-     * 
+     *
      * @param element
      *            the DOM element owning attribute
      * @param attribute
@@ -131,9 +132,9 @@ public class WidgetUtil {
     public static void updateAttribute(Element element, String attribute,
             Object value) {
         if (value == null) {
-            element.removeAttribute(attribute);
+            DomApi.wrap(element).removeAttribute(attribute);
         } else {
-            element.setAttribute(attribute, value.toString());
+            DomApi.wrap(element).setAttribute(attribute, value.toString());
         }
     }
 

@@ -191,6 +191,30 @@ public class TemplateModelBeanUtil {
                 resolver.getPropertyName(), beanClass));
     }
 
+    @SuppressWarnings("unchecked")
+    static <T> List<T> getListProxy(StateNode stateNode, String modelPath,
+            Class<T> itemType) {
+        if (modelPath == null || modelPath.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The modelPath cannot be empty, the root path always refers to a map, not a list");
+        }
+
+        if (itemType == null) {
+            throw new IllegalArgumentException(
+                    "The item type must not be null");
+        }
+
+        ModelPathResolver resolver = ModelPathResolver.forProperty(modelPath);
+        ModelMap parentMap = resolver.resolveModelMap(stateNode);
+        // Create the state node for the list if it does not exist
+        ModelPathResolver.resolveStateNode(parentMap.getNode(),
+                resolver.getPropertyName(), ModelList.class);
+
+        Type type = ReflectTools.createParameterizedType(List.class, itemType);
+        return (List<T>) getModelValue(parentMap, resolver.getPropertyName(),
+                type);
+    }
+
     /**
      * Sets the value inside the given model map, identified by the given
      * <code>propertyName</code>, to the given value, interpreted as the given
@@ -285,9 +309,8 @@ public class TemplateModelBeanUtil {
             childNodes.add(childNode);
         }
 
-        ModelList modelList = ModelPathResolver
-                .resolveStateNode(stateNode, modelPath, ModelList.class)
-                .getFeature(ModelList.class);
+        ModelList modelList = ModelPathResolver.forPath(modelPath)
+                .resolveModelList(stateNode);
         modelList.clear();
 
         modelList.addAll(childNodes);
@@ -299,6 +322,9 @@ public class TemplateModelBeanUtil {
         if (returnType instanceof Class<?>) {
             return getModelValueBasicType(value, propertyName,
                     (Class<?>) returnType);
+        } else if (returnType instanceof ParameterizedType) {
+            return getModelValueParameterizedType(value, propertyName,
+                    (ParameterizedType) returnType);
         }
 
         throw createUnsupportedTypeException(returnType, propertyName);
@@ -318,7 +344,12 @@ public class TemplateModelBeanUtil {
         }
         Type type = ReflectTools.getPropertyType(method);
         if (isSupportedParameterizedType(type)) {
-            model.setValue(property, null);
+            ParameterizedType clazz = (ParameterizedType) type;
+            Type componentType = clazz.getActualTypeArguments()[0];
+            if (componentType instanceof Class<?>
+                    && !isSupportedBasicType((Class<?>) componentType)) {
+                model.setValue(property, null);
+            }
             return;
         }
         if (!(type instanceof Class<?>)) {
@@ -352,6 +383,17 @@ public class TemplateModelBeanUtil {
                     returnClazz);
         }
         throw createUnsupportedTypeException(returnClazz, propertyName);
+    }
+
+    private static Object getModelValueParameterizedType(Object value,
+            String propertyName, ParameterizedType returnType) {
+
+        if (returnType.getRawType() == List.class) {
+            return new TemplateModelListProxy((StateNode) value,
+                    (Class<?>) returnType.getActualTypeArguments()[0]);
+        }
+
+        throw createUnsupportedTypeException(returnType, propertyName);
     }
 
     private static ModelPropertyWrapper mapBeanValueToProperty(
