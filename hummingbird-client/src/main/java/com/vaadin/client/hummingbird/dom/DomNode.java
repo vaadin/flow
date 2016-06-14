@@ -152,4 +152,12 @@ public interface DomNode {
      */
     Node cloneNode(boolean deep);
 
+    /**
+     * Gets the parent node of this node.
+     *
+     * @return the parent node, not <code>null</code> if this node has no
+     *         parent.
+     */
+    @JsProperty
+    Node getParentNode();
 }

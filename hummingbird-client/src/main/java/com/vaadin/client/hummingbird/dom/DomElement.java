@@ -177,4 +177,22 @@ public interface DomElement extends DomNode {
      * @return a non-live node list of elements that matched the given selectors
      */
     JsArray<Node> querySelectorAll(String selectors);
+
+    /**
+     * Sets an attribute value for this node.
+     *
+     * @param name
+     *            the attribute name
+     * @param value
+     *            the attribute value
+     */
+    void setAttribute(String name, String value);
+
+    /**
+     * Removes an attribute from this node.
+     * 
+     * @param name
+     *            the attribute name
+     */
+    void removeAttribute(String name);
 }
