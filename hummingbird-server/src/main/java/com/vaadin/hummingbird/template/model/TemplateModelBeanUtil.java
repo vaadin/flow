@@ -308,9 +308,8 @@ public class TemplateModelBeanUtil {
             childNodes.add(childNode);
         }
 
-        ModelList modelList = ModelPathResolver
-                .resolveStateNode(stateNode, modelPath, ModelList.class)
-                .getFeature(ModelList.class);
+        ModelList modelList = ModelPathResolver.forPath(modelPath)
+                .resolveModelList(stateNode);
         modelList.clear();
 
         modelList.addAll(childNodes);

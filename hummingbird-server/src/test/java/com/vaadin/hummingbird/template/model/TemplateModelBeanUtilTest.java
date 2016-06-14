@@ -254,6 +254,30 @@ public class TemplateModelBeanUtilTest {
     }
 
     @Test
+    public void testImportBeansModelPath() {
+        NoModelTemplate template = new NoModelTemplate();
+
+        Bean listItem1 = new Bean(1);
+        Bean listItem2 = new Bean(2);
+
+        List<Bean> beans = Arrays.asList(listItem1, listItem2);
+
+        template.getModel().importBeans("some.part.contains.beans", beans,
+                Bean.class, name -> true);
+
+        ModelList modelList = ModelPathResolver
+                .forPath("some.part.contains.beans")
+                .resolveModelList(template.getElement().getNode());
+
+        Assert.assertEquals(2, modelList.size());
+
+        assertBeanEqualsModelMap(listItem1,
+                modelList.get(0).getFeature(ModelMap.class));
+        assertBeanEqualsModelMap(listItem2,
+                modelList.get(1).getFeature(ModelMap.class));
+    }
+
+    @Test
     public void testImportFilteredBeans() {
         NoModelTemplate template = new NoModelTemplate();
 
