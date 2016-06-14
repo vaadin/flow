@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.regex.Pattern;
@@ -398,6 +399,36 @@ public class ReflectTools implements Serializable {
                     CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
                     cls.getName()), e);
         }
+    }
+
+    /**
+     * Creates a parameterized type, e.g. {@code List<Bean>}.
+     *
+     * @param rawType
+     *            the raw type, e.g. {@code List}
+     * @param subType
+     *            the sub type, e.g. {@code Bean}
+     * @return a parameterized type
+     */
+    public static Type createParameterizedType(Class<?> rawType,
+            Class<?> subType) {
+        return new ParameterizedType() {
+
+            @Override
+            public Type getRawType() {
+                return rawType;
+            }
+
+            @Override
+            public Type getOwnerType() {
+                return null;
+            }
+
+            @Override
+            public Type[] getActualTypeArguments() {
+                return new Type[] { subType };
+            }
+        };
     }
 
 }

@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 
@@ -87,26 +88,50 @@ public class ModelPathResolver {
     }
 
     /**
-     * Resolves the model path starting from the given stateNode. Returns the
-     * {@link ModelMap} which contains the property defined by the path, i.e.
-     * uses all parts up until the last "." in the path.
+     * Resolves the {@link ModelMap} that the model path refers to, starting
+     * from the given stateNode.
      *
      * @param stateNode
      *            the state node to start resolving from
      * @return the model map of the resolved node
      */
     public ModelMap resolveModelMap(StateNode stateNode) {
-        Class<ModelMap> childFeature = ModelMap.class;
+        return resolve(stateNode, ModelMap.class);
+    }
+
+    private <T extends NodeFeature> T resolve(StateNode stateNode,
+            Class<T> childFeature) {
         StateNode node = stateNode;
         int lastIndex = modelPathParts.length - 1;
         if (pathContainsPropertyName) {
             lastIndex--;
         }
 
-        for (int i = 0; i <= lastIndex; i++) {
-            node = resolveStateNode(node, modelPathParts[i], childFeature);
+        for (int i = 0; i < lastIndex; i++) {
+            node = resolveStateNode(node, modelPathParts[i], ModelMap.class);
+        }
+
+        if (lastIndex >= 0) {
+            node = resolveStateNode(node, modelPathParts[lastIndex],
+                    childFeature);
         }
         return node.getFeature(childFeature);
+    }
+
+    /**
+     * Resolves the {@link ModelList} that the model path refers to, starting
+     * from the given stateNode.
+     *
+     * @param stateNode
+     *            the state node to start resolving from
+     * @return the model list of the resolved node
+     */
+    public ModelList resolveModelList(StateNode stateNode) {
+        // Assume for now that only the last part refers to a list and all
+        // intermediate parts refer to maps
+        // e.g. formItem.person.addresses
+
+        return resolve(stateNode, ModelList.class);
     }
 
     /**
