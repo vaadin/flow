@@ -237,6 +237,39 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Gets default value for given {@code primitiveType}.
+     * 
+     * @param primitiveType
+     *            the primitive type
+     * @return the corresponding default value
+     */
+    public static Object getPrimitiveDefaultValue(Class<?> primitiveType) {
+        if (!primitiveType.isPrimitive()) {
+            throw new IllegalArgumentException(
+                    "Provided type " + primitiveType + " is not primitive");
+        }
+        if (primitiveType.equals(int.class)) {
+            return 0;
+        } else if (primitiveType.equals(double.class)) {
+            return 0D;
+        } else if (primitiveType.equals(boolean.class)) {
+            return false;
+        } else if (primitiveType.equals(float.class)) {
+            return 0F;
+        } else if (primitiveType.equals(byte.class)) {
+            return (byte) 0;
+        } else if (primitiveType.equals(char.class)) {
+            return (char) 0;
+        } else if (primitiveType.equals(short.class)) {
+            return (short) 0;
+        } else if (primitiveType.equals(long.class)) {
+            return 0L;
+        }
+        assert false;
+        return null;
+    }
+
+    /**
      * Checks whether the given method is a valid setter according to the
      * JavaBeans Specification.
      *
@@ -316,6 +349,20 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Return all the setter methods from the given type.
+     * <p>
+     * Any setter methods from {@link Object} are excluded.
+     *
+     * @param type
+     *            the type to get setters from
+     * @return a stream of setter methods
+     */
+    public static Stream<Method> getSetterMethods(Class<?> type) {
+        return Stream.of(type.getMethods()).filter(ReflectTools::isSetter)
+                .filter(ReflectTools::isNotObjectMethod);
+    }
+
+    /**
      * Returns whether the given method is <b>NOT</b> declared in {@link Object}
      * .
      *
@@ -349,6 +396,27 @@ public class ReflectTools implements Serializable {
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
                 .replaceFirst("");
         return SharedUtil.firstToLower(propertyName);
+    }
+
+    /**
+     * Returns property type from the given getter or setter method.
+     * 
+     * @see #isSetter(Method)
+     * @see #isGetter(Method)
+     * @param method
+     *            the method to inspect
+     * @return the property type
+     */
+    public static Type getPropertyType(Method method) {
+        if (!isGetter(method) && !isSetter(method)) {
+            throw new IllegalArgumentException(
+                    "Method is not a valid getter or setter");
+        }
+        if (isGetter(method)) {
+            return method.getGenericReturnType();
+        } else {
+            return method.getGenericParameterTypes()[0];
+        }
     }
 
     /**

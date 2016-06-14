@@ -246,6 +246,9 @@ public class TemplateModelTest {
         BasicTypeModelTemplate template = new BasicTypeModelTemplate();
         BasicTypeModel model = template.getModel();
 
+        // Initial populate properties model changes. Clear them out.
+        template.getElement().getNode().clearChanges();
+
         model.setString("foobar");
 
         Assert.assertEquals("foobar", model.getString());
@@ -667,6 +670,53 @@ public class TemplateModelTest {
                 SubSubBeanIface.class);
 
         Assert.assertEquals(4, subProxy.getValue());
+    }
+
+    @Test
+    public void modelMapContainsModelProperties() {
+        BasicTypeModelTemplate template = new BasicTypeModelTemplate();
+
+        // create model (populate properties)
+        template.getModel();
+
+        ModelMap model = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+
+        Assert.assertTrue(model.hasValue("booleanPrimitive"));
+        Assert.assertTrue(model.hasValue("boolean"));
+        Assert.assertTrue(model.hasValue("int"));
+        Assert.assertTrue(model.hasValue("integer"));
+        Assert.assertTrue(model.hasValue("doublePrimitive"));
+        Assert.assertTrue(model.hasValue("double"));
+        Assert.assertTrue(model.hasValue("string"));
+    }
+
+    @Test
+    public void notSupportedModelMapHasNoProperties() {
+        BasicTypeModelTemplate template = new BasicTypeModelTemplate();
+
+        // create model (populate properties)
+        template.getModel();
+
+        ModelMap model = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+
+        Assert.assertFalse(model.hasValue("long"));
+        Assert.assertFalse(model.hasValue("foo"));
+        Assert.assertFalse(model.hasValue("bar"));
+    }
+
+    @Test
+    public void modelMapContainsBeanProperty() {
+        BeanModelTemplate template = new BeanModelTemplate();
+
+        // create model (populate properties)
+        template.getModel();
+
+        ModelMap model = template.getElement().getNode()
+                .getFeature(ModelMap.class);
+
+        Assert.assertTrue(model.hasValue("bean"));
     }
 
     private void setModelPropertyAndVerifyGetter(Template template,

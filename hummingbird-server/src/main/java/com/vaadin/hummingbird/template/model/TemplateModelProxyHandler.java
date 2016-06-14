@@ -155,6 +155,13 @@ public class TemplateModelProxyHandler implements Serializable {
         assert stateNode != null;
         assert modelType != null;
 
+        ModelMap model = stateNode.getFeature(ModelMap.class);
+        if (model == null) {
+            throw new IllegalArgumentException(
+                    "Provided StateNode doesn't have a model");
+        }
+        TemplateModelBeanUtil.populateProperties(model, modelType);
+
         return modelType
                 .cast(proxyConstructors.get(modelType).apply(stateNode));
     }

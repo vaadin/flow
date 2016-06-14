@@ -331,11 +331,13 @@ public class TemplateModelBeanUtilTest {
             Assert.assertTrue(properties.contains(s));
         }
 
-        Assert.assertFalse(modelMap.hasValue("booleanObject"));
-        Assert.assertFalse(modelMap.hasValue("booleanValue"));
-        Assert.assertFalse(modelMap.hasValue("intObject"));
-        Assert.assertFalse(modelMap.hasValue("doubleObject"));
-        Assert.assertFalse(modelMap.hasValue("doubleValue"));
+        // properties in the model are populated but they are not imported from
+        // the bean
+        Assert.assertNull(modelMap.getValue("booleanObject"));
+        Assert.assertEquals(false, modelMap.getValue("booleanValue"));
+        Assert.assertNull(modelMap.getValue("intObject"));
+        Assert.assertNull(null, modelMap.getValue("doubleObject"));
+        Assert.assertEquals(0d, modelMap.getValue("doubleValue"));
     }
 
     @Test

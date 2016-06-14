@@ -264,6 +264,38 @@ public class TemplateModelBeanUtil {
         throw createUnsupportedTypeException(returnType, propertyName);
     }
 
+    static void populateProperties(ModelMap model, Class<?> beanClass) {
+        Stream.of(beanClass.getMethods())
+                .filter(method -> ReflectTools.isGetter(method)
+                        || ReflectTools.isSetter(method))
+                .forEach(method -> initProperty(model, method));
+    }
+
+    private static void initProperty(ModelMap model, Method method) {
+        String property = ReflectTools.getPropertyName(method);
+        if (model.hasValue(property)) {
+            return;
+        }
+        Type type = ReflectTools.getPropertyType(method);
+        if (!(type instanceof Class<?>)) {
+            return;
+        }
+        Class<?> clazz = (Class<?>) type;
+        if (!isSupportedBasicType(clazz)) {
+            if (ReflectTools.getGetterMethods(clazz).count() != 0
+                    || ReflectTools.getSetterMethods(clazz).count() != 0) {
+                model.setValue(property, null);
+            }
+            return;
+        }
+        if (clazz.isPrimitive()) {
+            model.setValue(property, (Serializable) ReflectTools
+                    .getPrimitiveDefaultValue((Class<?>) type));
+        } else {
+            model.setValue(property, null);
+        }
+    }
+
     private static Object getModelValueBasicType(Object value,
             String propertyName, Class<?> returnClazz) {
         if (isSupportedBasicType(returnClazz)) {
@@ -320,19 +352,8 @@ public class TemplateModelBeanUtil {
     }
 
     private static Object getPrimitiveDefaultValue(Class<?> primitiveType) {
-        if (primitiveType == int.class) {
-            return Integer.valueOf(0);
-        } else if (primitiveType == double.class) {
-            return Double.valueOf(0);
-        } else if (primitiveType == boolean.class) {
-            return false;
-        }
-        assert !isSupportedBasicType(primitiveType);
-
-        throw new InvalidTemplateModelException(
-                "Template model does not support primitive type "
-                        + primitiveType.getName()
-                        + ", all supported types are: "
-                        + getSupportedTypesString());
+        assert Stream.of(SUPPORTED_PRIMITIVE_TYPES).collect(Collectors.toSet())
+                .contains(primitiveType);
+        return ReflectTools.getPrimitiveDefaultValue(primitiveType);
     }
 }
