@@ -33,6 +33,8 @@ public class TemplateIncludeIT extends PhantomJSTest {
                 + "<div id=\"header\"> <span>Menu item 1</span> <span>Menu item 2</span> <span>Menu item 3</span> </div>" //
                 + "<div id=\"content\">Here goes the content</div>" //
                 + "<div id=\"footer\"> <span>Footer goes here</span> </div></div>";
+        expected = expected.replace("> <", "><");
+        outerHtml = outerHtml.replace("> <", "><");
         Assert.assertEquals(expected, outerHtml);
     }
 }

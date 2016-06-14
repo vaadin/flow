@@ -15,8 +15,13 @@
  */
 package com.vaadin.hummingbird.template.parser;
 
+import java.util.regex.Pattern;
+
 import org.jsoup.nodes.Node;
 
+import com.vaadin.hummingbird.template.AbstractBindingValueProvider;
+import com.vaadin.hummingbird.template.JsExpressionBindingProvider;
+import com.vaadin.hummingbird.template.ModelValueBindingProvider;
 import com.vaadin.hummingbird.template.TemplateParseException;
 
 /**
@@ -30,6 +35,9 @@ import com.vaadin.hummingbird.template.TemplateParseException;
  */
 public abstract class AbstractTemplateBuilderFactory<T extends Node>
         implements TemplateNodeBuilderFactory<T> {
+
+    private static final Pattern SIMPLE_MODEL_REFERENCE_EXPRESSION = Pattern
+            .compile("[\\w\\.]+");
 
     /**
      * Threadlocal for tracking whether parser is inside a for loop or not. To
@@ -97,5 +105,14 @@ public abstract class AbstractTemplateBuilderFactory<T extends Node>
         String key = parameterString;
         key = key.substring(enclosingLength);
         return key.substring(0, key.length() - enclosingLength);
+    }
+
+    protected static AbstractBindingValueProvider createExpressionBinding(
+            String expression) {
+        if (SIMPLE_MODEL_REFERENCE_EXPRESSION.matcher(expression).matches()) {
+            return new ModelValueBindingProvider(expression);
+        } else {
+            return new JsExpressionBindingProvider(expression);
+        }
     }
 }

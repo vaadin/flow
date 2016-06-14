@@ -2,9 +2,9 @@ package com.vaadin.hummingbird.template.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -77,6 +77,12 @@ public class TemplateModelTest {
 
     public interface BeanModel extends TemplateModel {
         void setBean(Bean bean);
+    }
+
+    public interface ListBeanModel extends TemplateModel {
+        void setBeans(List<Bean> beans);
+
+        List<Bean> getBeans();
     }
 
     public interface SubBeanIface {
@@ -204,6 +210,13 @@ public class TemplateModelTest {
         }
     }
 
+    static class ListBeanModelTemplate extends NoModelTemplate {
+        @Override
+        public ListBeanModel getModel() {
+            return (ListBeanModel) super.getModel();
+        }
+    }
+
     @Test
     public void testTemplateModelTypeReading() {
         Class<? extends TemplateModel> templateModelType = TemplateModelTypeParser
@@ -236,11 +249,9 @@ public class TemplateModelTest {
         TemplateModel modelProxy = emptyModelTemplate.getModel();
         TemplateModel modelProxy2 = emptyModelTemplate.getModel();
 
-        Assert.assertTrue(Proxy.isProxyClass(modelProxy.getClass()));
         Assert.assertTrue(modelProxy == modelProxy2);
 
         modelProxy2 = new EmptyModelTemplate().getModel();
-        Assert.assertTrue(Proxy.isProxyClass(modelProxy2.getClass()));
         Assert.assertNotSame(modelProxy, modelProxy2);
     }
 
@@ -429,7 +440,7 @@ public class TemplateModelTest {
         Assert.assertEquals("foobar", modelMap.getValue("string"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testUnsupportedPrimitiveSetter() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -437,7 +448,7 @@ public class TemplateModelTest {
         model.setLong(0L);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testUnsupportedPrimitiveGetter() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -445,7 +456,7 @@ public class TemplateModelTest {
         model.getLong();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testGetterVoid() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -453,7 +464,7 @@ public class TemplateModelTest {
         model.getFoo();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testGetterWithParam() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -461,7 +472,7 @@ public class TemplateModelTest {
         model.getFoo(0);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testSetterReturns() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -469,7 +480,7 @@ public class TemplateModelTest {
         model.setFoo(0);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testSetterNoParam() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -477,7 +488,7 @@ public class TemplateModelTest {
         model.setFoo();
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testSetterTwoParams() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -485,7 +496,7 @@ public class TemplateModelTest {
         model.setFoo(1, 2);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testInvalidSetterMethodName() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -493,7 +504,7 @@ public class TemplateModelTest {
         model.setfoo(1);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = InvalidTemplateModelException.class)
     public void testInvalidGetterMethodName() {
         NotSupportedModelTemplate template = new NotSupportedModelTemplate();
         NotSupportedModel model = template.getModel();
@@ -530,6 +541,18 @@ public class TemplateModelTest {
 
         setModelPropertyAndVerifyGetter(template, () -> proxy.isVisible(),
                 "bean.beanClass", "visible", true);
+    }
+
+    @Test
+    public void getProxyClass_sameClasses() {
+        SubBeansModel model1 = new SubBeansTemplate().getModel();
+        model1.setBeanClass(new SubBean());
+
+        SubBeansModel model2 = new SubBeansTemplate().getModel();
+        model2.setBeanClass(new SubBean());
+
+        Assert.assertSame(model1.getBeanClass().getClass(),
+                model2.getBeanClass().getClass());
     }
 
     @Test
@@ -689,4 +712,16 @@ public class TemplateModelTest {
         return feature;
     }
 
+    @Test
+    public void getListFromModel() {
+        ListBeanModelTemplate template = new ListBeanModelTemplate();
+        ArrayList<Bean> beans = new ArrayList<>();
+        beans.add(new Bean(100));
+        beans.add(new Bean(200));
+        beans.add(new Bean(300));
+        template.getModel().setBeans(beans);
+        TemplateModelBeanUtilTest.assertListContentsEquals(
+                template.getModel().getBeans(), new Bean(100), new Bean(200),
+                new Bean(300));
+    }
 }

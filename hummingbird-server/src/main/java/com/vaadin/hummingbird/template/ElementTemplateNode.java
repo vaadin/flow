@@ -98,7 +98,8 @@ public class ElementTemplateNode extends AbstractElementTemplateNode {
         this.eventHandlers = new HashMap<>(eventHandlers);
 
         children = new ArrayList<>(childBuilders.size());
-        childBuilders.stream().map(childBuilder -> childBuilder.build(this))
+        childBuilders.stream()
+                .flatMap(childBuilder -> childBuilder.build(this).stream())
                 .forEach(children::add);
     }
 

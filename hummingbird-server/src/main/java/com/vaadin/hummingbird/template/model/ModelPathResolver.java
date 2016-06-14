@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 
@@ -29,35 +30,108 @@ import com.vaadin.hummingbird.nodefeature.NodeFeature;
 public class ModelPathResolver {
     private static final Pattern DOT_PATTERN = Pattern.compile("\\.");
     private String[] modelPathParts;
+    private boolean pathContainsPropertyName;
 
     /**
      * Constructs a representation of the given model path.
      *
      * @param modelPath
-     *            the path, in the format
-     *            {@literal parent1.parent2.propertyName}.
+     *            the path, in the format {@literal path1.path2} or
+     *            {@literal path1.path2.propertyName}, depending on
+     *            <code>containsPropertyName</code>
+     * @param pathContainsPropertyName
+     *            <code>true</code> if <code>modelPath</code> ends with a
+     *            property, <code>false</code> if modelPath contains no property
+     *            information
      */
-    public ModelPathResolver(String modelPath) {
-        modelPathParts = DOT_PATTERN.split(modelPath);
+    private ModelPathResolver(String modelPath,
+            boolean pathContainsPropertyName) {
+        this.pathContainsPropertyName = pathContainsPropertyName;
+        if (modelPath.endsWith(".")) {
+            throw new IllegalArgumentException(
+                    "The model path must not end with a dot");
+        }
+        if ("".equals(modelPath)) {
+            if (pathContainsPropertyName) {
+                throw new IllegalArgumentException("The given model path \""
+                        + modelPath
+                        + "\" denotes a property and must therefore contain a dot");
+            }
+            modelPathParts = new String[0];
+        } else {
+            modelPathParts = DOT_PATTERN.split(modelPath);
+        }
     }
 
     /**
-     * Resolves the model path starting from the given stateNode. Returns the
-     * {@link ModelMap} which contains the property defined by the path, i.e.
-     * uses all parts up until the last "." in the path.
+     * Creates a new resolver for the given path of type
+     * {@literal path1.path2.path3}.
+     *
+     * @param path
+     *            the model path, without property information
+     * @return a resolver for the given path
+     */
+    public static ModelPathResolver forPath(String path) {
+        return new ModelPathResolver(path, false);
+    }
+
+    /**
+     * Creates a new resolver for the given path of type
+     * {@literal parent1.parent2.property}.
+     *
+     * @param pathWithProperty
+     *            the model path, ending with a property name
+     * @return a resolver for the given path
+     */
+    public static ModelPathResolver forProperty(String pathWithProperty) {
+        return new ModelPathResolver(pathWithProperty, true);
+    }
+
+    /**
+     * Resolves the {@link ModelMap} that the model path refers to, starting
+     * from the given stateNode.
      *
      * @param stateNode
      *            the state node to start resolving from
      * @return the model map of the resolved node
      */
     public ModelMap resolveModelMap(StateNode stateNode) {
-        Class<ModelMap> childFeature = ModelMap.class;
+        return resolve(stateNode, ModelMap.class);
+    }
+
+    private <T extends NodeFeature> T resolve(StateNode stateNode,
+            Class<T> childFeature) {
         StateNode node = stateNode;
-        // The last part is the propertyName
-        for (int i = 0; i < modelPathParts.length - 1; i++) {
-            node = resolveStateNode(node, modelPathParts[i], childFeature);
+        int lastIndex = modelPathParts.length - 1;
+        if (pathContainsPropertyName) {
+            lastIndex--;
+        }
+
+        for (int i = 0; i < lastIndex; i++) {
+            node = resolveStateNode(node, modelPathParts[i], ModelMap.class);
+        }
+
+        if (lastIndex >= 0) {
+            node = resolveStateNode(node, modelPathParts[lastIndex],
+                    childFeature);
         }
         return node.getFeature(childFeature);
+    }
+
+    /**
+     * Resolves the {@link ModelList} that the model path refers to, starting
+     * from the given stateNode.
+     *
+     * @param stateNode
+     *            the state node to start resolving from
+     * @return the model list of the resolved node
+     */
+    public ModelList resolveModelList(StateNode stateNode) {
+        // Assume for now that only the last part refers to a list and all
+        // intermediate parts refer to maps
+        // e.g. formItem.person.addresses
+
+        return resolve(stateNode, ModelList.class);
     }
 
     /**
@@ -66,6 +140,11 @@ public class ModelPathResolver {
      * @return the property name
      */
     public String getPropertyName() {
+        if (!pathContainsPropertyName) {
+            throw new IllegalStateException(
+                    "The resolver was created with only a path");
+        }
+
         return modelPathParts[modelPathParts.length - 1];
     }
 

@@ -123,17 +123,22 @@ public class ResourceLoader {
     private final JsMap<String, JsArray<ResourceLoadListener>> loadListeners = JsCollections
             .map();
 
+    private Registry registry;
+
     /**
      * Creates a new resource loader. You should not create you own resource
      * loader, but instead use {@link Registry#getResourceLoader()} to get an
      * instance.
      *
+     * @param registry
+     *            the global registry
      * @param initFromDom
      *            <code>true</code> if currently loaded resources should be
      *            marked as loaded, <code>false</code> to ignore currently
      *            loaded resources
      */
-    public ResourceLoader(boolean initFromDom) {
+    public ResourceLoader(Registry registry, boolean initFromDom) {
+        this.registry = registry;
         if (initFromDom) {
             initLoadedResourcesFromDom();
         }
@@ -273,13 +278,11 @@ public class ResourceLoader {
             addOnloadHandler(linkTag, new ResourceLoadListener() {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
-                    Console.log("Loaded HTML import " + url);
                     fireLoad(event);
                 }
 
                 @Override
                 public void onError(ResourceLoadEvent event) {
-                    Console.error("Failed to load HTML import " + url);
                     fireError(event);
                 }
             }, event);
@@ -461,6 +464,8 @@ public class ResourceLoader {
     }
 
     private void fireError(ResourceLoadEvent event) {
+        Console.error("Error loading " + event.getResourceUrl());
+        showLoadingError(event);
         String resource = event.getResourceUrl();
 
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
@@ -475,7 +480,24 @@ public class ResourceLoader {
         }
     }
 
+    protected void showLoadingError(ResourceLoadEvent event) {
+        if (registry.getApplicationConfiguration().isProductionMode()) {
+            // Only show error message when not in production
+            return;
+        }
+        Document document = Browser.getDocument();
+        Element errorContainer = document.createDivElement();
+        errorContainer.setClassName("v-system-error");
+        errorContainer
+                .setTextContent("Error loading " + event.getResourceUrl());
+        errorContainer.addEventListener("click", e -> {
+            errorContainer.getParentElement().removeChild(errorContainer);
+        });
+        document.getBody().appendChild(errorContainer);
+    }
+
     private void fireLoad(ResourceLoadEvent event) {
+        Console.log("Loaded " + event.getResourceUrl());
         String resource = event.getResourceUrl();
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
         loadedResources.add(resource);

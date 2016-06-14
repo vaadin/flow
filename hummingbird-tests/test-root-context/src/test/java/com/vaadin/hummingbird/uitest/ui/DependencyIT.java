@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,6 +82,33 @@ public class DependencyIT extends PhantomJSTest {
                 messages.get(messages.size() - 2));
         Assert.assertEquals("HTML import 3 loaded",
                 messages.get(messages.size() - 1));
+    }
+
+    @Test
+    public void loadingUnavailableResources() {
+        open();
+        findElement(By.id("loadUnavailableResources")).click();
+
+        List<String> errors = findElements(By.className("v-system-error"))
+                .stream().map(WebElement::getText).collect(Collectors.toList());
+        Assert.assertEquals(3, errors.size());
+        // The order for these can be random
+        Assert.assertTrue(errors
+                .contains("Error loading http://localhost:8888/not-found.css"));
+        Assert.assertTrue(errors
+                .contains("Error loading http://localhost:8888/not-found.js"));
+        Assert.assertTrue(errors.contains(
+                "Error loading http://localhost:8888/not-found.html"));
+    }
+
+    @Test
+    public void loadingUnavailableResourcesProduction() {
+        openProduction();
+        findElement(By.id("loadUnavailableResources")).click();
+
+        List<WebElement> errors = findElements(By.className("v-system-error"));
+        // Should not be shown in production
+        Assert.assertEquals(0, errors.size());
     }
 
     private List<String> getMessages() {

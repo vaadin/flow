@@ -93,8 +93,6 @@ public class TemplateParser {
 
     private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
         Collection<TemplateNodeBuilderFactory<?>> factories = new ArrayList<>();
-        factories.add(new ChildTextNodeBuilderFactory());
-        factories.add(new TemplateIncludeBuilderFactory());
         factories.add(new ForElementBuilderFactory());
         factories.add(new DataNodeFactory());
         return factories;
@@ -126,7 +124,9 @@ public class TemplateParser {
         Optional<TemplateNodeBuilder> templateBuilder = createBuilder(
                 children.get(0), templateResolver);
         assert templateBuilder.isPresent();
-        return templateBuilder.get().build(null);
+        List<? extends TemplateNode> nodes = templateBuilder.get().build(null);
+        assert nodes.size() == 1;
+        return nodes.get(0);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })

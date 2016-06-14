@@ -33,6 +33,10 @@ These tutorials show how the different features are used.
 ** <<tutorial-component-composite#,Creating a Component Using Existing Components>>
 ** <<tutorial-component-events#,Using Events with Components>>
 ** <<tutorial-component-with-dependencies#,Creating a Component with External Dependencies>>
+* Web Components
+** <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
+** <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
+** <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
 * Template API
 ** <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 ** <<tutorial-template-bindings#,Binding Model Data in a Template>>
@@ -42,10 +46,6 @@ These tutorials show how the different features are used.
 ** <<tutorial-template-include#,Including Templates in Templates>>
 ** <<tutorial-template-for#,Creating Template Contents Dynamically Based on a List of Items>>
 ** <<tutorial-template-event-handlers#,Handling User Events in a Template>>
-* Web Components
-** <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
-** <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
-** <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>

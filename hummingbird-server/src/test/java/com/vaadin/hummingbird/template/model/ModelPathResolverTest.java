@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 
 public class ModelPathResolverTest {
@@ -34,14 +35,34 @@ public class ModelPathResolverTest {
 
     @Test
     public void resolveEmptyPath() {
-        ModelPathResolver resolver = new ModelPathResolver("");
+        ModelPathResolver resolver = ModelPathResolver.forPath("");
         ModelMap map = resolver.resolveModelMap(root);
         Assert.assertEquals(root.getFeature(ModelMap.class), map);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void resolvePathEndsInDot() {
+        ModelPathResolver.forPath("foo.");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void resolvePropertyEmptyPath() {
+        ModelPathResolver.forProperty("");
+    }
+
+    @Test
+    public void resolvePath() {
+        ModelPathResolver resolver = ModelPathResolver.forPath("foo");
+        ModelMap rootMap = root.getFeature(ModelMap.class);
+        ModelMap map = resolver.resolveModelMap(root);
+        Assert.assertTrue(rootMap.hasValue("foo"));
+        Assert.assertEquals(map, ((StateNode) rootMap.getValue("foo"))
+                .getFeature(ModelMap.class));
+    }
+
     @Test
     public void resolveProperty() {
-        ModelPathResolver resolver = new ModelPathResolver("foo");
+        ModelPathResolver resolver = ModelPathResolver.forProperty("foo");
         ModelMap map = resolver.resolveModelMap(root);
         Assert.assertEquals(root.getFeature(ModelMap.class), map);
     }
@@ -51,7 +72,8 @@ public class ModelPathResolverTest {
         ModelMap rootMap = root.getFeature(ModelMap.class);
         Assert.assertFalse(rootMap.hasValue("foo"));
 
-        ModelMap map = new ModelPathResolver("foo.bar").resolveModelMap(root);
+        ModelMap map = ModelPathResolver.forProperty("foo.bar")
+                .resolveModelMap(root);
         Assert.assertTrue(rootMap.hasValue("foo"));
         ModelMap fooMap = ((StateNode) rootMap.getValue("foo"))
                 .getFeature(ModelMap.class);
@@ -60,7 +82,7 @@ public class ModelPathResolverTest {
 
     @Test
     public void resolveSubSubProperty() {
-        ModelMap map = new ModelPathResolver("foo.bar.baz")
+        ModelMap map = ModelPathResolver.forProperty("foo.bar.baz")
                 .resolveModelMap(root);
         ModelMap rootMap = root.getFeature(ModelMap.class);
         ModelMap fooMap = ((StateNode) rootMap.getValue("foo"))
@@ -71,28 +93,51 @@ public class ModelPathResolverTest {
         Assert.assertEquals(barMap, map);
     }
 
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void propertyNameForEmpty() {
-        ModelPathResolver resolver = new ModelPathResolver("");
-        Assert.assertEquals("", resolver.getPropertyName());
+        ModelPathResolver.forProperty("");
     }
 
     @Test
     public void propertyNameForProperty() {
-        ModelPathResolver resolver = new ModelPathResolver("foo");
+        ModelPathResolver resolver = ModelPathResolver.forProperty("foo");
         Assert.assertEquals("foo", resolver.getPropertyName());
     }
 
     @Test
     public void propertyNameForSubProperty() {
-        ModelPathResolver resolver = new ModelPathResolver("foo.bar");
+        ModelPathResolver resolver = ModelPathResolver.forProperty("foo.bar");
         Assert.assertEquals("bar", resolver.getPropertyName());
     }
 
     @Test
     public void propertyNameForSubSubProperty() {
-        ModelPathResolver resolver = new ModelPathResolver("foo.bar.baz");
+        ModelPathResolver resolver = ModelPathResolver
+                .forProperty("foo.bar.baz");
         Assert.assertEquals("baz", resolver.getPropertyName());
+    }
+
+    @Test
+    public void resolveList() {
+        ModelPathResolver resolver = ModelPathResolver.forPath("list");
+        ModelList modelList = resolver.resolveModelList(root);
+        Assert.assertEquals(modelList,
+                ((StateNode) root.getFeature(ModelMap.class).getValue("list"))
+                        .getFeature(ModelList.class));
+    }
+
+    @Test
+    public void resolveSubList() {
+        ModelPathResolver resolver = ModelPathResolver.forPath("foo.bar.list");
+        ModelList modelList = resolver.resolveModelList(root);
+
+        StateNode foo = (StateNode) root.getFeature(ModelMap.class)
+                .getValue("foo");
+        StateNode bar = (StateNode) foo.getFeature(ModelMap.class)
+                .getValue("bar");
+        StateNode list = (StateNode) bar.getFeature(ModelMap.class)
+                .getValue("list");
+        Assert.assertEquals(modelList, list.getFeature(ModelList.class));
     }
 
 }

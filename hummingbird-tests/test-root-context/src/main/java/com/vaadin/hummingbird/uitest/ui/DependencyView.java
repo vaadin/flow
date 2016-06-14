@@ -81,10 +81,19 @@ public class DependencyView extends AbstractDivView {
         });
         allBlue.setId("loadBlue");
 
+        Button loadUnavailableResources = new Button(
+                "Load unavailable resources", e -> {
+                    getPage().addStyleSheet("/not-found.css");
+                    getPage().addHtmlImport("/not-found.html");
+                    getPage().addJavaScript("/not-found.js");
+                });
+        loadUnavailableResources.setId("loadUnavailableResources");
+
         Div log = new Div();
         log.setId("log");
 
-        add(jsOrder, htmlOrder, allBlue, new Hr(), log);
+        add(jsOrder, htmlOrder, allBlue, loadUnavailableResources, new Hr(),
+                log);
     }
 
     @Override
