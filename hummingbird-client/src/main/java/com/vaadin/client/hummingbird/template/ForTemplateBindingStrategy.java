@@ -20,8 +20,12 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.dom.DomApi;
+import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
+import com.vaadin.client.hummingbird.nodefeature.ListSpliceListener;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
@@ -52,52 +56,116 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
      * sibling {@code beforeNode}.
      *
      */
-    private static final class ForTemplateNodeUpdate implements Command {
+    private static final class ForTemplateNodeUpdate
+            implements Command, ListSpliceListener {
 
-        private Node anchor;
-        private Node beforeNode;
-        private final StateNode stateNode;
-        private final ForTemplateNode templateNode;
+        private final Node anchor;
         private final BinderContext context;
+
+        private final int childId;
+        private final MapProperty collectionProperty;
+
+        // The number of children to remove if the binding is cleared
+        private int childCount = 0;
 
         ForTemplateNodeUpdate(BinderContext context, Node anchor,
                 StateNode stateNode, ForTemplateNode templateNode) {
             this.anchor = anchor;
-            this.stateNode = stateNode;
-            this.templateNode = templateNode;
             this.context = context;
+
+            JsArray<Double> children = templateNode.getChildrenIds();
+            assert children.length() == 1;
+            childId = children.get(0).intValue();
+
+            String collectionVariable = templateNode.getCollectionVariable();
+            NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            collectionProperty = model.getProperty(collectionVariable);
         }
 
         @Override
         public void execute() {
             Element parent = anchor.getParentElement();
-            if (beforeNode == null) {
-                beforeNode = DomApi.wrap(anchor).getNextSibling();
+
+            // This is run when the list property value changes, i.e. when we
+            // should bind to a new list
+
+            // Remove all children from the previous binding
+            for (int i = 0; i < childCount; i++) {
+                Node nextSibling = DomApi.wrap(anchor).getNextSibling();
+                DomApi.wrap(parent).removeChild(nextSibling);
             }
+            childCount = 0;
 
-            JsArray<Double> children = templateNode.getChildrenIds();
-            assert children.length() == 1;
-            int childId = children.get(0).intValue();
+            // Bind to a new list if there is one
+            StateNode node = (StateNode) collectionProperty.getValue();
+            if (node != null) {
+                NodeList childList = node
+                        .getList(NodeFeatures.TEMPLATE_MODELLIST);
 
-            Node htmlNode = DomApi.wrap(anchor).getNextSibling();
-            while (htmlNode != beforeNode) {
-                DomApi.wrap(parent).removeChild(htmlNode);
-                htmlNode = DomApi.wrap(anchor).getNextSibling();
-            }
+                // Listener added inside a computation -> will be removed when
+                // this computation is invalidated
+                childList.addSpliceListener(e -> {
+                    /*
+                     * Handle lazily so we can create the children we need to
+                     * insert. The change that gives a child node an element tag
+                     * name might not yet have been applied at this point.
+                     */
+                    Reactive.addFlushListener(() -> onSplice(e));
+                });
 
-            NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-            MapProperty property = model
-                    .getProperty(templateNode.getCollectionVariable());
-            if (property.getValue() != null) {
-                StateNode node = (StateNode) property.getValue();
-                context.populateChildren(parent, node,
-                        NodeFeatures.TEMPLATE_MODELLIST,
-                        childNode -> AbstractTemplateStrategy
-                                .createAndBind(childNode, childId, context),
-                        beforeNode);
+                // Init DOM contents based on current list values without making
+                // the current computation depend on the current list contents
+                Reactive.runWithComputation(null, () -> {
+                    JsArray<Object> currentChildren = JsCollections.array();
+                    for (int i = 0; i < childList.length(); i++) {
+                        currentChildren.push(childList.get(i));
+                    }
+
+                    onSplice(new ListSpliceEvent(childList, 0,
+                            JsCollections.array(), currentChildren));
+                });
             }
         }
 
+        @Override
+        public void onSplice(ListSpliceEvent event) {
+            Element parent = anchor.getParentElement();
+
+            // Find the DOM node before the splice target. Must find location
+            // relative to the anchor since we don't know exactly what index the
+            // anchor has.
+            Node beforeNode = anchor;
+            int startIndex = event.getIndex();
+            for (int i = 0; i < startIndex; i++) {
+                beforeNode = DomApi.wrap(beforeNode).getNextSibling();
+            }
+
+            // Remove a number of nodes following the splice target
+            int removeCount = event.getRemove().length();
+            for (int i = 0; i < removeCount; i++) {
+                Node nextSibling = DomApi.wrap(beforeNode).getNextSibling();
+                DomApi.wrap(parent).removeChild(nextSibling);
+            }
+
+            // Create, bind and insert new nodes
+            JsArray<?> add = event.getAdd();
+            int addCount = add.length();
+            for (int i = 0; i < addCount; i++) {
+                StateNode childNode = (StateNode) add.get(i);
+
+                Node childDomNode = AbstractTemplateStrategy
+                        .createAndBind(childNode, childId, context);
+
+                Node nextSibling = DomApi.wrap(beforeNode).getNextSibling();
+
+                DomApi.wrap(parent).insertBefore(childDomNode, nextSibling);
+                beforeNode = childDomNode;
+            }
+
+            // Update child count so that the right number of nodes can be
+            // removed when when the binding is reset
+            childCount = childCount - removeCount + addCount;
+        }
     }
 
     @Override

@@ -74,6 +74,16 @@ public abstract class Computation implements ReactiveChangeListener {
         }
 
         invalidate();
+    }
+
+    private void invalidate() {
+        invalidated = true;
+
+        clearDependencies();
+
+        if (!stopped) {
+            Reactive.addFlushListener(this::recompute);
+        }
 
         // Fire invalidate events
         if (invalidateListeners.size() != 0) {
@@ -87,14 +97,6 @@ public abstract class Computation implements ReactiveChangeListener {
         }
     }
 
-    private void invalidate() {
-        invalidated = true;
-
-        clearDependencies();
-
-        Reactive.addFlushListener(this::recompute);
-    }
-
     private void clearDependencies() {
         while (!dependencies.isEmpty()) {
             dependencies.remove(0).remove();
@@ -106,6 +108,8 @@ public abstract class Computation implements ReactiveChangeListener {
      */
     public void stop() {
         stopped = true;
+
+        invalidate();
 
         // Prevent firing more events
         invalidateListeners.clear();
