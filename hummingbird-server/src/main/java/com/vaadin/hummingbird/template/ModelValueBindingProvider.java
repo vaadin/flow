@@ -52,7 +52,7 @@ public class ModelValueBindingProvider extends AbstractBindingValueProvider {
 
     @Override
     public Object getValue(StateNode node) {
-        ModelPathResolver resolver = new ModelPathResolver(key);
+        ModelPathResolver resolver = ModelPathResolver.forProperty(key);
         return resolver.resolveModelMap(node)
                 .getValue(resolver.getPropertyName());
     }
