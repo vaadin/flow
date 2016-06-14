@@ -22,6 +22,8 @@ import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.dom.DomApi;
+import com.vaadin.client.hummingbird.dom.DomElement;
+import com.vaadin.client.hummingbird.dom.DomNode;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceListener;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
@@ -32,7 +34,6 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
-import elemental.dom.Element;
 import elemental.dom.Node;
 
 /**
@@ -84,15 +85,17 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
 
         @Override
         public void execute() {
-            Element parent = anchor.getParentElement();
+            DomElement wrappedAnchor = DomApi.wrap(anchor);
+            DomElement wrappedParent = DomApi
+                    .wrap(wrappedAnchor.getParentNode());
 
             // This is run when the list property value changes, i.e. when we
             // should bind to a new list
 
             // Remove all children from the previous binding
             for (int i = 0; i < childCount; i++) {
-                Node nextSibling = DomApi.wrap(anchor).getNextSibling();
-                DomApi.wrap(parent).removeChild(nextSibling);
+                Node nextSibling = wrappedAnchor.getNextSibling();
+                wrappedParent.removeChild(nextSibling);
             }
             childCount = 0;
 
@@ -129,7 +132,8 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
 
         @Override
         public void onSplice(ListSpliceEvent event) {
-            Element parent = anchor.getParentElement();
+            DomNode wrappedParent = DomApi
+                    .wrap(DomApi.wrap(anchor).getParentNode());
 
             // Find the DOM node before the splice target. Must find location
             // relative to the anchor since we don't know exactly what index the
@@ -144,7 +148,7 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
             int removeCount = event.getRemove().length();
             for (int i = 0; i < removeCount; i++) {
                 Node nextSibling = DomApi.wrap(beforeNode).getNextSibling();
-                DomApi.wrap(parent).removeChild(nextSibling);
+                wrappedParent.removeChild(nextSibling);
             }
 
             // Create, bind and insert new nodes
@@ -158,7 +162,7 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
 
                 Node nextSibling = DomApi.wrap(beforeNode).getNextSibling();
 
-                DomApi.wrap(parent).insertBefore(childDomNode, nextSibling);
+                wrappedParent.insertBefore(childDomNode, nextSibling);
                 beforeNode = childDomNode;
             }
 

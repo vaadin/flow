@@ -333,8 +333,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             assert child != null : "Can't find element to remove";
 
-            assert child
-                    .getParentElement() == context.element : "Invalid element parent";
+            assert DomApi.wrap(child)
+                    .getParentNode() == context.element : "Invalid element parent";
 
             DomApi.wrap(context.element).removeChild(child);
         }
