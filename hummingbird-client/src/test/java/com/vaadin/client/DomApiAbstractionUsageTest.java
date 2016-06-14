@@ -1,170 +1,176 @@
 package com.vaadin.client;
 
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Pattern;
+import java.nio.file.Paths;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
+import com.vaadin.client.bootstrap.Bootstrapper;
 import com.vaadin.client.communication.DefaultReconnectDialog;
+import com.vaadin.client.hummingbird.RouterLinkHandler;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.dom.DomElement;
 import com.vaadin.client.hummingbird.dom.DomNode;
 
+import elemental.dom.Document;
+import elemental.dom.Element;
+import elemental.dom.Node;
+import elemental.dom.Text;
+import elemental.html.AnchorElement;
+
 public class DomApiAbstractionUsageTest {
-    private static final Path location = new File(".").toPath();
-    private static final Path javaLocation = location.resolve("src/main/java");
+    private static final Set<String> ignoredApplictionClasses = Stream
+            .of(DomElement.class, DomNode.class, ResourceLoader.class,
+                    BrowserInfo.class, DefaultReconnectDialog.class,
+                    SystemErrorHandler.class, LoadingIndicator.class,
+                    RouterLinkHandler.class, Profiler.class)
+            .map(Class::getName).collect(Collectors.toSet());
 
-    private static final List<String> blackListedMethodNames = new ArrayList<>();
-    private static final List<String> whiteListedFiles = Arrays.asList(
-            new String[] { DomElement.class.getName(), DomNode.class.getName(),
-                    ResourceLoader.class.getName(), BrowserInfo.class.getName(),
-                    DefaultReconnectDialog.class.getName(),
-                    SystemErrorHandler.class.getName(),
-                    LoadingIndicator.class.getName(),
-                    Profiler.class.getName() });
+    private static final Set<Class<?>> ignoredElementalClasses = Stream
+            .of(Document.class, AnchorElement.class, Text.class)
+            .collect(Collectors.toSet());
 
-    // checks for line starting with DomApi.wrap(variableName).
-    //@formatter:off
-    private static final String methodPrecedesWrapPatternString =
-                    "DomApi" // DomApi
-                    + "\\.wrap\\(" // .wrap(
-                    + "\\w+" // variable name
-                    + "[\\.1\\w*]*" // optionally more variables separated with .
-                    + "\\)\\.%s{1}\\("; // ).
-    // same as above, but matches end of line with $,
-    //@formatter:on
+    private static final Set<String> ignoredElementMethods = Stream
+            .of("getTagName", "addEventListener", "getOwnerDocument",
+                    "hasAttribute", "getStyle")
+            .collect(Collectors.toSet());
 
-    // checks for DomApi.wrap(element) call from previous line because of line
-    // wrapping, e.g. next line must start with .methodCall()
-    private static final Pattern endsWithPattern = Pattern
-            .compile("DomApi\\.wrap\\(\\w+[\\.1\\w*]*\\)$");
+    private final ClassVisitor classVisitor = new ClassVisitor(Opcodes.ASM5) {
+        private boolean whitelistedClass = false;
+        private String className;
 
-    private static final Map<String, Pattern> methodToPatternMap = new HashMap<>();
+        @Override
+        public void visit(int version, int access, String name,
+                String signature, String superName, String[] interfaces) {
+            className = name.replace('/', '.');
 
-    private static final Map<String, Path> classNameToPathMap = new HashMap<>();
+            String outerClassName = className.replaceAll("\\$.*", "");
+            whitelistedClass = ignoredApplictionClasses
+                    .contains(outerClassName);
+        }
 
-    @BeforeClass
-    public static void setup() throws IOException {
-        // read files
-        Files.walk(javaLocation).filter(DomApiAbstractionUsageTest::filter)
-                .forEach(DomApiAbstractionUsageTest::addFile);
+        @Override
+        public FieldVisitor visitField(int access, String name, String desc,
+                String signature, Object value) {
+            // Trim array markers (not efficient, but straightforward)
+            while (desc.startsWith("[")) {
+                desc = desc.substring(1);
+            }
 
-        addBlackListedMethods(DomElement.class);
-    }
+            if (desc.startsWith("L")) {
+                // Lcom/foo/Foo;
+                String typeName = desc.substring(1, desc.length() - 1);
+                Class<?> type = DomApiAbstractionUsageTest.getClass(typeName);
+                if (DomNode.class.isAssignableFrom(type)) {
+                    Assert.fail(className + "." + name
+                            + " references a wrapped node");
+                }
+            }
+            return null;
+        }
 
-    private static void addBlackListedMethods(Class<?> clazz) {
-        Stream.of(clazz.getMethods()).forEach(
-                method -> blackListedMethodNames.add(method.getName()));
-    }
+        @Override
+        public MethodVisitor visitMethod(int access, String methodName,
+                String desc, String signature, String[] exceptions) {
+            if (whitelistedClass) {
+                return null;
+            }
+
+            return new MethodVisitor(api) {
+                @Override
+                public void visitMethodInsn(int opcode, String targetClass,
+                        String targetMethod, String targetDesc,
+                        boolean inInterface) {
+                    verifyMethod(className + "." + methodName, targetClass,
+                            targetMethod);
+                }
+            };
+        }
+    };
 
     /**
      * This tests that no API from {@link DomElement} or {@link DomNode} is used
      * without wrapping it with a {@link DomApi#wrap(elemental.dom.Node)} call.
-     * <p>
-     * Verifies that any required method call is preceded with DomApi.wrap(*).
-     * <p>
-     * Currently doesn't support calling methods more than once on the same
-     * line, e.g. this will fail event though correctly handled:
-     * <code>DomApi.wrap(DomApi.wrap(n).getChildNodes()).getChildNodes()</code>
      */
     @Test
     public void testDomApiCodeNotUsed() throws IOException {
-        StringBuilder sb = new StringBuilder();
-        AtomicInteger fails = new AtomicInteger();
-        for (Entry<String, Path> entry : classNameToPathMap.entrySet()) {
-            Stream<String> lines = Files.lines(entry.getValue())
-                    .filter(DomApiAbstractionUsageTest::filterComments);
-            String previousLine = "";
+        String classesPath = getClassesLocation(Bootstrapper.class);
 
-            for (String line : lines.toArray(String[]::new)) {
-                final String trimmedLine = line.trim();
+        Files.walk(Paths.get(classesPath))
+                .filter(path -> path.toString().endsWith(".class"))
+                .forEach(this::testClassFile);
+    }
 
-                for (String blackListed : blackListedMethodNames) {
-                    if (trimmedLine.contains(blackListed + "(")) {
-                        // if someone is chaining the calls, just fail (for now)
-                        int matches = StringUtils.countMatches(trimmedLine,
-                                blackListed);
-                        if (matches > 1) {
-                            sb.append("\n[").append(blackListed)
-                                    .append("] is used ").append(matches)
-                                    .append(" times in [").append(trimmedLine)
-                                    .append("] @ ").append(entry.getKey());
-                            fails.incrementAndGet();
-                        } else
+    private void testClassFile(Path classFile) {
+        try (InputStream stream = new FileInputStream(classFile.toString())) {
+            ClassReader classReader = new ClassReader(stream);
 
-                        if (!doesPreviousLineEndWithWrap(previousLine,
-                                trimmedLine, blackListed)
-                                && !doesCallPrecideWrap(trimmedLine,
-                                        blackListed)) {
-
-                            sb.append("\n[").append(blackListed)
-                                    .append("] used in [").append(trimmedLine)
-                                    .append("] @ ").append(entry.getKey());
-                            fails.incrementAndGet();
-                        }
-                    }
-                }
-                previousLine = trimmedLine;
-            }
-        }
-
-        if (sb.length() > 0)
-
-        {
-            Assert.fail("Number of fails: " + fails.toString() + sb.toString());
+            int flags = 0;
+            classReader.accept(classVisitor, flags);
+        } catch (IOException e) {
+            throw new RuntimeException(classFile.toString(), e);
         }
     }
 
-    private boolean doesPreviousLineEndWithWrap(String previousLine,
-            String trimmedLine, String blackListedMethod) {
-        return endsWithPattern.matcher(previousLine).find()
-                && trimmedLine.startsWith("." + blackListedMethod);
-    }
+    private static void verifyMethod(String callingMethod,
+            String targetClassName, String targetMethod) {
+        // Won't care about overhead of loading all
+        // classes since this is just a test
+        Class<?> targetClass = getClass(targetClassName);
 
-    private boolean doesCallPrecideWrap(String trimmedLine,
-            String blackListedMethod) {
-        Pattern pattern = methodToPatternMap.get(blackListedMethod);
-        if (pattern == null) {
-            String format = String.format(methodPrecedesWrapPatternString,
-                    blackListedMethod);
-            pattern = Pattern.compile(format);
-            methodToPatternMap.put(blackListedMethod, pattern);
+        if (!Node.class.isAssignableFrom(targetClass)) {
+            return;
         }
-        // case where there are multiple matches been failed earlier
-        return pattern.matcher(trimmedLine).find();
-    }
 
-    private static boolean filterComments(String line) {
-        String trimmed = line.trim();
-        return !(trimmed.startsWith("/*") || trimmed.startsWith("*")
-                || trimmed.startsWith("// "));
-    }
-
-    private static boolean filter(Path path) {
-        String fileName = path.toFile().getName();
-        return fileName.endsWith(".java");
-    }
-
-    private static void addFile(Path path) {
-        String className = javaLocation.relativize(path).toString()
-                .replace('/', '.').replaceAll("\\.java$", "");
-
-        if (!whiteListedFiles.contains(className)) {
-            classNameToPathMap.put(className, path);
+        if (ignoredElementalClasses.contains(targetClass)) {
+            return;
         }
+
+        if (Element.class == targetClass
+                && ignoredElementMethods.contains(targetMethod)) {
+            return;
+        }
+
+        Assert.fail(callingMethod + " calls " + targetClass.getName() + "."
+                + targetMethod);
+    }
+
+    private static Class<?> getClass(String targetClassName) {
+        try {
+            return Class.forName(targetClassName.replace('/', '.'), false,
+                    DomApiAbstractionUsageTest.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(targetClassName, e);
+        }
+    }
+
+    private String getClassesLocation(Class<Bootstrapper> sampleClass) {
+        String sampleClassName = '/' + sampleClass.getName().replace('.', '/')
+                + ".class";
+
+        URL sampleClassLocation = sampleClass.getResource(sampleClassName);
+
+        assert "file".equals(sampleClassLocation.getProtocol());
+
+        String sampleClassAbsolutePath = sampleClassLocation.getFile();
+
+        assert sampleClassAbsolutePath.endsWith(sampleClassName);
+
+        return sampleClassAbsolutePath.substring(0,
+                sampleClassAbsolutePath.length() - sampleClassName.length());
     }
 }

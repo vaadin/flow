@@ -22,6 +22,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
 import java.util.regex.Pattern;
@@ -244,10 +245,6 @@ public class ReflectTools implements Serializable {
      * @return the corresponding default value
      */
     public static Object getPrimitiveDefaultValue(Class<?> primitiveType) {
-        if (!primitiveType.isPrimitive()) {
-            throw new IllegalArgumentException(
-                    "Provided type " + primitiveType + " is not primitive");
-        }
         if (primitiveType.equals(int.class)) {
             return 0;
         } else if (primitiveType.equals(double.class)) {
@@ -264,9 +261,12 @@ public class ReflectTools implements Serializable {
             return (short) 0;
         } else if (primitiveType.equals(long.class)) {
             return 0L;
+        } else if (!primitiveType.isPrimitive()) {
+            throw new IllegalArgumentException(
+                    "Provided type " + primitiveType + " is not primitive");
         }
-        assert false;
-        return null;
+        throw new IllegalStateException(
+                "Unexpected primitive type: " + primitiveType);
     }
 
     /**
@@ -350,16 +350,13 @@ public class ReflectTools implements Serializable {
 
     /**
      * Return all the setter methods from the given type.
-     * <p>
-     * Any setter methods from {@link Object} are excluded.
      *
      * @param type
      *            the type to get setters from
      * @return a stream of setter methods
      */
     public static Stream<Method> getSetterMethods(Class<?> type) {
-        return Stream.of(type.getMethods()).filter(ReflectTools::isSetter)
-                .filter(ReflectTools::isNotObjectMethod);
+        return Stream.of(type.getMethods()).filter(ReflectTools::isSetter);
     }
 
     /**
@@ -466,6 +463,36 @@ public class ReflectTools implements Serializable {
                     CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
                     cls.getName()), e);
         }
+    }
+
+    /**
+     * Creates a parameterized type, e.g. {@code List<Bean>}.
+     *
+     * @param rawType
+     *            the raw type, e.g. {@code List}
+     * @param subType
+     *            the sub type, e.g. {@code Bean}
+     * @return a parameterized type
+     */
+    public static Type createParameterizedType(Class<?> rawType,
+            Class<?> subType) {
+        return new ParameterizedType() {
+
+            @Override
+            public Type getRawType() {
+                return rawType;
+            }
+
+            @Override
+            public Type getOwnerType() {
+                return null;
+            }
+
+            @Override
+            public Type[] getActualTypeArguments() {
+                return new Type[] { subType };
+            }
+        };
     }
 
 }

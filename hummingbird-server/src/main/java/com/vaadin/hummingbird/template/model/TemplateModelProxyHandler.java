@@ -150,17 +150,31 @@ public class TemplateModelProxyHandler implements Serializable {
      *            the type of the template's model, not <code>null</code>
      * @return a proxy object, not <code>null</code>
      */
-    public static <T> T createModelProxy(StateNode stateNode,
-            Class<T> modelType) {
+    public static <T extends TemplateModel> T createTemplateModelProxy(
+            StateNode stateNode, Class<T> modelType) {
         assert stateNode != null;
         assert modelType != null;
 
         ModelMap model = stateNode.getFeature(ModelMap.class);
-        if (model == null) {
-            throw new IllegalArgumentException(
-                    "Provided StateNode doesn't have a model");
-        }
+
         TemplateModelBeanUtil.populateProperties(model, modelType);
+        return createModelProxy(stateNode, modelType);
+    }
+
+    /**
+     * Creates a proxy object for the given {@code modelType} type for the given
+     * state node.
+     *
+     * @param stateNode
+     *            the state node, not <code>null</code>
+     * @param modelType
+     *            the type of the model, not <code>null</code>
+     * @return a proxy object, not <code>null</code>
+     */
+    public static <T> T createModelProxy(StateNode stateNode,
+            Class<T> modelType) {
+        assert stateNode != null;
+        assert modelType != null;
 
         return modelType
                 .cast(proxyConstructors.get(modelType).apply(stateNode));
@@ -273,13 +287,25 @@ public class TemplateModelProxyHandler implements Serializable {
      * @return the state node of the proxy
      */
     public static StateNode getStateNodeForProxy(Object proxy) {
-        if (proxy instanceof ModelProxy) {
+        if (isProxy(proxy)) {
             ModelProxy model = (ModelProxy) proxy;
             return model.$stateNode();
         } else {
             throw new IllegalArgumentException(
                     "Proxy is not a proper template model proxy");
         }
+    }
+
+    /**
+     * Checks if the given object is a proxy created by this class.
+     *
+     * @param proxy
+     *            the object to check
+     * @return <code>true</code> if the given object is a proxy object,
+     *         <code>false</code> otherwise
+     */
+    public static boolean isProxy(Object proxy) {
+        return proxy instanceof ModelProxy;
     }
 
 }
