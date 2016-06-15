@@ -1104,7 +1104,11 @@ public class Element implements Serializable {
 
     /**
      * Gets the text content of this element. This includes only the text from
-     * any immediate child text nodes.
+     * any immediate child text nodes. Use {@link #getTextContent()} to get the
+     * full text that recursively includes the text content of all child nodes
+     *
+     * @see #getTextContent()
+     * @see #setTextContent(String)
      *
      * @return the text content of this element
      */
@@ -1114,7 +1118,11 @@ public class Element implements Serializable {
 
     /**
      * Gets the text content of this element. The text content recursively
-     * includes the text content of all child nodes.
+     * includes the text content of all child nodes. Use
+     * {@link #getOwnTextContent()} to only get the text from any immediate
+     * child text nodes.
+     *
+     * @see #getOwnTextContent()
      *
      * @return the text content
      */
