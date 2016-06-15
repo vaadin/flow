@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -271,8 +272,17 @@ public class TemplateModelProxyHandler implements Serializable {
         String propertyName = ReflectTools.getPropertyName(method);
         Type declaredValueType = method.getGenericParameterTypes()[0];
 
-        TemplateModelUtil.setModelValue(modelMap, propertyName,
-                declaredValueType, value, "", string -> true);
+        if (TemplateModelUtil.isBean(declaredValueType)) {
+            // Can't use setModelValue for beans as it will prefix the property
+            // name for the filter
+            Predicate<String> filter = TemplateModelUtil
+                    .getFilterFromIncludeExclude(method);
+            TemplateModelUtil.importBean(stateNode, propertyName,
+                    (Class<?>) declaredValueType, value, "", filter);
+        } else {
+            TemplateModelUtil.setModelValue(modelMap, propertyName,
+                    declaredValueType, value, "", string -> true);
+        }
     }
 
     private static ModelMap getModelMap(StateNode stateNode) {
