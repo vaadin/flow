@@ -802,7 +802,7 @@ public class TemplateModelTest {
         beans.add(new Bean(200));
         beans.add(new Bean(300));
         template.getModel().setBeans(beans);
-        TemplateModelBeanUtilTest.assertListContentsEquals(
+        TemplateModelUtilTest.assertListContentsEquals(
                 template.getModel().getBeans(), new Bean(100), new Bean(200),
                 new Bean(300));
     }

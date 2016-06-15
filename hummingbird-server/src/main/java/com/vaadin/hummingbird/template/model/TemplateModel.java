@@ -108,7 +108,7 @@ public interface TemplateModel extends Serializable {
         StateNode stateNode = TemplateModelProxyHandler
                 .getStateNodeForProxy(this);
 
-        return TemplateModelBeanUtil.getProxy(stateNode, modelPath, beanType);
+        return TemplateModelUtil.getProxy(stateNode, modelPath, beanType);
     }
 
     /**
@@ -135,7 +135,7 @@ public interface TemplateModel extends Serializable {
         StateNode stateNode = TemplateModelProxyHandler
                 .getStateNodeForProxy(this);
 
-        return TemplateModelBeanUtil.getListProxy(stateNode, modelPath,
+        return TemplateModelUtil.getListProxy(stateNode, modelPath,
                 beanType);
     }
 
@@ -166,7 +166,7 @@ public interface TemplateModel extends Serializable {
         StateNode stateNode = TemplateModelProxyHandler
                 .getStateNodeForProxy(this);
 
-        TemplateModelBeanUtil.importBean(stateNode, modelPath, bean.getClass(),
+        TemplateModelUtil.importBean(stateNode, modelPath, bean.getClass(),
                 bean, "", propertyNameFilter);
     }
 
@@ -189,7 +189,7 @@ public interface TemplateModel extends Serializable {
             Class<T> beanType, Predicate<String> propertyNameFilter) {
         StateNode stateNode = TemplateModelProxyHandler
                 .getStateNodeForProxy(this);
-        TemplateModelBeanUtil.importBeans(stateNode, modelPath, beans, beanType,
+        TemplateModelUtil.importBeans(stateNode, modelPath, beans, beanType,
                 propertyNameFilter);
     }
 

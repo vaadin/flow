@@ -39,7 +39,7 @@ import com.vaadin.util.ReflectTools;
  *
  * @author Vaadin Ltd
  */
-public class TemplateModelBeanUtil {
+public class TemplateModelUtil {
 
     private static final Class<?>[] SUPPORTED_NON_PRIMITIVE_TYPES = new Class[] {
             Boolean.class, Double.class, Integer.class, String.class };
@@ -67,7 +67,7 @@ public class TemplateModelBeanUtil {
         }
     }
 
-    private TemplateModelBeanUtil() {
+    private TemplateModelUtil() {
         // NOOP
     }
 

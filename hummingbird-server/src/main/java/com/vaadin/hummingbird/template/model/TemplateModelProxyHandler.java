@@ -157,7 +157,7 @@ public class TemplateModelProxyHandler implements Serializable {
 
         ModelMap model = stateNode.getFeature(ModelMap.class);
 
-        TemplateModelBeanUtil.populateProperties(model, modelType);
+        TemplateModelUtil.populateProperties(model, modelType);
         return createModelProxy(stateNode, modelType);
     }
 
@@ -261,7 +261,7 @@ public class TemplateModelProxyHandler implements Serializable {
         String propertyName = ReflectTools.getPropertyName(method);
         Type returnType = method.getGenericReturnType();
 
-        return TemplateModelBeanUtil.getModelValue(modelMap, propertyName,
+        return TemplateModelUtil.getModelValue(modelMap, propertyName,
                 returnType);
     }
 
@@ -271,7 +271,7 @@ public class TemplateModelProxyHandler implements Serializable {
         String propertyName = ReflectTools.getPropertyName(method);
         Type declaredValueType = method.getGenericParameterTypes()[0];
 
-        TemplateModelBeanUtil.setModelValue(modelMap, propertyName,
+        TemplateModelUtil.setModelValue(modelMap, propertyName,
                 declaredValueType, value, "", string -> true);
     }
 
