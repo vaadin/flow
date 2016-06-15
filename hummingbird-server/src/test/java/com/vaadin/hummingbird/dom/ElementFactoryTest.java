@@ -86,7 +86,7 @@ public class ElementFactoryTest {
             sb.append(" ").append(attrs);
         }
         sb.append(">");
-        sb.append(e.getTextContent());
+        sb.append(e.getTextRecursively());
         sb.append("</");
         sb.append(e.getTag());
         sb.append(">");

@@ -20,7 +20,7 @@ public class RouterLinkUI extends UI {
         addLinks();
 
         getPage().getHistory().setHistoryStateChangeHandler(e -> {
-            location.setTextContent(e.getLocation());
+            location.setText(e.getLocation());
         });
     }
 

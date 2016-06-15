@@ -26,14 +26,14 @@ public class DynamicStyling {
 
     void tutorialCode() {
 
-        button.setTextContent("Change to blue");
+        button.setText("Change to blue");
         button.addEventListener("click",
                 e -> button.getClassList().add("blue"));
 
         //@formatter:off - custom line wrapping
 
         Element input = ElementFactory.createInput();
-        button.setTextContent("Change to the entered value");
+        button.setText("Change to the entered value");
         button.addEventListener("click",
                 e -> button.getStyle().set("background", input.getProperty("value")));
 

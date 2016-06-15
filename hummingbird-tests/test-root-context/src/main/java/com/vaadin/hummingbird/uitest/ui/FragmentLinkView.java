@@ -13,8 +13,7 @@ public class FragmentLinkView extends AbstractDivView {
         bodyElement.getStyle().set("margin", "1em");
 
         Element scrollLocator = ElementFactory.createDiv()
-                .setAttribute("id", "scrollLocator")
-                .setTextContent("Scroll locator");
+                .setAttribute("id", "scrollLocator").setText("Scroll locator");
         scrollLocator.getStyle().set("position", "fixed").set("top", "0")
                 .set("right", "0");
 
@@ -71,7 +70,7 @@ public class FragmentLinkView extends AbstractDivView {
     }
 
     private Element createSpacer() {
-        Element spacer = ElementFactory.createDiv().setTextContent("spacer");
+        Element spacer = ElementFactory.createDiv().setText("spacer");
         spacer.getStyle().set("height", "1000px");
         return spacer;
     }

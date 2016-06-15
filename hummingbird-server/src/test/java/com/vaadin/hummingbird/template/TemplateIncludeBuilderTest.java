@@ -54,14 +54,14 @@ public class TemplateIncludeBuilderTest {
         List<Element> children = filterOutTextChildren(element);
         Assert.assertEquals("span", children.get(0).getTag());
         Assert.assertEquals("Main template",
-                element.getChild(1).getTextContent());
+                element.getChild(1).getTextRecursively());
 
         Element subTemplateElement = children.get(1);
         Assert.assertEquals("div", subTemplateElement.getTag());
 
         Element span = filterOutTextChildren(subTemplateElement).get(0);
         Assert.assertEquals("span", span.getTag());
-        Assert.assertEquals("Sub template", span.getTextContent());
+        Assert.assertEquals("Sub template", span.getTextRecursively());
     }
 
     @Test
@@ -90,7 +90,7 @@ public class TemplateIncludeBuilderTest {
         Assert.assertEquals("div", secondSubTemplateElement.getTag());
         Element span = filterOutTextChildren(secondSubTemplateElement).get(0);
         Assert.assertEquals("span", span.getTag());
-        Assert.assertEquals("Sub template", span.getTextContent());
+        Assert.assertEquals("Sub template", span.getTextRecursively());
 
     }
 

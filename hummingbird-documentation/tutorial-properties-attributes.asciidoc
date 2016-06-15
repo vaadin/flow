@@ -112,7 +112,7 @@ However you can use `element.getAttribute('style')` to get all the style rules i
 [[textContent]]
 == TextContent
 
-The element's _textContent_ property can be set using the `setTextContent` method.
+The element's _textContent_ property can be set using the `setText` method.
 Note that this removes all children of the element and replaces them with a single text node with the given value.
 
 [TIP]
@@ -124,19 +124,22 @@ Element element = ElementFactory.createDiv("Hello world");  // <div>Hello world<
 
 element.appendChild(ElementFactory.createSpan()); // <div>Hello world<span></span></div>
 
-element.setTextContent("Replacement text"); // <div>Replacement text</div>
+element.setText("Replacement text"); // <div>Replacement text</div>
 ----
 
-You can fetch the element's _textContent_ with the `getTextContent` method,
-but note that it returns a concatenation of the _textContent_
-property values of the element and all its child nodes. The child nodes are iterated recursively.
+You can fetch the text of an element using the `getText` or `getTextRecursively` methods.
+
+* `getText` returns the text inside the element itself, ignoring text inside child elements.
+* `getTextRecursively` returns the text of the entire element tree by recursively concatenating the text from all child elements.
 
 [source,java]
 ----
-element.setTextContent("Welcome back ");
+element.setText("Welcome back ");
 
 Element name = ElementFactory.createStrong("Rudolph Reindeer");
-element.appendChild(name);
+element.appendChild(name); // <div>Welcome back <strong>Rudolph Reindeer</strong></div>
 
-element.getTextContent(); // will return "Welcome back Rudolph Reindeer"
+element.getTextRecursively(); // will return "Welcome back Rudolph Reindeer"
+element.getText(); // will return "Welcome back "
+
 ----

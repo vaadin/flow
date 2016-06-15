@@ -35,7 +35,7 @@ public class ComponentManyElements {
         }
 
         public String getLabel() {
-            return labelElement.getOwnTextContent();
+            return labelElement.getText();
         }
 
         public String getValue() {
@@ -43,7 +43,7 @@ public class ComponentManyElements {
         }
 
         public TextField setLabel(String label) {
-            labelElement.setTextContent(label);
+            labelElement.setText(label);
             return this;
         }
 
@@ -58,7 +58,7 @@ public class ComponentManyElements {
     private Element inputElement;
 
     public void setLabel(String label) {
-        labelElement.setTextContent(label);
+        labelElement.setText(label);
     }
 
     public void setValue(String value) {

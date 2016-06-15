@@ -40,7 +40,7 @@ public class BasicComponentView extends AbstractDivView {
         Button button = new Button(BUTTON_TEXT, e -> {
             Div greeting = new Div();
             greeting.addClassName("thankYou");
-            String buttonText = e.getSource().getElement().getOwnTextContent();
+            String buttonText = e.getSource().getElement().getText();
 
             greeting.setText("Thank you for clicking \"" + buttonText
                     + "\" at (" + e.getClientX() + "," + e.getClientY()

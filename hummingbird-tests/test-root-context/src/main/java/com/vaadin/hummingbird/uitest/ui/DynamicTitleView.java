@@ -16,7 +16,7 @@ public class DynamicTitleView extends AbstractDivView {
     @Override
     protected void onShow() {
         getElement().removeAllChildren().appendChild(new Element(Tag.DIV)
-                .setTextContent("Dynamic").setAttribute("id", "dynamic"));
+                .setText("Dynamic").setAttribute("id", "dynamic"));
     }
 
 }

@@ -33,7 +33,7 @@ public class ComponentAttach {
             // user name can be stored to session after login
             //@formatter:off - custom line wrapping
             String userName = (String) attachEvent.getSession().getAttribute("username");
-            getElement().setTextContent("Hello " + userName + ", welcome back!");
+            getElement().setText("Hello " + userName + ", welcome back!");
             //@formatter:on
         }
     }

@@ -148,7 +148,7 @@ public class RouterTest {
 
         router.navigate(ui, new Location(""));
 
-        Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+        Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
         // 404 code should be sent ONLY on initial request
         Mockito.verifyZeroInteractions(response);
 
@@ -171,7 +171,7 @@ public class RouterTest {
 
         router.navigate(ui, new Location(""));
 
-        Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+        Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
     }
 
     @Test
@@ -312,7 +312,7 @@ public class RouterTest {
         router.navigate(ui, new Location(""));
 
         Assert.assertEquals(new DefaultErrorView().getText(),
-                ui.getElement().getTextContent());
+                ui.getElement().getTextRecursively());
     }
 
     @Test
@@ -327,7 +327,7 @@ public class RouterTest {
         router.navigate(ui, new Location(""));
 
         Assert.assertEquals(new ErrorView().getText(),
-                ui.getElement().getTextContent());
+                ui.getElement().getTextRecursively());
     }
 
     @Test
