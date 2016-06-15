@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.template.model;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -277,6 +278,13 @@ public class TemplateModelProxyHandler implements Serializable {
                     .getFilterFromIncludeExclude(method);
             TemplateModelUtil.importBean(stateNode, propertyName,
                     (Class<?>) declaredValueType, value, "", filter);
+        } else if (TemplateModelUtil.isBeansList(declaredValueType)) {
+            Predicate<String> filter = TemplateModelUtil
+                    .getFilterFromIncludeExclude(method);
+            Class<?> itemType = TemplateModelUtil
+                    .getBeansListItemType(declaredValueType);
+            TemplateModelUtil.importBeans(stateNode, propertyName,
+                    (List<?>) value, (Class<?>) itemType, filter);
         } else {
             TemplateModelUtil.setModelValue(modelMap, propertyName,
                     declaredValueType, value, "", string -> true);
