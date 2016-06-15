@@ -443,11 +443,13 @@ public class TemplateModelBeanUtilTest {
             Assert.assertTrue(properties.contains(s));
         }
 
-        Assert.assertFalse(modelMap.hasValue("booleanObject"));
-        Assert.assertFalse(modelMap.hasValue("booleanValue"));
-        Assert.assertFalse(modelMap.hasValue("intObject"));
-        Assert.assertFalse(modelMap.hasValue("doubleObject"));
-        Assert.assertFalse(modelMap.hasValue("doubleValue"));
+        // properties in the model are populated but they are not imported from
+        // the bean
+        Assert.assertNull(modelMap.getValue("booleanObject"));
+        Assert.assertEquals(false, modelMap.getValue("booleanValue"));
+        Assert.assertNull(modelMap.getValue("intObject"));
+        Assert.assertNull(null, modelMap.getValue("doubleObject"));
+        Assert.assertEquals(0d, modelMap.getValue("doubleValue"));
     }
 
     @Test
@@ -543,16 +545,29 @@ public class TemplateModelBeanUtilTest {
     }
 
     private void assertBeanEqualsModelMap(Bean bean, ModelMap model) {
+        Assert.assertTrue(model.hasValue("booleanObject"));
         Assert.assertEquals(bean.getBooleanObject(),
                 model.getValue("booleanObject"));
+
+        Assert.assertTrue(model.hasValue("doubleObject"));
         Assert.assertEquals(bean.getDoubleObject(),
                 model.getValue("doubleObject"));
+
+        Assert.assertTrue(model.hasValue("intObject"));
         Assert.assertEquals(bean.getIntObject(), model.getValue("intObject"));
+
+        Assert.assertTrue(model.hasValue("booleanValue"));
         Assert.assertEquals(bean.isBooleanValue(),
                 model.getValue("booleanValue"));
+
+        Assert.assertTrue(model.hasValue("doubleValue"));
         Assert.assertEquals(bean.getDoubleValue(),
                 model.getValue("doubleValue"));
+
+        Assert.assertTrue(model.hasValue("intValue"));
         Assert.assertEquals(bean.getIntValue(), model.getValue("intValue"));
+
+        Assert.assertTrue(model.hasValue("string"));
         Assert.assertEquals(bean.getString(), model.getValue("string"));
     }
 

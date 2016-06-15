@@ -150,6 +150,27 @@ public class TemplateModelProxyHandler implements Serializable {
      *            the type of the template's model, not <code>null</code>
      * @return a proxy object, not <code>null</code>
      */
+    public static <T extends TemplateModel> T createTemplateModelProxy(
+            StateNode stateNode, Class<T> modelType) {
+        assert stateNode != null;
+        assert modelType != null;
+
+        ModelMap model = stateNode.getFeature(ModelMap.class);
+
+        TemplateModelBeanUtil.populateProperties(model, modelType);
+        return createModelProxy(stateNode, modelType);
+    }
+
+    /**
+     * Creates a proxy object for the given {@code modelType} type for the given
+     * state node.
+     *
+     * @param stateNode
+     *            the state node, not <code>null</code>
+     * @param modelType
+     *            the type of the model, not <code>null</code>
+     * @return a proxy object, not <code>null</code>
+     */
     public static <T> T createModelProxy(StateNode stateNode,
             Class<T> modelType) {
         assert stateNode != null;
