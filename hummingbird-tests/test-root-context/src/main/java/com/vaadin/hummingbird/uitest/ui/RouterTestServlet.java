@@ -103,9 +103,9 @@ public class RouterTestServlet extends VaadinServlet {
         public void onLocationChange(LocationChangeEvent event) {
             WrappedSession session = VaadinSession.getCurrent().getSession();
             if (session == null) {
-                sessionId.setTextContent("No session");
+                sessionId.setText("No session");
             } else {
-                sessionId.setTextContent("Session id: " + session.getId());
+                sessionId.setText("Session id: " + session.getId());
             }
         }
 

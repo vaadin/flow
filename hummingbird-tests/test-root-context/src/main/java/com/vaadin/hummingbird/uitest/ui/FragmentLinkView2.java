@@ -6,7 +6,7 @@ import com.vaadin.ui.AttachEvent;
 public class FragmentLinkView2 extends FragmentLinkView {
 
     public FragmentLinkView2() {
-        getElement().insertChild(0, new Element("div").setTextContent("VIEW 2")
+        getElement().insertChild(0, new Element("div").setText("VIEW 2")
                 .setAttribute("id", "view2"));
     }
 

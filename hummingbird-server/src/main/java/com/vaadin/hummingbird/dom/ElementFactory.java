@@ -56,7 +56,7 @@ public interface ElementFactory {
      * @return an {@code &lt;a>} element.
      */
     static Element createAnchor(String href, String textContent) {
-        return createAnchor(href).setTextContent(textContent);
+        return createAnchor(href).setText(textContent);
     }
 
     /**
@@ -101,7 +101,7 @@ public interface ElementFactory {
      * @return a {@code &lt;button>} element.
      */
     static Element createButton(String textContent) {
-        return createButton().setTextContent(textContent);
+        return createButton().setText(textContent);
     }
 
     /**
@@ -121,7 +121,7 @@ public interface ElementFactory {
      * @return a {@code &lt;div>} element.
      */
     static Element createDiv(String textContent) {
-        return createDiv().setTextContent(textContent);
+        return createDiv().setText(textContent);
     }
 
     /**
@@ -186,7 +186,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h1>} element.
      */
     static Element createHeading1(String textContent) {
-        return createHeading1().setTextContent(textContent);
+        return createHeading1().setText(textContent);
     }
 
     /**
@@ -197,7 +197,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h2>} element.
      */
     static Element createHeading2(String textContent) {
-        return createHeading2().setTextContent(textContent);
+        return createHeading2().setText(textContent);
     }
 
     /**
@@ -208,7 +208,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h3>} element.
      */
     static Element createHeading3(String textContent) {
-        return createHeading3().setTextContent(textContent);
+        return createHeading3().setText(textContent);
     }
 
     /**
@@ -219,7 +219,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h4>} element.
      */
     static Element createHeading4(String textContent) {
-        return createHeading4().setTextContent(textContent);
+        return createHeading4().setText(textContent);
     }
 
     /**
@@ -230,7 +230,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h5>} element.
      */
     static Element createHeading5(String textContent) {
-        return createHeading5().setTextContent(textContent);
+        return createHeading5().setText(textContent);
     }
 
     /**
@@ -241,7 +241,7 @@ public interface ElementFactory {
      * @return an {@code &lt;h6>} element.
      */
     static Element createHeading6(String textContent) {
-        return createHeading6().setTextContent(textContent);
+        return createHeading6().setText(textContent);
     }
 
     /**
@@ -290,7 +290,7 @@ public interface ElementFactory {
      * @return an {@code &lt;label>} element.
      */
     static Element createLabel(String textContent) {
-        return createLabel().setTextContent(textContent);
+        return createLabel().setText(textContent);
     }
 
     /**
@@ -310,7 +310,7 @@ public interface ElementFactory {
      * @return an {@code &lt;li>} element.
      */
     static Element createListItem(String textContent) {
-        return createListItem().setTextContent(textContent);
+        return createListItem().setText(textContent);
     }
 
     /**
@@ -330,7 +330,7 @@ public interface ElementFactory {
      * @return an {@code &lt;option>} element.
      */
     static Element createOption(String textContent) {
-        return createOption().setTextContent(textContent);
+        return createOption().setText(textContent);
     }
 
     /**
@@ -350,7 +350,7 @@ public interface ElementFactory {
      * @return a {@code &lt;p>} element.
      */
     static Element createParagraph(String textContent) {
-        return new Element(Tag.P).setTextContent(textContent);
+        return new Element(Tag.P).setText(textContent);
     }
 
     /**
@@ -370,7 +370,7 @@ public interface ElementFactory {
      * @return a {@code &lt;pre>} element.
      */
     static Element createPreformatted(String textContent) {
-        return createPreformatted().setTextContent(textContent);
+        return createPreformatted().setText(textContent);
     }
 
     /**
@@ -399,7 +399,7 @@ public interface ElementFactory {
      * @return a {@code &lt;span>} element.
      */
     static Element createSpan(String textContent) {
-        return createSpan().setTextContent(textContent);
+        return createSpan().setText(textContent);
     }
 
     /**
@@ -437,7 +437,7 @@ public interface ElementFactory {
      * @return a {@code &lt;strong>} element
      */
     static Element createStrong(String textContent) {
-        return createStrong().setTextContent(textContent);
+        return createStrong().setText(textContent);
     }
 
     /**
@@ -457,7 +457,7 @@ public interface ElementFactory {
      * @return an {@code &lt;em>} element.
      */
     static Element createEmphasis(String textContent) {
-        return createEmphasis().setTextContent(textContent);
+        return createEmphasis().setText(textContent);
     }
 
 }

@@ -38,7 +38,7 @@ public class BasicPollUI extends ClientServerCounterUI {
         getElement().insertChild(0, pollCounter);
         setPollInterval(500);
         addPollListener(e -> {
-            pollCounter.setTextContent("Polls received: " + (++pollCount));
+            pollCounter.setText("Polls received: " + (++pollCount));
         });
 
         Button stopPolling = new Button("Stop polling", e -> {
@@ -61,8 +61,7 @@ public class BasicPollUI extends ClientServerCounterUI {
     }
 
     private void updatePollIntervalText() {
-        pollInterval
-                .setTextContent("Poll interval: " + getPollInterval() + "ms");
+        pollInterval.setText("Poll interval: " + getPollInterval() + "ms");
     }
 
 }
