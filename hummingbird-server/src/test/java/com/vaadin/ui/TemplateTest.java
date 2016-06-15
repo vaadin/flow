@@ -173,7 +173,7 @@ public class TemplateTest {
         Element element = template.getElement();
 
         Assert.assertEquals("div", element.getTag());
-        Assert.assertEquals("foo", element.getTextContent());
+        Assert.assertEquals("foo", element.getTextRecursively());
     }
 
     @Test

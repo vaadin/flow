@@ -993,15 +993,15 @@ public class ElementTest {
         element.appendChild(Element.createText("foo"));
         element.appendChild(child);
 
-        Assert.assertEquals("foobar", element.getTextContent());
+        Assert.assertEquals("foobar", element.getTextRecursively());
     }
 
     @Test
     public void testSetTextContent() {
         Element element = ElementFactory.createDiv();
-        element.setTextContent("foo");
+        element.setText("foo");
 
-        Assert.assertEquals("foo", element.getTextContent());
+        Assert.assertEquals("foo", element.getTextRecursively());
         Assert.assertEquals(1, element.getChildCount());
         Assert.assertTrue(element.getChild(0).isTextNode());
     }
@@ -1012,10 +1012,10 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.appendChild(child);
 
-        element.setTextContent("foo");
+        element.setText("foo");
 
         Assert.assertNull(child.getParent());
-        Assert.assertEquals("foo", element.getTextContent());
+        Assert.assertEquals("foo", element.getTextRecursively());
     }
 
     @Test
@@ -1024,10 +1024,10 @@ public class ElementTest {
         Element text = Element.createText("foo");
         element.appendChild(text);
 
-        element.setTextContent("bar");
+        element.setText("bar");
 
         Assert.assertEquals(element, text.getParent());
-        Assert.assertEquals("bar", text.getTextContent());
+        Assert.assertEquals("bar", text.getTextRecursively());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -1039,7 +1039,7 @@ public class ElementTest {
     @Test
     public void testGetTextContentProperty() {
         Element element = ElementFactory.createDiv();
-        element.setTextContent("foo");
+        element.setText("foo");
 
         Assert.assertFalse(element.hasProperty("textContent"));
         Assert.assertNull(element.getProperty("textContent"));
@@ -1049,11 +1049,11 @@ public class ElementTest {
     // Because that's how it works in browsers
     public void clearTextContentRemovesChild() {
         Element element = ElementFactory.createDiv();
-        element.setTextContent("foo");
+        element.setText("foo");
 
         Assert.assertEquals(1, element.getChildCount());
 
-        element.setTextContent("");
+        element.setText("");
 
         Assert.assertEquals(0, element.getChildCount());
     }
@@ -1717,16 +1717,15 @@ public class ElementTest {
     @Test
     public void testGetOwnTextContent() {
         Element element = ElementFactory.createDiv();
-        element.setTextContent("foo");
+        element.setText("foo");
         element.appendChild(ElementFactory.createDiv()
                 .appendChild(ElementFactory.createSpan("span contents")));
         element.appendChild(ElementFactory.createStrong("strong contents"));
         element.appendChild(Element.createText("Another text node"));
 
-        Assert.assertEquals("fooAnother text node",
-                element.getOwnTextContent());
+        Assert.assertEquals("fooAnother text node", element.getText());
         Assert.assertEquals("foospan contentsstrong contentsAnother text node",
-                element.getTextContent());
+                element.getTextRecursively());
     }
 
     @Test

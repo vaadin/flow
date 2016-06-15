@@ -52,7 +52,7 @@ public class UpdateDivUI extends UI {
     }
 
     private void updateDiv() {
-        div.setTextContent("Hello world at " + System.currentTimeMillis() + " ("
+        div.setText("Hello world at " + System.currentTimeMillis() + " ("
                 + msgId++ + ")");
     }
 }

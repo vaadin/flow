@@ -36,7 +36,7 @@ public class TextElementStateProviderTest {
     public void testBlankNode() {
         Assert.assertTrue(element.isTextNode());
 
-        Assert.assertEquals("foo", element.getTextContent());
+        Assert.assertEquals("foo", element.getTextRecursively());
 
         Assert.assertEquals("foo", feature.getText());
     }
@@ -45,14 +45,14 @@ public class TextElementStateProviderTest {
     public void testElementReadsFeature() {
         feature.setText("bar");
 
-        Assert.assertEquals("bar", element.getTextContent());
+        Assert.assertEquals("bar", element.getTextRecursively());
     }
 
     @Test
     public void testSetTextContent() {
-        element.setTextContent("bar");
+        element.setText("bar");
 
-        Assert.assertEquals("bar", element.getTextContent());
+        Assert.assertEquals("bar", element.getTextRecursively());
         Assert.assertEquals("bar", feature.getText());
     }
 

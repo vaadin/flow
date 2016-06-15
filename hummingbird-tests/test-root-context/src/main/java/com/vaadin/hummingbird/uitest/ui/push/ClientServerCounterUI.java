@@ -44,7 +44,7 @@ public class ClientServerCounterUI extends UI {
 
         Button button = new Button("Increment", e -> {
             clientCounter++;
-            lbl.setTextContent(clientCounter + "");
+            lbl.setText(clientCounter + "");
         });
         button.setId(INCREMENT_BUTTON_ID);
 
@@ -58,7 +58,7 @@ public class ClientServerCounterUI extends UI {
                 "Server counter (updates each second by server thread):"));
         serverCounterElement = ElementFactory.createDiv().setAttribute("id",
                 SERVER_COUNTER_ID);
-        serverCounterElement.setTextContent(serverCounter + "");
+        serverCounterElement.setText(serverCounter + "");
         getElement().appendChild(serverCounterElement);
 
         Button startTimer = new Button("Start timer", e -> {
@@ -71,7 +71,7 @@ public class ClientServerCounterUI extends UI {
                 public void run() {
                     access(() -> {
                         serverCounter++;
-                        serverCounterElement.setTextContent(serverCounter + "");
+                        serverCounterElement.setText(serverCounter + "");
                     });
                 }
             };
@@ -82,7 +82,7 @@ public class ClientServerCounterUI extends UI {
 
         Element stopTimer = ElementFactory.createButton("Stop timer")
                 .setAttribute("id", STOP_TIMER_ID);
-        stopTimer.setTextContent("Stop timer");
+        stopTimer.setText("Stop timer");
         stopTimer.addEventListener("click", e -> {
             if (task != null) {
                 task.cancel();

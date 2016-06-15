@@ -228,8 +228,7 @@ public class ElementUtil {
      */
     public static Node toJsoup(Document document, Element element) {
         if (element.isTextNode()) {
-            return new TextNode(element.getOwnTextContent(),
-                    document.baseUri());
+            return new TextNode(element.getText(), document.baseUri());
         }
 
         org.jsoup.nodes.Element target = document

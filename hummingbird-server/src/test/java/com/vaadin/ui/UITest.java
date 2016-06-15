@@ -129,7 +129,7 @@ public class UITest {
         UI ui = new UI() {
             @Override
             protected void init(VaadinRequest request) {
-                getElement().setTextContent("UI.init");
+                getElement().setText("UI.init");
             }
         };
 
@@ -138,9 +138,9 @@ public class UITest {
 
         initUI(ui, "", statusCodeCaptor);
 
-        Assert.assertTrue(ui.getElement().getTextContent().contains("404"));
+        Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
         Assert.assertFalse(
-                ui.getElement().getTextContent().contains("UI.init"));
+                ui.getElement().getTextRecursively().contains("UI.init"));
         Assert.assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
     }
 

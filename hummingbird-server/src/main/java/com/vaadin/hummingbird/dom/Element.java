@@ -754,7 +754,8 @@ public class Element implements Serializable {
      * </tr>
      * <tr>
      * <td>textContent</td>
-     * <td>{@link Element#setTextContent(String)}</td>
+     * <td>{@link Element#getText()} and {@link Element#getTextRecursively()}
+     * </td>
      * </tr>
      * </table>
      * <p>
@@ -1079,7 +1080,7 @@ public class Element implements Serializable {
      *            an empty string
      * @return this element
      */
-    public Element setTextContent(String textContent) {
+    public Element setText(String textContent) {
         if (textContent == null) {
             // Browsers work this way
             textContent = "";
@@ -1090,7 +1091,7 @@ public class Element implements Serializable {
         } else {
             boolean hasText = !textContent.isEmpty();
             if (getChildCount() == 1 && getChild(0).isTextNode() && hasText) {
-                getChild(0).setTextContent(textContent);
+                getChild(0).setText(textContent);
             } else {
                 removeAllChildren();
                 if (hasText) {
@@ -1104,21 +1105,29 @@ public class Element implements Serializable {
 
     /**
      * Gets the text content of this element. This includes only the text from
-     * any immediate child text nodes.
+     * any immediate child text nodes. Use {@link #getTextRecursively()} to get
+     * the full text that recursively includes the text content of the entire
+     * element tree.
+     *
+     * @see #getTextRecursively()
+     * @see #setText(String)
      *
      * @return the text content of this element
      */
-    public String getOwnTextContent() {
+    public String getText() {
         return getTextContent(e -> e.isTextNode());
     }
 
     /**
-     * Gets the text content of this element. The text content recursively
-     * includes the text content of all child nodes.
+     * Gets the text content of this element tree. This does recursively include
+     * the text content of all child nodes. Use {@link #getText()} to only get
+     * the text from text nodes that are immediate children of this element.
      *
-     * @return the text content
+     * @see #getText()
+     *
+     * @return the text content of this element and all child elements
      */
-    public String getTextContent() {
+    public String getTextRecursively() {
         return getTextContent(e -> true);
     }
 
@@ -1144,7 +1153,7 @@ public class Element implements Serializable {
     private void appendTextContent(StringBuilder builder,
             Predicate<? super Element> childFilter) {
         if (isTextNode()) {
-            builder.append(getTextContent());
+            builder.append(getText());
         } else {
             getChildren().filter(childFilter)
                     .forEach(e -> e.appendTextContent(builder, childFilter));
