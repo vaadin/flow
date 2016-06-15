@@ -17,7 +17,7 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.NoModelTemplate;
 import com.vaadin.ui.Template;
 
-public class TemplateModelBeanUtilTest {
+public class TemplateModelUtilTest {
 
     public static class BeanWithUnsupportedProperty {
         // not a bean
@@ -595,7 +595,7 @@ public class TemplateModelBeanUtilTest {
             Bean bean = new Bean(i + 1);
             beans.add(bean);
         }
-        TemplateModelBeanUtil.importBeans(
+        TemplateModelUtil.importBeans(
                 TemplateModelProxyHandler.getStateNodeForProxy(model),
                 modelPath, beans, Bean.class, propertyName -> true);
         return model.getListProxy(modelPath, Bean.class);

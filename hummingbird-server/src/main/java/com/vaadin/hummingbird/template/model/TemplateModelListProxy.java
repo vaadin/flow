@@ -68,7 +68,7 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
         }
         StateNode nodeToAdd = TemplateElementStateProvider
                 .createSubModelNode(ModelMap.class);
-        TemplateModelBeanUtil.importBean(nodeToAdd, "", itemType, object, "",
+        TemplateModelUtil.importBean(nodeToAdd, "", itemType, object, "",
                 e -> true);
         getModelList().add(index, nodeToAdd);
     }
