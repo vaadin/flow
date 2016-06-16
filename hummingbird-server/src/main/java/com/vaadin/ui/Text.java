@@ -44,7 +44,7 @@ public class Text extends Component {
         if (text == null) {
             throw new IllegalArgumentException("The text must not be null");
         }
-        getElement().setTextContent(text);
+        getElement().setText(text);
     }
 
     /**
@@ -53,7 +53,7 @@ public class Text extends Component {
      * @return the text of the component, not <code>null</code>
      */
     public String getText() {
-        return getElement().getOwnTextContent();
+        return getElement().getText();
     }
 
 }

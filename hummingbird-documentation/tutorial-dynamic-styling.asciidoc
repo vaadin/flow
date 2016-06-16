@@ -12,7 +12,7 @@ To change the look and feel of your application, you can style it by using dynam
 
 [source,java]
 ----
-button.setTextContent("Change to blue");
+button.setText("Change to blue");
 button.addEventListener("click",
     e -> button.getClassList().add("blue"));
 ----
@@ -22,7 +22,7 @@ In this case you are limited to the styles you have defined in advance. To get r
 [source,java]
 ----
 Element input = ElementFactory.createInput();
-button.setTextContent("Change to the entered value");
+button.setText("Change to the entered value");
 button.addEventListener("click",
     e -> button.getStyle().set("background",input.getProperty("value")));
 ----

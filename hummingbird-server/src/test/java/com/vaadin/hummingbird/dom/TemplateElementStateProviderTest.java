@@ -205,7 +205,7 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(builder);
 
         Assert.assertTrue(element.isTextNode());
-        Assert.assertEquals("Hello", element.getTextContent());
+        Assert.assertEquals("Hello", element.getTextRecursively());
     }
 
     @Test
@@ -217,7 +217,7 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(builder);
 
         Assert.assertEquals("div", element.getTag());
-        Assert.assertEquals("Hello", element.getTextContent());
+        Assert.assertEquals("Hello", element.getTextRecursively());
 
         Element child = element.getChild(0);
         Assert.assertTrue(child.isTextNode());
@@ -412,7 +412,7 @@ public class TemplateElementStateProviderTest {
         Assert.assertEquals(1, parent.getChildren().count());
         Assert.assertEquals(parent, child.getParent());
 
-        Assert.assertEquals("The text", parent.getTextContent());
+        Assert.assertEquals("The text", parent.getTextRecursively());
     }
 
     @Test
@@ -427,7 +427,7 @@ public class TemplateElementStateProviderTest {
         Assert.assertEquals(1, parent.getChildren().count());
         Assert.assertEquals(parent, child.getParent());
 
-        Assert.assertEquals("The text", parent.getTextContent());
+        Assert.assertEquals("The text", parent.getTextRecursively());
     }
 
     @Test(expected = IllegalStateException.class)

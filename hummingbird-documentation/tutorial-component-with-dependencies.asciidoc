@@ -14,7 +14,7 @@ public class UserNameLabel extends Component {
   protected void onAttach(AttachEvent attachEvent) {
     // user name can be stored to session after login
     String userName = (String) attachEvent.getSession().getAttribute("username");
-    getElement().setTextContent("Hello " + userName + ", welcome back!");
+    getElement().setText("Hello " + userName + ", welcome back!");
   }
 }
 ----

@@ -115,8 +115,7 @@ public class HtmlComponentSmokeTest {
                 Assert.assertEquals(
                         constructor
                                 + " should set the text content for a class with @Tag",
-                        parameterValue,
-                        instance.getElement().getOwnTextContent());
+                        parameterValue, instance.getElement().getText());
             }
         } catch (NoSuchMethodException e) {
             // No constructor to test

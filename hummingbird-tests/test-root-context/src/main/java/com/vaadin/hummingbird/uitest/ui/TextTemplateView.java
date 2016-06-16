@@ -52,7 +52,7 @@ public class TextTemplateView extends Div implements View {
             String serverSideClass) {
         template.getElement().getNode().getFeature(ModelMap.class)
                 .setValue("name", name);
-        String property = template.getElement().getTextContent();
+        String property = template.getElement().getTextRecursively();
         Label label = new Label(property);
         label.addClassName(serverSideClass);
         add(label);

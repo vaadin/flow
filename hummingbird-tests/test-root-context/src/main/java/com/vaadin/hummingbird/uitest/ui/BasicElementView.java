@@ -63,15 +63,13 @@ public class BasicElementView extends AbstractDivView {
         spanClasses.add("hello");
         helloWorldEventRemover = helloWorldElement.addEventListener("click",
                 e -> {
-                    if (helloWorldElement.getOwnTextContent()
-                            .equals("Hello world")) {
-                        helloWorldElement.setTextContent("Stop touching me!");
+                    if (helloWorldElement.getText().equals("Hello world")) {
+                        helloWorldElement.setText("Stop touching me!");
                     } else {
                         // We never get to this code as long as the event
                         // removal actually works
-                        helloWorldElement.setTextContent(
-                                helloWorldElement.getOwnTextContent()
-                                        + " This might be your last warning!");
+                        helloWorldElement.setText(helloWorldElement.getText()
+                                + " This might be your last warning!");
                     }
                     spanClasses.clear();
                     helloWorldEventRemover.remove();

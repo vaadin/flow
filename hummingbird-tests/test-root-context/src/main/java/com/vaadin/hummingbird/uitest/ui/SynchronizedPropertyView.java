@@ -30,7 +30,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
         Element label = ElementFactory
                 .createDiv("Server value: " + input.getProperty("value"));
         input.addEventListener("change", e -> {
-            label.setTextContent("Server value: " + input.getProperty("value"));
+            label.setText("Server value: " + input.getProperty("value"));
         });
         getElement().appendChild(input, label);
 
@@ -42,8 +42,7 @@ public class SynchronizedPropertyView extends AbstractDivView {
         Element label2 = ElementFactory
                 .createDiv("Server value: " + input2.getProperty("value"));
         input2.addEventListener("input", e -> {
-            label2.setTextContent(
-                    "Server value: " + input2.getProperty("value"));
+            label2.setText("Server value: " + input2.getProperty("value"));
         });
         getElement().appendChild(input2, label2);
     }
