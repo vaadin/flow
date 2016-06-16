@@ -21,6 +21,8 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.ui.DependencyList;
 
 import elemental.json.JsonArray;
@@ -50,7 +52,7 @@ public class DependencyLoader {
     }
 
     /**
-     * Loads the given dependencies using the given loader and ensures any
+     * Loads the given dependencies using the given loaders and ensures any
      * callbacks registered using {@link runWhenDependenciesLoaded(Command)} are
      * run when all dependencies have been loaded.
      *
@@ -58,14 +60,21 @@ public class DependencyLoader {
      *            a list of dependency URLs to load, will be translated using
      *            {@link #translateVaadinUri(String)} before they are loaded,
      *            not <code>null</code>
-     * @param resourceLoader
-     *            a function which takes care of loading the dependency URL
+     * @param resourceLoaders
+     *            functions which takes care of loading the dependency URL
+     * @param loadOneByOne
+     *            load dependencies one by one if {@code true} (do not load next
+     *            one until current one is loaded), otherwise start to load all
+     *            resources simultaneously
      *
      */
     public void loadDependencies(final JsArray<String> dependencies,
-            BiConsumer<String, ResourceLoadListener> resourceLoader) {
+            JsArray<BiConsumer<String, ResourceLoadListener>> resourceLoaders,
+            boolean loadOneByOne) {
         assert dependencies != null;
-        assert resourceLoader != null;
+        assert resourceLoaders != null;
+        assert dependencies.length() == resourceLoaders.length();
+
         if (dependencies.length() == 0) {
             return;
         }
@@ -73,12 +82,7 @@ public class DependencyLoader {
         ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
             @Override
             public void onLoad(ResourceLoadEvent event) {
-                if (dependencies.length() != 0) {
-                    String url = translateVaadinUri(dependencies.shift());
-                    startDependencyLoading();
-                    // Load next in chain
-                    resourceLoader.accept(url, this);
-                }
+                loadNextDependency(dependencies, resourceLoaders, this);
                 // Call start for next before calling end for current
                 endDependencyLoading();
             }
@@ -92,13 +96,23 @@ public class DependencyLoader {
         };
 
         // Start chain by loading first
-        String url = translateVaadinUri(dependencies.shift());
-        startDependencyLoading();
-        resourceLoader.accept(url, resourceLoadListener);
+        loadNextDependency(dependencies, resourceLoaders, resourceLoadListener);
 
-        for (int i = 0; i < dependencies.length(); i++) {
-            String loadUrl = translateVaadinUri(dependencies.get(i));
-            resourceLoader.accept(loadUrl, null);
+        if (!loadOneByOne) {
+            for (int i = 0; i < dependencies.length(); i++) {
+                String url = translateVaadinUri(dependencies.get(i));
+                resourceLoaders.get(i).accept(url, null);
+            }
+        }
+    }
+
+    private void loadNextDependency(final JsArray<String> dependencies,
+            JsArray<BiConsumer<String, ResourceLoadListener>> resourceLoaders,
+            ResourceLoadListener resourceLoadListener) {
+        if (dependencies.length() != 0) {
+            String url = translateVaadinUri(dependencies.shift());
+            startDependencyLoading();
+            resourceLoaders.shift().accept(url, resourceLoadListener);
         }
     }
 
@@ -169,12 +183,19 @@ public class DependencyLoader {
         assert deps != null;
 
         ResourceLoader resourceLoader = registry.getResourceLoader();
-        loadDependencies(deps, DependencyList.TYPE_STYLESHEET,
+        JsMap<String, BiConsumer<String, ResourceLoadListener>> styleSheets = JsCollections
+                .map();
+        styleSheets.set(DependencyList.TYPE_STYLESHEET,
                 resourceLoader::loadStylesheet);
-        loadDependencies(deps, DependencyList.TYPE_JAVASCRIPT,
+        loadDependencies(deps, styleSheets);
+
+        JsMap<String, BiConsumer<String, ResourceLoadListener>> scriptsAndImports = JsCollections
+                .map();
+        scriptsAndImports.set(DependencyList.TYPE_JAVASCRIPT,
                 resourceLoader::loadScript);
-        loadDependencies(deps, DependencyList.TYPE_HTML_IMPORT,
+        scriptsAndImports.set(DependencyList.TYPE_HTML_IMPORT,
                 resourceLoader::loadHtml);
+        loadDependencies(deps, scriptsAndImports);
 
         for (int i = 0; i < deps.length(); i++) {
             Console.error(
@@ -183,23 +204,31 @@ public class DependencyLoader {
         }
     }
 
-    private void loadDependencies(JsonArray deps, String typeToLoad,
-            BiConsumer<String, ResourceLoadListener> loader) {
+    @SuppressWarnings("unchecked")
+    private void loadDependencies(JsonArray deps,
+            JsMap<String, BiConsumer<String, ResourceLoadListener>> typesToLoad) {
         JsArray<String> toLoad = JsCollections.array();
+        JsArray<BiConsumer<String, ResourceLoadListener>> loaders = JsCollections
+                .array();
 
+        JsSet<String> presentTypes = JsCollections.set();
         for (int i = 0; i < deps.length(); i++) {
             JsonObject dependencyJson = (JsonObject) deps.get(i);
             String type = dependencyJson.getString(DependencyList.KEY_TYPE);
-            if (typeToLoad.equals(type)) {
+            if (typesToLoad.has(type)) {
+                presentTypes.add(type);
                 String url = dependencyJson.getString(DependencyList.KEY_URL);
                 toLoad.push(url);
+                BiConsumer<String, ResourceLoadListener> loader = typesToLoad
+                        .get(type);
+                loaders.push(loader);
                 deps.remove(i);
                 i--;
             }
         }
 
         if (!toLoad.isEmpty()) {
-            loadDependencies(toLoad, loader);
+            loadDependencies(toLoad, loaders, presentTypes.size() > 1);
         }
     }
 }
