@@ -16,7 +16,7 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
@@ -89,9 +89,15 @@ public class ModelMap extends NodeMap {
         return super.contains(key);
     }
 
-    @Override
-    public Set<String> keySet() {
-        return super.keySet();
+    /**
+     * Gets the keys for which values have been defined.
+     *
+     * @see #hasValue(String)
+     *
+     * @return a stream of keys
+     */
+    public Stream<String> getKeys() {
+        return super.keySet().stream();
     }
 
     /**

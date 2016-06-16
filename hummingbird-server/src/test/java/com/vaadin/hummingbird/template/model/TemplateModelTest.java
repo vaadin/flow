@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import com.vaadin.annotations.Exclude;
 import com.vaadin.annotations.Include;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.ui.Template;
@@ -323,6 +325,70 @@ public class TemplateModelTest {
         @Override
         protected ModelWithExcludeForSubBean getModel() {
             return (ModelWithExcludeForSubBean) super.getModel();
+        }
+
+    }
+
+    public static class TemplateWithIncludeForSubBean extends EmptyDivTemplate {
+
+        public interface ModelWithExcludeForSubBean extends TemplateModel {
+            public BeanContainingBeans getBeanContainingBeans();
+
+            @Include({ "bean1.booleanObject" })
+            public void setBeanContainingBeans(
+                    BeanContainingBeans beanContainingBeans);
+        }
+
+        @Override
+        protected ModelWithExcludeForSubBean getModel() {
+            return (ModelWithExcludeForSubBean) super.getModel();
+        }
+
+    }
+
+    public static class TemplateWithIncludeOnList extends EmptyDivTemplate {
+
+        public interface ModelWithIncludeOnList extends TemplateModel {
+            @Include("intValue")
+            public void setBeans(List<Bean> beans);
+
+            public List<Bean> getBeans();
+        }
+
+        @Override
+        protected ModelWithIncludeOnList getModel() {
+            return (ModelWithIncludeOnList) super.getModel();
+        }
+
+    }
+
+    public static class TemplateWithIncludeOnListSubBean
+            extends EmptyDivTemplate {
+
+        public interface ModelWithIncludeOnListSubBean extends TemplateModel {
+            @Include({ "bean1.intValue", "bean2.booleanValue" })
+            public void setBeanContainingBeans(List<BeanContainingBeans> beans);
+        }
+
+        @Override
+        protected ModelWithIncludeOnListSubBean getModel() {
+            return (ModelWithIncludeOnListSubBean) super.getModel();
+        }
+
+    }
+
+    public static class TemplateWithExcludeOnList extends EmptyDivTemplate {
+
+        public interface ModelWithExcludeOnList extends TemplateModel {
+            @Exclude("intValue")
+            public void setBeans(List<Bean> beans);
+
+            public List<Bean> getBeans();
+        }
+
+        @Override
+        protected ModelWithExcludeOnList getModel() {
+            return (ModelWithExcludeOnList) super.getModel();
         }
 
     }
@@ -877,6 +943,11 @@ public class TemplateModelTest {
         return ModelMap.get(node).resolveModelMap(beanPath);
     }
 
+    private ModelList getModelList(Template template, String beanPath) {
+        StateNode node = template.getElement().getNode();
+        return ModelMap.get(node).resolveModelList(beanPath);
+    }
+
     @Test
     public void getListFromModel() {
         ListBeanModelTemplate template = new ListBeanModelTemplate();
@@ -896,7 +967,7 @@ public class TemplateModelTest {
         template.getModel().setBean(new Bean(123));
 
         ModelMap modelMap = getModelMap(template, "bean");
-        Set<String> mapKeys = new HashSet<>(modelMap.keySet());
+        Set<String> mapKeys = getKeys(modelMap);
         Assert.assertTrue("Model should contain included 'doubleValue'",
                 mapKeys.remove("doubleValue"));
         Assert.assertTrue("Model should contain included 'booleanObject'",
@@ -911,7 +982,7 @@ public class TemplateModelTest {
         template.getModel().setBean(new Bean(123));
 
         ModelMap modelMap = getModelMap(template, "bean");
-        Set<String> mapKeys = new HashSet<>(modelMap.keySet());
+        Set<String> mapKeys = getKeys(modelMap);
         HashSet<String> excluded = new HashSet<>();
         excluded.add("doubleValue");
         excluded.add("booleanObject");
@@ -942,7 +1013,7 @@ public class TemplateModelTest {
         template.getModel().setBean(new Bean(123));
         ModelMap modelMap = getModelMap(template, "bean");
         Assert.assertTrue(modelMap.hasValue("booleanObject"));
-        Assert.assertEquals(1, modelMap.keySet().size());
+        Assert.assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
@@ -951,7 +1022,7 @@ public class TemplateModelTest {
         template.getModel().setBean(new Bean(123));
         ModelMap modelMap = getModelMap(template, "bean");
         Assert.assertTrue(modelMap.hasValue("booleanObject"));
-        Assert.assertEquals(1, modelMap.keySet().size());
+        Assert.assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
@@ -960,7 +1031,7 @@ public class TemplateModelTest {
         template.getModel().setBean(new Bean(123));
         ModelMap modelMap = getModelMap(template, "bean");
         Assert.assertTrue(modelMap.hasValue("doubleValue"));
-        Assert.assertEquals(1, modelMap.keySet().size());
+        Assert.assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
@@ -981,6 +1052,117 @@ public class TemplateModelTest {
                 .hasValue("booleanObject"));
         Assert.assertNull(
                 template.getModel().getBeanContainingBeans().getBean2());
+    }
+
+    @Test
+    public void setBeanIncludeSubBeanProperties() {
+        TemplateWithIncludeForSubBean template = new TemplateWithIncludeForSubBean();
+        BeanContainingBeans beanContainer = new BeanContainingBeans();
+        beanContainer.setBean1(new Bean(1));
+        beanContainer.setBean2(new Bean(2));
+        template.getModel().setBeanContainingBeans(beanContainer);
+
+        Assert.assertNotNull(
+                template.getModel().getBeanContainingBeans().getBean1());
+        Assert.assertNull(
+                template.getModel().getBeanContainingBeans().getBean2());
+
+        ModelMap bean1Map = getModelMap(template, "beanContainingBeans.bean1");
+        Set<String> bean1Keys = getKeys(bean1Map);
+        Assert.assertTrue(bean1Keys.contains("booleanObject"));
+        Assert.assertEquals(1, bean1Keys.size());
+    }
+
+    @Test
+    public void setListWithInclude() {
+        TemplateWithIncludeOnList template = new TemplateWithIncludeOnList();
+        List<Bean> beans = new ArrayList<>();
+        beans.add(new Bean(1));
+        beans.add(new Bean(2));
+        template.getModel().setBeans(beans);
+
+        ModelList modelList = getModelList(template, "beans");
+        ModelMap bean1 = ModelMap.get(modelList.get(0));
+        Set<String> propertiesInMap = bean1.getKeys()
+                .collect(Collectors.toSet());
+        Assert.assertTrue("Bean in model should have an 'intValue' property",
+                propertiesInMap.remove("intValue"));
+        Assert.assertEquals(
+                "All other properties should have been filtered out", 0,
+                propertiesInMap.size());
+    }
+
+    @Test
+    public void setListWithExclude() {
+        TemplateWithExcludeOnList template = new TemplateWithExcludeOnList();
+        List<Bean> beans = new ArrayList<>();
+        beans.add(new Bean(1));
+        beans.add(new Bean(2));
+        template.getModel().setBeans(beans);
+
+        ModelList modelList = getModelList(template, "beans");
+        ModelMap bean1 = ModelMap.get(modelList.get(0));
+        ModelMap bean2 = ModelMap.get(modelList.get(1));
+
+        Set<String> bean1InMap = getKeys(bean1);
+        Set<String> bean2InMap = getKeys(bean2);
+        Assert.assertFalse(
+                "Bean1 in model should not have an 'intValue' property",
+                bean1InMap.contains("intValue"));
+        Assert.assertFalse(
+                "Bean2 in model should not have an 'intValue' property",
+                bean2InMap.contains("intValue"));
+        Assert.assertEquals("All other properties should have been included", 6,
+                bean1InMap.size());
+        Assert.assertEquals("All other properties should have been included", 6,
+                bean2InMap.size());
+    }
+
+    @Test
+    public void setListWithSubBeanInclude() {
+        TemplateWithIncludeOnListSubBean template = new TemplateWithIncludeOnListSubBean();
+        List<BeanContainingBeans> beanContainingBeans = new ArrayList<>();
+        beanContainingBeans
+                .add(new BeanContainingBeans(new Bean(11), new Bean(12)));
+        beanContainingBeans.add(new BeanContainingBeans(null, new Bean(22)));
+        template.getModel().setBeanContainingBeans(beanContainingBeans);
+
+        ModelList modelList = getModelList(template, "beanContainingBeans");
+        Assert.assertEquals(2, modelList.size());
+
+        ModelMap container1Map = ModelMap.get(modelList.get(0));
+        ModelMap container2Map = ModelMap.get(modelList.get(1));
+        HashSet<String> bean1bean2 = new HashSet<>();
+        bean1bean2.add("bean1");
+        bean1bean2.add("bean2");
+        Assert.assertEquals(bean1bean2,
+                container1Map.getKeys().collect(Collectors.toSet()));
+        Assert.assertEquals(bean1bean2,
+                container2Map.getKeys().collect(Collectors.toSet()));
+
+        Set<String> container1Bean1Properties = getKeys(
+                container1Map.resolveModelMap("bean1"));
+        Assert.assertTrue(container1Bean1Properties.remove("intValue"));
+        Assert.assertEquals(0, container1Bean1Properties.size());
+
+        Set<String> container1Bean2Properties = getKeys(
+                container1Map.resolveModelMap("bean2"));
+        Assert.assertTrue(container1Bean2Properties.remove("booleanValue"));
+        Assert.assertEquals(0, container1Bean2Properties.size());
+
+        Set<String> container2Bean1Properties = getKeys(
+                container2Map.resolveModelMap("bean1"));
+        // Null value in the initial bean implies not imported or created
+        Assert.assertEquals(0, container2Bean1Properties.size());
+
+        Set<String> container2Bean2Properties = getKeys(
+                container2Map.resolveModelMap("bean2"));
+        Assert.assertTrue(container2Bean2Properties.remove("booleanValue"));
+        Assert.assertEquals(0, container2Bean2Properties.size());
+    }
+
+    private static Set<String> getKeys(ModelMap map) {
+        return map.getKeys().collect(Collectors.toSet());
     }
 
 }

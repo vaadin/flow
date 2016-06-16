@@ -154,7 +154,7 @@ public class TemplateModelUtil {
         if (modelType instanceof Class<?>) {
             setModelValueClass(modelMap, propertyName, (Class<?>) modelType,
                     value, filterPrefix, filter);
-        } else if (isSupportedParameterizedType(modelType)) {
+        } else if (isBeansList(modelType)) {
             setModelValueParameterizedType(modelMap, propertyName, modelType,
                     value);
         } else {
@@ -262,13 +262,7 @@ public class TemplateModelUtil {
 
     private static void setModelValueParameterizedType(ModelMap modelMap,
             String propertyName, Type expectedType, Object value) {
-        ParameterizedType pt = (ParameterizedType) expectedType;
-
-        Type itemType = pt.getActualTypeArguments()[0];
-        if (!(itemType instanceof Class<?>)) {
-            throw createUnsupportedTypeException(expectedType, propertyName);
-        }
-
+        Class<?> itemType = getBeansListItemType(expectedType);
         importBeans(modelMap.getNode(), propertyName, (List<?>) value,
                 (Class<?>) itemType, name -> true);
     }
@@ -340,7 +334,7 @@ public class TemplateModelUtil {
             return;
         }
         Type type = ReflectTools.getPropertyType(method);
-        if (isSupportedParameterizedType(type)) {
+        if (isBeansList(type)) {
             ParameterizedType clazz = (ParameterizedType) type;
             Type componentType = clazz.getActualTypeArguments()[0];
             if (componentType instanceof Class<?>
@@ -427,9 +421,38 @@ public class TemplateModelUtil {
         return SUPPORTED_BASIC_TYPES.contains(clazz);
     }
 
-    private static boolean isSupportedParameterizedType(Type type) {
+    /**
+     * Checks if the given type will be handled as a list of beans in the model.
+     *
+     * @param type
+     *            the type to check
+     * @return <code>true</code> if the given type will be handled as a list of
+     *         beans, <code>false</code> otherwise
+     */
+    public static boolean isBeansList(Type type) {
         return type instanceof ParameterizedType
                 && ((ParameterizedType) type).getRawType().equals(List.class);
+    }
+
+    /**
+     * Gets the type of items for the given list type.
+     *
+     * @param type
+     *            the type to check, must be a list of beans
+     * @return the item type of the list
+     */
+    public static Class<?> getBeansListItemType(Type type) {
+        assert isBeansList(type);
+
+        ParameterizedType pt = (ParameterizedType) type;
+
+        Type itemType = pt.getActualTypeArguments()[0];
+        if (!(itemType instanceof Class<?>)) {
+            throw new InvalidTemplateModelException(
+                    "The given type is not a beans list type: " + type);
+        }
+        return (Class<?>) itemType;
+
     }
 
     private static InvalidTemplateModelException createUnsupportedTypeException(
@@ -470,6 +493,16 @@ public class TemplateModelUtil {
         if (include != null) {
             for (String includeProperty : include.value()) {
                 toInclude.add(includeProperty);
+
+                // If "some.bean.value" is included,
+                // we should automatically include "some" and "some.bean"
+                String property = includeProperty;
+                int dotLocation = property.lastIndexOf('.');
+                while (dotLocation != -1) {
+                    property = property.substring(0, dotLocation);
+                    toInclude.add(property);
+                    dotLocation = property.lastIndexOf('.');
+                }
             }
         }
 

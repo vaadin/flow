@@ -7,6 +7,11 @@ public class BeanContainingBeans {
     public BeanContainingBeans() {
     }
 
+    public BeanContainingBeans(Bean bean1, Bean bean2) {
+        this.bean1 = bean1;
+        this.bean2 = bean2;
+    }
+
     public Bean getBean1() {
         return bean1;
     }
