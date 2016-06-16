@@ -182,14 +182,14 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
     }
 
     @Override
-    protected void bind(StateNode stateNode, Node anchor, int templateId,
+    protected void bind(StateNode modelNode, Node anchor, int templateId,
             TemplateBinderContext context) {
         ForTemplateNode templateNode = (ForTemplateNode) getTemplateNode(
-                stateNode.getTree(), templateId);
+                modelNode.getTree(), templateId);
         Computation computation = Reactive
                 .runWhenDepedenciesChange(new ForTemplateNodeUpdate(context,
-                        anchor, stateNode, templateNode));
-        stateNode.addUnregisterListener(event -> computation.stop());
+                        anchor, modelNode, templateNode));
+        modelNode.addUnregisterListener(event -> computation.stop());
     }
 
 }

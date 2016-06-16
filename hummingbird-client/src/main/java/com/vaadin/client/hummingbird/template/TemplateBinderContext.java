@@ -19,6 +19,9 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 
 /**
+ * A {@link BinderContext} extension which provides template root node for
+ * template strategies.
+ * 
  * @author Vaadin Ltd
  *
  */

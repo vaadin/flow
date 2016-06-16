@@ -54,6 +54,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private StateNode stateNode;
 
     private Map<String, JsArray<?>> serverMethods = new HashMap<>();
+    private Map<String, StateNode> serverRpcNodes = new HashMap<>();
 
     @Override
     protected void gwtSetUp() throws Exception {
@@ -70,6 +71,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
             public void sendTemplateEventToServer(StateNode node,
                     String methodName, JsArray<?> argValues) {
                 serverMethods.put(methodName, argValues);
+                serverRpcNodes.put(methodName, node);
             }
         };
 
@@ -826,6 +828,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         assertEquals(1, serverMethods.size());
         assertNotNull(serverMethods.get(operation));
+        assertEquals(stateNode.getId(), serverRpcNodes.get(operation).getId());
     }
 
     public void testNgFor_unregister_noUpdates() {

@@ -42,12 +42,12 @@ public class TextTemplateBindingStrategy
     }
 
     @Override
-    protected void bind(StateNode stateNode, Text node, int templateId,
+    protected void bind(StateNode modelNode, Text node, int templateId,
             TemplateBinderContext context) {
         TextTemplateNode templateNode = (TextTemplateNode) getTemplateNode(
-                stateNode.getTree(), templateId);
+                modelNode.getTree(), templateId);
         Binding binding = templateNode.getTextBinding();
-        bind(stateNode, binding, value -> DomApi.wrap(node)
+        bind(modelNode, binding, value -> DomApi.wrap(node)
                 .setTextContent(value.map(Object::toString).orElse("")));
     }
 
