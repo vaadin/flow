@@ -38,7 +38,7 @@ public interface HasText extends HasElement {
      *            the text content to set
      */
     default void setText(String text) {
-        getElement().setTextContent(text);
+        getElement().setText(text);
     }
 
     /**
@@ -49,6 +49,6 @@ public interface HasText extends HasElement {
      * @return the text content of this component, not <code>null</code>
      */
     default String getText() {
-        return getElement().getOwnTextContent();
+        return getElement().getText();
     }
 }

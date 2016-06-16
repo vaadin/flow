@@ -107,7 +107,7 @@ public class ForElementTemplateNodeTest {
 
         Assert.assertEquals(1, forTemplateNode.getGeneratedElementCount(model));
         Assert.assertEquals("textValue",
-                forTemplateNode.getElement(0, model).getOwnTextContent());
+                forTemplateNode.getElement(0, model).getText());
     }
 
     @Test
@@ -125,9 +125,9 @@ public class ForElementTemplateNodeTest {
 
         Assert.assertEquals(2, templateNode.getGeneratedElementCount(model));
         Assert.assertEquals("textValue1",
-                templateNode.getElement(0, model).getOwnTextContent());
+                templateNode.getElement(0, model).getText());
         Assert.assertEquals("textValue2",
-                templateNode.getElement(1, model).getOwnTextContent());
+                templateNode.getElement(1, model).getText());
     }
 
     @Test

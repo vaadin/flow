@@ -168,7 +168,7 @@ public class ComponentTest {
 
         @Override
         public String toString() {
-            return getElement().getOwnTextContent();
+            return getElement().getText();
         }
 
         @Override
@@ -248,7 +248,7 @@ public class ComponentTest {
         Assert.assertEquals(Tag.DIV,
                 divWithTextComponent.getElement().getTag());
         Assert.assertEquals("Test component",
-                divWithTextComponent.getElement().getTextContent());
+                divWithTextComponent.getElement().getTextRecursively());
     }
 
     @Test

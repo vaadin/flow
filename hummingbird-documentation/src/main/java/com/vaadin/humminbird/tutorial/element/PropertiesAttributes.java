@@ -68,18 +68,19 @@ public class PropertiesAttributes {
         //@formatter:off - custom line wrapping
 
         Element element = ElementFactory.createDiv("Hello world"); // <div>Hello world</div>
-        element.setTextContent("Hello world");
+        element.setText("Hello world");
 
         element.appendChild(ElementFactory.createSpan()); // <div>Hello world<span></span></div>
 
-        element.setTextContent("Replacement text"); // <div>Replacement text</div>
+        element.setText("Replacement text"); // <div>Replacement text</div>
 
-        element.setTextContent("Welcome back ");
+        element.setText("Welcome back ");
 
         Element name = ElementFactory.createStrong("Rudolph Reindeer");
-        element.appendChild(name);
+        element.appendChild(name); // <div>Welcome back <strong>Rudolph Reindeer</strong></div>
 
-        element.getTextContent(); // will return "Welcome back Rudolph Reindeer"
+        element.getTextRecursively(); // will return "Welcome back Rudolph Reindeer"
+        element.getText(); // will return "Welcome back "
 
         //@formatter:on
     }
