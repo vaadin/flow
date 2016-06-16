@@ -15,7 +15,6 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 /**
@@ -39,7 +38,6 @@ public class ApplicationConfiguration {
 
     private boolean widgetsetVersionSent = false;
 
-    private JavaScriptObject versionInfo;
     private boolean productionMode = false;
     private String servletVersion;
     private String atmosphereVersion;
@@ -307,25 +305,6 @@ public class ApplicationConfiguration {
      */
     public void setWidgetsetVersionSent() {
         widgetsetVersionSent = true;
-    }
-
-    /**
-     * Sets the version info object which is published to JavaScript.
-     *
-     * @param versionInfo
-     *            the version info object
-     */
-    public void setVersionInfo(JavaScriptObject versionInfo) {
-        this.versionInfo = versionInfo;
-    }
-
-    /**
-     * Gets the version info object which is published to JavaScript.
-     *
-     * @return the version info object
-     */
-    public JavaScriptObject getVersionInfo() {
-        return versionInfo;
     }
 
 }
