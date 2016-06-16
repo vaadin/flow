@@ -79,11 +79,11 @@ public class TemplateParserTest {
 
         // Explicitly set "bar" property to null. So model has property "bar".
         // See #970
-        node.getFeature(ModelMap.class).setValue("bar", null);
+        ModelMap.get(node).setValue("bar", null);
         Assert.assertNull(binding.getValue(node));
 
         String value = "someValue";
-        node.getFeature(ModelMap.class).setValue("bar", value);
+        ModelMap.get(node).setValue("bar", value);
 
         Assert.assertEquals(value, binding.getValue(node));
     }
@@ -107,11 +107,11 @@ public class TemplateParserTest {
 
         // Explicitly set "foo" property to null. So model has property "foo".
         // See #970
-        node.getFeature(ModelMap.class).setValue("foo", null);
+        ModelMap.get(node).setValue("foo", null);
 
         Assert.assertNull(binding.get().getValue(node));
 
-        node.getFeature(ModelMap.class).setValue("foo", "bar");
+        ModelMap.get(node).setValue("foo", "bar");
 
         Assert.assertEquals("bar", binding.get().getValue(node));
     }
@@ -140,10 +140,10 @@ public class TemplateParserTest {
 
         // Explicitly set "foo" property to null. So model has property "foo".
         // See #970
-        node.getFeature(ModelMap.class).setValue("foo", null);
+        ModelMap.get(node).setValue("foo", null);
         Assert.assertNull(binding.get().getValue(node));
 
-        node.getFeature(ModelMap.class).setValue("foo", "bar");
+        ModelMap.get(node).setValue("foo", "bar");
 
         Assert.assertEquals("bar", binding.get().getValue(node));
     }
@@ -175,10 +175,10 @@ public class TemplateParserTest {
 
         // Explicitly set "bar" property to null. So model has property "bar".
         // See #970
-        node.getFeature(ModelMap.class).setValue("bar", null);
+        ModelMap.get(node).setValue("bar", null);
         Assert.assertNull(binding.get().getValue(node));
 
-        node.getFeature(ModelMap.class).setValue("bar", "value");
+        ModelMap.get(node).setValue("bar", "value");
 
         Assert.assertEquals("value", binding.get().getValue(node));
     }

@@ -93,4 +93,19 @@ public class ModelMap extends NodeMap {
     public Set<String> keySet() {
         return super.keySet();
     }
+
+    /**
+     * Gets the model map for the given node.
+     * <p>
+     * Throws an exception if the node does not have a model map.
+     *
+     * @param node
+     *            the node which has a model map
+     * @return the model map for the node
+     */
+    public static ModelMap get(StateNode node) {
+        assert node != null;
+        return node.getFeature(ModelMap.class);
+    }
+
 }

@@ -167,7 +167,7 @@ public class ModelPathResolver {
             String childNodeName, Class<? extends NodeFeature> childFeature) {
         assert !childNodeName.contains(".");
 
-        ModelMap parentLevel = parentNode.getFeature(ModelMap.class);
+        ModelMap parentLevel = ModelMap.get(parentNode);
         if (parentLevel.hasValue(childNodeName)) {
             Serializable value = parentLevel.getValue(childNodeName);
             if (value instanceof StateNode

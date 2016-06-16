@@ -183,7 +183,7 @@ public class ForElementTemplateNodeTest {
             modelList.getFeature(ModelList.class).add(modelItem);
         }
         StateNode node = templateRootElement.getNode();
-        node.getFeature(ModelMap.class).setValue(key, modelList);
+        ModelMap.get(node).setValue(key, modelList);
         return node;
     }
 }

@@ -156,9 +156,8 @@ public class TemplateModelProxyHandler implements Serializable {
         assert stateNode != null;
         assert modelType != null;
 
-        ModelMap model = stateNode.getFeature(ModelMap.class);
-
-        TemplateModelUtil.populateProperties(model, modelType);
+        TemplateModelUtil.populateProperties(ModelMap.get(stateNode),
+                modelType);
         return createModelProxy(stateNode, modelType);
     }
 
@@ -258,7 +257,7 @@ public class TemplateModelProxyHandler implements Serializable {
     }
 
     private static Object handleGetter(StateNode stateNode, Method method) {
-        ModelMap modelMap = getModelMap(stateNode);
+        ModelMap modelMap = ModelMap.get(stateNode);
         String propertyName = ReflectTools.getPropertyName(method);
         Type returnType = method.getGenericReturnType();
 
@@ -268,7 +267,7 @@ public class TemplateModelProxyHandler implements Serializable {
 
     private static void handleSetter(StateNode stateNode, Method method,
             Object value) {
-        ModelMap modelMap = getModelMap(stateNode);
+        ModelMap modelMap = ModelMap.get(stateNode);
         String propertyName = ReflectTools.getPropertyName(method);
         Type declaredValueType = method.getGenericParameterTypes()[0];
 
@@ -283,10 +282,6 @@ public class TemplateModelProxyHandler implements Serializable {
             TemplateModelUtil.setModelValue(modelMap, propertyName,
                     declaredValueType, value, "", string -> true);
         }
-    }
-
-    private static ModelMap getModelMap(StateNode stateNode) {
-        return stateNode.getFeature(ModelMap.class);
     }
 
     /**
