@@ -16,7 +16,7 @@
 package com.vaadin.hummingbird.template;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.template.model.ModelPathResolver;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 
 import elemental.json.JsonValue;
 
@@ -52,9 +52,15 @@ public class ModelValueBindingProvider extends AbstractBindingValueProvider {
 
     @Override
     public Object getValue(StateNode node) {
-        ModelPathResolver resolver = ModelPathResolver.forProperty(key);
-        return resolver.resolveModelMap(node)
-                .getValue(resolver.getPropertyName());
+        ModelMap map = ModelMap.get(node);
+        int dotLocation = key.lastIndexOf('.');
+        if (dotLocation != -1) {
+            String modelPath = key.substring(0, dotLocation);
+            String modelKey = key.substring(dotLocation + 1);
+            return map.resolveModelMap(modelPath).getValue(modelKey);
+        } else {
+            return map.getValue(key);
+        }
     }
 
     @Override

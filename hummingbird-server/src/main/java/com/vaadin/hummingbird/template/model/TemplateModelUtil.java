@@ -126,8 +126,7 @@ public class TemplateModelUtil {
 
         // Resolve the state node only after all the bean values have been
         // resolved properly
-        ModelMap modelMap = ModelPathResolver.forPath(modelPath)
-                .resolveModelMap(modelNode);
+        ModelMap modelMap = ModelMap.get(modelNode).resolveModelMap(modelPath);
 
         values.forEach(wrapper -> setModelValue(wrapper, modelMap, filterPrefix,
                 filter));
@@ -177,6 +176,8 @@ public class TemplateModelUtil {
      */
     public static <T> T getProxy(StateNode stateNode, String modelPath,
             Class<T> beanClass) {
+        assert stateNode != null;
+        assert modelPath != null;
 
         if (modelPath.isEmpty()) {
             // get the whole model as a bean
@@ -184,17 +185,15 @@ public class TemplateModelUtil {
                     .createModelProxy(stateNode, beanClass));
         }
 
-        ModelPathResolver resolver = ModelPathResolver.forProperty(modelPath);
-        ModelMap parentMap = resolver.resolveModelMap(stateNode);
-        // Create the state node for the bean if it does not exist
-        ModelPathResolver.resolveStateNode(parentMap.getNode(),
-                resolver.getPropertyName(), ModelMap.class);
+        ModelMap map = ModelMap.get(stateNode).resolveModelMap(modelPath);
+        ModelMap parentMap = ModelMap.get(map.getNode().getParent());
+        String propertyName = ModelMap.getLastPart(modelPath);
 
-        return beanClass.cast(getModelValue(parentMap,
-                resolver.getPropertyName(), beanClass));
+        Object modelValue = getModelValue(parentMap, propertyName, beanClass);
+        assert modelValue != null;
+        return beanClass.cast(modelValue);
     }
 
-    @SuppressWarnings("unchecked")
     static <T> List<T> getListProxy(StateNode stateNode, String modelPath,
             Class<T> itemType) {
         if (modelPath == null || modelPath.isEmpty()) {
@@ -207,15 +206,10 @@ public class TemplateModelUtil {
                     "The item type must not be null");
         }
 
-        ModelPathResolver resolver = ModelPathResolver.forProperty(modelPath);
-        ModelMap parentMap = resolver.resolveModelMap(stateNode);
-        // Create the state node for the list if it does not exist
-        ModelPathResolver.resolveStateNode(parentMap.getNode(),
-                resolver.getPropertyName(), ModelList.class);
+        ModelList modelList = ModelMap.get(stateNode)
+                .resolveModelList(modelPath);
 
-        Type type = ReflectTools.createParameterizedType(List.class, itemType);
-        return (List<T>) getModelValue(parentMap, resolver.getPropertyName(),
-                type);
+        return new TemplateModelListProxy<>(modelList.getNode(), itemType);
     }
 
     /**
@@ -312,8 +306,8 @@ public class TemplateModelUtil {
             childNodes.add(childNode);
         }
 
-        ModelList modelList = ModelPathResolver.forPath(modelPath)
-                .resolveModelList(stateNode);
+        ModelList modelList = ModelMap.get(stateNode)
+                .resolveModelList(modelPath);
         modelList.clear();
 
         modelList.addAll(childNodes);

@@ -175,7 +175,6 @@ public class TemplateModelProxyHandler implements Serializable {
             Class<T> modelType) {
         assert stateNode != null;
         assert modelType != null;
-
         return modelType
                 .cast(proxyConstructors.get(modelType).apply(stateNode));
     }
