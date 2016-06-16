@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
 
@@ -86,5 +87,10 @@ public class ModelMap extends NodeMap {
      */
     public boolean hasValue(String key) {
         return super.contains(key);
+    }
+
+    @Override
+    public Set<String> keySet() {
+        return super.keySet();
     }
 }
