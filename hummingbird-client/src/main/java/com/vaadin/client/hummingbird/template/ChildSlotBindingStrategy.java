@@ -97,7 +97,7 @@ public class ChildSlotBindingStrategy extends AbstractTemplateStrategy<Node> {
 
     @Override
     protected void bind(StateNode stateNode, Node anchor, int templateId,
-            BinderContext context) {
+            TemplateBinderContext context) {
         Computation computation = Reactive.runWhenDepedenciesChange(
                 new ChildSlotBinder(context, anchor, stateNode));
         stateNode.addUnregisterListener(e -> computation.stop());

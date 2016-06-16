@@ -17,7 +17,6 @@ package com.vaadin.client.hummingbird.template;
 
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
-import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.dom.DomApi;
 
 import elemental.client.Browser;
@@ -44,7 +43,7 @@ public class TextTemplateBindingStrategy
 
     @Override
     protected void bind(StateNode stateNode, Text node, int templateId,
-            BinderContext context) {
+            TemplateBinderContext context) {
         TextTemplateNode templateNode = (TextTemplateNode) getTemplateNode(
                 stateNode.getTree(), templateId);
         Binding binding = templateNode.getTextBinding();

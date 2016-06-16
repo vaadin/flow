@@ -68,7 +68,7 @@ public class ElementTemplateBindingStrategy
 
     @Override
     protected void bind(StateNode stateNode, Element element, int templateId,
-            BinderContext context) {
+            TemplateBinderContext context) {
         ElementTemplateNode templateNode = (ElementTemplateNode) getTemplateNode(
                 stateNode.getTree(), templateId);
         bindProperties(stateNode, templateNode, element);
@@ -88,7 +88,7 @@ public class ElementTemplateBindingStrategy
             }
         }
 
-        registerEventHandlers(stateNode, templateNode, element);
+        registerEventHandlers(context.getTemplateRoot(), templateNode, element);
 
         MapProperty overrideProperty = stateNode
                 .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
@@ -122,7 +122,7 @@ public class ElementTemplateBindingStrategy
                         value.orElse(null)));
     }
 
-    private void registerEventHandlers(StateNode stateNode,
+    private void registerEventHandlers(StateNode templateStateNode,
             ElementTemplateNode templateNode, Element element) {
         JsonObject eventHandlers = templateNode.getEventHandlers();
         if (eventHandlers != null) {
@@ -132,7 +132,7 @@ public class ElementTemplateBindingStrategy
                 EventHandler eventHandler = NativeFunction.create("$event",
                         "$server", handler);
                 element.addEventListener(event, evt -> eventHandler.handle(evt,
-                        createServerProxy(stateNode)));
+                        createServerProxy(templateStateNode)));
             }
         }
     }
@@ -166,14 +166,17 @@ public class ElementTemplateBindingStrategy
         context.bind(overrideNode, element);
     }
 
-    private JavaScriptObject createServerProxy(StateNode node) {
+    private JavaScriptObject createServerProxy(StateNode templateNode) {
+        assert templateNode.hasFeature(NodeFeatures.TEMPLATE);
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
-        if (node.hasFeature(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES)) {
-            NodeList list = node
+        if (templateNode
+                .hasFeature(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES)) {
+            NodeList list = templateNode
                     .getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES);
             for (int i = 0; i < list.length(); i++) {
-                attachServerProxyMethod(proxy, node, list.get(i).toString());
+                attachServerProxyMethod(proxy, templateNode,
+                        list.get(i).toString());
             }
         }
         return proxy;

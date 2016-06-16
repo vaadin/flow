@@ -768,6 +768,66 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("foo", li.getTextContent());
     }
 
+    public void testServerEventHandlerInNgFor() {
+        TestElementTemplateNode parent = TestElementTemplateNode.create("div");
+        String operation = "operation";
+
+        // ============= create <li *ngFor> ===============================
+        String collectionVar = "items";
+
+        TestForTemplateNode templateNode = TestTemplateNode
+                .create(ForTemplateNode.TYPE);
+
+        int templateId = 42;
+        registry.getTemplateRegistry().register(templateId, templateNode);
+
+        TestElementTemplateNode forChild = TestElementTemplateNode.create("li");
+        templateNode.setCollectionVariable(collectionVar);
+
+        forChild.addEventHandler("click", "$server." + operation + "()");
+
+        int forChildId = 11;
+        registry.getTemplateRegistry().register(forChildId, forChild);
+
+        templateNode.setChildrenIds(new double[] { forChildId });
+
+        parent.setChildrenIds(new double[] { templateId });
+
+        NodeMap model = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        MapProperty property = model.getProperty(collectionVar);
+        StateNode modelNode = new StateNode(1, tree);
+
+        property.setValue(modelNode);
+        // ================== now modelNode is NG FOR model node ==========
+
+        StateNode varNode = new StateNode(2, tree);
+
+        com.vaadin.client.hummingbird.nodefeature.NodeList modelList = modelNode
+                .getList(NodeFeatures.TEMPLATE_MODELLIST);
+        // add one item to the "collection" model
+        modelList.add(0, varNode);
+
+        stateNode.getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES).set(0,
+                operation);
+
+        Element element = createElement(parent);
+
+        Reactive.flush();
+
+        MouseEvent event = (MouseEvent) Browser.getDocument()
+                .createEvent(Events.MOUSE);
+        event.initMouseEvent("click", true, true, Browser.getWindow(), 0, 0, 0,
+                0, 0, false, false, false, false, 0, element);
+
+        Browser.getDocument().getBody().appendChild(element);
+
+        element.getElementsByTagName("li").item(0).dispatchEvent(event);
+
+        assertEquals(1, serverMethods.size());
+        assertNotNull(serverMethods.get(operation));
+    }
+
     public void testNgFor_unregister_noUpdates() {
         TestElementTemplateNode parent = TestElementTemplateNode.create("div");
         String textVar = "text";

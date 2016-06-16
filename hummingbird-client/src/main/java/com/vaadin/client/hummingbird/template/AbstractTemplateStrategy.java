@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird.template;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
@@ -36,7 +37,6 @@ import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 
 import elemental.dom.Node;
 import elemental.json.JsonObject;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Abstract binding strategy to handle template nodes.
@@ -48,6 +48,43 @@ import jsinterop.annotations.JsFunction;
  */
 public abstract class AbstractTemplateStrategy<T extends Node>
         implements BindingStrategy<T> {
+
+    private static class TemplateBinderContextImpl
+            implements TemplateBinderContext {
+
+        private BinderContext original;
+
+        private StateNode templateNode;
+
+        private TemplateBinderContextImpl(BinderContext original,
+                StateNode templateNode) {
+            assert templateNode.hasFeature(NodeFeatures.TEMPLATE);
+
+            this.original = original;
+            this.templateNode = templateNode;
+        }
+
+        @Override
+        public Node createAndBind(StateNode node) {
+            return original.createAndBind(node);
+        }
+
+        @Override
+        public void bind(StateNode stateNode, Node node) {
+            original.bind(stateNode, node);
+        }
+
+        @Override
+        public <T extends BindingStrategy<?>> JsArray<T> getStrategies(
+                Predicate<BindingStrategy<?>> predicate) {
+            return original.getStrategies(predicate);
+        }
+
+        @Override
+        public StateNode getTemplateRoot() {
+            return templateNode;
+        }
+    }
 
     @Override
     public boolean isApplicable(StateNode node) {
@@ -67,7 +104,8 @@ public abstract class AbstractTemplateStrategy<T extends Node>
 
     @Override
     public void bind(StateNode stateNode, T htmlNode, BinderContext context) {
-        bind(stateNode, htmlNode, getTemplateId(stateNode), context);
+        bind(stateNode, htmlNode, getTemplateId(stateNode),
+                new TemplateBinderContextImpl(context, stateNode));
     }
 
     /**
@@ -122,7 +160,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      *            the template id
      */
     protected abstract void bind(StateNode stateNode, T node, int templateId,
-            BinderContext context);
+            TemplateBinderContext context);
 
     /**
      * Binds the {@code stateNode} using the given {@code binding} and
@@ -171,13 +209,6 @@ public abstract class AbstractTemplateStrategy<T extends Node>
             Binding binding = WidgetUtil.crazyJsCast(bindings.get(name));
             bind(stateNode, binding, value -> executor.accept(name, value));
         }
-    }
-
-    @FunctionalInterface
-    @JsFunction
-    @SuppressWarnings("unusable-by-js")
-    private interface ModelValueSupplier {
-        Object get(NodeMap model);
     }
 
     /**
@@ -275,7 +306,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected static Node createAndBind(StateNode node, int templateId,
-            BinderContext context) {
+            TemplateBinderContext context) {
         JsArray<AbstractTemplateStrategy> strategies = context.getStrategies(
                 strategy -> strategy instanceof AbstractTemplateStrategy<?>);
         StateTree tree = node.getTree();
