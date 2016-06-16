@@ -32,7 +32,7 @@ public class JsExpressionBindingProviderTest {
         JsExpressionBindingProvider binding = new JsExpressionBindingProvider(
                 "bar +'foo'");
         StateNode node = new StateNode(ModelMap.class);
-        node.getFeature(ModelMap.class).setValue("bar", "modelValue");
+        ModelMap.get(node).setValue("bar", "modelValue");
 
         Assert.assertEquals("modelValuefoo", binding.getValue(node));
     }

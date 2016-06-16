@@ -35,7 +35,7 @@ public class ModelValueBindingTest {
                 "bar");
         StateNode node = new StateNode(ModelMap.class);
 
-        node.getFeature(ModelMap.class).setValue("bar", "someValue");
+        ModelMap.get(node).setValue("bar", "someValue");
 
         Assert.assertEquals("someValue", binding.getValue(node));
     }

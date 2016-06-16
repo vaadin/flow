@@ -119,7 +119,7 @@ public class JsExpressionBindingProvider extends AbstractBindingValueProvider {
                 /*
                  * Without this code engine will use {@code put} method to set
                  * global bindings. But the method is not implemented.
-                 * 
+                 *
                  * Also it allows to avoid global bindings initialization for
                  * every Bindings instance.
                  */
@@ -151,8 +151,7 @@ public class JsExpressionBindingProvider extends AbstractBindingValueProvider {
 
     @Override
     public Object getValue(StateNode node) {
-        ModelBindings bindings = new ModelBindings(
-                node.getFeature(ModelMap.class));
+        ModelBindings bindings = new ModelBindings(ModelMap.get(node));
         try {
             return SCRIPT_ENGINE.eval(expression, bindings);
         } catch (ScriptException e) {

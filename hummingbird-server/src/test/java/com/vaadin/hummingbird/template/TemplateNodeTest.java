@@ -49,8 +49,7 @@ public class TemplateNodeTest {
     public void singleElementLookup() {
         TemplateNode templateNode = parse("<div id='foo'><div>");
         Element div = getElement(templateNode);
-        Element foundDiv = templateNode.findElement(div.getNode(), "foo")
-                .get();
+        Element foundDiv = templateNode.findElement(div.getNode(), "foo").get();
         Assert.assertEquals(div, foundDiv);
     }
 
@@ -65,8 +64,7 @@ public class TemplateNodeTest {
     public void childElementLookup() {
         TemplateNode templateNode = parse("<span><div id='foo'><div></span>");
         Element div = getElement(templateNode).getChild(0);
-        Element foundDiv = templateNode.findElement(div.getNode(), "foo")
-                .get();
+        Element foundDiv = templateNode.findElement(div.getNode(), "foo").get();
         Assert.assertEquals(div, foundDiv);
     }
 
@@ -77,7 +75,7 @@ public class TemplateNodeTest {
 
         StateNode node = TemplateElementStateProvider.createRootNode();
         StateNode listNode = new StateNode(ModelList.class);
-        node.getFeature(ModelMap.class).setValue("items", listNode);
+        ModelMap.get(node).setValue("items", listNode);
         StateNode item1 = TemplateElementStateProvider
                 .createSubModelNode(ModelMap.class);
         StateNode item2 = TemplateElementStateProvider

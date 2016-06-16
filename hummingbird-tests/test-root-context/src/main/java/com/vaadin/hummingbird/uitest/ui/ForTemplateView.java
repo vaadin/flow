@@ -113,8 +113,9 @@ public class ForTemplateView extends Div implements View {
     }
 
     private void updateModelItem(StateNode stateNode, String text, String key) {
-        stateNode.getFeature(ModelMap.class).setValue("text", text);
-        stateNode.getFeature(ModelMap.class).setValue("key", key);
+        ModelMap model = ModelMap.get(stateNode);
+        model.setValue("text", text);
+        model.setValue("key", key);
     }
 
     private StateNode createModelItem(String text, String key) {
