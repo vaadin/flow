@@ -19,8 +19,8 @@ A typical use case would be a form where you want to edit the contents of one or
     <input [value]="person.lastName" />
   </div>
   <div>
-    <span>Email</span>
-    <input [value]="person.email" />
+    <span>Age</span>
+    <input [value]="person.age" />
   </div>
 </div>
 ----
@@ -32,6 +32,7 @@ Assuming your Person bean looks like:
 public class Person {
     private String firstName, lastName;
     private int age;
+    private Long id;
 
     public Person() {
         // Needed for TemplateModel
@@ -66,6 +67,14 @@ public class Person {
     public void setAge(int age) {
         this.age = age;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }
 ----
 
@@ -74,11 +83,14 @@ You can specify your model to use a Person bean by adding a setter and a getter 
 [source,java]
 ----
 public interface FormModel extends TemplateModel {
+  @Exclude("id")
   public void setPerson(Person person);
   public Person getPerson();
 }
 ----
 
+The method `setPerson` is annotated with the `@Exclude` annotation to avoid 
+importing of the `id` property whose type is unsupported.
 In the template you can initialize the model by setting a new person instance to it:
 
 [source,java]
@@ -95,6 +107,10 @@ public class Form extends Template {
     }
 }
 ----
+[TIP]
+Alternatively you can use the `@Include` annotation and provide a list of properties that you want import.
+All other properties will be excluded. In this specific case the 
+`@Import({"firstName","lastName","age"})` annotation does the same as the `@Exclude("id")` annotation. 
 
 [NOTE]
 If you later on update the `Person person` bean created in the constructor, nothing will happen to the model. The bean values are copied by `setPerson` and the bean is not attached to the model in any way.

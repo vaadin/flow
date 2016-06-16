@@ -2,6 +2,7 @@ package com.vaadin.humminbird.tutorial.template;
 
 import java.util.List;
 
+import com.vaadin.annotations.Include;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
@@ -13,8 +14,9 @@ public class EmployeesTable extends Template {
         private String name;
         private String title;
         private String email;
+        private long id;
 
-        public Employee(String name, String title, String email) {
+        public Employee(String name, String title, String email, long id) {
             this.name = name;
             this.title = title;
             this.email = email;
@@ -44,9 +46,17 @@ public class EmployeesTable extends Template {
             this.email = email;
         }
 
+        public long getId() {
+            return id;
+        }
+
+        public void setId(long id) {
+            this.id = id;
+        }
     }
 
     public interface EmployeesModel extends TemplateModel {
+        @Include({ "name", "title", "email" })
         void setEmployees(List<Employee> employees);
 
         List<Employee> getEmployees();
