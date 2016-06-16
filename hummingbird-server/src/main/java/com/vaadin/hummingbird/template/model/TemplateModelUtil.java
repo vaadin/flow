@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -28,6 +29,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.annotations.Exclude;
+import com.vaadin.annotations.Include;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
@@ -381,7 +384,10 @@ public class TemplateModelUtil {
         } else if (value instanceof StateNode) {
             return TemplateModelProxyHandler.createModelProxy((StateNode) value,
                     returnClazz);
+        } else if (!returnClazz.isPrimitive() && value == null) {
+            return null;
         }
+
         throw createUnsupportedTypeException(returnClazz, propertyName);
     }
 
@@ -446,4 +452,66 @@ public class TemplateModelUtil {
                 .contains(primitiveType);
         return ReflectTools.getPrimitiveDefaultValue(primitiveType);
     }
+
+    /**
+     * Gets a filter based on any <code>@Include</code> and/or
+     * <code>@Exclude</code> annotations present on the given method.
+     *
+     * @param method
+     *            the method to check
+     * @return a filter based on the given annotations
+     */
+    public static Predicate<String> getFilterFromIncludeExclude(Method method) {
+        Exclude exclude = method.getAnnotation(Exclude.class);
+        Include include = method.getAnnotation(Include.class);
+        Set<String> toExclude = new HashSet<>();
+        Set<String> toInclude = new HashSet<>();
+
+        if (exclude != null) {
+            for (String excludeProperty : exclude.value()) {
+                toExclude.add(excludeProperty);
+            }
+        }
+
+        if (include != null) {
+            for (String includeProperty : include.value()) {
+                toInclude.add(includeProperty);
+            }
+        }
+
+        return propertyName -> {
+            if (toExclude.contains(propertyName)) {
+                return false;
+            }
+
+            if (!toInclude.isEmpty()) {
+                return toInclude.contains(propertyName);
+            }
+
+            return true;
+        };
+    }
+
+    /**
+     * Checks if the given type will be handled as a bean in the model.
+     *
+     * @param type
+     *            the type to check
+     * @return <code>true</code> if the given type will be handled as a bean,
+     *         <code>false</code> if the given type will be handled as a basic
+     *         type or is not supported
+     */
+    public static boolean isBean(Type type) {
+        if (!(type instanceof Class<?>)) {
+            return false;
+        }
+        Class<?> cls = (Class<?>) type;
+        if (isSupportedBasicType(cls)) {
+            return false;
+        } else if (cls.isPrimitive()) {
+            return false;
+        }
+        return true;
+    }
+
 }
