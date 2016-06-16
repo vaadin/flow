@@ -105,7 +105,7 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(builder);
 
         StateNode stateNode = element.getNode();
-        stateNode.getFeature(ModelMap.class).setValue("key", Boolean.TRUE);
+        ModelMap.get(stateNode).setValue("key", Boolean.TRUE);
 
         Assert.assertEquals(Boolean.TRUE, element.getPropertyRaw("a"));
 
@@ -121,7 +121,7 @@ public class TemplateElementStateProviderTest {
         Element element = createElement(builder);
 
         StateNode stateNode = element.getNode();
-        stateNode.getFeature(ModelMap.class).setValue("key", 1.1d);
+        ModelMap.get(stateNode).setValue("key", 1.1d);
 
         Assert.assertEquals(1.1d, element.getPropertyRaw("a"));
 
@@ -139,7 +139,7 @@ public class TemplateElementStateProviderTest {
         StateNode stateNode = element.getNode();
         JsonObject json = Json.createObject();
         json.put("foo", "bar");
-        stateNode.getFeature(ModelMap.class).setValue("key", json);
+        ModelMap.get(stateNode).setValue("key", json);
 
         Assert.assertEquals(json, element.getPropertyRaw("a"));
 

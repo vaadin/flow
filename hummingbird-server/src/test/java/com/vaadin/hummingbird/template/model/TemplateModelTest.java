@@ -548,7 +548,7 @@ public class TemplateModelTest {
         Assert.assertNotNull(stateNode);
         Assert.assertEquals(1, beanTriggered.get());
 
-        ModelMap modelMap = stateNode.getFeature(ModelMap.class);
+        ModelMap modelMap = ModelMap.get(stateNode);
         Assert.assertNotNull(modelMap);
         Assert.assertEquals("foobar", modelMap.getValue("string"));
     }
@@ -876,14 +876,12 @@ public class TemplateModelTest {
         StateNode node = template.getElement().getNode();
         String[] path = beanPath.split("\\.");
         for (int i = 0; i < path.length; i++) {
-            Serializable bean = node.getFeature(ModelMap.class)
-                    .getValue(path[i]);
+            Serializable bean = ModelMap.get(node).getValue(path[i]);
             Assert.assertNotNull(bean);
             Assert.assertTrue(bean instanceof StateNode);
             node = (StateNode) bean;
         }
-        ModelMap feature = node.getFeature(ModelMap.class);
-        return feature;
+        return ModelMap.get(node);
     }
 
     @Test

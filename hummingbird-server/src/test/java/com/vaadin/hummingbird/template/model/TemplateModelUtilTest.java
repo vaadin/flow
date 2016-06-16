@@ -325,7 +325,7 @@ public class TemplateModelUtilTest {
         ModelMap parentBeanModel = beansModel.get(0).getFeature(ModelMap.class);
 
         StateNode childBeanNode = (StateNode) parentBeanModel.getValue("bean");
-        ModelMap childBeanModel = childBeanNode.getFeature(ModelMap.class);
+        ModelMap childBeanModel = ModelMap.get(childBeanNode);
 
         Assert.assertFalse(childBeanModel.hasValue("string"));
         Assert.assertTrue(childBeanModel.hasValue("booleanValue"));
