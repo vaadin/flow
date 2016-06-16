@@ -16,6 +16,7 @@
 package com.vaadin.humminbird.tutorial.template;
 
 import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.Exclude;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
@@ -25,6 +26,8 @@ public class BeanInTemplateModel {
     public class Person {
         private String firstName, lastName;
         private int age;
+
+        private Long id;
 
         public Person() {
             // Needed for TemplateModel
@@ -59,9 +62,18 @@ public class BeanInTemplateModel {
         public void setAge(int age) {
             this.age = age;
         }
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
     }
 
     public interface FormModel extends TemplateModel {
+        @Exclude("id")
         public void setPerson(Person person);
 
         public Person getPerson();
