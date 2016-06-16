@@ -50,7 +50,6 @@ import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
-import com.vaadin.hummingbird.template.model.ModelPathResolver;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 import com.vaadin.hummingbird.template.parser.TemplateResolver;
 
@@ -1008,8 +1007,8 @@ public class TemplateElementStateProviderTest {
 
         Element element = createElement(builder);
         StateNode stateNode = element.getNode();
-        ModelPathResolver r = ModelPathResolver.forProperty(modelPath);
-        r.resolveModelMap(stateNode).setValue(r.getPropertyName(), "John");
+        ModelMap.get(stateNode).resolveModelMap("bean").setValue("name",
+                "John");
 
         Assert.assertEquals("John", element.getProperty("prop"));
     }
