@@ -103,6 +103,14 @@ public class ForTemplateIT extends PhantomJSTest {
         checkLi(lis.get(0), "item2", "text2");
     }
 
+    @Test
+    public void serverEventHandler() {
+        WebElement li = findElement(By.cssSelector("li"));
+        li.click();
+
+        Assert.assertTrue(isElementPresent(By.id("server-rpc")));
+    }
+
     private void checkLi(WebElement element, String text, String value) {
         Assert.assertEquals(text, element.getText());
         Assert.assertEquals(value, element.findElement(By.cssSelector("input"))

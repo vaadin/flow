@@ -18,9 +18,12 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.HtmlContainer;
+import com.vaadin.hummingbird.html.Label;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
@@ -56,12 +59,25 @@ public class ForTemplateView extends Div implements View {
         void setItems(List<Item> modelList);
     }
 
+    public static class ForTemplate extends InlineTemplate<ItemListModel> {
+
+        public ForTemplate() {
+            super("<ul><div></div>"
+                    + "<li *ngFor='let item of items' class='a' (click)='$server.callRpc()'>{{item.text}}"
+                    + "<input [value]='item.key'></li><div></div></ul>",
+                    ItemListModel.class);
+        }
+
+        @EventHandler
+        private void callRpc() {
+            Label label = new Label("Server Event Handler is called");
+            label.setId("server-rpc");
+            ((HtmlContainer) getParent().get()).add(label);
+        }
+    }
+
     public ForTemplateView() {
-        InlineTemplate<ItemListModel> template = new InlineTemplate<>(
-                "<ul><div></div>"
-                        + "<li *ngFor='let item of items' class='a'>{{item.text}}"
-                        + "<input [value]='item.key'></li><div></div></ul>",
-                ItemListModel.class);
+        ForTemplate template = new ForTemplate();
 
         List<Item> items = new ArrayList<>();
         items.add(new Item("item1", "text1"));

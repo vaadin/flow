@@ -18,7 +18,6 @@ package com.vaadin.client.hummingbird.template;
 import com.vaadin.client.Command;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
-import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.dom.DomApi;
@@ -61,7 +60,7 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
             implements Command, ListSpliceListener {
 
         private final Node anchor;
-        private final BinderContext context;
+        private final TemplateBinderContext context;
 
         private final int childId;
         private final MapProperty collectionProperty;
@@ -69,7 +68,7 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
         // The number of children to remove if the binding is cleared
         private int childCount = 0;
 
-        ForTemplateNodeUpdate(BinderContext context, Node anchor,
+        ForTemplateNodeUpdate(TemplateBinderContext context, Node anchor,
                 StateNode stateNode, ForTemplateNode templateNode) {
             this.anchor = anchor;
             this.context = context;
@@ -183,14 +182,14 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
     }
 
     @Override
-    protected void bind(StateNode stateNode, Node anchor, int templateId,
-            BinderContext context) {
+    protected void bind(StateNode modelNode, Node anchor, int templateId,
+            TemplateBinderContext context) {
         ForTemplateNode templateNode = (ForTemplateNode) getTemplateNode(
-                stateNode.getTree(), templateId);
+                modelNode.getTree(), templateId);
         Computation computation = Reactive
                 .runWhenDepedenciesChange(new ForTemplateNodeUpdate(context,
-                        anchor, stateNode, templateNode));
-        stateNode.addUnregisterListener(event -> computation.stop());
+                        anchor, modelNode, templateNode));
+        modelNode.addUnregisterListener(event -> computation.stop());
     }
 
 }

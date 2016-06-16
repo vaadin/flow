@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird.template;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
@@ -36,7 +37,6 @@ import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 
 import elemental.dom.Node;
 import elemental.json.JsonObject;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Abstract binding strategy to handle template nodes.
@@ -49,25 +49,65 @@ import jsinterop.annotations.JsFunction;
 public abstract class AbstractTemplateStrategy<T extends Node>
         implements BindingStrategy<T> {
 
-    @Override
-    public boolean isApplicable(StateNode node) {
-        assert node != null;
+    private static class TemplateBinderContextImpl
+            implements TemplateBinderContext {
 
-        boolean isTemplate = node.hasFeature(NodeFeatures.TEMPLATE);
+        private BinderContext original;
+
+        private StateNode templateRoot;
+
+        private TemplateBinderContextImpl(BinderContext original,
+                StateNode templateRoot) {
+            assert templateRoot.hasFeature(NodeFeatures.TEMPLATE);
+
+            this.original = original;
+            this.templateRoot = templateRoot;
+        }
+
+        @Override
+        public Node createAndBind(StateNode node) {
+            return original.createAndBind(node);
+        }
+
+        @Override
+        public void bind(StateNode stateNode, Node node) {
+            original.bind(stateNode, node);
+        }
+
+        @Override
+        public <T extends BindingStrategy<?>> JsArray<T> getStrategies(
+                Predicate<BindingStrategy<?>> predicate) {
+            return original.getStrategies(predicate);
+        }
+
+        @Override
+        public StateNode getTemplateRoot() {
+            return templateRoot;
+        }
+    }
+
+    @Override
+    public boolean isApplicable(StateNode templateRoot) {
+        assert templateRoot != null;
+
+        boolean isTemplate = templateRoot.hasFeature(NodeFeatures.TEMPLATE);
         if (isTemplate) {
-            return isApplicable(node.getTree(), getTemplateId(node));
+            return isApplicable(templateRoot.getTree(),
+                    getTemplateId(templateRoot));
         }
         return false;
     }
 
     @Override
-    public T create(StateNode node) {
-        return create(node.getTree(), getTemplateId(node));
+    public T create(StateNode templateRoot) {
+        return create(templateRoot.getTree(), getTemplateId(templateRoot));
     }
 
     @Override
-    public void bind(StateNode stateNode, T htmlNode, BinderContext context) {
-        bind(stateNode, htmlNode, getTemplateId(stateNode), context);
+    public void bind(StateNode templateRoot, T htmlNode,
+            BinderContext context) {
+        bind(templateRoot, htmlNode, getTemplateId(templateRoot),
+                new TemplateBinderContextImpl(context, templateRoot));
     }
 
     /**
@@ -108,12 +148,12 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     protected abstract T create(StateTree tree, int templateId);
 
     /**
-     * Binds a DOM node to the {@code stateNode} using the {@code templateId}
+     * Binds a DOM node to the {@code modelNode} using the {@code templateId}
      * and {@code context} to delegate handling of nodes with the types that the
      * strategy is not aware of.
      *
-     * @param stateNode
-     *            the state node to bind, not {@code null}
+     * @param modelNode
+     *            the state node containing model data to bind, not {@code null}
      * @param node
      *            the DOM node, not <code>null</code>
      * @param context
@@ -121,27 +161,27 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      * @param templateId
      *            the template id
      */
-    protected abstract void bind(StateNode stateNode, T node, int templateId,
-            BinderContext context);
+    protected abstract void bind(StateNode modelNode, T node, int templateId,
+            TemplateBinderContext context);
 
     /**
-     * Binds the {@code stateNode} using the given {@code binding} and
+     * Binds the {@code modelNode} using the given {@code binding} and
      * {@code executor} to set the {@code binding} data to the node.
      *
-     * @param stateNode
-     *            the state node, not {@code null}
+     * @param modelNode
+     *            the state node containing model data, not {@code null}
      * @param binding
      *            binding data to set, not {@code null}
      * @param executor
      *            the operation to set the binding data to the node
      */
-    protected void bind(StateNode stateNode, Binding binding,
+    protected void bind(StateNode modelNode, Binding binding,
             Consumer<Optional<Object>> executor) {
         if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
             Computation computation = Reactive
                     .runWhenDepedenciesChange(() -> executor
-                            .accept(getModelPropertyValue(stateNode, binding)));
-            stateNode.addUnregisterListener(event -> computation.stop());
+                            .accept(getModelPropertyValue(modelNode, binding)));
+            modelNode.addUnregisterListener(event -> computation.stop());
         } else {
             // Only static bindings is known as a final call
             assert binding.getType().equals(StaticBindingValueProvider.TYPE);
@@ -151,17 +191,17 @@ public abstract class AbstractTemplateStrategy<T extends Node>
 
     /**
      * Hooks up all {@code bindings} to run {@code executor} when the
-     * {@code stateNode} changes in a way that affects the binding.
+     * {@code modelNode} changes in a way that affects the binding.
      *
-     * @param stateNode
-     *            the state node, not {@code null}
+     * @param modelNode
+     *            the state node containing model data, not {@code null}
      * @param bindings
      *            binding data to set, not {@code null}
      * @param executor
      *            the operation to use the binding value for a named binding,
      *            not {@code null}
      */
-    protected void bind(StateNode stateNode, JsonObject bindings,
+    protected void bind(StateNode modelNode, JsonObject bindings,
             BiConsumer<String, Optional<Object>> executor) {
         if (bindings == null) {
             return;
@@ -169,15 +209,8 @@ public abstract class AbstractTemplateStrategy<T extends Node>
 
         for (String name : bindings.keys()) {
             Binding binding = WidgetUtil.crazyJsCast(bindings.get(name));
-            bind(stateNode, binding, value -> executor.accept(name, value));
+            bind(modelNode, binding, value -> executor.accept(name, value));
         }
-    }
-
-    @FunctionalInterface
-    @JsFunction
-    @SuppressWarnings("unusable-by-js")
-    private interface ModelValueSupplier {
-        Object get(NodeMap model);
     }
 
     /**
@@ -263,9 +296,9 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      * Creates and binds a DOM node for the given state node and
      * {@code templateId} using binder {@code context}.
      *
-     * @param node
-     *            the state node for which to create a DOM node, not
-     *            <code>null</code>
+     * @param modelNode
+     *            the state node with model data for which to create a DOM node,
+     *            not <code>null</code>
      * @param templateId
      *            template id
      * @param context
@@ -274,16 +307,16 @@ public abstract class AbstractTemplateStrategy<T extends Node>
      * @return the DOM node, not <code>null</code>
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected static Node createAndBind(StateNode node, int templateId,
-            BinderContext context) {
+    protected static Node createAndBind(StateNode modelNode, int templateId,
+            TemplateBinderContext context) {
         JsArray<AbstractTemplateStrategy> strategies = context.getStrategies(
                 strategy -> strategy instanceof AbstractTemplateStrategy<?>);
-        StateTree tree = node.getTree();
+        StateTree tree = modelNode.getTree();
         for (int i = 0; i < strategies.length(); i++) {
             AbstractTemplateStrategy strategy = strategies.get(i);
             if (strategy.isApplicable(tree, templateId)) {
                 Node domNode = strategy.create(tree, templateId);
-                strategy.bind(node, domNode, templateId, context);
+                strategy.bind(modelNode, domNode, templateId, context);
                 return domNode;
             }
         }

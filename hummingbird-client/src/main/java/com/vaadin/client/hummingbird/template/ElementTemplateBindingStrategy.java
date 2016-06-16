@@ -67,30 +67,30 @@ public class ElementTemplateBindingStrategy
     }
 
     @Override
-    protected void bind(StateNode stateNode, Element element, int templateId,
-            BinderContext context) {
+    protected void bind(StateNode modelNode, Element element, int templateId,
+            TemplateBinderContext context) {
         ElementTemplateNode templateNode = (ElementTemplateNode) getTemplateNode(
-                stateNode.getTree(), templateId);
-        bindProperties(stateNode, templateNode, element);
+                modelNode.getTree(), templateId);
+        bindProperties(modelNode, templateNode, element);
 
-        bindClassNames(stateNode, templateNode, element);
+        bindClassNames(modelNode, templateNode, element);
 
-        bindAttributes(stateNode, templateNode, element);
+        bindAttributes(modelNode, templateNode, element);
 
         JsArray<Double> children = templateNode.getChildrenIds();
         if (children != null) {
             for (int i = 0; i < children.length(); i++) {
                 int childTemplateId = children.get(i).intValue();
 
-                Node child = createAndBind(stateNode, childTemplateId, context);
+                Node child = createAndBind(modelNode, childTemplateId, context);
 
                 DomApi.wrap(element).appendChild(child);
             }
         }
 
-        registerEventHandlers(stateNode, templateNode, element);
+        registerEventHandlers(context.getTemplateRoot(), templateNode, element);
 
-        MapProperty overrideProperty = stateNode
+        MapProperty overrideProperty = modelNode
                 .getMap(NodeFeatures.TEMPLATE_OVERRIDES)
                 .getProperty(String.valueOf(templateNode.getId()));
         if (overrideProperty.hasValue()) {
@@ -111,7 +111,7 @@ public class ElementTemplateBindingStrategy
              * first event is fired, but Java makes it so difficult to reference
              * the remover from inside the event handler.
              */
-            stateNode.addUnregisterListener(e -> remover.remove());
+            modelNode.addUnregisterListener(e -> remover.remove());
         }
     }
 
@@ -122,7 +122,7 @@ public class ElementTemplateBindingStrategy
                         value.orElse(null)));
     }
 
-    private void registerEventHandlers(StateNode stateNode,
+    private void registerEventHandlers(StateNode templateStateNode,
             ElementTemplateNode templateNode, Element element) {
         JsonObject eventHandlers = templateNode.getEventHandlers();
         if (eventHandlers != null) {
@@ -132,7 +132,7 @@ public class ElementTemplateBindingStrategy
                 EventHandler eventHandler = NativeFunction.create("$event",
                         "$server", handler);
                 element.addEventListener(event, evt -> eventHandler.handle(evt,
-                        createServerProxy(stateNode)));
+                        createServerProxy(templateStateNode)));
             }
         }
     }
@@ -166,14 +166,17 @@ public class ElementTemplateBindingStrategy
         context.bind(overrideNode, element);
     }
 
-    private JavaScriptObject createServerProxy(StateNode node) {
+    private JavaScriptObject createServerProxy(StateNode templateStateNode) {
+        assert templateStateNode.hasFeature(NodeFeatures.TEMPLATE);
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
-        if (node.hasFeature(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES)) {
-            NodeList list = node
+        if (templateStateNode
+                .hasFeature(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES)) {
+            NodeList list = templateStateNode
                     .getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES);
             for (int i = 0; i < list.length(); i++) {
-                attachServerProxyMethod(proxy, node, list.get(i).toString());
+                attachServerProxyMethod(proxy, templateStateNode,
+                        list.get(i).toString());
             }
         }
         return proxy;
