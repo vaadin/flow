@@ -874,14 +874,7 @@ public class TemplateModelTest {
 
     private ModelMap getModelMap(Template template, String beanPath) {
         StateNode node = template.getElement().getNode();
-        String[] path = beanPath.split("\\.");
-        for (int i = 0; i < path.length; i++) {
-            Serializable bean = ModelMap.get(node).getValue(path[i]);
-            Assert.assertNotNull(bean);
-            Assert.assertTrue(bean instanceof StateNode);
-            node = (StateNode) bean;
-        }
-        return ModelMap.get(node);
+        return ModelMap.get(node).resolveModelMap(beanPath);
     }
 
     @Test

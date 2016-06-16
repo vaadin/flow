@@ -206,9 +206,8 @@ public class TemplateModelUtilTest {
         bean.setBeans(Arrays.asList(listItem1, listItem2));
 
         template.getModel().importBean("namespace", bean, INCLUDE_ALL);
-
-        ModelMap modelMap = ModelPathResolver.forPath("namespace")
-                .resolveModelMap(template.getElement().getNode());
+        ModelMap modelMap = ModelMap.get(template.getElement().getNode())
+                .resolveModelMap("namespace");
         StateNode beansNode = (StateNode) modelMap.getValue("beans");
 
         Assert.assertTrue(beansNode.hasFeature(ModelList.class));
@@ -265,9 +264,8 @@ public class TemplateModelUtilTest {
         template.getModel().importBeans("some.part.contains.beans", beans,
                 Bean.class, name -> true);
 
-        ModelList modelList = ModelPathResolver
-                .forPath("some.part.contains.beans")
-                .resolveModelList(template.getElement().getNode());
+        ModelList modelList = ModelMap.get(template.getElement().getNode())
+                .resolveModelList("some.part.contains.beans");
 
         Assert.assertEquals(2, modelList.size());
 
@@ -381,8 +379,8 @@ public class TemplateModelUtilTest {
         TemplateModel model = template.getModel();
         model.importBean("namespace", beanWithNestedBean, INCLUDE_ALL);
 
-        ModelMap modelMap = ModelPathResolver.forPath("namespace.bean")
-                .resolveModelMap(stateNode);
+        ModelMap modelMap = ModelMap.get(stateNode)
+                .resolveModelMap("namespace.bean");
         assertBeanEqualsModelMap(beanWithNestedBean.getBean(), modelMap);
 
         // ((StateNode) template.getElement().getNode()
@@ -485,9 +483,9 @@ public class TemplateModelUtilTest {
                     properties.contains(s));
         }
 
-        ModelMap nestedBeanModelMap = ModelPathResolver
-                .forPath("namespace.bean")
-                .resolveModelMap(template.getElement().getNode());
+        ModelMap nestedBeanModelMap = ModelMap
+                .get(template.getElement().getNode())
+                .resolveModelMap("namespace.bean");
 
         Assert.assertEquals(bean.getString(),
                 nestedBeanModelMap.getValue("string"));
@@ -539,8 +537,8 @@ public class TemplateModelUtilTest {
 
     private void assertBeanEqualsModelMap(Bean bean, Template template,
             String namespace) {
-        ModelMap modelMap = ModelPathResolver.forPath(namespace)
-                .resolveModelMap(template.getElement().getNode());
+        ModelMap modelMap = ModelMap.get(template.getElement().getNode())
+                .resolveModelMap(namespace);
         assertBeanEqualsModelMap(bean, modelMap);
     }
 
@@ -710,8 +708,8 @@ public class TemplateModelUtilTest {
             Bean... beans) {
         StateNode stateNode = TemplateModelProxyHandler
                 .getStateNodeForProxy(model);
-        ModelList modelList = ModelPathResolver.forPath(modelPath)
-                .resolveModelList(stateNode);
+        ModelList modelList = ModelMap.get(stateNode)
+                .resolveModelList(modelPath);
         assertModelListContentsEquals(modelList, beans);
     }
 

@@ -19,12 +19,12 @@ import java.io.Serializable;
 import java.util.Set;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 
 /**
  * Map for model values used in data binding in templates.
  *
  * @author Vaadin Ltd
- *
  */
 public class ModelMap extends NodeMap {
 
@@ -106,6 +106,140 @@ public class ModelMap extends NodeMap {
     public static ModelMap get(StateNode node) {
         assert node != null;
         return node.getFeature(ModelMap.class);
+    }
+
+    /**
+     * Gets a model map using the given key.
+     * <p>
+     * If the key is not mapped to a value, creates a model map for the key.
+     *
+     * @param key
+     *            the key to use for the lookup
+     * @return a model map attached to the given key, possibly created in this
+     *         method
+     */
+    private ModelMap getOrCreateModelMap(String key) {
+        Serializable value = getValue(key);
+        if (value == null) {
+            value = TemplateElementStateProvider
+                    .createSubModelNode(ModelMap.class);
+            setValue(key, value);
+        }
+
+        assert value instanceof StateNode;
+        assert ((StateNode) value).hasFeature(ModelMap.class);
+        return ((StateNode) value).getFeature(ModelMap.class);
+    }
+
+    /**
+     * Gets a model list using the given key.
+     * <p>
+     * If the key is not mapped to a value, creates a model list for the key.
+     *
+     * @param key
+     *            the key to use for the lookup
+     * @return a model list attached to the given key, possibly created in this
+     *         method
+     */
+    private ModelList getOrCreateModelList(String key) {
+        Serializable value = getValue(key);
+        if (value == null) {
+            value = TemplateElementStateProvider
+                    .createSubModelNode(ModelList.class);
+            setValue(key, value);
+        }
+
+        assert value instanceof StateNode;
+        assert ((StateNode) value).hasFeature(ModelList.class);
+        return ((StateNode) value).getFeature(ModelList.class);
+    }
+
+    /**
+     * Resolves the {@link ModelMap} that the model path refers to.
+     * <p>
+     * If the model path contains separate dot separated parts, any non-existing
+     * part will be created during resolving.
+     *
+     * @param modelPath
+     *            the path to resolve, either a single property name or a dot
+     *            separated path
+     * @return the resolved model map
+     */
+    public ModelMap resolveModelMap(String modelPath) {
+        if ("".equals(modelPath)) {
+            return this;
+        }
+        return resolve(modelPath, ModelMap.class);
+    }
+
+    /**
+     * Resolves the {@link ModelList} that the model path refers to.
+     * <p>
+     * If the model path contains separate dot separated parts, any non-existing
+     * part will be created during resolving.
+     *
+     * @param modelPath
+     *            the path to resolve, either a single property name or a dot
+     *            separated path
+     * @return the resolved model list
+     */
+    public ModelList resolveModelList(String modelPath) {
+        return resolve(modelPath, ModelList.class);
+    }
+
+    /**
+     * Resolves the {@link ModelList} or {@link ModelMap} that the model path
+     * refers to.
+     * <p>
+     * If the model path contains separate dot separated parts, any non-existing
+     * part will be created during resolving.
+     *
+     * @param modelPath
+     *            the path to resolve, either a single property name or a dot
+     *            separated path
+     * @param leafType
+     *            the type of feature to resolve, {@link ModelList} or
+     *            {@link ModelMap}
+     * @return the resolved model list or map
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends NodeFeature> T resolve(String modelPath,
+            Class<T> leafType) {
+        assert modelPath != null;
+        assert !"".equals(modelPath);
+        assert !modelPath.startsWith(".");
+        assert !modelPath.endsWith(".");
+        assert leafType == ModelMap.class || leafType == ModelList.class;
+
+        int dotLocation = modelPath.indexOf('.');
+        if (dotLocation == -1) {
+            if (leafType == ModelMap.class) {
+                return (T) getOrCreateModelMap(modelPath);
+            } else {
+                return (T) getOrCreateModelList(modelPath);
+            }
+        } else {
+            String firstKey = modelPath.substring(0, dotLocation);
+            String remainingPath = modelPath.substring(dotLocation + 1);
+            ModelMap subMap = getOrCreateModelMap(firstKey);
+            return subMap.resolve(remainingPath, leafType);
+        }
+    }
+
+    /**
+     * Gets the last part of a dot separated model path.
+     *
+     * @param modelPath
+     *            the model path
+     * @return the last part of the model path
+     */
+    public static String getLastPart(String modelPath) {
+        int dotLocation = modelPath.lastIndexOf('.');
+        if (dotLocation == -1) {
+            return modelPath;
+        } else {
+            return modelPath.substring(dotLocation + 1);
+        }
     }
 
 }
