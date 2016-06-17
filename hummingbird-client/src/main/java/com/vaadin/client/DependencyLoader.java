@@ -52,9 +52,10 @@ public class DependencyLoader {
     }
 
     /**
-     * Loads the given dependencies using the given loaders and ensures any
-     * callbacks registered using {@link runWhenDependenciesLoaded(Command)} are
-     * run when all dependencies have been loaded.
+     * Loads the given dependencies in the given order using the given loaders
+     * and ensures any callbacks registered using
+     * {@link runWhenDependenciesLoaded(Command)} are run when all dependencies
+     * have been loaded.
      *
      * @param dependencies
      *            a list of dependency URLs to load, will be translated using
