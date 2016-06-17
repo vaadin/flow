@@ -16,11 +16,22 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 
 public class ModelMapTest {
+    private StateNode rootModelNode;
+    private ModelMap rootMap;
+
+    @Before
+    public void setup() {
+        rootModelNode = TemplateElementStateProvider
+                .createSubModelNode(ModelMap.class);
+        rootMap = ModelMap.get(rootModelNode);
+    }
 
     @Test
     public void putGet() {
@@ -44,4 +55,108 @@ public class ModelMapTest {
         ModelMap map = new ModelMap(new StateNode());
         map.setValue("foo.bar", "a");
     }
+
+    @Test
+    public void resolveAndCreateImmediateChildMap() {
+        ModelMap child = rootMap.resolveModelMap("child");
+        ModelMap parent = getParentMapAndAssertMapping(child, "child");
+        Assert.assertEquals(rootMap, parent);
+    }
+
+    @Test
+    public void resolveAndCreateImmediateChildList() {
+        ModelList child = rootMap.resolveModelList("child");
+        ModelMap parent = getParentMapAndAssertMapping(child, "child");
+        Assert.assertEquals(rootMap, parent);
+    }
+
+    @Test
+    public void resolveAndCreateSubChildMap() {
+        ModelMap child = rootMap.resolveModelMap("parent.child");
+        ModelMap parent = getParentMapAndAssertMapping(child, "child");
+        ModelMap resolvedRoot = getParentMapAndAssertMapping(parent, "parent");
+        Assert.assertEquals(rootMap, resolvedRoot);
+    }
+
+    @Test
+    public void resolveAndCreateSubChildList() {
+        ModelList child = rootMap.resolveModelList("parent.child");
+        ModelMap parent = getParentMapAndAssertMapping(child, "child");
+        ModelMap resolvedRoot = getParentMapAndAssertMapping(parent, "parent");
+        Assert.assertEquals(rootMap, resolvedRoot);
+    }
+
+    @Test
+    public void resolveAndCreateSubSubChildMap() {
+        ModelMap child = rootMap.resolveModelMap("grand.parent.child");
+        ModelMap parent = getParentMapAndAssertMapping(child, "child");
+        ModelMap grand = getParentMapAndAssertMapping(parent, "parent");
+        ModelMap resolvedRoot = getParentMapAndAssertMapping(grand, "grand");
+        Assert.assertEquals(rootMap, resolvedRoot);
+    }
+
+    @Test
+    public void resolveAndCreateSubSubChildList() {
+        ModelList child = rootMap.resolveModelList("grand.parent.child");
+        ModelMap parent = getParentMapAndAssertMapping(child, "child");
+        ModelMap grand = getParentMapAndAssertMapping(parent, "parent");
+        ModelMap resolvedRoot = getParentMapAndAssertMapping(grand, "grand");
+        Assert.assertEquals(rootMap, resolvedRoot);
+    }
+
+    @Test
+    public void resolveEmptyPath() {
+        Assert.assertEquals(rootMap, rootMap.resolveModelMap(""));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void resolvePathEndsInDot() {
+        rootMap.resolveModelMap("foo.");
+    }
+
+    @Test(expected = AssertionError.class)
+    public void resolvePathStartsWithDot() {
+        rootMap.resolveModelMap(".foo");
+    }
+
+    private ModelMap getParentMapAndAssertMapping(ModelList child,
+            String childKey) {
+        assert child != null;
+        assert child.getNode() != null;
+        ModelMap parentMap = ModelMap.get(child.getNode().getParent());
+        assert parentMap != null;
+        Assert.assertEquals(child.getNode(), parentMap.getValue(childKey));
+        return parentMap;
+    }
+
+    private ModelMap getParentMapAndAssertMapping(ModelMap child,
+            String childKey) {
+        assert child != null;
+        assert child.getNode() != null;
+        ModelMap parentMap = ModelMap.get(child.getNode().getParent());
+        assert parentMap != null;
+        Assert.assertEquals(child.getNode(), parentMap.getValue(childKey));
+        return parentMap;
+    }
+
+    @Test
+    public void getLastPartEmptyString() {
+        Assert.assertEquals("", ModelMap.getLastPart(""));
+    }
+
+    @Test
+    public void getLastPartWithoutDots() {
+        Assert.assertEquals("foo", ModelMap.getLastPart("foo"));
+    }
+
+    @Test
+    public void getLastPartOneLevel() {
+        Assert.assertEquals("bar", ModelMap.getLastPart("foo.bar"));
+    }
+
+    @Test
+    public void getLastPartTwoLevels() {
+        Assert.assertEquals("baz", ModelMap.getLastPart("foo.bar.baz"));
+    }
+
 }

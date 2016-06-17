@@ -16,7 +16,6 @@
 
 package com.vaadin.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.Poller;
@@ -46,6 +45,7 @@ public class ApplicationConnection {
      */
     public ApplicationConnection(
             ApplicationConfiguration applicationConfiguration) {
+
         registry = new DefaultRegistry(this, applicationConfiguration);
         StateNode rootNode = registry.getStateTree().getRootNode();
 
@@ -124,12 +124,6 @@ public class ApplicationConnection {
         client.isActive = $entry(function() {
             return ap.@com.vaadin.client.ApplicationConnection::isActive()();
         });
-        var vi = ap.@com.vaadin.client.ApplicationConnection::getVersionInfo()();
-        if (vi) {
-            client.getVersionInfo = function() {
-                return vi;
-            }
-        }
 
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
@@ -146,10 +140,6 @@ public class ApplicationConnection {
 
         $wnd.vaadin.clients[applicationId] = client;
     }-*/;
-
-    private JavaScriptObject getVersionInfo() {
-        return registry.getApplicationConfiguration().getVersionInfo();
-    }
 
     /**
      * Checks if deferred commands are (potentially) still being executed as a
