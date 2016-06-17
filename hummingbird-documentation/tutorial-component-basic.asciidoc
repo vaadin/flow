@@ -22,6 +22,8 @@ public class TextField extends Component {
 ----
 
 The Component class will automatically create its root element based on the `@Tag` annotation, which can then be accessed using `getElement()`. The root element in the text field is in this example used to set up synchronization of the value from the browser to the server when the user changes its value. It is also used to set the initial value of the field.
+[TIP]
+You can use predefined constants in the `@Tag` annotation. E.g. the annotation `@Tag("input")` is equivalent to `@Tag(Tag.INPUT)`. But those constants don't cover all possible tag names.  
 
 To make the component easier to use, you can add an API for getting and setting the value:
 
