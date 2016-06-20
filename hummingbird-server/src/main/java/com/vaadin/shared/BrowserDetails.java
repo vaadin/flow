@@ -161,16 +161,19 @@ public class BrowserDetails implements Serializable {
                     parseVersionString(safeSubstring(userAgent, i, i + 6));
                 }
             } else if (isSafari) {
-                int i = userAgent.indexOf(" version/") + 9;
-                int engineVersion = (int) (browserEngineVersion * 10);
-                if (engineVersion >= 6010 && engineVersion < 6015) {
-                    browserMajorVersion = 9;
-                    browserMinorVersion = 0;
-                } else if (engineVersion >= 6015) {
-                    browserMajorVersion = 9;
-                    browserMinorVersion = 1;
-                } else {
+                int i = userAgent.indexOf(" version/");
+                if (i >= 0) {
+                    i += 9;
                     parseVersionString(safeSubstring(userAgent, i, i + 5));
+                } else {
+                    int engineVersion = (int) (browserEngineVersion * 10);
+                    if (engineVersion >= 6010 && engineVersion < 6015) {
+                        browserMajorVersion = 9;
+                        browserMinorVersion = 0;
+                    } else if (engineVersion >= 6015) {
+                        browserMajorVersion = 9;
+                        browserMinorVersion = 1;
+                    }
                 }
             } else if (isOpera) {
                 int i = userAgent.indexOf(" version/");
