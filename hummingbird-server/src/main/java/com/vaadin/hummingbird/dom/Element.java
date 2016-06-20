@@ -454,6 +454,25 @@ public class Element implements Serializable {
     /**
      * Adds an event listener for the given event type.
      * <p>
+     * Event listeners are triggered in the order they are registered.
+     *
+     * @see #addEventListener(String, DomEventListener, String...)
+     *
+     * @param eventType
+     *            the type of event to listen to, not <code>null</code>
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for removing the listener
+     */
+    public EventRegistrationHandle addEventListener(String eventType,
+            DomEventListener listener) {
+        return addEventListener(eventType, listener, new String[0]);
+    }
+
+    /**
+     * Adds an event listener and event data expressions for the given event
+     * type.
+     * <p>
      * When an event is fired in the browser, custom JavaScript expressions
      * defined in the <code>evendDataDefinitions</code> parameter are evaluated
      * to extract data that is sent back to the server. The expression is
