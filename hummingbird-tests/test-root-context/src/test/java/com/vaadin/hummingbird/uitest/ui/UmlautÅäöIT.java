@@ -15,12 +15,11 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 import com.vaadin.testbench.By;
-
-import junit.framework.Assert;
 
 public class UmlautÅäöIT extends PhantomJSTest {
 

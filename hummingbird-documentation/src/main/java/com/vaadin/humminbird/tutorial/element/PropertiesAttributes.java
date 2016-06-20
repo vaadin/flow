@@ -22,6 +22,7 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 @CodeFor("tutorial-properties-attributes.asciidoc")
 public class PropertiesAttributes {
 
+    @SuppressWarnings("unused")
     void tutorialCode() {
         Element nameField = ElementFactory.createInput();
         nameField.setAttribute("id", "nameField");

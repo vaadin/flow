@@ -18,10 +18,9 @@ package com.vaadin.hummingbird.uitest.ui;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.uitest.ui.CompositeView.NameField;
-import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
 
-public class CompositeNestedView extends Composite implements View {
+public class CompositeNestedView extends Composite<Div> implements View {
 
     public static final String NAME_ID = "name";
     public static final String NAME_FIELD_ID = "nameField";
@@ -29,7 +28,7 @@ public class CompositeNestedView extends Composite implements View {
     private NameField nameField;
 
     @Override
-    protected Component initContent() {
+    protected Div initContent() {
         Div div = new Div();
         nameField = new NameField();
         nameField.setId(NAME_FIELD_ID);
