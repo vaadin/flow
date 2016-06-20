@@ -272,8 +272,8 @@ public class RouterConfigurationTest {
     }
 
     private List<Class<? extends View>> getViewChainTypes(UI ui) {
-        return ui.getActiveViewChain().stream().map(v -> v.getClass())
-                .collect(Collectors.toList());
+        return ui.getInternals().getActiveViewChain().stream()
+                .map(v -> v.getClass()).collect(Collectors.toList());
     }
 
     @Test(expected = IllegalStateException.class)
