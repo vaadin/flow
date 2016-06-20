@@ -85,7 +85,8 @@ public class UITest {
     public void testInitialLocation() {
         UI ui = createAndInitTestUI("foo/bar");
 
-        Assert.assertEquals("foo/bar", ui.getActiveViewLocation().getPath());
+        Assert.assertEquals("foo/bar",
+                ui.getInternals().getActiveViewLocation().getPath());
     }
 
     @Test
@@ -94,7 +95,8 @@ public class UITest {
 
         ui.navigateTo("foo/bar");
 
-        Assert.assertEquals("foo/bar", ui.getActiveViewLocation().getPath());
+        Assert.assertEquals("foo/bar",
+                ui.getInternals().getActiveViewLocation().getPath());
     }
 
     @Test
@@ -106,7 +108,8 @@ public class UITest {
         history.getHistoryStateChangeHandler().onHistoryStateChange(
                 new HistoryStateChangeEvent(history, null, "foo/bar"));
 
-        Assert.assertEquals("foo/bar", ui.getActiveViewLocation().getPath());
+        Assert.assertEquals("foo/bar",
+                ui.getInternals().getActiveViewLocation().getPath());
     }
 
     @Test

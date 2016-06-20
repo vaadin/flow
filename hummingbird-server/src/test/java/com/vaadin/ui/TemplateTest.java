@@ -238,8 +238,8 @@ public class TemplateTest {
 
         Assert.assertEquals(
                 Arrays.asList(TestView.class, TemplateParentView.class),
-                ui.getActiveViewChain().stream().map(Object::getClass)
-                        .collect(Collectors.toList()));
+                ui.getInternals().getActiveViewChain().stream()
+                        .map(Object::getClass).collect(Collectors.toList()));
         Element uiContent = ui.getElement().getChild(0);
 
         Assert.assertEquals("div", uiContent.getTag());
@@ -251,8 +251,8 @@ public class TemplateTest {
         router.navigate(ui, new Location("empty"));
 
         Assert.assertEquals(Arrays.asList(TemplateParentView.class),
-                ui.getActiveViewChain().stream().map(Object::getClass)
-                        .collect(Collectors.toList()));
+                ui.getInternals().getActiveViewChain().stream()
+                        .map(Object::getClass).collect(Collectors.toList()));
 
         Assert.assertEquals(1, uiContent.getChildCount());
         Assert.assertEquals("h1", uiContent.getChild(0).getTag());
