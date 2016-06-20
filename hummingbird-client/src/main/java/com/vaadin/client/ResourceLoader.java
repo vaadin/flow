@@ -462,8 +462,8 @@ public class ResourceLoader {
     }
 
     private void fireError(ResourceLoadEvent event) {
-        Console.error("Error loading " + event.getResourceUrl());
-        showLoadingError(event);
+        registry.getSystemErrorHandler()
+                .handleError("Error loading " + event.getResourceUrl());
         String resource = event.getResourceUrl();
 
         JsArray<ResourceLoadListener> listeners = loadListeners.get(resource);
@@ -476,22 +476,6 @@ public class ResourceLoader {
                 }
             }
         }
-    }
-
-    protected void showLoadingError(ResourceLoadEvent event) {
-        if (registry.getApplicationConfiguration().isProductionMode()) {
-            // Only show error message when not in production
-            return;
-        }
-        Document document = Browser.getDocument();
-        Element errorContainer = document.createDivElement();
-        errorContainer.setClassName("v-system-error");
-        errorContainer
-                .setTextContent("Error loading " + event.getResourceUrl());
-        errorContainer.addEventListener("click", e -> {
-            errorContainer.getParentElement().removeChild(errorContainer);
-        });
-        document.getBody().appendChild(errorContainer);
     }
 
     private void fireLoad(ResourceLoadEvent event) {

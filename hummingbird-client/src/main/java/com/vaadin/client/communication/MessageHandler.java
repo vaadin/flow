@@ -375,13 +375,13 @@ public class MessageHandler {
                         nextResponseSessionExpiredHandler.execute();
                     } else {
                         registry.getSystemErrorHandler()
-                                .showSessionExpiredError(null);
+                                .handleSessionExpiredError(null);
                         registry.getUILifecycle().setState(UIState.TERMINATED);
                     }
                 } else if (meta.containsKey("appError")) {
                     ValueMap error = meta.getValueMap("appError");
 
-                    registry.getSystemErrorHandler().showError(
+                    registry.getSystemErrorHandler().handleUnrecoverableError(
                             error.getString("caption"),
                             error.getString("message"),
                             error.getString("details"), error.getString("url"));

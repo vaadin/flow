@@ -172,7 +172,8 @@ public class RouterLinkHandler {
 
         Element target = (Element) clickEvent.getTarget();
         EventTarget eventListenerElement = clickEvent.getCurrentTarget();
-        while (target != eventListenerElement) {
+        // Target can become null if another click handler detaches the element
+        while (target != null && target != eventListenerElement) {
             if (isRouterLinkAnchorElement(target)) {
                 return (AnchorElement) target;
             }
