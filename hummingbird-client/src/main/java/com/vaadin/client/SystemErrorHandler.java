@@ -167,8 +167,9 @@ public class SystemErrorHandler {
      * @param throwable
      *            the throwable which occurred
      */
-    public void showDevelopmentModeError(Throwable e) {
-        showDevelopmentModeError(unwrapUmbrellaException(e).getMessage());
+    public void showDevelopmentModeError(Throwable throwable) {
+        showDevelopmentModeError(
+                unwrapUmbrellaException(throwable).getMessage());
     }
 
     private Throwable unwrapUmbrellaException(Throwable e) {
