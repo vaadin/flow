@@ -77,7 +77,7 @@ public abstract class ViewRenderer implements NavigationHandler {
         checkDuplicates(viewType, parentViewTypes);
 
         // Instances currently in use that we want to reuse if possible
-        Map<Class<? extends View>, View> availableInstances = ui
+        Map<Class<? extends View>, View> availableInstances = ui.getInternals()
                 .getActiveViewChain().stream()
                 .collect(Collectors.toMap(i -> i.getClass(), i -> i));
 

@@ -93,10 +93,8 @@
 		<dependencies>
 			<dependency>
 				<groupId>com.google.gwt</groupId>
-				<artifactId>gwt</artifactId>
+				<artifactId>gwt-elemental</artifactId>
 				<version>${gwt.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>com.google.jsinterop</groupId>
