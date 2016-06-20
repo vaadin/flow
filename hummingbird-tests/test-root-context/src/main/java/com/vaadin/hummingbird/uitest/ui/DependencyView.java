@@ -37,6 +37,9 @@ public class DependencyView extends AbstractDivView {
     private StreamResourceRegistration htmlImport2;
     private StreamResourceRegistration htmlImport3;
 
+    private StreamResourceRegistration htmlMixedImport1;
+    private StreamResourceRegistration htmlMixedImport2;
+
     @Tag("div")
     @HtmlImport("/test-files/html/htmlimport4.html")
     static class HtmlComponent extends Component implements HasText {
@@ -75,6 +78,21 @@ public class DependencyView extends AbstractDivView {
         });
         htmlOrder.setId("loadHtml");
 
+        /* HTML & JS order */
+        Button mixedOrder = new Button("Test HTML & JS order", e -> {
+            getPage().addJavaScript("/test-files/js/script1.js");
+
+            getPage().addHtmlImport(
+                    htmlMixedImport1.getResourceUri().toString());
+
+            getPage().addJavaScript("/test-files/js/script2.js");
+
+            getPage().addHtmlImport(
+                    htmlMixedImport2.getResourceUri().toString());
+
+        });
+        mixedOrder.setId("loadMixed");
+
         Button allBlue = new Button("Load 'everything blue' stylesheet", e -> {
             getPage().addStyleSheet("/test-files/css/allblueimportant.css");
 
@@ -92,8 +110,8 @@ public class DependencyView extends AbstractDivView {
         Div log = new Div();
         log.setId("log");
 
-        add(jsOrder, htmlOrder, allBlue, loadUnavailableResources, new Hr(),
-                log);
+        add(jsOrder, htmlOrder, mixedOrder, allBlue, loadUnavailableResources,
+                new Hr(), log);
     }
 
     @Override
@@ -103,6 +121,11 @@ public class DependencyView extends AbstractDivView {
                 new HTMLImportStreamFactory("HTML import 2", 1000));
         htmlImport3 = registerResource("htmlimport3.html",
                 new HTMLImportStreamFactory("HTML import 3", 0));
+
+        htmlMixedImport1 = registerResource("mixedImport1.html",
+                new HTMLImportStreamFactory("Mixed HTML import 1", 1000));
+        htmlMixedImport2 = registerResource("mixedImport2.html",
+                new HTMLImportStreamFactory("Mixed HTML import 2", 0));
 
         getPage().addStyleSheet("/test-files/css/allred.css");
         getPage().addJavaScript("/test-files/js/body-click-listener.js");
