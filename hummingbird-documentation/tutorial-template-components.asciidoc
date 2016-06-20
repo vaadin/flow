@@ -52,3 +52,6 @@ The declared type used in an `@Id` injection declaration must have a default con
 
 [TIP]
 You can use only add new elements to template elements without children or text content. In the example above the `"content"` element is eligible for modification but the `"header"` element is not as it contains text.
+
+[TIP]
+The `@Id` annotation can also be used to inject an `Element` instance instead of a `Component` instance in case you want to use low level API or there is no appropriate HTML component available. 
