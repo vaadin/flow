@@ -15,6 +15,9 @@
  */
 package com.vaadin.client;
 
+import java.util.Set;
+
+import com.google.web.bindery.event.shared.UmbrellaException;
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
@@ -131,6 +134,52 @@ public class SystemErrorHandler {
                 e -> WidgetUtil.redirect(url), false);
 
         document.getBody().appendChild(systemErrorContainer);
+    }
+
+    /**
+     * Shows the given error message if not running in production mode and logs
+     * it to the console if running in production mode.
+     *
+     * @param errorMessage
+     *            the error message to show
+     */
+    public void showDevelopmentModeError(String errorMessage) {
+        Console.error(errorMessage);
+        if (registry.getApplicationConfiguration().isProductionMode()) {
+            return;
+        }
+
+        Document document = Browser.getDocument();
+        Element errorContainer = document.createDivElement();
+        errorContainer.setClassName("v-system-error");
+        errorContainer.setTextContent(errorMessage);
+        errorContainer.addEventListener("click", e -> {
+            // Allow user to dismiss the error by clicking it.
+            errorContainer.getParentElement().removeChild(errorContainer);
+        });
+        document.getBody().appendChild(errorContainer);
+    }
+
+    /**
+     * Shows an error message if not running in production mode and logs it to
+     * the console if running in production mode.
+     *
+     * @param throwable
+     *            the throwable which occurred
+     */
+    public void showDevelopmentModeError(Throwable throwable) {
+        showDevelopmentModeError(
+                unwrapUmbrellaException(throwable).getMessage());
+    }
+
+    private static Throwable unwrapUmbrellaException(Throwable e) {
+        if (e instanceof UmbrellaException) {
+            Set<Throwable> causes = ((UmbrellaException) e).getCauses();
+            if (causes.size() == 1) {
+                return unwrapUmbrellaException(causes.iterator().next());
+            }
+        }
+        return e;
     }
 
 }
