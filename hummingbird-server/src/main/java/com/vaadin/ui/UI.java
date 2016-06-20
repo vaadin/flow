@@ -17,7 +17,6 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -33,7 +32,6 @@ import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.Router;
-import com.vaadin.hummingbird.router.View;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
 import com.vaadin.server.ErrorHandlingCommand;
@@ -636,26 +634,6 @@ public class UI extends Component
      */
     public Page getPage() {
         return page;
-    }
-
-    /**
-     * Gets the currently active view and parent views.
-     *
-     * @return a list of view and parent view instances, starting from the
-     *         innermost part
-     */
-    public List<View> getActiveViewChain() {
-        return internals.getActiveViewChain();
-    }
-
-    /**
-     * Gets the location of the currently shown view. The location is relative
-     * the the servlet mapping used for serving this UI.
-     *
-     * @return the view location, not <code>null</code>
-     */
-    public Location getActiveViewLocation() {
-        return internals.getActiveViewLocation();
     }
 
     /**
