@@ -169,10 +169,11 @@ public abstract class Template extends Component implements HasChildView {
                 .of(cls.getDeclaredFields())
                 .filter(field -> !field.isSynthetic());
 
-        annotatedComponentFields.forEach(this::maybeMapComponentField);
+        annotatedComponentFields.forEach(this::tryMapComponentOrElement);
     }
 
-    private void maybeMapComponentField(Field field) {
+    @SuppressWarnings("unchecked")
+    private void tryMapComponentOrElement(Field field) {
         Optional<Id> idAnnotation = AnnotationReader.getAnnotationFor(field,
                 Id.class);
         if (!idAnnotation.isPresent()) {
@@ -180,34 +181,34 @@ public abstract class Template extends Component implements HasChildView {
         }
         String id = idAnnotation.get().value();
 
-        if (!Component.class.isAssignableFrom(field.getType())) {
-            throw new IllegalArgumentException("The field '" + field.getName()
-                    + "' in " + getClass().getName() + " has an @"
-                    + Id.class.getSimpleName()
-                    + " annotation but the field type '"
-                    + field.getType().getName() + "' does not extend "
-                    + Component.class.getSimpleName());
-        }
-
+        Class<?> fieldType = field.getType();
         String fieldName = field.getName();
-        @SuppressWarnings("unchecked")
-        Class<? extends Component> componentType = (Class<? extends Component>) field
-                .getType();
-
-        Optional<Element> element = getElementById(id);
-        if (!element.isPresent()) {
-            throw new IllegalArgumentException("No element with id '" + id
-                    + "' found while binding field '" + fieldName + "' in "
-                    + getClass().getName());
-        }
-
-        if (element.get().equals(getElement())) {
+        Element element = getElementById(id)
+                .orElseThrow(() -> new IllegalArgumentException(String.format(
+                        "No element with id '%s' found while binding field '%s' in '%s'",
+                        id, fieldName, getClass().getName())));
+        if (element.equals(getElement())) {
             throw new IllegalArgumentException(
-                    "Cannot map the root element of the template. This is always mapped to the template instance itself ("
+                    "Cannot map the root element of the template. "
+                            + "This is always mapped to the template instance itself ("
                             + getClass().getName() + ")");
         }
-        Component c = Component.from(element.get(), componentType);
-        ReflectTools.setJavaFieldValue(this, field, c);
+
+        if (Component.class.isAssignableFrom(fieldType)) {
+            Class<? extends Component> componentType = (Class<? extends Component>) fieldType;
+            Component c = Component.from(element, componentType);
+            ReflectTools.setJavaFieldValue(this, field, c);
+        } else if (Element.class.isAssignableFrom(fieldType)) {
+            ReflectTools.setJavaFieldValue(this, field, element);
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "The field '%s' in '%s' has an @'%s' "
+                            + "annotation but the field type '%s' "
+                            + "does not extend neither '%s' nor '%s'",
+                    fieldName, getClass().getName(), Id.class.getSimpleName(),
+                    fieldType.getName(), Component.class.getSimpleName(),
+                    Element.class.getSimpleName()));
+        }
     }
 
     /**
