@@ -29,6 +29,7 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.HasText;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
+import com.vaadin.util.ReflectTools;
 
 public class ViewRendererTest {
 
@@ -322,6 +323,37 @@ public class ViewRendererTest {
         setPageTitleGenerator(lce -> null);
 
         new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+    }
+
+    @Test
+    public void testViewInstantiationCustomization() {
+        // override default implementation of reusing the views if possible
+        ViewRenderer renderer = new StaticViewRenderer(TestView.class,
+                ParentView.class) {
+
+            @Override
+            protected <T extends View> T getView(Class<T> viewType,
+                    NavigationEvent event) {
+                // always return a new view
+                return ReflectTools.createInstance(viewType);
+            }
+        };
+        renderer.handle(dummyEvent);
+
+        View view1 = dummyEvent.getUI().getInternals().getActiveViewChain()
+                .get(0);
+        View parentView1 = dummyEvent.getUI().getInternals()
+                .getActiveViewChain().get(1);
+
+        renderer.handle(dummyEvent);
+
+        View view2 = dummyEvent.getUI().getInternals().getActiveViewChain()
+                .get(0);
+        View parentView2 = dummyEvent.getUI().getInternals()
+                .getActiveViewChain().get(1);
+
+        Assert.assertNotSame(view1, view2);
+        Assert.assertNotSame(parentView1, parentView2);
     }
 
     private void setPageTitleGenerator(PageTitleGenerator generator) {
