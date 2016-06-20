@@ -75,6 +75,9 @@ public class TemplateTest {
         @Id("header")
         protected H1TestComponent header;
 
+        @Id("header")
+        protected Element headerElement;
+
         public TemplateUsingStreamConstructor() {
             super("<div><h1 id='header'>Header</h1>@child@<div id='footer'></div></div>");
         }
@@ -95,6 +98,13 @@ public class TemplateTest {
 
     }
 
+    public static class TemplateMapElementToRoot extends SimpleTemplate {
+
+        @Id("root")
+        protected Element root;
+
+    }
+
     public static class TemplateMapInvalidFieldType extends SimpleTemplate {
 
         @Id("root")
@@ -109,9 +119,23 @@ public class TemplateTest {
 
     }
 
+    public static class TemplateElementNonExistingIdField
+            extends SimpleTemplate {
+
+        @Id("foo")
+        protected Element rootElement;
+
+    }
+
     public static class TemplateEmptyIdField extends SimpleTemplate {
         @Id("")
         protected TestComponent root;
+
+    }
+
+    public static class TemplateElementEmptyIdField extends SimpleTemplate {
+        @Id("")
+        protected Element rootElement;
 
     }
 
@@ -130,6 +154,9 @@ public class TemplateTest {
 
         @Id("footer")
         private TestComponent footer;
+
+        @Id("footer")
+        private Element footerElement;
     }
 
     @HtmlTemplate("samePackage.html")
@@ -238,8 +265,8 @@ public class TemplateTest {
 
         Assert.assertEquals(
                 Arrays.asList(TestView.class, TemplateParentView.class),
-                ui.getActiveViewChain().stream().map(Object::getClass)
-                        .collect(Collectors.toList()));
+                ui.getInternals().getActiveViewChain().stream()
+                        .map(Object::getClass).collect(Collectors.toList()));
         Element uiContent = ui.getElement().getChild(0);
 
         Assert.assertEquals("div", uiContent.getTag());
@@ -251,8 +278,8 @@ public class TemplateTest {
         router.navigate(ui, new Location("empty"));
 
         Assert.assertEquals(Arrays.asList(TemplateParentView.class),
-                ui.getActiveViewChain().stream().map(Object::getClass)
-                        .collect(Collectors.toList()));
+                ui.getInternals().getActiveViewChain().stream()
+                        .map(Object::getClass).collect(Collectors.toList()));
 
         Assert.assertEquals(1, uiContent.getChildCount());
         Assert.assertEquals("h1", uiContent.getChild(0).getTag());
@@ -290,6 +317,9 @@ public class TemplateTest {
         TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
         Assert.assertNotNull(t.header);
         Assert.assertEquals("h1", t.header.getElement().getTag());
+
+        Assert.assertNotNull(t.headerElement);
+        Assert.assertEquals("h1", t.headerElement.getTag());
     }
 
     @Test
@@ -299,11 +329,19 @@ public class TemplateTest {
         Assert.assertEquals("h1", t.header.getElement().getTag());
         Assert.assertNotNull(t.footer);
         Assert.assertEquals("div", t.footer.getElement().getTag());
+
+        Assert.assertEquals(t.header.getElement(), t.headerElement);
+        Assert.assertEquals(t.footer.getElement(), t.footerElement);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void mapTemplateRoot() {
         new TemplateMapToRoot();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapElementTemplateRoot() {
+        new TemplateMapElementToRoot();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -317,8 +355,18 @@ public class TemplateTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void mapElementNonExistingId() {
+        new TemplateElementNonExistingIdField();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void mapEmptyId() {
         new TemplateEmptyIdField();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void mapElementEmptyId() {
+        new TemplateElementEmptyIdField();
     }
 
     @Test(expected = IllegalArgumentException.class)

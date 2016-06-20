@@ -120,7 +120,7 @@ public class Router implements Serializable {
             handler = currentConfig.resolveRoute(location);
         }
 
-        // Redirect foo/bar <-> foo/bar if there is no mapping for the given
+        // Redirect foo/bar <-> foo/bar/ if there is no mapping for the given
         // location but there is a mapping for the other
         if (!handler.isPresent() && !location.getPath().isEmpty()) {
             Location toggledLocation = toggleEndingSlash(location);
