@@ -16,6 +16,7 @@
 
 package com.vaadin.client;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.Poller;
@@ -47,6 +48,9 @@ public class ApplicationConnection {
             ApplicationConfiguration applicationConfiguration) {
 
         registry = new DefaultRegistry(this, applicationConfiguration);
+        GWT.setUncaughtExceptionHandler(
+                registry.getSystemErrorHandler()::handleError);
+
         StateNode rootNode = registry.getStateTree().getRootNode();
 
         // Bind UI configuration objects

@@ -312,6 +312,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Basic system error dialog style just to make it visible and outside
         // of normal flow
         styles.appendText(".v-system-error {" //
+                + "color: red;" //
                 + "background: white;" //
                 + "position: absolute;" //
                 + "top: 1em;" //
