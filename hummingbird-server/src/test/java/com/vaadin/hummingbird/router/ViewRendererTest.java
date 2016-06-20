@@ -29,6 +29,7 @@ import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.ui.HasText;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
+import com.vaadin.util.ReflectTools;
 
 public class ViewRendererTest {
 
@@ -115,7 +116,7 @@ public class ViewRendererTest {
     public void showSimpleView() {
         new StaticViewRenderer(TestView.class).handle(dummyEvent);
 
-        List<View> viewChain = ui.getActiveViewChain();
+        List<View> viewChain = ui.getInternals().getActiveViewChain();
         Assert.assertEquals(1, viewChain.size());
 
         View viewInstance = viewChain.get(0);
@@ -134,7 +135,7 @@ public class ViewRendererTest {
         new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        List<View> viewChain = ui.getActiveViewChain();
+        List<View> viewChain = ui.getInternals().getActiveViewChain();
         Assert.assertEquals(3, viewChain.size());
         Assert.assertEquals(
                 Arrays.asList(TestView.class, ParentView.class,
@@ -161,7 +162,7 @@ public class ViewRendererTest {
     public void reuseSingleView() {
         new StaticViewRenderer(TestView.class).handle(dummyEvent);
 
-        List<View> firstChain = ui.getActiveViewChain();
+        List<View> firstChain = ui.getInternals().getActiveViewChain();
         TestView view = (TestView) firstChain.get(0);
 
         Assert.assertEquals(1, view.locations.size());
@@ -170,7 +171,7 @@ public class ViewRendererTest {
 
         Assert.assertEquals(2, view.locations.size());
 
-        List<View> secondChain = ui.getActiveViewChain();
+        List<View> secondChain = ui.getInternals().getActiveViewChain();
 
         Assert.assertNotSame(firstChain, secondChain);
         Assert.assertSame(view, secondChain.get(0));
@@ -181,12 +182,12 @@ public class ViewRendererTest {
         new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        List<View> firstChain = ui.getActiveViewChain();
+        List<View> firstChain = ui.getInternals().getActiveViewChain();
 
         new StaticViewRenderer(AnotherTestView.class, AnotherParentView.class)
                 .handle(dummyEvent);
 
-        List<View> secondChain = ui.getActiveViewChain();
+        List<View> secondChain = ui.getInternals().getActiveViewChain();
 
         // Last item in each chain should be reused
         Assert.assertSame(firstChain.get(2), secondChain.get(1));
@@ -197,12 +198,12 @@ public class ViewRendererTest {
         new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        List<View> firstChain = ui.getActiveViewChain();
+        List<View> firstChain = ui.getInternals().getActiveViewChain();
 
         new StaticViewRenderer(TestView.class, AnotherParentView.class,
                 ParentView.class).handle(dummyEvent);
 
-        List<View> secondChain = ui.getActiveViewChain();
+        List<View> secondChain = ui.getInternals().getActiveViewChain();
 
         Assert.assertEquals(Arrays.asList(firstChain.get(0), firstChain.get(2),
                 firstChain.get(1)), secondChain);
@@ -223,7 +224,8 @@ public class ViewRendererTest {
         new StaticViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
-        ParentView parentView = (ParentView) ui.getActiveViewChain().get(1);
+        ParentView parentView = (ParentView) ui.getInternals()
+                .getActiveViewChain().get(1);
 
         new StaticViewRenderer(ParentView.class, AnotherParentView.class)
                 .handle(dummyEvent);
@@ -246,7 +248,8 @@ public class ViewRendererTest {
     public void routeParamtersInEvent() {
         router.reconfigure(c -> c.setRoute("foo/{name}/*", TestView.class));
         router.navigate(ui, new Location("foo/bar/baz/"));
-        TestView testView = (TestView) ui.getActiveViewChain().get(0);
+        TestView testView = (TestView) ui.getInternals().getActiveViewChain()
+                .get(0);
 
         Assert.assertEquals("bar", testView.namePlaceholderValue);
         Assert.assertEquals("baz/", testView.wildcardValue);
@@ -320,6 +323,37 @@ public class ViewRendererTest {
         setPageTitleGenerator(lce -> null);
 
         new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+    }
+
+    @Test
+    public void testViewInstantiationCustomization() {
+        // override default implementation of reusing the views if possible
+        ViewRenderer renderer = new StaticViewRenderer(TestView.class,
+                ParentView.class) {
+
+            @Override
+            protected <T extends View> T getView(Class<T> viewType,
+                    NavigationEvent event) {
+                // always return a new view
+                return ReflectTools.createInstance(viewType);
+            }
+        };
+        renderer.handle(dummyEvent);
+
+        View view1 = dummyEvent.getUI().getInternals().getActiveViewChain()
+                .get(0);
+        View parentView1 = dummyEvent.getUI().getInternals()
+                .getActiveViewChain().get(1);
+
+        renderer.handle(dummyEvent);
+
+        View view2 = dummyEvent.getUI().getInternals().getActiveViewChain()
+                .get(0);
+        View parentView2 = dummyEvent.getUI().getInternals()
+                .getActiveViewChain().get(1);
+
+        Assert.assertNotSame(view1, view2);
+        Assert.assertNotSame(parentView1, parentView2);
     }
 
     private void setPageTitleGenerator(PageTitleGenerator generator) {

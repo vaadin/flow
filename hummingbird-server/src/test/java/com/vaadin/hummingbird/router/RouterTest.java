@@ -341,9 +341,11 @@ public class RouterTest {
         });
 
         router.navigate(ui, new Location("foo/bar/"));
-        Assert.assertEquals("foo/bar", ui.getActiveViewLocation().getPath());
+        Assert.assertEquals("foo/bar",
+                ui.getInternals().getActiveViewLocation().getPath());
 
         router.navigate(ui, new Location("bar"));
-        Assert.assertEquals("bar/", ui.getActiveViewLocation().getPath());
+        Assert.assertEquals("bar/",
+                ui.getInternals().getActiveViewLocation().getPath());
     }
 }

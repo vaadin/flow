@@ -85,6 +85,23 @@ public class DependencyIT extends PhantomJSTest {
     }
 
     @Test
+    public void mixedHtmlAndJsInjection() {
+        open();
+        findElement(By.id("loadMixed")).click();
+
+        List<String> messages = getMessages();
+
+        Assert.assertEquals("script1 is loaded",
+                messages.get(messages.size() - 4));
+        Assert.assertEquals("Mixed HTML import 1 loaded",
+                messages.get(messages.size() - 3));
+        Assert.assertEquals("script2 is loaded",
+                messages.get(messages.size() - 2));
+        Assert.assertEquals("Mixed HTML import 2 loaded",
+                messages.get(messages.size() - 1));
+    }
+
+    @Test
     public void loadingUnavailableResources() {
         open();
         findElement(By.id("loadUnavailableResources")).click();
