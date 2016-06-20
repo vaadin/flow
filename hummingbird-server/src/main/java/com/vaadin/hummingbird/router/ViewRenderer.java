@@ -54,6 +54,31 @@ public abstract class ViewRenderer implements NavigationHandler {
     public abstract List<Class<? extends HasChildView>> getParentViewTypes();
 
     /**
+     * Gets the view instance to use for the given view type and the
+     * corresponding navigation event.
+     * <p>
+     * Override this method to control the creation of view instances.
+     * <p>
+     * By default reuses any currently used views if possible. Those can be
+     * accessed using {@link #getCurrentViewInstances(UI)}.
+     *
+     * @param viewType
+     *            the type of the view
+     * @param event
+     *            the navigation event that uses the view
+     * @return an instance of the view
+     */
+    protected <T> T getView(Class<T> viewType, NavigationEvent event) {
+        Map<Class<? extends View>, View> availableInstances = getCurrentViewInstances(
+                event.getUI());
+        T instance = viewType.cast(availableInstances.remove(viewType));
+        if (instance == null) {
+            instance = ReflectTools.createInstance(viewType);
+        }
+        return instance;
+    }
+
+    /**
      * Gets the route for which the view types were mapped. Returns
      * <code>null</code> if no route definition is available.
      *
@@ -76,18 +101,13 @@ public abstract class ViewRenderer implements NavigationHandler {
 
         checkDuplicates(viewType, parentViewTypes);
 
-        // Instances currently in use that we want to reuse if possible
-        Map<Class<? extends View>, View> availableInstances = ui.getInternals()
-                .getActiveViewChain().stream()
-                .collect(Collectors.toMap(i -> i.getClass(), i -> i));
-
-        View viewInstance = reuseOrCreate(viewType, availableInstances);
+        View viewInstance = getView(viewType, event);
 
         List<View> viewChain = new ArrayList<>();
         viewChain.add(viewInstance);
 
         for (Class<? extends HasChildView> parentType : parentViewTypes) {
-            viewChain.add(reuseOrCreate(parentType, availableInstances));
+            viewChain.add(getView(parentType, event));
         }
 
         LocationChangeEvent locationChangeEvent = createEvent(event, viewChain);
@@ -104,6 +124,18 @@ public abstract class ViewRenderer implements NavigationHandler {
                 parentViews);
 
         updatePageTitle(event, locationChangeEvent);
+    }
+
+    /**
+     * Gets the currently active view instances mapped by type for the given UI.
+     *
+     * @param ui
+     *            the UI to get the active views for
+     * @return a map of view type to view instance
+     */
+    protected Map<Class<? extends View>, View> getCurrentViewInstances(UI ui) {
+        return ui.getInternals().getActiveViewChain().stream()
+                .collect(Collectors.toMap(i -> i.getClass(), i -> i));
     }
 
     /**
@@ -219,12 +251,4 @@ public abstract class ViewRenderer implements NavigationHandler {
         return routePlaceholders;
     }
 
-    private static <T extends View> T reuseOrCreate(Class<T> type,
-            Map<Class<? extends View>, View> availableInstances) {
-        T instance = type.cast(availableInstances.remove(type));
-        if (instance == null) {
-            instance = ReflectTools.createInstance(type);
-        }
-        return instance;
-    }
 }
