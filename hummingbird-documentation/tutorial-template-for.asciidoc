@@ -50,6 +50,7 @@ The name of the method should match the name in the `*ngFor` definition; data fo
 ----
 public class EmployeesTable extends Template {
   public interface EmployeesModel extends TemplateModel {
+      @Include({ "name", "title", "email" })
       void setEmployees(List<Employee> employees);
 
       List<Employee> getEmployees();
@@ -70,6 +71,9 @@ public class EmployeesTable extends Template {
 }
 ----
 
+The `@Include` annotation is used here to limit which properties to import into the model.
+This is done to exclude the `id` property whose type is unsupported. Alternatively you can use a `@Exclude("id")` in this specific case.
+
 The `Employee` bean should have getters corresponding the properties used inside the `*ngFor` definition in the template, e.g. `getName()` for `employee.name`.
 
 [source,java]
@@ -78,8 +82,9 @@ public class Employee {
     private String name;
     private String title;
     private String email;
+    private long id;
 
-    public Employee(String name, String title, String email) {
+    public Employee(String name, String title, String email, long id) {
         this.name = name;
         this.title = title;
         this.email = email;
@@ -107,6 +112,14 @@ public class Employee {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+    
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }
 ----
