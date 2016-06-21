@@ -18,9 +18,7 @@ package com.vaadin.hummingbird.template.model;
 import java.util.AbstractList;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
 
 /**
  * A list implementation which uses a {@link ModelList} in a {@link StateNode}
@@ -32,7 +30,7 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
  */
 public class TemplateModelListProxy<T> extends AbstractList<T> {
     private StateNode stateNode;
-    private Class<T> itemType;
+    private BeanModelType<T> itemType;
 
     /**
      * Creates a new proxy for the given node and item type.
@@ -42,7 +40,8 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
      * @param itemType
      *            the type of items in the list
      */
-    public TemplateModelListProxy(StateNode stateNode, Class<T> itemType) {
+    public TemplateModelListProxy(StateNode stateNode,
+            BeanModelType<T> itemType) {
         this.stateNode = stateNode;
         this.itemType = itemType;
     }
@@ -66,10 +65,10 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
             throw new IllegalArgumentException(
                     "Null values cannot be added to a list in the model");
         }
-        StateNode nodeToAdd = TemplateElementStateProvider
-                .createSubModelNode(ModelMap.class);
-        TemplateModelUtil.importBean(nodeToAdd, "", itemType, object, "",
-                e -> true);
+
+        StateNode nodeToAdd = itemType.userToModel(object,
+                PropertyFilter.EMPTY);
+
         getModelList().add(index, nodeToAdd);
     }
 
