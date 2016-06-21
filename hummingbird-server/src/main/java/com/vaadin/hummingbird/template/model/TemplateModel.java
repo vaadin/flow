@@ -17,9 +17,9 @@ package com.vaadin.hummingbird.template.model;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
-import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Template;
 
 /**
@@ -105,10 +105,12 @@ public interface TemplateModel extends Serializable {
      * @return a proxy instance of the bean found at the given {@code modelPath}
      */
     default <T> T getProxy(String modelPath, Class<T> beanType) {
-        StateNode stateNode = TemplateModelProxyHandler
-                .getStateNodeForProxy(this);
+        Objects.requireNonNull(modelPath);
+        Objects.requireNonNull(beanType);
 
-        return TemplateModelUtil.getProxy(stateNode, modelPath, beanType);
+        return TemplateModelUtil.resolveBeanAndRun(this, modelPath,
+                (type, map) -> TemplateModelProxyHandler
+                        .createModelProxy(map.getNode(), type.cast(beanType)));
     }
 
     /**
@@ -132,11 +134,14 @@ public interface TemplateModel extends Serializable {
      * @return a proxy instance of the list found at the given {@code modelPath}
      */
     default <T> List<T> getListProxy(String modelPath, Class<T> beanType) {
-        StateNode stateNode = TemplateModelProxyHandler
-                .getStateNodeForProxy(this);
+        Objects.requireNonNull(modelPath);
+        Objects.requireNonNull(beanType);
 
-        return TemplateModelUtil.getListProxy(stateNode, modelPath,
-                beanType);
+        return TemplateModelUtil
+                .resolveListAndRun(this, modelPath,
+                        (type, list) -> new TemplateModelListProxy<>(
+                                list.getNode(),
+                                type.getItemType().cast(beanType)));
     }
 
     /**
@@ -163,11 +168,16 @@ public interface TemplateModel extends Serializable {
      */
     default void importBean(String modelPath, Object bean,
             Predicate<String> propertyNameFilter) {
-        StateNode stateNode = TemplateModelProxyHandler
-                .getStateNodeForProxy(this);
+        Objects.requireNonNull(modelPath);
+        Objects.requireNonNull(bean);
+        Objects.requireNonNull(propertyNameFilter);
 
-        TemplateModelUtil.importBean(stateNode, modelPath, bean.getClass(),
-                bean, "", propertyNameFilter);
+        TemplateModelUtil.resolveBeanAndRun(this, modelPath, (type, map) -> {
+            type.importProperties(map, bean,
+                    new PropertyFilter(propertyNameFilter));
+
+            return null;
+        });
     }
 
     /**
@@ -177,20 +187,25 @@ public interface TemplateModel extends Serializable {
      *            the path defining which part of the model to import into
      * @param beans
      *            the beans to import
-     * @param beanType
-     *            the type of the beans to import
      * @param propertyNameFilter
      *            a filter determining which bean properties to import
      *
      * @see #importBean(String, Object, Predicate)
      * @see TemplateModel supported property types
      */
-    default <T> void importBeans(String modelPath, List<? extends T> beans,
-            Class<T> beanType, Predicate<String> propertyNameFilter) {
-        StateNode stateNode = TemplateModelProxyHandler
-                .getStateNodeForProxy(this);
-        TemplateModelUtil.importBeans(stateNode, modelPath, beans, beanType,
-                propertyNameFilter);
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    default void importBeans(String modelPath, List<?> beans,
+            Predicate<String> propertyNameFilter) {
+        Objects.requireNonNull(modelPath);
+        Objects.requireNonNull(beans);
+        Objects.requireNonNull(propertyNameFilter);
+
+        TemplateModelUtil.resolveListAndRun(this, modelPath, (type, list) -> {
+            type.importBeans(list, (List) beans,
+                    new PropertyFilter(propertyNameFilter));
+
+            return null;
+        });
     }
 
 }
