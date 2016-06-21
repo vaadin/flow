@@ -192,6 +192,9 @@ public class RouterConfiguration
      * routed before without a parent, it will from now on always use the parent
      * set in this method.
      * <p>
+     * The path must start with a <code>/</code>, unless mapping to root with an
+     * empty path <code>""</code>.
+     * <p>
      * The path is made up of segments separated by <code>/</code>. A segment
      * name enclosed in <code>{</code> and <code>}</code> is interpreted as a
      * placeholder segment. If no exact match is found when resolving a URL but
@@ -222,6 +225,9 @@ public class RouterConfiguration
     }
 
     private void mapViewToRoute(Class<? extends View> viewType, String path) {
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
         viewToRoute.computeIfAbsent(viewType, t -> new ArrayList<>()).add(path);
     }
 
@@ -251,7 +257,11 @@ public class RouterConfiguration
         assert path != null;
         assert viewType != null;
 
+        verifyValidPath(path);
+
         mapViewToRoute(viewType, path);
+        String relativePath = path.startsWith("/") ? path.substring(1) : path;
+
         setRoute(path, new ViewRenderer() {
             @Override
             public Class<? extends View> getViewType() {
@@ -265,7 +275,7 @@ public class RouterConfiguration
 
             @Override
             protected String getRoute() {
-                return path;
+                return relativePath;
             }
         });
     }
@@ -367,12 +377,24 @@ public class RouterConfiguration
     public void setRoute(String path, NavigationHandler navigationHandler) {
         assert path != null;
         assert navigationHandler != null;
-        assert !path.startsWith("/");
         assert !path.contains("://");
+
+        verifyValidPath(path);
+
+        if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
 
         // Start the recursion
         setRoute(new RouteLocation(new Location(path)), routeTreeRoot,
                 navigationHandler);
+    }
+
+    private static void verifyValidPath(String path) {
+        if (!path.startsWith("/") && !path.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Path should always start with / unless mapping to root context with an empty path");
+        }
     }
 
     private void setRoute(RouteLocation location, RouteTreeNode node,
@@ -414,6 +436,10 @@ public class RouterConfiguration
      */
     public void removeRoute(String path) {
         assert path != null;
+
+        verifyValidPath(path);
+
+        path = path.startsWith("/") ? path.substring(1) : path;
 
         removeViewToRouteMapping(path);
         // Start the recursion

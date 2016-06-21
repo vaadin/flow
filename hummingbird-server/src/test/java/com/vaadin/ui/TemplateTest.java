@@ -257,7 +257,7 @@ public class TemplateTest {
         Router router = new Router();
         router.reconfigure(c -> {
             c.setRoute("", TestView.class, TemplateParentView.class);
-            c.setRoute("empty", TemplateParentView.class);
+            c.setRoute("/empty", TemplateParentView.class);
         });
 
         UI ui = new UI();
