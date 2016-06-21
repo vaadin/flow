@@ -25,6 +25,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.text.MessageFormat;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -239,7 +240,7 @@ public class ReflectTools implements Serializable {
 
     /**
      * Gets default value for given {@code primitiveType}.
-     * 
+     *
      * @param primitiveType
      *            the primitive type
      * @return the corresponding default value
@@ -388,7 +389,8 @@ public class ReflectTools implements Serializable {
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
         assert isGetter(method)
-                || isSetter(method) : "Method is not a valid getter or setter";
+                || isSetter(method) : "Method is not a valid getter or setter:"
+                        + methodName;
 
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
                 .replaceFirst("");
@@ -397,7 +399,7 @@ public class ReflectTools implements Serializable {
 
     /**
      * Returns property type from the given getter or setter method.
-     * 
+     *
      * @see #isSetter(Method)
      * @see #isGetter(Method)
      * @param method
@@ -493,6 +495,28 @@ public class ReflectTools implements Serializable {
                 return new Type[] { subType };
             }
         };
+    }
+
+    /**
+     * Finds a getter for a property in a bean type.
+     *
+     * @param beanClass
+     *            the bean type, not <code>null</code>
+     * @param propertyName
+     *            the property name, not <code>null</code>
+     * @return a getter method, or an empty optional if the bean type has no
+     *         readable property with the provided name
+     */
+    public static Optional<Method> getGetter(Class<? extends Object> beanClass,
+            String propertyName) {
+        /*
+         * Iterating all methods is no worse than what Class.getMethod
+         * internally does, but in this way we don't have to deal with any
+         * exceptions.
+         */
+        return getGetterMethods(beanClass)
+                .filter(method -> propertyName.equals(getPropertyName(method)))
+                .findFirst();
     }
 
 }

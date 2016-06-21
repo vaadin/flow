@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -862,67 +863,6 @@ public class TemplateModelTest {
         Assert.assertEquals(4, subProxy.getValue());
     }
 
-    @Test
-    public void modelMapContainsModelProperties() {
-        BasicTypeModelTemplate template = new BasicTypeModelTemplate();
-
-        // create model (populate properties)
-        template.getModel();
-
-        ModelMap model = template.getElement().getNode()
-                .getFeature(ModelMap.class);
-
-        Assert.assertTrue(model.hasValue("booleanPrimitive"));
-        Assert.assertTrue(model.hasValue("boolean"));
-        Assert.assertTrue(model.hasValue("int"));
-        Assert.assertTrue(model.hasValue("integer"));
-        Assert.assertTrue(model.hasValue("doublePrimitive"));
-        Assert.assertTrue(model.hasValue("double"));
-        Assert.assertTrue(model.hasValue("string"));
-    }
-
-    @Test
-    public void notSupportedModelMapHasNoProperties() {
-        BasicTypeModelTemplate template = new BasicTypeModelTemplate();
-
-        // create model (populate properties)
-        template.getModel();
-
-        ModelMap model = template.getElement().getNode()
-                .getFeature(ModelMap.class);
-
-        Assert.assertFalse(model.hasValue("long"));
-        Assert.assertFalse(model.hasValue("foo"));
-        Assert.assertFalse(model.hasValue("bar"));
-    }
-
-    @Test
-    public void modelMapContainsBeanProperty() {
-        BeanModelTemplate template = new BeanModelTemplate();
-
-        // create model (populate properties)
-        template.getModel();
-
-        ModelMap model = template.getElement().getNode()
-                .getFeature(ModelMap.class);
-
-        Assert.assertTrue(model.hasValue("bean"));
-    }
-
-    @Test
-    public void templateWithListProperty_modelMapContainsListProperty() {
-        TemplateWithList template = new TemplateWithList();
-
-        // create model (populate properties)
-        template.getModel();
-
-        ModelMap model = template.getElement().getNode()
-                .getFeature(ModelMap.class);
-
-        Assert.assertTrue(model.hasValue("beans"));
-        Assert.assertFalse(model.hasValue("items"));
-    }
-
     private void setModelPropertyAndVerifyGetter(Template template,
             Supplier<Object> getter, String beanPath, String property,
             Serializable expected) {
@@ -956,9 +896,18 @@ public class TemplateModelTest {
         beans.add(new Bean(200));
         beans.add(new Bean(300));
         template.getModel().setBeans(beans);
-        TemplateModelUtilTest.assertListContentsEquals(
-                template.getModel().getBeans(), new Bean(100), new Bean(200),
-                new Bean(300));
+        assertListContentsEquals(template.getModel().getBeans(), new Bean(100),
+                new Bean(200), new Bean(300));
+    }
+
+    private static <T> void assertListContentsEquals(List<T> list, T... beans) {
+        Assert.assertEquals(beans.length, list.size());
+        for (int i = 0; i < beans.length; i++) {
+            Assert.assertThat(list.get(i),
+                    Matchers.samePropertyValuesAs(beans[i]));
+            Assert.assertNotSame(beans[i], list.get(i));
+        }
+
     }
 
     @Test
@@ -1050,8 +999,17 @@ public class TemplateModelTest {
         // bean1.booleanObject is excluded
         Assert.assertFalse(getModelMap(template, "beanContainingBeans.bean1")
                 .hasValue("booleanObject"));
-        Assert.assertNull(
-                template.getModel().getBeanContainingBeans().getBean2());
+    }
+
+    @Test(expected = InvalidTemplateModelException.class)
+    public void setBeanExcludeSubBeanProperties_getterThrows() {
+        TemplateWithExcludeForSubBean template = new TemplateWithExcludeForSubBean();
+        BeanContainingBeans beanContainer = new BeanContainingBeans();
+        beanContainer.setBean2(new Bean(2));
+
+        template.getModel().setBeanContainingBeans(beanContainer);
+
+        template.getModel().getBeanContainingBeans().getBean2();
     }
 
     @Test
@@ -1064,13 +1022,21 @@ public class TemplateModelTest {
 
         Assert.assertNotNull(
                 template.getModel().getBeanContainingBeans().getBean1());
-        Assert.assertNull(
-                template.getModel().getBeanContainingBeans().getBean2());
 
         ModelMap bean1Map = getModelMap(template, "beanContainingBeans.bean1");
         Set<String> bean1Keys = getKeys(bean1Map);
         Assert.assertTrue(bean1Keys.contains("booleanObject"));
         Assert.assertEquals(1, bean1Keys.size());
+    }
+
+    @Test(expected = InvalidTemplateModelException.class)
+    public void setBeanIncludeSubBeanProperties_getterThrows() {
+        TemplateWithIncludeForSubBean template = new TemplateWithIncludeForSubBean();
+        BeanContainingBeans beanContainer = new BeanContainingBeans();
+        beanContainer.setBean2(new Bean(2));
+        template.getModel().setBeanContainingBeans(beanContainer);
+
+        template.getModel().getBeanContainingBeans().getBean2();
     }
 
     @Test

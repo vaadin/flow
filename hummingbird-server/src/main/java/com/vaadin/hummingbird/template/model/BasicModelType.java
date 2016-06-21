@@ -1,0 +1,91 @@
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.hummingbird.template.model;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import com.vaadin.util.ReflectTools;
+
+/**
+ * A model type representing an immutable leaf value, e.g. strings, numbers or
+ * booleans.
+ *
+ * @author Vaadin Ltd
+ */
+public class BasicModelType extends ModelType {
+    private static final Map<Class<?>, BasicModelType> types = new HashMap<>();
+
+    static {
+        Stream.of(int.class, Integer.class, boolean.class, Boolean.class,
+                double.class, Double.class, String.class)
+                .forEach(type -> types.put(type, new BasicModelType(type)));
+        assert noDuplicateTypeNames(
+                types.values().stream().map(BasicModelType::getName));
+    }
+
+    private final Class<?> type;
+
+    private BasicModelType(Class<?> type) {
+        this.type = type;
+    }
+
+    private static boolean noDuplicateTypeNames(Stream<String> names) {
+        Set<String> seenNames = new HashSet<>();
+        names.forEach(name -> {
+            if (!seenNames.add(name)) {
+                throw new AssertionError(
+                        "There are multiple basic types with the name " + name);
+            }
+        });
+        return true;
+    }
+
+    /**
+     * Gets the basic model type definition for the given Java class.
+     *
+     * @param type
+     *            the Java class to find a basic model type for
+     * @return the basic model type, or an empty optional if the provided type
+     *         is not a basic type
+     */
+    public static Optional<ModelType> get(Class<?> type) {
+        return Optional.ofNullable(types.get(type));
+    }
+
+    private String getName() {
+        return type.getSimpleName();
+    }
+
+    @Override
+    public Object modelToUser(Serializable modelValue) {
+        if (modelValue == null && type.isPrimitive()) {
+            return ReflectTools.getPrimitiveDefaultValue(type);
+        } else {
+            return modelValue;
+        }
+    }
+
+    @Override
+    public Serializable userToModel(Object userValue, PropertyFilter filter) {
+        return (Serializable) userValue;
+    }
+}

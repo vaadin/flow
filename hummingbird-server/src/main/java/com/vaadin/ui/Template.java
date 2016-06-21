@@ -35,6 +35,7 @@ import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.RelativeFileResolver;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
 import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
@@ -254,8 +255,8 @@ public abstract class Template extends Component implements HasChildView {
     private TemplateModel createTemplateModelInstance() {
         Class<? extends TemplateModel> modelType = getModelType();
 
-        return TemplateModelProxyHandler.createTemplateModelProxy(stateNode,
-                modelType);
+        return TemplateModelProxyHandler.createModelProxy(stateNode,
+                ModelDescriptor.get(modelType));
     }
 
     /**

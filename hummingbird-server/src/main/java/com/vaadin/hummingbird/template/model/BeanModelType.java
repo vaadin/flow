@@ -1,0 +1,321 @@
+/*
+ * Copyright 2000-2016 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.hummingbird.template.model;
+
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.util.ReflectTools;
+
+/**
+ * A model type corresponding to a Java bean type.
+ *
+ * @author Vaadin Ltd
+ * @param <T>
+ *            the proxy type used by this bean type
+ */
+public class BeanModelType<T> extends ModelType {
+
+    private final Map<String, ModelType> properties = new HashMap<>();
+    private final Class<T> proxyType;
+
+    /**
+     * Creates a new bean model type from the given class and properties.
+     *
+     * @param proxyType
+     *            the class to use for proxies of this type, not
+     *            <code>null</code>
+     * @param properties
+     *            a map of properties of this type. The contents of the map will
+     *            be copied. Not <code>null</code>.
+     */
+    public BeanModelType(Class<T> proxyType,
+            Map<String, ModelType> properties) {
+        assert proxyType != null;
+        assert properties != null;
+
+        this.proxyType = proxyType;
+        this.properties.putAll(properties);
+    }
+
+    /**
+     * Creates a new bean model type with the bean properties of the provided
+     * class that passes the provided property filter.
+     *
+     * @param javaType
+     *            the java type of this bean type
+     * @param propertyFilter
+     *            the filter that determines which bean properties to include in
+     *            this model type
+     */
+    public BeanModelType(Class<T> javaType, PropertyFilter propertyFilter) {
+        this(javaType, findProperties(javaType, propertyFilter));
+    }
+
+    private static Map<String, ModelType> findProperties(Class<?> javaType,
+            PropertyFilter propertyFilter) {
+        assert javaType != null;
+        assert propertyFilter != null;
+
+        Map<String, ModelType> properties = new HashMap<>();
+
+        BiConsumer<Method, Function<Method, Predicate<String>>> mapBuilder = (
+                method, filterProvider) -> {
+            String propertyName = ReflectTools.getPropertyName(method);
+            if (properties.containsKey(propertyName)) {
+                return;
+            }
+
+            if (!propertyFilter.test(propertyName)) {
+                return;
+            }
+
+            PropertyFilter innerFilter = new PropertyFilter(propertyFilter,
+                    propertyName, filterProvider.apply(method));
+
+            ModelType propertyType = getPropertyType(
+                    ReflectTools.getPropertyType(method), innerFilter);
+
+            properties.put(propertyName, propertyType);
+        };
+
+        // Check setters first because they might have additional filters
+        ReflectTools.getSetterMethods(javaType).forEach(setter -> {
+            mapBuilder.accept(setter,
+                    TemplateModelUtil::getFilterFromIncludeExclude);
+        });
+
+        // Then go through the getters in case there are readonly-ish properties
+        ReflectTools.getGetterMethods(javaType).forEach(getter -> {
+            mapBuilder.accept(getter, method -> name -> true);
+        });
+
+        return properties;
+    }
+
+    private static ModelType getPropertyType(Type propertyType,
+            PropertyFilter propertyFilter) {
+        if (propertyType instanceof Class<?>) {
+            Class<?> propertyTypeClass = (Class<?>) propertyType;
+            if (isBean(propertyTypeClass)) {
+                return new BeanModelType<>(propertyTypeClass, propertyFilter);
+            } else {
+                Optional<ModelType> maybeBasicModelType = BasicModelType
+                        .get(propertyTypeClass);
+                if (maybeBasicModelType.isPresent()) {
+                    return maybeBasicModelType.get();
+                }
+            }
+        } else if (ListModelType.isList(propertyType)) {
+            return new ListModelType<>(new BeanModelType<>(
+                    ListModelType.getBeansListItemType(propertyType),
+                    propertyFilter));
+        }
+
+        throw new InvalidTemplateModelException(
+                propertyType.toString() + " is not a supported property type");
+    }
+
+    /**
+     * Checks if the given type can be handled as a bean in a model.
+     *
+     * @param type
+     *            the type to check
+     * @return <code>true</code> if the given type will be handled as a bean,
+     *         <code>false</code> if the given type will be handled as a basic
+     *         type or is not supported
+     */
+    public static boolean isBean(Type type) {
+        if (!(type instanceof Class<?>)) {
+            return false;
+        }
+        Class<?> cls = (Class<?>) type;
+        if (BasicModelType.get(cls).isPresent()) {
+            return false;
+        } else if (cls.isPrimitive()) {
+            // Primitives can't be beans even if they're not basic types
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Checks whether this bean type has a property with the given name.
+     *
+     * @param propertyName
+     *            the property name to check
+     * @return <code>true</code> if this model has a property with the given
+     *         name; <code>false</code> otherwise
+     */
+    public boolean hasProperty(String propertyName) {
+        return properties.containsKey(propertyName);
+    }
+
+    /**
+     * Gets the type of the property with the given name.
+     *
+     * @param propertyName
+     *            the name of the property to check
+     *
+     * @return the model type
+     */
+    public ModelType getPropertyType(String propertyName) {
+        assert hasProperty(propertyName);
+
+        return properties.get(propertyName);
+    }
+
+    @Override
+    public T modelToUser(Serializable modelValue) {
+        return TemplateModelProxyHandler
+                .createModelProxy((StateNode) modelValue, this);
+    }
+
+    /**
+     * Gets the Class that proxies of this bean type should extend.
+     *
+     * @return the proxy type to use, not <code>null</code>
+     */
+    public Class<T> getProxyType() {
+        return proxyType;
+    }
+
+    @Override
+    public StateNode userToModel(Object userValue, PropertyFilter filter) {
+        if (userValue == null) {
+            return null;
+        }
+
+        StateNode node = TemplateElementStateProvider
+                .createSubModelNode(ModelMap.class);
+
+        importProperties(ModelMap.get(node), userValue, filter);
+
+        return node;
+    }
+
+    /**
+     * Imports properties from a bean into a model map based on the properties
+     * in this model type.
+     *
+     * @param model
+     *            the model map to import values into
+     * @param bean
+     *            the bean to get values from
+     * @param propertyFilter
+     *            defines which properties from this model type to import
+     */
+    public void importProperties(ModelMap model, Object bean,
+            PropertyFilter propertyFilter) {
+        Class<? extends Object> beanClass = bean.getClass();
+
+        /*
+         * Collect all values and let getters throw before starting to populate
+         * the model.
+         *
+         * Can't use Collectors.toMap() since it disallows null values.
+         */
+        Map<String, Object> values = new HashMap<>();
+        properties.keySet().stream().filter(propertyFilter)
+                .map(name -> ReflectTools.getGetter(beanClass, name))
+                .filter(Optional::isPresent).map(Optional::get)
+                .forEach(getter -> {
+                    try {
+                        Object value = getter.invoke(bean);
+                        values.put(ReflectTools.getPropertyName(getter), value);
+                    } catch (Exception e) {
+                        throw new IllegalArgumentException(
+                                "Cannot access bean property "
+                                        + ReflectTools.getPropertyName(getter),
+                                e);
+                    }
+                });
+
+        // Populate the model with the extracted values
+        values.forEach((name, value) -> {
+            ModelType type = getPropertyType(name);
+            model.setValue(name, type.userToModel(value,
+                    new PropertyFilter(propertyFilter, name)));
+        });
+    }
+
+    /**
+     * Finds the model type denoted by the given model path.
+     *
+     * @param modelPath
+     *            the model path to resolve, not <code>null</code>
+     * @return the model type of the resolved path, not <code>null</code>
+     */
+    public ModelType resolveType(String modelPath) {
+        assert modelPath != null;
+
+        if (modelPath.isEmpty()) {
+            return this;
+        }
+
+        String[] parts = modelPath.split("\\.", 2);
+
+        String propertyName = parts[0];
+        if (!hasProperty(propertyName)) {
+            throw new IllegalArgumentException(
+                    "No such property: " + propertyName);
+        }
+
+        ModelType propertyType = getPropertyType(propertyName);
+
+        if (parts.length == 1) {
+            // Last segment of the path
+            return propertyType;
+        } else {
+            String subPath = parts[1];
+
+            if (propertyType instanceof BeanModelType<?>) {
+                return ((BeanModelType<?>) propertyType).resolveType(subPath);
+            } else {
+                throw new IllegalArgumentException(
+                        propertyName + " is not a bean");
+            }
+        }
+    }
+
+    /**
+     * Checks that this type uses the provided proxy type and returns this type
+     * as a bean model type with that proxy type.
+     *
+     * @param proxyType
+     *            the proxy type to cast to
+     * @return this bean model type
+     */
+    @SuppressWarnings("unchecked")
+    public <C> BeanModelType<C> cast(Class<C> proxyType) {
+        if (getProxyType() != proxyType) {
+            throw new IllegalArgumentException(
+                    "Got " + proxyType + ", excpted " + getProxyType());
+        }
+        return (BeanModelType<C>) this;
+    }
+
+}
