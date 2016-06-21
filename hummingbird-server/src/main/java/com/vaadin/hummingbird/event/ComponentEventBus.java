@@ -99,6 +99,7 @@ public class ComponentEventBus implements Serializable {
      * @return <code>true</code> if at least one listener is registered,
      *         <code>false</code> otherwise
      */
+    @SuppressWarnings("rawtypes")
     public boolean hasListener(Class<? extends ComponentEvent> eventType) {
         if (eventType == null) {
             throw new IllegalArgumentException("Event type cannot be null");
@@ -287,7 +288,7 @@ public class ComponentEventBus implements Serializable {
      */
     private void handleDomEvent(Class<? extends ComponentEvent<?>> eventType,
             DomEvent domEvent) {
-        ComponentEvent e = createEventForDomEvent(eventType, domEvent,
+        ComponentEvent<?> e = createEventForDomEvent(eventType, domEvent,
                 component);
         fireEvent(e);
     }

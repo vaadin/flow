@@ -913,8 +913,8 @@ public class TemplateElementStateProviderTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void requiredNodeFeatures() {
-        @SuppressWarnings("unchecked")
         Class<? extends NodeFeature>[] requiredFeatures = new Class[] {
                 TemplateOverridesMap.class };
 

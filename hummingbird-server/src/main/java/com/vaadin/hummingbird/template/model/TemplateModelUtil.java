@@ -379,6 +379,7 @@ public class TemplateModelUtil {
         throw createUnsupportedTypeException(returnClazz, propertyName);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private static Object getModelValueParameterizedType(Object value,
             String propertyName, ParameterizedType returnType) {
 

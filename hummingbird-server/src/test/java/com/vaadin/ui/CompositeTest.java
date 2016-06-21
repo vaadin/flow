@@ -189,8 +189,8 @@ public class CompositeTest {
     public void attachDetachEvents_compositeHierarchy_correctOrder() {
         UI ui = new UI();
 
-        ArrayList<Component> attached = new ArrayList<Component>();
-        ArrayList<Component> detached = new ArrayList<Component>();
+        ArrayList<Component> attached = new ArrayList<>();
+        ArrayList<Component> detached = new ArrayList<>();
 
         ComponentEventListener<AttachEvent> attachListener = event -> attached
                 .add(event.getSource());
@@ -264,7 +264,7 @@ public class CompositeTest {
         component.addAttachListener(event -> triggered.add(2));
         component.addDetachListener(event -> triggered.add(-2));
 
-        Composite compositeInsideComposite = new Composite() {
+        Composite<Component> compositeInsideComposite = new Composite<Component>() {
             @Override
             protected Component initContent() {
                 return component;
@@ -283,7 +283,7 @@ public class CompositeTest {
         compositeInsideComposite.addAttachListener(event -> triggered.add(4));
         compositeInsideComposite.addDetachListener(event -> triggered.add(-4));
 
-        Composite composite = new Composite() {
+        Composite<Component> composite = new Composite<Component>() {
             @Override
             protected Component initContent() {
                 return compositeInsideComposite;
