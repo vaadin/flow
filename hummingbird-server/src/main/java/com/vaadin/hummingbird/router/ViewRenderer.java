@@ -79,6 +79,9 @@ public abstract class ViewRenderer implements NavigationHandler {
     /**
      * Gets the route for which the view types were mapped. Returns
      * <code>null</code> if no route definition is available.
+     * <p>
+     * NOTE: the route should not start with <code>/</code>, even though it is
+     * required when mapping views to routes.
      *
      * @return the route definition, or <code>null</code> if no route is
      *         available
