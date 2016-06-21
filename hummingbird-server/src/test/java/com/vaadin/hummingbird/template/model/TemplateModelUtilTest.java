@@ -733,6 +733,7 @@ public class TemplateModelUtilTest {
 
     }
 
+    @SafeVarargs
     static <T> void assertListContentsEquals(List<T> list, T... beans) {
         Assert.assertEquals(beans.length, list.size());
         for (int i = 0; i < beans.length; i++) {

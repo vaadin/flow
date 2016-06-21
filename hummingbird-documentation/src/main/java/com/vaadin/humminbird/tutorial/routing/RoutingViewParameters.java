@@ -72,6 +72,7 @@ public class RoutingViewParameters {
 
     }
 
+    @SuppressWarnings("null")
     void routerLink() {
         Product product = null;
 

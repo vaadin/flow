@@ -65,6 +65,7 @@ public class ComponentEvents {
         }
     }
 
+    @SuppressWarnings("unused")
     private void useEvents() {
         TextField textField = new TextField();
         EventRegistrationHandle registration = textField
