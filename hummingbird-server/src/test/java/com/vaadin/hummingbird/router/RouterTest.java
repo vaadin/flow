@@ -255,7 +255,7 @@ public class RouterTest {
                         usedHandler.set("resolver");
                     }));
 
-            configuration.setRoute("*", e -> {
+            configuration.setRoute("/*", e -> {
                 usedHandler.set("route");
             });
         });
@@ -274,7 +274,7 @@ public class RouterTest {
         router.reconfigure(configuration -> {
             configuration.setResolver(resolveEvent -> Optional.empty());
 
-            configuration.setRoute("*", e -> {
+            configuration.setRoute("/*", e -> {
                 usedHandler.set("route");
             });
         });
@@ -336,8 +336,8 @@ public class RouterTest {
 
         Router router = new Router();
         router.reconfigure(c -> {
-            c.setRoute("foo/{name}", TestView.class);
-            c.setRoute("bar/*", TestView.class);
+            c.setRoute("/foo/{name}", TestView.class);
+            c.setRoute("/bar/*", TestView.class);
         });
 
         router.navigate(ui, new Location("foo/bar/"));

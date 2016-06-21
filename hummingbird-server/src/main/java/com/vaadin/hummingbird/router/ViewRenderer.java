@@ -156,6 +156,9 @@ public abstract class ViewRenderer implements NavigationHandler {
         String route = getRoute();
         Map<String, String> routePlaceholders;
         if (route != null) {
+            if (route.startsWith("/")) {
+                route = route.substring(1);
+            }
             routePlaceholders = extractRoutePlaceholders(event.getLocation(),
                     new RouteLocation(new Location(route)));
         } else {

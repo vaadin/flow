@@ -246,7 +246,7 @@ public class ViewRendererTest {
 
     @Test
     public void routeParamtersInEvent() {
-        router.reconfigure(c -> c.setRoute("foo/{name}/*", TestView.class));
+        router.reconfigure(c -> c.setRoute("/foo/{name}/*", TestView.class));
         router.navigate(ui, new Location("foo/bar/baz/"));
         TestView testView = (TestView) ui.getInternals().getActiveViewChain()
                 .get(0);
