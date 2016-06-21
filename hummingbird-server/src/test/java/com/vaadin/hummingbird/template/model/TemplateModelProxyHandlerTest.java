@@ -34,11 +34,18 @@ public class TemplateModelProxyHandlerTest {
         Assert.assertFalse(m1.equals(null));
         Assert.assertFalse(m1.equals("foobar"));
         Assert.assertFalse(m1.equals(m2));
+
+        ModelDescriptor<EmptyModel> realModelType = ModelDescriptor
+                .get(EmptyModel.class);
+
         Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
-                emptyModelTemplate1.getElement().getNode(), EmptyModel.class)));
-        Assert.assertTrue(m1.equals(TemplateModelProxyHandler.createModelProxy(
-                emptyModelTemplate1.getElement().getNode(),
-                TemplateModel.class)));
+                emptyModelTemplate1.getElement().getNode(), realModelType)));
+
+        BeanModelType<TemplateModel> wrongModelType = new BeanModelType<>(
+                TemplateModel.class, PropertyFilter.ACCEPT_ALL);
+        Assert.assertFalse(m1.equals(TemplateModelProxyHandler.createModelProxy(
+                emptyModelTemplate1.getElement().getNode(), wrongModelType)));
+
         Assert.assertTrue(m2.equals(m2));
     }
 
@@ -71,8 +78,9 @@ public class TemplateModelProxyHandlerTest {
     public void objectMethodIsNotIntercepted() {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
-        Model proxy = TemplateModelProxyHandler
-                .createModelProxy(template.getElement().getNode(), Model.class);
+        Model proxy = TemplateModelProxyHandler.createModelProxy(
+                template.getElement().getNode(),
+                new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL));
         Assert.assertEquals(System.identityHashCode(proxy), proxy.hashCode());
     }
 
@@ -80,8 +88,9 @@ public class TemplateModelProxyHandlerTest {
     public void notAccessorIsNotIntercepted() {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
-        Model proxy = TemplateModelProxyHandler
-                .createModelProxy(template.getElement().getNode(), Model.class);
+        Model proxy = TemplateModelProxyHandler.createModelProxy(
+                template.getElement().getNode(),
+                new BeanModelType<>(Model.class, PropertyFilter.ACCEPT_ALL));
         Assert.assertEquals("foo", proxy.toString());
     }
 
@@ -90,6 +99,7 @@ public class TemplateModelProxyHandlerTest {
         EmptyModelTemplate template = new EmptyModelTemplate();
 
         TemplateModelProxyHandler.createModelProxy(
-                template.getElement().getNode(), BadModel.class);
+                template.getElement().getNode(),
+                new BeanModelType<>(BadModel.class, PropertyFilter.ACCEPT_ALL));
     }
 }
