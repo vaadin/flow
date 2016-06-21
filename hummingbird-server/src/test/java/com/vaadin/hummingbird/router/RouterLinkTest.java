@@ -83,7 +83,7 @@ public class RouterLinkTest {
     @Test
     public void buildUrlWithRouter() {
         Router router = new Router();
-        router.reconfigure(c -> c.setRoute("foo/{bar}", TestView.class));
+        router.reconfigure(c -> c.setRoute("/foo/{bar}", TestView.class));
 
         String url = RouterLink.buildUrl(router, TestView.class, "asdf");
 
@@ -111,8 +111,8 @@ public class RouterLinkTest {
     public void buildUrlWithRouter_multipleRoutes() {
         Router router = new Router();
         router.reconfigure(c -> {
-            c.setRoute("foo/{bar}", TestView.class);
-            c.setRoute("another/route", TestView.class);
+            c.setRoute("/foo/{bar}", TestView.class);
+            c.setRoute("/another/route", TestView.class);
         });
 
         RouterLink.buildUrl(router, TestView.class, "asdf");
@@ -124,7 +124,7 @@ public class RouterLinkTest {
         // Router from the UI.
         RouterTestUI ui = createUI();
         ui.getRouter().get()
-                .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+                .reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink("Show something", TestView.class,
                 "something");
@@ -142,7 +142,7 @@ public class RouterLinkTest {
     public void setRoute_attachedLink() {
         RouterTestUI ui = new RouterTestUI(new Router());
         ui.getRouter().get()
-                .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+                .reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink();
 
@@ -157,7 +157,7 @@ public class RouterLinkTest {
     @Test
     public void createRouterLink_explicitRouter() {
         Router router = new Router();
-        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+        router.reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink(router, "Show something",
                 TestView.class, "something");
@@ -177,7 +177,7 @@ public class RouterLinkTest {
         // Router from the UI.
         RouterTestUI ui = createUI();
         ui.getRouter().get()
-                .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+                .reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink("Show something", TestView.class,
                 "something");
@@ -196,7 +196,7 @@ public class RouterLinkTest {
     @Test
     public void createReconfigureRouterLink_explicitRouter() {
         Router router = new Router();
-        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+        router.reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink(router, "Show something",
                 TestView.class, "something");
@@ -216,7 +216,7 @@ public class RouterLinkTest {
     public void reconfigureRouterLink_attachedLink() {
         Router router = new Router();
         RouterTestUI ui = new RouterTestUI(router);
-        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+        router.reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink();
         ui.add(link);
@@ -238,7 +238,7 @@ public class RouterLinkTest {
         // Router from the UI.
         RouterTestUI ui = createUI();
         ui.getRouter().get()
-                .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+                .reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         new RouterLink("Show something", TestView.class);
     }
@@ -246,7 +246,7 @@ public class RouterLinkTest {
     @Test(expected = IllegalArgumentException.class)
     public void invalidRoute_explicitRouter() {
         Router router = new Router();
-        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+        router.reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         new RouterLink(router, "Show something", TestView.class);
     }
@@ -255,7 +255,7 @@ public class RouterLinkTest {
     public void invalidRoute_attachedLink() {
         Router router = new Router();
         RouterTestUI ui = new RouterTestUI(router);
-        router.reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+        router.reconfigure(c -> c.setRoute("/show/{bar}", TestView.class));
 
         RouterLink link = new RouterLink();
         ui.add(link);
@@ -270,8 +270,8 @@ public class RouterLinkTest {
         try {
             VaadinService.setCurrent(servlet.getService());
 
-            servlet.getService().getRouter()
-                    .reconfigure(c -> c.setRoute("show/{bar}", TestView.class));
+            servlet.getService().getRouter().reconfigure(
+                    c -> c.setRoute("/show/{bar}", TestView.class));
 
             new RouterLink("Show something", TestView.class);
         } finally {

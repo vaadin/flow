@@ -40,7 +40,7 @@ public class RoutingViewHierarchy {
         @Override
         public void configure(RouterConfiguration configuration) {
             //@formatter:off - custom line wrapping
-            configuration.setRoute("company", CompanyView.class, MainLayout.class);
+            configuration.setRoute("/company", CompanyView.class, MainLayout.class);
             //@formatter:on
         }
     }
@@ -49,7 +49,7 @@ public class RoutingViewHierarchy {
         @Override
         public void configure(RouterConfiguration configuration) {
             //@formatter:off - custom line wrapping
-            configuration.setRoute("company", CompanyView.class, CompanySideBarView.class);
+            configuration.setRoute("/company", CompanyView.class, CompanySideBarView.class);
             configuration.setParentView(CompanySideBarView.class, MainLayout.class);
             //@formatter:on
         }
