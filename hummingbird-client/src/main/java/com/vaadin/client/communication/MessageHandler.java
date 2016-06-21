@@ -309,120 +309,126 @@ public class MessageHandler {
             serverTimingInfo = valueMap.getValueMap("timings");
         }
 
-        Command c = new Command() {
-            @Override
-            public void execute() {
-                assert serverId == -1 || serverId == lastSeenServerSyncId;
+        DependencyLoader
+                .runWhenDependenciesLoaded(DomApi::updateApiImplementation);
+        DependencyLoader.runWhenDependenciesLoaded(
+                () -> processMessage(valueMap, lock, start));
+    }
 
-                double processUidlStart = Duration.currentTimeMillis();
+    /**
+     * Performs the actual processing of a server message when all dependencies
+     * have been loaded.
+     *
+     * @param valueMap
+     *            the message payload
+     * @param lock
+     *            the lock object for this response
+     * @param start
+     *            the time stamp when processing started
+     */
+    private void processMessage(ValueMap valueMap, Object lock, Date start) {
+        assert getServerId(valueMap) == -1
+                || getServerId(valueMap) == lastSeenServerSyncId;
 
-                JsonObject json = valueMap.cast();
+        try {
+            double processUidlStart = Duration.currentTimeMillis();
 
-                if (json.hasKey("templates")) {
-                    TemplateRegistry templates = registry.getTemplateRegistry();
+            JsonObject json = valueMap.cast();
 
-                    JsonObject templatesJson = json.getObject("templates");
+            if (json.hasKey("templates")) {
+                TemplateRegistry templates = registry.getTemplateRegistry();
+                JsonObject templatesJson = json.getObject("templates");
+                templates.importFromJson(templatesJson);
+            }
 
-                    templates.importFromJson(templatesJson);
-                }
+            if (json.hasKey("changes")) {
+                StateTree tree = registry.getStateTree();
+                TreeChangeProcessor.processChanges(tree,
+                        json.getArray("changes"));
 
-                if (json.hasKey("changes")) {
-                    StateTree tree = registry.getStateTree();
-                    TreeChangeProcessor.processChanges(tree,
-                            json.getArray("changes"));
-
-                    if (!registry.getApplicationConfiguration()
-                            .isProductionMode()) {
-                        JsonObject debugJson = tree.getRootNode()
-                                .getDebugJson();
-                        Console.log("StateTree after applying changes:");
-                        Console.log(debugJson);
-                    }
-                }
-
-                if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
-                    // Invoke JS only after all tree changes have been
-                    // propagated
-                    Reactive.addPostFlushListener(() -> registry
-                            .getExecuteJavaScriptProcessor().execute(json
-                                    .getArray(JsonConstants.UIDL_KEY_EXECUTE)));
-                }
-
-                Console.log("handleUIDLMessage: "
-                        + (Duration.currentTimeMillis() - processUidlStart)
-                        + " ms");
-
-                ValueMap meta = valueMap.getValueMap("meta");
-
-                if (meta != null) {
-                    Profiler.enter("Error handling");
-                    if (meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
-                        if (nextResponseSessionExpiredHandler != null) {
-                            nextResponseSessionExpiredHandler.execute();
-                        } else {
-                            registry.getSystemErrorHandler()
-                                    .showSessionExpiredError(null);
-                            registry.getUILifecycle()
-                                    .setState(UIState.TERMINATED);
-                        }
-                    } else if (meta.containsKey("appError")) {
-                        ValueMap error = meta.getValueMap("appError");
-
-                        registry.getSystemErrorHandler().showError(
-                                error.getString("caption"),
-                                error.getString("message"),
-                                error.getString("details"),
-                                error.getString("url"));
-
-                        registry.getUILifecycle().setState(UIState.TERMINATED);
-                    }
-                    Profiler.leave("Error handling");
-                }
-                nextResponseSessionExpiredHandler = null;
-                Reactive.flush();
-
-                // TODO build profiling for widget impl loading time
-
-                lastProcessingTime = (int) ((new Date().getTime())
-                        - start.getTime());
-                totalProcessingTime += lastProcessingTime;
-                if (bootstrapTime == 0) {
-
-                    double fetchStart = getFetchStartTime();
-                    if (fetchStart != 0) {
-                        int time = (int) (Duration.currentTimeMillis()
-                                - fetchStart);
-                        Console.log("First response processed " + time
-                                + " ms after fetchStart");
-                    }
-
-                    bootstrapTime = calculateBootstrapTime();
-                    if (Profiler.isEnabled() && bootstrapTime != -1) {
-                        Profiler.logBootstrapTimings();
-                    }
-                }
-
-                Console.log(" Processing time was "
-                        + String.valueOf(lastProcessingTime) + "ms");
-
-                endRequestIfResponse(valueMap);
-                resumeResponseHandling(lock);
-
-                if (Profiler.isEnabled()) {
-                    Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-                        @Override
-                        public void execute() {
-                            Profiler.logTimings();
-                            Profiler.reset();
-                        }
-                    });
+                if (!registry.getApplicationConfiguration()
+                        .isProductionMode()) {
+                    JsonObject debugJson = tree.getRootNode().getDebugJson();
+                    Console.log("StateTree after applying changes:");
+                    Console.log(debugJson);
                 }
             }
 
-        };
-        DependencyLoader
-                .runWhenDependenciesLoaded(DomApi::updateApiImplementation);
-        DependencyLoader.runWhenDependenciesLoaded(c);
+            if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
+                // Invoke JS only after all tree changes have been
+                // propagated
+                Reactive.addPostFlushListener(
+                        () -> registry.getExecuteJavaScriptProcessor().execute(
+                                json.getArray(JsonConstants.UIDL_KEY_EXECUTE)));
+            }
+
+            Console.log("handleUIDLMessage: "
+                    + (Duration.currentTimeMillis() - processUidlStart)
+                    + " ms");
+
+            ValueMap meta = valueMap.getValueMap("meta");
+
+            if (meta != null) {
+                Profiler.enter("Error handling");
+                if (meta.containsKey(JsonConstants.META_SESSION_EXPIRED)) {
+                    if (nextResponseSessionExpiredHandler != null) {
+                        nextResponseSessionExpiredHandler.execute();
+                    } else {
+                        registry.getSystemErrorHandler()
+                                .showSessionExpiredError(null);
+                        registry.getUILifecycle().setState(UIState.TERMINATED);
+                    }
+                } else if (meta.containsKey("appError")) {
+                    ValueMap error = meta.getValueMap("appError");
+
+                    registry.getSystemErrorHandler().showError(
+                            error.getString("caption"),
+                            error.getString("message"),
+                            error.getString("details"), error.getString("url"));
+
+                    registry.getUILifecycle().setState(UIState.TERMINATED);
+                }
+                Profiler.leave("Error handling");
+            }
+            nextResponseSessionExpiredHandler = null;
+            Reactive.flush();
+
+            lastProcessingTime = (int) ((new Date().getTime())
+                    - start.getTime());
+            totalProcessingTime += lastProcessingTime;
+            if (bootstrapTime == 0) {
+
+                double fetchStart = getFetchStartTime();
+                if (fetchStart != 0) {
+                    int time = (int) (Duration.currentTimeMillis()
+                            - fetchStart);
+                    Console.log("First response processed " + time
+                            + " ms after fetchStart");
+                }
+
+                bootstrapTime = calculateBootstrapTime();
+                if (Profiler.isEnabled() && bootstrapTime != -1) {
+                    Profiler.logBootstrapTimings();
+                }
+            }
+
+        } finally {
+            Console.log(" Processing time was "
+                    + String.valueOf(lastProcessingTime) + "ms");
+
+            endRequestIfResponse(valueMap);
+            resumeResponseHandling(lock);
+
+            if (Profiler.isEnabled()) {
+                Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+                    @Override
+                    public void execute() {
+                        Profiler.logTimings();
+                        Profiler.reset();
+                    }
+                });
+            }
+        }
     }
 
     private void endRequestIfResponse(ValueMap json) {
