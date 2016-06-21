@@ -15,6 +15,9 @@
  */
 package com.vaadin.client;
 
+import java.util.Set;
+
+import com.google.web.bindery.event.shared.UmbrellaException;
 import com.vaadin.client.bootstrap.ErrorMessage;
 
 import elemental.client.Browser;
@@ -46,9 +49,8 @@ public class SystemErrorHandler {
      * @param details
      *            message details or null if there are no details
      */
-    public void showCommunicationError(String details) {
-        Console.error("Communication error: " + details);
-        showError(details,
+    public void handleCommunicationError(String details) {
+        handleUnrecoverableError(details,
                 registry.getApplicationConfiguration().getCommunicationError());
     }
 
@@ -58,9 +60,8 @@ public class SystemErrorHandler {
      * @param details
      *            message details or null if there are no details
      */
-    public void showAuthenticationError(String details) {
-        Console.error("Authentication error: " + details);
-        showError(details,
+    public void handleAuthenticationError(String details) {
+        handleUnrecoverableError(details,
                 registry.getApplicationConfiguration().getAuthorizationError());
     }
 
@@ -70,27 +71,28 @@ public class SystemErrorHandler {
      * @param details
      *            message details or null if there are no details
      */
-    public void showSessionExpiredError(String details) {
-        Console.error("Session expired: " + details);
-        showError(details, registry.getApplicationConfiguration()
+    public void handleSessionExpiredError(String details) {
+        handleUnrecoverableError(details, registry.getApplicationConfiguration()
                 .getSessionExpiredError());
     }
 
     /**
-     * Shows an error notification.
+     * Shows an error notification for an error which is unrecoverable.
      *
      * @param details
      *            message details or null if there are no details
      * @param message
      *            an ErrorMessage describing the error
      */
-    protected void showError(String details, ErrorMessage message) {
-        showError(message.getCaption(), message.getMessage(), details,
-                message.getUrl());
+    protected void handleUnrecoverableError(String details,
+            ErrorMessage message) {
+        handleUnrecoverableError(message.getCaption(), message.getMessage(),
+                details, message.getUrl());
     }
 
     /**
-     * Shows a error notification using the given parameters.
+     * Shows an error notification for an error which is unrecoverable, using
+     * the given parameters.
      *
      * @param caption
      *            the caption of the message
@@ -100,10 +102,10 @@ public class SystemErrorHandler {
      *            message details or null if there are no details
      * @param url
      *            a URL to redirect to when the user clicks the message or null
-     *            if no redirection should take place
+     *            to refresh on click
      */
-    public void showError(String caption, String message, String details,
-            String url) {
+    public void handleUnrecoverableError(String caption, String message,
+            String details, String url) {
         Document document = Browser.getDocument();
         Element systemErrorContainer = document.createDivElement();
         systemErrorContainer.setClassName("v-system-error");
@@ -113,24 +115,72 @@ public class SystemErrorHandler {
             captionDiv.setClassName("caption");
             captionDiv.setInnerHTML(caption);
             systemErrorContainer.appendChild(captionDiv);
+            Console.error(caption);
         }
         if (message != null) {
             Element messageDiv = document.createDivElement();
             messageDiv.setClassName("message");
             messageDiv.setInnerHTML(message);
             systemErrorContainer.appendChild(messageDiv);
+            Console.error(message);
         }
         if (details != null) {
             Element detailsDiv = document.createDivElement();
             detailsDiv.setClassName("details");
             detailsDiv.setInnerHTML(details);
             systemErrorContainer.appendChild(detailsDiv);
+            Console.error(details);
         }
 
         systemErrorContainer.addEventListener("click",
                 e -> WidgetUtil.redirect(url), false);
 
         document.getBody().appendChild(systemErrorContainer);
+    }
+
+    /**
+     * Shows the given error message if not running in production mode and logs
+     * it to the console if running in production mode.
+     *
+     * @param errorMessage
+     *            the error message to show
+     */
+    public void handleError(String errorMessage) {
+        Console.error(errorMessage);
+        if (registry.getApplicationConfiguration().isProductionMode()) {
+            return;
+        }
+
+        Document document = Browser.getDocument();
+        Element errorContainer = document.createDivElement();
+        errorContainer.setClassName("v-system-error");
+        errorContainer.setTextContent(errorMessage);
+        errorContainer.addEventListener("click", e -> {
+            // Allow user to dismiss the error by clicking it.
+            errorContainer.getParentElement().removeChild(errorContainer);
+        });
+        document.getBody().appendChild(errorContainer);
+    }
+
+    /**
+     * Shows an error message if not running in production mode and logs it to
+     * the console if running in production mode.
+     *
+     * @param throwable
+     *            the throwable which occurred
+     */
+    public void handleError(Throwable throwable) {
+        handleError(unwrapUmbrellaException(throwable).getMessage());
+    }
+
+    private static Throwable unwrapUmbrellaException(Throwable e) {
+        if (e instanceof UmbrellaException) {
+            Set<Throwable> causes = ((UmbrellaException) e).getCauses();
+            if (causes.size() == 1) {
+                return unwrapUmbrellaException(causes.iterator().next());
+            }
+        }
+        return e;
     }
 
 }
