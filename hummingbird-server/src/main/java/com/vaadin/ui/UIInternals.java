@@ -651,13 +651,13 @@ public class UIInternals implements Serializable {
     public void addComponentDependencies(
             Class<? extends Component> componentClass) {
         Page page = ui.getPage();
-        List<JavaScript> javaScripts = AnnotationReader
-                .getJavaScriptAnnotations(componentClass);
-        javaScripts.forEach(js -> page.addJavaScript(js.value()));
-
         List<HtmlImport> htmlImports = AnnotationReader
                 .getHtmlImportAnnotations(componentClass);
         htmlImports.forEach(html -> page.addHtmlImport(html.value()));
+
+        List<JavaScript> javaScripts = AnnotationReader
+                .getJavaScriptAnnotations(componentClass);
+        javaScripts.forEach(js -> page.addJavaScript(js.value()));
 
         List<StyleSheet> styleSheets = AnnotationReader
                 .getStyleSheetAnnotations(componentClass);

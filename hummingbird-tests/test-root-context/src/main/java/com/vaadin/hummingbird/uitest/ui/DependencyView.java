@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
@@ -41,6 +42,7 @@ public class DependencyView extends AbstractDivView {
     private StreamResourceRegistration htmlMixedImport2;
 
     @Tag("div")
+    @JavaScript("/test-files/html/htmlimport4-js.js")
     @HtmlImport("/test-files/html/htmlimport4.html")
     static class HtmlComponent extends Component implements HasText {
 
