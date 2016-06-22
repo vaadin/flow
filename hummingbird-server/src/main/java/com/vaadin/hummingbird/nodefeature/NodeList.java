@@ -250,7 +250,6 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        System.out.println("collect changes " + getNode().getId());
         getChangeTracker().forEach(collector);
     }
 
