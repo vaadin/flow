@@ -117,8 +117,17 @@ public final class Binder {
             }
         }
         if (applicable == null) {
-            throw new IllegalArgumentException(
-                    "State node has no suitable binder strategy");
+            StringBuilder features = new StringBuilder();
+            node.forEachFeature((feature, id) -> features
+                    .append(feature.getDebugJson()).append(", "));
+            if (features.length() > 0) {
+                features.delete(features.length() - 2, features.length());
+                features.insert(0, " Node contains features: ");
+            } else {
+                features.append(" Node has no any feature");
+            }
+            throw new IllegalArgumentException("State node with id="
+                    + node.getId() + " has no suitable binder strategy.");
         }
         return applicable;
     }

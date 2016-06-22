@@ -33,6 +33,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 public class TreeChangeProcessor {
+
     private TreeChangeProcessor() {
         // Only static helpers here
     }
@@ -49,28 +50,31 @@ public class TreeChangeProcessor {
         int length = changes.length();
 
         // Attach all nodes before doing anything else
+        JsArray<JsonObject> updateChanges = JsCollections.array();
         for (int i = 0; i < length; i++) {
             JsonObject change = changes.getObject(i);
+            Integer id = getId(change);
             if (isAttach(change)) {
-                int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
-
-                StateNode node = new StateNode(nodeId, tree);
-                tree.registerNode(node);
+                tree.registerNode(new StateNode(id, tree));
+            } else {
+                updateChanges.push(change);
             }
         }
 
         // Then process all non-attach changes
-        for (int i = 0; i < length; i++) {
-            JsonObject change = changes.getObject(i);
-            if (!isAttach(change)) {
-                processChange(tree, change);
-            }
+        while (!updateChanges.isEmpty()) {
+            JsonObject change = updateChanges.remove(0);
+            processChange(tree, change, updateChanges);
         }
     }
 
     private static boolean isAttach(JsonObject change) {
         return JsonConstants.CHANGE_TYPE_ATTACH
                 .equals(change.getString(JsonConstants.CHANGE_TYPE));
+    }
+
+    private static Integer getId(JsonObject change) {
+        return (int) change.getNumber(JsonConstants.CHANGE_NODE);
     }
 
     /**
@@ -82,7 +86,8 @@ public class TreeChangeProcessor {
      * @param change
      *            the JSON change
      */
-    public static void processChange(StateTree tree, JsonObject change) {
+    static void processChange(StateTree tree, JsonObject change,
+            JsArray<JsonObject> changes) {
         String type = change.getString(JsonConstants.CHANGE_TYPE);
         int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
 
@@ -91,10 +96,10 @@ public class TreeChangeProcessor {
 
         switch (type) {
         case JsonConstants.CHANGE_TYPE_SPLICE:
-            processSpliceChange(change, node);
+            processSpliceChange(change, node, changes);
             break;
         case JsonConstants.CHANGE_TYPE_PUT:
-            processPutChange(change, node);
+            processPutChange(change, node, changes);
             break;
         case JsonConstants.CHANGE_TYPE_REMOVE:
             processRemoveChange(change, node);
@@ -111,7 +116,8 @@ public class TreeChangeProcessor {
         node.getTree().unregisterNode(node);
     }
 
-    private static void processPutChange(JsonObject change, StateNode node) {
+    private static void processPutChange(JsonObject change, StateNode node,
+            JsArray<JsonObject> changes) {
         MapProperty property = findProperty(change, node);
 
         if (change.hasKey(JsonConstants.CHANGE_PUT_VALUE)) {
@@ -123,6 +129,7 @@ public class TreeChangeProcessor {
                     .getNumber(JsonConstants.CHANGE_PUT_NODE_VALUE);
             StateNode child = node.getTree().getNode(childId);
             assert child != null;
+            processDependency(changes, node.getTree(), childId);
 
             property.setValue(child);
         } else {
@@ -145,7 +152,8 @@ public class TreeChangeProcessor {
         return map.getProperty(key);
     }
 
-    private static void processSpliceChange(JsonObject change, StateNode node) {
+    private static void processSpliceChange(JsonObject change, StateNode node,
+            JsArray<JsonObject> changes) {
         int nsId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
 
         NodeList list = node.getList(nsId);
@@ -177,6 +185,7 @@ public class TreeChangeProcessor {
                 int childId = (int) addNodes.getNumber(i);
                 StateNode child = tree.getNode(childId);
                 assert child != null : "No child node found with id " + childId;
+                processDependency(changes, tree, childId);
 
                 add.set(i, child);
             }
@@ -184,6 +193,24 @@ public class TreeChangeProcessor {
             list.splice(index, remove, add);
         } else {
             list.splice(index, remove);
+        }
+    }
+
+    // TODO : this is not optimal some Map should be used but it behaves in
+    // weird way, so optimization should be done separately
+    private static void processDependency(JsArray<JsonObject> changes,
+            StateTree tree, Integer childId) {
+        JsonObject dep = null;
+        for (int i = 0; i < changes.length(); i++) {
+            JsonObject change = changes.get(i);
+            if (getId(change).equals(childId)) {
+                dep = change;
+                break;
+            }
+        }
+        if (dep != null) {
+            changes.remove(dep);
+            processChange(tree, dep, changes);
         }
     }
 }
