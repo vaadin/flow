@@ -21,6 +21,7 @@ import org.objectweb.asm.Opcodes;
 
 import com.vaadin.client.bootstrap.Bootstrapper;
 import com.vaadin.client.communication.DefaultReconnectDialog;
+import com.vaadin.client.hummingbird.PreRenderer;
 import com.vaadin.client.hummingbird.RouterLinkHandler;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.dom.DomElement;
@@ -33,11 +34,11 @@ import elemental.dom.Text;
 import elemental.html.AnchorElement;
 
 public class DomApiAbstractionUsageTest {
-    private static final Set<String> ignoredApplictionClasses = Stream
+    private static final Set<String> ignoredClasses = Stream
             .of(DomElement.class, DomNode.class, ResourceLoader.class,
                     BrowserInfo.class, DefaultReconnectDialog.class,
                     SystemErrorHandler.class, LoadingIndicator.class,
-                    RouterLinkHandler.class, Profiler.class)
+                    RouterLinkHandler.class, Profiler.class, PreRenderer.class)
             .map(Class::getName).collect(Collectors.toSet());
 
     private static final Set<Class<?>> ignoredElementalClasses = Stream
@@ -59,8 +60,7 @@ public class DomApiAbstractionUsageTest {
             className = name.replace('/', '.');
 
             String outerClassName = className.replaceAll("\\$.*", "");
-            whitelistedClass = ignoredApplictionClasses
-                    .contains(outerClassName);
+            whitelistedClass = ignoredClasses.contains(outerClassName);
         }
 
         @Override
