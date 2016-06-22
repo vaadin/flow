@@ -177,29 +177,24 @@ public class UidlWriterTest {
                 DependencyList.TYPE_JAVASCRIPT);
         assertDependency("UI-", dependencies.get(idx++),
                 DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("super-", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-
-        assertDependency("anotherinterface-", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-
-        assertDependency("interface-", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-
-        assertDependency("", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
 
         assertDependency("super-", dependencies.get(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
-
         assertDependency("anotherinterface-", dependencies.get(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
-
         assertDependency("interface-", dependencies.get(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
-
         assertDependency("", dependencies.get(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
+
+        assertDependency("super-", dependencies.get(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("anotherinterface-", dependencies.get(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("interface-", dependencies.get(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("", dependencies.get(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
 
         assertDependency("super-", dependencies.get(idx++),
                 DependencyList.TYPE_STYLESHEET);
@@ -229,30 +224,31 @@ public class UidlWriterTest {
         JsonArray dependencies = response
                 .getArray(DependencyList.DEPENDENCY_KEY);
 
+        int idx = 0;
         Assert.assertEquals(12, dependencies.length());
-        assertDependency("childinterface1-", dependencies.getObject(0),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("childinterface2-", dependencies.getObject(1),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("child1-", dependencies.getObject(2),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("child2-", dependencies.getObject(3),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("childinterface1-", dependencies.getObject(4),
+        assertDependency("childinterface1-", dependencies.getObject(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("childinterface2-", dependencies.getObject(5),
+        assertDependency("childinterface2-", dependencies.getObject(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("child1-", dependencies.getObject(6),
+        assertDependency("child1-", dependencies.getObject(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("child2-", dependencies.getObject(7),
+        assertDependency("child2-", dependencies.getObject(idx++),
                 DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("childinterface1-", dependencies.getObject(8),
+        assertDependency("childinterface1-", dependencies.getObject(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("childinterface2-", dependencies.getObject(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("child1-", dependencies.getObject(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("child2-", dependencies.getObject(idx++),
+                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("childinterface1-", dependencies.getObject(idx++),
                 DependencyList.TYPE_STYLESHEET);
-        assertDependency("childinterface2-", dependencies.getObject(9),
+        assertDependency("childinterface2-", dependencies.getObject(idx++),
                 DependencyList.TYPE_STYLESHEET);
-        assertDependency("child1-", dependencies.getObject(10),
+        assertDependency("child1-", dependencies.getObject(idx++),
                 DependencyList.TYPE_STYLESHEET);
-        assertDependency("child2-", dependencies.getObject(11),
+        assertDependency("child2-", dependencies.getObject(idx++),
                 DependencyList.TYPE_STYLESHEET);
     }
 
