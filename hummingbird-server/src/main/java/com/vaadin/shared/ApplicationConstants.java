@@ -165,4 +165,9 @@ public class ApplicationConstants implements Serializable {
      */
     public static final String ROUTER_LINK_ATTRIBUTE = "routerlink";
 
+    /**
+     * Attribute name for marking elements which are pre-rendered.
+     */
+    public static final String PRE_RENDER_ATTRIBUTE = "pre-render";
+
 }
