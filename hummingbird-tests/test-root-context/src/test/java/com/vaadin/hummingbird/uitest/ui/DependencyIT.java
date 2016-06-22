@@ -73,6 +73,8 @@ public class DependencyIT extends PhantomJSTest {
                 messages.get(0));
         Assert.assertEquals("Messagehandler initialized in HTML import 4",
                 messages.get(1));
+        Assert.assertEquals("HTML import 4 companion JS loaded",
+                messages.get(2));
 
         // Inject html
         findElementById("loadHtml").click();
