@@ -1115,8 +1115,6 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     private StateNode createSimpleOverrideNode(int mainNodeTemplateId,
             int overrideNodeId) {
         StateNode overrideNode = new StateNode(overrideNodeId, tree);
-        // make it recognizable as an override element
-        overrideNode.getMap(NodeFeatures.OVERRIDE_DATA);
 
         stateNode.getMap(NodeFeatures.TEMPLATE_OVERRIDES)
                 .getProperty(String.valueOf(mainNodeTemplateId))
