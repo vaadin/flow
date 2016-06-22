@@ -40,6 +40,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
+import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.util.CurrentInstance;
 
 /**
@@ -96,6 +97,9 @@ public class UI extends Component
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
+        getElement().setAttribute("scroll", "auto");
+        getElement().getClassList()
+                .add(ApplicationConstants.GENERATED_BODY_CLASSNAME);
     }
 
     /**
