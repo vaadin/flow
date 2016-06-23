@@ -294,4 +294,20 @@ public class TemplateParserTest {
         parse("<button (click='handle($event)'>");
     }
 
+    @Test
+    public void parseStyle() {
+        ElementTemplateNode node = (ElementTemplateNode) parse(
+                "<button style='background-color:red'>");
+
+        Assert.assertEquals(1, node.getAttributeNames().count());
+        Assert.assertEquals(0, node.getPropertyNames().count());
+        Assert.assertEquals(0, node.getClassNames().count());
+
+        Optional<BindingValueProvider> binding = node
+                .getAttributeBinding("style");
+        Assert.assertTrue(binding.isPresent());
+        Assert.assertEquals("background-color:red",
+                binding.get().getValue(null));
+    }
+
 }
