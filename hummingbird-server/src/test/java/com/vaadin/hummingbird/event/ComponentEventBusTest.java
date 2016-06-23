@@ -123,7 +123,7 @@ public class ComponentEventBusTest {
     @Test
     public void serverEvent_fire() {
         AtomicInteger eventHandlerCalled = new AtomicInteger(0);
-        AtomicReference<BigDecimal> dataValueInEvent = new AtomicReference<BigDecimal>(
+        AtomicReference<BigDecimal> dataValueInEvent = new AtomicReference<>(
                 new BigDecimal(0));
 
         TestComponentWithServerEvent component = new TestComponentWithServerEvent();

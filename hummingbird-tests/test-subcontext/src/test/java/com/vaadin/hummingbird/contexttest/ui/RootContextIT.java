@@ -1,8 +1,7 @@
 package com.vaadin.hummingbird.contexttest.ui;
 
 import org.junit.Assert;
-
-import com.vaadin.testbench.By;
+import org.openqa.selenium.By;
 
 public class RootContextIT extends AbstractContextIT {
 
