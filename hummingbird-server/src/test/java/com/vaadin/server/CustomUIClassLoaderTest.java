@@ -29,7 +29,7 @@ public class CustomUIClassLoaderTest extends TestCase {
      */
     public class LoggingClassLoader extends ClassLoader {
 
-        private List<String> requestedClasses = new ArrayList<String>();
+        private List<String> requestedClasses = new ArrayList<>();
 
         @Override
         protected synchronized Class<?> loadClass(String name, boolean resolve)
