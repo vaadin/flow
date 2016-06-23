@@ -141,8 +141,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                     SynchronizedPropertyEventsList.class)
             .toArray(Class[]::new);
 
-    private static final Predicate<? super String> excludeCustomAttributes = name -> !CustomAttribute
-            .getNames().contains(name);
+    private static final Predicate<? super String> excludeCustomAttributes = name -> "style"
+            .equals(name) || !CustomAttribute.getNames().contains(name);
 
     private ElementTemplateNode templateNode;
 

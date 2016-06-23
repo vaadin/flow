@@ -443,18 +443,12 @@ public class TemplateElementStateProviderTest {
     public void testHardcodedStyleAttribute() {
         Element element = createElement("<div style='display:none'></div>");
 
-        /*
-         * Currently empty since getStyle() is implemented to always be empty.
-         *
-         * Should be updated to make sure getAttributeNames() still doesn't
-         * throw after actual style support has been implemented.
-         */
-        Assert.assertEquals(0, element.getAttributeNames().count());
+        Assert.assertEquals(1, element.getAttributeNames().count());
 
         // Test the same after attributes have been migrated to an override node
         element.setProperty("foo", "bar");
 
-        Assert.assertEquals(0, element.getAttributeNames().count());
+        Assert.assertEquals(1, element.getAttributeNames().count());
     }
 
     @Test
@@ -1036,7 +1030,15 @@ public class TemplateElementStateProviderTest {
         Assert.assertNull(element.getProperty("boundproperty"));
         Assert.assertArrayEquals(new Object[] { "boundProperty" },
                 element.getPropertyNames().toArray());
+    }
 
+    public void templateStaticStyleAttribute() {
+        Element element = createElement("<div style='background:blue'></div>");
+
+        Assert.assertEquals("background:blue", element.getAttribute("style"));
+        Assert.assertEquals("blue", element.getStyle().get("background"));
+        Assert.assertArrayEquals(new Object[] { "style" },
+                element.getAttributeNames().toArray());
     }
 
 }
