@@ -38,19 +38,25 @@ import com.vaadin.util.ReflectTools;
 public abstract class ViewRenderer implements NavigationHandler {
 
     /**
-     * Gets the view type show.
+     * Gets the view type to show.
      *
      * @return the view type, not <code>null</code>
      */
     public abstract Class<? extends View> getViewType();
 
     /**
-     * Gets the parent view types to show, starting from the parent view
-     * immediately wrapping the view type.
+     * Gets the parent view types to show for the given view type, starting from
+     * the parent view immediately wrapping the view type.
+     *
+     * @see #getViewType()
+     *
+     * @param viewType
+     *            view type to show
      *
      * @return a list of parent view types, not <code>null</code>
      */
-    public abstract List<Class<? extends HasChildView>> getParentViewTypes();
+    public abstract List<Class<? extends HasChildView>> getParentViewTypes(
+            Class<? extends View> viewType);
 
     /**
      * Gets the view instance to use for the given view type and the
@@ -92,7 +98,8 @@ public abstract class ViewRenderer implements NavigationHandler {
         UI ui = event.getUI();
 
         Class<? extends View> viewType = getViewType();
-        List<Class<? extends HasChildView>> parentViewTypes = getParentViewTypes();
+        List<Class<? extends HasChildView>> parentViewTypes = getParentViewTypes(
+                viewType);
 
         assert viewType != null;
         assert parentViewTypes != null;

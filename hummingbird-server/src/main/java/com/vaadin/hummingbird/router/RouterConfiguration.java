@@ -259,8 +259,10 @@ public class RouterConfiguration
             }
 
             @Override
-            public List<Class<? extends HasChildView>> getParentViewTypes() {
-                return getParentViewsAsList(viewType);
+            public List<Class<? extends HasChildView>> getParentViewTypes(
+                    Class<? extends View> actualViewType) {
+                assert actualViewType == viewType;
+                return getParentViewsAsList(actualViewType);
             }
 
             @Override
