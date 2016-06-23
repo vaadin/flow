@@ -2,9 +2,9 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
-import com.vaadin.testbench.By;
 
 public class ViewTitleIT extends PhantomJSTest {
 
