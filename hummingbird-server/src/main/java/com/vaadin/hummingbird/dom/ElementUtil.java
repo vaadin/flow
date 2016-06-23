@@ -238,7 +238,12 @@ public class ElementUtil {
         }
 
         element.getAttributeNames().forEach(name -> {
-            target.attr(name, element.getAttribute(name));
+            String attributeValue = element.getAttribute(name);
+            if ("".equals(attributeValue)) {
+                target.attr(name, true);
+            } else {
+                target.attr(name, attributeValue);
+            }
         });
 
         element.getChildren()
