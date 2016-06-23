@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 public class StaticFileServerTest implements Serializable {
@@ -143,7 +144,7 @@ public class StaticFileServerTest implements Serializable {
         response = Mockito.mock(HttpServletResponse.class);
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         // No header == getDateHeader returns -1 (Mockito default is 0)
-        Mockito.when(request.getDateHeader(Mockito.anyString()))
+        Mockito.when(request.getDateHeader(Matchers.anyString()))
                 .thenReturn(-1L);
 
         responseCode = new AtomicInteger(-1);
@@ -155,24 +156,24 @@ public class StaticFileServerTest implements Serializable {
             headers.put((String) invocation.getArguments()[0],
                     (String) invocation.getArguments()[1]);
             return null;
-        }).when(response).setHeader(Mockito.anyString(), Mockito.anyString());
+        }).when(response).setHeader(Matchers.anyString(), Matchers.anyString());
         Mockito.doAnswer(invocation -> {
             dateHeaders.put((String) invocation.getArguments()[0],
                     (Long) invocation.getArguments()[1]);
             return null;
-        }).when(response).setDateHeader(Mockito.anyString(), Mockito.anyLong());
+        }).when(response).setDateHeader(Matchers.anyString(), Matchers.anyLong());
         Mockito.doAnswer(invocation -> {
             responseCode.set((int) invocation.getArguments()[0]);
             return null;
-        }).when(response).setStatus(Mockito.anyInt());
+        }).when(response).setStatus(Matchers.anyInt());
         Mockito.doAnswer(invocation -> {
             responseCode.set((int) invocation.getArguments()[0]);
             return null;
-        }).when(response).sendError(Mockito.anyInt());
+        }).when(response).sendError(Matchers.anyInt());
         Mockito.doAnswer(invocation -> {
             responseContentLength.set((long) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentLengthLong(Mockito.anyLong());
+        }).when(response).setContentLengthLong(Matchers.anyLong());
 
     }
 
@@ -287,11 +288,11 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void contentType() {
-        AtomicReference<String> contentType = new AtomicReference<String>(null);
+        AtomicReference<String> contentType = new AtomicReference<>(null);
         Mockito.doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentType(Mockito.anyString());
+        }).when(response).setContentType(Matchers.anyString());
 
         Mockito.when(servletContext.getMimeType("/file.png"))
                 .thenReturn("image/png");
@@ -303,11 +304,11 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void noContentType() {
-        AtomicReference<String> contentType = new AtomicReference<String>(null);
+        AtomicReference<String> contentType = new AtomicReference<>(null);
         Mockito.doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentType(Mockito.anyString());
+        }).when(response).setContentType(Matchers.anyString());
 
         Mockito.when(servletContext.getMimeType("/file")).thenReturn(null);
 

@@ -34,10 +34,10 @@ import org.eclipse.jetty.webapp.WebInfConfiguration;
 import org.eclipse.jetty.webapp.WebXmlConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.hummingbird.testutil.FixedPhantomJSDriver;
-import com.vaadin.testbench.By;
 
 /**
  * Test that verifies no leaks happen during redeployment of a war. Uses Jetty

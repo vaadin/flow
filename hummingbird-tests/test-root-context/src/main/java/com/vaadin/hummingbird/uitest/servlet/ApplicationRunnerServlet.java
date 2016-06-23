@@ -64,9 +64,9 @@ public class ApplicationRunnerServlet extends VaadinServlet {
      * The name of the application class currently used. Only valid within one
      * request.
      */
-    private LinkedHashSet<String> defaultPackages = new LinkedHashSet<String>();
+    private LinkedHashSet<String> defaultPackages = new LinkedHashSet<>();
 
-    private transient final ThreadLocal<HttpServletRequest> request = new ThreadLocal<HttpServletRequest>();
+    private transient final ThreadLocal<HttpServletRequest> request = new ThreadLocal<>();
 
     @Override
     public void init(ServletConfig servletConfig) throws ServletException {

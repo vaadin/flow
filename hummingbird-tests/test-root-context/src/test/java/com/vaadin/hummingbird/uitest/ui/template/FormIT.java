@@ -17,9 +17,9 @@ package com.vaadin.hummingbird.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
-import com.vaadin.testbench.By;
 
 public class FormIT extends PhantomJSTest {
 
