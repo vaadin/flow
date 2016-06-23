@@ -101,19 +101,22 @@ public class ElementUtil {
 
     private static String getInvalidStylePropertyNameError(String name) {
         if (name == null || name.trim().isEmpty()) {
-            return "A style property name cannot be null or empty";
+            return "A style property name cannot be null or empty (" + name
+                    + ")";
         }
 
         if (name.startsWith(" ") || name.endsWith(" ")) {
-            return "A style property name cannot start or end in whitespace";
+            return "A style property name cannot start or end in whitespace ("
+                    + name + ")";
         }
 
         if (name.contains(":")) {
-            return "A style property name cannot contain colons";
+            return "A style property name cannot contain colons (" + name + ")";
         }
 
         if (name.contains("-")) {
-            return "A style property name cannot contain dashes. Use the camelCase style property name.";
+            return "A style property name cannot contain dashes. Use the camelCase style property name ("
+                    + name + ")";
         }
 
         return null;
