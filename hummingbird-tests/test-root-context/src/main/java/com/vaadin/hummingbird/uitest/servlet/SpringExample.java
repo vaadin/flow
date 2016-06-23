@@ -203,10 +203,11 @@ public class SpringExample implements RouterConfigurator {
             }
 
             @Override
-            public List<Class<? extends HasChildView>> getParentViewTypes() {
+            public List<Class<? extends HasChildView>> getParentViewTypes(
+                    Class<? extends View> viewType) {
                 // Return value of getViewType() should really be passed to this
                 // method so it wouldn't have to call it again
-                if (getViewType() == NoPermissionView.class) {
+                if (viewType == NoPermissionView.class) {
                     return Collections.singletonList(RootView.class);
                 } else {
                     return parentViews;

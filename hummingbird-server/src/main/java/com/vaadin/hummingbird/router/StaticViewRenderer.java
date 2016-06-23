@@ -73,7 +73,8 @@ public class StaticViewRenderer extends ViewRenderer {
     }
 
     @Override
-    public List<Class<? extends HasChildView>> getParentViewTypes() {
+    public List<Class<? extends HasChildView>> getParentViewTypes(
+            Class<? extends View> viewType) {
         return Collections.unmodifiableList(parentViewTypes);
     }
 }
