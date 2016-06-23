@@ -39,7 +39,7 @@ public class Routing {
         @Override
         public void configure(RouterConfiguration configuration) {
             configuration.setRoute("", HomeView.class);
-            configuration.setRoute("company", CompanyView.class);
+            configuration.setRoute("/company", CompanyView.class);
         }
 
     }

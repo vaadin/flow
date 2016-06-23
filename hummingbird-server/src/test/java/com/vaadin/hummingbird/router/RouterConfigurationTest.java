@@ -39,81 +39,81 @@ public class RouterConfigurationTest {
         assertMatches("", "");
         assertNotMatches("a", "");
 
-        assertMatches("foo", "foo");
-        assertMatches("foo/", "foo/");
+        assertMatches("foo", "/foo");
+        assertMatches("foo/", "/foo/");
 
-        assertNotMatches("foo/", "foo");
-        assertNotMatches("foo", "foo/");
+        assertNotMatches("foo/", "/foo");
+        assertNotMatches("foo", "/foo/");
 
-        assertNotMatches("foo/bar", "foo/");
-        assertNotMatches("foo/", "foo/bar");
+        assertNotMatches("foo/bar", "/foo/");
+        assertNotMatches("foo/", "/foo/bar");
 
-        assertNotMatches("foo/bar", "foo/baz");
-        assertNotMatches("foo/bar", "baz/bar");
+        assertNotMatches("foo/bar", "/foo/baz");
+        assertNotMatches("foo/bar", "/baz/bar");
 
-        assertMatches("foo/bar/baz", "foo/bar/baz");
+        assertMatches("foo/bar/baz", "/foo/bar/baz");
     }
 
     @Test
     public void testPlaceholderRoute() {
-        assertMatches("foo", "{name}");
-        assertMatches("foo/", "{name}/");
+        assertMatches("foo", "/{name}");
+        assertMatches("foo/", "/{name}/");
 
-        assertNotMatches("foo", "{name}/");
-        assertNotMatches("foo/", "{name}");
+        assertNotMatches("foo", "/{name}/");
+        assertNotMatches("foo/", "/{name}");
 
-        assertMatches("foo/bar/baz", "{name}/bar/baz");
-        assertMatches("foo/bar/baz", "foo/{name}/baz");
-        assertMatches("foo/bar/baz", "foo/bar/{name}");
+        assertMatches("foo/bar/baz", "/{name}/bar/baz");
+        assertMatches("foo/bar/baz", "/foo/{name}/baz");
+        assertMatches("foo/bar/baz", "/foo/bar/{name}");
 
-        assertNotMatches("foo/bar/baz", "{name}/asdf/baz");
-        assertNotMatches("foo/bar/baz", "{name}/bar/asdf");
-        assertNotMatches("foo/bar/baz", "asdf/{name}/baz");
-        assertNotMatches("foo/bar/baz", "foo/{name}/asdf");
-        assertNotMatches("foo/bar/baz", "asdf/bar/{name}");
-        assertNotMatches("foo/bar/baz", "foo/asdf/{name}");
+        assertNotMatches("foo/bar/baz", "/{name}/asdf/baz");
+        assertNotMatches("foo/bar/baz", "/{name}/bar/asdf");
+        assertNotMatches("foo/bar/baz", "/asdf/{name}/baz");
+        assertNotMatches("foo/bar/baz", "/foo/{name}/asdf");
+        assertNotMatches("foo/bar/baz", "/asdf/bar/{name}");
+        assertNotMatches("foo/bar/baz", "/foo/asdf/{name}");
 
-        assertMatches("foo/bar/baz", "{name1}/{name2}/{name3}");
+        assertMatches("foo/bar/baz", "/{name1}/{name2}/{name3}");
 
-        assertMatches("foo/", "foo/{name}");
-        assertMatches("foo//bar", "foo/{name}/bar");
+        assertMatches("foo/", "/foo/{name}");
+        assertMatches("foo//bar", "/foo/{name}/bar");
     }
 
     @Test
     public void testWildcardRoute() {
-        assertMatches("", "*");
-        assertMatches("foo", "*");
-        assertMatches("foo/", "*");
-        assertMatches("foo/bar", "*");
+        assertMatches("", "/*");
+        assertMatches("foo", "/*");
+        assertMatches("foo/", "/*");
+        assertMatches("foo/bar", "/*");
 
-        assertMatches("foo/", "foo/*");
-        assertMatches("foo/bar", "foo/*");
-        assertMatches("foo/bar/", "foo/*");
+        assertMatches("foo/", "/foo/*");
+        assertMatches("foo/bar", "/foo/*");
+        assertMatches("foo/bar/", "/foo/*");
 
-        assertNotMatches("foo", "foo/*");
-        assertNotMatches("bar/foo", "foo/*");
+        assertNotMatches("foo", "/foo/*");
+        assertNotMatches("bar/foo", "/foo/*");
     }
 
     @Test
     public void testRoutePriorityOrder() {
-        assertRoutePriorityOrder("foo", "{name}", "*");
+        assertRoutePriorityOrder("/foo", "/{name}", "/*");
 
-        assertRoutePriorityOrder("foo/bar", "foo/{name}", "{name}/bar",
-                "{name}/{name2}");
+        assertRoutePriorityOrder("/foo/bar", "/foo/{name}", "/{name}/bar",
+                "/{name}/{name2}");
 
-        assertRoutePriorityOrder("foo/bar", "foo/*", "*");
+        assertRoutePriorityOrder("/foo/bar", "/foo/*", "/*");
 
-        assertRoutePriorityOrder("foo/", "foo/{name}", "foo/*");
+        assertRoutePriorityOrder("/foo/", "/foo/{name}", "/foo/*");
     }
 
     @Test
     public void testRoutesCopied() throws Exception {
         RouterConfiguration original = createConfiguration();
-        original.setRoute("foo/bar", createNoopHandler());
+        original.setRoute("/foo/bar", createNoopHandler());
 
         RouterConfiguration copy = new RouterConfiguration(original, false);
 
-        original.removeRoute("foo/bar");
+        original.removeRoute("/foo/bar");
 
         Assert.assertNotNull("Updating the original should not affect the copy",
                 copy.resolveRoute(new Location("foo/bar")));
@@ -122,12 +122,20 @@ public class RouterConfigurationTest {
     @Test
     public void testEverythingIsCopied() throws Exception {
         RouterConfiguration original = createConfiguration();
-        original.setRoute("foo/bar", TestView.class);
+        original.setRoute("/foo/bar", TestView.class);
         original.setErrorView(TestView.class);
 
         RouterConfiguration copy = new RouterConfiguration(original, false);
 
         validateNoSameInstances(original, copy);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSetRoute_invalidPath_throws() {
+        Router router = new Router();
+        router.reconfigure(conf -> {
+            conf.setRoute("foobar", TestView.class);
+        });
     }
 
     @SuppressWarnings("rawtypes")
@@ -187,15 +195,15 @@ public class RouterConfigurationTest {
 
         NavigationHandler navigationHandler = createNoopHandler();
 
-        configuration.setRoute("foo", navigationHandler);
-        configuration.setRoute("{name}", navigationHandler);
-        configuration.setRoute("*", navigationHandler);
+        configuration.setRoute("/foo", navigationHandler);
+        configuration.setRoute("/{name}", navigationHandler);
+        configuration.setRoute("/*", navigationHandler);
 
-        configuration.removeRoute("foo");
+        configuration.removeRoute("/foo");
         Assert.assertNotNull(configuration.resolveRoute(new Location("foo")));
-        configuration.removeRoute("{otherName}");
+        configuration.removeRoute("/{otherName}");
         Assert.assertNotNull(configuration.resolveRoute(new Location("foo")));
-        configuration.removeRoute("*");
+        configuration.removeRoute("/*");
 
         // Should resolve to empty optional only after removing all the routes
         Assert.assertFalse(
@@ -210,22 +218,22 @@ public class RouterConfigurationTest {
     @Test(expected = IllegalStateException.class)
     public void testSetExistingRouteThrows() {
         RouterConfiguration configuration = createConfiguration();
-        configuration.setRoute("foo", createNoopHandler());
-        configuration.setRoute("foo", createNoopHandler());
+        configuration.setRoute("/foo", createNoopHandler());
+        configuration.setRoute("/foo", createNoopHandler());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testSetExistingPlaceholderThrows() {
         RouterConfiguration configuration = createConfiguration();
-        configuration.setRoute("{name}", createNoopHandler());
-        configuration.setRoute("{anotherName}", createNoopHandler());
+        configuration.setRoute("/{name}", createNoopHandler());
+        configuration.setRoute("/{anotherName}", createNoopHandler());
     }
 
     @Test(expected = IllegalStateException.class)
     public void testSetExistingWildcardThrows() {
         RouterConfiguration configuration = createConfiguration();
-        configuration.setRoute("foo/*", createNoopHandler());
-        configuration.setRoute("foo/*", createNoopHandler());
+        configuration.setRoute("/foo/*", createNoopHandler());
+        configuration.setRoute("/foo/*", createNoopHandler());
     }
 
     @Test
@@ -235,7 +243,7 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route", TestView.class);
+            conf.setRoute("/route", TestView.class);
             conf.setParentView(TestView.class, ParentView.class);
             conf.setParentView(ParentView.class, AnotherParentView.class);
         });
@@ -258,7 +266,7 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route", TestView.class, ParentView.class);
+            conf.setRoute("/route", TestView.class, ParentView.class);
             conf.setParentView(ParentView.class, AnotherParentView.class);
         });
 
@@ -295,6 +303,7 @@ public class RouterConfigurationTest {
     private static void assertRoutePriorityOrder(String... routes) {
         // First param also serves as the base location
         String location = routes[0];
+        location = location.startsWith("/") ? location.substring(1) : location;
         for (int i = 0; i < routes.length - 1; i++) {
             String stronger = routes[i];
             String weaker = routes[i + 1];
@@ -362,8 +371,8 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route1", TestView.class, ParentView.class);
-            conf.setRoute("route2", AnotherTestView.class);
+            conf.setRoute("/route1", TestView.class, ParentView.class);
+            conf.setRoute("/route2", AnotherTestView.class);
         });
 
         assertRoute(router, TestView.class, "route1");
@@ -388,7 +397,7 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route1", TestView.class);
+            conf.setRoute("/route1", TestView.class);
         });
 
         assertRoutes(router, TestView.class, "route1");
@@ -399,8 +408,8 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route2", TestView.class);
-            conf.setRoute("route1", TestView.class);
+            conf.setRoute("/route2", TestView.class);
+            conf.setRoute("/route1", TestView.class);
         });
 
         assertRoutes(router, TestView.class, "route2", "route1");
@@ -418,11 +427,11 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route1", TestView.class);
-            conf.setRoute("route2", AnotherTestView.class);
+            conf.setRoute("/route1", TestView.class);
+            conf.setRoute("/route2", AnotherTestView.class);
         });
         router.reconfigure(conf -> {
-            conf.removeRoute("route1");
+            conf.removeRoute("/route1");
         });
         assertRoutes(router, TestView.class);
         assertRoutes(router, AnotherTestView.class, "route2");
@@ -446,7 +455,7 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route", TestView.class);
+            conf.setRoute("/route", TestView.class);
         });
 
         assertParentViews(router, TestView.class);
@@ -474,7 +483,7 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route", TestView.class);
+            conf.setRoute("/route", TestView.class);
             conf.setParentView(TestView.class, ParentView.class);
         });
 
@@ -486,7 +495,7 @@ public class RouterConfigurationTest {
         Router router = new Router();
 
         router.reconfigure(conf -> {
-            conf.setRoute("route", TestView.class);
+            conf.setRoute("/route", TestView.class);
             conf.setParentView(TestView.class, ParentView.class);
             conf.setParentView(ParentView.class, AnotherParentView.class);
         });
@@ -546,5 +555,4 @@ public class RouterConfigurationTest {
             conf.setErrorView(TestView.class, null);
         });
     }
-
 }
