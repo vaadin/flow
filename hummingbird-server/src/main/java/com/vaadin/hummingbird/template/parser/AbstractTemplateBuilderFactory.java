@@ -17,7 +17,7 @@ package com.vaadin.hummingbird.template.parser;
 
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Node;
+import com.vaadin.external.jsoup.nodes.Node;
 
 import com.vaadin.hummingbird.template.AbstractBindingValueProvider;
 import com.vaadin.hummingbird.template.JsExpressionBindingProvider;
