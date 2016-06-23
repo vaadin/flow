@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Comment;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Node;
-import org.jsoup.select.Elements;
+import com.vaadin.external.jsoup.Jsoup;
+import com.vaadin.external.jsoup.nodes.Comment;
+import com.vaadin.external.jsoup.nodes.Document;
+import com.vaadin.external.jsoup.nodes.Node;
+import com.vaadin.external.jsoup.select.Elements;
 
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;

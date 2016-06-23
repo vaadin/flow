@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.template.parser;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.jsoup.nodes.Node;
+import com.vaadin.external.jsoup.nodes.Node;
 
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 

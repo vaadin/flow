@@ -17,14 +17,12 @@ package com.vaadin.hummingbird.template.parser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.function.Function;
 
-import org.jsoup.nodes.Element;
-import org.jsoup.nodes.Node;
-
+import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.ForTemplateBuilder;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
@@ -39,8 +37,7 @@ import com.vaadin.hummingbird.template.TemplateParseException;
 public class ForElementBuilderFactory
         extends AbstractTemplateBuilderFactory<Element> {
 
-    // Jsoup converts everything to lowercase
-    private static final String NG_FOR = "*ngFor".toLowerCase(Locale.ENGLISH);
+    private static final String NG_FOR = "*ngFor";
 
     /**
      * Creates a new factory.
