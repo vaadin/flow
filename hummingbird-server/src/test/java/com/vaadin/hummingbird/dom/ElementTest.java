@@ -2487,7 +2487,7 @@ public class ElementTest {
         div.setAttribute("pin", "");
 
         Assert.assertEquals(
-                "<div pin=\"\" foo=\"bar\" style=\"width:20px\" class=\"cls\"></div>",
+                "<div pin foo=\"bar\" style=\"width:20px\" class=\"cls\"></div>",
                 div.getOuterHTML());
     }
 
