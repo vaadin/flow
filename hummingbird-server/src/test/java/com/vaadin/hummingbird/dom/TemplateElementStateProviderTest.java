@@ -1013,4 +1013,30 @@ public class TemplateElementStateProviderTest {
         Assert.assertEquals("John", element.getProperty("prop"));
     }
 
+    @Test
+    public void templateMixedCaseAttributeProperty() {
+        Element element = createElement(
+                "<div [boundProperty]='modelParam' unboundAttribute='value' [attr.boundAttribute]='modelParam'></div>");
+
+        ModelMap.get(element.getNode()).setValue("modelParam", "modelValue");
+
+        // Attribute names are case insensitive
+        Assert.assertEquals("value", element.getAttribute("unboundattribute"));
+        Assert.assertEquals("value", element.getAttribute("UNBOUNDattribute"));
+        Assert.assertEquals("modelValue",
+                element.getAttribute("boundattribute"));
+        Assert.assertEquals("modelValue",
+                element.getAttribute("BOUNDattribute"));
+        Assert.assertArrayEquals(
+                new Object[] { "unboundattribute", "boundattribute" },
+                element.getAttributeNames().toArray());
+
+        // Property names are case sensitive
+        Assert.assertEquals("modelValue", element.getProperty("boundProperty"));
+        Assert.assertNull(element.getProperty("boundproperty"));
+        Assert.assertArrayEquals(new Object[] { "boundProperty" },
+                element.getPropertyNames().toArray());
+
+    }
+
 }
