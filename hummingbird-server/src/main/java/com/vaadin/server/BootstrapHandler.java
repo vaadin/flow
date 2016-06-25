@@ -275,12 +275,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
                 .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
-        /*
-         * Enable Chrome Frame in all versions of IE if installed.
-         */
-        head.appendElement(META_TAG).attr("http-equiv", "X-UA-Compatible")
-                .attr(CONTENT_ATTRIBUTE, "IE=11;chrome=1");
-
         head.appendElement("base").attr("href", getServiceUrl(context));
 
         Class<? extends UI> uiClass = context.getUI().getClass();
