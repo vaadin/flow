@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.jsoup.nodes.TextNode;
+import com.vaadin.external.jsoup.nodes.TextNode;
 import org.junit.Assert;
 import org.junit.Test;
 

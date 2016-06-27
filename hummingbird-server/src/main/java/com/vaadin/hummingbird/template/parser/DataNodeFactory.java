@@ -18,8 +18,8 @@ package com.vaadin.hummingbird.template.parser;
 import java.util.Optional;
 import java.util.function.Function;
 
-import org.jsoup.nodes.DataNode;
-import org.jsoup.nodes.Node;
+import com.vaadin.external.jsoup.nodes.DataNode;
+import com.vaadin.external.jsoup.nodes.Node;
 
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
