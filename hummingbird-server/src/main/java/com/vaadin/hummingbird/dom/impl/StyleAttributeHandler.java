@@ -68,6 +68,8 @@ public class StyleAttributeHandler extends CustomAttribute {
             throw new IllegalArgumentException(String.format(
                     ERROR_PARSING_STYLE, attributeValue, "No styles found"));
         }
+
+        style.clear();
         for (CSSDeclaration declaration : parsed.getAllDeclarations()) {
             String key = declaration.getProperty();
             String value = declaration.getExpression()
