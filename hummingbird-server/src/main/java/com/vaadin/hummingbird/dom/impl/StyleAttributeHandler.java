@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.dom.impl;
 
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import com.helger.css.ECSSVersion;
@@ -55,28 +56,43 @@ public class StyleAttributeHandler extends CustomAttribute {
     @Override
     public void setAttribute(Element element, String attributeValue) {
         Style style = element.getStyle();
+        style.clear();
+        parseStyles(attributeValue).forEach(style::set);
+    }
+
+    /**
+     * Parses the given style string and populates the given style object with
+     * the found styles.
+     *
+     * @param styleString
+     *            the string to parse
+     */
+    public static LinkedHashMap<String, String> parseStyles(
+            String styleString) {
         CollectingCSSParseErrorHandler errorCollector = new CollectingCSSParseErrorHandler();
         CSSDeclarationList parsed = CSSReaderDeclarationList.readFromString(
-                attributeValue, ECSSVersion.LATEST, errorCollector);
+                styleString, ECSSVersion.LATEST, errorCollector);
         if (errorCollector.hasParseErrors()) {
             throw new IllegalArgumentException(String
-                    .format(ERROR_PARSING_STYLE, attributeValue, errorCollector
+                    .format(ERROR_PARSING_STYLE, styleString, errorCollector
                             .getAllParseErrors().get(0).getErrorMessage()));
         }
         if (parsed == null) {
             // Did not find any styles
             throw new IllegalArgumentException(String.format(
-                    ERROR_PARSING_STYLE, attributeValue, "No styles found"));
+                    ERROR_PARSING_STYLE, styleString, "No styles found"));
         }
 
-        style.clear();
+        LinkedHashMap<String, String> parsedStyles = new LinkedHashMap<>();
         for (CSSDeclaration declaration : parsed.getAllDeclarations()) {
             String key = declaration.getProperty();
             String value = declaration.getExpression()
                     .getAsCSSString(new CSSWriterSettings(ECSSVersion.LATEST)
                             .setOptimizedOutput(true), 0);
-            style.set(StyleUtil.styleAttributeToProperty(key), value);
+            parsedStyles.put(StyleUtil.styleAttributeToProperty(key), value);
         }
+
+        return parsedStyles;
     }
 
     @Override
