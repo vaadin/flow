@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -46,10 +47,12 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
@@ -307,7 +310,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Element html = document.appendElement("html");
         Element head = html.appendElement("head");
 
-        setupDocumentHead(head, context);
+        JsonObject initialUidl = getInitialUidl(context.getUI());
+        setupDocumentHead(head, initialUidl, context);
         setupDocumentBody(document, context);
 
         document.outputSettings().prettyPrint(false);
@@ -323,7 +327,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         writer.close();
     }
 
-    private static void setupDocumentHead(Element head,
+    private static void setupDocumentHead(Element head, JsonObject initialUIDL,
             BootstrapContext context) {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
                 .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
@@ -343,6 +347,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (title.isPresent() && !title.get().isEmpty()) {
             head.appendElement("title").appendText(title.get());
         }
+
+        includeDependencies(head, initialUIDL, context);
 
         Element styles = head.appendElement("style").attr("type", "text/css");
         styles.appendText("html, body {height:100%;margin:0;}");
@@ -391,9 +397,40 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         if (context.getPreRenderMode().includeLiveVersion()) {
-            head.appendChild(getBootstrapScript(context));
+            head.appendChild(getBootstrapScript(initialUIDL, context));
             head.appendChild(getClientEngineScript(context));
         }
+
+    }
+
+    private static void includeDependencies(Element head,
+            JsonObject initialUIDL, BootstrapContext context) {
+        // Extract style sheets and load them eagerly
+        JsonArray dependencies = initialUIDL
+                .getArray(DependencyList.DEPENDENCY_KEY);
+        if (dependencies == null || dependencies.length() == 0) {
+            // No dependencies at all
+            return;
+        }
+
+        Predicate<? super JsonObject> includeStyleSheets = object -> DependencyList.TYPE_STYLESHEET
+                .equals(object.getString(DependencyList.KEY_TYPE));
+
+        com.vaadin.hummingbird.util.JsonUtil.objectStream(dependencies)
+                .filter(includeStyleSheets).forEach(stylesheet -> {
+                    Element link = head.appendElement("link");
+                    link.attr("rel", "stylesheet");
+                    link.attr("type", "text/css");
+                    String url = stylesheet.getString(DependencyList.KEY_URL);
+                    url = context.getUriResolver().resolveVaadinUri(url);
+                    link.attr("href", url);
+                });
+
+        // Remove from initial UIDL
+        JsonArray otherDependencies = com.vaadin.hummingbird.util.JsonUtil
+                .objectStream(dependencies).filter(includeStyleSheets.negate())
+                .collect(com.vaadin.hummingbird.util.JsonUtil.asArray());
+        initialUIDL.put(DependencyList.DEPENDENCY_KEY, otherDependencies);
 
     }
 
@@ -455,13 +492,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
     }
 
-    private static Element getBootstrapScript(BootstrapContext context) {
+    private static Element getBootstrapScript(JsonValue initialUIDL,
+            BootstrapContext context) {
         Element mainScript = new Element(Tag.valueOf("script"), "").attr("type",
                 TYPE_TEXT_JAVASCRIPT);
 
         StringBuilder builder = new StringBuilder();
         builder.append("//<![CDATA[\n");
-        builder.append(getBootstrapJS(context));
+        builder.append(getBootstrapJS(initialUIDL, context));
 
         builder.append("//]]>");
         mainScript.appendChild(
@@ -469,7 +507,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return mainScript;
     }
 
-    private static String getBootstrapJS(BootstrapContext context) {
+    private static String getBootstrapJS(JsonValue initialUIDL,
+            BootstrapContext context) {
         boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
         String result = getBootstrapJS();
@@ -479,8 +518,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (!productionMode) {
             indent = 4;
         }
-        JsonValue initialUIDL = getInitialUidl(context.getUI());
-
         String appConfigString = JsonUtil.stringify(appConfig, indent);
 
         String initialUIDLString = JsonUtil.stringify(initialUIDL, indent);

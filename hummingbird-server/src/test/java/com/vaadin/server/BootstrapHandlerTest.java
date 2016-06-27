@@ -12,10 +12,13 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Title;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.TextNode;
+import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.server.BootstrapHandler.PreRenderMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -28,6 +31,9 @@ public class BootstrapHandlerTest {
     static final String UI_TITLE = "UI_TITLE";
 
     @Title(UI_TITLE)
+    @StyleSheet("relative.css")
+    @StyleSheet("context://context.css")
+    @JavaScript("myjavascript.js")
     private class TestUI extends UI {
 
         @Override
@@ -48,6 +54,7 @@ public class BootstrapHandlerTest {
 
     @Before
     public void setup() {
+        BootstrapHandler.clientEngineFile = "foobar";
         ui = new TestUI();
 
         deploymentConfiguration = new MockDeploymentConfiguration();
@@ -149,13 +156,62 @@ public class BootstrapHandlerTest {
     @Test
     public void withourPrerenderDoesNotContainHtml() throws Exception {
         initUI(createVaadinRequest(PreRenderMode.LIVE_ONLY));
-        BootstrapHandler.clientEngineFile = "foobar";
         // Actual test
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, ui));
         Element body = page.body();
         Assert.assertEquals(1, body.children().size());
         Assert.assertEquals("noscript", body.children().get(0).tagName());
+    }
+
+    @Test
+    public void prerenderContainsStyleSheets() throws Exception {
+        initUI(createVaadinRequest(PreRenderMode.PRE_ONLY));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, ui));
+        Element head = page.head();
+
+        Elements relativeCssLinks = head.getElementsByAttributeValue("href",
+                "relative.css");
+        Assert.assertEquals(1, relativeCssLinks.size());
+        Element relativeLinkElement = relativeCssLinks.get(0);
+        Assert.assertEquals("link", relativeLinkElement.tagName());
+        Assert.assertEquals("text/css", relativeLinkElement.attr("type"));
+
+        Elements contextCssLinks = head.getElementsByAttributeValue("href",
+                "./context.css");
+        Assert.assertEquals(1, contextCssLinks.size());
+        Element contextLinkElement = contextCssLinks.get(0);
+        Assert.assertEquals("link", contextLinkElement.tagName());
+        Assert.assertEquals("text/css", contextLinkElement.attr("type"));
+    }
+
+    @Test
+    public void styleSheetsNotInUidl() throws Exception {
+        initUI(createVaadinRequest(null));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, ui));
+
+        Element uidlScriptTag = null;
+        for (Element scriptTag : page.head().getElementsByTag("script")) {
+            if (scriptTag.hasAttr("src")) {
+                continue;
+            }
+
+            uidlScriptTag = scriptTag;
+
+            break;
+        }
+        Assert.assertNotNull(uidlScriptTag);
+
+        String uidlData = uidlScriptTag.data();
+        Assert.assertTrue(uidlData.contains("var uidl ="));
+        Assert.assertTrue(uidlData.contains("myjavascript.js"));
+        Assert.assertFalse(uidlData.contains("context.css"));
+        Assert.assertFalse(uidlData.contains("relative.css"));
+
     }
 
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {
