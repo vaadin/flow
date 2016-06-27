@@ -1397,6 +1397,12 @@ public class ElementTest {
         e.getStyle().set("   color", "red");
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void setStyleNameColon() {
+        Element e = ElementFactory.createDiv();
+        e.getStyle().set("color:", "red");
+    }
+
     @Test
     public void setStyleValueExtraWhitespace() {
         Element e = ElementFactory.createDiv();
@@ -1838,7 +1844,7 @@ public class ElementTest {
         Assert.assertTrue(res.isPresent());
         res = null;
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -1865,7 +1871,7 @@ public class ElementTest {
         Assert.assertTrue(res.isPresent());
         res = null;
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -1906,7 +1912,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -1938,7 +1944,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -1961,7 +1967,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -1985,7 +1991,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -2016,7 +2022,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -2042,7 +2048,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -2071,7 +2077,7 @@ public class ElementTest {
         element.setAttribute("foo", resource);
         String attribute = element.getAttribute("foo");
 
-        WeakReference<StreamResource> ref = new WeakReference<StreamResource>(
+        WeakReference<StreamResource> ref = new WeakReference<>(
                 resource);
         resource = null;
 
@@ -2487,7 +2493,7 @@ public class ElementTest {
         div.setAttribute("pin", "");
 
         Assert.assertEquals(
-                "<div pin=\"\" foo=\"bar\" style=\"width:20px\" class=\"cls\"></div>",
+                "<div pin foo=\"bar\" style=\"width:20px\" class=\"cls\"></div>",
                 div.getOuterHTML());
     }
 

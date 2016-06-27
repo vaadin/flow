@@ -19,9 +19,9 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
+import com.vaadin.external.jsoup.nodes.Document;
+import com.vaadin.external.jsoup.nodes.Node;
+import com.vaadin.external.jsoup.nodes.TextNode;
 
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
@@ -105,15 +105,21 @@ public class ElementUtil {
         }
 
         if (name.startsWith(" ") || name.endsWith(" ")) {
-            return "A style property name cannot start or end in whitespace";
+            return String.format(
+                    "Invalid style property name '%s': a style property name cannot start or end in whitespace",
+                    name);
         }
 
         if (name.contains(":")) {
-            return "A style property name cannot contain colons";
+            return String.format(
+                    "Invalid style property name '%s': a style property name cannot contain colons",
+                    name);
         }
 
         if (name.contains("-")) {
-            return "A style property name cannot contain dashes. Use the camelCase style property name.";
+            return String.format(
+                    "Invalid style property name '%s': a style property name cannot contain dashes. Use the camelCase property name",
+                    name);
         }
 
         return null;
@@ -231,14 +237,19 @@ public class ElementUtil {
             return new TextNode(element.getText(), document.baseUri());
         }
 
-        org.jsoup.nodes.Element target = document
+        com.vaadin.external.jsoup.nodes.Element target = document
                 .createElement(element.getTag());
         if (element.hasProperty("innerHTML")) {
             target.html((String) element.getPropertyRaw("innerHTML"));
         }
 
         element.getAttributeNames().forEach(name -> {
-            target.attr(name, element.getAttribute(name));
+            String attributeValue = element.getAttribute(name);
+            if ("".equals(attributeValue)) {
+                target.attr(name, true);
+            } else {
+                target.attr(name, attributeValue);
+            }
         });
 
         element.getChildren()

@@ -17,10 +17,8 @@ package com.vaadin.hummingbird.template.model;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,6 +67,21 @@ public class TemplateModelProxyHandler implements Serializable {
          */
         // $ in the name to minimize collision risk
         void $stateNode(StateNode node);
+
+        /**
+         * Gets the model type definition for this type.
+         *
+         * @return the model type, not <code>null</code>
+         */
+        BeanModelType<?> $modelType();
+
+        /**
+         * Sets the model type for this instance.
+         *
+         * @param type
+         *            the model type, not <code>null</code>
+         */
+        void $modelType(BeanModelType<?> type);
     }
 
     /**
@@ -81,7 +94,8 @@ public class TemplateModelProxyHandler implements Serializable {
                 return true;
             } else if (obj instanceof InterfaceProxy) {
                 InterfaceProxy that = (InterfaceProxy) obj;
-                return $stateNode().equals(that.$stateNode());
+                return $stateNode().equals(that.$stateNode())
+                        && $modelType().equals(that.$modelType());
             } else {
                 return false;
             }
@@ -95,11 +109,11 @@ public class TemplateModelProxyHandler implements Serializable {
 
         @Override
         public int hashCode() {
-            return $stateNode().hashCode();
+            return Objects.hash($stateNode(), $modelType());
         }
     }
 
-    private static final ReflectionCache<Object, Function<StateNode, Object>> proxyConstructors = new ReflectionCache<>(
+    private static final ReflectionCache<Object, BiFunction<StateNode, BeanModelType<?>, Object>> proxyConstructors = new ReflectionCache<>(
             TemplateModelProxyHandler::createProxyConstructor);
 
     private static final TemplateModelProxyHandler proxyHandler = new TemplateModelProxyHandler();
@@ -129,37 +143,30 @@ public class TemplateModelProxyHandler implements Serializable {
     @SuppressWarnings("static-method")
     public Object intercept(@This Object target, @Origin Method method,
             @AllArguments Object[] args) {
-        StateNode stateNode = getStateNodeForProxy(target);
+        String propertyName = ReflectTools.getPropertyName(method);
+
+        BeanModelType<?> modelType = getModelTypeForProxy(target);
+
+        if (!modelType.hasProperty(propertyName)) {
+            throw new InvalidTemplateModelException(
+                    modelType.getProxyType().getName()
+                            + " has no property named " + propertyName
+                            + " (or it has been excluded)");
+        }
+
+        ModelType propertyType = modelType.getPropertyType(propertyName);
+        ModelMap modelMap = ModelMap.get(getStateNodeForProxy(target));
 
         if (ReflectTools.isGetter(method)) {
-            return handleGetter(stateNode, method);
+            return handleGetter(modelMap, propertyName, propertyType);
         } else if (ReflectTools.isSetter(method)) {
-            handleSetter(stateNode, method, args[0]);
+            Object value = args[0];
+            handleSetter(modelMap, propertyName, propertyType, value);
             return null;
         }
 
         throw new InvalidTemplateModelException(
                 getUnsupportedMethodMessage(method, args));
-    }
-
-    /**
-     * Creates a proxy object for the given {@link TemplateModel} type for the
-     * given template state node.
-     *
-     * @param stateNode
-     *            the template's state node, not <code>null</code>
-     * @param modelType
-     *            the type of the template's model, not <code>null</code>
-     * @return a proxy object, not <code>null</code>
-     */
-    public static <T extends TemplateModel> T createTemplateModelProxy(
-            StateNode stateNode, Class<T> modelType) {
-        assert stateNode != null;
-        assert modelType != null;
-
-        TemplateModelUtil.populateProperties(ModelMap.get(stateNode),
-                modelType);
-        return createModelProxy(stateNode, modelType);
     }
 
     /**
@@ -173,14 +180,19 @@ public class TemplateModelProxyHandler implements Serializable {
      * @return a proxy object, not <code>null</code>
      */
     public static <T> T createModelProxy(StateNode stateNode,
-            Class<T> modelType) {
+            BeanModelType<T> modelType) {
         assert stateNode != null;
         assert modelType != null;
-        return modelType
-                .cast(proxyConstructors.get(modelType).apply(stateNode));
+
+        Class<T> proxyType = modelType.getProxyType();
+
+        Object proxy = proxyConstructors.get(proxyType).apply(stateNode,
+                modelType);
+
+        return proxyType.cast(proxy);
     }
 
-    private static Function<StateNode, Object> createProxyConstructor(
+    private static BiFunction<StateNode, BeanModelType<?>, Object> createProxyConstructor(
             Class<?> type) {
         if (type.isInterface()) {
             return createInterfaceConstructor(type);
@@ -189,7 +201,7 @@ public class TemplateModelProxyHandler implements Serializable {
         }
     }
 
-    private static Function<StateNode, Object> createInterfaceConstructor(
+    private static BiFunction<StateNode, BeanModelType<?>, Object> createInterfaceConstructor(
             Class<?> modelType) {
         Builder<InterfaceProxy> builder = new ByteBuddy()
                 .subclass(InterfaceProxy.class).implement(modelType);
@@ -197,7 +209,7 @@ public class TemplateModelProxyHandler implements Serializable {
         return createProxyConstructor(modelType.getClassLoader(), builder);
     }
 
-    private static Function<StateNode, Object> createClassConstructor(
+    private static BiFunction<StateNode, BeanModelType<?>, Object> createClassConstructor(
             Class<?> modelType) {
         Builder<?> builder = new ByteBuddy().subclass(modelType)
                 .implement(ModelProxy.class);
@@ -205,7 +217,7 @@ public class TemplateModelProxyHandler implements Serializable {
         return createProxyConstructor(modelType.getClassLoader(), builder);
     }
 
-    private static Function<StateNode, Object> createProxyConstructor(
+    private static BiFunction<StateNode, BeanModelType<?>, Object> createProxyConstructor(
             ClassLoader classLoader, Builder<?> proxyBuilder) {
         Class<?> proxyType = proxyBuilder
 
@@ -218,13 +230,20 @@ public class TemplateModelProxyHandler implements Serializable {
                 .method(method -> "$stateNode".equals(method.getName()))
                 .intercept(FieldAccessor.ofField("$stateNode"))
 
+                // Handle internal $modelType methods
+                .defineField("$modelType", BeanModelType.class)
+                .method(method -> "$modelType".equals(method.getName()))
+                .intercept(FieldAccessor.ofField("$modelType"))
+
                 // Create the class
                 .make().load(classLoader, ClassLoadingStrategy.Default.WRAPPER)
                 .getLoaded();
 
-        return node -> {
+        return (node, modelType) -> {
             Object instance = ReflectTools.createInstance(proxyType);
-            ((ModelProxy) instance).$stateNode(node);
+            ModelProxy modelProxy = (ModelProxy) instance;
+            modelProxy.$stateNode(node);
+            modelProxy.$modelType(modelType);
             return instance;
         };
     }
@@ -256,39 +275,19 @@ public class TemplateModelProxyHandler implements Serializable {
                                 .collect(Collectors.joining(", ")));
     }
 
-    private static Object handleGetter(StateNode stateNode, Method method) {
-        ModelMap modelMap = ModelMap.get(stateNode);
-        String propertyName = ReflectTools.getPropertyName(method);
-        Type returnType = method.getGenericReturnType();
+    private static Object handleGetter(ModelMap modelMap, String propertyName,
+            ModelType propertyType) {
+        Serializable modelValue = modelMap.getValue(propertyName);
 
-        return TemplateModelUtil.getModelValue(modelMap, propertyName,
-                returnType);
+        return propertyType.modelToApplication(modelValue);
     }
 
-    private static void handleSetter(StateNode stateNode, Method method,
-            Object value) {
-        ModelMap modelMap = ModelMap.get(stateNode);
-        String propertyName = ReflectTools.getPropertyName(method);
-        Type declaredValueType = method.getGenericParameterTypes()[0];
+    private static void handleSetter(ModelMap modelMap, String propertyName,
+            ModelType propertyType, Object value) {
+        Serializable modelValue = propertyType.applicationToModel(value,
+                PropertyFilter.ACCEPT_ALL);
 
-        if (TemplateModelUtil.isBean(declaredValueType)) {
-            // Can't use setModelValue for beans as it will prefix the property
-            // name for the filter
-            Predicate<String> filter = TemplateModelUtil
-                    .getFilterFromIncludeExclude(method);
-            TemplateModelUtil.importBean(stateNode, propertyName,
-                    (Class<?>) declaredValueType, value, "", filter);
-        } else if (TemplateModelUtil.isBeansList(declaredValueType)) {
-            Predicate<String> filter = TemplateModelUtil
-                    .getFilterFromIncludeExclude(method);
-            Class<?> itemType = TemplateModelUtil
-                    .getBeansListItemType(declaredValueType);
-            TemplateModelUtil.importBeans(stateNode, propertyName,
-                    (List<?>) value, (Class<?>) itemType, filter);
-        } else {
-            TemplateModelUtil.setModelValue(modelMap, propertyName,
-                    declaredValueType, value, "", string -> true);
-        }
+        modelMap.setValue(propertyName, modelValue);
     }
 
     /**
@@ -299,12 +298,26 @@ public class TemplateModelProxyHandler implements Serializable {
      * @return the state node of the proxy
      */
     public static StateNode getStateNodeForProxy(Object proxy) {
-        if (isProxy(proxy)) {
-            ModelProxy model = (ModelProxy) proxy;
-            return model.$stateNode();
-        } else {
+        return assertIsProxy(proxy).$stateNode();
+    }
+
+    /**
+     * Gets the model type that a proxy instance is bound to.
+     *
+     * @param proxy
+     *            the template model proxy
+     * @return the model type of the proxy
+     */
+    public static BeanModelType<?> getModelTypeForProxy(Object proxy) {
+        return assertIsProxy(proxy).$modelType();
+    }
+
+    private static ModelProxy assertIsProxy(Object maybeProxy) {
+        if (!isProxy(maybeProxy)) {
             throw new IllegalArgumentException(
-                    "Proxy is not a proper template model proxy");
+                    maybeProxy + " is not a template model proxy");
+        } else {
+            return (ModelProxy) maybeProxy;
         }
     }
 

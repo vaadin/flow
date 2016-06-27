@@ -25,8 +25,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.jsoup.nodes.Node;
-import org.jsoup.nodes.TextNode;
+import com.vaadin.external.jsoup.nodes.Node;
+import com.vaadin.external.jsoup.nodes.TextNode;
 
 import com.vaadin.hummingbird.template.ChildSlotBuilder;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;

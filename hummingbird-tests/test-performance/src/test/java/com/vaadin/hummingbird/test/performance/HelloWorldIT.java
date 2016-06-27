@@ -3,6 +3,7 @@ package com.vaadin.hummingbird.test.performance;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
@@ -89,7 +90,7 @@ public class HelloWorldIT extends AbstractTestBenchTest {
 
         LocalTime start = LocalTime.now();
         open();
-        AtomicReference<WebElement> buttonHolder = new AtomicReference<WebElement>(
+        AtomicReference<WebElement> buttonHolder = new AtomicReference<>(
                 null);
         waitUntil(new ExpectedCondition<Boolean>() {
             @Override
@@ -152,7 +153,7 @@ public class HelloWorldIT extends AbstractTestBenchTest {
         // Waiting for https://github.com/ariya/phantomjs/pull/12703 to be
         // merged...
         try {
-            String ip = Inet4Address.getLocalHost().getHostAddress();
+            String ip = InetAddress.getLocalHost().getHostAddress();
             return "http://" + ip + ":" + SERVER_PORT;
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);

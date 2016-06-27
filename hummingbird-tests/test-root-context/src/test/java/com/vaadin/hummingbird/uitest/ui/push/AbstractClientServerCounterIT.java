@@ -32,7 +32,7 @@ public abstract class AbstractClientServerCounterIT extends PhantomJSTest {
 
     public static int getClientCounter(TestBenchTestCase t) {
         WebElement clientCounterElem = t
-                .findElement(By.id(BasicPushUI.CLIENT_COUNTER_ID));
+                .findElement(By.id(ClientServerCounterUI.CLIENT_COUNTER_ID));
         return Integer.parseInt(clientCounterElem.getText());
     }
 
@@ -46,20 +46,20 @@ public abstract class AbstractClientServerCounterIT extends PhantomJSTest {
 
     public static int getServerCounter(TestBenchTestCase t) {
         WebElement serverCounterElem = t
-                .findElement(By.id(BasicPushUI.SERVER_COUNTER_ID));
+                .findElement(By.id(ClientServerCounterUI.SERVER_COUNTER_ID));
         return Integer.parseInt(serverCounterElem.getText());
     }
 
     public static WebElement getServerCounterStartButton(TestBenchTestCase t) {
-        return t.findElement(By.id(BasicPushUI.START_TIMER_ID));
+        return t.findElement(By.id(ClientServerCounterUI.START_TIMER_ID));
     }
 
     public static WebElement getServerCounterStopButton(TestBenchTestCase t) {
-        return t.findElement(By.id(BasicPushUI.STOP_TIMER_ID));
+        return t.findElement(By.id(ClientServerCounterUI.STOP_TIMER_ID));
     }
 
     public static WebElement getIncrementButton(TestBenchTestCase t) {
-        return t.findElement(By.id(BasicPushUI.INCREMENT_BUTTON_ID));
+        return t.findElement(By.id(ClientServerCounterUI.INCREMENT_BUTTON_ID));
     }
 
     protected void waitUntilClientCounterChanges(final int expectedValue) {
