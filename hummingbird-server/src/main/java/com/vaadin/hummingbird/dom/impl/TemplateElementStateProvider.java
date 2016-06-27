@@ -380,8 +380,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     @Override
     public Style getStyle(StateNode node) {
-        // Should eventually be based on [style.foo]=bar in the template
-        return new ImmutableEmptyStyle();
+        return new BoundStyle(templateNode, node);
     }
 
     @Override
