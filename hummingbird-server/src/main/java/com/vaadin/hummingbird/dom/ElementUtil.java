@@ -105,15 +105,21 @@ public class ElementUtil {
         }
 
         if (name.startsWith(" ") || name.endsWith(" ")) {
-            return "A style property name cannot start or end in whitespace";
+            return String.format(
+                    "Invalid style property name '%s': a style property name cannot start or end in whitespace",
+                    name);
         }
 
         if (name.contains(":")) {
-            return "A style property name cannot contain colons";
+            return String.format(
+                    "Invalid style property name '%s': a style property name cannot contain colons",
+                    name);
         }
 
         if (name.contains("-")) {
-            return "A style property name cannot contain dashes. Use the camelCase style property name.";
+            return String.format(
+                    "Invalid style property name '%s': a style property name cannot contain dashes. Use the camelCase property name",
+                    name);
         }
 
         return null;
