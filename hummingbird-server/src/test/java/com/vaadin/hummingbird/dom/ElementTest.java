@@ -1306,6 +1306,15 @@ public class ElementTest {
     }
 
     @Test
+    public void setStyleAttributeMultipleTimes() {
+        Element e = ElementFactory.createDiv();
+        e.setAttribute("style", "width:12em");
+        e.setAttribute("style", "height:12em");
+        Assert.assertEquals("height:12em", e.getAttribute("style"));
+
+    }
+
+    @Test
     public void setMultipleStylesAsAttribute() {
         Element e = ElementFactory.createDiv();
         String style = "width:12em;height:2em";
@@ -1844,8 +1853,7 @@ public class ElementTest {
         Assert.assertTrue(res.isPresent());
         res = null;
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         ui.getElement().setAttribute("foo", "bar");
@@ -1871,8 +1879,7 @@ public class ElementTest {
         Assert.assertTrue(res.isPresent());
         res = null;
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         ui.getElement().removeAttribute("foo");
@@ -1912,8 +1919,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         String resName = "resource2";
@@ -1944,8 +1950,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         element.setAttribute("foo", "bar");
@@ -1967,8 +1972,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         element.removeAttribute("foo");
@@ -1991,8 +1995,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         ui.getElement().appendChild(element);
@@ -2022,8 +2025,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         ui.getElement().appendChild(element);
@@ -2048,8 +2050,7 @@ public class ElementTest {
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", resource);
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         ui.getElement().appendChild(element);
@@ -2077,8 +2078,7 @@ public class ElementTest {
         element.setAttribute("foo", resource);
         String attribute = element.getAttribute("foo");
 
-        WeakReference<StreamResource> ref = new WeakReference<>(
-                resource);
+        WeakReference<StreamResource> ref = new WeakReference<>(resource);
         resource = null;
 
         URI uri = new URI(attribute);
