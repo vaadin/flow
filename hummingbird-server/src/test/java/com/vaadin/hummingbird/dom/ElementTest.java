@@ -1397,6 +1397,12 @@ public class ElementTest {
         e.getStyle().set("   color", "red");
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void setStyleNameColon() {
+        Element e = ElementFactory.createDiv();
+        e.getStyle().set("color:", "red");
+    }
+
     @Test
     public void setStyleValueExtraWhitespace() {
         Element e = ElementFactory.createDiv();
