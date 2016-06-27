@@ -294,4 +294,20 @@ public class TemplateParserTest {
         parse("<button (click='handle($event)'>");
     }
 
+    @Test
+    public void parseMixedCaseAttributeStyle() {
+        ElementTemplateNode node = (ElementTemplateNode) parse(
+                "<button someTag='value'>");
+        Assert.assertEquals(1, node.getAttributeNames().count());
+        Assert.assertEquals("sometag",
+                node.getAttributeNames().findFirst().get());
+        Assert.assertEquals(0, node.getPropertyNames().count());
+        Assert.assertEquals(0, node.getClassNames().count());
+
+        Optional<BindingValueProvider> binding = node
+                .getAttributeBinding("sometag");
+        Assert.assertTrue(binding.isPresent());
+        Assert.assertEquals("value", binding.get().getValue(null));
+    }
+
 }

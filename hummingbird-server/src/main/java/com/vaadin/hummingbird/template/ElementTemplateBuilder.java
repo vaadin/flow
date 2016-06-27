@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -88,7 +89,9 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
      * Adds an attribute binding to this builder.
      *
      * @param name
-     *            the name of the attribute, not <code>null</code>
+     *            the name of the attribute, not <code>null</code>. Will be
+     *            automatically converted to lower case to make attributes case
+     *            insensitive.
      * @param binding
      *            the binding that will provide the attribute value, not
      *            <code>null</code>
@@ -101,7 +104,7 @@ public class ElementTemplateBuilder implements TemplateNodeBuilder {
         assert !attributes.containsKey(
                 name) : "There is already an attribute named " + name;
 
-        attributes.put(name, binding);
+        attributes.put(name.toLowerCase(Locale.ENGLISH), binding);
         return this;
     }
 
