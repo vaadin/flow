@@ -25,7 +25,7 @@ public class UmlautÅäöView extends Template implements View {
 
     public UmlautÅäöView() {
         super(new ByteArrayInputStream(
-                "<div id='content'>Umlaut view: åäöü</div>"
+                "<div id='content'>Umlaut view: åäöü. a\u00adb</div>"
                         .getBytes(StandardCharsets.UTF_8)));
 
     }
