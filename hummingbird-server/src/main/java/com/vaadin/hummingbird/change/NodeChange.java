@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.change;
 
 import java.io.Serializable;
 
+import com.vaadin.hummingbird.ConstantPool;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.shared.JsonConstants;
 
@@ -54,14 +55,18 @@ public abstract class NodeChange implements Serializable {
     /**
      * Serializes this change to JSON.
      *
+     * @param constantPool
+     *            the constant pool to use for serializing constant pool
+     *            references
+     *
      * @return a json representation of this change
      */
-    public JsonObject toJson() {
+    public JsonObject toJson(ConstantPool constantPool) {
         JsonObject json = Json.createObject();
 
         json.put(JsonConstants.CHANGE_NODE, node.getId());
 
-        populateJson(json);
+        populateJson(json, constantPool);
 
         return json;
     }
@@ -71,6 +76,10 @@ public abstract class NodeChange implements Serializable {
      *
      * @param json
      *            the json object to populate
+     * @param constantPool
+     *            the constant pool to use for serializing constant pool
+     *            references
      */
-    protected abstract void populateJson(JsonObject json);
+    protected abstract void populateJson(JsonObject json,
+            ConstantPool constantPool);
 }

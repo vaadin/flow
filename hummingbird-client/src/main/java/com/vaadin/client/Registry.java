@@ -25,6 +25,7 @@ import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
+import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.ExecuteJavaScriptProcessor;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsCollections;
@@ -269,5 +270,14 @@ public class Registry {
      */
     public ResourceLoader getResourceLoader() {
         return get(ResourceLoader.class);
+    }
+
+    /**
+     * Gets the {@link ConstantPool} singleton.
+     * 
+     * @return the {@link ConstantPool} singleton
+     */
+    public ConstantPool getConstantPool() {
+        return get(ConstantPool.class);
     }
 }
