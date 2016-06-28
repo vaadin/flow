@@ -16,6 +16,7 @@
 
 package com.vaadin.hummingbird.change;
 
+import com.vaadin.hummingbird.ConstantPool;
 import com.vaadin.hummingbird.nodefeature.NodeMap;
 import com.vaadin.shared.JsonConstants;
 
@@ -54,12 +55,12 @@ public class MapRemoveChange extends NodeFeatureChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json) {
+    protected void populateJson(JsonObject json, ConstantPool constantPool) {
         // Set the type before calling super to make the keys appear in a more
         // logical order
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_REMOVE);
 
-        super.populateJson(json);
+        super.populateJson(json, constantPool);
 
         json.put(JsonConstants.CHANGE_MAP_KEY, key);
     }

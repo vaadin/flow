@@ -19,6 +19,7 @@ package com.vaadin.hummingbird.change;
 import java.util.List;
 import java.util.function.Function;
 
+import com.vaadin.hummingbird.ConstantPool;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.NodeList;
@@ -98,10 +99,10 @@ public class ListSpliceChange extends NodeFeatureChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json) {
+    protected void populateJson(JsonObject json, ConstantPool constantPool) {
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_SPLICE);
 
-        super.populateJson(json);
+        super.populateJson(json, constantPool);
 
         json.put(JsonConstants.CHANGE_SPLICE_INDEX, index);
         if (removeCount > 0) {
@@ -117,7 +118,8 @@ public class ListSpliceChange extends NodeFeatureChange {
                 mapper = item -> Json.create(((StateNode) item).getId());
             } else {
                 addKey = JsonConstants.CHANGE_SPLICE_ADD;
-                mapper = JsonCodec::encodeWithoutTypeInfo;
+                mapper = item -> JsonCodec.encodeWithConstantPool(item,
+                        constantPool);
             }
 
             JsonArray newItemsJson = newItems.stream().map(mapper)

@@ -40,7 +40,7 @@ public class MapPutChangeTest {
     public void testJson() {
         MapPutChange change = new MapPutChange(feature, "some", "string");
 
-        JsonObject json = change.toJson();
+        JsonObject json = change.toJson(null);
 
         Assert.assertEquals(change.getNode().getId(),
                 (int) json.getNumber(JsonConstants.CHANGE_NODE));
@@ -79,7 +79,7 @@ public class MapPutChangeTest {
         StateNode value = StateNodeTest.createEmptyNode("value");
         MapPutChange change = new MapPutChange(feature, "myKey", value);
 
-        JsonObject json = change.toJson();
+        JsonObject json = change.toJson(null);
         Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_PUT_VALUE));
 
         JsonValue nodeValue = json.get(JsonConstants.CHANGE_PUT_NODE_VALUE);
@@ -89,7 +89,7 @@ public class MapPutChangeTest {
 
     private JsonValue getValue(Object input) {
         MapPutChange change = new MapPutChange(feature, "myKey", input);
-        JsonObject json = change.toJson();
+        JsonObject json = change.toJson(null);
         return json.get(JsonConstants.CHANGE_PUT_VALUE);
     }
 
