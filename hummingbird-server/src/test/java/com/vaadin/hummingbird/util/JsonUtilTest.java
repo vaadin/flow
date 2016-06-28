@@ -114,6 +114,28 @@ public class JsonUtilTest {
     }
 
     @Test
+    public void collectEmptyStream() {
+        Stream<JsonValue> jsonValueStream = Stream.empty();
+        JsonArray a = jsonValueStream.collect(JsonUtil.asArray());
+        Assert.assertEquals(0, a.length());
+    }
+
+    @Test(expected = AssertionError.class)
+    public void createObjectStreamForNull() {
+        JsonUtil.objectStream(null);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void createNumberStreamForNull() {
+        JsonUtil.numberStream(null);
+    }
+
+    @Test(expected = AssertionError.class)
+    public void createStreamForNull() {
+        JsonUtil.stream(null);
+    }
+
+    @Test
     public void testStream() {
         JsonArray array = createTestArray1();
         List<JsonValue> list = JsonUtil.stream(array)
