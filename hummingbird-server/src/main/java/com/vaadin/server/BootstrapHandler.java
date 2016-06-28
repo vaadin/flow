@@ -30,15 +30,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.Viewport;
+import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.external.jsoup.nodes.DataNode;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;
 import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.parser.Tag;
-
-import com.vaadin.annotations.AnnotationReader;
-import com.vaadin.annotations.Viewport;
-import com.vaadin.annotations.ViewportGeneratorClass;
+import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -62,6 +63,8 @@ import elemental.json.impl.JsonUtil;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
+    static final String PRE_RENDER_INFO_TEXT = "This is only a pre-rendered version. Remove ?prerender=only to see the full version";
+
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "hummingbird.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -78,7 +81,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "/client.nocache.js";
 
     private static String bootstrapJS;
-    private static String clientEngineFile;
+    static String clientEngineFile;
 
     private static Pattern scriptEndTagPattern = Pattern.compile("</(script)",
             Pattern.CASE_INSENSITIVE);
@@ -200,6 +203,62 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             return uriResolver;
         }
+
+        /**
+         * Gets the pre-rendering mode.
+         * <p>
+         * The pre-rendering mode can be "pre-render only", "pre-render and
+         * live" or "live only" and is only meant for testing.
+         *
+         * @return the mode to use for pre-rendering
+         */
+        public PreRenderMode getPreRenderMode() {
+            String preParam = request.getParameter("prerender");
+            if (preParam != null) {
+                if ("only".equals(preParam)) {
+                    return PreRenderMode.PRE_ONLY;
+                } else if ("no".equals(preParam)) {
+                    return PreRenderMode.LIVE_ONLY;
+                }
+            }
+            return PreRenderMode.PRE_AND_LIVE;
+        }
+
+        /**
+         * Checks if the application is running in production mode.
+         *
+         * @return <code>true</code> if in production mode, <code>false</code>
+         *         otherwise.
+         */
+        public boolean isProductionMode() {
+            return request.getService().getDeploymentConfiguration()
+                    .isProductionMode();
+        }
+
+    }
+
+    enum PreRenderMode {
+        PRE_AND_LIVE, PRE_ONLY, LIVE_ONLY;
+
+        /**
+         * Checks if a live version of the application should be rendered.
+         *
+         * @return <code>true</code> if a live version should be rendered,
+         *         <code>false</code> otherwise
+         */
+        public boolean includeLiveVersion() {
+            return this == PRE_AND_LIVE || this == LIVE_ONLY;
+        }
+
+        /**
+         * Checks if a pre-render version of the application should be included.
+         *
+         * @return <code>true</code> if a pre-render version should be included,
+         *         <code>false</code> otherwise
+         */
+        public boolean includePreRenderVersion() {
+            return this == PRE_AND_LIVE || this == PRE_ONLY;
+        }
     }
 
     private static class BootstrapUriResolver extends VaadinUriResolver {
@@ -230,28 +289,29 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         BootstrapContext context = new BootstrapContext(request, response,
                 session, ui);
 
-        String html = getBootstrapPageHtml(context);
-
         ServletHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
 
-        writeBootstrapPage(response, html);
+        Document document = getBootstrapPage(context);
+        writeBootstrapPage(response, document.outerHtml());
 
         return true;
     }
 
-    private static String getBootstrapPageHtml(BootstrapContext context)
+    static Document getBootstrapPage(BootstrapContext context)
             throws IOException {
-        VaadinRequest request = context.getRequest();
+        Document document = new Document("");
+        DocumentType doctype = new DocumentType("html", "", "",
+                document.baseUri());
+        document.appendChild(doctype);
+        Element html = document.appendElement("html");
+        Element head = html.appendElement("head");
 
-        Document document = Document.createShell("");
-        BootstrapPageResponse pageResponse = new BootstrapPageResponse(request,
-                context.getSession(), context.getUI(), document);
+        setupDocumentHead(head, context);
+        setupDocumentBody(document, context);
 
-        setupDocumentHead(context, pageResponse);
-        setupDocumentBody(pageResponse);
-
-        return document.outerHtml();
+        document.outputSettings().prettyPrint(false);
+        return document;
     }
 
     private static void writeBootstrapPage(VaadinResponse response, String html)
@@ -263,15 +323,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         writer.close();
     }
 
-    private static void setupDocumentHead(BootstrapContext context,
-            BootstrapPageResponse response) {
-        Document document = response.getDocument();
-
-        DocumentType doctype = new DocumentType("html", "", "",
-                document.baseUri());
-        document.child(0).before(doctype);
-
-        Element head = document.head();
+    private static void setupDocumentHead(Element head,
+            BootstrapContext context) {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
                 .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
@@ -313,6 +366,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "right: 1em;" //
                 + "border: 1px solid black;" //
                 + "padding: 1em;" //
+                + "z-index: 10000;" //
                 + "}");
 
         if (context.getSession().getBrowser().isPhantomJS()) {
@@ -336,15 +390,45 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendChild(getPushScript(context));
         }
 
-        head.appendChild(getBootstrapScript(context));
+        if (context.getPreRenderMode().includeLiveVersion()) {
+            head.appendChild(getBootstrapScript(context));
+            head.appendChild(getClientEngineScript(context));
+        }
 
-        head.appendChild(getClientEngineScript(context));
     }
 
-    private static void setupDocumentBody(BootstrapPageResponse response) {
-        Element body = response.getDocument().body();
-        body.attr("scroll", "auto");
-        body.addClass(ApplicationConstants.GENERATED_BODY_CLASSNAME);
+    private static void setupDocumentBody(Document document,
+            BootstrapContext context) {
+        Element body;
+        if (!context.getPreRenderMode().includePreRenderVersion()) {
+            body = document.appendElement("body");
+        } else {
+            com.vaadin.hummingbird.dom.Element uiElement = context.getUI()
+                    .getElement();
+
+            Node prerenderedUIElement = ElementUtil.toJsoup(document,
+                    uiElement);
+            assert prerenderedUIElement instanceof Element;
+            assert "body".equals(((Element) prerenderedUIElement).tagName());
+
+            document.appendChild(prerenderedUIElement);
+            body = document.body();
+            assert body == prerenderedUIElement;
+
+            // Mark body and children so we know what to remove when
+            // transitioning to the live version
+            body.attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true);
+            body.children().forEach(element -> element
+                    .attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true));
+        }
+
+        if (context.getPreRenderMode() == PreRenderMode.PRE_ONLY
+                && !context.isProductionMode()) {
+            Element preOnlyInfo = body.appendElement("div");
+            preOnlyInfo.addClass("v-system-error");
+            preOnlyInfo.text(PRE_RENDER_INFO_TEXT);
+            preOnlyInfo.attr("onclick", "this.remove()");
+        }
 
         body.appendElement("noscript").append(
                 "You have to enable javascript in your browser to use this web site.");
