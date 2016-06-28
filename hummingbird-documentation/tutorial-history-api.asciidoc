@@ -1,3 +1,5 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
 = History API
 :toc:
 
@@ -34,13 +36,13 @@ https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy[same or
 
 ==== Handling user navigation
 
-You can set a handler for navigation events using the
+If you choose to not use the <<tutorial-routing#,Router>>, you can replace it by setting a handler for navigation events using the
 `history.setHistoryStateChangeHandler(HistoryStateChangeHandler)`. It will be
 notified when:
 
 * the user navigates back or forward using the browser buttons
 * the navigation was done programmatically from server-side java code or
-client-side javascript
+client-side JavaScript
 * the user clicks a link marked with the _routerlink_ attribute
 
 [source,java]
@@ -80,3 +82,7 @@ The _url_ used with `pushState` and `replaceState` must be for the
 https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy[same origin]
 as the current _url_; otherwise browser will throw an exception and the history
 is not updated.
+
+[NOTE]
+If you use the `pushState` or `replaceState`, the framework internal scroll position restoration
+on navigation won't work, as it uses the `history.state` to keep track of the scroll positions.

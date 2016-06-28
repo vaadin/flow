@@ -270,4 +270,13 @@ public class Registry {
     public ResourceLoader getResourceLoader() {
         return get(ResourceLoader.class);
     }
+
+    /**
+     * Gets the {@link ScrollPositionHandler} singleton.
+     *
+     * @return the {@link ScrollPositionHandler} singleton
+     */
+    public ScrollPositionHandler getScrollPositionHandler() {
+        return get(ScrollPositionHandler.class);
+    }
 }
