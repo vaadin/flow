@@ -158,6 +158,11 @@ public class NodeFeatures {
      */
     public static final String ROOT_TEMPLATE_ID = "root";
 
+    /**
+     * Key for {@link TemplateMap#getModelDescriptor()}.
+     */
+    public static final String MODEL_DESCRIPTOR = "descriptor";
+
     private NodeFeatures() {
         // Only static
     }

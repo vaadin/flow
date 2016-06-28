@@ -17,10 +17,12 @@ package com.vaadin.hummingbird.nodefeature;
 
 import java.util.Optional;
 
+import com.vaadin.hummingbird.ConstantPoolReference;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.ChildSlotNode;
 import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.model.ModelDescriptor;
 
 /**
  * Map for nodes used as template roots.
@@ -68,6 +70,38 @@ public class TemplateMap extends NodeMap {
 
         put(NodeFeatures.ROOT_TEMPLATE_ID,
                 Integer.valueOf(rootTemplate.getId()));
+    }
+
+    /**
+     * Sets the descriptor of the model type used by this template.
+     *
+     * @param modelDescriptor
+     *            the model descriptor to set, not <code>null</code>
+     */
+    public void setModelDescriptor(ModelDescriptor<?> modelDescriptor) {
+        assert modelDescriptor != null;
+        assert !contains(NodeFeatures.MODEL_DESCRIPTOR);
+
+        put(NodeFeatures.MODEL_DESCRIPTOR, new ConstantPoolReference<>(
+                modelDescriptor, ModelDescriptor::toJson));
+    }
+
+    /**
+     * Gets the descriptor of the model type used by this template.
+     *
+     * @return the model descriptor, or <code>null</code> if it has not yet been
+     *         set
+     */
+    public ModelDescriptor<?> getModelDescriptor() {
+        @SuppressWarnings("unchecked")
+        ConstantPoolReference<ModelDescriptor<?>> reference = (ConstantPoolReference<ModelDescriptor<?>>) get(
+                NodeFeatures.MODEL_DESCRIPTOR);
+
+        if (reference == null) {
+            return null;
+        } else {
+            return reference.getValue();
+        }
     }
 
     /**

@@ -28,6 +28,8 @@ public class JsInTemplateView extends Template {
         public int getItemCount();
 
         public void setItemCount(int itemCount);
+
+        public void setPerson(Person person);
     }
 
     @Override
@@ -44,5 +46,7 @@ public class JsInTemplateView extends Template {
     public void updateModel() {
         getModel().setFirstName("Another");
         getModel().setItemCount(getModel().getItemCount() == 0 ? 3 : 0);
+
+        getModel().setPerson(new Person("Mr", "Smith", 42));
     }
 }
