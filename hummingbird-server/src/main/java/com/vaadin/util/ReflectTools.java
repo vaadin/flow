@@ -245,7 +245,8 @@ public class ReflectTools implements Serializable {
      *            the primitive type
      * @return the corresponding default value
      */
-    public static Object getPrimitiveDefaultValue(Class<?> primitiveType) {
+    public static Serializable getPrimitiveDefaultValue(
+            Class<?> primitiveType) {
         if (primitiveType.equals(int.class)) {
             return 0;
         } else if (primitiveType.equals(double.class)) {
