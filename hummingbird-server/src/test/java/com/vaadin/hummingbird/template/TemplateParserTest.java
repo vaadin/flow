@@ -161,26 +161,33 @@ public class TemplateParserTest {
     @Test
     public void parseClassName() {
         ElementTemplateNode rootNode = (ElementTemplateNode) parse(
-                "<input [class.foo]=bar></input>");
+                "<input [class.foo]=bar [class.camelCase]=baz></input>");
 
         Assert.assertEquals(0, rootNode.getAttributeNames().count());
         Assert.assertEquals(0, rootNode.getPropertyNames().count());
-        Assert.assertEquals(1, rootNode.getClassNames().count());
+        Assert.assertEquals(2, rootNode.getClassNames().count());
 
-        Optional<BindingValueProvider> binding = rootNode
+        Optional<BindingValueProvider> fooBinding = rootNode
                 .getClassNameBinding("foo");
-        Assert.assertTrue(binding.isPresent());
+        Assert.assertTrue(fooBinding.isPresent());
+
+        Optional<BindingValueProvider> camelCaseBinding = rootNode
+                .getClassNameBinding("camelCase");
+        Assert.assertTrue(camelCaseBinding.isPresent());
 
         StateNode node = new StateNode(ModelMap.class);
 
         // Explicitly set "bar" property to null. So model has property "bar".
         // See #970
         ModelMap.get(node).setValue("bar", null);
-        Assert.assertNull(binding.get().getValue(node));
+        Assert.assertNull(fooBinding.get().getValue(node));
+        Assert.assertNull(camelCaseBinding.get().getValue(node));
 
         ModelMap.get(node).setValue("bar", "value");
+        ModelMap.get(node).setValue("baz", "value2");
 
-        Assert.assertEquals("value", binding.get().getValue(node));
+        Assert.assertEquals("value", fooBinding.get().getValue(node));
+        Assert.assertEquals("value2", camelCaseBinding.get().getValue(node));
     }
 
     @Test(expected = TemplateParseException.class)
