@@ -16,6 +16,7 @@
 
 package com.vaadin.hummingbird.change;
 
+import com.vaadin.hummingbird.ConstantPool;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
 import com.vaadin.shared.JsonConstants;
@@ -54,7 +55,7 @@ public abstract class NodeFeatureChange extends NodeChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json) {
+    protected void populateJson(JsonObject json, ConstantPool constantPool) {
         json.put(JsonConstants.CHANGE_FEATURE,
                 Json.create(NodeFeatureRegistry.getId(feature)));
     }

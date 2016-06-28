@@ -17,10 +17,12 @@ package com.vaadin.hummingbird.nodefeature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import com.vaadin.hummingbird.ConstantPoolReference;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.DomEventListener;
@@ -28,8 +30,6 @@ import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.util.JsonUtil;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
 
 /**
  * Map of DOM events with server-side listeners. The key set of this map
@@ -80,26 +80,31 @@ public class ElementListenerMap extends NodeMap {
             assert !listeners.containsKey(eventType);
 
             listeners.put(eventType, new ArrayList<>());
-            put(eventType, Json.createArray());
+            put(eventType, createConstantPoolReference(Collections.emptySet()));
         }
 
         listeners.get(eventType).add(listener);
 
         if (eventDataExpressions.length != 0) {
-            JsonArray eventDataJson = (JsonArray) get(eventType);
+            @SuppressWarnings("unchecked")
+            ConstantPoolReference<Set<String>> currentReference = (ConstantPoolReference<Set<String>>) get(
+                    eventType);
 
-            Set<String> eventData = JsonUtil.stream(eventDataJson)
-                    .map(JsonValue::asString).collect(Collectors.toSet());
+            Set<String> eventData = new HashSet<>(currentReference.getValue());
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
-                // Send full new event data to the client if the set changed
-
-                put(eventType, eventData.stream().map(Json::create)
-                        .collect(JsonUtil.asArray()));
+                // Update the constant pool reference if the value has changed
+                put(eventType, createConstantPoolReference(eventData));
             }
         }
 
         return () -> removeListener(eventType, listener);
+    }
+
+    private static ConstantPoolReference<Set<String>> createConstantPoolReference(
+            Set<String> eventData) {
+        return new ConstantPoolReference<>(eventData, value -> value.stream()
+                .map(Json::create).collect(JsonUtil.asArray()));
     }
 
     private void removeListener(String eventType, DomEventListener listener) {

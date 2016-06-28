@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird.collection;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.Binder;
@@ -32,8 +33,11 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
 import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.events.Event;
+import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
+import elemental.json.JsonValue;
 
 public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     private static class CollectingStateTree extends StateTree {
@@ -42,8 +46,13 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         JsMap<StateNode, JsMap<String, Object>> synchronizedProperties = JsCollections
                 .map();
 
-        public CollectingStateTree() {
-            super(null);
+        public CollectingStateTree(ConstantPool constantPool) {
+            super(new Registry() {
+                @Override
+                public ConstantPool getConstantPool() {
+                    return constantPool;
+                }
+            });
         }
 
         @Override
@@ -69,6 +78,8 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         }
     }
 
+    private ConstantPool constantPool = new ConstantPool();
+
     private CollectingStateTree tree;
 
     private StateNode node;
@@ -91,7 +102,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
         Reactive.reset();
-        tree = new CollectingStateTree();
+        tree = new CollectingStateTree(constantPool);
 
         node = new StateNode(0, tree);
         properties = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
@@ -399,9 +410,17 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         String numberExpression = "event.button";
         String stringExpression = "element.tagName";
 
+        String constantPoolKey = "expressionsKey";
+
+        JsonArray expressionConstantValue = Json.createArray();
+        expressionConstantValue.set(0, booleanExpression);
+        expressionConstantValue.set(1, numberExpression);
+        expressionConstantValue.set(2, stringExpression);
+
+        addToConstantPool(constantPoolKey, expressionConstantValue);
+
         node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty("click")
-                .setValue(JsCollections.array(booleanExpression,
-                        numberExpression, stringExpression));
+                .setValue(constantPoolKey);
         Reactive.flush();
         Browser.getDocument().getBody().appendChild(element);
 
@@ -419,6 +438,12 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
                 eventData.get(numberExpression).getType());
         assertEquals("DIV", eventData.getString(stringExpression));
         assertEquals(true, eventData.getBoolean(booleanExpression));
+    }
+
+    private void addToConstantPool(String key, JsonValue value) {
+        JsonObject update = Json.createObject();
+        update.put(key, value);
+        constantPool.importFromJson(update);
     }
 
     public void testRemovedEventNotFired() {
