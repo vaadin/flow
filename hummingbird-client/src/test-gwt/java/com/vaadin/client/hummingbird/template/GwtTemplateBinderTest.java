@@ -21,6 +21,7 @@ import java.util.Map;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.Binder;
@@ -49,6 +50,9 @@ import elemental.json.JsonObject;
 public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
     private static final String MODEL_KEY = "key";
+
+    private static int modelTypeCount = 0;
+
     private Registry registry;
     private StateTree tree;
     private StateNode stateNode;
@@ -62,6 +66,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         registry = new Registry() {
             {
                 set(TemplateRegistry.class, new TemplateRegistry());
+                set(ConstantPool.class, new ConstantPool());
             }
         };
 
@@ -88,6 +93,11 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
                 return super.hasFeature(id);
             }
         };
+
+        // Use the most common model structure by default
+        JsonObject modelType = Json.createObject();
+        modelType.put(MODEL_KEY, "String");
+        setModelType(stateNode, modelType);
     }
 
     public void testTemplateProperties() {
@@ -1028,7 +1038,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     }
 
     public void testJSExpressionInBinding() {
-        // create binding with expression : : key ? key+'bar' :'foo'
+        // create binding with expression : : key ? key+'@bar.com' :'foo'
         TestTextTemplate templateNode = TestTextTemplate
                 .create(TestBinding.createTextValueBinding(
                         MODEL_KEY + " ? " + MODEL_KEY + "+'@bar.com' : 'foo'"));
@@ -1046,6 +1056,44 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals("value@bar.com", domNode.getTextContent());
+    }
+
+    public void testJSExpresisonsWithSubProperties() {
+        JsonObject beanType = Json.createObject();
+        beanType.put(MODEL_KEY, "String");
+
+        JsonObject modelType = Json.createObject();
+        modelType.put(MODEL_KEY, beanType);
+
+        setModelType(stateNode, modelType);
+
+        // create binding with expression : : key.key ? key.key+'@bar.com'
+        // :'foo'
+        TestTextTemplate templateNode = TestTextTemplate.create(TestBinding
+                .createTextValueBinding(MODEL_KEY + "." + MODEL_KEY + " ? "
+                        + MODEL_KEY + "." + MODEL_KEY + "+'@bar.com' : 'foo'"));
+
+        Node domNode = createText(templateNode);
+
+        NodeMap parentMap = stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        StateNode childNode = new StateNode(458, stateNode.getTree());
+        NodeMap childMap = childNode.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        parentMap.getProperty(MODEL_KEY).setValue(childNode);
+
+        childMap.getProperty(MODEL_KEY).setValue(null);
+
+        Reactive.flush();
+
+        assertEquals("foo", domNode.getTextContent());
+
+        childMap.getProperty(MODEL_KEY).setValue("value");
+
+        Reactive.flush();
+
+        assertEquals("value@bar.com", domNode.getTextContent());
+
     }
 
     /**
@@ -1166,4 +1214,18 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         registerTemplateNode(templateNode, stateNode, 1);
     }
 
+    private static void setModelType(StateNode node, JsonObject modelTypeJson) {
+        String constantId = "modelType " + modelTypeCount++;
+
+        JsonObject constantsJson = Json.createObject();
+        constantsJson.put(constantId, modelTypeJson);
+
+        ConstantPool constantPool = node.getTree().getRegistry()
+                .getConstantPool();
+        constantPool.importFromJson(constantsJson);
+
+        node.getMap(NodeFeatures.TEMPLATE)
+                .getProperty(NodeFeatures.MODEL_DESCRIPTOR)
+                .setValue(constantId);
+    }
 }

@@ -28,6 +28,22 @@ public class JsInTemplateView extends Template {
         public int getItemCount();
 
         public void setItemCount(int itemCount);
+
+        public void setPerson(Person person);
+
+        public void setPersonHolder(PersonHolder holder);
+    }
+
+    public static class PersonHolder {
+        private Person person;
+
+        public void setPerson(Person person) {
+            this.person = person;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
     }
 
     @Override
@@ -44,5 +60,11 @@ public class JsInTemplateView extends Template {
     public void updateModel() {
         getModel().setFirstName("Another");
         getModel().setItemCount(getModel().getItemCount() == 0 ? 3 : 0);
+
+        getModel().setPerson(new Person("Mr", "Smith", 42));
+
+        PersonHolder personHolder = new PersonHolder();
+        personHolder.setPerson(new Person("Mr", "Anderson", 53));
+        getModel().setPersonHolder(personHolder);
     }
 }
