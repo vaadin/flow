@@ -24,6 +24,7 @@ import java.util.List;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
+import com.vaadin.util.ReflectTools;
 
 /**
  * A model type corresponding to a list of bean types.
@@ -142,5 +143,11 @@ public class ListModelType<T> implements ModelType {
     @Override
     public boolean accepts(Type applicationType) {
         return isList(applicationType);
+    }
+
+    @Override
+    public Type getJavaType() {
+        return ReflectTools.createParameterizedType(List.class,
+                (Class<?>) itemType.getJavaType());
     }
 }

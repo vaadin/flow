@@ -359,4 +359,9 @@ public class BeanModelType<T> implements ModelType {
     public boolean accepts(Type applicationType) {
         return isBean(applicationType);
     }
+
+    @Override
+    public Type getJavaType() {
+        return proxyType;
+    }
 }
