@@ -15,18 +15,21 @@
  */
 package com.vaadin.ui;
 
-import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.Synchronize;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
+import com.vaadin.annotations.Uses;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.util.ReflectionCache;
 import com.vaadin.ui.Component.MapToExistingElement;
+import com.vaadin.ui.ComponentMetaData.DependencyInfo;
+import com.vaadin.ui.ComponentMetaData.SynchronizedPropertyInfo;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -36,8 +39,8 @@ import com.vaadin.util.ReflectTools;
  */
 public class ComponentUtil {
 
-    static ReflectionCache<Component, Set<SynchronizedPropertyInfo>> synchronizedPropertyCache = new ReflectionCache<>(
-            ComponentUtil::findSynchronizedProperties);
+    static ReflectionCache<Component, ComponentMetaData> componentMetaDataCache = new ReflectionCache<>(
+            ComponentMetaData::new);
 
     private ComponentUtil() {
         // Util methods only
@@ -271,16 +274,6 @@ public class ComponentUtil {
 
     }
 
-    private static class SynchronizedPropertyInfo {
-        private final String property;
-        private final String[] eventNames;
-
-        public SynchronizedPropertyInfo(String property, String[] eventNames) {
-            this.property = property;
-            this.eventNames = eventNames;
-        }
-    }
-
     /**
      * Gets the name of the synchronized properties defined declaratively for
      * the given class.
@@ -291,9 +284,9 @@ public class ComponentUtil {
      */
     public static Stream<String> getSynchronizedProperties(
             Class<? extends Component> componentClass) {
-        Set<SynchronizedPropertyInfo> infos = synchronizedPropertyCache
-                .get(componentClass);
-        return infos.stream().map(info -> info.property);
+        Set<SynchronizedPropertyInfo> infos = componentMetaDataCache
+                .get(componentClass).getSynchronizedProperties();
+        return infos.stream().map(info -> info.getProperty());
     }
 
     /**
@@ -307,45 +300,24 @@ public class ComponentUtil {
      */
     public static Stream<String> getSynchronizedPropertyEvents(
             Class<? extends Component> componentClass) {
-        Set<SynchronizedPropertyInfo> infos = synchronizedPropertyCache
-                .get(componentClass);
-        return infos.stream().map(info -> info.eventNames).flatMap(Stream::of);
+        Set<SynchronizedPropertyInfo> infos = componentMetaDataCache
+                .get(componentClass).getSynchronizedProperties();
+        return infos.stream().flatMap(SynchronizedPropertyInfo::getEventNames)
+                .distinct();
     }
 
     /**
-     * Scans the class for {@link Synchronize} annotations and gathers the data.
+     * Gets the dependencies for the given class, defined using annotations (
+     * {@link HtmlImport}, {@link JavaScript}, {@link StyleSheet} and
+     * {@link Uses}).
      *
      * @param componentClass
-     *            the class to scan
-     * @return a set of information objects about properties to be synchronized
+     *            the component class to check
+     * @return the dependencies for the given class
      */
-    public static Set<SynchronizedPropertyInfo> findSynchronizedProperties(
-            Class<Component> componentClass) {
-        HashSet<SynchronizedPropertyInfo> infos = new HashSet<>();
-        for (Method method : componentClass.getMethods()) {
-            Synchronize annotation = method.getAnnotation(Synchronize.class);
-            if (annotation == null) {
-                continue;
-            }
-
-            if (!ReflectTools.isGetter(method)) {
-                throw new IllegalStateException(method + " is annotated with @"
-                        + Synchronize.class.getSimpleName()
-                        + " even though it's not a getter.");
-            }
-
-            String propertyName;
-            if (annotation.property().isEmpty()) {
-                propertyName = ReflectTools.getPropertyName(method);
-            } else {
-                propertyName = annotation.property();
-            }
-            String[] eventNames = annotation.value();
-            infos.add(new SynchronizedPropertyInfo(propertyName, eventNames));
-        }
-
-        return infos;
-
+    public static DependencyInfo getDependencies(
+            Class<? extends Component> componentClass) {
+        return componentMetaDataCache.get(componentClass).getDependencyInfo();
     }
 
 }
