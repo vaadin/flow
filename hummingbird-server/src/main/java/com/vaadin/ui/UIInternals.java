@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
@@ -47,6 +46,7 @@ import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.server.communication.PushConnection;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.ui.ComponentMetaData.DependencyInfo;
 import com.vaadin.ui.Page.ExecutionCanceler;
 
 /**
@@ -651,17 +651,13 @@ public class UIInternals implements Serializable {
     public void addComponentDependencies(
             Class<? extends Component> componentClass) {
         Page page = ui.getPage();
-        List<HtmlImport> htmlImports = AnnotationReader
-                .getHtmlImportAnnotations(componentClass);
-        htmlImports.forEach(html -> page.addHtmlImport(html.value()));
-
-        List<JavaScript> javaScripts = AnnotationReader
-                .getJavaScriptAnnotations(componentClass);
-        javaScripts.forEach(js -> page.addJavaScript(js.value()));
-
-        List<StyleSheet> styleSheets = AnnotationReader
-                .getStyleSheetAnnotations(componentClass);
-        styleSheets
+        DependencyInfo dependencies = ComponentUtil
+                .getDependencies(componentClass);
+        dependencies.getHtmlImports()
+                .forEach(html -> page.addHtmlImport(html.value()));
+        dependencies.getJavaScripts()
+                .forEach(js -> page.addJavaScript(js.value()));
+        dependencies.getStyleSheets()
                 .forEach(styleSheet -> page.addStyleSheet(styleSheet.value()));
 
     }
