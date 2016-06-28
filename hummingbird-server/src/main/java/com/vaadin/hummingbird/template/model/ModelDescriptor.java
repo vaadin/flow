@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.template.model;
 
+import java.util.Map;
+
 import com.vaadin.hummingbird.util.ReflectionCache;
 
 /**
@@ -22,6 +24,7 @@ import com.vaadin.hummingbird.util.ReflectionCache;
  *
  * @author Vaadin Ltd
  * @param <T>
+ *            the template model type used by this descriptor
  */
 public class ModelDescriptor<T extends TemplateModel> extends BeanModelType<T> {
     @SuppressWarnings("unchecked")
@@ -30,6 +33,26 @@ public class ModelDescriptor<T extends TemplateModel> extends BeanModelType<T> {
 
     private ModelDescriptor(Class<T> beanType) {
         super(beanType, PropertyFilter.ACCEPT_ALL);
+    }
+
+    /**
+     * Creates a new model descriptor from the given class and properties. This
+     * class is only intended for testing – actual users should instead call
+     * {@link #get(Class)} to get a cached instance.
+     *
+     * @param proxyType
+     *            the class to use for proxies of this type, not
+     *            <code>null</code>
+     * @param properties
+     *            a map of properties of this type. The contents of the map will
+     *            be copied. Not <code>null</code>.
+     *
+     * @deprecated Only used for testing
+     */
+    @Deprecated()
+    protected ModelDescriptor(Class<T> proxyType,
+            Map<String, ModelType> properties) {
+        super(proxyType, properties);
     }
 
     /**
