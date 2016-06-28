@@ -170,7 +170,9 @@ public class SessionSizeIT extends AbstractTestBenchTest {
         try {
             String response = IOUtils.toString(new URL(url),
                     StandardCharsets.UTF_8);
-            Assert.assertEquals(buttonCount,
+            // Each button is included once in UIDL and once prerendered
+            int expectedHelloCounts = buttonCount * 2;
+            Assert.assertEquals(expectedHelloCounts,
                     StringUtils.countMatches(response, "Hello"));
         } catch (IOException e) {
             throw new RuntimeException(e);
