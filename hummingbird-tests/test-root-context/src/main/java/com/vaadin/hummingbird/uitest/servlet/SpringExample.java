@@ -193,7 +193,7 @@ public class SpringExample implements RouterConfigurator {
 
         configuration.setRoute(route, new ViewRenderer() {
             @Override
-            public Class<? extends View> getViewType() {
+            public Class<? extends View> getViewType(NavigationEvent event) {
                 String[] roles = Spring.findRolesForBean(beanName);
                 if (roles != null && !Spring.isAccessAllowed(roles)) {
                     return NoPermissionView.class;
@@ -204,7 +204,7 @@ public class SpringExample implements RouterConfigurator {
 
             @Override
             public List<Class<? extends HasChildView>> getParentViewTypes(
-                    Class<? extends View> viewType) {
+                    NavigationEvent event, Class<? extends View> viewType) {
                 if (viewType == NoPermissionView.class) {
                     return Collections.singletonList(RootView.class);
                 } else {
@@ -220,6 +220,11 @@ public class SpringExample implements RouterConfigurator {
                 } else {
                     return (T) Spring.getBean(beanName);
                 }
+            }
+
+            @Override
+            protected String getRoute() {
+                return route;
             }
         });
 

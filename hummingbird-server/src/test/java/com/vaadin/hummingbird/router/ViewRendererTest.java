@@ -114,7 +114,7 @@ public class ViewRendererTest {
 
     @Test
     public void showSimpleView() {
-        new StaticViewRenderer(TestView.class).handle(dummyEvent);
+        new TestViewRenderer(TestView.class).handle(dummyEvent);
 
         List<View> viewChain = ui.getInternals().getActiveViewChain();
         Assert.assertEquals(1, viewChain.size());
@@ -132,7 +132,7 @@ public class ViewRendererTest {
 
     @Test
     public void showNestedView() {
-        new StaticViewRenderer(TestView.class, ParentView.class,
+        new TestViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         List<View> viewChain = ui.getInternals().getActiveViewChain();
@@ -160,14 +160,14 @@ public class ViewRendererTest {
 
     @Test
     public void reuseSingleView() {
-        new StaticViewRenderer(TestView.class).handle(dummyEvent);
+        new TestViewRenderer(TestView.class).handle(dummyEvent);
 
         List<View> firstChain = ui.getInternals().getActiveViewChain();
         TestView view = (TestView) firstChain.get(0);
 
         Assert.assertEquals(1, view.locations.size());
 
-        new StaticViewRenderer(TestView.class).handle(dummyEvent);
+        new TestViewRenderer(TestView.class).handle(dummyEvent);
 
         Assert.assertEquals(2, view.locations.size());
 
@@ -179,12 +179,12 @@ public class ViewRendererTest {
 
     @Test
     public void reuseFirstParentView() {
-        new StaticViewRenderer(TestView.class, ParentView.class,
+        new TestViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         List<View> firstChain = ui.getInternals().getActiveViewChain();
 
-        new StaticViewRenderer(AnotherTestView.class, AnotherParentView.class)
+        new TestViewRenderer(AnotherTestView.class, AnotherParentView.class)
                 .handle(dummyEvent);
 
         List<View> secondChain = ui.getInternals().getActiveViewChain();
@@ -195,12 +195,12 @@ public class ViewRendererTest {
 
     @Test
     public void testReuse_orderChanged() {
-        new StaticViewRenderer(TestView.class, ParentView.class,
+        new TestViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         List<View> firstChain = ui.getInternals().getActiveViewChain();
 
-        new StaticViewRenderer(TestView.class, AnotherParentView.class,
+        new TestViewRenderer(TestView.class, AnotherParentView.class,
                 ParentView.class).handle(dummyEvent);
 
         List<View> secondChain = ui.getInternals().getActiveViewChain();
@@ -211,23 +211,23 @@ public class ViewRendererTest {
 
     @Test
     public void testReuseAllViews() {
-        new StaticViewRenderer(TestView.class, ParentView.class,
+        new TestViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         // setChildView throws if it's invoked
-        new StaticViewRenderer(TestView.class, ParentView.class,
+        new TestViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
     }
 
     @Test
     public void testRemoveChildView() {
-        new StaticViewRenderer(TestView.class, ParentView.class,
+        new TestViewRenderer(TestView.class, ParentView.class,
                 AnotherParentView.class).handle(dummyEvent);
 
         ParentView parentView = (ParentView) ui.getInternals()
                 .getActiveViewChain().get(1);
 
-        new StaticViewRenderer(ParentView.class, AnotherParentView.class)
+        new TestViewRenderer(ParentView.class, AnotherParentView.class)
                 .handle(dummyEvent);
 
         Assert.assertEquals(0, parentView.getElement().getChildCount());
@@ -235,12 +235,12 @@ public class ViewRendererTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void sameTypeTwice_constructorThrows() {
-        new StaticViewRenderer(ParentView.class, ParentView.class);
+        new TestViewRenderer(ParentView.class, ParentView.class);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void sameParentTypeTwice_constructorThrows() {
-        new StaticViewRenderer(TestView.class, ParentView.class,
+        new TestViewRenderer(TestView.class, ParentView.class,
                 ParentView.class);
     }
 
@@ -257,41 +257,41 @@ public class ViewRendererTest {
 
     @Test
     public void testViewTitle_titleAnnotation_titleUpdated() {
-        new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
+        new TestViewRenderer(AnotherTestView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate(ANOTHER_VIEW_TITLE);
     }
 
     @Test
     public void testViewTitle_titleSetPreviouslyButNotDefinedForNextView_emptyTitleSet() {
-        new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
+        new TestViewRenderer(AnotherTestView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate(ANOTHER_VIEW_TITLE);
 
-        new StaticViewRenderer(TestView.class).handle(dummyEvent);
+        new TestViewRenderer(TestView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate("");
     }
 
     @Test(expected = AssertionError.class)
     public void testViewTitle_nullTitleReturned_noTitleSet() {
-        new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
+        new TestViewRenderer(AnotherTestView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate(ANOTHER_VIEW_TITLE);
 
-        new StaticViewRenderer(NullTitleView.class).handle(dummyEvent);
+        new TestViewRenderer(NullTitleView.class).handle(dummyEvent);
     }
 
     @Test
     public void testViewDynamicTitle() {
-        new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+        new TestViewRenderer(DynamicTitleView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate(DYNAMIC_VIEW_TITLE);
     }
 
     @Test
     public void testViewTitle_onlyParentHasTitle_defaultTitleUsed() {
-        new StaticViewRenderer(TestView.class, ParentView.class)
+        new TestViewRenderer(TestView.class, ParentView.class)
                 .handle(dummyEvent);
 
         verifyViewTitleUpdate("");
@@ -301,19 +301,19 @@ public class ViewRendererTest {
     public void testViewTitle_customPageTitle_generator_isAlwaysUsed() {
         setPageTitleGenerator(lce -> "foobar");
 
-        new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+        new TestViewRenderer(DynamicTitleView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate("foobar");
 
         setPageTitleGenerator(lce -> "akbar");
 
-        new StaticViewRenderer(AnotherTestView.class).handle(dummyEvent);
+        new TestViewRenderer(AnotherTestView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate("akbar");
 
         setPageTitleGenerator(new DefaultPageTitleGenerator());
 
-        new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+        new TestViewRenderer(DynamicTitleView.class).handle(dummyEvent);
 
         verifyViewTitleUpdate(DYNAMIC_VIEW_TITLE);
     }
@@ -322,13 +322,13 @@ public class ViewRendererTest {
     public void testViewTitle_nullPageTitleGenerated_noTitleUpdate() {
         setPageTitleGenerator(lce -> null);
 
-        new StaticViewRenderer(DynamicTitleView.class).handle(dummyEvent);
+        new TestViewRenderer(DynamicTitleView.class).handle(dummyEvent);
     }
 
     @Test
     public void testViewInstantiationCustomization() {
         // override default implementation of reusing the views if possible
-        ViewRenderer renderer = new StaticViewRenderer(TestView.class,
+        ViewRenderer renderer = new TestViewRenderer(TestView.class,
                 ParentView.class) {
 
             @Override
