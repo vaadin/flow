@@ -71,6 +71,7 @@ public class DefaultRegistry extends Registry {
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
         set(TemplateRegistry.class, new TemplateRegistry());
+        set(ScrollPositionHandler.class, new ScrollPositionHandler(this));
 
         // Classes with dependencies, in correct order
         set(Heartbeat.class, new Heartbeat(this));
