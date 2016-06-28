@@ -31,8 +31,8 @@ import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.StaticViewRenderer;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.uitest.servlet.TestViewRenderer;
 import com.vaadin.hummingbird.uitest.ui.RouterTestServlet.MyRouterConfigurator;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
@@ -54,7 +54,7 @@ public class RouterTestServlet extends VaadinServlet {
                     if (navigationEvent.getLocation().getFirstSegment()
                             .equals("")) {
                         return Optional
-                                .of(new StaticViewRenderer(NormalView.class));
+                                .of(new TestViewRenderer(NormalView.class));
                     }
 
                     Optional<Class<? extends View>> res = getViewClasses()
@@ -63,9 +63,9 @@ public class RouterTestServlet extends VaadinServlet {
                                             .getFirstSegment()))
                             .findAny();
                     NavigationHandler handler = res
-                            .map(clazz -> new StaticViewRenderer(clazz,
+                            .map(clazz -> new TestViewRenderer(clazz,
                                     Layout.class))
-                            .orElse(new StaticViewRenderer(
+                            .orElse(new TestViewRenderer(
                                     DefaultErrorView.class));
                     return Optional.of(handler);
                 }

@@ -15,66 +15,55 @@
  */
 package com.vaadin.hummingbird.router;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * An {@link ViewRenderer} where the view types are decided at construction
- * time.
+ * A simple view renderer that always uses the given view type with the parent
+ * views configured for it.
  *
  * @author Vaadin Ltd
  */
 public class StaticViewRenderer extends ViewRenderer {
 
+    private final String route;
     private final Class<? extends View> viewType;
-    // Starts with the view's immediate parent
-    private final List<Class<? extends HasChildView>> parentViewTypes;
 
     /**
-     * Creates a renderer for the given view type and optional parent view
-     * types. The same type may not be used in multiple positions in the same
-     * view renderer.
+     * Creates a new view renderer for the given view type and route.
      *
      * @param viewType
-     *            the view type to show
-     * @param parentViewTypes
-     *            an array of parent view types to show, starting from the
-     *            parent view immediately wrapping the view type
+     *            the view type to show, not <code>null</code>
+     * @param route
+     *            the route to use when evaluating path parameters for the view,
+     *            or <code>null</code> if the view should not get any path
+     *            parameters
      */
-    @SafeVarargs
-    public StaticViewRenderer(Class<? extends View> viewType,
-            Class<? extends HasChildView>... parentViewTypes) {
-        this(viewType, Arrays.asList(parentViewTypes));
-    }
+    public StaticViewRenderer(Class<? extends View> viewType, String route) {
+        if (viewType == null) {
+            throw new IllegalArgumentException("viewType cannot be null");
+        }
 
-    /**
-     * Creates a renderer for the given view type and an optional list of parent
-     * view types. The same type may not be used in multiple positions in the
-     * same view renderer.
-     *
-     * @param viewType
-     *            the view type to show
-     * @param parentViewTypes
-     *            a list of parent view types to show, starting from the parent
-     *            view immediately wrapping the view type
-     */
-    public StaticViewRenderer(Class<? extends View> viewType,
-            List<Class<? extends HasChildView>> parentViewTypes) {
-        ViewRenderer.checkDuplicates(viewType, parentViewTypes);
-
+        this.route = route;
         this.viewType = viewType;
-        this.parentViewTypes = parentViewTypes;
     }
 
     @Override
-    public Class<? extends View> getViewType() {
+    public Class<? extends View> getViewType(NavigationEvent event) {
         return viewType;
     }
 
     @Override
     public List<Class<? extends HasChildView>> getParentViewTypes(
-            Class<? extends View> viewType) {
-        return Collections.unmodifiableList(parentViewTypes);
+            NavigationEvent event, Class<? extends View> viewType) {
+        assert viewType == this.viewType;
+        return event.getSource().getConfiguration().getParentViews(viewType)
+                .collect(Collectors.toList());
     }
+
+    @Override
+    protected String getRoute() {
+        return route;
+    }
+
 }
