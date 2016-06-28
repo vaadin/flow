@@ -26,7 +26,7 @@ public class UmlautÅäöIT extends PhantomJSTest {
     @Test
     public void testViewOpens() {
         open();
-        Assert.assertEquals("Umlaut view: åäöü",
+        Assert.assertEquals("Umlaut view: åäöü. a\u00adb",
                 findElement(By.id("content")).getText());
     }
 }
