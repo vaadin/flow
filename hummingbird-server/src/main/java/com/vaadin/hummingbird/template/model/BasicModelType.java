@@ -80,4 +80,9 @@ public class BasicModelType implements ModelType {
         }
         return type == applicationType;
     }
+
+    @Override
+    public Type getJavaType() {
+        return type;
+    }
 }

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -28,6 +29,7 @@ import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
@@ -36,6 +38,7 @@ import com.vaadin.hummingbird.template.RelativeFileResolver;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateParseException;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
+import com.vaadin.hummingbird.template.model.ModelType;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
 import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
@@ -255,8 +258,31 @@ public abstract class Template extends Component implements HasChildView {
     private TemplateModel createTemplateModelInstance() {
         Class<? extends TemplateModel> modelType = getModelType();
 
-        return TemplateModelProxyHandler.createModelProxy(stateNode,
-                ModelDescriptor.get(modelType));
+        ModelDescriptor<? extends TemplateModel> descriptor = ModelDescriptor
+                .get(modelType);
+        TemplateModel model = TemplateModelProxyHandler
+                .createModelProxy(stateNode, descriptor);
+
+        // Temporary workaround to deal with default values until client side
+        // can handle them correctly (#973)
+        ModelMap modelMap = ModelMap.get(stateNode);
+        descriptor.getPropertyNames().forEach(propertyName -> {
+            ModelType propertyType = descriptor.getPropertyType(propertyName);
+            Type propertyJavaType = propertyType.getJavaType();
+            if (propertyJavaType instanceof Class) {
+                Class<?> propertyClassType = (Class<?>) propertyJavaType;
+                if (propertyClassType.isPrimitive()) {
+                    // Primitive
+                    modelMap.setValue(propertyName, ReflectTools
+                            .getPrimitiveDefaultValue(propertyClassType));
+                } else {
+                    // Boxed type or String or bean
+                    modelMap.setValue(propertyName, null);
+                }
+            }
+        });
+
+        return model;
     }
 
     /**

@@ -71,4 +71,11 @@ public interface ModelType {
      *         <code>false</code> otherwise
      */
     boolean accepts(Type applicationType);
+
+    /**
+     * Gets the Java {@link Type} that this model encapsulates.
+     *
+     * @return the java type
+     */
+    Type getJavaType();
 }
