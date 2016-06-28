@@ -20,6 +20,8 @@ import java.lang.reflect.Type;
 
 import com.vaadin.hummingbird.StateNode;
 
+import elemental.json.JsonValue;
+
 /**
  * A model type that can convert values between a representation suitable for
  * users and a representation suitable for storage in a {@link StateNode}.
@@ -31,7 +33,7 @@ import com.vaadin.hummingbird.StateNode;
  *
  * @author Vaadin Ltd
  */
-public interface ModelType {
+public interface ModelType extends Serializable {
     /**
      * Creates a representation of the provided model value that is intended for
      * use in application code. For mutable values, this is typically a proxy
@@ -42,6 +44,17 @@ public interface ModelType {
      * @return a user-friendly representation of the provided model value
      */
     Object modelToApplication(Serializable modelValue);
+
+    /**
+     * Creates a representation of the provided model value that is intended for
+     * use by Nashorn when evaluating bindings.
+     *
+     * @param modelValue
+     *            the model value to represent
+     * @return a representation of the provided model value that is suitable for
+     *         Nashorn
+     */
+    Object modelToNashorn(Serializable modelValue);
 
     /**
      * Creates a model value representation of the provided application value.
@@ -78,4 +91,11 @@ public interface ModelType {
      * @return the java type
      */
     Type getJavaType();
+
+    /**
+     * Creates a JSON representation of this model type.
+     *
+     * @return a JSON representation of this model type, not <code>null</code>
+     */
+    public JsonValue toJson();
 }

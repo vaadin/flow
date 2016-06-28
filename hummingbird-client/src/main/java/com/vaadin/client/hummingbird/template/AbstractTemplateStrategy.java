@@ -26,7 +26,7 @@ import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.binding.BindingStrategy;
 import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.model.BeanModelType;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
@@ -180,7 +180,7 @@ public abstract class AbstractTemplateStrategy<T extends Node>
         if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
             Computation computation = Reactive
                     .runWhenDepedenciesChange(() -> executor
-                            .accept(getModelPropertyValue(modelNode, binding)));
+                            .accept(getModelBindingValue(modelNode, binding)));
             modelNode.addUnregisterListener(event -> computation.stop());
         } else {
             // Only static bindings is known as a final call
@@ -214,30 +214,30 @@ public abstract class AbstractTemplateStrategy<T extends Node>
     }
 
     /**
-     * Gets the model property value from the {@code node} for the
-     * {@code binding}.
+     * Gets the value from the {@code node} for the {@code binding}.
      *
      * @param node
      *            the state node, not {@code null}
      * @param binding
      *            binding data, not {@code null}
-     * @return map property value for the binding, or an empty optional if no
-     *         value for the binding
+     * @return map binding value, or an empty optional if no value for the
+     *         binding
      */
-    protected Optional<Object> getModelPropertyValue(StateNode node,
+    private static Optional<Object> getModelBindingValue(StateNode node,
             Binding binding) {
         NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
         String key = binding.getValue();
         assert key != null;
-        if (key.matches("^[\\w\\.]+$") && key.contains(".")) {
+
+        if (!node.hasFeature(NodeFeatures.TEMPLATE)) {
             /*
-             * This is temporary legacy logic to support subproperties. JS
+             * This is temporary legacy logic to support *ngFor bindings. JS
              * evaluation should be used in any case. But at the moment JS
-             * evaluation doesn't work with subproperties so they are handled
+             * evaluation doesn't work with *ngFor bindings so they are handled
              * here.
-             * 
-             * TODO: remove this and update JS evaluation to support
-             * subproperties.
+             *
+             * TODO: remove this and update JS evaluation to support *ngFor.
              */
             String[] modelPathParts = key.split("\\.");
             // The last part is the propertyName
@@ -249,19 +249,25 @@ public abstract class AbstractTemplateStrategy<T extends Node>
             key = modelPathParts[modelPathParts.length - 1];
             return Optional.ofNullable(model.getProperty(key).getValue());
         } else {
-            JsArray<String> properties = JsCollections.array();
-            JsArray<Object> values = JsCollections.array();
-            model.forEachProperty((value, property) -> {
-                properties.push(property);
-                values.push(value.getValue());
-            });
-            String[] args = new String[properties.length() + 1];
-            for (int i = 0; i < properties.length(); i++) {
-                args[i] = properties.get(i);
-            }
-            args[properties.length()] = "return " + key;
-            NativeFunction function = new NativeFunction(args);
-            return Optional.ofNullable(function.apply(null, values));
+            String expression = key;
+
+            String modelDescriptorId = (String) node
+                    .getMap(NodeFeatures.TEMPLATE)
+                    .getProperty(NodeFeatures.MODEL_DESCRIPTOR).getValue();
+
+            assert modelDescriptorId != null;
+
+            JsonObject modelDescriptor = node.getTree().getRegistry()
+                    .getConstantPool().get(modelDescriptorId);
+
+            NativeFunction function = new NativeFunction("model",
+                    "with(model) { return " + expression + "}");
+
+            BeanModelType type = new BeanModelType(modelDescriptor);
+
+            Object proxy = type.createProxy(model);
+
+            return Optional.ofNullable(function.call(null, proxy));
         }
     }
 

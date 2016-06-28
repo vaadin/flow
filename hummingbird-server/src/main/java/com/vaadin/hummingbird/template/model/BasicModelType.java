@@ -24,6 +24,9 @@ import java.util.stream.Stream;
 
 import com.vaadin.util.ReflectTools;
 
+import elemental.json.Json;
+import elemental.json.JsonValue;
+
 /**
  * A model type representing an immutable leaf value, e.g. strings, numbers or
  * booleans.
@@ -37,6 +40,11 @@ public class BasicModelType implements ModelType {
         Stream.of(int.class, Integer.class, boolean.class, Boolean.class,
                 double.class, Double.class, String.class)
                 .forEach(type -> types.put(type, new BasicModelType(type)));
+
+        // Make sure each type has a unique getSimpleName value since it's used
+        // as an identifier in JSON messages
+        assert types.keySet().stream().map(Class::getSimpleName).distinct()
+                .count() == types.size();
     }
 
     private final Class<?> type;
@@ -67,6 +75,11 @@ public class BasicModelType implements ModelType {
     }
 
     @Override
+    public Object modelToNashorn(Serializable modelValue) {
+        return modelToApplication(modelValue);
+    }
+
+    @Override
     public Serializable applicationToModel(Object applicationValue,
             PropertyFilter filter) {
         return (Serializable) applicationValue;
@@ -84,5 +97,10 @@ public class BasicModelType implements ModelType {
     @Override
     public Type getJavaType() {
         return type;
+    }
+
+    @Override
+    public JsonValue toJson() {
+        return Json.create(type.getSimpleName());
     }
 }
