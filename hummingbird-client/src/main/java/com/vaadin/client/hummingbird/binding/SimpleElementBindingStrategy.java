@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -443,12 +444,19 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         NodeMap listenerMap = getDomEventListenerMap(node);
 
-        @SuppressWarnings("unchecked")
-        JsArray<String> dataExpressions = (JsArray<String>) listenerMap
-                .getProperty(type).getValue();
+        ConstantPool constantPool = node.getTree().getRegistry()
+                .getConstantPool();
+        String expressionConstantKey = (String) listenerMap.getProperty(type)
+                .getValue();
+        assert expressionConstantKey != null;
+
+        assert constantPool.has(expressionConstantKey);
+
+        JsArray<String> dataExpressions = constantPool
+                .get(expressionConstantKey);
 
         JsonObject eventData;
-        if (dataExpressions == null || dataExpressions.isEmpty()) {
+        if (dataExpressions.isEmpty()) {
             eventData = null;
         } else {
             eventData = Json.createObject();

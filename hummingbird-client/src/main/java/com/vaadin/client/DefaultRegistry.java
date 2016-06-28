@@ -26,6 +26,7 @@ import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.communication.ServerRpcQueue;
 import com.vaadin.client.communication.XhrConnection;
+import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.ExecuteJavaScriptProcessor;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.template.TemplateRegistry;
@@ -71,6 +72,7 @@ public class DefaultRegistry extends Registry {
         set(ExecuteJavaScriptProcessor.class,
                 new ExecuteJavaScriptProcessor(this));
         set(TemplateRegistry.class, new TemplateRegistry());
+        set(ConstantPool.class, new ConstantPool());
 
         // Classes with dependencies, in correct order
         set(Heartbeat.class, new Heartbeat(this));

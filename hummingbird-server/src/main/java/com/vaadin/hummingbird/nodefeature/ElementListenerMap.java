@@ -18,9 +18,9 @@ package com.vaadin.hummingbird.nodefeature;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.HashSet;
 
+import com.vaadin.hummingbird.ConstantPoolReference;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.DomEventListener;
@@ -28,8 +28,6 @@ import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.util.JsonUtil;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
 
 /**
  * Map of DOM events with server-side listeners. The key set of this map
@@ -39,6 +37,15 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 public class ElementListenerMap extends NodeMap {
+    /*
+     * Shared empty serializable set instance to avoid allocating lots of memory
+     * for the default case of no event data expressions at all. Cannot easily
+     * make the instance immutable while still implementing HashSet. To avoid
+     * accidental modification, we instead assert that it's empty when it's
+     * used.
+     */
+    private static final HashSet<String> emptyHashSet = new HashSet<>();
+
     // Server-side only data
     private HashMap<String, ArrayList<DomEventListener>> listeners;
 
@@ -80,26 +87,36 @@ public class ElementListenerMap extends NodeMap {
             assert !listeners.containsKey(eventType);
 
             listeners.put(eventType, new ArrayList<>());
-            put(eventType, Json.createArray());
+
+            // Make sure the "immutable" instance hasn't accidentally been
+            // mutated
+            assert emptyHashSet.isEmpty();
+            put(eventType, createConstantPoolReference(emptyHashSet));
         }
 
         listeners.get(eventType).add(listener);
 
         if (eventDataExpressions.length != 0) {
-            JsonArray eventDataJson = (JsonArray) get(eventType);
+            @SuppressWarnings("unchecked")
+            ConstantPoolReference<HashSet<String>> currentReference = (ConstantPoolReference<HashSet<String>>) get(
+                    eventType);
 
-            Set<String> eventData = JsonUtil.stream(eventDataJson)
-                    .map(JsonValue::asString).collect(Collectors.toSet());
+            HashSet<String> eventData = new HashSet<>(
+                    currentReference.getValue());
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
-                // Send full new event data to the client if the set changed
-
-                put(eventType, eventData.stream().map(Json::create)
-                        .collect(JsonUtil.asArray()));
+                // Update the constant pool reference if the value has changed
+                put(eventType, createConstantPoolReference(eventData));
             }
         }
 
         return () -> removeListener(eventType, listener);
+    }
+
+    private static ConstantPoolReference<HashSet<String>> createConstantPoolReference(
+            HashSet<String> eventData) {
+        return new ConstantPoolReference<>(eventData, value -> value.stream()
+                .map(Json::create).collect(JsonUtil.asArray()));
     }
 
     private void removeListener(String eventType, DomEventListener listener) {
