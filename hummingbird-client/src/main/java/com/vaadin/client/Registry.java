@@ -280,4 +280,13 @@ public class Registry {
     public ConstantPool getConstantPool() {
         return get(ConstantPool.class);
     }
+
+    /**
+     * Gets the {@link ScrollPositionHandler} singleton.
+     *
+     * @return the {@link ScrollPositionHandler} singleton
+     */
+    public ScrollPositionHandler getScrollPositionHandler() {
+        return get(ScrollPositionHandler.class);
+    }
 }

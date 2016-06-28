@@ -17,7 +17,6 @@ package com.vaadin.client.hummingbird;
 
 import java.util.Objects;
 
-import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.URIResolver;
 import com.vaadin.client.WidgetUtil;
@@ -64,58 +63,61 @@ public class RouterLinkHandler {
             return;
         }
 
-        String href = getValidLinkHref(clickEvent);
-        if (href == null) {
+        AnchorElement anchor = getAnchorElement(clickEvent);
+        if (anchor == null) {
             return;
         }
 
-        String baseURI = ((Element) clickEvent.getCurrentTarget())
+        final String href = anchor.getHref();
+        final String baseURI = ((Element) clickEvent.getCurrentTarget())
                 .getOwnerDocument().getBaseURI();
 
         // verify that the link is actually for this application
         if (!href.startsWith(baseURI)) {
-            // ain't nobody going to see this log
-            Console.warn("Should not use "
-                    + ApplicationConstants.ROUTER_LINK_ATTRIBUTE
-                    + " attribute for an external link.");
+            // scroll position is stored by a beforeunload handler in
+            // ScrollPositionHandler
             return;
         }
 
-        String location = URIResolver.getBaseRelativeUri(baseURI, href);
+        // special case: inside page navigation doesn't cause server side
+        // round trip but need to store the scroll positions since browser adds
+        // another history state
+        if (isInsidePageNavigation(anchor)) {
+            // there is no pop state if the hashes are exactly the same
+            String currentHash = Browser.getDocument().getLocation().getHash();
+            if (!currentHash.equals(anchor.getHash())) {
+                registry.getScrollPositionHandler().beforeNavigation(href,
+                        false);
+            }
+            // the browser triggers a fragment change & pop state event
+            registry.getScrollPositionHandler()
+                    .setIgnoreScrollRestorationOnNextPopStateEvent(true);
+            return;
+        }
 
+        if (!isRouterLinkAnchorElement(anchor)) {
+            return;
+        }
+
+        handleRouterLinkClick(clickEvent, baseURI, href, registry);
+    }
+
+    private static void handleRouterLinkClick(Event clickEvent, String baseURI,
+            String href, Registry registry) {
+        clickEvent.preventDefault();
+
+        String location = URIResolver.getBaseRelativeUri(baseURI, href);
         if (location.contains("#")) {
             // make sure fragment event gets fired after response
             new FragmentHandler(Browser.getWindow().getLocation().getHref(),
-                    href).bind(registry);
+                    href, registry).bind();
 
             // don't send hash to server
             location = location.split("#", 2)[0];
         }
+        registry.getScrollPositionHandler().beforeNavigation(href, true);
 
-        clickEvent.preventDefault();
-        Browser.getWindow().getHistory().pushState(null, null, href);
         sendServerNavigationEvent(registry, location, null);
-    }
-
-    /**
-     * Gets the link href for the given event. If the event target or the link
-     * href is not a valid routerlink, or is only inside page navigation (just
-     * fragment change), <code>null</code> will be returned instead.
-     *
-     * @param clickEvent
-     *            the click event for the link
-     * @return the link href or <code>null</code> there is no valid href
-     */
-    private static String getValidLinkHref(Event clickEvent) {
-        AnchorElement anchor = getRouterLink(clickEvent);
-        if (anchor == null) {
-            return null;
-        }
-        String href = anchor.getHref();
-        if (href == null || isInsidePageNavigation(anchor)) {
-            return null;
-        }
-        return href;
     }
 
     /**
@@ -127,36 +129,38 @@ public class RouterLinkHandler {
      *         <code>false</code> if not
      */
     private static boolean isInsidePageNavigation(AnchorElement anchor) {
-        return isInsidePageNavigation(anchor.getPathname(), anchor.getHash());
+        return isInsidePageNavigation(anchor.getPathname(),
+                anchor.getHref().contains("#"));
     }
 
     /**
-     * Checks whether the given path and hash are for navigating inside the same
-     * page as the current one.
+     * Checks whether the given path is for navigating inside the same page as
+     * the current one.
      * <p>
      * If the paths are different, it is always outside the current page
-     * navigation.
-     * <p>
-     * If the paths are the same, then it is inside the current page navigation
-     * unless the hashes are the same too; then it is considered reloading the
-     * current page.
+     * navigation. If they are the same, then it depends on whether the new href
+     * has any hash <code>#</code>.
      *
      * @param path
      *            the path to check against
-     * @param hash
-     *            the hash to check against
+     * @param hasFragment
+     *            the <code>true</code> if the navigated url contains a
+     *            fragment,<code>false</code> if not
      * @return <code>true</code> if the given location is for navigating inside
      *         the current page, <code>false</code> if not
      */
-    public static boolean isInsidePageNavigation(String path, String hash) {
+    public static boolean isInsidePageNavigation(String path,
+            boolean hasFragment) {
         String currentPath = Browser.getWindow().getLocation().getPathname();
-        String currentHash = Browser.getWindow().getLocation().getHash();
         assert currentPath != null : "window.location.path should never be null";
-        assert currentHash != null : "window.location.hash should never be null";
-        // if same path it is always inside page unless fragment same, then it
-        // is reload
-        return Objects.equals(currentPath, path)
-                && !Objects.equals(currentHash, hash);
+
+        if (!Objects.equals(currentPath, path)) {
+            return false;
+        }
+        // if paths are the same, then need to check fragment.
+        // if the navigated location doesn't have fragment at all, then it is
+        // reload, otherwise inside page
+        return hasFragment;
     }
 
     /**
@@ -167,14 +171,14 @@ public class RouterLinkHandler {
      *            the click event
      * @return the target anchor if found, <code>null</code> otherwise
      */
-    private static AnchorElement getRouterLink(Event clickEvent) {
+    private static AnchorElement getAnchorElement(Event clickEvent) {
         assert "click".equals(clickEvent.getType());
 
         Element target = (Element) clickEvent.getTarget();
         EventTarget eventListenerElement = clickEvent.getCurrentTarget();
         // Target can become null if another click handler detaches the element
         while (target != null && target != eventListenerElement) {
-            if (isRouterLinkAnchorElement(target)) {
+            if (isAnchorElement(target)) {
                 return (AnchorElement) target;
             }
             target = target.getParentElement();
@@ -184,16 +188,27 @@ public class RouterLinkHandler {
     }
 
     /**
-     * Checks if the given element is {@code <a routerlink>}.
+     * Checks if the given element is an anchor element {@code <a>}.
      *
      * @param target
      *            the element to check
-     * @return <code>true</code> if the element is a routerlink,
+     * @return <code>true</code> if the element is an anchor <code>false</code>
+     *         otherwise
+     */
+    private static boolean isAnchorElement(Element target) {
+        return "a".equalsIgnoreCase(target.getTagName());
+    }
+
+    /**
+     * Checks if the given element is an anchor element {@code <a routerlink>}.
+     *
+     * @param target
+     *            the element to check
+     * @return <code>true</code> if the element is a routerlink
      *         <code>false</code> otherwise
      */
-    private static boolean isRouterLinkAnchorElement(Element target) {
-        return "a".equalsIgnoreCase(target.getTagName()) && target
-                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE);
+    private static boolean isRouterLinkAnchorElement(AnchorElement anchor) {
+        return anchor.hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE);
     }
 
     private static boolean hasModifierKeys(Event clickEvent) {
