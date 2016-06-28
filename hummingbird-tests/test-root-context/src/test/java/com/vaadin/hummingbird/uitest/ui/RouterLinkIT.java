@@ -15,14 +15,15 @@ public class RouterLinkIT extends PhantomJSTest {
         verifySamePage();
 
         testInsideServlet("foo", "foo");
+        testInsideServlet("./foobar", "foobar");
         testInsideServlet("foo/bar", "foo/bar");
 
-        testInsideServlet("./foobar", "foobar");
         testInsideServlet("./foobar?what=not", "foobar?what=not");
-        testInsideServlet("./foobar?what=not#fragment", "foobar?what=not",
-                "foobar?what=not#fragment");
 
         testInsideServlet("/run/baz", "baz");
+
+        testInsideServlet("./foobar?what=not#fragment", "foobar?what=not",
+                "foobar?what=not#fragment");
 
         clickLink("empty");
         verifyInsideServletLocation("");
@@ -50,6 +51,18 @@ public class RouterLinkIT extends PhantomJSTest {
         String currentUrl = getDriver().getCurrentUrl();
         Assert.assertTrue("Invalid URL: " + currentUrl,
                 currentUrl.startsWith("http://www.google."));
+    }
+
+    @Test
+    public void testImageInsideRouterLink() {
+        open();
+
+        verifySamePage();
+
+        findElement(By.tagName("img")).click();
+
+        verifyInsideServletLocation("image/link");
+        verifyPopStateEvent("image/link");
     }
 
     private void testInsideServlet(String linkToTest,

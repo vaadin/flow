@@ -21,6 +21,7 @@ import com.vaadin.client.hummingbird.RouterLinkHandler;
 
 import elemental.client.Browser;
 import elemental.events.Event;
+import elemental.events.PopStateEvent;
 
 /**
  * Handles <code>popstate</code> events and sends them to the server.
@@ -75,10 +76,14 @@ public class PopStateHandler {
 
         assert pathAfterPreviousResponse != null : "Initial response has not ended before pop state event was triggered";
 
-        // ignore pop state events caused by fragment change
+        // don't visit server on pop state events caused by fragment change
         if (Objects.equals(path, pathAfterPreviousResponse)) {
+            registry.getScrollPositionHandler()
+                    .onPopStateEvent((PopStateEvent) e, false);
             return;
         }
+        registry.getScrollPositionHandler().onPopStateEvent((PopStateEvent) e,
+                true);
 
         String location = URIResolver.getCurrentLocationRelativeToBaseUri();
         // don't send hash to server
@@ -89,5 +94,4 @@ public class PopStateHandler {
         RouterLinkHandler.sendServerNavigationEvent(registry, location,
                 stateObject);
     }
-
 }

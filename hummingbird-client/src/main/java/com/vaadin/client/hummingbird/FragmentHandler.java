@@ -38,34 +38,36 @@ public class FragmentHandler {
 
     private final String previousHref;
     private final String newHref;
+    private final Registry registry;
 
     private HandlerRegistration handlerRegistration;
 
     /**
-     * Creates a new fragment handler for the given locations.
+     * Creates a new fragment handler.
      *
      * @param previousHref
      *            the href before the navigation
      * @param newHref
      *            the href being navigated into
+     * @param registry
+     *            the registry to bind to
      */
-    public FragmentHandler(String previousHref, String newHref) {
+    public FragmentHandler(String previousHref, String newHref,
+            Registry registry) {
         assert previousHref != null;
         assert newHref != null;
 
         this.previousHref = previousHref;
         this.newHref = newHref;
+        this.registry = registry;
     }
 
     /**
      * Adds a request response tracker to the given registry for making sure the
      * fragment is handled correctly if the location has not been updated during
      * the response.
-     *
-     * @param registry
-     *            the registry to bind to
      */
-    public void bind(Registry registry) {
+    public void bind() {
         handlerRegistration = registry.getRequestResponseTracker()
                 .addResponseHandlingEndedHandler(this::onResponseHandlingEnded);
     }
@@ -77,10 +79,16 @@ public class FragmentHandler {
         String currentHref = Browser.getWindow().getLocation().getHref();
 
         if (Objects.equals(currentHref, newHref)) {
+            // make scroll position handler ignore pop state event
+            registry.getScrollPositionHandler()
+                    .setIgnoreScrollRestorationOnNextPopStateEvent(true);
             // trigger possible scroll to fragment identifier
             Browser.getWindow().getLocation().replace(newHref);
             // fire fragment change event
             fireHashChangeEvent(previousHref, newHref);
+
+            registry.getScrollPositionHandler()
+                    .setIgnoreScrollRestorationOnNextPopStateEvent(false);
         }
 
         handlerRegistration.removeHandler();
