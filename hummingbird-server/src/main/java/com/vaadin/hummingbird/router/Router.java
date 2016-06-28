@@ -133,9 +133,8 @@ public class Router implements Serializable {
         }
 
         if (!handler.isPresent()) {
-            Class<? extends View> errorView = configuration.getErrorView();
-            handler = Optional.of(new StaticViewRenderer(errorView,
-                    configuration.getParentViewsAsList(errorView)));
+            NavigationHandler errorHandler = configuration.getErrorHandler();
+            handler = Optional.of(errorHandler);
 
             // for initial request return 404 access code
             if (initialRequest) {

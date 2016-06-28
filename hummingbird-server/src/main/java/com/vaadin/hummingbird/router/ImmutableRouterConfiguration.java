@@ -134,14 +134,15 @@ public interface ImmutableRouterConfiguration {
     boolean isConfigured();
 
     /**
-     * Gets the error view type.
+     * Gets the error handler.
      * <p>
-     * The error view corresponds to the 404 error page. It is shown when the
-     * user tries to navigate into an undefined route.
+     * The error handler shows views corresponding to the 404 error page. It is
+     * used when the user tries to navigate into an undefined route.
      * <p>
-     * By default returns the {@link DefaultErrorView}.
+     * By default returns a {@link DefaultViewRenderer} configured to show
+     * {@link DefaultErrorView}.
      *
-     * @return the error view type
+     * @return the error view handler, not <code>null</code>
      */
-    Class<? extends View> getErrorView();
+    NavigationHandler getErrorHandler();
 }

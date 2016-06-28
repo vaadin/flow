@@ -40,23 +40,28 @@ public abstract class ViewRenderer implements NavigationHandler {
     /**
      * Gets the view type to show.
      *
+     * @param event
+     *            the event for which to show the view
+     *
      * @return the view type, not <code>null</code>
      */
-    public abstract Class<? extends View> getViewType();
+    public abstract Class<? extends View> getViewType(NavigationEvent event);
 
     /**
      * Gets the parent view types to show for the given view type, starting from
      * the parent view immediately wrapping the view type.
      *
-     * @see #getViewType()
+     * @see #getViewType(NavigationEvent)
      *
+     * @param event
+     *            the event for which to show the parent views
      * @param viewType
      *            view type to show
      *
      * @return a list of parent view types, not <code>null</code>
      */
     public abstract List<Class<? extends HasChildView>> getParentViewTypes(
-            Class<? extends View> viewType);
+            NavigationEvent event, Class<? extends View> viewType);
 
     /**
      * Gets the view instance to use for the given view type and the
@@ -89,17 +94,15 @@ public abstract class ViewRenderer implements NavigationHandler {
      * @return the route definition, or <code>null</code> if no route is
      *         available
      */
-    protected String getRoute() {
-        return null;
-    }
+    protected abstract String getRoute();
 
     @Override
     public void handle(NavigationEvent event) {
         UI ui = event.getUI();
 
-        Class<? extends View> viewType = getViewType();
+        Class<? extends View> viewType = getViewType(event);
         List<Class<? extends HasChildView>> parentViewTypes = getParentViewTypes(
-                viewType);
+                event, viewType);
 
         assert viewType != null;
         assert parentViewTypes != null;

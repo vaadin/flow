@@ -56,7 +56,8 @@ public class RouterConfiguration
 
     private PageTitleGenerator pageTitleGenerator;
 
-    private Class<? extends View> errorView = DefaultErrorView.class;
+    private NavigationHandler errorHandler = new DefaultViewRenderer(
+            DefaultErrorView.class, null);
 
     /**
      * Creates a new empty immutable configuration.
@@ -88,7 +89,7 @@ public class RouterConfiguration
 
         pageTitleGenerator = original.pageTitleGenerator;
 
-        errorView = original.errorView;
+        errorHandler = original.errorHandler;
 
         routeTreeRoot = new RouteTreeNode(original.routeTreeRoot);
 
@@ -252,24 +253,7 @@ public class RouterConfiguration
         assert viewType != null;
 
         mapViewToRoute(viewType, path);
-        setRoute(path, new ViewRenderer() {
-            @Override
-            public Class<? extends View> getViewType() {
-                return viewType;
-            }
-
-            @Override
-            public List<Class<? extends HasChildView>> getParentViewTypes(
-                    Class<? extends View> actualViewType) {
-                assert actualViewType == viewType;
-                return getParentViewsAsList(actualViewType);
-            }
-
-            @Override
-            protected String getRoute() {
-                return path;
-            }
-        });
+        setRoute(path, new DefaultViewRenderer(viewType, path));
     }
 
     /**
@@ -510,12 +494,35 @@ public class RouterConfiguration
     }
 
     @Override
-    public Class<? extends View> getErrorView() {
-        return errorView;
+    public NavigationHandler getErrorHandler() {
+        return errorHandler;
     }
 
     /**
-     * Sets the error view type to use.
+     * Sets the error handler to use.
+     * <p>
+     * The error handler shows views corresponding to the 404 error page. It is
+     * used when the user tries to navigate into an undefined route.
+     * <p>
+     * The default error handler uses a {@link DefaultViewRenderer} to show
+     * {@link DefaultErrorView}.
+     *
+     * @param errorHandler
+     *            the navigation handler to use for showing errors, not
+     *            <code>null</code>
+     */
+    public void setErrorHandler(NavigationHandler errorHandler) {
+        if (errorHandler == null) {
+            throw new IllegalArgumentException("errorHandler cannot be null");
+        }
+        throwIfImmutable();
+        this.errorHandler = errorHandler;
+    }
+
+    /**
+     * Sets the error view type to use. This is a shorthand for calling
+     * {@link #setErrorHandler(NavigationHandler)} with a
+     * {@link DefaultViewRenderer}.
      * <p>
      * The error view corresponds to the 404 error page. It is shown when the
      * user tries to navigate into an undefined route.
@@ -537,8 +544,8 @@ public class RouterConfiguration
         if (errorView == null) {
             throw new IllegalArgumentException("errorView cannot be null");
         }
-        throwIfImmutable();
-        this.errorView = errorView;
+
+        setErrorHandler(new DefaultViewRenderer(errorView, null));
     }
 
     /**

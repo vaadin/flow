@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.servlet;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.ServletConfig;
@@ -22,12 +24,14 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
+import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.StaticViewRenderer;
+import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.router.ViewRenderer;
 import com.vaadin.hummingbird.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
 import com.vaadin.server.VaadinServlet;
 
@@ -45,10 +49,29 @@ public class ViewTestServlet extends VaadinServlet {
                 public Optional<NavigationHandler> resolve(
                         NavigationEvent navigationEvent) {
                     try {
-                        return Optional.of(new StaticViewRenderer(
-                                viewLocator.findViewClass(navigationEvent
-                                        .getLocation().getFirstSegment()),
-                                ViewTestLayout.class));
+                        Class<? extends View> viewType = viewLocator
+                                .findViewClass(navigationEvent.getLocation()
+                                        .getFirstSegment());
+                        return Optional.of(new ViewRenderer() {
+                            @Override
+                            public Class<? extends View> getViewType(
+                                    NavigationEvent event) {
+                                return viewType;
+                            }
+
+                            @Override
+                            public List<Class<? extends HasChildView>> getParentViewTypes(
+                                    NavigationEvent event,
+                                    Class<? extends View> viewType) {
+                                return Collections
+                                        .singletonList(ViewTestLayout.class);
+                            }
+
+                            @Override
+                            protected String getRoute() {
+                                return null;
+                            }
+                        });
                     } catch (ClassNotFoundException e) {
                         return Optional.empty();
                     }

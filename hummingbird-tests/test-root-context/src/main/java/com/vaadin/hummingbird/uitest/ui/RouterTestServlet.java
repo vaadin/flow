@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -24,6 +26,7 @@ import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.router.DefaultErrorView;
+import com.vaadin.hummingbird.router.DefaultViewRenderer;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.hummingbird.router.NavigationEvent;
@@ -31,8 +34,8 @@ import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.hummingbird.router.StaticViewRenderer;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.router.ViewRenderer;
 import com.vaadin.hummingbird.uitest.ui.RouterTestServlet.MyRouterConfigurator;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinSession;
@@ -53,8 +56,8 @@ public class RouterTestServlet extends VaadinServlet {
                         NavigationEvent navigationEvent) {
                     if (navigationEvent.getLocation().getFirstSegment()
                             .equals("")) {
-                        return Optional
-                                .of(new StaticViewRenderer(NormalView.class));
+                        return Optional.of(new DefaultViewRenderer(
+                                NormalView.class, null));
                     }
 
                     Optional<Class<? extends View>> res = getViewClasses()
@@ -62,11 +65,28 @@ public class RouterTestServlet extends VaadinServlet {
                                     .equals(navigationEvent.getLocation()
                                             .getFirstSegment()))
                             .findAny();
-                    NavigationHandler handler = res
-                            .map(clazz -> new StaticViewRenderer(clazz,
-                                    Layout.class))
-                            .orElse(new StaticViewRenderer(
-                                    DefaultErrorView.class));
+                    NavigationHandler handler = res.<NavigationHandler> map(
+                            clazz -> new ViewRenderer() {
+                                @Override
+                                public Class<? extends View> getViewType(
+                                        NavigationEvent event) {
+                                    return clazz;
+                                }
+
+                                @Override
+                                public List<Class<? extends HasChildView>> getParentViewTypes(
+                                        NavigationEvent event,
+                                        Class<? extends View> viewType) {
+                                    return Collections
+                                            .singletonList(Layout.class);
+                                }
+
+                                @Override
+                                protected String getRoute() {
+                                    return null;
+                                }
+                            }).orElse(new DefaultViewRenderer(
+                                    DefaultErrorView.class, null));
                     return Optional.of(handler);
                 }
             });

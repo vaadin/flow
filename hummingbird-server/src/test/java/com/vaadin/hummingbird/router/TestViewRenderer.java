@@ -25,7 +25,7 @@ import java.util.List;
  *
  * @author Vaadin Ltd
  */
-public class StaticViewRenderer extends ViewRenderer {
+public class TestViewRenderer extends ViewRenderer {
 
     private final Class<? extends View> viewType;
     // Starts with the view's immediate parent
@@ -43,7 +43,7 @@ public class StaticViewRenderer extends ViewRenderer {
      *            parent view immediately wrapping the view type
      */
     @SafeVarargs
-    public StaticViewRenderer(Class<? extends View> viewType,
+    public TestViewRenderer(Class<? extends View> viewType,
             Class<? extends HasChildView>... parentViewTypes) {
         this(viewType, Arrays.asList(parentViewTypes));
     }
@@ -59,7 +59,7 @@ public class StaticViewRenderer extends ViewRenderer {
      *            a list of parent view types to show, starting from the parent
      *            view immediately wrapping the view type
      */
-    public StaticViewRenderer(Class<? extends View> viewType,
+    public TestViewRenderer(Class<? extends View> viewType,
             List<Class<? extends HasChildView>> parentViewTypes) {
         ViewRenderer.checkDuplicates(viewType, parentViewTypes);
 
@@ -68,13 +68,18 @@ public class StaticViewRenderer extends ViewRenderer {
     }
 
     @Override
-    public Class<? extends View> getViewType() {
+    public Class<? extends View> getViewType(NavigationEvent event) {
         return viewType;
     }
 
     @Override
     public List<Class<? extends HasChildView>> getParentViewTypes(
-            Class<? extends View> viewType) {
+            NavigationEvent event, Class<? extends View> viewType) {
         return Collections.unmodifiableList(parentViewTypes);
+    }
+
+    @Override
+    protected String getRoute() {
+        return null;
     }
 }
