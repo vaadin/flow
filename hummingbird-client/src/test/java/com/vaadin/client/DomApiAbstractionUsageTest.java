@@ -38,7 +38,8 @@ public class DomApiAbstractionUsageTest {
             .of(DomElement.class, DomNode.class, ResourceLoader.class,
                     BrowserInfo.class, DefaultReconnectDialog.class,
                     SystemErrorHandler.class, LoadingIndicator.class,
-                    RouterLinkHandler.class, Profiler.class, PreRenderer.class)
+                    RouterLinkHandler.class, Profiler.class, PreRenderer.class,
+                    ScrollPositionHandler.class)
             .map(Class::getName).collect(Collectors.toSet());
 
     private static final Set<Class<?>> ignoredElementalClasses = Stream

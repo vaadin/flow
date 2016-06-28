@@ -3,9 +3,11 @@ package com.vaadin.client.hummingbird;
 import com.google.gwt.core.client.JavaScriptException;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
+import com.vaadin.client.ScrollPositionHandler;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.communication.MessageHandler;
+import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
@@ -48,6 +50,10 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
                 set(UILifecycle.class, lifecycle);
                 set(ServerConnector.class, connector);
                 set(MessageHandler.class, new MessageHandler(this));
+                set(RequestResponseTracker.class,
+                        new RequestResponseTracker(this));
+                set(ScrollPositionHandler.class,
+                        new ScrollPositionHandler(this));
             }
         };
         boundElement = Browser.getDocument().createDivElement();
@@ -59,7 +65,7 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         currentEvent = null;
         assertInvocations(0);
 
-        Element target = createTarget("a", "foobar", true);
+        Element target = createTarget("a", "foobar3", true);
         boundElement.appendChild(target);
         fireClickEvent(target);
 
@@ -204,20 +210,6 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
 
         assertInvocations(0);
         assertEventDefaultNotPrevented();
-    }
-
-    public void testRouterLink_clickOnImage_handled() {
-        currentEvent = null;
-        assertInvocations(0);
-
-        Element routerLinkElement = createTarget("a", "foobar", true);
-        boundElement.appendChild(routerLinkElement);
-        Element image = Browser.getDocument().createImageElement();
-        routerLinkElement.appendChild(image);
-        fireClickEvent(image);
-
-        assertInvocations(1);
-        assertEventDefaultPrevented();
     }
 
 }
