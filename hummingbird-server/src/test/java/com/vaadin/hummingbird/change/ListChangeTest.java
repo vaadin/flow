@@ -43,7 +43,7 @@ public class ListChangeTest {
         ListSpliceChange change = new ListSpliceChange(feature, true, 0, 1,
                 Arrays.asList(child1, child2));
 
-        JsonObject json = change.toJson();
+        JsonObject json = change.toJson(null);
 
         Assert.assertEquals(change.getNode().getId(),
                 (int) json.getNumber(JsonConstants.CHANGE_NODE));
@@ -69,7 +69,7 @@ public class ListChangeTest {
         ListSpliceChange change = new ListSpliceChange(feature, false, 1, 0,
                 Arrays.asList());
 
-        JsonObject json = change.toJson();
+        JsonObject json = change.toJson(null);
 
         Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_REMOVE));
     }
@@ -79,7 +79,7 @@ public class ListChangeTest {
         ListSpliceChange change = new ListSpliceChange(feature, false, 1, 0,
                 Arrays.asList());
 
-        JsonObject json = change.toJson();
+        JsonObject json = change.toJson(null);
 
         Assert.assertFalse(json.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES));
     }

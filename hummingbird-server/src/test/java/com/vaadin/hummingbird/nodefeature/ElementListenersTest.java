@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.nodefeature;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -27,12 +26,9 @@ import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
-import com.vaadin.hummingbird.util.JsonUtil;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 public class ElementListenersTest
         extends AbstractNodeFeatureTest<ElementListenerMap> {
@@ -137,11 +133,6 @@ public class ElementListenersTest
     }
 
     private Set<String> getExpressions(String name) {
-        JsonArray json = (JsonArray) ns.get(name);
-        if (json == null) {
-            return null;
-        }
-        return JsonUtil.stream(json).map(JsonValue::asString)
-                .collect(Collectors.toSet());
+        return ns.getExpressions(name);
     }
 }
