@@ -464,8 +464,10 @@ public class RouterConfigurationTest {
 
     private void assertErrorView(Router router,
             Class<? extends View> errorView) {
-        Assert.assertEquals(errorView,
-                router.getConfiguration().getErrorView());
+        ViewRenderer errorHandler = (ViewRenderer) router.getConfiguration()
+                .getErrorHandler();
+
+        Assert.assertEquals(errorView, errorHandler.getViewType(null));
     }
 
     @Test
