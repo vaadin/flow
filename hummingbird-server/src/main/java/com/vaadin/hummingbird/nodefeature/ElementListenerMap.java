@@ -17,10 +17,12 @@ package com.vaadin.hummingbird.nodefeature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import com.vaadin.hummingbird.ConstantPoolKey;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.DomEventListener;
@@ -28,8 +30,6 @@ import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.util.JsonUtil;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
 
 /**
  * Map of DOM events with server-side listeners. The key set of this map
@@ -39,8 +39,18 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 public class ElementListenerMap extends NodeMap {
+    /*
+     * Shared empty serializable set instance to avoid allocating lots of memory
+     * for the default case of no event data expressions at all. Cannot easily
+     * make the instance immutable while still implementing HashSet. To avoid
+     * accidental modification, we instead assert that it's empty when it's
+     * used.
+     */
+    private static final HashSet<String> emptyHashSet = new HashSet<>();
+
     // Server-side only data
     private HashMap<String, ArrayList<DomEventListener>> listeners;
+    private HashMap<String, Set<String>> typeToExpressions;
 
     /**
      * Creates a new element listener map for the given node.
@@ -72,6 +82,7 @@ public class ElementListenerMap extends NodeMap {
 
         if (listeners == null) {
             listeners = new HashMap<>();
+            typeToExpressions = new HashMap<>();
         }
 
         // Could optimize slightly by integrating the initialization into the
@@ -80,26 +91,36 @@ public class ElementListenerMap extends NodeMap {
             assert !listeners.containsKey(eventType);
 
             listeners.put(eventType, new ArrayList<>());
-            put(eventType, Json.createArray());
+
+            // Make sure the "immutable" instance hasn't accidentally been
+            // mutated
+            assert emptyHashSet.isEmpty();
+            typeToExpressions.put(eventType, emptyHashSet);
+            put(eventType, createConstantPoolKey(emptyHashSet));
         }
 
         listeners.get(eventType).add(listener);
 
         if (eventDataExpressions.length != 0) {
-            JsonArray eventDataJson = (JsonArray) get(eventType);
-
-            Set<String> eventData = JsonUtil.stream(eventDataJson)
-                    .map(JsonValue::asString).collect(Collectors.toSet());
+            HashSet<String> eventData = new HashSet<>(
+                    typeToExpressions.get(eventType));
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
-                // Send full new event data to the client if the set changed
+                // Update the constant pool reference if the value has changed
+                put(eventType, createConstantPoolKey(eventData));
 
-                put(eventType, eventData.stream().map(Json::create)
-                        .collect(JsonUtil.asArray()));
+                // Remember value for server-side use
+                typeToExpressions.put(eventType, eventData);
             }
         }
 
         return () -> removeListener(eventType, listener);
+    }
+
+    private static ConstantPoolKey createConstantPoolKey(
+            HashSet<String> eventData) {
+        return new ConstantPoolKey(eventData.stream().map(Json::create)
+                .collect(JsonUtil.asArray()));
     }
 
     private void removeListener(String eventType, DomEventListener listener) {
@@ -113,9 +134,11 @@ public class ElementListenerMap extends NodeMap {
             // No more listeners of this type?
             if (listenerList.isEmpty()) {
                 listeners.remove(eventType);
+                typeToExpressions.remove(eventType);
 
                 if (listeners.isEmpty()) {
                     listeners = null;
+                    typeToExpressions = null;
                 }
 
                 // Remove from the set that is synchronized with the client
@@ -144,5 +167,13 @@ public class ElementListenerMap extends NodeMap {
         ArrayList<DomEventListener> copy = new ArrayList<>(typeListeners);
 
         copy.forEach(l -> l.handleEvent(event));
+    }
+
+    public Set<String> getExpressions(String name) {
+        if (typeToExpressions == null) {
+            return null;
+        } else {
+            return Collections.unmodifiableSet(typeToExpressions.get(name));
+        }
     }
 }

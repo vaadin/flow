@@ -108,11 +108,15 @@ public class UidlWriter implements Serializable {
 
         encodeChanges(ui, stateChanges, templates);
 
-        DependencyList dependencyList = ui.getInternals().getDependencyList();
+        DependencyList dependencyList = uiInternals.getDependencyList();
         JsonArray pendingDeps = dependencyList.getPendingSendToClient();
         if (pendingDeps.length() != 0) {
             response.put(DependencyList.DEPENDENCY_KEY, pendingDeps);
             dependencyList.clearPendingSendToClient();
+        }
+        if (uiInternals.getConstantPool().hasNewConstants()) {
+            response.put("constants",
+                    uiInternals.getConstantPool().dumpConstants());
         }
         if (stateChanges.length() != 0) {
             response.put("changes", stateChanges);
@@ -166,11 +170,10 @@ public class UidlWriter implements Serializable {
      */
     private void encodeChanges(UI ui, JsonArray stateChanges,
             JsonObject templates) {
-        StateTree stateTree = ui.getInternals().getStateTree();
+        UIInternals uiInternals = ui.getInternals();
+        StateTree stateTree = uiInternals.getStateTree();
 
         Consumer<TemplateNode> templateEncoder = new Consumer<TemplateNode>() {
-            private UIInternals uiInternals = ui.getInternals();
-
             @Override
             public void accept(TemplateNode templateNode) {
                 // Send to client if it's a new template
@@ -188,11 +191,12 @@ public class UidlWriter implements Serializable {
             runIfNewTemplateChange(change, templateEncoder);
 
             // send components' @StyleSheet and @JavaScript dependencies
-            runIfComponentAttachChange(change, c -> ui.getInternals()
-                    .addComponentDependencies(c.getClass()));
+            runIfComponentAttachChange(change,
+                    c -> uiInternals.addComponentDependencies(c.getClass()));
 
             // Encode the actual change
-            stateChanges.set(stateChanges.length(), change.toJson());
+            stateChanges.set(stateChanges.length(),
+                    change.toJson(uiInternals.getConstantPool()));
         });
     }
 

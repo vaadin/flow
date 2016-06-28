@@ -104,6 +104,27 @@ public class JsonCodec {
     }
 
     /**
+     * Encodes a "primitive" value or a constant pool reference to JSON. This
+     * methods supports {@link ConstantPoolKey} in addition to the types
+     * supported by {@link #encodeWithoutTypeInfo(Object)}.
+     *
+     * @param value
+     *            the value to encode
+     * @param constantPool
+     *            the constant pool to use for encoding constant pool references
+     * @return the value encoded as JSON
+     */
+    public static JsonValue encodeWithConstantPool(Object value,
+            ConstantPool constantPool) {
+        if (value instanceof ConstantPoolKey) {
+            ConstantPoolKey reference = (ConstantPoolKey) value;
+            return Json.create(constantPool.getConstantId(reference));
+        } else {
+            return encodeWithoutTypeInfo(value);
+        }
+    }
+
+    /**
      * Helper for encoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
      * {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
@@ -128,7 +149,7 @@ public class JsonCodec {
         }
         assert !canEncodeWithoutTypeInfo(type);
         throw new IllegalArgumentException(
-                "Can't encode" + value.getClass() + " to json");
+                "Can't encode " + value.getClass() + " to json");
     }
 
     /**

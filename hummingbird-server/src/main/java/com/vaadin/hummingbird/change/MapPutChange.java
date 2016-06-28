@@ -16,6 +16,7 @@
 
 package com.vaadin.hummingbird.change;
 
+import com.vaadin.hummingbird.ConstantPool;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
@@ -72,13 +73,13 @@ public class MapPutChange extends NodeFeatureChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json) {
+    protected void populateJson(JsonObject json, ConstantPool constantPool) {
         // Set the type and key before calling super to make the keys appear in
         // a more logical order
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_PUT);
         json.put(JsonConstants.CHANGE_MAP_KEY, key);
 
-        super.populateJson(json);
+        super.populateJson(json, constantPool);
 
         if (value instanceof StateNode) {
             StateNode node = (StateNode) value;
@@ -86,7 +87,7 @@ public class MapPutChange extends NodeFeatureChange {
                     Json.create(node.getId()));
         } else {
             json.put(JsonConstants.CHANGE_PUT_VALUE,
-                    JsonCodec.encodeWithoutTypeInfo(value));
+                    JsonCodec.encodeWithConstantPool(value, constantPool));
         }
     }
 }
