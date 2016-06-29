@@ -15,6 +15,7 @@
 		<gwt.module>com.vaadin.ClientEngine</gwt.module>
 		<gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
 		<gwt.module.style>OBF</gwt.module.style>
+		<gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
 	</properties>
 
 	<dependencyManagement>
@@ -114,7 +115,7 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>gwt-maven-plugin</artifactId>
 				<version>2.8.0-beta1</version>
-				<!-- Remove dependencies when gwt-maven-plugin 2.8.0-SNAPSHOT is available -->
+				<!-- Remove dependencies when gwt-maven-plugin 2.8.0-RC1 is available -->
 				<dependencies>
 					<dependency>
 						<groupId>com.google.gwt</groupId>
@@ -157,6 +158,7 @@
 					<webappDirectory>${gwt.module.output}</webappDirectory>
 					<launcherDir>${gwt.module.output}</launcherDir>
 					<compileReport>true</compileReport>
+					<bindAddress>${gwt.sdm.bindAddress}</bindAddress>
 					<modules>
 						<module>${gwt.module}</module>
 					</modules>
