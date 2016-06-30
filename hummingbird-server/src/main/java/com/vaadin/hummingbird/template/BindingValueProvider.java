@@ -64,6 +64,11 @@ public interface BindingValueProvider extends Serializable {
         if (value == null) {
             return defaultValue;
         } else {
+            // Need to format values the same way as JS does to avoid
+            // differences between the pre-rendered and the live version
+            if (value instanceof Double) {
+                return JavaScriptNumberFormatter.toString((double) value);
+            }
             return value.toString();
         }
     }

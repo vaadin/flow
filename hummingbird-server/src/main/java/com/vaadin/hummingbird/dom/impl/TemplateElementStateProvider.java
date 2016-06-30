@@ -132,7 +132,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         Optional<BindingValueProvider> provider = templateNode
                 .getAttributeBinding(attribute);
         String boundValue = provider.map(binding -> binding.getValue(node, ""))
-                .map(Object::toString).orElse(null);
+                .orElse(null);
         if (provider.isPresent()
                 && !(provider.get() instanceof StaticBindingValueProvider)) {
             return boundValue;
