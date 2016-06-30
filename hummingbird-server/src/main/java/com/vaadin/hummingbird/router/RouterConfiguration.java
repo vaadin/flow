@@ -291,7 +291,7 @@ public class RouterConfiguration
             parentViewTypes.put(viewType, parentView);
         } else if (parentView != parentViewTypes.get(viewType)) {
             throw new IllegalStateException(
-                    "There is alerady a parent view configured for "
+                    "There is already a parent view configured for "
                             + viewType);
         }
     }

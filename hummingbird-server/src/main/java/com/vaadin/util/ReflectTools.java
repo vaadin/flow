@@ -390,7 +390,7 @@ public class ReflectTools implements Serializable {
     public static String getPropertyName(Method method) {
         String methodName = method.getName();
         assert isGetter(method)
-                || isSetter(method) : "Method is not a valid getter or setter:"
+                || isSetter(method) : "Method is not a valid getter or setter: "
                         + methodName;
 
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
@@ -410,7 +410,7 @@ public class ReflectTools implements Serializable {
     public static Type getPropertyType(Method method) {
         if (!isGetter(method) && !isSetter(method)) {
             throw new IllegalArgumentException(
-                    "Method is not a valid getter or setter");
+                    "Method is not a valid getter or setter: " + method);
         }
         if (isGetter(method)) {
             return method.getGenericReturnType();
