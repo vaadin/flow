@@ -15,6 +15,7 @@
  */
 package com.vaadin.humminbird.tutorial.component;
 
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.ui.Component;
@@ -27,9 +28,9 @@ public class ComponentBasic {
 
         public TextField(String value) {
             getElement().setProperty("value", value);
-            getElement().synchronizeProperty("value", "change");
         }
 
+        @Synchronize("change")
         public String getValue() {
             return getElement().getProperty("value");
         }

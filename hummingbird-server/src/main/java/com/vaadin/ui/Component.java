@@ -102,6 +102,7 @@ public abstract class Component implements HasElement, Serializable,
             Element e = new Element(tagName);
             setElement(this, e);
         }
+        configureSynchronizedProperties();
     }
 
     /**
@@ -122,6 +123,16 @@ public abstract class Component implements HasElement, Serializable,
         } else if (element != null) {
             setElement(this, element, true);
         }
+    }
+
+    /**
+     * Configures synchronized properties based on given annotations.
+     */
+    private void configureSynchronizedProperties() {
+        ComponentUtil.getSynchronizedProperties(getClass())
+                .forEach(getElement()::addSynchronizedProperty);
+        ComponentUtil.getSynchronizedPropertyEvents(getClass())
+                .forEach(getElement()::addSynchronizedPropertyEvent);
     }
 
     private void mapToElement(String tagName) {
