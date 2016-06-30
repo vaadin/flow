@@ -348,9 +348,15 @@ public class MessageHandler {
 
                 if (!registry.getApplicationConfiguration()
                         .isProductionMode()) {
-                    JsonObject debugJson = tree.getRootNode().getDebugJson();
-                    Console.log("StateTree after applying changes:");
-                    Console.log(debugJson);
+                    try {
+                        JsonObject debugJson = tree.getRootNode()
+                                .getDebugJson();
+                        Console.log("StateTree after applying changes:");
+                        Console.log(debugJson);
+                    } catch (Exception e) {
+                        Console.error("Failed to log state tree");
+                        Console.error(e);
+                    }
                 }
             }
 

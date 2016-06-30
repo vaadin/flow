@@ -30,6 +30,7 @@ import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.uitest.servlet.ViewTestServlet.ViewTestConfigurator;
 import com.vaadin.server.VaadinServlet;
+import com.vaadin.server.VaadinServletService;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
 @VaadinServletConfiguration(productionMode = false, routerConfigurator = ViewTestConfigurator.class)
@@ -48,8 +49,13 @@ public class ViewTestServlet extends VaadinServlet {
                         Class<? extends View> viewType = viewLocator
                                 .findViewClass(navigationEvent.getLocation()
                                         .getFirstSegment());
-                        return Optional.of(new TestViewRenderer(viewType,
-                                ViewTestLayout.class));
+                        if (VaadinServletService.getCurrentRequest()
+                                .getParameter("noheader") != null) {
+                            return Optional.of(new TestViewRenderer(viewType));
+                        } else {
+                            return Optional.of(new TestViewRenderer(viewType,
+                                    ViewTestLayout.class));
+                        }
                     } catch (ClassNotFoundException e) {
                         return Optional.empty();
                     }
