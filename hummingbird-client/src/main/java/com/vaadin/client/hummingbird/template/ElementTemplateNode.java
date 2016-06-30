@@ -42,7 +42,8 @@ public interface ElementTemplateNode extends TemplateNode {
      * Gets a map of property bindings, as a JSON object.
      *
      * @see Binding
-     * @return a JSON object mapping property names to bindings.
+     * @return a JSON object mapping property names to bindings, or
+     *         <code>null</code> if not present.
      */
     @JsProperty
     JsonObject getProperties();
@@ -51,7 +52,8 @@ public interface ElementTemplateNode extends TemplateNode {
      * Gets a map of attribute bindings, as a JSON object.
      *
      * @see Binding
-     * @return a JSON object mapping attribute names to bindings.
+     * @return a JSON object mapping attribute names to bindings, or
+     *         <code>null</code> if not present.
      */
     @JsProperty
     JsonObject getAttributes();
@@ -60,7 +62,8 @@ public interface ElementTemplateNode extends TemplateNode {
      * Gets a map of class name bindings, as a JSON object.
      *
      * @see Binding
-     * @return a JSON object mapping class names to bindings.
+     * @return a JSON object mapping class names to bindings, or
+     *         <code>null</code> if not present..
      */
     @JsProperty
     JsonObject getClassNames();
@@ -69,7 +72,8 @@ public interface ElementTemplateNode extends TemplateNode {
      * Gets a map of event handlers, as a JSON object.
      *
      * @see Binding
-     * @return a JSON object mapping event names to event handlers.
+     * @return a JSON object mapping event names to event handlers, or
+     *         <code>null</code> if not present..
      */
     @JsProperty
     JsonObject getEventHandlers();
