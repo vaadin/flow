@@ -15,35 +15,71 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.Text;
 
 public class SynchronizedPropertyView extends AbstractDivView {
 
+    @Tag("input")
+    public static class InputSync extends Component {
+        public InputSync(Div label, String event) {
+            getElement().setAttribute("placeholder", "Enter text here");
+
+            label.setText("Server value: " + getElement().getProperty("value"));
+            getElement().synchronizeProperty("value", event);
+            getElement().addEventListener(event, e -> {
+                label.setText(
+                        "Server value: " + getElement().getProperty("value"));
+            });
+        }
+
+    }
+
     @Override
     protected void onShow() {
-        getElement().appendChild(
-                ElementFactory.createSpan("Synchronized on 'change' event"));
-        Element input = ElementFactory.createInput().setAttribute("placeholder",
-                "Enter text here");
-        input.synchronizeProperty("value", "change");
-        Element label = ElementFactory
-                .createDiv("Server value: " + input.getProperty("value"));
-        input.addEventListener("change", e -> {
-            label.setText("Server value: " + input.getProperty("value"));
-        });
-        getElement().appendChild(input, label);
+        add(new Text("Synchronized on 'change' event"));
+        Div label = new Div();
+        label.setId("syncOnChangeLabel");
+        InputSync syncOnChange = new InputSync(label, "change");
+        syncOnChange.setId("syncOnChange");
+        add(syncOnChange);
+        add(label);
 
-        getElement().appendChild(
-                ElementFactory.createSpan("Synchronized on 'input' event"));
-        Element input2 = ElementFactory.createInput()
-                .setAttribute("placeholder", "Enter text here");
-        input2.synchronizeProperty("value", "input");
-        Element label2 = ElementFactory
-                .createDiv("Server value: " + input2.getProperty("value"));
-        input2.addEventListener("input", e -> {
-            label2.setText("Server value: " + input2.getProperty("value"));
+        add(new Text("Synchronized on 'keyup' event"));
+        label = new Div();
+        label.setId("syncOnKeyUpLabel");
+        InputSync syncOnKeyUp = new InputSync(label, "keyup");
+        syncOnKeyUp.setId("syncOnKeyUp");
+        add(syncOnKeyUp);
+        add(label);
+
+        add(new Text(
+                "Synchronize 'value' on 'input' event and 'valueAsNumber' on 'blur'"));
+        Div valueLabel = new Div();
+        valueLabel.setId("multiSyncValueLabel");
+        Div valueAsNumberLabel = new Div();
+        valueAsNumberLabel.setId("multiSyncValueAsNumberLabel");
+
+        Element multiSync = ElementFactory.createInput("number");
+        multiSync.setAttribute("id", "multiSyncValue");
+        multiSync.synchronizeProperty("valueAsNumber", "blur");
+        multiSync.synchronizeProperty("value", "input");
+
+        multiSync.addEventListener("input", e -> {
+            valueLabel
+                    .setText("Server value: " + multiSync.getProperty("value"));
         });
-        getElement().appendChild(input2, label2);
+        multiSync.addEventListener("blur", e -> {
+            valueAsNumberLabel.setText("Server valueAsNumber: "
+                    + multiSync.getProperty("valueAsNumber"));
+        });
+
+        getElement().appendChild(multiSync);
+        add(valueLabel, valueAsNumberLabel);
+
     }
 }
