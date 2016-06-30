@@ -281,6 +281,14 @@ public class RouterConfigurationTest {
         RouterConfiguration configuration = createConfiguration();
 
         configuration.setParentView(TestView.class, ParentView.class);
+        configuration.setParentView(TestView.class, AnotherParentView.class);
+    }
+
+    @Test
+    public void testSetParentViewTwice() {
+        RouterConfiguration configuration = createConfiguration();
+
+        configuration.setParentView(TestView.class, ParentView.class);
         configuration.setParentView(TestView.class, ParentView.class);
     }
 
