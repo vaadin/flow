@@ -15,11 +15,17 @@
  */
 package com.vaadin.ui;
 
+import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
+import com.vaadin.hummingbird.util.ReflectionCache;
 import com.vaadin.ui.Component.MapToExistingElement;
 import com.vaadin.util.ReflectTools;
 
@@ -28,7 +34,14 @@ import com.vaadin.util.ReflectTools;
  *
  * @author Vaadin Ltd
  */
-public interface ComponentUtil {
+public class ComponentUtil {
+
+    static ReflectionCache<Component, Set<SynchronizedPropertyInfo>> synchronizedPropertyCache = new ReflectionCache<>(
+            ComponentUtil::findSynchronizedProperties);
+
+    private ComponentUtil() {
+        // Util methods only
+    }
 
     /**
      * Finds the first component instance in each {@link Element} subtree by
@@ -39,7 +52,7 @@ public interface ComponentUtil {
      * @param componentConsumer
      *            a consumer which is called for each found component
      */
-    static void findComponents(Element element,
+    public static void findComponents(Element element,
             Consumer<Component> componentConsumer) {
         assert element != null;
         assert componentConsumer != null;
@@ -71,7 +84,7 @@ public interface ComponentUtil {
      *            composite or a nested composite
      * @return the parent of the component, never <code>null</code>
      */
-    static Component getParentUsingComposite(Composite<?> composite,
+    public static Component getParentUsingComposite(Composite<?> composite,
             Component component) {
         // If this is the component inside a composite or a nested
         // composite, we need to traverse the composite hierarchy to find
@@ -95,7 +108,7 @@ public interface ComponentUtil {
      *            a composite in the chain
      * @return the innermost component
      */
-    static Component getInnermostComponent(Composite<?> composite) {
+    public static Component getInnermostComponent(Composite<?> composite) {
         Component content = composite.getContent();
         while (content instanceof Composite) {
             content = ((Composite<?>) content).getContent();
@@ -115,7 +128,7 @@ public interface ComponentUtil {
      * @return <code>true</code> if the component is inside the composite chain,
      *         <code>false</code> otherwise
      */
-    static boolean isCompositeContent(Composite<?> composite,
+    public static boolean isCompositeContent(Composite<?> composite,
             Component component) {
         Component compositeContent = composite.getContent();
         if (compositeContent == component) {
@@ -136,7 +149,7 @@ public interface ComponentUtil {
      * @param element
      * @return
      */
-    static Optional<Component> findParentComponent(Element element) {
+    public static Optional<Component> findParentComponent(Element element) {
         Element mappedElement = element;
         while (mappedElement != null
                 && !ElementUtil.getComponent(mappedElement).isPresent()) {
@@ -161,7 +174,7 @@ public interface ComponentUtil {
      *            the element which is mapped to a component
      * @return the innermost component mapped to the element
      */
-    static Component getInnermostComponent(Element element) {
+    public static Component getInnermostComponent(Element element) {
         assert ElementUtil.getComponent(element).isPresent();
 
         Component component = ElementUtil.getComponent(element).get();
@@ -184,7 +197,8 @@ public interface ComponentUtil {
      *            indicates if this is the first time the component (element)
      *            has been attached
      */
-    static void onComponentAttach(Component component, boolean initialAttach) {
+    public static void onComponentAttach(Component component,
+            boolean initialAttach) {
         if (component instanceof Composite) {
             onComponentAttach(((Composite<?>) component).getContent(),
                     initialAttach);
@@ -205,7 +219,7 @@ public interface ComponentUtil {
      * @param component
      *            the component detached from a UI
      */
-    static void onComponentDetach(Component component) {
+    public static void onComponentDetach(Component component) {
         if (component instanceof Composite) {
             onComponentDetach(((Composite<?>) component).getContent());
         }
@@ -236,8 +250,8 @@ public interface ComponentUtil {
      *            <code>false</code> to only map the component to the element
      * @return a new component instance of the given type
      */
-    static <T> T componentFromElement(Element element, Class<T> componentType,
-            boolean mapComponent) {
+    public static <T> T componentFromElement(Element element,
+            Class<T> componentType, boolean mapComponent) {
         if (element == null) {
             throw new IllegalArgumentException("Element to use cannot be null");
         }
@@ -256,4 +270,82 @@ public interface ComponentUtil {
         }
 
     }
+
+    private static class SynchronizedPropertyInfo {
+        private final String property;
+        private final String[] eventNames;
+
+        public SynchronizedPropertyInfo(String property, String[] eventNames) {
+            this.property = property;
+            this.eventNames = eventNames;
+        }
+    }
+
+    /**
+     * Gets the name of the synchronized properties defined declaratively for
+     * the given class.
+     *
+     * @param componentClass
+     *            the component class to check
+     * @return the synchronized properties defined declaratively for the class
+     */
+    public static Stream<String> getSynchronizedProperties(
+            Class<? extends Component> componentClass) {
+        Set<SynchronizedPropertyInfo> infos = synchronizedPropertyCache
+                .get(componentClass);
+        return infos.stream().map(info -> info.property);
+    }
+
+    /**
+     * Gets the name of the synchronized property event defined declaratively
+     * for the given class.
+     *
+     * @param componentClass
+     *            the component class to check
+     * @return the synchronized property events defined declaratively for the
+     *         class
+     */
+    public static Stream<String> getSynchronizedPropertyEvents(
+            Class<? extends Component> componentClass) {
+        Set<SynchronizedPropertyInfo> infos = synchronizedPropertyCache
+                .get(componentClass);
+        return infos.stream().map(info -> info.eventNames).flatMap(Stream::of);
+    }
+
+    /**
+     * Scans the class for {@link Synchronize} annotations and gathers the data.
+     *
+     * @param componentClass
+     *            the class to scan
+     * @return a set of information objects about properties to be synchronized
+     */
+    public static Set<SynchronizedPropertyInfo> findSynchronizedProperties(
+            Class<Component> componentClass) {
+        HashSet<SynchronizedPropertyInfo> infos = new HashSet<>();
+        for (Method method : componentClass.getMethods()) {
+            Synchronize annotation = method.getAnnotation(Synchronize.class);
+            if (annotation == null) {
+                continue;
+            }
+
+            if (!ReflectTools.isGetter(method)) {
+                throw new IllegalStateException(method + " is annotated with @"
+                        + Synchronize.class.getSimpleName()
+                        + " even though it's not a getter.");
+            }
+
+            String propertyName;
+            if (annotation.property().isEmpty()) {
+                propertyName = ReflectTools.getPropertyName(method);
+            } else {
+                propertyName = annotation.property();
+            }
+            String[] eventNames = annotation.value();
+            infos.add(new SynchronizedPropertyInfo(propertyName, eventNames));
+        }
+
+        return infos;
+
+    }
+
 }

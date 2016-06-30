@@ -18,15 +18,18 @@ package com.vaadin.ui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
@@ -829,6 +832,136 @@ public class ComponentTest {
 
         Assert.assertEquals(div, c.getElement());
         Assert.assertEquals(span, c.span.getElement());
+    }
+
+    @Tag("div")
+    public static class SynchronizePropertyOnChangeComponent extends Component {
+        @Synchronize("change")
+        public String getFoo() {
+            return "";
+        }
+    }
+
+    public static class SynchronizePropertyUsingElementConstructor
+            extends Component {
+        public SynchronizePropertyUsingElementConstructor() {
+            super(null);
+        }
+
+        @Synchronize("change")
+        public String getFoo() {
+            return "";
+        }
+
+        public void customInit() {
+            setElement(this, new Element("Span"));
+
+        }
+    }
+
+    @Tag("div")
+    public static class SynchronizePropertyOnChangeGivenPropertyComponent
+            extends Component {
+        @Synchronize(value = "change", property = "bar")
+        public String getFoo() {
+            return "";
+        }
+    }
+
+    @Tag("div")
+    public static class SynchronizePropertyOnMultipleEventsComponent
+            extends Component {
+        @Synchronize(value = { "input", "blur" })
+        public String getFoo() {
+            return "";
+        }
+    }
+
+    @Tag("div")
+    public static class SynchronizeOnNonGetterComponent extends Component {
+        @Synchronize("change")
+        public String doWork() {
+            return "";
+        }
+    }
+
+    private void assertSynchronizedProperties(Element element,
+            String... properties) {
+        Set<String> expected = Stream.of(properties)
+                .collect(Collectors.toSet());
+        Set<String> actual = element.getSynchronizedProperties()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(expected, actual);
+
+    }
+
+    private void assertSynchronizedPropertiesEvents(Element element,
+            String... events) {
+        Set<String> expected = Stream.of(events).collect(Collectors.toSet());
+        Set<String> actual = element.getSynchronizedPropertyEvents()
+                .collect(Collectors.toSet());
+        Assert.assertEquals(expected, actual);
+
+    }
+
+    @Test
+    public void synchronizePropertyBasedOnGetterName() {
+        SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
+        Element element = component.getElement();
+        assertSynchronizedProperties(element, "foo");
+        assertSynchronizedPropertiesEvents(element, "change");
+    }
+
+    @Test
+    public void synchronizePropertyElementConstructor() {
+        SynchronizePropertyUsingElementConstructor component = new SynchronizePropertyUsingElementConstructor();
+        component.customInit();
+        Element element = component.getElement();
+        assertSynchronizedProperties(element, "foo");
+        assertSynchronizedPropertiesEvents(element, "change");
+    }
+
+    @Test
+    public void synchronizePropertiesCached() {
+        Assert.assertFalse(ComponentUtil.synchronizedPropertyCache
+                .contains(SynchronizePropertyOnChangeComponent.class));
+        SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
+        Element element = component.getElement();
+        assertSynchronizedProperties(element, "foo");
+        assertSynchronizedPropertiesEvents(element, "change");
+        Assert.assertTrue(ComponentUtil.synchronizedPropertyCache
+                .contains(SynchronizePropertyOnChangeComponent.class));
+    }
+
+    @Test
+    public void synchronizePropertyWithPropertyName() {
+        SynchronizePropertyOnChangeGivenPropertyComponent component = new SynchronizePropertyOnChangeGivenPropertyComponent();
+        Element element = component.getElement();
+        assertSynchronizedProperties(element, "bar");
+        assertSynchronizedPropertiesEvents(element, "change");
+    }
+
+    @Test
+    public void synchronizePropertyWithMultipleEvents() {
+        SynchronizePropertyOnMultipleEventsComponent component = new SynchronizePropertyOnMultipleEventsComponent();
+        Element element = component.getElement();
+        assertSynchronizedProperties(element, "foo");
+        assertSynchronizedPropertiesEvents(element, "blur", "input");
+    }
+
+    @Test
+    public void synchronizePropertyOverride() {
+        SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
+        component.getElement().removeSynchronizedProperty("foo");
+        component.getElement().removeSynchronizedPropertyEvent("change");
+        Element element = component.getElement();
+        assertSynchronizedProperties(element);
+        assertSynchronizedPropertiesEvents(element);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void synchronizeOnNonGetter() {
+        new SynchronizeOnNonGetterComponent();
     }
 
 }
