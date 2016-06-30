@@ -81,9 +81,9 @@ public class HTMLTest {
         Element element = html.getElement();
         Assert.assertEquals(Tag.SPAN, element.getTag());
 
-        // Styles are ignored until Element.setAttribute("style") works
-        Assert.assertEquals(1, element.getAttributeNames().count());
+        Assert.assertEquals(2, element.getAttributeNames().count());
         Assert.assertEquals("foo", element.getAttribute("class"));
+        Assert.assertEquals("color:red", element.getAttribute("style"));
         Assert.assertEquals("hello", html.getInnerHtml());
     }
 
