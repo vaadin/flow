@@ -17,18 +17,21 @@ public class ValueChangeEvent extends ComponentEvent<PaperSlider> {
 }
 ----
 
-To get the new value you need to set up synchronization of the `value` property for the element:
+To be able to access the value on the server, you can add a  getter to the component class and annotate it using `@Synchronize` so that property changes are automatically synchronized/sent from the browser to the server:
 
 [source,java]
 ----
 public class PaperSlider extends Component {
-  public PaperSlider() {
-    getElement().synchronizeProperty("value", "value-change");
+
+  @Synchronize("value-change")
+  public int getValue() {
+      return getElement().getProperty("value", 0);
   }
 }
 ----
 
 Property synchronization takes place before events are fired so the event listener can use `ValueChangeEvent.getSource().getValue()` to get the new value. There should be a public `addValueChangeListener` so the component user can listen to the event:
+
 [source,java]
 ----
 public class PaperSlider extends Component {
@@ -42,6 +45,7 @@ public class PaperSlider extends Component {
 The example uses the same event methods described in the <<tutorial-event-listener#,Listening to User Events>> tutorial as there is no difference between configuring an event for a built in element and for a web component element.
 
 The final integration of `<paper-slider>` with support for `value`, `pin` and listening to value change events is:
+
 [source,java]
 ----
 @DomEvent("value-change")
@@ -55,14 +59,11 @@ public class ValueChangeEvent extends ComponentEvent<PaperSlider> {
 @HtmlImport("context://bower_components/paper-slider/paper-slider.html")
 public class PaperSlider extends Component {
 
-    public PaperSlider() {
-        getElement().synchronizeProperty("value", "value-change");
-    }
-
     public void setValue(int value) {
         getElement().setProperty("value", value);
     }
 
+    @Synchronize("value-change")
     public int getValue() {
         return getElement().getProperty("value", 0);
     }

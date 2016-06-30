@@ -17,6 +17,7 @@ package com.vaadin.humminbird.tutorial.webcomponent;
 
 import com.vaadin.annotations.DomEvent;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
@@ -38,13 +39,13 @@ public class WebComponentEvents {
     public class PaperSlider extends Component {
 
         public PaperSlider() {
-            getElement().synchronizeProperty("value", "value-change");
         }
 
         public void setValue(int value) {
             getElement().setProperty("value", value);
         }
 
+        @Synchronize("value-change")
         public int getValue() {
             return getElement().getProperty("value", 0);
         }
