@@ -21,12 +21,14 @@ import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
 import com.vaadin.annotations.AnnotationReader;
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.event.ComponentEventBus;
 import com.vaadin.hummingbird.event.ComponentEventListener;
+import com.vaadin.util.ReflectTools;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -102,6 +104,7 @@ public abstract class Component implements HasElement, Serializable,
             Element e = new Element(tagName);
             setElement(this, e);
         }
+        configureSynchronizedProperties();
     }
 
     /**
@@ -122,6 +125,28 @@ public abstract class Component implements HasElement, Serializable,
         } else if (element != null) {
             setElement(this, element, true);
         }
+    }
+
+    /**
+     * Configures synchronized properties based on given annotations.
+     */
+    protected void configureSynchronizedProperties() {
+        ReflectTools.getGetterMethods(getClass()).forEach(getter -> {
+            Synchronize annotation = getter.getAnnotation(Synchronize.class);
+            if (annotation != null) {
+                String propertyName;
+                if (annotation.property().isEmpty()) {
+                    propertyName = ReflectTools.getPropertyName(getter);
+                } else {
+                    propertyName = annotation.property();
+                }
+                String[] eventNames = annotation.value();
+                getElement().addSynchronizedProperty(propertyName);
+                for (String eventName : eventNames) {
+                    getElement().addSynchronizedPropertyEvent(eventName);
+                }
+            }
+        });
     }
 
     private void mapToElement(String tagName) {
