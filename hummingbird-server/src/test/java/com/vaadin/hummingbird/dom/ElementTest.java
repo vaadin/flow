@@ -2508,9 +2508,11 @@ public class ElementTest {
 
     @Test
     public void htmlComponentOuterHtml() {
-        Html html = new Html("<div><span><button>hello</button></span></div>");
+        Html html = new Html(
+                "<div style='background:green'><span><button>hello</button></span></div>");
         Assert.assertEquals(
-                "<div>\n" + " <span><button>hello</button></span>\n" + "</div>",
+                "<div style=\"background:green\">\n"
+                        + " <span><button>hello</button></span>\n" + "</div>",
                 html.getElement().getOuterHTML());
     }
 
