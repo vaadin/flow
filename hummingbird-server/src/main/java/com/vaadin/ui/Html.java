@@ -23,7 +23,6 @@ import java.util.logging.Logger;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.external.jsoup.nodes.Attributes;
 import com.vaadin.external.jsoup.nodes.Document;
-
 import com.vaadin.hummingbird.dom.Element;
 
 /**
@@ -115,12 +114,7 @@ public class Html extends Component {
         attrs.forEach(a -> {
             String name = a.getKey();
             String value = a.getValue();
-            if ("style".equals(name)) {
-                getLogger().warning("Style values '" + value
-                        + "' ignored for root element.");
-            } else {
-                getElement().setAttribute(name, value);
-            }
+            getElement().setAttribute(name, value);
         });
 
         doc.outputSettings().prettyPrint(false);
