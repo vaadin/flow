@@ -21,9 +21,9 @@ import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.reactive.Computation;
-import com.vaadin.client.hummingbird.reactive.ReactiveChangeListener;
 import com.vaadin.client.hummingbird.reactive.ReactiveEventRouter;
 import com.vaadin.client.hummingbird.reactive.ReactiveValue;
+import com.vaadin.client.hummingbird.reactive.ReactiveValueChangeListener;
 
 import elemental.events.EventRemover;
 import elemental.json.JsonObject;
@@ -47,8 +47,9 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     private final ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent> eventRouter = new ReactiveEventRouter<MapPropertyAddListener, MapPropertyAddEvent>(
             this) {
         @Override
-        protected MapPropertyAddListener wrap(ReactiveChangeListener listener) {
-            return listener::onChange;
+        protected MapPropertyAddListener wrap(
+                ReactiveValueChangeListener reactiveValueChangeListener) {
+            return reactiveValueChangeListener::onValueChange;
         }
 
         @Override
@@ -136,9 +137,9 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     }
 
     @Override
-    public EventRemover addReactiveChangeListener(
-            ReactiveChangeListener listener) {
-        return eventRouter.addReactiveListener(listener);
+    public EventRemover addReactiveValueChangeListener(
+            ReactiveValueChangeListener reactiveValueChangeListener) {
+        return eventRouter.addReactiveListener(reactiveValueChangeListener);
     }
 
     /**
