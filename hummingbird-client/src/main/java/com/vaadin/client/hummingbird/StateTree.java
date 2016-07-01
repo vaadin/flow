@@ -40,6 +40,8 @@ public class StateTree {
 
     private JsMap<Integer, String> nodeFeatureDebugName;
 
+    private boolean updateInProgress;
+
     /**
      * Creates a new instance connected to the given registry.
      *
@@ -52,10 +54,32 @@ public class StateTree {
     }
 
     /**
+     * Mark this tree as being updated.
+     *
+     * @param updateInProgress
+     *            <code>true</code> if the tree is being updated,
+     *            <code>false</code> if not
+     * @see #isUpdateInProgress()
+     */
+    public void setUpdateInProgress(boolean updateInProgress) {
+        this.updateInProgress = updateInProgress;
+    }
+
+    /**
+     * Returns whether this tree is currently being updated by
+     * {@link TreeChangeProcessor#processChanges(StateTree, JsonArray)}.
+     *
+     * @return <code>true</code> if being updated, <code>false</code> if not
+     */
+    public boolean isUpdateInProgress() {
+        return updateInProgress;
+    }
+
+    /**
      * Registers a node with this tree.
      *
      * @param node
-     *            the node to regsiter
+     *            the node to register
      */
     public final void registerNode(StateNode node) {
         assert node != null;

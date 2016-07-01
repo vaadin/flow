@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.hummingbird.binding.Binder;
+
 import elemental.events.EventRemover;
 
 public class StateTreeTest {
@@ -102,6 +104,13 @@ public class StateTreeTest {
         } catch (AssertionError expected) {
             // All is fine
         }
+    }
+
+    @Test(expected = AssertionError.class)
+    public void testUpdatingTree_triggeringBinder_causesAssertionError() {
+        tree.registerNode(node);
+        tree.setUpdateInProgress(true);
+        Binder.bind(node, null);
     }
 
 }

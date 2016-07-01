@@ -46,6 +46,11 @@ public class TreeChangeProcessor {
      *            the JSON array of changes
      */
     public static void processChanges(StateTree tree, JsonArray changes) {
+        assert !tree
+                .isUpdateInProgress() : "Previous tree change processing has not completed";
+        tree.setUpdateInProgress(true);
+        assert tree.isUpdateInProgress();
+
         int length = changes.length();
 
         // Attach all nodes before doing anything else
@@ -66,6 +71,9 @@ public class TreeChangeProcessor {
                 processChange(tree, change);
             }
         }
+
+        tree.setUpdateInProgress(false);
+        assert !tree.isUpdateInProgress();
     }
 
     private static boolean isAttach(JsonObject change) {
