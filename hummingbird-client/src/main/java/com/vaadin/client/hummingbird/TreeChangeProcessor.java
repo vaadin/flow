@@ -38,7 +38,7 @@ public class TreeChangeProcessor {
     }
 
     /**
-     * Update a state tree based on an JSON array of changes.
+     * Update a state tree based on a JSON array of changes.
      *
      * @param tree
      *            the tree to update
@@ -46,26 +46,35 @@ public class TreeChangeProcessor {
      *            the JSON array of changes
      */
     public static void processChanges(StateTree tree, JsonArray changes) {
-        int length = changes.length();
+        assert !tree
+                .isUpdateInProgress() : "Previous tree change processing has not completed";
+        try {
+            tree.setUpdateInProgress(true);
+            int length = changes.length();
 
-        // Attach all nodes before doing anything else
-        for (int i = 0; i < length; i++) {
-            JsonObject change = changes.getObject(i);
-            if (isAttach(change)) {
-                int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
+            // Attach all nodes before doing anything else
+            for (int i = 0; i < length; i++) {
+                JsonObject change = changes.getObject(i);
+                if (isAttach(change)) {
+                    int nodeId = (int) change
+                            .getNumber(JsonConstants.CHANGE_NODE);
 
-                StateNode node = new StateNode(nodeId, tree);
-                tree.registerNode(node);
+                    StateNode node = new StateNode(nodeId, tree);
+                    tree.registerNode(node);
+                }
             }
+
+            // Then process all non-attach changes
+            for (int i = 0; i < length; i++) {
+                JsonObject change = changes.getObject(i);
+                if (!isAttach(change)) {
+                    processChange(tree, change);
+                }
+            }
+        } finally {
+            tree.setUpdateInProgress(false);
         }
 
-        // Then process all non-attach changes
-        for (int i = 0; i < length; i++) {
-            JsonObject change = changes.getObject(i);
-            if (!isAttach(change)) {
-                processChange(tree, change);
-            }
-        }
     }
 
     private static boolean isAttach(JsonObject change) {

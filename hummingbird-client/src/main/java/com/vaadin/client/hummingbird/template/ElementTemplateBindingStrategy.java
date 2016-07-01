@@ -24,6 +24,7 @@ import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
+import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
@@ -103,8 +104,10 @@ public class ElementTemplateBindingStrategy
             /*
              * React in case an override nodes appears later on.
              */
-            EventRemover remover = overrideProperty.addChangeListener(
-                    e -> bindOverrideNode(element, overrideProperty, context));
+            EventRemover remover = overrideProperty
+                    .addChangeListener(e -> Reactive
+                            .addFlushListener(() -> bindOverrideNode(element,
+                                    overrideProperty, context)));
 
             /*
              * Should preferably remove the change listener immediately when the
