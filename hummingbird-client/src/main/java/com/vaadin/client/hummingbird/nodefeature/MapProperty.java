@@ -18,9 +18,9 @@ package com.vaadin.client.hummingbird.nodefeature;
 import java.util.Map;
 import java.util.Objects;
 
-import com.vaadin.client.hummingbird.reactive.ReactiveChangeListener;
 import com.vaadin.client.hummingbird.reactive.ReactiveEventRouter;
 import com.vaadin.client.hummingbird.reactive.ReactiveValue;
+import com.vaadin.client.hummingbird.reactive.ReactiveValueChangeListener;
 
 import elemental.events.EventRemover;
 
@@ -36,8 +36,9 @@ public class MapProperty implements ReactiveValue {
     private final ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent> eventRouter = new ReactiveEventRouter<MapPropertyChangeListener, MapPropertyChangeEvent>(
             this) {
         @Override
-        protected MapPropertyChangeListener wrap(ReactiveChangeListener l) {
-            return l::onChange;
+        protected MapPropertyChangeListener wrap(
+                ReactiveValueChangeListener l) {
+            return l::onValueChange;
         }
 
         @Override
@@ -164,9 +165,9 @@ public class MapProperty implements ReactiveValue {
     }
 
     @Override
-    public EventRemover addReactiveChangeListener(
-            ReactiveChangeListener listener) {
-        return eventRouter.addReactiveListener(listener);
+    public EventRemover addReactiveValueChangeListener(
+            ReactiveValueChangeListener reactiveValueChangeListener) {
+        return eventRouter.addReactiveListener(reactiveValueChangeListener);
     }
 
     /**

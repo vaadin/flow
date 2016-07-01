@@ -16,30 +16,19 @@
 package com.vaadin.client.hummingbird.reactive;
 
 /**
- * Event fired when a reactive value has changed.
+ * Listens to changes to a reactive value.
+ *
+ * @see ReactiveValue#addReactiveValueChangeListener(ReactiveChangeListener)
  *
  * @author Vaadin Ltd
  */
-public abstract class ReactiveChangeEvent {
-
-    private ReactiveValue source;
-
+@FunctionalInterface
+public interface ReactiveValueChangeListener {
     /**
-     * Creates a new event fired from a source.
+     * Invoked when a reactive value has changed.
      *
-     * @param source
-     *            the reactive value that will fire the event
+     * @param event
+     *            the change event
      */
-    public ReactiveChangeEvent(ReactiveValue source) {
-        this.source = source;
-    }
-
-    /**
-     * Gets the reactive value from which this event originates.
-     *
-     * @return the event source
-     */
-    public ReactiveValue getSource() {
-        return source;
-    }
+    void onValueChange(ReactiveValueChangeEvent event);
 }
