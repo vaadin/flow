@@ -15,14 +15,14 @@
  */
 package com.vaadin.client.hummingbird.nodefeature;
 
-import com.vaadin.client.hummingbird.reactive.ReactiveChangeEvent;
+import com.vaadin.client.hummingbird.reactive.ReactiveValueChangeEvent;
 
 /**
  * Event fired when the value of a map property changes.
  *
  * @author Vaadin Ltd
  */
-public class MapPropertyChangeEvent extends ReactiveChangeEvent {
+public class MapPropertyChangeEvent extends ReactiveValueChangeEvent {
 
     private Object oldValue;
     private Object newValue;

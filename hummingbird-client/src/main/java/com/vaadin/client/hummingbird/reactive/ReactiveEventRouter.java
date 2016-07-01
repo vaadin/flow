@@ -23,9 +23,9 @@ import elemental.events.EventRemover;
 /**
  * Event router providing integration with reactive features in {@link Reactive}
  * and {@link Computation}. Listeners can be added both for a specific event
- * type as well as for generic reactive change events. All events are fired to
- * both types of listeners, as well as to event collectors registered using
- * {@link Reactive#addEventCollector(ReactiveChangeListener)}.
+ * type and for the generic value change. All events are fired to both types of
+ * listeners, as well as to event collectors registered using
+ * {@link Reactive#addEventCollector(ReactiveValueChangeListener)}.
  *
  * @author Vaadin Ltd
  * @param <L>
@@ -33,7 +33,7 @@ import elemental.events.EventRemover;
  * @param <E>
  *            the reactive event type of this router
  */
-public abstract class ReactiveEventRouter<L, E extends ReactiveChangeEvent> {
+public abstract class ReactiveEventRouter<L, E extends ReactiveValueChangeEvent> {
     private final JsSet<L> listeners = JsCollections.set();
 
     private final ReactiveValue reactiveValue;
@@ -74,21 +74,22 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveChangeEvent> {
     /**
      * Adds a generic reactive change listener to this router.
      *
-     * @param listener
+     * @param reactiveValueChangeListener
      *            the change listener to add, not <code>null</code>
      * @return an event remover that can be used for removing the added listener
      */
-    public EventRemover addReactiveListener(ReactiveChangeListener listener) {
-        assert listener != null;
-        return addListener(wrap(listener));
+    public EventRemover addReactiveListener(
+            ReactiveValueChangeListener reactiveValueChangeListener) {
+        assert reactiveValueChangeListener != null;
+        return addListener(wrap(reactiveValueChangeListener));
     }
 
     /**
      * Fires an event to all listeners added to this router using
      * {@link #addListener(Object)} or
-     * {@link #addReactiveListener(ReactiveChangeListener)} as well as all
+     * {@link #addReactiveListener(ReactiveValueChangeListener)} as well as all
      * global event collectors added using
-     * {@link Reactive#addEventCollector(ReactiveChangeListener)}.
+     * {@link Reactive#addEventCollector(ReactiveValueChangeListener)}.
      *
      * @param event
      *            the event to fire
@@ -128,11 +129,12 @@ public abstract class ReactiveEventRouter<L, E extends ReactiveChangeEvent> {
      * Callback for wrapping a generic reactive change listener to an instance
      * of the listener type natively supported by this event router.
      *
-     * @param listener
+     * @param reactiveValueChangeListener
      *            the reactive change listener
      * @return an event listener wrapping the provided listener
      */
-    protected abstract L wrap(ReactiveChangeListener listener);
+    protected abstract L wrap(
+            ReactiveValueChangeListener reactiveValueChangeListener);
 
     /**
      * Callback for dispatching an event to a listener.
