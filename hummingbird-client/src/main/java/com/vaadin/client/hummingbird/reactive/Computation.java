@@ -30,7 +30,7 @@ import elemental.events.EventRemover;
  *
  * @author Vaadin Ltd
  */
-public abstract class Computation implements ReactiveChangeListener {
+public abstract class Computation implements ReactiveValueChangeListener {
 
     private boolean invalidated = false;
 
@@ -62,13 +62,14 @@ public abstract class Computation implements ReactiveChangeListener {
      */
     public void addDependency(ReactiveValue dependency) {
         if (!stopped) {
-            EventRemover remover = dependency.addReactiveChangeListener(this);
+            EventRemover remover = dependency
+                    .addReactiveValueChangeListener(this);
             dependencies.push(remover);
         }
     }
 
     @Override
-    public void onChange(ReactiveChangeEvent changeEvent) {
+    public void onValueChange(ReactiveValueChangeEvent changeEvent) {
         if (invalidated || stopped) {
             return;
         }
