@@ -45,7 +45,7 @@ public class Reactive {
 
     private static JsArray<FlushListener> postFlushListeners;
 
-    private static JsSet<ReactiveChangeListener> eventCollectors;
+    private static JsSet<ReactiveValueChangeListener> eventCollectors;
 
     private static Computation currentComputation = null;
 
@@ -157,34 +157,34 @@ public class Reactive {
      * Adds a reactive change listener that will be invoked whenever a reactive
      * change event is fired from any reactive event router.
      *
-     * @param listener
+     * @param reactiveValueChangeListener
      *            the listener to add
      * @return an event remover that can be used to remove the listener
      */
     public static EventRemover addEventCollector(
-            ReactiveChangeListener listener) {
+            ReactiveValueChangeListener reactiveValueChangeListener) {
         if (eventCollectors == null) {
             eventCollectors = JsCollections.set();
         }
-        eventCollectors.add(listener);
+        eventCollectors.add(reactiveValueChangeListener);
 
-        return () -> eventCollectors.delete(listener);
+        return () -> eventCollectors.delete(reactiveValueChangeListener);
     }
 
     /**
      * Fires a reactive change event to all registered event collectors.
      *
-     * @see #addEventCollector(ReactiveChangeListener)
+     * @see #addEventCollector(ReactiveValueChangeListener)
      *
      * @param event
      *            the fired event
      */
-    public static void notifyEventCollectors(ReactiveChangeEvent event) {
+    public static void notifyEventCollectors(ReactiveValueChangeEvent event) {
         if (eventCollectors != null) {
-            JsSet<ReactiveChangeListener> copy = JsCollections
+            JsSet<ReactiveValueChangeListener> copy = JsCollections
                     .set(eventCollectors);
 
-            copy.forEach(listener -> listener.onChange(event));
+            copy.forEach(listener -> listener.onValueChange(event));
         }
     }
 

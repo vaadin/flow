@@ -16,14 +16,14 @@
 package com.vaadin.client.hummingbird.nodefeature;
 
 import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.client.hummingbird.reactive.ReactiveChangeEvent;
+import com.vaadin.client.hummingbird.reactive.ReactiveValueChangeEvent;
 
 /**
  * Event fired when the structure of a {@link NodeList} changes.
  *
  * @author Vaadin Ltd
  */
-public class ListSpliceEvent extends ReactiveChangeEvent {
+public class ListSpliceEvent extends ReactiveValueChangeEvent {
 
     private int index;
     private JsArray<?> remove;
