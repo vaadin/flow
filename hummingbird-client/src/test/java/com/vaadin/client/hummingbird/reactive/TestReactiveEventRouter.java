@@ -18,15 +18,15 @@ package com.vaadin.client.hummingbird.reactive;
 import elemental.events.EventRemover;
 
 public class TestReactiveEventRouter extends
-        ReactiveEventRouter<ReactiveChangeListener, ReactiveChangeEvent> {
+        ReactiveEventRouter<ReactiveValueChangeListener, ReactiveValueChangeEvent> {
 
     private static final class TestEventSource implements ReactiveValue {
-        private ReactiveEventRouter<ReactiveChangeListener, ReactiveChangeEvent> router;
+        private ReactiveEventRouter<ReactiveValueChangeListener, ReactiveValueChangeEvent> router;
 
         @Override
-        public EventRemover addReactiveChangeListener(
-                ReactiveChangeListener listener) {
-            return router.addReactiveListener(listener);
+        public EventRemover addReactiveValueChangeListener(
+                ReactiveValueChangeListener reactiveValueChangeListener) {
+            return router.addReactiveListener(reactiveValueChangeListener);
         }
     }
 
@@ -36,18 +36,19 @@ public class TestReactiveEventRouter extends
     }
 
     @Override
-    protected ReactiveChangeListener wrap(ReactiveChangeListener l) {
+    protected ReactiveValueChangeListener wrap(ReactiveValueChangeListener l) {
         return l;
     }
 
     @Override
-    protected void dispatchEvent(ReactiveChangeListener listener,
-            ReactiveChangeEvent event) {
-        listener.onChange(event);
+    protected void dispatchEvent(
+            ReactiveValueChangeListener reactiveValueChangeListener,
+            ReactiveValueChangeEvent event) {
+        reactiveValueChangeListener.onValueChange(event);
     }
 
     public void invalidate() {
-        fireEvent(new ReactiveChangeEvent(getReactiveValue()) {
+        fireEvent(new ReactiveValueChangeEvent(getReactiveValue()) {
             // Nothing interesting here
         });
     }
