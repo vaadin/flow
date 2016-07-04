@@ -145,7 +145,8 @@ public class RouteTreeNode implements Serializable {
             routes.remove(segment);
         } else {
             if (routes.containsKey(segment)) {
-                throw new IllegalStateException("Route is already registered");
+                throw new IllegalStateException("Route segment <" + segment
+                        + "> is already registered");
             }
             routes.put(segment, navigationHandler);
         }
