@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.html;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.html.event.ChangeEvent;
 import com.vaadin.hummingbird.html.event.ChangeNotifier;
@@ -45,7 +46,7 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      * Creates a new input without any specific type.
      */
     public Input() {
-        getElement().synchronizeProperty("value", "change");
+        // Nothing to do here
     }
 
     /**
@@ -77,6 +78,7 @@ public class Input extends HtmlComponent implements ChangeNotifier {
      *
      * @return the the value, by default <code>""</code>
      */
+    @Synchronize("change")
     public String getValue() {
         return get(valueDescriptor);
     }

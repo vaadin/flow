@@ -124,6 +124,16 @@ public abstract class Component implements HasElement, Serializable,
         }
     }
 
+    /**
+     * Configures synchronized properties based on given annotations.
+     */
+    private void configureSynchronizedProperties() {
+        ComponentUtil.getSynchronizedProperties(getClass())
+                .forEach(getElement()::addSynchronizedProperty);
+        ComponentUtil.getSynchronizedPropertyEvents(getClass())
+                .forEach(getElement()::addSynchronizedPropertyEvent);
+    }
+
     private void mapToElement(String tagName) {
         MapToExistingElement wrapData = elementToMapTo.get();
         assert wrapData != null;
@@ -184,6 +194,7 @@ public abstract class Component implements HasElement, Serializable,
         component.element = element;
         if (mapElementToComponent) {
             ElementUtil.setComponent(element, component);
+            component.configureSynchronizedProperties();
         }
     }
 
