@@ -29,6 +29,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -339,6 +340,12 @@ public class MessageHandler {
                 TemplateRegistry templates = registry.getTemplateRegistry();
                 JsonObject templatesJson = json.getObject("templates");
                 templates.importFromJson(templatesJson);
+            }
+
+            if (json.hasKey("constants")) {
+                ConstantPool constantPool = registry.getConstantPool();
+                JsonObject constants = json.getObject("constants");
+                constantPool.importFromJson(constants);
             }
 
             if (json.hasKey("changes")) {

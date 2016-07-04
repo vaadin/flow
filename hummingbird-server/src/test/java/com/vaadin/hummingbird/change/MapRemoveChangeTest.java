@@ -35,7 +35,7 @@ public class MapRemoveChangeTest {
     public void testJson() {
         MapRemoveChange change = new MapRemoveChange(feature, "some");
 
-        JsonObject json = change.toJson();
+        JsonObject json = change.toJson(null);
 
         Assert.assertEquals(change.getNode().getId(),
                 (int) json.getNumber(JsonConstants.CHANGE_NODE));

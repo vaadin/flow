@@ -30,6 +30,7 @@ import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.hummingbird.ConstantPool;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
@@ -152,6 +153,8 @@ public class UIInternals implements Serializable {
     private volatile VaadinSession session;
 
     private DependencyList dependencyList = new DependencyList();
+
+    private ConstantPool constantPool = new ConstantPool();
 
     /**
      * Creates a new instance for the given UI.
@@ -664,5 +667,15 @@ public class UIInternals implements Serializable {
         styleSheets
                 .forEach(styleSheet -> page.addStyleSheet(styleSheet.value()));
 
+    }
+
+    /**
+     * Gets the constant pool that is used for keeping track of constants shared
+     * with the client for this UI.
+     *
+     * @return the constant pool to use, not <code>null</code>
+     */
+    public ConstantPool getConstantPool() {
+        return constantPool;
     }
 }
