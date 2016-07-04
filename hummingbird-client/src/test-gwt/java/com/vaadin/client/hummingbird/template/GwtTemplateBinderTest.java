@@ -406,9 +406,14 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         Reactive.flush();
 
+        // tests the rare(ish) case resulting in #1050 (fixed by #1051)
+        tree.setUpdateInProgress(true);
+
         StateNode overrideNode = createSimpleOverrideNode(id);
         overrideNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty("id")
                 .setValue("override");
+
+        tree.setUpdateInProgress(false);
 
         Reactive.flush();
 
