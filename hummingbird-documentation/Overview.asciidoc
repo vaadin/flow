@@ -59,6 +59,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-execute-javascript#,Executing JavaScript>>
 ** <<tutorial-history-api#,The History API>>
 ** <<tutorial-dynamic-content#,Dynamic Content>>
+** <<tutorial-loading-indicator#,The Loading Indicator>>
 
 The rest of this document gives a high-level overview of the features and explains how they fit together.
 

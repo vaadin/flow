@@ -17,12 +17,14 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import java.util.function.Consumer;
 
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
 import com.vaadin.ui.LoadingIndicatorConfiguration;
 import com.vaadin.ui.UI;
 
+@StyleSheet("/com/vaadin/hummingbird/uitest/ui/loading-indicator.css")
 public class LoadingIndicatorView extends AbstractDivView {
 
     @Override
