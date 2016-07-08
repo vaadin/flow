@@ -23,11 +23,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.vaadin.external.jsoup.nodes.Document;
-
+import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
@@ -42,6 +43,7 @@ import com.vaadin.hummingbird.util.JavaScriptSemantics;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
+import com.vaadin.ui.Page;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -1473,5 +1475,47 @@ public class Element implements Serializable {
      */
     public <T> T as(Class<T> componentType) {
         return ComponentUtil.componentFromElement(this, componentType, false);
+    }
+
+    /**
+     * Calls the given function on the element with the given arguments.
+     * <p>
+     * The function will be called after all pending DOM updates have completed,
+     * at the same time that
+     * {@link Page#executeJavaScript(String, Serializable...)} calls are
+     * invoked.
+     * <p>
+     * If the element is not attached, the function called will be deferred
+     * until an attach event occurs.
+     *
+     * @see JsonCodec JsonCodec for supported argument types
+     *
+     * @param functionName
+     *            the name of the function to call, may contain dots to indicate
+     *            a function on a property.
+     * @param arguments
+     *            the arguments to pass to the function. Must be of a type
+     *            supported by the communication mechanism, as defined by
+     *            {@link JsonCodec}
+     */
+    public void callFunction(String functionName, Serializable... arguments) {
+        assert functionName != null;
+        assert !functionName
+                .startsWith(".") : "Function name should not start with a dot";
+
+        getNode().runWhenAttached(ui -> {
+            // $0.method($1,$2,$3)
+            String paramPlaceholderString = IntStream
+                    .range(1, arguments.length + 1).mapToObj(i -> "$" + i)
+                    .collect(Collectors.joining(","));
+            Serializable[] jsParameters = Stream
+                    .concat(Stream.of(this), Stream.of(arguments))
+                    .toArray(size -> new Serializable[size]);
+
+            ui.getPage().executeJavaScript(
+                    "$0." + functionName + "(" + paramPlaceholderString + ")",
+                    jsParameters);
+        });
+
     }
 }
