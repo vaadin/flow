@@ -1,5 +1,8 @@
 <div>
-	<table>
+	<table> 
+		<tr>
+			<th colspan=2>Integers in model</th>
+		</tr>
 		<tr [attr.bound]="intZero">
 			<td>Int Zero</td>
 			<td id="intZero">{{intZero}}</td>
@@ -13,7 +16,7 @@
 			<td id="intMax">{{intMax}}</td>
 		</tr>
 		<tr>
-			<td colspan=2><hr></td>
+			<th colspan=2>Doubles in model</th>
 		</tr>
 		<tr [attr.bound]="doubleZero">
 			<td>Double Zero</td>
@@ -51,17 +54,22 @@
 			<td>Double MinPlus</td>
 			<td id="doubleMinPlus">{{doubleMinPlus}}</td>
 		</tr>
+		<tr>
+			<th colspan=2>Special doubles inline in template</th>
+		</tr>
 		<tr [attr.bound]="doubleNaN">
 			<td>Double NaN</td>
-			<td id="doubleNaN">{{doubleNaN}}</td>
+			<!--  Must include "+" so that legacy logic doesn't interpret this as a model path -->
+			<td id="doubleNaN">{{+NaN}}</td>
 		</tr>
 		<tr [attr.bound]="doublePosInf">
 			<td>Double PosInf</td>
-			<td id="doublePosInf">{{doublePosInf}}</td>
+			<!--  Must include "+" so that legacy logic doesn't interpret this as a model path -->
+			<td id="doublePosInf">{{+Infinity}}</td>
 		</tr>
 		<tr [attr.bound]="doubleNegInf">
 			<td>Double NegInf</td>
-			<td id="doubleNegInf">{{doubleNegInf}}</td>
+			<td id="doubleNegInf">{{-Infinity}}</td>
 		</tr>
 	</table>
 </div>

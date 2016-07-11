@@ -31,8 +31,6 @@ public class TemplateTextFormattingView extends Template {
 
         public void setDoubleHalf(double d);
 
-        public void setDoubleNaN(double d);
-
         public void setDoubleSmall(double d);
 
         public void setDoubleLarge(double d);
@@ -46,10 +44,6 @@ public class TemplateTextFormattingView extends Template {
         public void setDoubleMinPlus(double d);
 
         public void setDoubleMax(double d);
-
-        public void setDoublePosInf(double d);
-
-        public void setDoubleNegInf(double d);
     }
 
     @Override
@@ -64,7 +58,6 @@ public class TemplateTextFormattingView extends Template {
 
         getModel().setDoubleZero(0);
         getModel().setDoubleHalf(0.50);
-        getModel().setDoubleNaN(Double.NaN);
         getModel().setDoubleSemiSmall(-1e20);
         getModel().setDoubleSemiLarge(1e20);
         getModel().setDoubleSmall(-123e123);
@@ -74,8 +67,6 @@ public class TemplateTextFormattingView extends Template {
                 Double.doubleToLongBits(Double.MIN_VALUE) + 1);
         getModel().setDoubleMinPlus(minPlus);
         getModel().setDoubleMax(Double.MAX_VALUE);
-        getModel().setDoublePosInf(Double.POSITIVE_INFINITY);
-        getModel().setDoubleNegInf(Double.NEGATIVE_INFINITY);
 
     }
 
