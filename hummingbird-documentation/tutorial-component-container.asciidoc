@@ -50,7 +50,7 @@ public class MyComponentContainer extends Component {
 
 Component hierarchy methods such as `getChildren` and `getParent` will work automatically for the component because they are implemented based on the element hierarchy. They will work even if you add wrapper elements in between.
 
-To be allow removal of components, you can add a similar method:
+To allow removal of components, you can add a similar method:
 
 [source,java]
 ----
