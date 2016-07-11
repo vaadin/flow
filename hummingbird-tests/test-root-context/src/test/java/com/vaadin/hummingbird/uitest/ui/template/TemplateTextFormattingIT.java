@@ -46,7 +46,8 @@ public class TemplateTextFormattingIT extends PhantomJSTest {
         Map<String, String> prerenderValues = new HashMap<>();
         rows.forEach(tr -> {
             List<WebElement> tds = tr.findElements(By.tagName("td"));
-            if (tds.size() == 1) {
+            if (tds.size() == 0) {
+                // Ignore header with th instead of td
                 return;
             }
             String name = tds.get(0).getText();
@@ -59,7 +60,8 @@ public class TemplateTextFormattingIT extends PhantomJSTest {
 
         rows.forEach(tr -> {
             List<WebElement> tds = tr.findElements(By.tagName("td"));
-            if (tds.size() == 1) {
+            if (tds.size() == 0) {
+                // Ignore header with th instead of td
                 return;
             }
             String name = tds.get(0).getText();
