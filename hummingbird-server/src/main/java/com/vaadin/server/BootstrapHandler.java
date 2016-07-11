@@ -210,8 +210,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         /**
          * Gets the pre-rendering mode.
          * <p>
-         * The pre-rendering mode can be "pre-render only", "pre-render and
-         * live" or "live only" and is only meant for testing.
+         * The pre-rendering mode can be "pre-render only", "pre-render and live
+         * " or "live only" and is only meant for testing.
          *
          * @return the mode to use for pre-rendering
          */
@@ -438,7 +438,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             BootstrapContext context) {
         Element body;
         if (!context.getPreRenderMode().includePreRenderVersion()) {
-            body = document.appendElement("body");
+            document.head().after("<body></body>");
+            body = document.body();
         } else {
             com.vaadin.hummingbird.dom.Element uiElement = context.getUI()
                     .getElement();
@@ -448,7 +449,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             assert prerenderedUIElement instanceof Element;
             assert "body".equals(((Element) prerenderedUIElement).tagName());
 
-            document.appendChild(prerenderedUIElement);
+            document.head().after(prerenderedUIElement);
             body = document.body();
             assert body == prerenderedUIElement;
 
