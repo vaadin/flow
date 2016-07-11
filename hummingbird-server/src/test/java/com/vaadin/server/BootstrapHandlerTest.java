@@ -214,6 +214,19 @@ public class BootstrapHandlerTest {
 
     }
 
+    @Test // #1134
+    public void testBodyAfterHead() throws Exception {
+        initUI(createVaadinRequest(null));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, ui));
+
+        Element body = page.head().nextElementSibling();
+
+        Assert.assertEquals("body", body.tagName());
+        Assert.assertEquals("html", body.parent().tagName());
+    }
+
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {
         HttpServletRequest request;
         if (mode == PreRenderMode.PRE_ONLY) {
