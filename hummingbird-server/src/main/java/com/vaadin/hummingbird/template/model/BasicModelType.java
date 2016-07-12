@@ -31,7 +31,7 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  */
 public class BasicModelType implements ModelType {
-    private static final Map<Class<?>, BasicModelType> types = new HashMap<>();
+    static final Map<Class<?>, BasicModelType> types = new HashMap<>();
 
     static {
         Stream.of(int.class, Integer.class, boolean.class, Boolean.class,
