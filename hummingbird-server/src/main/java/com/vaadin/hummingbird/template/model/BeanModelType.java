@@ -64,7 +64,8 @@ public class BeanModelType<T> implements ModelType {
                     propertyName, filterProvider.apply(method));
 
             ModelType propertyType = getModelType(
-                    ReflectTools.getPropertyType(method), innerFilter);
+                    ReflectTools.getPropertyType(method), innerFilter,
+                    propertyName, method.getDeclaringClass());
 
             properties.put(propertyName, propertyType);
         }
@@ -133,7 +134,8 @@ public class BeanModelType<T> implements ModelType {
     }
 
     private static ModelType getModelType(Type propertyType,
-            PropertyFilter propertyFilter) {
+            PropertyFilter propertyFilter, String propertyName,
+            Class<?> declaringClass) {
         if (propertyType instanceof Class<?>) {
             Class<?> propertyTypeClass = (Class<?>) propertyType;
             if (isBean(propertyTypeClass)) {
@@ -146,13 +148,16 @@ public class BeanModelType<T> implements ModelType {
                 }
             }
         } else if (ListModelType.isList(propertyType)) {
-            return new ListModelType<>(new BeanModelType<>(
-                    ListModelType.getBeansListItemType(propertyType),
-                    propertyFilter));
+            Class<?> beansListItemType = ListModelType.getBeansListItemType(
+                    propertyType, propertyName, declaringClass);
+            return new ListModelType<>(
+                    new BeanModelType<>(beansListItemType, propertyFilter));
         }
 
-        throw new InvalidTemplateModelException(
-                propertyType.toString() + " is not a supported property type");
+        throw new InvalidTemplateModelException("Type "
+                + propertyType.toString() + " is not supported. Used in class "
+                + declaringClass.getSimpleName() + " with property named "
+                + propertyName + ". " + ModelType.getSupportedTypesString());
     }
 
     /**
