@@ -22,9 +22,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Makes annotated method available as an event handler method which will be
- * invoked once its client side reference is invoked using notation
- * "$server.method()".
+ * Publishes the annotated method so it can be invoked from the client side
+ * using the notation <code>element.$server.method()</code> or simply
+ * <code>$server.method()</code> in template event handlers.
  *
  * @author Vaadin Ltd
  *
