@@ -41,11 +41,6 @@ import com.vaadin.util.ReflectTools;
  */
 public class PublishedServerEventHandlers extends SerializableNodeList<String> {
 
-    private static final String ERROR_MSG = "The "
-            + PublishedServerEventHandlers.class.getSimpleName()
-            + " may be used only for components";
-    private boolean isInfoCollected;
-
     /**
      * Creates a new meta information list for the given state node.
      *
@@ -56,17 +51,21 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
         super(node);
     }
 
-    @Override
-    public void onAttach(boolean initialAttach) {
-        if (!isInfoCollected) {
-            collectEventHandlerMethods(getComponent());
-        }
-        isInfoCollected = true;
+    /**
+     * Called by {@link ComponentMapping} whenever a component instance has been
+     * set for the node.
+     *
+     * @param component
+     *            the component instance which was set
+     */
+    public void componentSet(Component component) {
+        assert component != null;
+        collectEventHandlerMethods(component.getClass());
     }
 
-    private void collectEventHandlerMethods(Component component) {
+    private void collectEventHandlerMethods(Class<?> classWithAnnotations) {
         List<Method> methods = new ArrayList<>();
-        collectEventHandlerMethods(component.getClass(), methods);
+        collectEventHandlerMethods(classWithAnnotations, methods);
         Map<String, Method> map = new HashMap<>();
         for (Method method : methods) {
             Method existing = map.get(method.getName());
@@ -76,7 +75,7 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
                         "There may be only one event handler method with the given name. "
                                 + "Class '%s' (considering its superclasses) "
                                 + "contains several event handler methods with the same name: '%s'",
-                        component.getClass().getName(), method.getName());
+                        classWithAnnotations.getName(), method.getName());
                 throw new IllegalStateException(msg);
             }
             map.put(method.getName(), method);
@@ -95,17 +94,9 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
         collectEventHandlerMethods(clazz.getSuperclass(), methods);
     }
 
-    private Component getComponent() {
-        assert getNode().hasFeature(ComponentMapping.class) : ERROR_MSG;
-        Optional<Component> component = getNode()
-                .getFeature(ComponentMapping.class).getComponent();
-        assert component.isPresent() : ERROR_MSG;
-        return component.get();
-    }
-
     private void addEventHandlerMethod(Method method,
             Collection<Method> methods) {
-        checkParameterTypes(method);
+        ensureSupportedParameterTypes(method);
         if (!void.class.equals(method.getReturnType())) {
             String msg = String.format(Locale.ENGLISH,
                     "Non void event handler methods (no return type) are not supported. "
@@ -115,8 +106,8 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
             throw new IllegalStateException(msg);
         }
         Optional<Class<?>> checkedException = Stream
-                .of(method.getExceptionTypes()).filter(this::isCheckedException)
-                .findFirst();
+                .of(method.getExceptionTypes())
+                .filter(ReflectTools::isCheckedException).findFirst();
         if (checkedException.isPresent()) {
             String msg = String.format(Locale.ENGLISH,
                     "Event handler method may not declare checked exceptions. "
@@ -131,18 +122,20 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
 
     }
 
-    private static void checkParameterTypes(Method method) {
+    private static void ensureSupportedParameterTypes(Method method) {
         if (method.getParameterCount() == 0) {
             return;
         }
         Stream.of(method.getParameterTypes())
-                .forEach(type -> checkParameterType(method, type));
+                .forEach(type -> ensureSupportedParameterType(method, type));
     }
 
-    private static void checkParameterType(Method method, Class<?> type) {
+    private static void ensureSupportedParameterType(Method method,
+            Class<?> type) {
         Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
         if (parameterType.isArray()) {
-            checkParameterType(method, parameterType.getComponentType());
+            ensureSupportedParameterType(method,
+                    parameterType.getComponentType());
         } else if (!JsonCodec.canEncodeWithoutTypeInfo(parameterType)) {
             String msg = String.format(Locale.ENGLISH,
                     "The parameter types of event handler methods must be serializable to JSON."
@@ -152,11 +145,6 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
                     EventHandler.class.getName(), type.getName());
             throw new IllegalStateException(msg);
         }
-    }
-
-    private boolean isCheckedException(Class<?> exceptionClass) {
-        return !RuntimeException.class.isAssignableFrom(exceptionClass)
-                && !Error.class.isAssignableFrom(exceptionClass);
     }
 
 }

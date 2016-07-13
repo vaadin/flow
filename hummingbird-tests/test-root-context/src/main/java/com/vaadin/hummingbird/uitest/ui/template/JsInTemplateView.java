@@ -16,6 +16,8 @@
 package com.vaadin.hummingbird.uitest.ui.template;
 
 import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.Id;
+import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
 
@@ -46,6 +48,23 @@ public class JsInTemplateView extends Template {
         }
     }
 
+    public static class ButtonWithEventHandler extends Button {
+        private transient JsInTemplateModel model;
+
+        @EventHandler
+        public void updateModel() {
+            model.setFirstName("ThroughButton");
+            model.setItemCount(78);
+        }
+
+        public void setModel(JsInTemplateModel model) {
+            this.model = model;
+        }
+    }
+
+    @Id("buttonUpdateModel")
+    private ButtonWithEventHandler buttonWithEventHandler;
+
     @Override
     protected JsInTemplateModel getModel() {
         return (JsInTemplateModel) super.getModel();
@@ -54,6 +73,8 @@ public class JsInTemplateView extends Template {
     public JsInTemplateView() {
         getModel().setFirstName("Initial");
         getModel().setItemCount(0);
+
+        buttonWithEventHandler.setModel(getModel());
     }
 
     @EventHandler
