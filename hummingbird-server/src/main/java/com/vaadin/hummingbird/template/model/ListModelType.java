@@ -124,17 +124,25 @@ public class ListModelType<T> implements ModelType {
      *
      * @param type
      *            the type to check, must be a list of beans
+     * @param propertyName
+     *            the property name
+     * @param declaringClass
+     *            the class where the type is used
      * @return the item type of the list
      */
-    public static Class<?> getBeansListItemType(Type type) {
+    public static Class<?> getBeansListItemType(Type type, String propertyName,
+            Class<?> declaringClass) {
         assert isList(type);
 
         ParameterizedType pt = (ParameterizedType) type;
 
         Type itemType = pt.getActualTypeArguments()[0];
         if (!(itemType instanceof Class<?>)) {
-            throw new InvalidTemplateModelException(
-                    "The given type is not a beans list type: " + type);
+            throw new InvalidTemplateModelException("Element type "
+                    + itemType.getTypeName()
+                    + " is not a valid Bean type. Used in class "
+                    + declaringClass.getSimpleName() + " with property named "
+                    + propertyName + " with list type " + type.getTypeName());
         }
         return (Class<?>) itemType;
 
