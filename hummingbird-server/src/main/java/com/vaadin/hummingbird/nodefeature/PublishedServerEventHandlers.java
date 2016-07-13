@@ -33,26 +33,26 @@ import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
 /**
- * Template meta data information: list of template methods annotated with @
- * {@link EventHandler}.
+ * Methods which are published as <code>element.$server.&lt;name&gt;</code> on
+ * the client side.
  *
  * @author Vaadin Ltd
  *
  */
-public class TemplateEventHandlerNames extends SerializableNodeList<String> {
+public class PublishedServerEventHandlers extends SerializableNodeList<String> {
 
     private static final String ERROR_MSG = "The "
-            + TemplateEventHandlerNames.class.getSimpleName()
+            + PublishedServerEventHandlers.class.getSimpleName()
             + " may be used only for components";
     private boolean isInfoCollected;
 
     /**
-     * Creates a new meta information list for the given template node.
+     * Creates a new meta information list for the given state node.
      *
      * @param node
-     *            the template node that the list belongs to
+     *            the state node this list belongs to
      */
-    public TemplateEventHandlerNames(StateNode node) {
+    public PublishedServerEventHandlers(StateNode node) {
         super(node);
     }
 
@@ -89,9 +89,8 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
         if (clazz.equals(Component.class)) {
             return;
         }
-        Stream.of(clazz.getDeclaredMethods())
-                .filter(method -> method
-                        .isAnnotationPresent(EventHandler.class))
+        Stream.of(clazz.getDeclaredMethods()).filter(
+                method -> method.isAnnotationPresent(EventHandler.class))
                 .forEach(method -> addEventHandlerMethod(method, methods));
         collectEventHandlerMethods(clazz.getSuperclass(), methods);
     }

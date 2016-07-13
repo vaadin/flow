@@ -34,11 +34,7 @@ import com.vaadin.ui.UI;
 
 import elemental.json.JsonValue;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class TemplateEventHandlerNamesTest {
+public class PublishedServerEventHandlersTest {
 
     static class Template1 extends InlineTemplate {
         public Template1() {
@@ -173,12 +169,12 @@ public class TemplateEventHandlerNamesTest {
     @Test
     public void noValuesBeforeAttach() {
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateEventHandlerNames.class);
+                PublishedServerEventHandlers.class);
         stateNode.getFeature(ComponentMapping.class)
                 .setComponent(new Template1());
 
-        TemplateEventHandlerNames feature = stateNode
-                .getFeature(TemplateEventHandlerNames.class);
+        PublishedServerEventHandlers feature = stateNode
+                .getFeature(PublishedServerEventHandlers.class);
         Assert.assertEquals(0, feature.size());
     }
 
@@ -189,8 +185,8 @@ public class TemplateEventHandlerNamesTest {
         Template template = new Template1();
         ui.add(template);
 
-        TemplateEventHandlerNames feature = template.getElement().getNode()
-                .getFeature(TemplateEventHandlerNames.class);
+        PublishedServerEventHandlers feature = template.getElement().getNode()
+                .getFeature(PublishedServerEventHandlers.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(Template1.class).findFirst().get(),
@@ -220,8 +216,8 @@ public class TemplateEventHandlerNamesTest {
         Template template = new TemplateWithGoodParametersMethods();
         ui.add(template);
 
-        TemplateEventHandlerNames feature = template.getElement().getNode()
-                .getFeature(TemplateEventHandlerNames.class);
+        PublishedServerEventHandlers feature = template.getElement().getNode()
+                .getFeature(PublishedServerEventHandlers.class);
         Assert.assertEquals(10, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
@@ -260,8 +256,8 @@ public class TemplateEventHandlerNamesTest {
         Template template = new TemplateWithMethodDeclaringUncheckedException();
         ui.add(template);
 
-        TemplateEventHandlerNames feature = template.getElement().getNode()
-                .getFeature(TemplateEventHandlerNames.class);
+        PublishedServerEventHandlers feature = template.getElement().getNode()
+                .getFeature(PublishedServerEventHandlers.class);
         Assert.assertEquals(2, feature.size());
         Assert.assertEquals(getDeclaredMethods(
                 TemplateWithMethodDeclaringUncheckedException.class).findFirst()
@@ -276,8 +272,8 @@ public class TemplateEventHandlerNamesTest {
         Template template = new ChildTemplateWithMultipleMethods();
         ui.add(template);
 
-        TemplateEventHandlerNames feature = template.getElement().getNode()
-                .getFeature(TemplateEventHandlerNames.class);
+        PublishedServerEventHandlers feature = template.getElement().getNode()
+                .getFeature(PublishedServerEventHandlers.class);
         Assert.assertEquals(3, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
@@ -300,8 +296,8 @@ public class TemplateEventHandlerNamesTest {
         Template template = new ChildTemplateWithOverriddenMethod();
         ui.add(template);
 
-        TemplateEventHandlerNames feature = template.getElement().getNode()
-                .getFeature(TemplateEventHandlerNames.class);
+        PublishedServerEventHandlers feature = template.getElement().getNode()
+                .getFeature(PublishedServerEventHandlers.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(ChildTemplateWithOverriddenMethod.class)
@@ -329,7 +325,7 @@ public class TemplateEventHandlerNamesTest {
     public void attach_noFeature() {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
-        StateNode stateNode = new StateNode(TemplateEventHandlerNames.class);
+        StateNode stateNode = new StateNode(PublishedServerEventHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
     }
@@ -339,7 +335,7 @@ public class TemplateEventHandlerNamesTest {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                TemplateEventHandlerNames.class);
+                PublishedServerEventHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
     }

@@ -41,19 +41,20 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * RPC handler for events defined in templates (which triggers client-&gt;server
- * communication).
- * 
- * @see JsonConstants#RPC_TYPE_TEMPLATE_EVENT
- * 
+ * RPC handler for events triggered through <code>element.$server</code> or
+ * simply <code>$server</code> in template event handlers.
+ *
+ * @see JsonConstants#RPC_PUBLISHED_SERVER_EVENT_HANDLER
+ *
  * @author Vaadin Ltd
  *
  */
-public class TemplateEventRpcHandler extends AbstractRpcInvocationHandler {
+public class PublishedServerEventHandlerRpcHandler
+        extends AbstractRpcInvocationHandler {
 
     @Override
     public String getRpcType() {
-        return JsonConstants.RPC_TYPE_TEMPLATE_EVENT;
+        return JsonConstants.RPC_PUBLISHED_SERVER_EVENT_HANDLER;
     }
 
     @Override
@@ -124,7 +125,8 @@ public class TemplateEventRpcHandler extends AbstractRpcInvocationHandler {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
-            Logger.getLogger(TemplateEventRpcHandler.class.getName())
+            Logger.getLogger(
+                    PublishedServerEventHandlerRpcHandler.class.getName())
                     .log(Level.FINE, null, e);
             throw new RuntimeException(e.getCause());
         }
