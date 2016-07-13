@@ -11,6 +11,11 @@ Template defines a special syntax `(event-name)="javascriptCode"` for attaching 
 
 Clicking on the `<button>` will now show an alert in the browser. You can listen to any event using the `(event-name)` syntax, it does not matter if it is a built-in browser event or a custom event from e.g. a web component.
 
+There are a few special variables available when the event handler is executed: `$event`, `$element` and `$server`. The `$event` variable refers to the JavaScript event object, the `$element` variable refers to the element for which the handler was defined. `$server` is described for in detail in "Server Side Event Handlers" below.
+
+[NOTE]
+The `$element` variable refers to the element for which the event handler was defined, not the target element of the event. If you have a click handler on an element and click on a child element, `$element` will refer to the parent element and `$event.target` will refer to the child (clicked) element.
+
 == Server Side Event Handlers
 To handle a DOM event in a template on the server side, you have two options:
 

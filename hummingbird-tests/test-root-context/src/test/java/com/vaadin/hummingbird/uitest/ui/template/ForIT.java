@@ -42,10 +42,28 @@ public class ForIT extends PhantomJSTest {
         Assert.assertEquals(2, getItems().size());
         Assert.assertEquals("Item 1 updated", getItems().get(1).getText());
 
+        getItems().get(1).click();
+        Assert.assertEquals("Clicked on: Item 1 updated", getItemLog());
+        getItemsAgain().get(1).click();
+        Assert.assertEquals("Clicked on: Item 1 updated", getItemAgainLog());
+
         click("remove");
 
         Assert.assertEquals(1, getItems().size());
         Assert.assertEquals("Item 0", getItems().get(0).getText());
+
+        getItems().get(0).click();
+        Assert.assertEquals("Clicked on: Item 0", getItemLog());
+        getItemsAgain().get(0).click();
+        Assert.assertEquals("Clicked on: Item 0", getItemAgainLog());
+    }
+
+    private String getItemLog() {
+        return findElement(By.id("itemLog")).getText();
+    }
+
+    private String getItemAgainLog() {
+        return findElement(By.id("itemAgainLog")).getText();
     }
 
     private void click(String buttonId) {
@@ -54,6 +72,10 @@ public class ForIT extends PhantomJSTest {
 
     private List<WebElement> getItems() {
         return findElements(By.className("item"));
+    }
+
+    private List<WebElement> getItemsAgain() {
+        return findElements(By.xpath("//div[@class='item-again']/span"));
     }
 
 }

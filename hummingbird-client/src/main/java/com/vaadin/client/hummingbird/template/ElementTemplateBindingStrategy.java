@@ -52,7 +52,7 @@ public class ElementTemplateBindingStrategy
     @JsFunction
     @SuppressWarnings("unusable-by-js")
     private interface EventHandler {
-        void handle(Event event, JavaScriptObject serverProxy);
+        void handle(Event event, JavaScriptObject serverProxy, Element element);
     }
 
     @Override
@@ -133,9 +133,9 @@ public class ElementTemplateBindingStrategy
                 String handler = WidgetUtil
                         .crazyJsCast(eventHandlers.get(event));
                 EventHandler eventHandler = NativeFunction.create("$event",
-                        "$server", handler);
+                        "$server", "$element", handler);
                 element.addEventListener(event, evt -> eventHandler.handle(evt,
-                        createServerProxy(templateStateNode)));
+                        createServerProxy(templateStateNode), element));
             }
         }
     }
