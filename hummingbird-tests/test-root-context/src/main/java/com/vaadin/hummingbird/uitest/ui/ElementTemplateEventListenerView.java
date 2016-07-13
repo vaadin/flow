@@ -27,7 +27,7 @@ public class ElementTemplateEventListenerView extends Div implements View {
 
     public ElementTemplateEventListenerView() {
         add(new InlineTemplate<>(
-                "<div (click)='$event.target.id=\"foo\"' class='target'>"
+                "<div (click)='$element.id=\"foo\"' class='target'>"
                         + "Template element with event listener</div>",
                 TemplateModel.class));
     }

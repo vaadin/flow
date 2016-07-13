@@ -56,7 +56,7 @@ public class TemplateEventHandlerView extends Div implements View {
 
         ArgReceiver() {
             super("<div id='arg-receiver' (click)="
-                    + "'$server.method($event.target.id, 3, 6.2, true, [2.1, 6.7],\"foo\",\"bar\" )'>"
+                    + "'$server.method($element.id, 3, 6.2, true, [2.1, 6.7],\"foo\",\"bar\" )'>"
                     + "Click to send event to the server</div>",
                     TemplateModel.class);
         }

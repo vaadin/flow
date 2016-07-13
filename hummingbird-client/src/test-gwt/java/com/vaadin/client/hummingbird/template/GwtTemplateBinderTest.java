@@ -664,7 +664,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
     public void testEventHandler() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
-        templateNode.addEventHandler("click", "$event.target.id='foo'");
+        templateNode.addEventHandler("click", "$element.id='foo'");
 
         Element element = createElement(templateNode);
         MouseEvent event = (MouseEvent) Browser.getDocument()
