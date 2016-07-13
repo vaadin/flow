@@ -160,6 +160,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(bindDomEventListeners(context));
 
         listeners.push(bindClassList(htmlNode, stateNode));
+
+        listeners.push(ServerEventHandlerBinder
+                .bindServerEventHandlerNames(htmlNode, stateNode));
     }
 
     @SuppressWarnings("unchecked")
