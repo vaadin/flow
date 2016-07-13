@@ -41,7 +41,7 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
-import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
+import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
@@ -933,7 +933,7 @@ public class TemplateElementStateProviderTest {
         assertHasFeatures(TemplateElementStateProvider.createRootNode(),
                 ModelMap.class, TemplateOverridesMap.class, TemplateMap.class,
                 ComponentMapping.class, ParentGeneratorHolder.class,
-                TemplateEventHandlerNames.class);
+                PublishedServerEventHandlers.class);
     }
 
     @Test

@@ -75,8 +75,8 @@ public class NodeFeatureRegistry {
         registerFeature(ParentGeneratorHolder.class,
                 ParentGeneratorHolder::new);
         registerFeature(ModelList.class, ModelList::new);
-        registerFeature(TemplateEventHandlerNames.class,
-                TemplateEventHandlerNames::new);
+        registerFeature(PublishedServerEventHandlers.class,
+                PublishedServerEventHandlers::new);
     }
 
     private NodeFeatureRegistry() {

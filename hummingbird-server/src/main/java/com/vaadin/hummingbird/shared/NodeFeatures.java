@@ -33,7 +33,7 @@ import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfiguration
 import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
+import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
@@ -139,9 +139,9 @@ public class NodeFeatures {
     public static final int TEMPLATE_MODELLIST = 21;
 
     /**
-     * Id for {@link TemplateEventHandlerNames}.
+     * Id for {@link PublishedServerEventHandlers}.
      */
-    public static final int TEMPLATE_EVENT_HANDLER_NAMES = 22;
+    public static final int PUBLISHED_SERVER_EVENT_HANDLERS = 22;
 
     /**
      * Key for {@link ElementData#getTag()}.
