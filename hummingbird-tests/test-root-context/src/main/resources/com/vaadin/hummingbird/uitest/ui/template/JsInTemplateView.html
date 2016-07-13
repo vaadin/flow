@@ -11,5 +11,7 @@
 	<div id="holderAge">PersonHolderAge: {{personHolder ? personHolder.person.age : "Unknown"}}</div>
 
 	<button id="updateModel" (click)="$server.updateModel()">Update
-		model</button>
+		model through template @EventHandler</button>
+	<button id="buttonUpdateModel" (click)="$element.$server.updateModel()">Update
+		model through Button @EventHandler</button>
 </div>
