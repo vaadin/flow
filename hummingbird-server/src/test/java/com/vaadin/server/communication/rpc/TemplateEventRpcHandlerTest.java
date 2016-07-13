@@ -39,7 +39,7 @@ public class TemplateEventRpcHandlerTest {
 
         private boolean isInvoked;
 
-        protected void method(int i) {
+        protected void intMethod(int i) {
 
         }
 
@@ -54,12 +54,12 @@ public class TemplateEventRpcHandlerTest {
 
         @EventHandler
         @Override
-        protected void method(int i) {
+        protected void intMethod(int i) {
 
         }
 
         @EventHandler
-        private void method() {
+        private void intMethod() {
         }
     }
 
@@ -75,7 +75,7 @@ public class TemplateEventRpcHandlerTest {
 
         @Override
         @EventHandler
-        protected void method(int i) {
+        protected void intMethod(int i) {
             intArg = i;
         }
 
@@ -107,7 +107,7 @@ public class TemplateEventRpcHandlerTest {
         private String[] varArg;
 
         @EventHandler
-        protected void method(String... args) {
+        protected void varArgMethod(String... args) {
             varArg = args;
         }
 
@@ -157,25 +157,25 @@ public class TemplateEventRpcHandlerTest {
 
     @Test(expected = IllegalStateException.class)
     public void twoEventHandlerMethodsWithTheSameName() {
-        ComponentWithMethod component = new ComponentWithTwoEventHandlerMethodSameName();
+        ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
         TemplateEventRpcHandler.invokeMethod(component, component.getClass(),
-                "method", Json.createArray());
+                "intMethod", Json.createArray());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void methodWithParametersIsNotAccepted() {
-        ComponentWithMethod component = new MethodWithParameters();
+    public void methodWithParametersInvokedWithoutParameters() {
+        MethodWithParameters component = new MethodWithParameters();
         TemplateEventRpcHandler.invokeMethod(component, component.getClass(),
-                "method", Json.createArray());
+                "intMethod", Json.createArray());
     }
 
     @Test
-    public void methodWithParametersIsInvoked() {
+    public void methodWithParameterInvokedWithProperParameter() {
         JsonArray array = Json.createArray();
         array.set(0, 65);
         MethodWithParameters component = new MethodWithParameters();
         TemplateEventRpcHandler.invokeMethod(component, component.getClass(),
-                "method", array);
+                "intMethod", array);
 
         Assert.assertEquals(65, component.intArg);
     }
@@ -305,7 +305,7 @@ public class TemplateEventRpcHandlerTest {
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         TemplateEventRpcHandler.invokeMethod(component, component.getClass(),
-                "method", array);
+                "varArgMethod", array);
 
         Assert.assertEquals(0, component.varArg.length);
     }
@@ -340,7 +340,7 @@ public class TemplateEventRpcHandlerTest {
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         TemplateEventRpcHandler.invokeMethod(component, component.getClass(),
-                "method", array);
+                "varArgMethod", array);
 
         Assert.assertEquals(1, component.varArg.length);
         Assert.assertEquals("foo", component.varArg[0]);
@@ -356,7 +356,7 @@ public class TemplateEventRpcHandlerTest {
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         TemplateEventRpcHandler.invokeMethod(component, component.getClass(),
-                "method", array);
+                "varArgMethod", array);
 
         Assert.assertArrayEquals(new String[] { value.getString(0) },
                 component.varArg);
