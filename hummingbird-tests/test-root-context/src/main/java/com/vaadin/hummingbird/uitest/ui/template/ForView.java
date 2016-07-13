@@ -76,4 +76,5 @@ public class ForView extends Template {
             item.setText(item.getText() + " updated");
         }
     }
+
 }
