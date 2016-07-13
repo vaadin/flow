@@ -168,9 +168,10 @@ public class JsonConstants implements Serializable {
     public static final String RPC_NAVIGATION_STATE = "state";
 
     /**
-     * Type value for template events sent from the client.
+     * Type value for events sent from the client to an event handler published
+     * on the server.
      */
-    public static final String RPC_TYPE_TEMPLATE_EVENT = "templateEvent";
+    public static final String RPC_PUBLISHED_SERVER_EVENT_HANDLER = "publishedEventHandler";
 
     /**
      * Key used to hold the server side method name in template event messages
@@ -182,7 +183,7 @@ public class JsonConstants implements Serializable {
      * Key used to hold the argument values for server side method call.
      *
      * @see #RPC_TEMPLATE_EVENT_METHOD_NAME
-     * @see #RPC_TYPE_TEMPLATE_EVENT
+     * @see #RPC_PUBLISHED_SERVER_EVENT_HANDLER
      */
     public static final String RPC_TEMPLATE_EVENT_ARGS = "templateEventMethodArgs";
 

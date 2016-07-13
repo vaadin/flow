@@ -174,9 +174,9 @@ public class ElementTemplateBindingStrategy
         JavaScriptObject proxy = JavaScriptObject.createObject();
 
         if (templateStateNode
-                .hasFeature(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES)) {
+                .hasFeature(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS)) {
             NodeList list = templateStateNode
-                    .getList(NodeFeatures.TEMPLATE_EVENT_HANDLER_NAMES);
+                    .getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
             for (int i = 0; i < list.length(); i++) {
                 attachServerProxyMethod(proxy, templateStateNode,
                         list.get(i).toString());

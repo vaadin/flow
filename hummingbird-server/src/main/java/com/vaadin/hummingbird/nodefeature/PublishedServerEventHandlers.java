@@ -39,10 +39,10 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  *
  */
-public class TemplateEventHandlerNames extends SerializableNodeList<String> {
+public class PublishedServerEventHandlers extends SerializableNodeList<String> {
 
     private static final String ERROR_MSG = "The "
-            + TemplateEventHandlerNames.class.getSimpleName()
+            + PublishedServerEventHandlers.class.getSimpleName()
             + " may be used only for components";
     private boolean isInfoCollected;
 
@@ -52,7 +52,7 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
      * @param node
      *            the template node that the list belongs to
      */
-    public TemplateEventHandlerNames(StateNode node) {
+    public PublishedServerEventHandlers(StateNode node) {
         super(node);
     }
 
@@ -89,9 +89,8 @@ public class TemplateEventHandlerNames extends SerializableNodeList<String> {
         if (clazz.equals(Component.class)) {
             return;
         }
-        Stream.of(clazz.getDeclaredMethods())
-                .filter(method -> method
-                        .isAnnotationPresent(EventHandler.class))
+        Stream.of(clazz.getDeclaredMethods()).filter(
+                method -> method.isAnnotationPresent(EventHandler.class))
                 .forEach(method -> addEventHandlerMethod(method, methods));
         collectEventHandlerMethods(clazz.getSuperclass(), methods);
     }
