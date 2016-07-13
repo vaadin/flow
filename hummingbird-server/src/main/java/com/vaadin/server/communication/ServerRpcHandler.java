@@ -34,7 +34,7 @@ import com.vaadin.server.communication.rpc.EventRpcHandler;
 import com.vaadin.server.communication.rpc.NavigationRpcHandler;
 import com.vaadin.server.communication.rpc.PropertySyncRpcHandler;
 import com.vaadin.server.communication.rpc.RpcInvocationHandler;
-import com.vaadin.server.communication.rpc.TemplateEventRpcHandler;
+import com.vaadin.server.communication.rpc.PublishedServerEventHandlerRpcHandler;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.shared.Version;
@@ -397,7 +397,7 @@ public class ServerRpcHandler implements Serializable {
         list.add(new EventRpcHandler());
         list.add(new NavigationRpcHandler());
         list.add(new PropertySyncRpcHandler());
-        list.add(new TemplateEventRpcHandler());
+        list.add(new PublishedServerEventHandlerRpcHandler());
         return list;
     }
 

@@ -101,7 +101,7 @@ public class ServerConnector {
             JsonArray argsArray) {
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_TYPE,
-                JsonConstants.RPC_TYPE_TEMPLATE_EVENT);
+                JsonConstants.RPC_PUBLISHED_SERVER_EVENT_HANDLER);
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME, methodName);
         message.put(JsonConstants.RPC_TEMPLATE_EVENT_ARGS, argsArray);
