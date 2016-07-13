@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird.nodefeature;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsCollections.ForEachCallback;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.ReactiveEventRouter;
 import com.vaadin.client.hummingbird.reactive.ReactiveValue;
@@ -184,4 +185,16 @@ public class NodeList extends NodeFeature implements ReactiveValue {
             ReactiveValueChangeListener reactiveValueChangeListener) {
         return eventRouter.addReactiveListener(reactiveValueChangeListener);
     }
+
+    /**
+     * Iterates all values in this list.
+     *
+     * @param callback
+     *            the callback to invoke for each value
+     */
+    public void forEach(ForEachCallback<Object> callback) {
+        eventRouter.registerRead();
+        values.forEach(callback);
+    }
+
 }

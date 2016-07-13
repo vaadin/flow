@@ -15,7 +15,9 @@
  */
 package com.vaadin.client.hummingbird.nodefeature;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
@@ -117,4 +119,18 @@ public class NodeListTest {
                 computation.getCount());
     }
 
+    @Test
+    public void testForEach() {
+        list.add(0, "foo");
+        list.add(1, "bar");
+        list.add(0, "baz");
+
+        List<String> forEachList = new ArrayList<>();
+        list.forEach(item -> {
+            forEachList.add((String) item);
+        });
+
+        Assert.assertArrayEquals(new String[] { "baz", "foo", "bar" },
+                forEachList.toArray());
+    }
 }
