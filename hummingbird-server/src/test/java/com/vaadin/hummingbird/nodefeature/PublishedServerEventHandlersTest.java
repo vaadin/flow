@@ -26,9 +26,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.template.InlineTemplate;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
@@ -166,8 +168,21 @@ public class PublishedServerEventHandlersTest {
         }
     }
 
+    @Tag("div")
+    static class NonTemplateComponentWithoutEventHandler extends Component {
+    }
+
+    @Tag("div")
+    static class NonTemplateComponentWithEventHandler extends Component {
+
+        @EventHandler
+        public void publishedMethod1() {
+
+        }
+    }
+
     @Test
-    public void noValuesBeforeAttach() {
+    public void eventHandlersUnrelatedToAttach() {
         StateNode stateNode = new StateNode(ComponentMapping.class,
                 PublishedServerEventHandlers.class);
         stateNode.getFeature(ComponentMapping.class)
@@ -175,7 +190,7 @@ public class PublishedServerEventHandlersTest {
 
         PublishedServerEventHandlers feature = stateNode
                 .getFeature(PublishedServerEventHandlers.class);
-        Assert.assertEquals(0, feature.size());
+        Assert.assertEquals(1, feature.size());
     }
 
     @Test
@@ -321,16 +336,18 @@ public class PublishedServerEventHandlersTest {
         ui.add(template);
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void attach_noFeature() {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(PublishedServerEventHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
+        Assert.assertEquals(0, stateNode
+                .getFeature(PublishedServerEventHandlers.class).size());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void attach_noComponent() {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
@@ -338,6 +355,39 @@ public class PublishedServerEventHandlersTest {
                 PublishedServerEventHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
+        Assert.assertEquals(0, stateNode
+                .getFeature(PublishedServerEventHandlers.class).size());
+    }
+
+    @Test
+    public void nonTemplateComponentWithEventHandler() {
+        UI ui = new UI();
+        NonTemplateComponentWithEventHandler component = new NonTemplateComponentWithEventHandler();
+        ui.add(component);
+
+        PublishedServerEventHandlers feature = component.getElement().getNode()
+                .getFeature(PublishedServerEventHandlers.class);
+        assertListFeature(feature, "publishedMethod1");
+    }
+
+    @Test
+    public void nonTemplateComponentWithoutEventHandler() {
+        UI ui = new UI();
+        NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
+        ui.add(component);
+
+        PublishedServerEventHandlers feature = component.getElement().getNode()
+                .getFeature(PublishedServerEventHandlers.class);
+        assertListFeature(feature);
+    }
+
+    private void assertListFeature(SerializableNodeList<String> feature,
+            String... expected) {
+        Assert.assertEquals(expected.length, feature.size());
+        for (int i = 0; i < expected.length; i++) {
+            Assert.assertEquals(expected[i], feature.get(i));
+        }
+
     }
 
     private Stream<String> getDeclaredMethods(Class<?> clazz) {

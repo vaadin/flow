@@ -1198,6 +1198,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         registerTemplateNode(templateNode);
         Element element = new ElementTemplateBindingStrategy()
                 .create(stateNode);
+        stateNode.setDomNode(element);
+
         Binder.bind(stateNode, element);
         return element;
     }

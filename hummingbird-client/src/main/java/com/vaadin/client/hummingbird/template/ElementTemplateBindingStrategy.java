@@ -20,10 +20,11 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
+import com.vaadin.client.hummingbird.binding.ServerEventHandlerBinder;
+import com.vaadin.client.hummingbird.binding.ServerEventHandlerBinder.ServerEventObject;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
-import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
@@ -116,6 +117,14 @@ public class ElementTemplateBindingStrategy
              */
             modelNode.addUnregisterListener(e -> remover.remove());
         }
+
+        if (element == context.getTemplateRoot().getDomNode()) {
+            // Only bind element.$server for the template root element using the
+            // data in the state node. Other elements might get their own
+            // $server through an override node
+            ServerEventHandlerBinder.bindServerEventHandlerNames(element,
+                    context.getTemplateRoot());
+        }
     }
 
     private void bindAttributes(StateNode stateNode,
@@ -134,8 +143,9 @@ public class ElementTemplateBindingStrategy
                         .crazyJsCast(eventHandlers.get(event));
                 EventHandler eventHandler = NativeFunction.create("$event",
                         "$server", handler);
-                element.addEventListener(event, evt -> eventHandler.handle(evt,
-                        createServerProxy(templateStateNode)));
+                element.addEventListener(event,
+                        evt -> eventHandler.handle(evt, ServerEventObject.get(
+                                (Element) templateStateNode.getDomNode())));
             }
         }
     }
@@ -168,31 +178,5 @@ public class ElementTemplateBindingStrategy
          */
         context.bind(overrideNode, element);
     }
-
-    private JavaScriptObject createServerProxy(StateNode templateStateNode) {
-        assert templateStateNode.hasFeature(NodeFeatures.TEMPLATE);
-        JavaScriptObject proxy = JavaScriptObject.createObject();
-
-        if (templateStateNode
-                .hasFeature(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS)) {
-            NodeList list = templateStateNode
-                    .getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
-            for (int i = 0; i < list.length(); i++) {
-                attachServerProxyMethod(proxy, templateStateNode,
-                        list.get(i).toString());
-            }
-        }
-        return proxy;
-    }
-
-    private static native void attachServerProxyMethod(JavaScriptObject proxy,
-            StateNode node, String methodName)
-    /*-{
-        proxy[methodName] = $entry(function() {
-            var args = Array.prototype.slice.call(arguments);
-            var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
-            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
-        });
-    }-*/;
 
 }

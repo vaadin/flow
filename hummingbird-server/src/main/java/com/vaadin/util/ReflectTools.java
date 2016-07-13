@@ -520,4 +520,17 @@ public class ReflectTools implements Serializable {
                 .findFirst();
     }
 
+    /**
+     * Checks if the given exception class represents a checked exception.
+     *
+     * @param exceptionClass
+     *            the class to check
+     * @return <code>true</code> if the class represents a checked exception,
+     *         false otherwise
+     */
+    public static boolean isCheckedException(Class<?> exceptionClass) {
+        return !RuntimeException.class.isAssignableFrom(exceptionClass)
+                && !Error.class.isAssignableFrom(exceptionClass);
+    }
+
 }
