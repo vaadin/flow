@@ -34,9 +34,6 @@ public class JavaScriptNumberFormatter {
      * @return a string representation matching the JS
      */
     public static String toString(double value) {
-        if (Double.isInfinite(value) || Double.isNaN(value)) {
-            return "";
-        }
         String doubleAsString = String.valueOf(value);
         if (doubleAsString.endsWith(".0")) {
             // JS strips ".0" from numbers

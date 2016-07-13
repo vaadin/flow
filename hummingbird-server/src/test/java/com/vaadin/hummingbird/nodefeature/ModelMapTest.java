@@ -159,4 +159,19 @@ public class ModelMapTest {
         Assert.assertEquals("baz", ModelMap.getLastPart("foo.bar.baz"));
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void setNaN_throws() {
+        rootMap.setValue("value", Double.NaN);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setPositiveInfinity_throws() {
+        rootMap.setValue("value", Double.POSITIVE_INFINITY);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setNegativeInfinity_throws() {
+        rootMap.setValue("value", Double.NEGATIVE_INFINITY);
+    }
+
 }

@@ -54,6 +54,14 @@ public class ModelMap extends NodeMap {
                     "Model map key may not contain dots");
         }
 
+        if (value instanceof Double) {
+            Double doubleValue = (Double) value;
+            if (doubleValue.isInfinite() || doubleValue.isNaN()) {
+                throw new IllegalArgumentException(
+                        "NaN and infinity are not supported");
+            }
+        }
+
         put(key, value);
     }
 

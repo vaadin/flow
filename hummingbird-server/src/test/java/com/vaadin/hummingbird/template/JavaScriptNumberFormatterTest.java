@@ -28,10 +28,11 @@ public class JavaScriptNumberFormatterTest {
 
     @Test
     public void doubles() throws ScriptException {
-        // JSON does not support NaN or infinity
-        assertDouble(Double.NaN, "");
-        assertDouble(Double.POSITIVE_INFINITY, "");
-        assertDouble(Double.NEGATIVE_INFINITY, "");
+        // These values cannot be sent in the model, but they might still show
+        // up as a result of evaluating JS
+        assertDouble(Double.NaN, "NaN");
+        assertDouble(Double.POSITIVE_INFINITY, "Infinity");
+        assertDouble(Double.NEGATIVE_INFINITY, "-Infinity");
 
         assertDouble(Double.MIN_VALUE);
         assertDouble(Double.MAX_VALUE);
