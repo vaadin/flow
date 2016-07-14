@@ -30,6 +30,10 @@ import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.util.ReflectTools;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+
 /**
  * A model type corresponding to a Java bean type.
  *
@@ -76,6 +80,40 @@ public class BeanModelType<T> implements ModelType {
 
         private Map<String, ModelType> getProperties() {
             return properties;
+        }
+    }
+
+    /**
+     * Nashorn proxy object that uses a {@link BeanModelType} to delegate
+     * JavaScript properties accesses to a {@link ModelMap}. Nashorn exposes
+     * instances of this type as opaque JavaScript objects, while internally
+     * delegating to the handler methods in this class.
+     */
+    @SuppressWarnings("restriction")
+    private static final class StateNodeWrapper
+            extends jdk.nashorn.api.scripting.AbstractJSObject {
+
+        private ModelMap model;
+        private BeanModelType<?> type;
+
+        public StateNodeWrapper(ModelMap model, BeanModelType<?> type) {
+            assert type != null;
+            assert model != null;
+            this.model = model;
+            this.type = type;
+        }
+
+        @Override
+        public boolean hasMember(String name) {
+            return type.hasProperty(name);
+        }
+
+        @Override
+        public Object getMember(String name) {
+            assert hasMember(name);
+
+            return type.getPropertyType(name)
+                    .modelToNashorn(model.getValue(name));
         }
     }
 
@@ -213,6 +251,16 @@ public class BeanModelType<T> implements ModelType {
     public T modelToApplication(Serializable modelValue) {
         return TemplateModelProxyHandler
                 .createModelProxy((StateNode) modelValue, this);
+    }
+
+    @Override
+    public Object modelToNashorn(Serializable modelValue) {
+        if (modelValue == null) {
+            return null;
+        } else {
+            ModelMap modelMap = ModelMap.get((StateNode) modelValue);
+            return new StateNodeWrapper(modelMap, this);
+        }
     }
 
     /**
@@ -369,4 +417,14 @@ public class BeanModelType<T> implements ModelType {
     public Type getJavaType() {
         return proxyType;
     }
+
+    @Override
+    public JsonValue toJson() {
+        JsonObject json = Json.createObject();
+
+        properties.forEach((name, type) -> json.put(name, type.toJson()));
+
+        return json;
+    }
+
 }

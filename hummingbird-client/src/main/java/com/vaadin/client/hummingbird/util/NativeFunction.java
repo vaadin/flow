@@ -56,6 +56,18 @@ public class NativeFunction {
     public native Object apply(Object thisArg, JsArray<?> arguments);
 
     /**
+     * Invokes this function with a given <code>this</code> and arguments
+     * provides as varargs.
+     *
+     * @param thisArg
+     *            the value of <code>this</code>
+     * @param arguments
+     *            the arguments to invoke this function with
+     * @return the return value of the invocation
+     */
+    public native Object call(Object thisArg, Object... arguments);
+
+    /**
      * Creates a new function with the given parameters and implementation. The
      * return value of this method is intended to be used as a type annotated
      * with {@link JsFunction @JsFunction}.

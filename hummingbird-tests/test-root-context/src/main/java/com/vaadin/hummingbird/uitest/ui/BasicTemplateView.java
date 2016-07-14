@@ -25,9 +25,18 @@ import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
 
 public class BasicTemplateView extends Template implements View {
+
+    public interface Model extends TemplateModel {
+        // Not actually always a string any more, but must define some type for
+        // the value to be considered present
+        public String getModelValue();
+
+        public String getFoo();
+    }
 
     @Id("container")
     private Div container;
@@ -60,6 +69,11 @@ public class BasicTemplateView extends Template implements View {
                 .setChild(childSlotContent.getElement().getNode());
 
         clearModel.addClickListener(e -> setModelValue(null));
+    }
+
+    @Override
+    protected Model getModel() {
+        return (Model) super.getModel();
     }
 
     @EventHandler

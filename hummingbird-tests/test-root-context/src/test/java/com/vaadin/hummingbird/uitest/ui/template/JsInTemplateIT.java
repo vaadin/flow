@@ -29,6 +29,8 @@ public class JsInTemplateIT extends PhantomJSTest {
         open();
         Assert.assertEquals("Initial", getFirstName());
         Assert.assertEquals("initial123", getUserName());
+        Assert.assertEquals("Age: Unknown", getAge());
+        Assert.assertEquals("PersonHolderAge: Unknown", getHolderAge());
         WebElement itemCount = getItemCount();
         Assert.assertTrue(hasCssClass(itemCount, "hidden"));
 
@@ -36,6 +38,8 @@ public class JsInTemplateIT extends PhantomJSTest {
 
         Assert.assertEquals("Another", getFirstName());
         Assert.assertEquals("another123", getUserName());
+        Assert.assertEquals("Age: 42", getAge());
+        Assert.assertEquals("PersonHolderAge: 53", getHolderAge());
         itemCount = getItemCount();
         Assert.assertFalse(hasCssClass(itemCount, "hidden"));
         Assert.assertEquals("Items available: 3", itemCount.getText());
@@ -52,4 +56,13 @@ public class JsInTemplateIT extends PhantomJSTest {
     private String getFirstName() {
         return findElement(By.id("firstName")).getText();
     }
+
+    private String getAge() {
+        return findElement(By.id("personAge")).getText();
+    }
+
+    private String getHolderAge() {
+        return findElement(By.id("holderAge")).getText();
+    }
+
 }
