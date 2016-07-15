@@ -159,40 +159,45 @@ public class TreeChangeProcessor {
 
         NodeList list = node.getList(nsId);
 
-        int index = (int) change.getNumber(JsonConstants.CHANGE_SPLICE_INDEX);
-        int remove;
         if (change.hasKey(JsonConstants.CHANGE_SPLICE_REMOVE)) {
-            remove = (int) change.getNumber(JsonConstants.CHANGE_SPLICE_REMOVE);
+            JsonArray removedIndexes = change
+                    .getArray(JsonConstants.CHANGE_SPLICE_REMOVE);
+            // the array is sorted in descending order in server side
+            JsArray<Object> array = ClientJsonCodec
+                    .jsonArrayAsJsArray(removedIndexes);
+            array.forEach(value -> list.splice(((Double) value).intValue(), 1));
         } else {
-            remove = 0;
-        }
+            int index = (int) change
+                    .getNumber(JsonConstants.CHANGE_SPLICE_INDEX);
+            if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD)) {
+                JsonArray addJson = change
+                        .getArray(JsonConstants.CHANGE_SPLICE_ADD);
 
-        if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD)) {
-            JsonArray addJson = change
-                    .getArray(JsonConstants.CHANGE_SPLICE_ADD);
+                JsArray<Object> add = ClientJsonCodec
+                        .jsonArrayAsJsArray(addJson);
 
-            JsArray<Object> add = ClientJsonCodec.jsonArrayAsJsArray(addJson);
+                list.splice(index, 0, add);
+            } else if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES)) {
+                JsonArray addNodes = change
+                        .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
+                int length = addNodes.length();
 
-            list.splice(index, remove, add);
-        } else if (change.hasKey(JsonConstants.CHANGE_SPLICE_ADD_NODES)) {
-            JsonArray addNodes = change
-                    .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
-            int length = addNodes.length();
+                JsArray<StateNode> add = JsCollections.array();
 
-            JsArray<StateNode> add = JsCollections.array();
+                StateTree tree = node.getTree();
+                for (int i = 0; i < length; i++) {
+                    int childId = (int) addNodes.getNumber(i);
+                    StateNode child = tree.getNode(childId);
+                    assert child != null : "No child node found with id "
+                            + childId;
 
-            StateTree tree = node.getTree();
-            for (int i = 0; i < length; i++) {
-                int childId = (int) addNodes.getNumber(i);
-                StateNode child = tree.getNode(childId);
-                assert child != null : "No child node found with id " + childId;
+                    add.set(i, child);
+                }
 
-                add.set(i, child);
+                list.splice(index, 0, add);
+            } else {
+                list.splice(index, 0);
             }
-
-            list.splice(index, remove, add);
-        } else {
-            list.splice(index, remove);
         }
     }
 }

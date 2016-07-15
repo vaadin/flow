@@ -24,7 +24,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.ListRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
 
 public class SerializableNodeListTest
@@ -74,18 +74,15 @@ public class SerializableNodeListTest
         i.remove();
         List<NodeChange> changes = collectChanges(nodeList);
         Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(0, ((ListSpliceChange) changes.get(0)).getIndex());
-        Assert.assertEquals(1,
-                ((ListSpliceChange) changes.get(0)).getRemoveCount());
+
+        verifyRemoved(changes, new Integer[] { 0 });
 
         i.next();
         i.next();
         i.remove();
         changes = collectChanges(nodeList);
         Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(1, ((ListSpliceChange) changes.get(0)).getIndex());
-        Assert.assertEquals(1,
-                ((ListSpliceChange) changes.get(0)).getRemoveCount());
+        verifyRemoved(changes, new Integer[] { 1 });
 
         List<String> actual = new ArrayList<>();
         for (int j = 0; j < nodeList.size(); j++) {
@@ -97,7 +94,7 @@ public class SerializableNodeListTest
     }
 
     @Test
-    public void clearUsingIterator() {
+    public void testClearUsingIterator() {
         nodeList.add("1");
         nodeList.add("2");
         collectChanges(nodeList);
@@ -109,13 +106,20 @@ public class SerializableNodeListTest
         i.remove();
 
         List<NodeChange> changes = collectChanges(nodeList);
-        Assert.assertEquals(2, changes.size());
-        Assert.assertEquals(0, ((ListSpliceChange) changes.get(0)).getIndex());
-        Assert.assertEquals(0, ((ListSpliceChange) changes.get(1)).getIndex());
-        Assert.assertEquals(1,
-                ((ListSpliceChange) changes.get(0)).getRemoveCount());
-        Assert.assertEquals(1,
-                ((ListSpliceChange) changes.get(1)).getRemoveCount());
+        Assert.assertEquals(1, changes.size());
+
+        verifyRemoved(changes, new Integer[] { 0, 0 });
+
         Assert.assertEquals(0, nodeList.size());
+    }
+
+    private void verifyRemoved(List<NodeChange> changes, Integer... indexes) {
+        Assert.assertTrue(changes.size() > 0);
+        NodeChange firstChange = changes.get(0);
+        Assert.assertTrue(firstChange instanceof ListRemoveChange);
+        ListRemoveChange removeChange = (ListRemoveChange) firstChange;
+        List<Integer> removedIndexes = removeChange.getRemovedIndices();
+        Assert.assertEquals(indexes.length, removedIndexes.size());
+        Assert.assertArrayEquals(indexes, removedIndexes.toArray());
     }
 }

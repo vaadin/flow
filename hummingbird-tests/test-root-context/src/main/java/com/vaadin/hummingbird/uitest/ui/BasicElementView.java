@@ -78,7 +78,29 @@ public class BasicElementView extends AbstractDivView {
         s.set("color", "red");
         s.set("fontWeight", "bold");
 
-        mainElement.appendChild(helloWorldElement, button, input);
+        Element elementContainer = ElementFactory.createDiv();
+        elementContainer.setAttribute("id", "addremovecontainer");
+        Element addRemoveButton = ElementFactory
+                .createButton("Add and remove element");
+        addRemoveButton.setAttribute("id", "addremovebutton");
+        addRemoveButton.addEventListener("click", e -> {
+            Element div = ElementFactory.createDiv("foobar");
+            elementContainer.appendChild(div);
+            elementContainer.removeChild(div);
+
+            Element div2 = ElementFactory.createDiv("foobar");
+            elementContainer.appendChild(div);
+            elementContainer.appendChild(div2);
+            elementContainer.removeChild(div);
+            elementContainer.removeChild(div2);
+
+            Element ok = ElementFactory.createDiv("OK");
+            ok.setAttribute("id", "ok");
+            elementContainer.appendChild(ok);
+        });
+
+        mainElement.appendChild(helloWorldElement, button, input,
+                addRemoveButton, elementContainer);
     }
 
 }

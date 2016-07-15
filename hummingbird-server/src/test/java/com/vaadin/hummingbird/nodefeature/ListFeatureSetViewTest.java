@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.NodeFeatureChange;
 import com.vaadin.hummingbird.nodefeature.NodeList.SetView;
 
 public class ListFeatureSetViewTest {
@@ -33,14 +33,14 @@ public class ListFeatureSetViewTest {
     private SetView<String> set;
 
     private static class TestFeature extends SerializableNodeList<String> {
-        private final ArrayList<ListSpliceChange> changes = new ArrayList<>();
+        private final ArrayList<NodeFeatureChange> changes = new ArrayList<>();
 
         public TestFeature() {
             super(Mockito.mock(StateNode.class));
         }
 
         @Override
-        protected ArrayList<ListSpliceChange> getChangeTracker() {
+        protected ArrayList<NodeFeatureChange> getChangeTracker() {
             // Default implementation calls unmocked method in StateNode
             return changes;
         }

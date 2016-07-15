@@ -99,7 +99,7 @@ public class TreeChangeProcessorTest {
 
     @Test
     public void testPrimitiveSpliceChange() {
-        JsonObject change = spliceChange(rootId, ns, 0, 0, Json.create("foo"),
+        JsonObject change = spliceAddChange(rootId, ns, 0, Json.create("foo"),
                 Json.create("bar"));
 
         TreeChangeProcessor.processChange(tree, change);
@@ -110,7 +110,7 @@ public class TreeChangeProcessorTest {
         Assert.assertEquals("foo", list.get(0));
         Assert.assertEquals("bar", list.get(1));
 
-        change = spliceChange(rootId, ns, 1, 0, Json.create("baz"));
+        change = spliceAddChange(rootId, ns, 1, Json.create("baz"));
 
         TreeChangeProcessor.processChange(tree, change);
 
@@ -119,7 +119,7 @@ public class TreeChangeProcessorTest {
         Assert.assertEquals("baz", list.get(1));
         Assert.assertEquals("bar", list.get(2));
 
-        change = spliceChange(rootId, ns, 1, 1);
+        change = spliceRemoveChange(rootId, ns, 1);
 
         TreeChangeProcessor.processChange(tree, change);
 
@@ -133,7 +133,7 @@ public class TreeChangeProcessorTest {
         StateNode child = new StateNode(2, tree);
         tree.registerNode(child);
 
-        JsonObject change = nodeSpliceChange(rootId, ns, 0, 0, child.getId());
+        JsonObject change = nodeSpliceChange(rootId, ns, 0, child.getId());
 
         TreeChangeProcessor.processChange(tree, change);
 
@@ -230,22 +230,18 @@ public class TreeChangeProcessorTest {
         return json;
     }
 
-    private static JsonObject spliceBaseChange(int node, int ns, int index,
-            int remove) {
+    private static JsonObject spliceBaseChange(int node, int ns) {
         JsonObject json = baseChange(node, JsonConstants.CHANGE_TYPE_SPLICE);
 
         json.put(JsonConstants.CHANGE_FEATURE, ns);
-        json.put(JsonConstants.CHANGE_SPLICE_INDEX, index);
-        if (remove > 0) {
-            json.put(JsonConstants.CHANGE_SPLICE_REMOVE, remove);
-        }
         return json;
     }
 
-    private static JsonObject spliceChange(int node, int ns, int index,
-            int remove, JsonValue... add) {
-        JsonObject json = spliceBaseChange(node, ns, index, remove);
+    private static JsonObject spliceAddChange(int node, int ns, int index,
+            JsonValue... add) {
+        JsonObject json = spliceBaseChange(node, ns);
 
+        json.put(JsonConstants.CHANGE_SPLICE_INDEX, index);
         if (add != null && add.length != 0) {
             json.put(JsonConstants.CHANGE_SPLICE_ADD, toArray(add));
         }
@@ -253,10 +249,22 @@ public class TreeChangeProcessorTest {
         return json;
     }
 
-    private static JsonObject nodeSpliceChange(int node, int ns, int index,
-            int remove, int... children) {
-        JsonObject json = spliceBaseChange(node, ns, index, remove);
+    private static JsonObject spliceRemoveChange(int node, int ns,
+            int... removedIndeces) {
+        JsonObject json = spliceBaseChange(node, ns);
 
+        JsonArray array = Arrays.stream(removedIndeces).mapToObj(Json::create)
+                .collect(JsonUtil.asArray());
+        json.put(JsonConstants.CHANGE_SPLICE_REMOVE, array);
+
+        return json;
+    }
+
+    private static JsonObject nodeSpliceChange(int node, int ns, int index,
+            int... children) {
+        JsonObject json = spliceBaseChange(node, ns);
+
+        json.put(JsonConstants.CHANGE_SPLICE_INDEX, index);
         if (children != null && children.length != 0) {
             JsonArray add = Arrays.stream(children).mapToObj(Json::create)
                     .collect(JsonUtil.asArray());

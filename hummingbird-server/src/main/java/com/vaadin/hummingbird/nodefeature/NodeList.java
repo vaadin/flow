@@ -27,8 +27,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.ListAddChange;
+import com.vaadin.hummingbird.change.ListRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.change.NodeFeatureChange;
 
 /**
  * A state node feature that structures data as a list.
@@ -106,6 +108,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     private List<T> values;
 
+    private ListRemoveChange removeChange;
+
     /**
      * Creates a new list for the given node.
      *
@@ -169,6 +173,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      */
     protected void addAll(Collection<? extends T> items) {
         assert items != null;
+        assert items.stream().filter(item -> indexOf(item) != -1)
+                .count() == 0 : "Cannot add duplicates to NodeList";
         if (items.isEmpty()) {
             return;
         }
@@ -180,8 +186,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         int startIndex = values.size();
         values.addAll(itemsList);
 
-        addChange(new ListSpliceChange(this, isNodeValues(), startIndex, 0,
-                itemsList));
+        addAddChange(
+                new ListAddChange(this, isNodeValues(), startIndex, itemsList));
     }
 
     /**
@@ -195,9 +201,9 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     protected void add(int index, T item) {
         ensureValues();
         values.add(index, item);
-
-        addChange(new ListSpliceChange(this, isNodeValues(), index, 0,
-                Collections.singletonList(item)));
+        ArrayList<T> list = new ArrayList<>();
+        list.add(item);
+        addAddChange(new ListAddChange(this, isNodeValues(), index, list));
     }
 
     /**
@@ -213,9 +219,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
 
         T removed = values.remove(index);
-
-        addChange(new ListSpliceChange(this, isNodeValues(), index, 1,
-                Collections.emptyList()));
+        addRemoveChange(index);
 
         if (values.isEmpty()) {
             values = null;
@@ -227,19 +231,73 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      * Gets or creates the list used to track changes that should be sent to the
      * client.
      * <p>
-     * This method is non-private for testing purposes.
+     * Protected for testing purposes.
      *
      * @return the list to track changes in
      */
-    protected ArrayList<ListSpliceChange> getChangeTracker() {
+    protected ArrayList<NodeFeatureChange> getChangeTracker() {
         return getNode().getChangeTracker(this, ArrayList::new);
     }
 
-    private void addChange(ListSpliceChange change) {
+    private void addAddChange(ListAddChange<T> change) {
         getNode().markAsDirty();
 
-        // XXX combine with previous changes if possible
+        // TODO combine with previous additions (good luck with that)
         getChangeTracker().add(change);
+
+        // TODO Fire some listeners
+    }
+
+    private void addRemoveChange(int removedItemIndex) {
+        getNode().markAsDirty();
+
+        ArrayList<NodeFeatureChange> previousChanges = getChangeTracker();
+
+        // check if the removed item has been added in an add operation not yet
+        // collected and can be ignored
+        ListAddChange<?> addChangeWithDiscardedItem = null;
+        for (NodeFeatureChange change : previousChanges) {
+            ListAddChange<?> previousChange = (ListAddChange<?>) change;
+            if (addChangeWithDiscardedItem == null) {
+                if (previousChange.checkAndDiscardRemovedItem()) {
+                    addChangeWithDiscardedItem = previousChange;
+                }
+            } else {
+                // update later add operation indices since indexing has changed
+                previousChange.adjustIndex(removedItemIndex);
+            }
+        }
+
+        // the remove was for recently added item that was discarded
+        if (addChangeWithDiscardedItem != null) {
+            // remove possibly empty add
+            if (addChangeWithDiscardedItem.isEmpty()) {
+                previousChanges.remove(addChangeWithDiscardedItem);
+            }
+            return;
+        }
+
+        // the remove was for a item that is in client side
+
+        // update add operations' indices because remove operation is run before
+        // adds in the client side
+        int adjustedRemovedItemIndex = removedItemIndex;
+        previousChanges
+                .forEach(previousChange -> ((ListAddChange<?>) previousChange)
+                        .adjustIndex(removedItemIndex));
+
+        // update remove operation index to what list was before any current
+        // additions
+        for (NodeFeatureChange change : previousChanges) {
+            ListAddChange<?> previousChange = (ListAddChange<?>) change;
+            adjustedRemovedItemIndex -= previousChange
+                    .getNumberOfNewItemsBeforeIndex(removedItemIndex);
+        }
+
+        if (removeChange == null) {
+            removeChange = new ListRemoveChange(this);
+        }
+        removeChange.add(Integer.valueOf(adjustedRemovedItemIndex));
 
         // TODO Fire some listeners
     }
@@ -250,7 +308,17 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        getChangeTracker().forEach(collector);
+
+        ArrayList<NodeFeatureChange> changes = getChangeTracker();
+        if (removeChange != null) {
+            changes.add(0, removeChange);
+            removeChange = null;
+        }
+        assert changes.stream()
+                .filter(change -> change instanceof ListRemoveChange)
+                .count() <= 1 : "There should be at most only one ListRemoveChange";
+
+        changes.forEach(collector);
     }
 
     @Override
@@ -261,8 +329,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     public void generateChangesFromEmpty() {
         if (values != null) {
             assert !values.isEmpty();
-            getChangeTracker().add(new ListSpliceChange(this, isNodeValues(), 0,
-                    0, new ArrayList<>(values)));
+            addAddChange(new ListAddChange<>(this, isNodeValues(), 0,
+                    new ArrayList<>(values)));
         }
     }
 
@@ -280,8 +348,16 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      * Removes all items.
      */
     protected void clear() {
-        while (size() > 0) {
-            remove(0);
+        if (values == null || values.isEmpty()) {
+            return;
+        }
+
+        // clear any previous removes and re-add by removing everything in the
+        // current list, all add operations will be discarded
+        removeChange = null;
+
+        while (values != null) {
+            remove(values.size() - 1);
         }
     }
 
@@ -292,7 +368,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      *            the value to look for
      * @return the position in the list or -1 if not found
      */
-    protected int indexOf(T value) {
+    public int indexOf(T value) {
         setAccessed();
         if (values == null) {
             return -1;
@@ -327,10 +403,10 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             @Override
             public void remove() {
                 arrayIterator.remove();
-                addChange(new ListSpliceChange(NodeList.this, isNodeValues(),
-                        index, 1, Collections.emptyList()));
+                addRemoveChange(index);
                 index--;
             }
         };
     }
+
 }
