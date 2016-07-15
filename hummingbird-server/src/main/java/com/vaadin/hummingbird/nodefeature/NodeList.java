@@ -21,13 +21,17 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.AbstractListChange;
+import com.vaadin.hummingbird.change.ListAddChange;
+import com.vaadin.hummingbird.change.ListRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
 
 /**
@@ -41,6 +45,31 @@ import com.vaadin.hummingbird.change.NodeChange;
  *            the type of the items in the list
  */
 public abstract class NodeList<T extends Serializable> extends NodeFeature {
+
+    private final class NodeListIterator implements Iterator<T> {
+        private int index = -1;
+        private T current;
+        private Iterator<T> arrayIterator = values.iterator();
+
+        @Override
+        public boolean hasNext() {
+            return arrayIterator.hasNext();
+        }
+
+        @Override
+        public T next() {
+            index++;
+            current = arrayIterator.next();
+            return current;
+        }
+
+        @Override
+        public void remove() {
+            arrayIterator.remove();
+            addChange(new ListRemoveChange<>(NodeList.this, index, current));
+            index--;
+        }
+    }
 
     /**
      * Provides access to a {@link NodeList} as a {@link Set}.
@@ -180,7 +209,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         int startIndex = values.size();
         values.addAll(itemsList);
 
-        addChange(new ListSpliceChange(this, isNodeValues(), startIndex, 0,
+        addChange(new ListAddChange<>(this, isNodeValues(), startIndex,
                 itemsList));
     }
 
@@ -196,7 +225,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         ensureValues();
         values.add(index, item);
 
-        addChange(new ListSpliceChange(this, isNodeValues(), index, 0,
+        addChange(new ListAddChange<>(this, isNodeValues(), index,
                 Collections.singletonList(item)));
     }
 
@@ -214,8 +243,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
         T removed = values.remove(index);
 
-        addChange(new ListSpliceChange(this, isNodeValues(), index, 1,
-                Collections.emptyList()));
+        addChange(new ListRemoveChange<>(this, index, removed));
 
         if (values.isEmpty()) {
             values = null;
@@ -231,11 +259,11 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
      *
      * @return the list to track changes in
      */
-    protected ArrayList<ListSpliceChange> getChangeTracker() {
+    protected List<AbstractListChange<T>> getChangeTracker() {
         return getNode().getChangeTracker(this, ArrayList::new);
     }
 
-    private void addChange(ListSpliceChange change) {
+    private void addChange(AbstractListChange<T> change) {
         getNode().markAsDirty();
 
         // XXX combine with previous changes if possible
@@ -250,7 +278,45 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        getChangeTracker().forEach(collector);
+        // This map contains items wrapped by AbstractListChanges as keys and
+        // index in the following allChanges list as a value (it allows to get
+        // AbstractListChange by the index)
+        Map<Object, Integer> indeces = new IdentityHashMap<>();
+        // This list contains all changes in the tracker. These changes will be
+        // modified: each "remove" change following by a corresponding "add"
+        // will be replaced by null and "add" will be adjusted. Indeces in
+        // changes in between will be adjusted
+        List<AbstractListChange<T>> allChanges = new ArrayList<>();
+        int index = 0;
+        for (AbstractListChange<T> change : getChangeTracker()) {
+            if (change instanceof ListRemoveChange<?>) {
+                // the remove change => find an appropriate "add" event, adjust
+                // it and adjust everything in between
+                agjustChanges(index, (ListRemoveChange<T>) change, indeces,
+                        allChanges);
+            } else if (change instanceof ListAddChange<?>) {
+                allChanges.add(change);
+                int i = index;
+                // put all items into "indeces" as keys and "index" as a value
+                // so that the "change" can be retrieved from the "allChanges"
+                // by the index
+                ((ListAddChange<T>) change).getNewItems()
+                        .forEach(item -> indeces.put(item, i));
+            }
+            index++;
+        }
+        allChanges.stream().filter(this::acceptChange).forEach(collector);
+
+    }
+
+    private boolean acceptChange(AbstractListChange<T> change) {
+        if (change == null) {
+            return false;
+        }
+        if (change instanceof ListAddChange<?>) {
+            return !((ListAddChange<?>) change).isEmpty();
+        }
+        return true;
     }
 
     @Override
@@ -261,8 +327,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     public void generateChangesFromEmpty() {
         if (values != null) {
             assert !values.isEmpty();
-            getChangeTracker().add(new ListSpliceChange(this, isNodeValues(), 0,
-                    0, new ArrayList<>(values)));
+            getChangeTracker().add(new ListAddChange<>(this, isNodeValues(), 0,
+                    new ArrayList<>(values)));
         }
     }
 
@@ -309,28 +375,67 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         if (values == null) {
             return Collections.<T> emptyList().iterator();
         }
-        Iterator<T> arrayIterator = values.iterator();
-        return new Iterator<T>() {
-            int index = -1;
+        return new NodeListIterator();
+    }
 
-            @Override
-            public boolean hasNext() {
-                return arrayIterator.hasNext();
-            }
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void agjustChanges(int index, ListRemoveChange<T> change,
+            Map<Object, Integer> indeces,
+            List<AbstractListChange<T>> allChanges) {
+        T removedItem = change.getRemovedItem();
+        // retrieve index of the item (it's supposed to be the index of an Add
+        // change)
+        Integer indx = indeces.get(removedItem);
+        if (indx == null) {
+            // if there is no suitable "add" change then just add "remove"
+            // change as is
+            allChanges.add(change);
+        } else {
+            // retrieve the "add" change by the index
+            AbstractListChange<T> addChange = allChanges.get(indx);
+            assert addChange instanceof ListAddChange<?>;
 
-            @Override
-            public T next() {
-                index++;
-                return arrayIterator.next();
-            }
+            ListAddChange add = (ListAddChange) addChange;
+            // "add" change has to be adjusted : we need to remove "removedItem"
+            // from it
+            List newItems = new ArrayList(add.getNewItems().size() - 1);
+            int indexToCorrect = filterElement(add.getNewItems(), removedItem,
+                    newItems) + add.getIndex();
+            // replace "add" change whose index is "indx" with a new change
+            // which is the copy of the original one but has newItems
+            allChanges.set(indx, add.copy(newItems));
 
-            @Override
-            public void remove() {
-                arrayIterator.remove();
-                addChange(new ListSpliceChange(NodeList.this, isNodeValues(),
-                        index, 1, Collections.emptyList()));
-                index--;
+            // now go through all the changes in between "add" and "remove" and
+            // reindex them
+            for (int i = indx + 1; i < index; i++) {
+                AbstractListChange<T> listChange = allChanges.get(i);
+                // listChange can be null for handled "removed" changes ( see
+                // the code below the cycle)
+                if (listChange != null
+                        && listChange.getIndex() > indexToCorrect) {
+                    // make a copy with the adjusted index in case change has an
+                    // index which is greater than index of the discarded item
+                    allChanges.set(i,
+                            listChange.copy(listChange.getIndex() - 1));
+                }
             }
-        };
+            allChanges.add(null);
+        }
+    }
+
+    private <E> int filterElement(List<E> list, E element, List<E> result) {
+        int i = 0;
+        boolean isRemoved = false;
+        for (E item : list) {
+            if (item.equals(element)) {
+                isRemoved = true;
+            } else {
+                result.add(item);
+            }
+            if (!isRemoved) {
+                i++;
+            }
+        }
+        return isRemoved ? i : -1;
     }
 }
