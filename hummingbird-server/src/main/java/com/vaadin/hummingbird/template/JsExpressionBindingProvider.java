@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,9 @@ import javax.script.ScriptException;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.template.model.BeanModelType;
+import com.vaadin.hummingbird.template.model.ModelType;
 
 import elemental.json.JsonValue;
 
@@ -47,15 +51,18 @@ public class JsExpressionBindingProvider extends AbstractBindingValueProvider {
     private static final ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager()
             .getEngineByName("nashorn");
 
-    private static final Bindings NASHORN_GLOBAL = SCRIPT_ENGINE
-            .createBindings();
-
     private static class ModelBindings implements Bindings {
+        private final Bindings nashornGlobal = SCRIPT_ENGINE.createBindings();
 
         private final ModelMap map;
+        private BeanModelType<?> type;
 
-        private ModelBindings(ModelMap map) {
+        private ModelBindings(ModelMap map, BeanModelType<?> type) {
+            assert map != null;
+            assert type != null;
+
             this.map = map;
+            this.type = type;
         }
 
         @Override
@@ -108,7 +115,7 @@ public class JsExpressionBindingProvider extends AbstractBindingValueProvider {
         public boolean containsKey(Object key) {
             assert key != null;
             if (key instanceof String) {
-                return map.hasValue(key.toString());
+                return type.hasProperty(key.toString());
             }
             return false;
         }
@@ -123,10 +130,16 @@ public class JsExpressionBindingProvider extends AbstractBindingValueProvider {
                  * Also it allows to avoid global bindings initialization for
                  * every Bindings instance.
                  */
-                return NASHORN_GLOBAL;
+                return nashornGlobal;
             }
             if (key instanceof String) {
-                return map.getValue(key.toString());
+                String propertyName = key.toString();
+
+                ModelType propertyType = type.getPropertyType(propertyName);
+
+                Serializable value = map.getValue(propertyName);
+
+                return propertyType.modelToNashorn(value);
             }
             return null;
         }
@@ -151,7 +164,8 @@ public class JsExpressionBindingProvider extends AbstractBindingValueProvider {
 
     @Override
     public Object getValue(StateNode node) {
-        ModelBindings bindings = new ModelBindings(ModelMap.get(node));
+        ModelBindings bindings = new ModelBindings(ModelMap.get(node),
+                node.getFeature(TemplateMap.class).getModelDescriptor());
         try {
             return SCRIPT_ENGINE.eval(expression, bindings);
         } catch (ScriptException e) {

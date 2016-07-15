@@ -2,6 +2,8 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.html.Anchor;
+import com.vaadin.hummingbird.html.Image;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -22,6 +24,21 @@ public class RouterLinkUI extends UI {
         getPage().getHistory().setHistoryStateChangeHandler(e -> {
             location.setText(e.getLocation());
         });
+
+        addImageLink();
+    }
+
+    private void addImageLink() {
+        Anchor anchor = new Anchor("image/link", null);
+        anchor.getElement().setAttribute("routerlink", true);
+        anchor.getStyle().set("display", "block");
+
+        Image image = new Image("", "IMAGE");
+        image.setWidth("200px");
+        image.setHeight("200px");
+
+        anchor.add(image);
+        add(anchor);
     }
 
     protected void addLinks() {

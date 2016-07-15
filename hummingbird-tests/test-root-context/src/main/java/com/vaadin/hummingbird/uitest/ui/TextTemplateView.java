@@ -18,7 +18,6 @@ package com.vaadin.hummingbird.uitest.ui;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Label;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
@@ -28,18 +27,22 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  */
 public class TextTemplateView extends Div implements View {
 
+    public interface Model extends TemplateModel {
+        public void setName(String name);
+    }
+
     public TextTemplateView() {
         Button button = new Button("Update simple name");
         button.setId("set-simple-name");
-        InlineTemplate<TemplateModel> text = new InlineTemplate<>(
-                "<div id='text'>{{name}}</div>", TemplateModel.class);
+        InlineTemplate<Model> text = new InlineTemplate<>(
+                "<div id='text'>{{name}}</div>", Model.class);
         setName(text, "Foo", "plain-text");
         button.addClickListener(event -> setName(text, "Bar", "plain-text"));
         add(button, text);
 
-        InlineTemplate<TemplateModel> jsExpression = new InlineTemplate<>(
+        InlineTemplate<Model> jsExpression = new InlineTemplate<>(
                 "<div id='js-expression'>{{name ? 'Hello ' + name: 'No name'}}</div>",
-                TemplateModel.class);
+                Model.class);
         setName(jsExpression, null, "js-text");
         Button updateJsExpression = new Button("Update JS expression");
         updateJsExpression.setId("set-expression-name");
@@ -48,10 +51,9 @@ public class TextTemplateView extends Div implements View {
         add(updateJsExpression, jsExpression);
     }
 
-    private void setName(InlineTemplate<?> template, String name,
+    private void setName(InlineTemplate<Model> template, String name,
             String serverSideClass) {
-        template.getElement().getNode().getFeature(ModelMap.class)
-                .setValue("name", name);
+        template.getModel().setName(name);
         String property = template.getElement().getTextRecursively();
         Label label = new Label(property);
         label.addClassName(serverSideClass);

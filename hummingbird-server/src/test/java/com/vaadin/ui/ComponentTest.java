@@ -29,8 +29,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Synchronize;
 import com.vaadin.annotations.Tag;
+import com.vaadin.annotations.Uses;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.dom.ElementUtil;
@@ -40,6 +44,9 @@ import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.TemplateTest.TestSpan;
+
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 public class ComponentTest {
 
@@ -922,15 +929,13 @@ public class ComponentTest {
     }
 
     @Test
-    public void synchronizePropertiesCached() {
-        Assert.assertFalse(ComponentUtil.synchronizedPropertyCache
-                .contains(SynchronizePropertyOnChangeComponent.class));
-        SynchronizePropertyOnChangeComponent component = new SynchronizePropertyOnChangeComponent();
-        Element element = component.getElement();
-        assertSynchronizedProperties(element, "foo");
-        assertSynchronizedPropertiesEvents(element, "change");
-        Assert.assertTrue(ComponentUtil.synchronizedPropertyCache
-                .contains(SynchronizePropertyOnChangeComponent.class));
+    public void componentMetaDataCached() {
+        ComponentUtil.componentMetaDataCache.clear();
+        Assert.assertFalse(
+                ComponentUtil.componentMetaDataCache.contains(Text.class));
+        new Text("foobar");
+        Assert.assertTrue(
+                ComponentUtil.componentMetaDataCache.contains(Text.class));
     }
 
     @Test
@@ -964,4 +969,114 @@ public class ComponentTest {
         new SynchronizeOnNonGetterComponent();
     }
 
+    @Tag("div")
+    @HtmlImport("html.html")
+    @JavaScript("js.js")
+    @StyleSheet("css.css")
+    public static class ComponentWithDependencies extends Component {
+
+    }
+
+    @Tag("span")
+    @Uses(ComponentWithDependencies.class)
+    @JavaScript("uses.js")
+    public static class UsesComponentWithDependencies extends Component {
+
+    }
+
+    @Tag("span")
+    @Uses(UsesComponentWithDependencies.class)
+    @HtmlImport("usesuses.html")
+    public static class UsesUsesComponentWithDependencies extends Component {
+
+    }
+
+    @Tag("div")
+    @JavaScript("dep1.js")
+    @Uses(CircularDependencies2.class)
+    public static class CircularDependencies1 extends Component {
+
+    }
+
+    @Tag("div")
+    @JavaScript("dep2.js")
+    @Uses(CircularDependencies1.class)
+    public static class CircularDependencies2 extends Component {
+
+    }
+
+    @Test
+    public void usesComponent() {
+        UsesComponentWithDependencies s = new UsesComponentWithDependencies();
+        UI ui = new UI();
+        ui.getInternals().addComponentDependencies(s.getClass());
+        JsonArray pending = ui.getInternals().getDependencyList()
+                .getPendingSendToClient();
+        Assert.assertEquals(4, pending.length());
+
+        int idx = 0;
+        assertDependency(DependencyList.TYPE_HTML_IMPORT, "html.html",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_JAVASCRIPT, "uses.js",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_JAVASCRIPT, "js.js",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_STYLESHEET, "css.css",
+                pending.getObject(idx++));
+    }
+
+    @Test
+    public void usesChain() {
+        UIInternals internals = new UI().getInternals();
+        internals.addComponentDependencies(
+                UsesUsesComponentWithDependencies.class);
+        JsonArray pending = internals.getDependencyList()
+                .getPendingSendToClient();
+        Assert.assertEquals(5, pending.length());
+
+        int idx = 0;
+        assertDependency(DependencyList.TYPE_HTML_IMPORT, "usesuses.html",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_HTML_IMPORT, "html.html",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_JAVASCRIPT, "uses.js",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_JAVASCRIPT, "js.js",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_STYLESHEET, "css.css",
+                pending.getObject(idx++));
+    }
+
+    @Test
+    public void circularDependencies() {
+        UIInternals internals = new UI().getInternals();
+        DependencyList dependencyList = internals.getDependencyList();
+
+        internals.addComponentDependencies(CircularDependencies1.class);
+        JsonArray pending = dependencyList.getPendingSendToClient();
+        Assert.assertEquals(2, pending.length());
+
+        int idx = 0;
+        assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep1.js",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep2.js",
+                pending.getObject(idx++));
+
+        internals = new UI().getInternals();
+        dependencyList = internals.getDependencyList();
+        internals.addComponentDependencies(CircularDependencies2.class);
+        pending = dependencyList.getPendingSendToClient();
+        idx = 0;
+        Assert.assertEquals(2, pending.length());
+        assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep2.js",
+                pending.getObject(idx++));
+        assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep1.js",
+                pending.getObject(idx++));
+
+    }
+
+    private void assertDependency(String type, String url, JsonObject object) {
+        Assert.assertEquals(type, object.getString(DependencyList.KEY_TYPE));
+        Assert.assertEquals(url, object.getString(DependencyList.KEY_URL));
+    }
 }

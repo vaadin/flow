@@ -23,6 +23,7 @@ import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.Template;
 
 /**
@@ -31,12 +32,25 @@ import com.vaadin.ui.Template;
  */
 public class PropertyBindingTemplateView extends Div implements View {
 
+    public interface Model extends TemplateModel {
+        public void setName(String name);
+
+        public void setMan(Boolean name);
+
+        public void setWeight(double weight);
+    }
+
     public static class PropertyBindingTemplate extends Template {
 
         public PropertyBindingTemplate() {
             super(new ByteArrayInputStream(
                     "<input [value]='name' [booleanprop]='man' [doubleprop]='weight'>"
                             .getBytes(StandardCharsets.UTF_8)));
+        }
+
+        @Override
+        protected Model getModel() {
+            return (Model) super.getModel();
         }
     }
 

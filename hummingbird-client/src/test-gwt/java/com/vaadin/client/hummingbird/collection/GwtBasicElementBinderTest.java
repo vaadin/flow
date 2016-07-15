@@ -78,7 +78,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         }
     }
 
-    private ConstantPool constantPool = new ConstantPool();
+    private ConstantPool constantPool;
 
     private CollectingStateTree tree;
 
@@ -102,6 +102,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
         Reactive.reset();
+        constantPool = new ConstantPool();
         tree = new CollectingStateTree(constantPool);
 
         node = new StateNode(0, tree);

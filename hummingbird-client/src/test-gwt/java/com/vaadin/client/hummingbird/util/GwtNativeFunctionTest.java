@@ -46,4 +46,14 @@ public class GwtNativeFunctionTest extends ClientEngineTestBase {
 
         assertEquals("[object HTMLDocument] myString 42", result);
     }
+
+    public void testCall() {
+        NativeFunction adder = new NativeFunction("param1", "param2",
+                "return this + param1 + param2");
+
+        Object result = adder.call(Browser.getDocument(), " myString ",
+                Double.valueOf(42));
+
+        assertEquals("[object HTMLDocument] myString 42", result);
+    }
 }

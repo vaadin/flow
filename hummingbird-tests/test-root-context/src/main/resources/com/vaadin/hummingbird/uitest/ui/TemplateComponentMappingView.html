@@ -13,10 +13,10 @@
 		}
 	</script>
 	<div>Main page</div>
-	<span id="span" (click)="logClick($event.target);">Span</span>
-	<button id="button" (click)="logClick($event.target);">Button</button>
+	<span id="span" (click)="logClick($element);">Span</span>
+	<button id="button" (click)="logClick($element);">Button</button>
 	<hr />
-	<input id="input" value="foo" (change)="logChange($event.target);"></input>
+	<input id="input" value="foo" (change)="logChange($element);"></input>
 	<hr />
 	<div id="log"></div>
 </div>
