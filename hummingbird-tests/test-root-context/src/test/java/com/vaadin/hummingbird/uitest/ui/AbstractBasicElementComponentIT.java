@@ -48,11 +48,11 @@ public abstract class AbstractBasicElementComponentIT extends PhantomJSTest {
         Assert.assertEquals("Stop touching me!", helloElement.getText());
     }
 
-    private int getThankYouCount() {
+    protected int getThankYouCount() {
         return getThankYouElements().size();
     }
 
-    private List<WebElement> getThankYouElements() {
+    protected List<WebElement> getThankYouElements() {
         return findElements(By.cssSelector(".thankYou"));
     }
 
