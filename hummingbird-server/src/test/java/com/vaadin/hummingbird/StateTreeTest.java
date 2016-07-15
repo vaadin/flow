@@ -29,11 +29,13 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.ListAddChange;
+import com.vaadin.hummingbird.change.ListRemoveChange;
 import com.vaadin.hummingbird.change.MapPutChange;
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
+import com.vaadin.hummingbird.change.NodeFeatureChange;
 import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.nodefeature.ElementData;
@@ -100,7 +102,7 @@ public class StateTreeTest {
 
     @Test
     public void testNoRootAttachChange() {
-        List<NodeChange> changes = collectChangesExceptChildrenAdd();
+        List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
         Assert.assertEquals(Collections.emptyList(), changes);
     }
@@ -110,7 +112,7 @@ public class StateTreeTest {
         StateNode node2 = StateNodeTest.createEmptyNode();
         StateNodeTest.setParent(node2, tree.getRootNode());
 
-        List<NodeChange> changes = collectChangesExceptChildrenAdd();
+        List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
         Assert.assertEquals(1, changes.size());
         NodeAttachChange nodeChange = (NodeAttachChange) changes.get(0);
@@ -175,11 +177,11 @@ public class StateTreeTest {
         StateNodeTest.setParent(node2, node1);
 
         // Clear
-        collectChangesExceptChildrenAdd();
+        collectChangesExceptChildrenAddRemove();
 
         StateNodeTest.setParent(node2, null);
 
-        List<NodeChange> changes = collectChangesExceptChildrenAdd();
+        List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
         Assert.assertEquals("Should be one change.", 1, changes.size());
         Assert.assertTrue("Should have a detach change",
@@ -193,13 +195,13 @@ public class StateTreeTest {
 
         StateNodeTest.setParent(node2, node1);
         node2.getFeature(ElementData.class).setTag("foo");
-        collectChangesExceptChildrenAdd();
+        collectChangesExceptChildrenAddRemove();
 
         StateNodeTest.setParent(node2, null);
-        collectChangesExceptChildrenAdd();
+        collectChangesExceptChildrenAddRemove();
 
         StateNodeTest.setParent(node2, node1);
-        List<NodeChange> changes = collectChangesExceptChildrenAdd();
+        List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
         Assert.assertEquals("Should be two changes.", 2, changes.size());
         Assert.assertTrue("First change should re-attach the node.",
@@ -213,11 +215,12 @@ public class StateTreeTest {
         Assert.assertEquals("foo", nodeChange.getValue());
     }
 
-    private List<NodeChange> collectChangesExceptChildrenAdd() {
+    private List<NodeChange> collectChangesExceptChildrenAddRemove() {
         ArrayList<NodeChange> changes = new ArrayList<>();
         tree.collectChanges(change -> {
-            if (change instanceof ListSpliceChange
-                    && ((ListSpliceChange) change)
+            if ((change instanceof ListAddChange
+                    || change instanceof ListRemoveChange)
+                    && ((NodeFeatureChange) change)
                             .getFeature() == ElementChildrenList.class) {
                 return;
             } else {

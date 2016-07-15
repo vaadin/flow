@@ -24,7 +24,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.ListRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
 
 public class SerializableNodeListTest
@@ -74,18 +74,16 @@ public class SerializableNodeListTest
         i.remove();
         List<NodeChange> changes = collectChanges(nodeList);
         Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(0, ((ListSpliceChange) changes.get(0)).getIndex());
-        Assert.assertEquals(1,
-                ((ListSpliceChange) changes.get(0)).getRemoveCount());
+        Assert.assertEquals(0,
+                ((ListRemoveChange<?>) changes.get(0)).getIndex());
 
         i.next();
         i.next();
         i.remove();
         changes = collectChanges(nodeList);
         Assert.assertEquals(1, changes.size());
-        Assert.assertEquals(1, ((ListSpliceChange) changes.get(0)).getIndex());
         Assert.assertEquals(1,
-                ((ListSpliceChange) changes.get(0)).getRemoveCount());
+                ((ListRemoveChange<?>) changes.get(0)).getIndex());
 
         List<String> actual = new ArrayList<>();
         for (int j = 0; j < nodeList.size(); j++) {
@@ -110,12 +108,10 @@ public class SerializableNodeListTest
 
         List<NodeChange> changes = collectChanges(nodeList);
         Assert.assertEquals(2, changes.size());
-        Assert.assertEquals(0, ((ListSpliceChange) changes.get(0)).getIndex());
-        Assert.assertEquals(0, ((ListSpliceChange) changes.get(1)).getIndex());
-        Assert.assertEquals(1,
-                ((ListSpliceChange) changes.get(0)).getRemoveCount());
-        Assert.assertEquals(1,
-                ((ListSpliceChange) changes.get(1)).getRemoveCount());
+        Assert.assertEquals(0,
+                ((ListRemoveChange<?>) changes.get(0)).getIndex());
+        Assert.assertEquals(0,
+                ((ListRemoveChange<?>) changes.get(1)).getIndex());
         Assert.assertEquals(0, nodeList.size());
     }
 }

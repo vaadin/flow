@@ -38,7 +38,9 @@ public class ViewTestLayout implements HasChildView {
 
         List<Class<? extends View>> classes = new ArrayList<>(
                 ViewTestServlet.getViewLocator().getAllViewClasses());
-        Collections.sort(classes, Comparator.comparing(Class::getName));
+        Comparator<Class<? extends View>> comparator = Comparator
+                .comparing(Class::getName);
+        Collections.sort(classes, comparator);
 
         String lastPackage = "";
         viewSelect.appendChild(ElementFactory.createOption());
