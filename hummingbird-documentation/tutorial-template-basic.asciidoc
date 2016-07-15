@@ -10,7 +10,10 @@ There are multiple ways you can create a component. This tutorial uses the `Temp
 For tutorials about how to use different template features, see:
 
 * <<tutorial-template-bindings#,Binding Model Data in a Template>>
+* <<tutorial-template-include#,Including Templates in Templates>>
+* <<tutorial-template-event-handlers#,Handling User Events in a Template>>
 * <<tutorial-template-for#,Creating Template Contents Dynamically Based on a List of Items>>
+* <<tutorial-template-webcomponents#,Using Web Components in a Template>>
 
 You can use a template to create a simple greeting component in this way:
 
