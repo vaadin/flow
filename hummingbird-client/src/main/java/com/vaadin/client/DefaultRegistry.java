@@ -82,5 +82,6 @@ public class DefaultRegistry extends Registry {
         set(PushConfiguration.class, new PushConfiguration(this));
         set(ReconnectDialogConfiguration.class,
                 new ReconnectDialogConfiguration(this));
+        set(ScrollPositionHandler.class, new ScrollPositionHandler(this));
     }
 }
