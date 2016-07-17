@@ -217,6 +217,9 @@ public class BeanModelType<T> implements ModelType {
         } else if (cls.isPrimitive()) {
             // Primitives can't be beans even if they're not basic types
             return false;
+        } else if (cls.isArray()) {
+            // Arrays are not beans
+            return false;
         }
         return true;
     }
