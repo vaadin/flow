@@ -170,7 +170,12 @@ public class SystemErrorHandler {
      *            the throwable which occurred
      */
     public void handleError(Throwable throwable) {
-        handleError(unwrapUmbrellaException(throwable).getMessage());
+        Throwable unwrappedThrowable = unwrapUmbrellaException(throwable);
+        if (unwrappedThrowable instanceof AssertionError) {
+            handleError("Assertion error: " + unwrappedThrowable.getMessage());
+        } else {
+            handleError(unwrappedThrowable.getMessage());
+        }
     }
 
     private static Throwable unwrapUmbrellaException(Throwable e) {
