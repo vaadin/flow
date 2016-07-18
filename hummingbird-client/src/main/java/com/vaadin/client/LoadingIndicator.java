@@ -21,7 +21,6 @@ import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration.Display;
-import elemental.css.CSSStyleDeclaration.Position;
 import elemental.dom.Element;
 
 /**
@@ -218,7 +217,6 @@ public class LoadingIndicator {
     public Element getElement() {
         if (element == null) {
             element = Browser.getDocument().createElement("div");
-            element.getStyle().setPosition(Position.ABSOLUTE);
             Browser.getDocument().getBody().appendChild(element);
         }
         return element;

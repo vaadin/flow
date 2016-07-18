@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -407,5 +408,58 @@ public class StateNodeTest {
         StateTree stateTree = new StateTree(new UI(),
                 ElementChildrenList.class);
         return stateTree;
+    }
+
+    @Test
+    public void runWhenAttachedNodeNotAttached() {
+        StateTree tree = createStateTree();
+        AtomicInteger commandRun = new AtomicInteger(0);
+        StateNode n1 = createEmptyNode();
+        n1.runWhenAttached(ui -> {
+            Assert.assertEquals(tree.getUI(), ui);
+            commandRun.incrementAndGet();
+        });
+
+        Assert.assertEquals(0, commandRun.get());
+
+        setParent(n1, tree.getRootNode());
+        Assert.assertEquals(1, commandRun.get());
+        setParent(n1, null);
+        setParent(n1, tree.getRootNode());
+        Assert.assertEquals(1, commandRun.get());
+    }
+
+    @Test
+    public void runMultipleWhenAttachedNodeNotAttached() {
+        StateTree tree = createStateTree();
+        AtomicInteger commandRun = new AtomicInteger(0);
+        StateNode n1 = createEmptyNode();
+        n1.runWhenAttached(ui -> {
+            Assert.assertEquals(tree.getUI(), ui);
+            commandRun.incrementAndGet();
+        });
+        n1.runWhenAttached(ui -> {
+            Assert.assertEquals(tree.getUI(), ui);
+            commandRun.incrementAndGet();
+        });
+
+        Assert.assertEquals(0, commandRun.get());
+
+        setParent(n1, tree.getRootNode());
+        Assert.assertEquals(2, commandRun.get());
+    }
+
+    @Test
+    public void runWhenAttachedNodeAttached() {
+        AtomicInteger commandRun = new AtomicInteger(0);
+        StateNode n1 = createEmptyNode();
+        StateTree tree = createStateTree();
+        setParent(n1, tree.getRootNode());
+        n1.runWhenAttached(ui -> {
+            Assert.assertEquals(tree.getUI(), ui);
+            commandRun.incrementAndGet();
+        });
+
+        Assert.assertEquals(1, commandRun.get());
     }
 }
