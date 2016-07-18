@@ -41,7 +41,7 @@ import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.hummingbird.nodefeature.TemplateEventHandlerNames;
+import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.BindingValueProvider;
@@ -65,7 +65,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] rootNodeFeatures = new Class[] {
             ComponentMapping.class, TemplateMap.class,
-            ParentGeneratorHolder.class, TemplateEventHandlerNames.class,
+            ParentGeneratorHolder.class, PublishedServerEventHandlers.class,
             TemplateOverridesMap.class, ModelMap.class };
 
     @SuppressWarnings("unchecked")
