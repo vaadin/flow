@@ -27,7 +27,19 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
- * Static helpers for encoding and decoding JSON.
+ * Methods for encoding objects to and from JSON.
+ * <p>
+ * Supported types are
+ * <ul>
+ * <li>{@link String}
+ * <li>{@link Boolean} and <code>boolean</code>
+ * <li>{@link Integer} and <code>int</code>
+ * <li>{@link Double} and <code>double</code> (<code>NaN</code> and infinity not
+ * supported)
+ * <li>{@link JsonValue} and all its sub types
+ * <li>{@link Element} (encoded as a reference to the element)
+ * <li>{@link Component} (encoded as a reference to the root element)
+ * </ul>
  *
  * @author Vaadin Ltd
  */
