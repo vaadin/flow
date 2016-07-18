@@ -39,6 +39,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.UI;
+import com.vaadin.ui.UIInternals.JavaScriptInvocation;
 
 import elemental.json.Json;
 import elemental.json.JsonValue;
@@ -106,6 +107,8 @@ public class ElementTest {
         ignore.add("indexOfChild");
         // Component wrapper
         ignore.add("as");
+        // Possibly returns a remover or a wrapped return value in the future
+        ignore.add("callFunction");
 
         for (Method m : Element.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {
@@ -2516,4 +2519,83 @@ public class ElementTest {
                 html.getElement().getOuterHTML());
     }
 
+    @Test
+    public void callFunctionBeforeAttach() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        element.callFunction("noArgsMethod");
+        ui.getElement().appendChild(element);
+
+        assertPendingJs(ui, "$0.noArgsMethod()", element);
+
+    }
+
+    @Test
+    public void callFunctionAfterAttach() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+        element.callFunction("noArgsMethod");
+
+        assertPendingJs(ui, "$0.noArgsMethod()", element);
+
+    }
+
+    @Test
+    public void callFunctionOneParam() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        element.callFunction("method", "foo");
+        ui.getElement().appendChild(element);
+
+        assertPendingJs(ui, "$0.method($1)", element, "foo");
+
+    }
+
+    @Test
+    public void callFunctionTwoParams() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        element.callFunction("method", "foo", 123);
+        ui.getElement().appendChild(element);
+
+        assertPendingJs(ui, "$0.method($1,$2)", element, "foo", 123);
+    }
+
+    @Test
+    public void callFunctionOnProperty() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        element.callFunction("property.method");
+        ui.getElement().appendChild(element);
+
+        assertPendingJs(ui, "$0.property.method()", element);
+    }
+
+    @Test
+    public void callFunctionOnSubProperty() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        element.callFunction("property.other.method");
+        ui.getElement().appendChild(element);
+
+        assertPendingJs(ui, "$0.property.other.method()", element);
+    }
+
+    private void assertPendingJs(UI ui, String js, Serializable... arguments) {
+        List<JavaScriptInvocation> pendingJs = ui.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        JavaScriptInvocation expected = new JavaScriptInvocation(js, arguments);
+        Assert.assertEquals(1, pendingJs.size());
+        assertEquals(expected, pendingJs.get(0));
+
+    }
+
+    private void assertEquals(JavaScriptInvocation expected,
+            JavaScriptInvocation actual) {
+        Assert.assertEquals(expected.getExpression(), actual.getExpression());
+        Assert.assertArrayEquals(expected.getParameters().toArray(),
+                actual.getParameters().toArray());
+
+    }
 }

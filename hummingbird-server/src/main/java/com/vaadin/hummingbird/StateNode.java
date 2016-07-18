@@ -32,6 +32,7 @@ import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
 import com.vaadin.server.Command;
+import com.vaadin.ui.UI;
 
 /**
  * A node in the state tree that is synchronized with the client-side. Data
@@ -491,5 +492,41 @@ public class StateNode implements Serializable {
 
         return (T) changes.computeIfAbsent(feature.getClass(),
                 k -> factory.get());
+    }
+
+    /**
+     * Runs the command when the node is attached to a UI.
+     * <p>
+     * If the node is already attached when this method is called, the method is
+     * run immediately.
+     *
+     * @param command
+     *            the command to run immediately or when the node is attached
+     */
+    public void runWhenAttached(Consumer<UI> command) {
+
+        if (isAttached()) {
+            command.accept(getUI());
+        } else {
+            addAttachListener(new Command() {
+                @Override
+                public void execute() {
+                    command.accept(getUI());
+                    removeAttachListener(this);
+                }
+            });
+        }
+    }
+
+    /**
+     * Internal helper for getting the UI instance for a node attached to a
+     * StateTree. Assumes the node is attached.
+     *
+     * @return the UI this node is attached to
+     */
+    private UI getUI() {
+        assert isAttached();
+        assert getOwner() instanceof StateTree : "Attach should only be called when the node has been attached to the tree, not to a null owner";
+        return ((StateTree) getOwner()).getUI();
     }
 }
