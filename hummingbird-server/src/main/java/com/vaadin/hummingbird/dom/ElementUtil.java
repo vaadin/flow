@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.nodes.TextNode;
-
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
 
@@ -230,9 +229,12 @@ public class ElementUtil {
      *            A JSoup document
      * @param element
      *            The element to convert
+     * @param prerender
+     *            is the html output meant for pre-rendering
      * @return A JSoup node containing the converted element
      */
-    public static Node toJsoup(Document document, Element element) {
+    public static Node toJsoup(Document document, Element element,
+            boolean prerender) {
         if (element.isTextNode()) {
             return new TextNode(element.getText(), document.baseUri());
         }
@@ -252,8 +254,12 @@ public class ElementUtil {
             }
         });
 
-        element.getChildren()
-                .forEach(child -> target.appendChild(toJsoup(document, child)));
+        element.getChildren().filter(child -> {
+            return !prerender || child.isTextNode() // text nodes throw for
+                                                    // getTag()
+                    || !"script".equalsIgnoreCase(child.getTag());
+        }).forEach(child -> target
+                .appendChild(toJsoup(document, child, prerender)));
 
         return target;
 
