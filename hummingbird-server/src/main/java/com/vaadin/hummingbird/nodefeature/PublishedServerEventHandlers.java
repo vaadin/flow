@@ -108,10 +108,11 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
         checkParameterTypes(method);
         if (!void.class.equals(method.getReturnType())) {
             String msg = String.format(Locale.ENGLISH,
-                    "Non void event handler methods (no return type) are not supported. "
-                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void",
+                    "Only void event handler methods are supported. "
+                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but %s",
                     method.getDeclaringClass().getName(), method.getName(),
-                    EventHandler.class.getName());
+                    EventHandler.class.getName(),
+                    method.getReturnType().getSimpleName());
             throw new IllegalStateException(msg);
         }
         Optional<Class<?>> checkedException = Stream
