@@ -19,6 +19,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.external.jsoup.nodes.Document;
+import com.vaadin.external.jsoup.nodes.Node;
+import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.ui.Component;
 
 public class ElementUtilTest {
@@ -82,6 +85,26 @@ public class ElementUtilTest {
         Component c2 = Mockito.mock(Component.class);
         ElementUtil.setComponent(e, c);
         ElementUtil.setComponent(e, c2);
+    }
+
+    @Test
+    public void notPrerender_includesScriptTags() {
+        InlineTemplate template = new InlineTemplate(
+                "<div><script>window.alert('shazbot');</script></div>");
+        Node jsoupNode = ElementUtil.toJsoup(new Document(""),
+                template.getElement(), false);
+
+        Assert.assertEquals(1, jsoupNode.childNodeSize());
+
+        Node child = jsoupNode.childNode(0);
+        Assert.assertEquals("<script>window.alert('shazbot');</script>",
+                child.outerHtml());
+
+        // pre-render==true won't contain script
+        jsoupNode = ElementUtil.toJsoup(new Document(""), template.getElement(),
+                true);
+
+        Assert.assertEquals(0, jsoupNode.childNodeSize());
     }
 
 }

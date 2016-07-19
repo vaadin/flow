@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.uitest.ui.prerender;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
@@ -80,6 +81,23 @@ public class PreRenderIT extends PhantomJSTest {
                 By.id("tpl-link-bound-attribute"));
         Assert.assertEquals("http://localhost:8888/view",
                 linkBoundAttribute.getAttribute("href"));
+    }
 
+    @Test
+    public void scriptsNotIncludedInPrerender() {
+        testBench().disableWaitForVaadin();
+        open("prerender=only");
+
+        WebElement element = findElement(By.id("tpl-script-removes"));
+        Assert.assertNotNull(element);
+
+        open();
+
+        try {
+            findElement(By.id("tpl-script-removes"));
+            Assert.fail("Element was not removed by template script");
+        } catch (NoSuchElementException nsee) {
+            // expected result since removed by script
+        }
     }
 }

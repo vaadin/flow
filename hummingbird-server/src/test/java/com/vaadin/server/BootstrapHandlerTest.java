@@ -17,8 +17,10 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Title;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.nodes.TextNode;
 import com.vaadin.external.jsoup.select.Elements;
+import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.server.BootstrapHandler.PreRenderMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -41,6 +43,7 @@ public class BootstrapHandlerTest {
             super.init(request);
             add(new Html("<div foo=bar>foobar</div>"));
             add(new Text("Hello world"));
+            add(new InlineTemplate("<div><script></script></div>"));
         }
 
     }
@@ -151,6 +154,18 @@ public class BootstrapHandlerTest {
         Assert.assertEquals("bar", div.attr("foo"));
         Assert.assertEquals("foobar", div.text());
         Assert.assertEquals("Hello world", textNode.text());
+    }
+
+    @Test
+    public void prerenderNoScriptTagsFromTemplate() throws Exception {
+        initUI(createVaadinRequest(PreRenderMode.PRE_AND_LIVE));
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, ui));
+        Element body = page.body();
+
+        Node div = body.childNode(2);
+        Assert.assertEquals(0, div.childNodeSize());
     }
 
     @Test
