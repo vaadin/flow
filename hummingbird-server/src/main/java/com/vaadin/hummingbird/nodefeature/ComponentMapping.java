@@ -20,6 +20,7 @@ import java.util.Optional;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
+import com.vaadin.ui.Composite;
 
 /**
  * A server side only node feature for mapping a node to a component.
@@ -51,7 +52,16 @@ public class ComponentMapping extends ServerSideFeature {
      */
     public void setComponent(Component component) {
         assert component != null : "Component must not be null";
+        assert this.component == null
+                || component instanceof Composite : "Only a Composite is allowed to remap a component";
         this.component = component;
+
+        if (getNode().hasFeature(PublishedServerEventHandlers.class)) {
+            // Update directly to avoid having a listener stored for each
+            // ComponentMapping instance
+            getNode().getFeature(PublishedServerEventHandlers.class)
+                    .componentSet(component);
+        }
     }
 
     /**

@@ -39,9 +39,9 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
+import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.template.BindingValueProvider;
@@ -74,7 +74,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                     ParentGeneratorHolder.class, ComponentMapping.class,
                     ElementAttributeMap.class, ElementPropertyMap.class,
                     ElementListenerMap.class, SynchronizedPropertiesList.class,
-                    SynchronizedPropertyEventsList.class)
+                    SynchronizedPropertyEventsList.class,
+                    PublishedServerEventHandlers.class)
             .toArray(Class[]::new);
 
     private static final Predicate<? super String> excludeCustomAttributes = name -> !CustomAttribute

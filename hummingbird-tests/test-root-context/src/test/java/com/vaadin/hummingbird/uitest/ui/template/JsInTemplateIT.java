@@ -43,6 +43,12 @@ public class JsInTemplateIT extends PhantomJSTest {
         itemCount = getItemCount();
         Assert.assertFalse(hasCssClass(itemCount, "hidden"));
         Assert.assertEquals("Items available: 3", itemCount.getText());
+
+        findElement(By.id("buttonUpdateModel")).click();
+        Assert.assertEquals("Items available: 78", itemCount.getText());
+        Assert.assertEquals("ThroughButton", getFirstName());
+        Assert.assertEquals("throughbutton123", getUserName());
+
     }
 
     private WebElement getItemCount() {
