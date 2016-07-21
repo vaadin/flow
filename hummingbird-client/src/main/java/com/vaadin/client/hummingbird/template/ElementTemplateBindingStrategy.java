@@ -86,6 +86,8 @@ public class ElementTemplateBindingStrategy
 
                 Node child = createAndBind(modelNode, childTemplateId, context);
 
+                modelNode.setChildDomNode(childTemplateId, child);
+
                 DomApi.wrap(element).appendChild(child);
             }
         }

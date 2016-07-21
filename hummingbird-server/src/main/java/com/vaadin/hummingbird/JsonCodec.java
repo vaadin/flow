@@ -18,6 +18,7 @@ package com.vaadin.hummingbird;
 import java.io.Serializable;
 
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.ui.Component;
 
@@ -54,6 +55,12 @@ public class JsonCodec {
      */
     public static final int ARRAY_TYPE = 1;
 
+    /**
+     * Type id for a complex type array containing an {@link Element} inside
+     * template (not root node).
+     */
+    public static final int ELEMENT_INSIDE_TEMPLATE = 2;
+
     private JsonCodec() {
         // Don't create instances
     }
@@ -88,7 +95,19 @@ public class JsonCodec {
     private static JsonValue encodeElement(Element element) {
         StateNode node = element.getNode();
         if (node.isAttached()) {
-            return wrapComplexValue(ELEMENT_TYPE, Json.create(node.getId()));
+            if (Element.isElementInsideTemplate(element)) {
+                assert element
+                        .getStateProvider() instanceof TemplateElementStateProvider;
+                TemplateElementStateProvider stateProvider = (TemplateElementStateProvider) element
+                        .getStateProvider();
+                return JsonUtil.createArray(
+                        Json.create(ELEMENT_INSIDE_TEMPLATE),
+                        Json.create(node.getId()),
+                        Json.create(stateProvider.getTemplateNode().getId()));
+            } else {
+                return wrapComplexValue(ELEMENT_TYPE,
+                        Json.create(node.getId()));
+            }
         } else {
             return Json.createNull();
         }

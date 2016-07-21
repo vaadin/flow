@@ -23,17 +23,23 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Id;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.hummingbird.util.JsonUtil;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.MockUI;
+import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
@@ -74,6 +80,48 @@ public class UidlWriterTest {
                         Json.createNull(), Json.create("$0.focus()")),
                 JsonUtil.createArray(Json.create("Lives remaining:"),
                         Json.create(3), Json.create("console.log($0, $1)")));
+
+        Assert.assertTrue(JsonUtil.jsonEquals(expectedJson, json));
+    }
+
+    static class InlineTemplateWithElement extends InlineTemplate {
+        @Id("label")
+        public Element label;
+
+        public InlineTemplateWithElement() {
+            super("<div id='div'><label id='label'>A label</label></div>");
+        }
+
+        @Override
+        protected void onAttach(AttachEvent attachEvent) {
+            attachEvent.getUI().getPage().executeJavaScript(
+                    "window.alert($0.id + ' ' + $1.id)", getElement(), label);
+        }
+    }
+
+    @Test
+    public void testTemplateElementEncoding() {
+        InlineTemplateWithElement inlineTemplateWithElement = new InlineTemplateWithElement();
+        MockUI ui = new MockUI();
+        ui.add(inlineTemplateWithElement);
+
+        JsonArray json = UidlWriter.encodeExecuteJavaScriptList(
+                ui.getInternals().dumpPendingJavaScriptInvocations());
+
+        JsonArray expectedJson = JsonUtil.createArray(JsonUtil.createArray(
+                JsonUtil.createArray(
+                        Json.create(JsonCodec.ELEMENT_TYPE),
+                        Json.create(inlineTemplateWithElement.getElement()
+                                .getNode().getId())),
+                JsonUtil.createArray(
+                        Json.create(JsonCodec.ELEMENT_INSIDE_TEMPLATE),
+                        Json.create(inlineTemplateWithElement.getElement()
+                                .getNode().getId()),
+                        Json.create(
+                                ((TemplateElementStateProvider) inlineTemplateWithElement.label
+                                        .getStateProvider()).getTemplateNode()
+                                                .getId())),
+                Json.create("window.alert($0.id + ' ' + $1.id)")));
 
         Assert.assertTrue(JsonUtil.jsonEquals(expectedJson, json));
     }

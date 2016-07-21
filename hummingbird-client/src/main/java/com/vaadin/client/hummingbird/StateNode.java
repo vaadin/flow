@@ -45,6 +45,8 @@ public class StateNode {
     private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections
             .set();
 
+    private JsMap<Integer, Node> childTemplateNodeToDomNodeMap;
+
     private Node domNode;
 
     /**
@@ -232,5 +234,38 @@ public class StateNode {
                 || node == null : "StateNode already has a DOM node";
 
         domNode = node;
+    }
+
+    /**
+     * Sets the DOM node associated with this state node and the given child
+     * template node.
+     *
+     * @param childTemplateNodeId
+     *            the child template node id
+     * @param child
+     *            the associated DOM node
+     */
+    public void setChildDomNode(int childTemplateNodeId, Node child) {
+        if (childTemplateNodeToDomNodeMap == null) {
+            childTemplateNodeToDomNodeMap = JsCollections.map();
+        } else {
+            assert !childTemplateNodeToDomNodeMap
+                    .has(childTemplateNodeId) : "Child Template Element with id "
+                            + childTemplateNodeId + " already has a DOM node";
+        }
+        childTemplateNodeToDomNodeMap.set(childTemplateNodeId, child);
+    }
+
+    /**
+     * Gets the DOM node associated with the given child template node.
+     *
+     * @param childTemplateNodeId
+     *            the child template node id
+     * @return the associated DOM node
+     */
+    public Node getDomNode(int childTemplateNodeId) {
+        assert childTemplateNodeToDomNodeMap != null : "No child template nodes for state node "
+                + id;
+        return childTemplateNodeToDomNodeMap.get(childTemplateNodeId);
     }
 }

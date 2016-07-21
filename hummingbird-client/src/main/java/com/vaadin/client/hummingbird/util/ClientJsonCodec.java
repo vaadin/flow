@@ -58,6 +58,9 @@ public class ClientJsonCodec {
             }
             case JsonCodec.ARRAY_TYPE:
                 return jsonArrayAsJsArray(array.getArray(1));
+            case JsonCodec.ELEMENT_INSIDE_TEMPLATE:
+                return tree.getNode((int) array.getNumber(1))
+                        .getDomNode((int) array.getNumber(2));
             default:
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
