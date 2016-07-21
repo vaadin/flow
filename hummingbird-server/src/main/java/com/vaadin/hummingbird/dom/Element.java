@@ -165,6 +165,19 @@ public class Element implements Serializable {
     }
 
     /**
+     * Checks whether the given element is a child element inside a template
+     * (not the template root).
+     *
+     * @param element
+     *            the element to check, not <code>null</code>
+     * @return <code>true</code> if element is inside a template,
+     *         <code>false</code> if not
+     */
+    public static boolean isElementInsideTemplate(Element element) {
+        return !get(element.getNode()).equals(element);
+    }
+
+    /**
      * Creates a text node with the given text.
      *
      * @param text

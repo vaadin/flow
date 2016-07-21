@@ -84,4 +84,9 @@ public class TemplateTextElementStateProvider
         return Optional.empty();
     }
 
+    @Override
+    public Optional<Integer> getTemplateNodeId(StateNode node) {
+        return Optional.of(templateNode.getId());
+    }
+
 }
