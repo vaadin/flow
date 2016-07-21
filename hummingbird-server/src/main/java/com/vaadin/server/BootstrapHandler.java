@@ -444,8 +444,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             com.vaadin.hummingbird.dom.Element uiElement = context.getUI()
                     .getElement();
 
-            Node prerenderedUIElement = ElementUtil.toJsoup(document,
-                    uiElement);
+            Node prerenderedUIElement = ElementUtil.toJsoup(document, uiElement,
+                    true);
             assert prerenderedUIElement instanceof Element;
             assert "body".equals(((Element) prerenderedUIElement).tagName());
 
