@@ -434,6 +434,15 @@ public class TemplateElementStateProvider implements ElementStateProvider {
 
     }
 
+    @Override
+    public Optional<Integer> getTemplateNodeId(StateNode node) {
+        if (isTemplateRoot()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(templateNode.getId());
+        }
+    }
+
     private Optional<StateNode> getOverrideNode(StateNode node) {
         return Optional.ofNullable(node.getFeature(TemplateOverridesMap.class)
                 .get(templateNode, false));

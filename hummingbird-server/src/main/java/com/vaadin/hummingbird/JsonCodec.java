@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.util.JsonUtil;
@@ -88,7 +89,16 @@ public class JsonCodec {
     private static JsonValue encodeElement(Element element) {
         StateNode node = element.getNode();
         if (node.isAttached()) {
-            return wrapComplexValue(ELEMENT_TYPE, Json.create(node.getId()));
+            Optional<Integer> templateId = element.getStateProvider()
+                    .getTemplateNodeId(node);
+            if (templateId.isPresent()) {
+                return JsonUtil.createArray(Json.create(ELEMENT_TYPE),
+                        Json.create(node.getId()),
+                        Json.create(templateId.get()));
+            } else {
+                return JsonUtil.createArray(Json.create(ELEMENT_TYPE),
+                        Json.create(node.getId()));
+            }
         } else {
             return Json.createNull();
         }

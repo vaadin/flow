@@ -35,6 +35,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 public class StateNode {
+    private static final Double ROOT_NODE_ID = Double.valueOf(-1);
     private final StateTree tree;
     private final int id;
 
@@ -45,7 +46,8 @@ public class StateNode {
     private final JsSet<NodeUnregisterListener> unregisterListeners = JsCollections
             .set();
 
-    private Node domNode;
+    private final JsMap<Double, Node> templateNodeIdToDomNodeMap = JsCollections
+            .map();
 
     /**
      * Creates a new state node.
@@ -218,7 +220,9 @@ public class StateNode {
      *         associated with this state node
      */
     public Node getDomNode() {
-        return domNode;
+        // no assert since there is some logic (at least in multiple tests)
+        // there might not be a node here
+        return templateNodeIdToDomNodeMap.get(ROOT_NODE_ID);
     }
 
     /**
@@ -228,9 +232,40 @@ public class StateNode {
      *            the associated DOM node
      */
     public void setDomNode(Node node) {
-        assert domNode == null
-                || node == null : "StateNode already has a DOM node";
+        assert templateNodeIdToDomNodeMap
+                .get(ROOT_NODE_ID) == null : "StateNode with id " + id
+                        + " already has a DOM node";
 
-        domNode = node;
+        templateNodeIdToDomNodeMap.set(ROOT_NODE_ID, node);
+    }
+
+    /**
+     * Sets the DOM node associated with this state node and the given child
+     * template node.
+     *
+     * @param childTemplateNodeId
+     *            the child template node id
+     * @param child
+     *            the associated DOM node
+     */
+    public void setChildDomNode(double childTemplateNodeId, Node child) {
+        assert !templateNodeIdToDomNodeMap
+                .has(childTemplateNodeId) : "Child Template Element with id "
+                        + childTemplateNodeId + " already has a DOM node";
+        templateNodeIdToDomNodeMap.set(childTemplateNodeId, child);
+    }
+
+    /**
+     * Gets the DOM node associated with the given child template node.
+     *
+     * @param childTemplateNodeId
+     *            the child template node id
+     * @return the associated DOM node
+     */
+    public Node getDomNode(double childTemplateNodeId) {
+        assert templateNodeIdToDomNodeMap.has(
+                childTemplateNodeId) : "No DOM node stored into StateNode " + id
+                        + " for child template node " + childTemplateNodeId;
+        return templateNodeIdToDomNodeMap.get(childTemplateNodeId);
     }
 }

@@ -362,4 +362,16 @@ public interface ElementStateProvider extends Serializable {
         return node.getFeature(ComponentMapping.class).getComponent();
     }
 
+    /**
+     * Gets the template node id matching the given state node, or an empty
+     * optional if not a template node.
+     *
+     * @param node
+     *            the node to get the template id for
+     * @return the template node id or an empty optional
+     */
+    default Optional<Integer> getTemplateNodeId(StateNode node) {
+        return Optional.empty();
+    }
+
 }
