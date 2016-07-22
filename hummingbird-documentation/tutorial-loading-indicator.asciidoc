@@ -1,4 +1,4 @@
-  = The Loading Indicator
+= The Loading Indicator
 
 To inform the user that loading is in progress and that the _UI_ is currently
 unresponsive, a _loading indicator_ can be displayed. A longer loading time might
