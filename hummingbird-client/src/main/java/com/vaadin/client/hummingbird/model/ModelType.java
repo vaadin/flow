@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.hummingbird.model;
 
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
@@ -40,11 +41,11 @@ public abstract class ModelType {
         case OBJECT:
             return new BeanModelType((JsonObject) type);
         case ARRAY:
-            throw new IllegalArgumentException(
-                    "Not yet supporting JS proxies for arrays");
+            ModelType itemType = fromJson(((JsonArray) type).get(0));
+            return new ListModelType(itemType);
         default:
             throw new IllegalArgumentException(
-                    "Cannot support type descriptor for " + type.getType());
+                    "Unkown model type: " + type.getType());
         }
     }
 
