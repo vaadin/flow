@@ -274,7 +274,7 @@ public class Registry {
 
     /**
      * Gets the {@link ConstantPool} singleton.
-     * 
+     *
      * @return the {@link ConstantPool} singleton
      */
     public ConstantPool getConstantPool() {

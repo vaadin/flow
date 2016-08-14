@@ -26,9 +26,9 @@ import elemental.json.JsonObject;
 
 /**
  * Property synchronization RPC handler.
- * 
+ *
  * @see JsonConstants#RPC_TYPE_PROPERTY_SYNC
- * 
+ *
  * @author Vaadin Ltd
  *
  */

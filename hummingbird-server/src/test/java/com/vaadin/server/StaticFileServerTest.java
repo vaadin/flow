@@ -29,13 +29,11 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPOutputStream;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
-import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -54,15 +52,6 @@ public class StaticFileServerTest implements Serializable {
         @Override
         public void write(int b) throws IOException {
             baos.write(b);
-        }
-
-        @Override
-        public void setWriteListener(WriteListener writeListener) {
-        }
-
-        @Override
-        public boolean isReady() {
-            return true;
         }
 
         public byte[] getOutput() {
@@ -84,8 +73,8 @@ public class StaticFileServerTest implements Serializable {
                 URLConnection connection = Mockito.mock(URLConnection.class);
                 Mockito.when(connection.getInputStream())
                         .thenReturn(new ByteArrayInputStream(data));
-                Mockito.when(connection.getContentLengthLong())
-                        .thenReturn((long) data.length);
+                Mockito.when(connection.getContentLength())
+                        .thenReturn(data.length);
                 Mockito.when(connection.getLastModified())
                         .thenReturn(lastModificationTime);
                 return connection;
@@ -134,7 +123,7 @@ public class StaticFileServerTest implements Serializable {
     private Map<String, String> headers;
     private Map<String, Long> dateHeaders;
     private AtomicInteger responseCode;
-    private AtomicLong responseContentLength;
+    private AtomicInteger responseContentLength;
 
     @Before
     public void setUp() throws IOException {
@@ -148,7 +137,7 @@ public class StaticFileServerTest implements Serializable {
                 .thenReturn(-1L);
 
         responseCode = new AtomicInteger(-1);
-        responseContentLength = new AtomicLong(-1L);
+        responseContentLength = new AtomicInteger(-1);
         headers = new HashMap<>();
         dateHeaders = new HashMap<>();
 
@@ -161,7 +150,8 @@ public class StaticFileServerTest implements Serializable {
             dateHeaders.put((String) invocation.getArguments()[0],
                     (Long) invocation.getArguments()[1]);
             return null;
-        }).when(response).setDateHeader(Matchers.anyString(), Matchers.anyLong());
+        }).when(response).setDateHeader(Matchers.anyString(),
+                Matchers.anyLong());
         Mockito.doAnswer(invocation -> {
             responseCode.set((int) invocation.getArguments()[0]);
             return null;
@@ -171,9 +161,9 @@ public class StaticFileServerTest implements Serializable {
             return null;
         }).when(response).sendError(Matchers.anyInt());
         Mockito.doAnswer(invocation -> {
-            responseContentLength.set((long) invocation.getArguments()[0]);
+            responseContentLength.set((int) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentLengthLong(Matchers.anyLong());
+        }).when(response).setContentLength(Matchers.anyInt());
 
     }
 

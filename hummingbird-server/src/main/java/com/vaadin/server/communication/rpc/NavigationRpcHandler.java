@@ -26,7 +26,7 @@ import elemental.json.JsonValue;
 
 /**
  * RPC handler for Navigation.
- * 
+ *
  * @see JsonConstants#RPC_TYPE_NAVIGATION
  * @author Vaadin Ltd
  *

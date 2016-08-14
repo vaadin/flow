@@ -25,7 +25,7 @@ import elemental.json.JsonObject;
 
 /**
  * Abstract invocation handler implementation with common methods.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

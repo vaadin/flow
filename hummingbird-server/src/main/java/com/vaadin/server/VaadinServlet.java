@@ -116,14 +116,14 @@ public class VaadinServlet extends HttpServlet implements Constants {
     private static void verifyServletVersion() throws ServletException {
         try {
             Method m = javax.servlet.http.HttpServletResponse.class
-                    .getMethod("setContentLengthLong", long.class);
+                    .getMethod("getStatus");
             if (m != null) {
                 return;
             }
 
-            throw new ServletException("Servlet 3.1+ is required");
+            throw new ServletException("Servlet 3.0+ is required");
         } catch (Exception e) {
-            throw new ServletException("Servlet 3.1+ is required", e);
+            throw new ServletException("Servlet 3.0+ is required", e);
         }
 
     }
@@ -485,8 +485,8 @@ public class VaadinServlet extends HttpServlet implements Constants {
     }
 
     /**
-     * Escapes characters to html entities. An exception is made for some
-     * "safe characters" to keep the text somewhat readable.
+     * Escapes characters to html entities. An exception is made for some "safe
+     * characters" to keep the text somewhat readable.
      *
      * @param unsafe
      * @return a safe string to be added inside an html tag

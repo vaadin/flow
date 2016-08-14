@@ -299,7 +299,7 @@ public class StaticFileServer implements Serializable {
      */
     protected void writeData(String filenameWithPath, URL resourceUrl,
             HttpServletRequest request, HttpServletResponse response)
-                    throws IOException {
+            throws IOException {
 
         URLConnection connection = null;
         InputStream dataStream = null;
@@ -329,9 +329,9 @@ public class StaticFileServer implements Serializable {
         }
 
         try {
-            long length = connection.getContentLengthLong();
-            if (length >= 0L) {
-                response.setContentLengthLong(length);
+            int length = connection.getContentLength();
+            if (length >= 0) {
+                response.setContentLength(length);
             }
         } catch (Exception e) {
             getLogger().log(Level.FINE, "Error setting the content length", e);
