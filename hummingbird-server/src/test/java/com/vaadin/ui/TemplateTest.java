@@ -194,6 +194,14 @@ public class TemplateTest {
         private TestSpan span;
     }
 
+    public static class TemplateWithPreTag extends InlineTemplate {
+        public TemplateWithPreTag() {
+            super("<div><pre>" + "Row 1\n" + "Row 2\n"
+                    + "   Indented row 3</pre></div>");
+        }
+
+    }
+
     @Test
     public void inputStreamInConstructor() {
         Template template = new TestTemplate();
@@ -372,6 +380,14 @@ public class TemplateTest {
     @Test(expected = IllegalArgumentException.class)
     public void mapWithSameIdUsedMultipleTimes() {
         new TemplateWithSameIdMultipleTimes();
+    }
+
+    @Test
+    public void preTagsPreserveWhitespace() {
+        TemplateWithPreTag template = new TemplateWithPreTag();
+        Assert.assertEquals(
+                "<pre>" + "Row 1\n" + "Row 2\n" + "   Indented row 3</pre>",
+                template.getElement().getChild(0).getOuterHTML());
     }
 
     @Before
