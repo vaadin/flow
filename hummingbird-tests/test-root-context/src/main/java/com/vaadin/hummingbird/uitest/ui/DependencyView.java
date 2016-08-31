@@ -32,6 +32,7 @@ import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasText;
 import com.vaadin.ui.Text;
+import com.vaadin.ui.UI;
 
 public class DependencyView extends AbstractDivView {
 
@@ -119,14 +120,15 @@ public class DependencyView extends AbstractDivView {
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
-        htmlImport2 = registerResource("htmlimport2.html",
+        UI ui = attachEvent.getUI();
+        htmlImport2 = registerResource(ui, "htmlimport2.html",
                 new HTMLImportStreamFactory("HTML import 2", 1000));
-        htmlImport3 = registerResource("htmlimport3.html",
+        htmlImport3 = registerResource(ui, "htmlimport3.html",
                 new HTMLImportStreamFactory("HTML import 3", 0));
 
-        htmlMixedImport1 = registerResource("mixedImport1.html",
+        htmlMixedImport1 = registerResource(ui, "mixedImport1.html",
                 new HTMLImportStreamFactory("Mixed HTML import 1", 1000));
-        htmlMixedImport2 = registerResource("mixedImport2.html",
+        htmlMixedImport2 = registerResource(ui, "mixedImport2.html",
                 new HTMLImportStreamFactory("Mixed HTML import 2", 0));
 
         getPage().addStyleSheet("/test-files/css/allred.css");
@@ -134,9 +136,9 @@ public class DependencyView extends AbstractDivView {
         getPage().addHtmlImport("/test-files/html/htmlimport1.html");
     }
 
-    private StreamResourceRegistration registerResource(String name,
-            InputStreamFactory streamFactory) {
-        return getUI().get().getSession().getResourceRegistry()
+    public static StreamResourceRegistration registerResource(UI ui,
+            String name, InputStreamFactory streamFactory) {
+        return ui.getSession().getResourceRegistry()
                 .registerResource(new StreamResource(name, streamFactory));
     }
 

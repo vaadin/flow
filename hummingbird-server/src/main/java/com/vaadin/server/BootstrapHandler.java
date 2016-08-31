@@ -386,11 +386,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                     + "server/es6-collections.js"));
         }
 
-        head.appendElement("script").attr("type", "text/javascript").attr("src",
-                context.getUriResolver()
-                        .resolveVaadinUri("context://"
-                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                + "server/webcomponents-lite.min.js"));
+        head.appendElement("script").attr("type", "text/javascript")
+                .attr("src",
+                        context.getUriResolver()
+                                .resolveVaadinUri("context://"
+                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                        + "server/webcomponents-lite.min.js"))
+                .attr("defer", true);
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -490,7 +492,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         pushJS += versionQueryParam;
 
         return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
+                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS)
+                .attr("defer", true);
     }
 
     private static Element getBootstrapScript(JsonValue initialUIDL,
@@ -543,7 +546,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element getClientEngineScript(BootstrapContext context) {
         return new Element(Tag.valueOf("script"), "")
                 .attr("type", TYPE_TEXT_JAVASCRIPT)
-                .attr("src", getClientEngineUrl(context));
+                .attr("src", getClientEngineUrl(context)).attr("defer", true);
     }
 
     protected static JsonObject getApplicationParameters(
