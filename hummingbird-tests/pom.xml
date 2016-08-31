@@ -32,6 +32,8 @@
 			concurrent running of test modules. -->
 		<server.port>8888</server.port>
 		<server.stop.port>8889</server.stop.port>
+		<!-- Don't run screenshot tests by default -->
+		<test.excludegroup>com.vaadin.hummingbird.testcategory.ScreenshotTests</test.excludegroup>
 	</properties>
 
 	<dependencies>
@@ -72,6 +74,7 @@
 						<serverPort>${server.port}</serverPort>
 						<phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
 					</systemPropertyVariables>
+					<excludedGroups>${test.excludegroup}</excludedGroups>
 				</configuration>
 			</plugin>
 			<!-- jetty plugin for those child modules that need it -->
