@@ -22,7 +22,12 @@ import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Hr;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.model.TemplateModel;
+import com.vaadin.hummingbird.uitest.servlet.DelayedContentServlet;
+import com.vaadin.server.VaadinService;
+import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.Dependency;
+import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.Text;
 
@@ -52,6 +57,15 @@ public class PreRenderView extends Div implements View {
         add(createComponentPart());
         add(new Hr());
         add(new PreTemplate());
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        if (null != VaadinService.getCurrentRequest().getParameter("delay")) {
+            attachEvent.getUI().getInternals().getDependencyList()
+                    .add(new Dependency(Type.JAVASCRIPT,
+                            DelayedContentServlet.DELAYED_RESOURCE_URL));
+        }
     }
 
     private static Component createComponentPart() {

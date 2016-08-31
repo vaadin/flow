@@ -30,6 +30,7 @@ import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
+import com.vaadin.client.hummingbird.PreRenderer;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -191,21 +192,24 @@ public class MessageHandler {
         }
 
         UIState state = registry.getUILifecycle().getState();
+        boolean firstTime = false;
         if (state == UIState.INITIALIZING) {
             // Application is starting up for the first time
             state = UIState.RUNNING;
             registry.getUILifecycle().setState(state);
+            firstTime = true;
         }
 
         if (state == UIState.RUNNING) {
-            handleJSON(json);
+            handleJSON(json, firstTime);
         } else {
             Console.warn(
                     "Ignored received message because application has already been stopped");
         }
     }
 
-    protected void handleJSON(final ValueMap valueMap) {
+    protected void handleJSON(final ValueMap valueMap,
+            final boolean firstTime) {
         final int serverId = getServerId(valueMap);
 
         if (isResynchronize(valueMap) && !isNextExpectedMessage(serverId)) {
@@ -310,6 +314,10 @@ public class MessageHandler {
             serverTimingInfo = valueMap.getValueMap("timings");
         }
 
+        if (firstTime) {
+            DependencyLoader
+                    .runWhenDependenciesLoaded(PreRenderer::transitionToLive);
+        }
         DependencyLoader
                 .runWhenDependenciesLoaded(DomApi::updateApiImplementation);
         DependencyLoader.runWhenDependenciesLoaded(
@@ -583,7 +591,7 @@ public class MessageHandler {
         if (toHandle != -1) {
             PendingUIDLMessage messageToHandle = pendingUIDLMessages
                     .remove(toHandle);
-            handleJSON(messageToHandle.getJson());
+            handleJSON(messageToHandle.getJson(), false);
             // Any remaining messages will be handled when this is called
             // again at the end of handleJSON
             return true;

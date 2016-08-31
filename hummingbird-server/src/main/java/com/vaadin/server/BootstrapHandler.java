@@ -66,7 +66,11 @@ import elemental.json.impl.JsonUtil;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
+    static final int LIVE_DELAY = 5000;
     static final String PRE_RENDER_INFO_TEXT = "This is only a pre-rendered version. Remove ?prerender=only to see the full version";
+    static final String DELAYED_LIVE_INFO_HTML = "This is only a pre-rendered version.<p>The loading of the live version has an extra delay of "
+            + LIVE_DELAY
+            + "ms.<p>Remove ?prerender=delay to see normal version.";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "hummingbird.gwtStatsEvents = [];"
@@ -262,6 +266,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         public boolean includePreRenderVersion() {
             return this == PRE_AND_LIVE || this == PRE_ONLY;
         }
+
     }
 
     private static class BootstrapUriResolver extends VaadinUriResolver {
@@ -464,8 +469,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 && !context.isProductionMode()) {
             Element preOnlyInfo = body.appendElement("div");
             preOnlyInfo.addClass("v-system-error");
-            preOnlyInfo.text(PRE_RENDER_INFO_TEXT);
             preOnlyInfo.attr("onclick", "this.remove()");
+            preOnlyInfo.text(PRE_RENDER_INFO_TEXT);
         }
 
         body.appendElement("noscript").append(
@@ -490,7 +495,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         pushJS += versionQueryParam;
 
         return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
+                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS)
+                .attr("defer", true);
     }
 
     private static Element getBootstrapScript(JsonValue initialUIDL,
@@ -543,7 +549,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element getClientEngineScript(BootstrapContext context) {
         return new Element(Tag.valueOf("script"), "")
                 .attr("type", TYPE_TEXT_JAVASCRIPT)
-                .attr("src", getClientEngineUrl(context));
+                .attr("src", getClientEngineUrl(context)).attr("defer", true);
     }
 
     protected static JsonObject getApplicationParameters(
