@@ -66,7 +66,11 @@ import elemental.json.impl.JsonUtil;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
+    static final int LIVE_DELAY = 5000;
     static final String PRE_RENDER_INFO_TEXT = "This is only a pre-rendered version. Remove ?prerender=only to see the full version";
+    static final String DELAYED_LIVE_INFO_HTML = "This is only a pre-rendered version.<p>The loading of the live version has an extra delay of "
+            + LIVE_DELAY
+            + "ms.<p>Remove ?prerender=delay to see normal version.";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "hummingbird.gwtStatsEvents = [];"
@@ -222,6 +226,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     return PreRenderMode.PRE_ONLY;
                 } else if ("no".equals(preParam)) {
                     return PreRenderMode.LIVE_ONLY;
+                } else if ("delay".equals(preParam)) {
+                    return PreRenderMode.PRE_AND_DELAYED_LIVE;
                 }
             }
             return PreRenderMode.PRE_AND_LIVE;
@@ -241,7 +247,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     enum PreRenderMode {
-        PRE_AND_LIVE, PRE_ONLY, LIVE_ONLY;
+        PRE_AND_LIVE, PRE_ONLY, LIVE_ONLY, PRE_AND_DELAYED_LIVE;
 
         /**
          * Checks if a live version of the application should be rendered.
@@ -250,7 +256,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *         <code>false</code> otherwise
          */
         public boolean includeLiveVersion() {
-            return this == PRE_AND_LIVE || this == LIVE_ONLY;
+            return this == PRE_AND_LIVE || this == LIVE_ONLY
+                    || this == PreRenderMode.PRE_AND_DELAYED_LIVE;
         }
 
         /**
@@ -260,7 +267,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *         <code>false</code> otherwise
          */
         public boolean includePreRenderVersion() {
-            return this == PRE_AND_LIVE || this == PRE_ONLY;
+            return this == PRE_AND_LIVE || this == PRE_ONLY
+                    || this == PRE_AND_DELAYED_LIVE;
+        }
+
+        /**
+         * Checks if there should be a delay before the client engine is loaded.
+         *
+         * @return <code>true</code> if the client engine loading should be
+         *         delayed, <code>false</code> otherwise
+         */
+        public boolean delayLiveVersion() {
+            return this == PRE_AND_DELAYED_LIVE;
         }
     }
 
@@ -460,12 +478,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true));
         }
 
-        if (context.getPreRenderMode() == PreRenderMode.PRE_ONLY
-                && !context.isProductionMode()) {
+        if (!context.isProductionMode()) {
             Element preOnlyInfo = body.appendElement("div");
             preOnlyInfo.addClass("v-system-error");
-            preOnlyInfo.text(PRE_RENDER_INFO_TEXT);
             preOnlyInfo.attr("onclick", "this.remove()");
+            if (context.getPreRenderMode() == PreRenderMode.PRE_ONLY) {
+                preOnlyInfo.text(PRE_RENDER_INFO_TEXT);
+            } else if (context
+                    .getPreRenderMode() == PreRenderMode.PRE_AND_DELAYED_LIVE) {
+                preOnlyInfo.html(DELAYED_LIVE_INFO_HTML);
+                preOnlyInfo.attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE,
+                        true);
+            }
         }
 
         body.appendElement("noscript").append(
@@ -490,7 +514,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         pushJS += versionQueryParam;
 
         return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
+                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS)
+                .attr("defer", true);
     }
 
     private static Element getBootstrapScript(JsonValue initialUIDL,
@@ -541,9 +566,36 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static Element getClientEngineScript(BootstrapContext context) {
-        return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT)
-                .attr("src", getClientEngineUrl(context));
+        if (context.isProductionMode()
+                || !context.getPreRenderMode().delayLiveVersion()) {
+            return new Element(Tag.valueOf("script"), "")
+                    .attr("type", TYPE_TEXT_JAVASCRIPT)
+                    .attr("src", getClientEngineUrl(context))
+                    .attr("defer", true);
+        } else {
+            return getDelayedClientEngineScript(context);
+        }
+    }
+
+    private static Element getDelayedClientEngineScript(
+            BootstrapContext context) {
+        Element mainScript = new Element(Tag.valueOf("script"), "").attr("type",
+                TYPE_TEXT_JAVASCRIPT);
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("//<![CDATA[\n");
+        builder.append("var script = document.createElement('script');");
+        builder.append("script.type = 'text/javascript';");
+        builder.append("script.defer = true;");
+        builder.append("script.src = '").append(getClientEngineUrl(context))
+                .append("';");
+        builder.append(
+                "window.addEventListener('load',function() {setTimeout(function(){ document.head.appendChild(script);}, 5000)});");
+        builder.append("//]]>");
+
+        mainScript.appendChild(
+                new DataNode(builder.toString(), mainScript.baseUri()));
+        return mainScript;
     }
 
     protected static JsonObject getApplicationParameters(

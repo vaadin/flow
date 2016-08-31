@@ -30,6 +30,7 @@ import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
+import com.vaadin.client.hummingbird.PreRenderer;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -195,6 +196,9 @@ public class MessageHandler {
             // Application is starting up for the first time
             state = UIState.RUNNING;
             registry.getUILifecycle().setState(state);
+
+            DependencyLoader
+                    .runWhenDependenciesLoaded(PreRenderer::transitionToLive);
         }
 
         if (state == UIState.RUNNING) {

@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui.prerender;
 
+import java.io.IOException;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -22,6 +24,8 @@ import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
+import com.vaadin.shared.ApplicationConstants;
+import com.vaadin.testbench.screenshot.ImageFileUtil;
 
 public class PreRenderIT extends PhantomJSTest {
 
@@ -99,5 +103,39 @@ public class PreRenderIT extends PhantomJSTest {
         } catch (NoSuchElementException nsee) {
             // expected result since removed by script
         }
+    }
+
+    @Test
+    public void prerenderIsVisible() throws IOException {
+        testBench().resizeViewPortTo(1000, 800);
+        testBench().disableWaitForVaadin();
+        open("prerender=delay");
+
+        WebElement error = findElement(By.className("v-system-error"));
+        Assert.assertNotNull(error);
+        Assert.assertNotNull(
+                error.getAttribute(ApplicationConstants.PRE_RENDER_ATTRIBUTE));
+
+        // Bound properties do not show up in pre rendered version
+        WebElement linkBound = findElement(By.id("tpl-link-bound"));
+        Assert.assertEquals(null, linkBound.getAttribute("href"));
+
+        Assert.assertTrue("Prerender HTML is not visible",
+                testBench()
+                        .compareScreen(ImageFileUtil.getReferenceScreenshotFile(
+                                "prerendered_application.png")));
+
+        waitForElementNotPresent(By.className("v-system-error"));
+
+        Assert.assertEquals(0,
+                findElements(By.xpath(".//*[@"
+                        + ApplicationConstants.PRE_RENDER_ATTRIBUTE + "=true]"))
+                                .size());
+
+        // When the client engine has been loaded, the template model has been
+        // applied and the UI changed
+        // Bound properties do not show up in pre rendered version
+        linkBound = findElement(By.id("tpl-link-bound"));
+        Assert.assertNotNull(linkBound.getAttribute("href"));
     }
 }
