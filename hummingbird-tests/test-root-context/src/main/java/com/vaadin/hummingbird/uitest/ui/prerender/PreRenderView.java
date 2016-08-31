@@ -15,6 +15,10 @@
  */
 package com.vaadin.hummingbird.uitest.ui.prerender;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.hummingbird.html.Anchor;
 import com.vaadin.hummingbird.html.Button;
@@ -22,6 +26,11 @@ import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Hr;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.model.TemplateModel;
+import com.vaadin.hummingbird.uitest.ui.DependencyView;
+import com.vaadin.hummingbird.uitest.ui.DependencyView.JSStreamFactory;
+import com.vaadin.server.StreamResourceRegistration;
+import com.vaadin.server.VaadinService;
+import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Template;
 import com.vaadin.ui.Text;
@@ -48,10 +57,29 @@ public class PreRenderView extends Div implements View {
         }
     }
 
+    private StreamResourceRegistration jsImport;
+
     public PreRenderView() {
         add(createComponentPart());
         add(new Hr());
         add(new PreTemplate());
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        if (null != VaadinService.getCurrentRequest().getParameter("delay")) {
+            jsImport = DependencyView.registerResource(attachEvent.getUI(),
+                    "some.js", new JSStreamFactory("delayed import", 5000) {
+                        @Override
+                        protected InputStream stringToStream(String jsString) {
+                            byte[] bytes = "window.document.body.appendChild(window.document.createElement('meter'));"
+                                    .getBytes(StandardCharsets.UTF_8);
+                            return new ByteArrayInputStream(bytes);
+                        }
+                    });
+            attachEvent.getUI().getPage()
+                    .addJavaScript(jsImport.getResourceUri().toString());
+        }
     }
 
     private static Component createComponentPart() {
