@@ -490,7 +490,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         pushJS += versionQueryParam;
 
         return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
+                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS)
+                .attr("defer", true);
     }
 
     private static Element getBootstrapScript(JsonValue initialUIDL,
@@ -543,7 +544,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element getClientEngineScript(BootstrapContext context) {
         return new Element(Tag.valueOf("script"), "")
                 .attr("type", TYPE_TEXT_JAVASCRIPT)
-                .attr("src", getClientEngineUrl(context));
+                .attr("src", getClientEngineUrl(context)).attr("defer", true);
     }
 
     protected static JsonObject getApplicationParameters(

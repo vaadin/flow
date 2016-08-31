@@ -169,7 +169,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void withourPrerenderDoesNotContainHtml() throws Exception {
+    public void withoutPrerenderDoesNotContainHtml() throws Exception {
         initUI(createVaadinRequest(PreRenderMode.LIVE_ONLY));
         // Actual test
         Document page = BootstrapHandler.getBootstrapPage(

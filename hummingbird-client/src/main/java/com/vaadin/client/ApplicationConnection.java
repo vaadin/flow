@@ -21,7 +21,6 @@ import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.communication.PollConfigurator;
 import com.vaadin.client.communication.Poller;
 import com.vaadin.client.communication.ReconnectDialogConfiguration;
-import com.vaadin.client.hummingbird.PreRenderer;
 import com.vaadin.client.hummingbird.RouterLinkHandler;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.binding.Binder;
@@ -59,8 +58,6 @@ public class ApplicationConnection {
         ReconnectDialogConfiguration.bind(registry.getConnectionStateHandler());
 
         new PopStateHandler(registry).bind();
-
-        PreRenderer.transitionToLive();
 
         Element body = Browser.getDocument().getBody();
 
