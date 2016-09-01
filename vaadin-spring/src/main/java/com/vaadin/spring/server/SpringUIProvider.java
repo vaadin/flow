@@ -26,6 +26,7 @@ import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.internal.UIID;
 import com.vaadin.ui.UI;
@@ -45,16 +46,22 @@ public class SpringUIProvider extends UIProvider {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final WebApplicationContext webApplicationContext;
+    private final VaadinSession vaadinSession;
+
+    /**
+     * Temporary cache for webApplicationContext, cleared if the session is serialized.
+     */
+    private transient WebApplicationContext webApplicationContext = null;
     private final Map<String, Class<? extends UI>> pathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
     private final Map<String, Class<? extends UI>> wildcardPathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
 
-    public SpringUIProvider(WebApplicationContext webApplicationContext) {
-        if (webApplicationContext == null) {
+    public SpringUIProvider(VaadinSession vaadinSession) {
+        this.vaadinSession = vaadinSession;
+
+        if (getWebApplicationContext() == null) {
             throw new IllegalStateException(
                     "Spring WebApplicationContext not initialized for UI provider. Use e.g. ContextLoaderListener to initialize it.");
         }
-        this.webApplicationContext = webApplicationContext;
         detectUIs();
         if (pathToUIMap.isEmpty()) {
             logger.warn("Found no Vaadin UIs in the application context");
@@ -144,6 +151,11 @@ public class SpringUIProvider extends UIProvider {
     }
 
     protected WebApplicationContext getWebApplicationContext() {
+        if (webApplicationContext == null) {
+            webApplicationContext = ((SpringVaadinServletService) vaadinSession.getService())
+                    .getWebApplicationContext();
+        }
+
         return webApplicationContext;
     }
 
@@ -169,7 +181,7 @@ public class SpringUIProvider extends UIProvider {
             logger.debug(
                     "Creating a new UI bean of class [{}] with identifier [{}]",
                     event.getUIClass().getCanonicalName(), identifier);
-            return webApplicationContext.getBean(event.getUIClass());
+            return getWebApplicationContext().getBean(event.getUIClass());
         } finally {
             CurrentInstance.set(key, null);
         }

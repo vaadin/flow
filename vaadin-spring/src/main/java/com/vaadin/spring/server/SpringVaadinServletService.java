@@ -17,6 +17,9 @@ package com.vaadin.spring.server;
 
 import java.util.List;
 
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.RequestHandler;
 import com.vaadin.server.ServiceException;
@@ -72,4 +75,12 @@ public class SpringVaadinServletService extends VaadinServletService {
         return handlers;
     }
 
+    /**
+     * Find the Spring web application context related to the servlet context.
+     *
+     */
+    public WebApplicationContext getWebApplicationContext() {
+        return WebApplicationContextUtils
+                .getWebApplicationContext(getServlet().getServletContext());
+    }
 }

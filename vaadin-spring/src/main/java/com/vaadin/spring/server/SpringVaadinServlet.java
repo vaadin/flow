@@ -90,8 +90,7 @@ public class SpringVaadinServlet extends VaadinServlet {
                 }
 
                 // add Spring UI provider
-                SpringUIProvider uiProvider = new SpringUIProvider(
-                        webApplicationContext);
+                SpringUIProvider uiProvider = new SpringUIProvider(session);
                 session.addUIProvider(uiProvider);
             }
         });
