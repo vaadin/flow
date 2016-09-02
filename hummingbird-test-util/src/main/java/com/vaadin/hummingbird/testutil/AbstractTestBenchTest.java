@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.testutil;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -168,6 +169,9 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     /**
      * Compares the given reference screenshot to the current and fails the test
      * if it doesn't match.
+     * <p>
+     * Compares also for possible alternative screenshot files with underscore
+     * and number before the file extension, e.g. filename_1.png.
      *
      * @param referenceImageFileName
      *            the reference image's file name, inside
@@ -177,11 +181,15 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      */
     protected void verifyScreenshot(String referenceImageFileName)
             throws IOException {
-        Assert.assertTrue(
-                "SCREENSHOT MATCH FAILURE: <" + referenceImageFileName
-                        + "> does not match expected.",
-                testBench().compareScreen(ImageFileUtil
-                        .getReferenceScreenshotFile(referenceImageFileName)));
+        List<String> possibleFileNames = ImageFileUtil
+                .getReferenceImageFileNames(referenceImageFileName, null);
+        for (String fileName : possibleFileNames) {
+            if (testBench().compareScreen(fileName)) {
+                return;
+            }
+        }
+        Assert.fail("SCREENSHOT MATCH FAILURE: <" + referenceImageFileName
+                + "> does not match expected.");
     }
 
 }
