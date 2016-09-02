@@ -76,6 +76,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String TYPE_TEXT_JAVASCRIPT = "text/javascript";
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String META_TAG = "meta";
+    private static final String DEFER_ATTRIBUTE = "defer";
 
     /**
      * Location of client nocache file, relative to the context root.
@@ -386,11 +387,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                     + "server/es6-collections.js"));
         }
 
-        head.appendElement("script").attr("type", "text/javascript").attr("src",
-                context.getUriResolver()
-                        .resolveVaadinUri("context://"
-                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                + "server/webcomponents-lite.min.js"));
+        head.appendElement("script").attr("type", "text/javascript")
+                .attr("src",
+                        context.getUriResolver()
+                                .resolveVaadinUri("context://"
+                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                        + "server/webcomponents-lite.min.js"))
+                .attr(DEFER_ATTRIBUTE, true);
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -490,7 +493,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         pushJS += versionQueryParam;
 
         return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
+                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS)
+                .attr(DEFER_ATTRIBUTE, true);
     }
 
     private static Element getBootstrapScript(JsonValue initialUIDL,
@@ -543,7 +547,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element getClientEngineScript(BootstrapContext context) {
         return new Element(Tag.valueOf("script"), "")
                 .attr("type", TYPE_TEXT_JAVASCRIPT)
-                .attr("src", getClientEngineUrl(context));
+                .attr("src", getClientEngineUrl(context))
+                .attr(DEFER_ATTRIBUTE, true);
     }
 
     protected static JsonObject getApplicationParameters(
