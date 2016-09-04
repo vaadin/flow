@@ -203,8 +203,7 @@ public class RouterConfigurationTest {
     }
 
     private static NavigationHandler createNoopHandler() {
-        return e -> {
-        };
+        return e -> 200;
     }
 
     @Test(expected = IllegalStateException.class)
@@ -555,6 +554,41 @@ public class RouterConfigurationTest {
         router.reconfigure(conf -> {
             conf.setErrorView(TestView.class, null);
         });
+    }
+
+    @Test
+    public void normalViewStatusCode() {
+        Router router = new Router();
+        router.reconfigure(c -> {
+            c.setRoute("*", ParentView.class);
+        });
+        int statusCode = router.getConfiguration()
+                .resolveRoute(new Location("")).get()
+                .handle(new NavigationEvent(router, new Location(""),
+                        new UI()));
+
+        Assert.assertEquals(200, statusCode);
+    }
+
+    @Test
+    public void defaultErrorHandlerStatusCode() {
+        Router router = new Router();
+        int statusCode = router.getConfiguration().getErrorHandler().handle(
+                new NavigationEvent(router, new Location(""), new UI()));
+
+        Assert.assertEquals(404, statusCode);
+    }
+
+    @Test
+    public void customErrorViewStatusCode() {
+        Router router = new Router();
+        router.reconfigure(c -> {
+            c.setErrorView(ParentView.class);
+        });
+        int statusCode = router.getConfiguration().getErrorHandler().handle(
+                new NavigationEvent(router, new Location(""), new UI()));
+
+        Assert.assertEquals(404, statusCode);
     }
 
 }
