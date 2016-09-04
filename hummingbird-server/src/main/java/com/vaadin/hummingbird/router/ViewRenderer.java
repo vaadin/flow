@@ -121,7 +121,16 @@ public abstract class ViewRenderer implements NavigationHandler {
         LocationChangeEvent locationChangeEvent = createEvent(event, viewChain);
 
         // Notify view and parent views about the new location
-        viewChain.forEach(view -> view.onLocationChange(locationChangeEvent));
+        for (View view : viewChain) {
+            view.onLocationChange(locationChangeEvent);
+
+            // Use the new navigation handler if a reroute target was set
+            Optional<NavigationHandler> rerouteTarget = locationChangeEvent
+                    .getRerouteTarget();
+            if (rerouteTarget.isPresent()) {
+                return rerouteTarget.get().handle(event);
+            }
+        }
 
         @SuppressWarnings("unchecked")
         List<HasChildView> parentViews = (List<HasChildView>) (List<?>) viewChain

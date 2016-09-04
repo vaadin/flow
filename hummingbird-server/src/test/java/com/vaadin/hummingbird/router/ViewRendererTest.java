@@ -114,6 +114,13 @@ public class ViewRendererTest {
         }
     }
 
+    public static class RerouteView extends TestView {
+        @Override
+        public void onLocationChange(LocationChangeEvent event) {
+            event.rerouteToErrorView();
+        }
+    }
+
     private final Router router = new Router();
     private final UI ui = new UI();
     private final NavigationEvent dummyEvent = new NavigationEvent(router,
@@ -371,6 +378,20 @@ public class ViewRendererTest {
 
         // StatusCodeView increments default status code with 1
         Assert.assertEquals(201, statusCode);
+    }
+
+    public void testViewReroute() {
+        TestViewRenderer renderer = new TestViewRenderer(RerouteView.class);
+
+        int statusCode = renderer.handle(dummyEvent);
+
+        Assert.assertEquals(404, statusCode);
+
+        List<View> activeViewChain = ui.getInternals().getActiveViewChain();
+
+        Assert.assertEquals(1, activeViewChain.size());
+        Assert.assertSame(DefaultErrorView.class,
+                activeViewChain.get(0).getClass());
     }
 
     private void setPageTitleGenerator(PageTitleGenerator generator) {
