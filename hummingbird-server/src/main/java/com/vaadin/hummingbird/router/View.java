@@ -63,12 +63,21 @@ public interface View extends HasElement, Serializable {
      * based on the location, e.g. to fetch content from a database based on an
      * identifier in the URL.
      * <p>
+     * This method can throw a {@link RerouteException} to signal that another
+     * navigation handler should be used instead of showing this view. This is
+     * typically done using {@link RerouteException#errorView()} to show the
+     * default error view instead of this view.
+     * <p>
      * This method does nothing by default.
      *
      * @param locationChangeEvent
      *            event object with information about the new location
+     * @throws RerouteException
+     *             if the location change should be aborted and navigation
+     *             continued with some other navigation handler
      */
-    default void onLocationChange(LocationChangeEvent locationChangeEvent) {
+    default void onLocationChange(LocationChangeEvent locationChangeEvent)
+            throws RerouteException {
         // Does nothing by default
     }
 
