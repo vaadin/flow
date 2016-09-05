@@ -47,6 +47,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -444,23 +445,31 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             document.head().after("<body></body>");
             body = document.body();
         } else {
-            com.vaadin.hummingbird.dom.Element uiElement = context.getUI()
-                    .getElement();
+            Optional<com.vaadin.hummingbird.dom.Element> uiElement = ComponentUtil
+                    .getPrerenderElement(context.getUI());
 
-            Node prerenderedUIElement = ElementUtil.toJsoup(document, uiElement,
-                    true);
-            assert prerenderedUIElement instanceof Element;
-            assert "body".equals(((Element) prerenderedUIElement).tagName());
+            if (uiElement.isPresent()) {
+                Node prerenderedUIElement = ElementUtil.toJsoup(document,
+                        uiElement.get(), true);
+                assert prerenderedUIElement instanceof Element;
+                assert "body"
+                        .equals(((Element) prerenderedUIElement).tagName());
 
-            document.head().after(prerenderedUIElement);
-            body = document.body();
-            assert body == prerenderedUIElement;
+                document.head().after(prerenderedUIElement);
+                body = document.body();
+                assert body == prerenderedUIElement;
 
-            // Mark body and children so we know what to remove when
-            // transitioning to the live version
-            body.attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true);
-            body.children().forEach(element -> element
-                    .attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true));
+                // Mark body and children so we know what to remove when
+                // transitioning to the live version
+                body.attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true);
+                body.children()
+                        .forEach(element -> element.attr(
+                                ApplicationConstants.PRE_RENDER_ATTRIBUTE,
+                                true));
+            } else {
+                document.head().after("<body></body>");
+                body = document.body();
+            }
         }
 
         if (context.getPreRenderMode() == PreRenderMode.PRE_ONLY
