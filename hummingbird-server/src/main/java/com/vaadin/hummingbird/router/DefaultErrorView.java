@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.router;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.annotations.Tag;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.HasText;
@@ -33,5 +35,10 @@ public final class DefaultErrorView extends Component implements HasText, View {
      */
     public DefaultErrorView() {
         setText("404 - View not found");
+    }
+
+    @Override
+    public void onLocationChange(LocationChangeEvent locationChangeEvent) {
+        locationChangeEvent.setStatusCode(HttpServletResponse.SC_NOT_FOUND);
     }
 }

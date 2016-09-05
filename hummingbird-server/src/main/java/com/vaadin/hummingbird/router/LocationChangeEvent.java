@@ -20,6 +20,8 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.ui.UI;
 
 /**
@@ -34,6 +36,8 @@ public class LocationChangeEvent extends EventObject {
     private final List<View> viewChain;
     private final UI ui;
     private final Map<String, String> routePlaceholders;
+
+    private int statusCode = HttpServletResponse.SC_OK;
 
     /**
      * Creates a new location change event.
@@ -134,6 +138,27 @@ public class LocationChangeEvent extends EventObject {
     @Override
     public Router getSource() {
         return (Router) super.getSource();
+    }
+
+    /**
+     * Gets the HTTP status code that will be returned for the client if this
+     * location change is an initial rendering request.
+     *
+     * @return the http status code
+     */
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    /**
+     * Sets the HTTP status code that will be returned for the client if this
+     * location change is an initial rendering request.
+     *
+     * @param statusCode
+     *            the http status code
+     */
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
     }
 
 }

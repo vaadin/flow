@@ -107,6 +107,13 @@ public class ViewRendererTest {
     public static class AnotherParentView extends ParentView {
     }
 
+    public static class StatusCodeView extends TestView {
+        @Override
+        public void onLocationChange(LocationChangeEvent event) {
+            event.setStatusCode(event.getStatusCode() + 1);
+        }
+    }
+
     private final Router router = new Router();
     private final UI ui = new UI();
     private final NavigationEvent dummyEvent = new NavigationEvent(router,
@@ -354,6 +361,16 @@ public class ViewRendererTest {
 
         Assert.assertNotSame(view1, view2);
         Assert.assertNotSame(parentView1, parentView2);
+    }
+
+    @Test
+    public void testStatusCode() {
+        TestViewRenderer renderer = new TestViewRenderer(StatusCodeView.class);
+
+        int statusCode = renderer.handle(dummyEvent);
+
+        // StatusCodeView increments default status code with 1
+        Assert.assertEquals(201, statusCode);
     }
 
     private void setPageTitleGenerator(PageTitleGenerator generator) {
