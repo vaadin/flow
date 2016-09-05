@@ -28,7 +28,6 @@ import com.vaadin.external.jsoup.nodes.Comment;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.select.Elements;
-
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TemplateParseException;
@@ -63,11 +62,31 @@ public class TemplateParser {
      */
     public static TemplateNode parse(InputStream templateStream,
             TemplateResolver templateResolver) {
+        return parse(templateStream, templateResolver, null);
+    }
+
+    /**
+     * Parses the template from the given input stream to a tree of template
+     * nodes.
+     * <p>
+     * Optionally sets the given parent template node, if given.
+     *
+     * @param templateStream
+     *            the input stream containing the template to parse, not
+     *            <code>null</code>
+     * @param templateResolver
+     *            the resolver to use to look up included files
+     * @param parent
+     *            the parent template node, can be <code>null</code>
+     * @return the template node at the root of the parsed template tree
+     */
+    public static TemplateNode parse(InputStream templateStream,
+            TemplateResolver templateResolver, TemplateNode parent) {
         assert templateStream != null;
         try {
             Document document = Jsoup.parse(templateStream, null, "");
 
-            return parse(document, templateResolver);
+            return parse(parent, document, templateResolver);
         } catch (IOException e) {
             throw new TemplateParseException("Error reading template data", e);
         }
@@ -88,7 +107,7 @@ public class TemplateParser {
 
         Document document = Jsoup.parseBodyFragment(templateString);
 
-        return parse(document, templateResolver);
+        return parse(null, document, templateResolver);
     }
 
     private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
@@ -105,8 +124,8 @@ public class TemplateParser {
         return factories;
     }
 
-    private static TemplateNode parse(Document bodyFragment,
-            TemplateResolver templateResolver) {
+    private static TemplateNode parse(TemplateNode parent,
+            Document bodyFragment, TemplateResolver templateResolver) {
         Elements children = bodyFragment.body().children();
 
         int childNodeSize = children.size();
@@ -124,7 +143,8 @@ public class TemplateParser {
         Optional<TemplateNodeBuilder> templateBuilder = createBuilder(
                 children.get(0), templateResolver);
         assert templateBuilder.isPresent();
-        List<? extends TemplateNode> nodes = templateBuilder.get().build(null);
+        List<? extends TemplateNode> nodes = templateBuilder.get()
+                .build(parent);
         assert nodes.size() == 1;
         return nodes.get(0);
     }
