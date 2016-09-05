@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.ui.Page;
 
 /**
@@ -57,7 +59,7 @@ public class RouterConfiguration
     private PageTitleGenerator pageTitleGenerator;
 
     private NavigationHandler errorHandler = new StaticViewRenderer(
-            DefaultErrorView.class, null);
+            DefaultErrorView.class, null, HttpServletResponse.SC_NOT_FOUND);
 
     /**
      * Creates a new empty immutable configuration.
@@ -545,7 +547,8 @@ public class RouterConfiguration
             throw new IllegalArgumentException("errorView cannot be null");
         }
 
-        setErrorHandler(new StaticViewRenderer(errorView, null));
+        setErrorHandler(new StaticViewRenderer(errorView, null,
+                HttpServletResponse.SC_NOT_FOUND));
     }
 
     /**

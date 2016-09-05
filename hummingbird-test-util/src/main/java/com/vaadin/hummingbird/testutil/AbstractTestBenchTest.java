@@ -15,9 +15,11 @@
  */
 package com.vaadin.hummingbird.testutil;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
@@ -26,6 +28,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.testbench.ScreenshotOnFailureRule;
 import com.vaadin.testbench.TestBenchDriverProxy;
+import com.vaadin.testbench.screenshot.ImageFileUtil;
 
 /**
  * Abstract base class for hummingbird TestBench tests, which are based on a
@@ -160,6 +163,25 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         FixedPhantomJSDriver driver = new FixedPhantomJSDriver(cap);
         setDriver(driver);
         driver.setTestBenchDriverProxy((TestBenchDriverProxy) getDriver());
+    }
+
+    /**
+     * Compares the given reference screenshot to the current and fails the test
+     * if it doesn't match.
+     *
+     * @param referenceImageFileName
+     *            the reference image's file name, inside
+     *            module-folder/reference-screenshots/
+     * @throws IOException
+     *             if there was a problem accessing the reference image
+     */
+    protected void verifyScreenshot(String referenceImageFileName)
+            throws IOException {
+        Assert.assertTrue(
+                "SCREENSHOT MATCH FAILURE: <" + referenceImageFileName
+                        + "> does not match expected.",
+                testBench().compareScreen(ImageFileUtil
+                        .getReferenceScreenshotFile(referenceImageFileName)));
     }
 
 }

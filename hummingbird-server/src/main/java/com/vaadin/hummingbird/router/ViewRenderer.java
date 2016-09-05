@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.hummingbird.router.RouteLocation.RouteSegmentVisitor;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -97,7 +99,7 @@ public abstract class ViewRenderer implements NavigationHandler {
     protected abstract String getRoute();
 
     @Override
-    public void handle(NavigationEvent event) {
+    public int handle(NavigationEvent event) {
         UI ui = event.getUI();
 
         Class<? extends View> viewType = getViewType(event);
@@ -132,6 +134,20 @@ public abstract class ViewRenderer implements NavigationHandler {
                 parentViews);
 
         updatePageTitle(event, locationChangeEvent);
+
+        return getStatusCode(locationChangeEvent);
+    }
+
+    /**
+     * Gets the HTTP status code to use for a specific location change event.
+     *
+     * @param locationChangeEvent
+     *            the location change event to get a status code for
+     * @return the HTTP status code to return to the client if handling an
+     *         initial rendering request
+     */
+    protected int getStatusCode(LocationChangeEvent locationChangeEvent) {
+        return HttpServletResponse.SC_OK;
     }
 
     /**

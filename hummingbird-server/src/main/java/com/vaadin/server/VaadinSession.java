@@ -877,12 +877,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * <p>
      * Please note that the command might be invoked on a different thread or
      * later on the current thread, which means that custom thread locals might
-     * not have the expected values when the command is executed. Inheritable
-     * values in {@link CurrentInstance} will have the same values as when this
-     * method was invoked. {@link VaadinSession#getCurrent()} and
-     * {@link VaadinService#getCurrent()} are set according to this session
-     * before executing the command. Non-inheritable CurrentInstance values
-     * including {@link VaadinService#getCurrentRequest()} and
+     * not have the expected values when the command is executed.
+     * {@link VaadinSession#getCurrent()} and {@link VaadinService#getCurrent()}
+     * are set according to this session before executing the command. Other
+     * standard CurrentInstance values such as
+     * {@link VaadinService#getCurrentRequest()} and
      * {@link VaadinService#getCurrentResponse()} will not be defined.
      * <p>
      * The returned future can be used to check for task completion and to

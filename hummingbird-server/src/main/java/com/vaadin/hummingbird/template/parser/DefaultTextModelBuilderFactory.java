@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.nodes.TextNode;
-
 import com.vaadin.hummingbird.template.ChildSlotBuilder;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateIncludeBuilder;
@@ -61,7 +60,7 @@ public class DefaultTextModelBuilderFactory
             TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         List<TemplateNodeBuilder> builders = new ArrayList<>();
-        collectBuilders(node.text(), builders, templateResolver);
+        collectBuilders(node.getWholeText(), builders, templateResolver);
         return makeCompound(builders);
     }
 
