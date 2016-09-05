@@ -39,6 +39,9 @@ public interface NavigationHandler extends Serializable {
      *
      * @param event
      *            the navigation event to handle
+     * @return the HTTP status code to return to the client if handling an
+     *         initial rendering request
      */
-    void handle(NavigationEvent event);
+    int handle(NavigationEvent event);
+
 }

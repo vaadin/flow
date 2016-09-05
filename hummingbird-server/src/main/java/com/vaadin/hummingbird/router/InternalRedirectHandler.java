@@ -24,7 +24,7 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  */
 public class InternalRedirectHandler implements NavigationHandler {
-    private Location target;
+    private final Location target;
 
     /**
      * Creates a new redirect handler for the provided location.
@@ -38,12 +38,12 @@ public class InternalRedirectHandler implements NavigationHandler {
     }
 
     @Override
-    public void handle(NavigationEvent event) {
+    public int handle(NavigationEvent event) {
         UI ui = event.getUI();
         Router router = event.getSource();
 
         ui.getPage().getHistory().replaceState(null, target.getPath());
 
-        router.navigate(ui, target);
+        return router.navigate(ui, target);
     }
 }
