@@ -23,6 +23,7 @@ import org.junit.Test;
 
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.ui.Template;
 
 public class TemplateIncludeBuilderTest {
@@ -48,6 +49,8 @@ public class TemplateIncludeBuilderTest {
         // <span>Sub template</span>
         // </div>
         IncludeTemplate template = new IncludeTemplate();
+        ElementTemplateNode parentTemplateNode = ((TemplateElementStateProvider) template
+                .getElement().getStateProvider()).getTemplateNode();
         Element element = template.getElement();
         Assert.assertEquals("div", element.getTag());
 
@@ -58,6 +61,12 @@ public class TemplateIncludeBuilderTest {
 
         Element subTemplateElement = children.get(1);
         Assert.assertEquals("div", subTemplateElement.getTag());
+
+        // template node should have the main template as the parent #1176
+        ElementTemplateNode includedTemplateNode = ((TemplateElementStateProvider) subTemplateElement
+                .getStateProvider()).getTemplateNode();
+        Assert.assertEquals(parentTemplateNode,
+                includedTemplateNode.getParent().get());
 
         Element span = filterOutTextChildren(subTemplateElement).get(0);
         Assert.assertEquals("span", span.getTag());
@@ -80,17 +89,35 @@ public class TemplateIncludeBuilderTest {
         // </div>
 
         MultipleIncludeTemplate template = new MultipleIncludeTemplate();
+        ElementTemplateNode node = ((TemplateElementStateProvider) template
+                .getElement().getStateProvider()).getTemplateNode();
         Element element = template.getElement();
         Assert.assertEquals("root-template", element.getTag());
+
         Element firstSubTemplateElement = filterOutTextChildren(element).get(0);
+        ElementTemplateNode firstSubTemplateElementNode = ((TemplateElementStateProvider) firstSubTemplateElement
+                .getStateProvider()).getTemplateNode();
+
         Assert.assertEquals("includes-from-parent",
                 firstSubTemplateElement.getTag());
+        Assert.assertEquals(node,
+                firstSubTemplateElementNode.getParent().get());
+
         Element secondSubTemplateElement = filterOutTextChildren(
                 firstSubTemplateElement).get(0);
+        ElementTemplateNode secondSubTemplateElementNode = ((TemplateElementStateProvider) secondSubTemplateElement
+                .getStateProvider()).getTemplateNode();
+
         Assert.assertEquals("div", secondSubTemplateElement.getTag());
+        Assert.assertEquals(firstSubTemplateElementNode,
+                secondSubTemplateElementNode.getParent().get());
+
         Element span = filterOutTextChildren(secondSubTemplateElement).get(0);
         Assert.assertEquals("span", span.getTag());
         Assert.assertEquals("Sub template", span.getTextRecursively());
+        Assert.assertEquals(secondSubTemplateElementNode,
+                ((TemplateElementStateProvider) span.getStateProvider())
+                        .getTemplateNode().getParent().get());
 
     }
 

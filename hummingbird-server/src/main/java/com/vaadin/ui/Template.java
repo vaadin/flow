@@ -144,8 +144,8 @@ public abstract class Template extends Component implements HasChildView {
             TemplateResolver templateResolver) {
         try (InputStream templateContentStream = inputStream) {
 
-            TemplateNode templateRoot = TemplateParser
-                    .parse(templateContentStream, templateResolver);
+            TemplateNode templateRoot = TemplateParser.parse(null,
+                    templateContentStream, templateResolver);
 
             stateNode.getFeature(TemplateMap.class)
                     .setRootTemplate(templateRoot);

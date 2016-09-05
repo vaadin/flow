@@ -53,17 +53,20 @@ public class TemplateIncludeBuilder implements TemplateNodeBuilder {
         assert parent instanceof AbstractElementTemplateNode : "@include@ parent must be an instance of "
                 + AbstractElementTemplateNode.class;
 
-        return Collections.singletonList(parseInclude(relativeFilename));
+        return Collections
+                .singletonList(parseInclude(parent, relativeFilename));
     }
 
-    private TemplateNode parseInclude(String includeFileName) {
+    private TemplateNode parseInclude(TemplateNode parent,
+            String includeFileName) {
         // Need a new resolver so that includes from the included file are
         // relative to that file (directory)
         DelegateResolver subResolver = new DelegateResolver(templateResolver,
                 getFolder(includeFileName));
         try (InputStream templateContentStream = templateResolver
                 .resolve(includeFileName)) {
-            return TemplateParser.parse(templateContentStream, subResolver);
+            return TemplateParser.parse(parent, templateContentStream,
+                    subResolver);
         } catch (IOException e) {
             throw new TemplateParseException(
                     "Unable to read template include for '" + includeFileName
