@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -70,9 +71,10 @@ public class RouterTest {
             resolvedLocation.set(eventToResolve.getLocation());
             return Optional.of(new NavigationHandler() {
                 @Override
-                public void handle(NavigationEvent eventToHandle) {
+                public int handle(NavigationEvent eventToHandle) {
                     Assert.assertNull(handledEvent.get());
                     handledEvent.set(eventToHandle);
+                    return HttpServletResponse.SC_OK;
                 }
             });
         }
@@ -112,8 +114,7 @@ public class RouterTest {
         TestResolver resolver = new TestResolver();
         router.reconfigure(c -> c.setResolver(resolver));
 
-        VaadinRequest request = Mockito.mock(VaadinRequest.class);
-        Mockito.when(request.getPathInfo()).thenReturn(null);
+        VaadinRequest request = requestWithPathInfo(null);
 
         router.initializeUI(ui, request);
 
@@ -129,6 +130,12 @@ public class RouterTest {
 
         Assert.assertEquals(Arrays.asList("foo"),
                 resolver.resolvedLocation.get().getSegments());
+    }
+
+    private static VaadinRequest requestWithPathInfo(String pathInfo) {
+        VaadinRequest request = Mockito.mock(VaadinRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        return request;
     }
 
     @Test
@@ -159,7 +166,8 @@ public class RouterTest {
         ArgumentCaptor<Integer> statusCodeCaptor = ArgumentCaptor
                 .forClass(Integer.class);
         Mockito.verify(response).setStatus(statusCodeCaptor.capture());
-        Assert.assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
+        Assert.assertEquals(Integer.valueOf(HttpServletResponse.SC_NOT_FOUND),
+                statusCodeCaptor.getValue());
     }
 
     @Test
@@ -253,10 +261,12 @@ public class RouterTest {
             configuration
                     .setResolver(resolveEvent -> Optional.of(handlerEvent -> {
                         usedHandler.set("resolver");
+                        return HttpServletResponse.SC_OK;
                     }));
 
             configuration.setRoute("*", e -> {
                 usedHandler.set("route");
+                return HttpServletResponse.SC_OK;
             });
         });
 
@@ -276,6 +286,7 @@ public class RouterTest {
 
             configuration.setRoute("*", e -> {
                 usedHandler.set("route");
+                return HttpServletResponse.SC_OK;
             });
         });
 
@@ -347,5 +358,37 @@ public class RouterTest {
         router.navigate(ui, new Location("bar"));
         Assert.assertEquals("bar/",
                 ui.getInternals().getActiveViewLocation().getPath());
+    }
+
+    @Test
+    public void testStatusCodeUpdates() {
+        RouterTestUI ui = new RouterTestUI();
+
+        Router router = ui.getRouter().get();
+
+        router.reconfigure(c -> {
+            c.setRoute("*", e -> 123);
+        });
+
+        VaadinResponse response = Mockito.mock(VaadinResponse.class);
+
+        try {
+            CurrentInstance.set(VaadinResponse.class, response);
+
+            VaadinRequest request = requestWithPathInfo(null);
+
+            router.initializeUI(ui, request);
+
+            // Response status should be set when initializing
+            Mockito.verify(response).setStatus(123);
+
+            router.navigate(ui, new Location("foo"));
+
+            // Non-init navigation shouldn't set any status code
+            Mockito.verifyNoMoreInteractions(response);
+
+        } finally {
+            CurrentInstance.clearAll();
+        }
     }
 }

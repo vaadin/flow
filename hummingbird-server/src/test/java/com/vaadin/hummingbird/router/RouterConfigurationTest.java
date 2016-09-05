@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -203,8 +205,7 @@ public class RouterConfigurationTest {
     }
 
     private static NavigationHandler createNoopHandler() {
-        return e -> {
-        };
+        return e -> HttpServletResponse.SC_OK;
     }
 
     @Test(expected = IllegalStateException.class)
@@ -555,6 +556,41 @@ public class RouterConfigurationTest {
         router.reconfigure(conf -> {
             conf.setErrorView(TestView.class, null);
         });
+    }
+
+    @Test
+    public void normalViewStatusCode() {
+        Router router = new Router();
+        router.reconfigure(c -> {
+            c.setRoute("*", ParentView.class);
+        });
+        int statusCode = router.getConfiguration()
+                .resolveRoute(new Location("")).get()
+                .handle(new NavigationEvent(router, new Location(""),
+                        new UI()));
+
+        Assert.assertEquals(HttpServletResponse.SC_OK, statusCode);
+    }
+
+    @Test
+    public void defaultErrorHandlerStatusCode() {
+        Router router = new Router();
+        int statusCode = router.getConfiguration().getErrorHandler().handle(
+                new NavigationEvent(router, new Location(""), new UI()));
+
+        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
+    }
+
+    @Test
+    public void customErrorViewStatusCode() {
+        Router router = new Router();
+        router.reconfigure(c -> {
+            c.setErrorView(ParentView.class);
+        });
+        int statusCode = router.getConfiguration().getErrorHandler().handle(
+                new NavigationEvent(router, new Location(""), new UI()));
+
+        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }
 
 }
