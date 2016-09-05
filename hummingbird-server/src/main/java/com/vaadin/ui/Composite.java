@@ -173,6 +173,11 @@ public abstract class Composite<T extends Component> extends Component {
         return getContent().getElement();
     }
 
+    @Override
+    protected Element getPrerenderElement() {
+        return getContent().getPrerenderElement();
+    }
+
     /**
      * Gets the child components of this composite.
      * <p>

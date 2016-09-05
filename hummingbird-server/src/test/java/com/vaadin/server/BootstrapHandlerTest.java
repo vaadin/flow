@@ -1,5 +1,6 @@
 package com.vaadin.server;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.vaadin.annotations.Id;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Title;
@@ -24,6 +26,7 @@ import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.server.BootstrapHandler.PreRenderMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.ui.Composite;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.Text;
 import com.vaadin.ui.UI;
@@ -46,6 +49,75 @@ public class BootstrapHandlerTest {
             add(new InlineTemplate("<div><script></script></div>"));
         }
 
+    }
+
+    private class AnotherUI extends UI {
+        @Override
+        protected void init(VaadinRequest request) {
+            super.init(request);
+            add(new Html("<div foo=bar>foobar</div>"));
+            add(new PrerenderText("Hello world"));
+            add(new PrerenderInlineTemplate());
+            add(new CompositeWithCustomPrerender());
+            add(new PrerenderComponentOverrideTemplate());
+        }
+    }
+
+    public static class PrerenderInlineTemplate extends InlineTemplate {
+
+        public PrerenderInlineTemplate() {
+            super("<div><script></script></div>");
+        }
+
+        @Override
+        protected com.vaadin.hummingbird.dom.Element getPrerenderElement() {
+            return createMeterElement();
+        }
+
+    }
+
+    public static class PrerenderComponentOverrideTemplate
+            extends InlineTemplate {
+
+        @Id("replaced")
+        private CompositeWithCustomPrerender prerender;
+
+        public PrerenderComponentOverrideTemplate() {
+            super("<div><div id='replaced'>foobar<div></div>");
+        }
+
+    }
+
+    private class PrerenderText extends Text {
+
+        public PrerenderText(String text) {
+            super(text);
+        }
+
+        @Override
+        protected com.vaadin.hummingbird.dom.Element getPrerenderElement() {
+            return super.getPrerenderElement().setText("FOOBAR");
+        }
+    }
+
+    public static class CompositeWithCustomPrerender extends Composite<Html> {
+
+        @Override
+        protected Html initContent() {
+            return new Html("<div foo=bar>foobar</div>") {
+                @Override
+                protected com.vaadin.hummingbird.dom.Element getPrerenderElement() {
+                    return createMeterElement();
+                }
+            };
+        }
+
+        @Override
+        protected com.vaadin.hummingbird.dom.Element getPrerenderElement() {
+            com.vaadin.hummingbird.dom.Element prerenderElement = super.getPrerenderElement();
+            prerenderElement.setAttribute("bar", "baz");
+            return prerenderElement;
+        }
     }
 
     private TestUI ui;
@@ -169,6 +241,67 @@ public class BootstrapHandlerTest {
     }
 
     @Test
+    public void prerenderUiOverriddenPreRenderElement() throws IOException {
+        TestUI testUI = new TestUI() {
+
+            @Override
+            protected com.vaadin.hummingbird.dom.Element getPrerenderElement() {
+                com.vaadin.hummingbird.dom.Element body = new com.vaadin.hummingbird.dom.Element(
+                        "body");
+                body.appendChild(createMeterElement());
+                return body;
+            }
+        };
+        testUI.getInternals().setSession(session);
+        VaadinRequest vaadinRequest = createVaadinRequest(
+                PreRenderMode.PRE_AND_LIVE);
+        testUI.doInit(vaadinRequest, 0);
+        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
+                null, session, testUI);
+
+        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+        Element body = page.body();
+
+        Element meter = body.child(0);
+        verifyMeterElement(meter);
+    }
+
+    @Test
+    public void prerenderCustomizedComponents() throws IOException {
+        AnotherUI anotherUI = new AnotherUI();
+        anotherUI.getInternals().setSession(session);
+        VaadinRequest vaadinRequest = createVaadinRequest(
+                PreRenderMode.PRE_AND_LIVE);
+        anotherUI.doInit(vaadinRequest, 0);
+        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
+                null, session, anotherUI);
+
+        Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
+        Element body = page.body();
+
+        Element div = (Element) body.childNode(0);
+        Assert.assertEquals("bar", div.attr("foo"));
+        Assert.assertEquals("foobar", div.text());
+
+        TextNode textNode = (TextNode) body.childNode(1);
+        Assert.assertEquals("FOOBAR", textNode.text());
+
+        Element overriddenTemplate = (Element) body.childNode(2);
+        verifyMeterElement(overriddenTemplate);
+
+        Element overriddenComposite = (Element) body.childNode(3);
+        verifyMeterElement(overriddenComposite);
+        Assert.assertEquals("baz", overriddenComposite.attr("bar"));
+
+        // template with mapped composite that overrides prerender
+        Element templateRoot = (Element) body.childNode(4);
+        Element anotherOverriddenComposite = (Element) templateRoot
+                .childNode(0);
+        verifyMeterElement(anotherOverriddenComposite);
+        Assert.assertEquals("baz", anotherOverriddenComposite.attr("bar"));
+    }
+
+    @Test
     public void withoutPrerenderDoesNotContainHtml() throws Exception {
         initUI(createVaadinRequest(PreRenderMode.LIVE_ONLY));
         // Actual test
@@ -284,5 +417,22 @@ public class BootstrapHandlerTest {
             }
         }).when(request).getServletPath();
         return request;
+    }
+
+    private static void verifyMeterElement(Element meter) {
+        Assert.assertEquals("meter", meter.tagName());
+        Assert.assertEquals("foo", meter.className());
+        Assert.assertEquals("1000", meter.attr("max"));
+        Assert.assertEquals("500", meter.attr("value"));
+    }
+
+    private static com.vaadin.hummingbird.dom.Element createMeterElement() {
+        com.vaadin.hummingbird.dom.Element meter = new com.vaadin.hummingbird.dom.Element(
+                "meter");
+        meter.getStyle().set("color", "black");
+        meter.setAttribute("max", "1000");
+        meter.setAttribute("value", "500");
+        meter.getClassList().add("foo");
+        return meter;
     }
 }

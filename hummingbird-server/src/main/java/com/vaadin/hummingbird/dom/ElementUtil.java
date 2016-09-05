@@ -23,6 +23,7 @@ import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.nodes.TextNode;
 import com.vaadin.ui.Component;
+import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Composite;
 
 /**
@@ -258,10 +259,15 @@ public class ElementUtil {
                 .filter(child -> !prerender
                         || child.isTextNode() // text nodes throw for getTag()
                         || !"script".equalsIgnoreCase(child.getTag()))//@formatter:on
+                .map(child -> prerender ? getPrerenderElement(child) : child)
                 .forEach(child -> target
                         .appendChild(toJsoup(document, child, prerender)));
 
         return target;
+    }
 
+    private static Element getPrerenderElement(Element element) {
+        return getComponent(element).map(ComponentUtil::getPrerenderElement)
+                .orElse(element);
     }
 }

@@ -47,6 +47,7 @@ import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -444,8 +445,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             document.head().after("<body></body>");
             body = document.body();
         } else {
-            com.vaadin.hummingbird.dom.Element uiElement = context.getUI()
-                    .getElement();
+            com.vaadin.hummingbird.dom.Element uiElement = ComponentUtil
+                    .getPrerenderElement(context.getUI());
 
             Node prerenderedUIElement = ElementUtil.toJsoup(document, uiElement,
                     true);

@@ -320,4 +320,18 @@ public class ComponentUtil {
         return componentMetaDataCache.get(componentClass).getDependencyInfo();
     }
 
+    /**
+     * Gets the pre-render element for the given component.
+     * <p>
+     * This is a framework internal method used for accessing the protected
+     * {@link Component#getPrerenderElement()} method.
+     *
+     * @param component
+     *            the component to get pre-render element for
+     * @return the pre-render element
+     * @see Component#getPrerenderElement()
+     */
+    public static Element getPrerenderElement(Component component) {
+        return component.getPrerenderElement();
+    }
 }

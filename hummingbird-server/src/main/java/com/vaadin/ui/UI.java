@@ -612,6 +612,23 @@ public class UI extends Component
     }
 
     /**
+     * Returns the pre-render version of the UI.
+     * <p>
+     * This method must always return an element of type <code>body</code>.
+     * <p>
+     * By default returns the body element and the children attached to the UI.
+     *
+     * @return an element with the pre-rendered DOM structure of the UI and its
+     *         children
+     * @see Component#getPrerenderElement()
+     */
+    @Override
+    protected Element getPrerenderElement() {
+        // overridden because of additional javadocs
+        return super.getPrerenderElement();
+    }
+
+    /**
      * Gets the state node for this UI.
      *
      * @return the state node for the UI, in practice the state tree root node
