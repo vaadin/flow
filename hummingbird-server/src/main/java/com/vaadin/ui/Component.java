@@ -167,6 +167,27 @@ public abstract class Component implements HasElement, Serializable,
     }
 
     /**
+     * Returns an optional pre-rendered version of the Component, or an empty
+     * optional if this component should not be included in the pre-render HTML.
+     * <p>
+     * Used by the framework during the first request to produce the HTML on the
+     * first page.
+     * <p>
+     * A component should override this method to pre-render something else than
+     * the default, which is the element returned by {@link #getElement()}.
+     * <p>
+     * Each component which supports pre-rendering should output the HTML tree
+     * for itself, call {@link #getPrerenderElement()} for its children and
+     * ensure they are attached to the pre-rendered element tree.
+     *
+     * @return an element with the pre-rendered DOM structure of the component
+     *         and its children
+     */
+    protected Optional<Element> getPrerenderElement() {
+        return Optional.of(getElement());
+    }
+
+    /**
      * Initializes the root element of a component.
      * <p>
      * Each component must have a root element and it must be set before the
