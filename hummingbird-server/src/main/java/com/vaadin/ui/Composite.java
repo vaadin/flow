@@ -17,6 +17,7 @@ package com.vaadin.ui;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.dom.Element;
@@ -171,6 +172,11 @@ public abstract class Composite<T extends Component> extends Component {
     @Override
     public Element getElement() {
         return getContent().getElement();
+    }
+
+    @Override
+    protected Optional<Element> getPrerenderElement() {
+        return getContent().getPrerenderElement();
     }
 
     /**
