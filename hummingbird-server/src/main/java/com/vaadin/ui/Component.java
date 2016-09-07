@@ -176,15 +176,14 @@ public abstract class Component implements HasElement, Serializable,
      * A component should override this method to pre-render something else than
      * the default, which is the element returned by {@link #getElement()}.
      * <p>
-     * Each component which supports pre-rendering should output the HTML tree
-     * for itself, call {@link #getPrerenderElement()} for its children and
-     * ensure they are attached to the pre-rendered element tree.
+     * <b>Web components are not included</b> in the pre-render HTML because no
+     * HTML imports are loaded for the pre-rendered page.
      *
      * @return an element with the pre-rendered DOM structure of the component
      *         and its children
      */
     protected Optional<Element> getPrerenderElement() {
-        return Optional.of(getElement());
+        return ElementUtil.prerender(getElement());
     }
 
     /**

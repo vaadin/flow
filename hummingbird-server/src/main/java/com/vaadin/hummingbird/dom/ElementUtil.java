@@ -270,6 +270,40 @@ public class ElementUtil {
 
     private static Optional<Element> getPrerenderElement(Element element) {
         return getComponent(element).map(ComponentUtil::getPrerenderElement)
-                .orElse(Optional.of(element));
+                .orElse(prerender(element));
+    }
+
+    /**
+     * Returns the pre-render version of the given element; the given element
+     * unless it is a custom element, then returns an empty optional.
+     * <p>
+     * Custom elements (Web Components) are recognized by having at least one
+     * dash in the tag name.
+     *
+     * @param element
+     *            the element to pre-render
+     * @return an optional element, or an empty optional if the given element
+     *         was a web component
+     */
+    public static Optional<Element> prerender(Element element) {
+        if (isCustomElement(element)) {
+            return Optional.empty();
+        } else {
+            return Optional.of(element);
+        }
+    }
+
+    /**
+     * Returns whether the given element is a custom element or not.
+     * <p>
+     * Custom elements (Web Components) are recognized by having at least one
+     * dash in the tag name.
+     *
+     * @param element
+     *            the element to check
+     * @return <code>true</code> if a custom element, <code>false</code> if not
+     */
+    public static boolean isCustomElement(Element element) {
+        return !element.isTextNode() && element.getTag().contains("-");
     }
 }

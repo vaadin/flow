@@ -17,6 +17,7 @@ import org.mockito.stubbing.Answer;
 import com.vaadin.annotations.Id;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
+import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Title;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
@@ -27,6 +28,7 @@ import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.server.BootstrapHandler.PreRenderMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.Composite;
 import com.vaadin.ui.Html;
 import com.vaadin.ui.Text;
@@ -52,7 +54,7 @@ public class BootstrapHandlerTest {
 
     }
 
-    private class AnotherUI extends UI {
+    private class CustomPrerenderComponentsUI extends UI {
         @Override
         protected void init(VaadinRequest request) {
             super.init(request);
@@ -62,10 +64,13 @@ public class BootstrapHandlerTest {
             add(new CompositeWithCustomPrerender());
             add(new PrerenderComponentOverrideTemplate());
             add(new NoPrerenderComponent());
+            add(new WebComponent());
+            add(new CustomElementsComponent());
+            add(new CustomElementPrerenderOverrideComponent());
         }
     }
 
-    private class NoPrerenderUI extends AnotherUI {
+    private class NoPrerenderUI extends CustomPrerenderComponentsUI {
         @Override
         protected Optional<com.vaadin.hummingbird.dom.Element> getPrerenderElement() {
             return Optional.empty();
@@ -142,6 +147,28 @@ public class BootstrapHandlerTest {
             prerenderElement.get().setAttribute("bar", "baz");
             return prerenderElement;
         }
+    }
+
+    @Tag("v-grid")
+    public static class WebComponent extends Component {
+
+    }
+
+    @Tag("div")
+    public static class CustomElementsComponent extends Component {
+        public CustomElementsComponent() {
+            getElement().appendChild(
+                    new com.vaadin.hummingbird.dom.Element("v-grid"));
+        }
+
+    }
+
+    public static class CustomElementPrerenderOverrideComponent
+            extends CustomElementsComponent {
+        @Override
+        protected java.util.Optional<com.vaadin.hummingbird.dom.Element> getPrerenderElement() {
+            return Optional.of(getElement());
+        };
     }
 
     private TestUI ui;
@@ -292,19 +319,19 @@ public class BootstrapHandlerTest {
 
     @Test
     public void prerenderCustomizedComponents() throws IOException {
-        AnotherUI anotherUI = new AnotherUI();
-        anotherUI.getInternals().setSession(session);
+        CustomPrerenderComponentsUI customPrerenderComponentsUI = new CustomPrerenderComponentsUI();
+        customPrerenderComponentsUI.getInternals().setSession(session);
         VaadinRequest vaadinRequest = createVaadinRequest(
                 PreRenderMode.PRE_AND_LIVE);
-        anotherUI.doInit(vaadinRequest, 0);
+        customPrerenderComponentsUI.doInit(vaadinRequest, 0);
         BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
-                null, session, anotherUI);
+                null, session, customPrerenderComponentsUI);
 
         Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
         Element body = page.body();
 
-        // contains 5 components and no-script
-        Assert.assertEquals(6, body.childNodeSize());
+        // contains 6 components and no-script
+        Assert.assertEquals(8, body.childNodeSize());
 
         Element div = (Element) body.childNode(0);
         Assert.assertEquals("bar", div.attr("foo"));
@@ -320,12 +347,25 @@ public class BootstrapHandlerTest {
         verifyMeterElement(overriddenComposite);
         Assert.assertEquals("baz", overriddenComposite.attr("bar"));
 
-        // template with mapped composite that overrides prerender
+        // template with mapped composite that overrides pre-render
         Element templateRoot = (Element) body.childNode(4);
         Element anotherOverriddenComposite = (Element) templateRoot
                 .childNode(0);
         verifyMeterElement(anotherOverriddenComposite);
         Assert.assertEquals("baz", anotherOverriddenComposite.attr("bar"));
+
+        // web component excluded from pre-render
+
+        // component that has a custom element inside
+        Element componentWithCustomElement = (Element) body.childNode(5);
+        Assert.assertEquals("div", componentWithCustomElement.tagName());
+        Assert.assertEquals(0, componentWithCustomElement.childNodeSize());
+
+        // component that has a custom element inside, but is filtered
+        Element anotherComponentWithCustomElement = (Element) body.childNode(6);
+        Assert.assertEquals("div", anotherComponentWithCustomElement.tagName());
+        Assert.assertEquals(0,
+                anotherComponentWithCustomElement.childNodeSize());
     }
 
     @Test
