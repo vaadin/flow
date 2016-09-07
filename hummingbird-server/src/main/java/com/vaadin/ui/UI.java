@@ -24,8 +24,10 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.Prerenderer;
 import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
@@ -622,12 +624,13 @@ public class UI extends Component
      *
      * @return an element with the pre-rendered DOM structure of the UI and its
      *         children
-     * @see Component#getPrerenderElement()
+     * @see Component#prerenderer()
+     * @see Prerenderer#prerenderElementTree(Element)
      */
     @Override
-    protected Optional<Element> getPrerenderElement() {
+    protected Optional<Node> prerenderer() {
         // overridden because of additional javadocs
-        return super.getPrerenderElement();
+        return super.prerenderer();
     }
 
     /**

@@ -40,7 +40,6 @@ import com.vaadin.external.jsoup.nodes.DocumentType;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.parser.Tag;
-import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -445,12 +444,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             document.head().after("<body></body>");
             body = document.body();
         } else {
-            Optional<com.vaadin.hummingbird.dom.Element> uiElement = ComponentUtil
-                    .getPrerenderElement(context.getUI());
+            Optional<Node> uiElement = ComponentUtil.prerender(context.getUI());
 
             if (uiElement.isPresent()) {
-                Node prerenderedUIElement = ElementUtil.toJsoup(document,
-                        uiElement.get(), true);
+                Node prerenderedUIElement = uiElement.get();
                 assert prerenderedUIElement instanceof Element;
                 assert "body"
                         .equals(((Element) prerenderedUIElement).tagName());

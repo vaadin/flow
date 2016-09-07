@@ -92,19 +92,13 @@ public class ElementUtilTest {
         InlineTemplate template = new InlineTemplate(
                 "<div><script>window.alert('shazbot');</script></div>");
         Node jsoupNode = ElementUtil.toJsoup(new Document(""),
-                template.getElement(), false);
+                template.getElement());
 
         Assert.assertEquals(1, jsoupNode.childNodeSize());
 
         Node child = jsoupNode.childNode(0);
         Assert.assertEquals("<script>window.alert('shazbot');</script>",
                 child.outerHtml());
-
-        // pre-render==true won't contain script
-        jsoupNode = ElementUtil.toJsoup(new Document(""), template.getElement(),
-                true);
-
-        Assert.assertEquals(0, jsoupNode.childNodeSize());
     }
 
 }
