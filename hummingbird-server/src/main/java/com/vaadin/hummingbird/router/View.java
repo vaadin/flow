@@ -63,6 +63,10 @@ public interface View extends HasElement, Serializable {
      * based on the location, e.g. to fetch content from a database based on an
      * identifier in the URL.
      * <p>
+     * This method can call any of the <code>reroute</code> methods from the
+     * provided location change event to make some other view or navigation
+     * target be used instead of this view.
+     * <p>
      * This method does nothing by default.
      *
      * @param locationChangeEvent
