@@ -18,8 +18,6 @@ package com.vaadin.hummingbird.router;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * A simple view renderer that always uses the given view type with the parent
  * views configured for it.
@@ -30,7 +28,6 @@ public class StaticViewRenderer extends ViewRenderer {
 
     private final String route;
     private final Class<? extends View> viewType;
-    private final int statusCode;
 
     /**
      * Creates a new view renderer for the given view type and route.
@@ -43,32 +40,12 @@ public class StaticViewRenderer extends ViewRenderer {
      *            parameters
      */
     public StaticViewRenderer(Class<? extends View> viewType, String route) {
-        this(viewType, route, HttpServletResponse.SC_OK);
-    }
-
-    /**
-     * Creates a new view renderer for the given view type, route and HTTP
-     * status code.
-     *
-     * @param viewType
-     *            the view type to show, not <code>null</code>
-     * @param route
-     *            the route to use when evaluating path parameters for the view,
-     *            or <code>null</code> if the view should not get any path
-     *            parameters
-     * @param statusCode
-     *            the HTTP status code to send to the client if handing an
-     *            initial rendering request
-     */
-    public StaticViewRenderer(Class<? extends View> viewType, String route,
-            int statusCode) {
         if (viewType == null) {
             throw new IllegalArgumentException("viewType cannot be null");
         }
 
         this.route = route;
         this.viewType = viewType;
-        this.statusCode = statusCode;
     }
 
     @Override
@@ -87,11 +64,6 @@ public class StaticViewRenderer extends ViewRenderer {
     @Override
     protected String getRoute() {
         return route;
-    }
-
-    @Override
-    protected int getStatusCode(LocationChangeEvent locationChangeEvent) {
-        return statusCode;
     }
 
 }

@@ -59,7 +59,7 @@ public class RouterConfiguration
     private PageTitleGenerator pageTitleGenerator;
 
     private NavigationHandler errorHandler = new StaticViewRenderer(
-            DefaultErrorView.class, null, HttpServletResponse.SC_NOT_FOUND);
+            DefaultErrorView.class, null);
 
     /**
      * Creates a new empty immutable configuration.
@@ -547,8 +547,20 @@ public class RouterConfiguration
             throw new IllegalArgumentException("errorView cannot be null");
         }
 
-        setErrorHandler(new StaticViewRenderer(errorView, null,
-                HttpServletResponse.SC_NOT_FOUND));
+        setErrorHandler(new StaticViewRenderer(errorView, null) {
+            @Override
+            public int handle(NavigationEvent event) {
+                int statusCode = super.handle(event);
+
+                // Override status code for the error view if the view itself
+                // hasn't set any specific code
+                if (statusCode == HttpServletResponse.SC_OK) {
+                    statusCode = 404;
+                }
+
+                return statusCode;
+            }
+        });
     }
 
     /**
