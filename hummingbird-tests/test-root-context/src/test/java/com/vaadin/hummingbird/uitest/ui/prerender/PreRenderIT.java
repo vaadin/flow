@@ -116,7 +116,7 @@ public class PreRenderIT extends PhantomJSTest {
         WebElement linkBound = findElement(By.id("tpl-link-bound"));
         Assert.assertNull(linkBound.getAttribute("href"));
 
-        verifyScreenshot("prerendered_application.png");
+        verifyScreenshot("prendered_application");
 
         // <meter> added by delayed JS dependency when client engine processes
         // initialUIDL for dependencies
