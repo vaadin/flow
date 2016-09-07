@@ -327,15 +327,6 @@ public class SpringUIProvider extends UIProvider {
         return pageTitle;
     }
 
-    @Override
-    public String getWidgetset(UICreateEvent event) {
-        String widgetset = super.getWidgetset(event);
-        if (widgetset != null) {
-            widgetset = resolvePropertyPlaceholders(widgetset);
-        }
-        return widgetset;
-    }
-
     private String resolvePropertyPlaceholders(String value) {
         if (StringUtils.hasText(value)) {
             return getWebApplicationContext().getEnvironment()
