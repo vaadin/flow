@@ -69,7 +69,7 @@ public class PreRenderView extends Div implements View {
     protected void onAttach(AttachEvent attachEvent) {
         if (null != VaadinService.getCurrentRequest().getParameter("delay")) {
             jsImport = DependencyView.registerResource(attachEvent.getUI(),
-                    "some.js", new JSStreamFactory("delayed import", 5000) {
+                    "some.js", new JSStreamFactory("delayed import", 10000) {
                         @Override
                         protected InputStream stringToStream(String jsString) {
                             byte[] bytes = "window.document.body.appendChild(window.document.createElement('meter'));"
