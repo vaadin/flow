@@ -22,9 +22,11 @@ import java.util.stream.Stream.Builder;
 
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Tag;
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
+import com.vaadin.hummingbird.dom.Prerenderer;
 import com.vaadin.hummingbird.event.ComponentEventBus;
 import com.vaadin.hummingbird.event.ComponentEventListener;
 
@@ -176,15 +178,22 @@ public abstract class Component implements HasElement, Serializable,
      * A component should override this method to pre-render something else than
      * the default, which is the element returned by {@link #getElement()}.
      * <p>
+     * By default <b>Web Components are and scripts are not included</b> in the
+     * pre-render HTML.
+     * <p>
      * Each component which supports pre-rendering should output the HTML tree
-     * for itself, call {@link #getPrerenderElement()} for its children and
-     * ensure they are attached to the pre-rendered element tree.
+     * for itself, handle pre-rendering for its children and ensure they are
+     * attached to the pre-rendered element tree.
+     * <p>
+     * The {@link Prerenderer} class provides some helper methods related to
+     * pre-rendering.
      *
-     * @return an element with the pre-rendered DOM structure of the component
-     *         and its children
+     * @return an JSoup node with the pre-rendered DOM structure of the
+     *         component and its children
+     * @see Prerenderer for useful methods
      */
-    protected Optional<Element> getPrerenderElement() {
-        return Optional.of(getElement());
+    protected Optional<Node> prerender() {
+        return Prerenderer.prerenderElementTree(getElement());
     }
 
     /**
