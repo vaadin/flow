@@ -15,20 +15,28 @@
  */
 package com.vaadin.spring.server;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.vaadin.navigator.ViewDisplay;
 import com.vaadin.server.UIClassSelectionEvent;
 import com.vaadin.server.UICreateEvent;
 import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.internal.UIID;
+import com.vaadin.spring.navigator.SpringNavigator;
+import com.vaadin.ui.ComponentContainer;
+import com.vaadin.ui.SingleComponentContainer;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
@@ -49,7 +57,8 @@ public class SpringUIProvider extends UIProvider {
     private final VaadinSession vaadinSession;
 
     /**
-     * Temporary cache for webApplicationContext, cleared if the session is serialized.
+     * Temporary cache for webApplicationContext, cleared if the session is
+     * serialized.
      */
     private transient WebApplicationContext webApplicationContext = null;
     private final Map<String, Class<? extends UI>> pathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
@@ -76,7 +85,8 @@ public class SpringUIProvider extends UIProvider {
         for (String uiBeanName : uiBeanNames) {
             Class<?> beanType = getWebApplicationContext().getType(uiBeanName);
             if (UI.class.isAssignableFrom(beanType)) {
-                logger.info("Found Vaadin UI [{}]", beanType.getCanonicalName());
+                logger.info("Found Vaadin UI [{}]",
+                        beanType.getCanonicalName());
                 final String path;
                 String tempPath = deriveMappingForUI(uiBeanName);
                 if (tempPath.length() > 0 && !tempPath.startsWith("/")) {
@@ -109,16 +119,16 @@ public class SpringUIProvider extends UIProvider {
      * @return path to map the UI to
      */
     protected String deriveMappingForUI(String uiBeanName) {
-        SpringUI annotation = getWebApplicationContext().findAnnotationOnBean(
-                uiBeanName, SpringUI.class);
+        SpringUI annotation = getWebApplicationContext()
+                .findAnnotationOnBean(uiBeanName, SpringUI.class);
         return annotation.path();
     }
 
     @Override
     public Class<? extends UI> getUIClass(
             UIClassSelectionEvent uiClassSelectionEvent) {
-        final String path = extractUIPathFromRequest(uiClassSelectionEvent
-                .getRequest());
+        final String path = extractUIPathFromRequest(
+                uiClassSelectionEvent.getRequest());
         if (pathToUIMap.containsKey(path)) {
             return pathToUIMap.get(path);
         }
@@ -152,8 +162,8 @@ public class SpringUIProvider extends UIProvider {
 
     protected WebApplicationContext getWebApplicationContext() {
         if (webApplicationContext == null) {
-            webApplicationContext = ((SpringVaadinServletService) vaadinSession.getService())
-                    .getWebApplicationContext();
+            webApplicationContext = ((SpringVaadinServletService) vaadinSession
+                    .getService()).getWebApplicationContext();
         }
 
         return webApplicationContext;
@@ -181,10 +191,89 @@ public class SpringUIProvider extends UIProvider {
             logger.debug(
                     "Creating a new UI bean of class [{}] with identifier [{}]",
                     event.getUIClass().getCanonicalName(), identifier);
-            return getWebApplicationContext().getBean(event.getUIClass());
+            UI ui = getWebApplicationContext().getBean(event.getUIClass());
+            configureNavigator(ui);
+            return ui;
         } finally {
             CurrentInstance.set(key, null);
         }
+    }
+
+    /**
+     * Configures a UI to use the navigator found by {@link #getNavigator()} if
+     * there is a {@link ViewContainer} annotation.
+     *
+     * @param ui
+     *            the Spring managed UI instance for which to configure
+     *            automatic navigation
+     */
+    protected void configureNavigator(UI ui) {
+        Object viewContainer = findViewContainer(ui);
+        if (viewContainer == null) {
+            return;
+        }
+        SpringNavigator navigator = getNavigator();
+        if (navigator == null) {
+            return;
+        }
+
+        if (viewContainer instanceof ViewDisplay) {
+            navigator.init(ui, (ViewDisplay) viewContainer);
+        } else if (viewContainer instanceof SingleComponentContainer) {
+            navigator.init(ui, (SingleComponentContainer) viewContainer);
+        } else if (viewContainer instanceof ComponentContainer) {
+            navigator.init(ui, (ComponentContainer) viewContainer);
+        } else {
+            logger.error(
+                    "View container does not implement ViewDisplay/SingleComponentContainer/ComponentContainer: "
+                            + viewContainer);
+            throw new IllegalStateException(
+                    "View container does not implement ViewDisplay/SingleComponentContainer/ComponentContainer: "
+                            + viewContainer);
+        }
+    }
+
+    /**
+     * Returns the configured navigator bean or null if no bean defined.
+     *
+     * @return bean extending {@link SpringNavigator} or null if none defined
+     * @throws BeansException
+     *             if there are multiple navigator beans or other configuration
+     *             problem
+     */
+    protected SpringNavigator getNavigator() {
+        try {
+            return getWebApplicationContext().getBean(SpringNavigator.class);
+        } catch (NoSuchBeanDefinitionException e) {
+            // While relying on exceptions here is not very nice, using
+            // getBean(Class) takes scopes, qualifiers etc. into account
+            // consistently.
+            // This is somewhat noisy as logged for every UI created.
+            logger.info("No Vaadin navigator bean defined");
+            return null;
+        }
+    }
+
+    protected Object findViewContainer(UI ui) {
+        final String[] viewContainerBeanNames = getWebApplicationContext()
+                .getBeanNamesForAnnotation(ViewContainer.class);
+        // TODO are all these beans in the correct scope and otherwise
+        // applicable for the UI?
+        if (viewContainerBeanNames.length == 0) {
+            logger.debug("No view container defined for the UI " + ui.getId());
+            return null;
+        }
+        if (viewContainerBeanNames.length > 1) {
+            logger.error(
+                    "Multiple view containers defined for the UI " + ui.getId()
+                            + ": " + Arrays.toString(viewContainerBeanNames));
+            throw new IllegalStateException(
+                    "A UI must only have one view containers, but multiple view containers are defined for UI "
+                            + ui.getId());
+        }
+        Object viewContainer = getWebApplicationContext()
+                .getBean(viewContainerBeanNames[0]);
+        return viewContainer;
     }
 
 }
