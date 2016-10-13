@@ -15,6 +15,8 @@
  */
 package com.vaadin.spring.navigator;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,7 +86,7 @@ public class SpringViewProvider implements ViewProvider {
     /*
      * Note! This is should be a singleton bean but it is probably not if you
      * serialize and deserialize a VaadinSession.
-     * 
+     *
      * This should be fixed so that SpringViewProvider is not a singleton bean
      * but is UIScoped. This should also remove the need for using
      * UI.getCurrent().
@@ -180,6 +182,22 @@ public class SpringViewProvider implements ViewProvider {
     protected String getViewNameFromAnnotation(Class<?> beanClass,
             SpringView annotation) {
         return Conventions.deriveMappingForView(beanClass, annotation);
+    }
+
+    /**
+     * Return a collection with all the registered Spring views for the current
+     * UI.
+     *
+     * @return collection of view names, not null
+     */
+    public Collection<String> getViewNamesForCurrentUI() {
+        Collection<String> viewNames = new HashSet<String>();
+        for (String viewName : viewNameToBeanNamesMap.keySet()) {
+            if (isViewNameValidForCurrentUI(viewName)) {
+                viewNames.add(viewName);
+            }
+        }
+        return viewNames;
     }
 
     @Override
