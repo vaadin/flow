@@ -23,13 +23,13 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
 
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.ui.UI;
 
 /**
  * Test for normal (full) use cases of SpringUIProvider with automatic
- * navigation configuration on the view.
+ * navigation configuration on the view but no view container defined.
  */
 @ContextConfiguration
 @WebAppConfiguration
@@ -44,12 +44,8 @@ public class SpringUIProviderTestWithoutViewContainer
     }
 
     @Configuration
+    @EnableVaadinNavigation
     static class Config extends AbstractSpringUIProviderTest.Config {
-        @Bean
-        public SpringNavigator navigator() {
-            return new SpringNavigator();
-        }
-
         // this gets configured by the UI provider
         @Bean
         public TestUI ui() {

@@ -15,28 +15,22 @@
  */
 package com.vaadin.spring.server;
 
-import java.util.Properties;
+import javax.servlet.http.HttpServletRequest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockServletConfig;
-import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.vaadin.server.DefaultDeploymentConfiguration;
-import com.vaadin.server.ServiceException;
 import com.vaadin.server.UICreateEvent;
-import com.vaadin.server.VaadinRequest;
-import com.vaadin.server.VaadinServlet;
-import com.vaadin.server.VaadinSession;
-import com.vaadin.spring.VaadinConfiguration;
+import com.vaadin.server.VaadinServletService;
+import com.vaadin.spring.annotation.EnableVaadin;
+import com.vaadin.spring.internal.UIScopeImpl;
+import com.vaadin.spring.test.util.SingletonBeanStoreRetrievalStrategy;
+import com.vaadin.spring.test.util.TestVaadinSession;
 import com.vaadin.ui.UI;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -45,28 +39,8 @@ import com.vaadin.ui.UI;
 public abstract class AbstractSpringUIProviderTest {
 
     @Configuration
-    protected static class Config extends VaadinConfiguration {
-        @Bean
-        public VaadinServlet vaadinServlet() {
-            return new SpringVaadinServlet();
-        }
-    }
-
-    private final class MySpringVaadinServletService
-            extends SpringVaadinServletService {
-        private MySpringVaadinServletService(VaadinServlet servlet)
-                throws ServiceException {
-            super(servlet, new DefaultDeploymentConfiguration(
-                    MySpringVaadinServletService.class, new Properties()), "");
-            init();
-        }
-
-        @Override
-        public VaadinSession createVaadinSession(VaadinRequest request)
-                throws com.vaadin.server.ServiceException {
-            return super.createVaadinSession(request);
-        }
-
+    @EnableVaadin
+    protected static class Config {
     }
 
     protected static final int TEST_UIID = 123;
@@ -75,38 +49,18 @@ public abstract class AbstractSpringUIProviderTest {
     private WebApplicationContext applicationContext;
 
     @Autowired
-    private MockServletContext servletContext;
+    private HttpServletRequest request;
 
-    @Autowired
-    private MockHttpServletRequest request;
-
-    @Autowired
-    private SpringVaadinServlet servlet;
-
-    private MySpringVaadinServletService service;
-    private SpringVaadinServletRequest vaadinServletRequest;
-    private VaadinSession vaadinSession;
+    private TestVaadinSession vaadinSession;
     private SpringUIProvider uiProvider;
 
     @Before
     public void setup() throws Exception {
-        // need to circumvent a lot of normal mechanisms as many relevant
-        // methods are private
-        // TODO very ugly - can this be simplified?
-        servlet.init(new MockServletConfig(servletContext));
-        setService(new MySpringVaadinServletService(servlet));
-        setVaadinServletRequest(
-                new SpringVaadinServletRequest(request, getService(), true));
-        setVaadinSession(
-                getService().createVaadinSession(getVaadinServletRequest()));
-        VaadinSession.setCurrent(vaadinSession);
+        UIScopeImpl.setBeanStoreRetrievalStrategy(
+                new SingletonBeanStoreRetrievalStrategy());
 
-        uiProvider = new SpringUIProvider(getVaadinSession());
-    }
-
-    @After
-    public void tearDown() {
-        VaadinSession.setCurrent(null);
+        vaadinSession = new TestVaadinSession(applicationContext);
+        uiProvider = new SpringUIProvider(vaadinSession);
     }
 
     protected SpringUIProvider getUiProvider() {
@@ -114,37 +68,14 @@ public abstract class AbstractSpringUIProviderTest {
     }
 
     protected UICreateEvent buildUiCreateEvent(Class<? extends UI> uiClass) {
-        return new UICreateEvent(getVaadinServletRequest(), uiClass, TEST_UIID);
+        return new UICreateEvent(new SpringVaadinServletRequest(request,
+                (VaadinServletService) vaadinSession.getService(), false),
+                uiClass, TEST_UIID);
     }
 
     @SuppressWarnings("unchecked")
     protected <T extends UI> T createUi(Class<T> uiClass) {
         return (T) getUiProvider().createInstance(buildUiCreateEvent(uiClass));
-    }
-
-    public MySpringVaadinServletService getService() {
-        return service;
-    }
-
-    private void setService(MySpringVaadinServletService service) {
-        this.service = service;
-    }
-
-    public SpringVaadinServletRequest getVaadinServletRequest() {
-        return vaadinServletRequest;
-    }
-
-    private void setVaadinServletRequest(
-            SpringVaadinServletRequest vaadinServletRequest) {
-        this.vaadinServletRequest = vaadinServletRequest;
-    }
-
-    public VaadinSession getVaadinSession() {
-        return vaadinSession;
-    }
-
-    private void setVaadinSession(VaadinSession vaadinSession) {
-        this.vaadinSession = vaadinSession;
     }
 
 }

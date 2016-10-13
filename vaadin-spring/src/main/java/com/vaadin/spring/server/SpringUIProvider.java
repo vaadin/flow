@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.navigator.ViewDisplay;
@@ -244,6 +245,8 @@ public class SpringUIProvider extends UIProvider {
     protected SpringNavigator getNavigator() {
         try {
             return getWebApplicationContext().getBean(SpringNavigator.class);
+        } catch (NoUniqueBeanDefinitionException e) {
+            throw e;
         } catch (NoSuchBeanDefinitionException e) {
             // While relying on exceptions here is not very nice, using
             // getBean(Class) takes scopes, qualifiers etc. into account

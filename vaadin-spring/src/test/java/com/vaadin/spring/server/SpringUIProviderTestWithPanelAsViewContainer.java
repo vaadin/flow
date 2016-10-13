@@ -25,16 +25,16 @@ import org.springframework.util.Assert;
 
 import com.vaadin.navigator.Navigator.SingleComponentContainerViewDisplay;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.spring.annotation.ViewContainer;
-import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 
 /**
  * Test for normal (full) use cases of SpringUIProvider with automatic
- * navigation configuration on the view.
+ * navigation configuration on the view with a Panel as the view container.
  */
 @ContextConfiguration
 @WebAppConfiguration
@@ -55,12 +55,8 @@ public class SpringUIProviderTestWithPanelAsViewContainer
     }
 
     @Configuration
+    @EnableVaadinNavigation
     static class Config extends AbstractSpringUIProviderTest.Config {
-        @Bean
-        public SpringNavigator navigator() {
-            return new SpringNavigator();
-        }
-
         @Bean
         public MyPanel myPanel() {
             return new MyPanel();
