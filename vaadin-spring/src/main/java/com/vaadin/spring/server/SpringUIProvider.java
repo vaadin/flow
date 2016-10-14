@@ -35,6 +35,7 @@ import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.internal.UIID;
+import com.vaadin.spring.internal.ViewContainerPostProcessor;
 import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.SingleComponentContainer;
@@ -263,8 +264,16 @@ public class SpringUIProvider extends UIProvider {
         // TODO are all these beans in the correct scope and otherwise
         // applicable for the UI?
         if (viewContainerBeanNames.length == 0) {
-            logger.debug("No view container defined for the UI " + ui.getId());
-            return null;
+            // look for the annotation on fields
+            ViewContainerPostProcessor postProcessor = getViewContainerPostProcessor();
+            if (postProcessor != null
+                    && postProcessor.getViewContainer() != null) {
+                return postProcessor.getViewContainer();
+            } else {
+                logger.debug(
+                        "No view container defined for the UI " + ui.getId());
+                return null;
+            }
         }
         if (viewContainerBeanNames.length > 1) {
             logger.error(
@@ -277,6 +286,24 @@ public class SpringUIProvider extends UIProvider {
         Object viewContainer = getWebApplicationContext()
                 .getBean(viewContainerBeanNames[0]);
         return viewContainer;
+    }
+
+    protected ViewContainerPostProcessor getViewContainerPostProcessor() {
+        try {
+            return getWebApplicationContext()
+                    .getBean(ViewContainerPostProcessor.class);
+        } catch (NoUniqueBeanDefinitionException e) {
+            logger.error(
+                    "Multiple " + ViewContainerPostProcessor.class.getName()
+                            + " beans exist");
+            throw e;
+        } catch (NoSuchBeanDefinitionException e) {
+            // This is somewhat noisy as potentially logged for every UI
+            // created.
+            logger.info(ViewContainerPostProcessor.class.getName()
+                    + " is not active, not checking for @ViewContainer annotations on fields");
+            return null;
+        }
     }
 
 }
