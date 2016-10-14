@@ -27,7 +27,8 @@ import org.springframework.util.Assert;
 
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewChangeListener;
+import com.vaadin.spring.navigator.SpringNavigator;
+import com.vaadin.spring.navigator.ViewActivationListener;
 import com.vaadin.ui.UI;
 
 /**
@@ -49,6 +50,29 @@ public class DefaultViewCache implements ViewCache {
 
     private String activeView = null;
 
+    private ViewActivationListener listener;
+
+    @SuppressWarnings("serial")
+    public DefaultViewCache() {
+        Navigator navigator = getCurrentUI().getNavigator();
+        if (!(navigator instanceof SpringNavigator)) {
+            throw new IllegalStateException("Navigator is not a SpringNavigator");
+        }
+        listener = new ViewActivationListener() {
+            
+            @Override
+            public void onViewActivated(ViewActivationEvent event) {
+                if (!event.isActivated()) {
+                    viewDeactivated(event.getViewName());
+                } else {
+                    viewActivated(event.getViewName());
+                }
+            }
+            
+        };
+        ((SpringNavigator)navigator).addViewActivationListener(listener);
+    }
+    
     /**
      * Called by {@link com.vaadin.spring.navigator.SpringViewProvider} when a
      * view scoped view is about to be created.
@@ -129,6 +153,11 @@ public class DefaultViewCache implements ViewCache {
                 beanStores.values())) {
             beanStore.destroy();
         }
+        Navigator navigator = getCurrentUI().getNavigator();
+        if (!(navigator instanceof SpringNavigator)) {
+            throw new IllegalStateException("Navigator is not a SpringNavigator");
+        }
+        ((SpringNavigator)navigator).removeViewActivationListener(listener);
         Assert.isTrue(beanStores.isEmpty(),
                 "beanStores should have been emptied by the destruction callbacks");
     }
@@ -171,8 +200,7 @@ public class DefaultViewCache implements ViewCache {
         return beanStore;
     }
 
-    class ViewBeanStore extends SessionLockingBeanStore implements
-    ViewChangeListener {
+    class ViewBeanStore extends SessionLockingBeanStore {
 
         private static final long serialVersionUID = -7655740852919880134L;
 
@@ -190,29 +218,15 @@ public class DefaultViewCache implements ViewCache {
             }
             LOGGER.trace("Adding [{}} as view change listener to [{}]", this,
                     navigator);
-            navigator.addViewChangeListener(this);
         }
 
         @Override
         public void destroy() {
             LOGGER.trace("Removing [{}] as view change listener from [{}]",
                     this, navigator);
-            navigator.removeViewChangeListener(this);
             super.destroy();
         }
 
-        @Override
-        public boolean beforeViewChange(ViewChangeEvent viewChangeEvent) {
-            return true;
-        }
-
-        @Override
-        public void afterViewChange(ViewChangeEvent viewChangeEvent) {
-            if (viewName.equals(viewChangeEvent.getViewName())) {
-                viewActivated(viewName);
-            } else {
-                viewDeactivated(viewName);
-            }
-        }
     }
+    
 }

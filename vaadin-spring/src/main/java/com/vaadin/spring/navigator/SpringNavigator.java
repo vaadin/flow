@@ -17,6 +17,13 @@ package com.vaadin.spring.navigator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import com.vaadin.navigator.ViewDisplay;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
+import com.vaadin.spring.navigator.ViewActivationListener.ViewActivationEvent;
+
 import com.vaadin.navigator.NavigationStateManager;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.ViewDisplay;
@@ -36,6 +43,78 @@ public class SpringNavigator extends Navigator {
 
     @Autowired
     private SpringViewProvider viewProvider;
+
+    private String currentViewName;
+
+    private final List<ViewActivationListener> activationListeners = new LinkedList<ViewActivationListener>();
+
+    public SpringNavigator() {}
+
+    public SpringNavigator(UI ui, ComponentContainer container) {
+        super(ui, container);
+    }
+
+    public SpringNavigator(UI ui, NavigationStateManager stateManager,
+            ViewDisplay display) {
+        super(ui, stateManager, display);
+    }
+
+    public SpringNavigator(UI ui, SingleComponentContainer container) {
+        super(ui, container);
+    }
+
+    public SpringNavigator(UI ui, ViewDisplay display) {
+        super(ui, display);
+    }
+    
+    /**
+     * Fires the {@link ViewActivationEvent}
+     * @param viewName
+     * @param active
+     */
+    private void fireActivationEvent(String viewName, boolean active) {
+        List<ViewActivationListener> listeners = new LinkedList<ViewActivationListener>(activationListeners);
+        ViewActivationEvent event = new ViewActivationEvent(this, active, viewName);
+        for (ViewActivationListener listener : listeners) {
+            listener.onViewActivated(event);
+        }
+    }
+    
+    /**
+     * Adds a listener on view activation
+     * @param listener
+     */
+    public void addViewActivationListener(ViewActivationListener listener) {
+        activationListeners.add(listener);
+    }
+    
+    /**
+     * Removes a listener on view activation
+     * @param listener
+     */
+    public void removeViewActivationListener(ViewActivationListener listener) {
+        activationListeners.remove(listener);
+    }
+    
+    @Override
+    protected boolean fireBeforeViewChange(ViewChangeEvent event) {
+        boolean openView = super.fireBeforeViewChange(event);
+        // it's ok to navigate to the desired view, so I can deactivate
+        // the previous View and activate the current. This code is strongly
+        // dependent on the Navigator implementation. Probably the Navigator
+        // should offer a way to intercept the "beforeViewEnter" event
+        String viewName = event.getViewName();
+        if (openView && !viewName.equals(currentViewName)) {
+            if  (currentViewName != null) {
+                // deactivate
+                fireActivationEvent(currentViewName, false);
+            }
+            currentViewName = viewName;
+            // activate
+            fireActivationEvent(currentViewName, true);
+        }
+        return openView;
+    }
 
     /**
      * Initializes an injected navigator and registers
