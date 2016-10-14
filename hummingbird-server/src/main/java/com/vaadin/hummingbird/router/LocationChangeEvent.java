@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.ui.UI;
 
@@ -34,6 +37,9 @@ public class LocationChangeEvent extends EventObject {
     private final List<View> viewChain;
     private final UI ui;
     private final Map<String, String> routePlaceholders;
+
+    private int statusCode = HttpServletResponse.SC_OK;
+    private NavigationHandler rerouteTarget;
 
     /**
      * Creates a new location change event.
@@ -134,6 +140,83 @@ public class LocationChangeEvent extends EventObject {
     @Override
     public Router getSource() {
         return (Router) super.getSource();
+    }
+
+    /**
+     * Gets the HTTP status code that will be returned for the client if this
+     * location change is an initial rendering request.
+     *
+     * @return the http status code
+     */
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    /**
+     * Sets the HTTP status code that will be returned for the client if this
+     * location change is an initial rendering request.
+     *
+     * @param statusCode
+     *            the http status code
+     */
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    /**
+     * Gets the reroute target to use if the user should be rerouted to some
+     * other view.
+     *
+     * @return and optional navigation handler, or an empty optional if no
+     *         reroute target has been set
+     */
+    public Optional<NavigationHandler> getRerouteTarget() {
+        return Optional.ofNullable(rerouteTarget);
+    }
+
+    /**
+     * Reroutes the navigation to use the provided navigation handler instead of
+     * the currently used handler.
+     * <p>
+     * Calling this method outside
+     * {@link View#onLocationChange(LocationChangeEvent)} will not have any
+     * effect.
+     *
+     * @param rerouteTarget
+     *            the navigation handler to use, or <code>null</code> to clear a
+     *            previously set reroute target
+     */
+    public void rerouteTo(NavigationHandler rerouteTarget) {
+        this.rerouteTarget = rerouteTarget;
+    }
+
+    /**
+     * Reroutes the navigation to show the default error view instead of the
+     * view that is currently about to be displayed.
+     *
+     * <p>
+     * Calling this method outside
+     * {@link View#onLocationChange(LocationChangeEvent)} will not have any
+     * effect.
+     */
+    public void rerouteToErrorView() {
+        rerouteTo(getSource().getConfiguration().getErrorHandler());
+    }
+
+    /**
+     * Reroutes the navigation to show the given view instead of the view that
+     * is currently about to be displayed.
+     *
+     * <p>
+     * Calling this method outside
+     * {@link View#onLocationChange(LocationChangeEvent)} will not have any
+     * effect.
+     *
+     * @param viewType
+     *            the view type to display, not <code>null</code>
+     */
+    public void rerouteTo(Class<? extends View> viewType) {
+        rerouteTo(new StaticViewRenderer(viewType, null));
     }
 
 }

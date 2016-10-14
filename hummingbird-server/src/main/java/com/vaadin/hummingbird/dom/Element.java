@@ -1461,7 +1461,7 @@ public class Element implements Serializable {
      * @return the outer HTML for the element
      */
     public String getOuterHTML() {
-        return ElementUtil.toJsoup(new Document(""), this, false).outerHtml();
+        return ElementUtil.toJsoup(new Document(""), this).outerHtml();
     }
 
     /**

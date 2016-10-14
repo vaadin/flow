@@ -30,6 +30,7 @@ import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
+import com.vaadin.client.hummingbird.PreRenderer;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.TreeChangeProcessor;
 import com.vaadin.client.hummingbird.collection.JsArray;
@@ -310,6 +311,10 @@ public class MessageHandler {
             serverTimingInfo = valueMap.getValueMap("timings");
         }
 
+        if (!isInitialUidlHandled()) {
+            DependencyLoader
+                    .runWhenDependenciesLoaded(PreRenderer::transitionToLive);
+        }
         DependencyLoader
                 .runWhenDependenciesLoaded(DomApi::updateApiImplementation);
         DependencyLoader.runWhenDependenciesLoaded(

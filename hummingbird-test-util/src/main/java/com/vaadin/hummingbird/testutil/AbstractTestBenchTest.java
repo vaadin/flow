@@ -15,9 +15,11 @@
  */
 package com.vaadin.hummingbird.testutil;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
@@ -160,6 +162,24 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         FixedPhantomJSDriver driver = new FixedPhantomJSDriver(cap);
         setDriver(driver);
         driver.setTestBenchDriverProxy((TestBenchDriverProxy) getDriver());
+    }
+
+    /**
+     * Compares the given reference screenshot to the current and fails the test
+     * if it doesn't match.
+     *
+     * @param identifier
+     *            the identifier to use for the screenshot, becomes part of the
+     *            screenshot name in the
+     *            {@code module-folder/reference-screenshots/} folder
+     * @throws IOException
+     *             if there was a problem accessing the reference image
+     */
+    protected void verifyScreenshot(String identifier) throws IOException {
+        Assert.assertTrue(
+                "SCREENSHOT MATCH FAILURE: <" + identifier
+                        + "> does not match expected.",
+                testBench().compareScreen(identifier));
     }
 
 }

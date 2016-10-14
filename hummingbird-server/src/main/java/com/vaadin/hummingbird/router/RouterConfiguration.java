@@ -24,6 +24,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServletResponse;
+
 import com.vaadin.ui.Page;
 
 /**
@@ -545,7 +547,20 @@ public class RouterConfiguration
             throw new IllegalArgumentException("errorView cannot be null");
         }
 
-        setErrorHandler(new StaticViewRenderer(errorView, null));
+        setErrorHandler(new StaticViewRenderer(errorView, null) {
+            @Override
+            public int handle(NavigationEvent event) {
+                int statusCode = super.handle(event);
+
+                // Override status code for the error view if the view itself
+                // hasn't set any specific code
+                if (statusCode == HttpServletResponse.SC_OK) {
+                    statusCode = 404;
+                }
+
+                return statusCode;
+            }
+        });
     }
 
     /**

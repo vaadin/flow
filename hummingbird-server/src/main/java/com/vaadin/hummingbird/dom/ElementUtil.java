@@ -229,12 +229,9 @@ public class ElementUtil {
      *            A JSoup document
      * @param element
      *            The element to convert
-     * @param prerender
-     *            is the html output meant for pre-rendering
      * @return A JSoup node containing the converted element
      */
-    public static Node toJsoup(Document document, Element element,
-            boolean prerender) {
+    public static Node toJsoup(Document document, Element element) {
         if (element.isTextNode()) {
             return new TextNode(element.getText(), document.baseUri());
         }
@@ -254,14 +251,36 @@ public class ElementUtil {
             }
         });
 
-        element.getChildren()//@formatter:off
-                .filter(child -> !prerender
-                        || child.isTextNode() // text nodes throw for getTag()
-                        || !"script".equalsIgnoreCase(child.getTag()))//@formatter:on
-                .forEach(child -> target
-                        .appendChild(toJsoup(document, child, prerender)));
+        element.getChildren()
+                .forEach(child -> target.appendChild(toJsoup(document, child)));
 
         return target;
-
     }
+
+    /**
+     * Checks whether the given element is a custom element or not.
+     * <p>
+     * Custom elements (Web Components) are recognized by having at least one
+     * dash in the tag name.
+     *
+     * @param element
+     *            the element to check
+     * @return <code>true</code> if a custom element, <code>false</code> if not
+     */
+    public static boolean isCustomElement(Element element) {
+        return !element.isTextNode() && element.getTag().contains("-");
+    }
+
+    /**
+     * Checks whether the given element is a <code>script</code> or not.
+     *
+     * @param element
+     *            the element to check
+     * @return <code>true</code> if a script, <code>false</code> if not
+     */
+    public static boolean isScript(Element element) {
+        return !element.isTextNode()
+                && "script".equalsIgnoreCase(element.getTag());
+    }
+
 }

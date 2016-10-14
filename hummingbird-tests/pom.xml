@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.15-SNAPSHOT</version>
+		<version>0.0.16-SNAPSHOT</version>
 	</parent>
 	<artifactId>hummingbird-tests</artifactId>
 	<name>Hummingbird tests</name>
@@ -32,6 +32,8 @@
 			concurrent running of test modules. -->
 		<server.port>8888</server.port>
 		<server.stop.port>8889</server.stop.port>
+		<!-- Don't run screenshot tests by default -->
+		<test.excludegroup>com.vaadin.hummingbird.testcategory.ScreenshotTests</test.excludegroup>
 	</properties>
 
 	<dependencies>
@@ -39,12 +41,12 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird</artifactId>
-			<version>0.0.15-SNAPSHOT</version>
+			<version>0.0.16-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-test-util</artifactId>
-			<version>0.0.15-SNAPSHOT</version>
+			<version>0.0.16-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -72,6 +74,7 @@
 						<serverPort>${server.port}</serverPort>
 						<phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
 					</systemPropertyVariables>
+					<excludedGroups>${test.excludegroup}</excludedGroups>
 				</configuration>
 			</plugin>
 			<!-- jetty plugin for those child modules that need it -->

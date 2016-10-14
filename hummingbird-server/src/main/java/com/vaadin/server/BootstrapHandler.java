@@ -40,13 +40,13 @@ import com.vaadin.external.jsoup.nodes.DocumentType;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.parser.Tag;
-import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.shared.VaadinUriResolver;
 import com.vaadin.shared.Version;
 import com.vaadin.shared.communication.PushMode;
+import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
@@ -76,6 +76,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String TYPE_TEXT_JAVASCRIPT = "text/javascript";
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String META_TAG = "meta";
+    private static final String DEFER_ATTRIBUTE = "defer";
 
     /**
      * Location of client nocache file, relative to the context root.
@@ -386,11 +387,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                     + "server/es6-collections.js"));
         }
 
-        head.appendElement("script").attr("type", "text/javascript").attr("src",
-                context.getUriResolver()
-                        .resolveVaadinUri("context://"
-                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                + "server/webcomponents-lite.min.js"));
+        head.appendElement("script").attr("type", "text/javascript")
+                .attr("src",
+                        context.getUriResolver()
+                                .resolveVaadinUri("context://"
+                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                        + "server/webcomponents-lite.min.js"))
+                .attr(DEFER_ATTRIBUTE, true);
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -441,23 +444,29 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             document.head().after("<body></body>");
             body = document.body();
         } else {
-            com.vaadin.hummingbird.dom.Element uiElement = context.getUI()
-                    .getElement();
+            Optional<Node> uiElement = ComponentUtil.prerender(context.getUI());
 
-            Node prerenderedUIElement = ElementUtil.toJsoup(document, uiElement,
-                    true);
-            assert prerenderedUIElement instanceof Element;
-            assert "body".equals(((Element) prerenderedUIElement).tagName());
+            if (uiElement.isPresent()) {
+                Node prerenderedUIElement = uiElement.get();
+                assert prerenderedUIElement instanceof Element;
+                assert "body"
+                        .equals(((Element) prerenderedUIElement).tagName());
 
-            document.head().after(prerenderedUIElement);
-            body = document.body();
-            assert body == prerenderedUIElement;
+                document.head().after(prerenderedUIElement);
+                body = document.body();
+                assert body == prerenderedUIElement;
 
-            // Mark body and children so we know what to remove when
-            // transitioning to the live version
-            body.attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true);
-            body.children().forEach(element -> element
-                    .attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true));
+                // Mark body and children so we know what to remove when
+                // transitioning to the live version
+                body.attr(ApplicationConstants.PRE_RENDER_ATTRIBUTE, true);
+                body.children()
+                        .forEach(element -> element.attr(
+                                ApplicationConstants.PRE_RENDER_ATTRIBUTE,
+                                true));
+            } else {
+                document.head().after("<body></body>");
+                body = document.body();
+            }
         }
 
         if (context.getPreRenderMode() == PreRenderMode.PRE_ONLY
@@ -490,7 +499,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         pushJS += versionQueryParam;
 
         return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS);
+                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS)
+                .attr(DEFER_ATTRIBUTE, true);
     }
 
     private static Element getBootstrapScript(JsonValue initialUIDL,
@@ -543,7 +553,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static Element getClientEngineScript(BootstrapContext context) {
         return new Element(Tag.valueOf("script"), "")
                 .attr("type", TYPE_TEXT_JAVASCRIPT)
-                .attr("src", getClientEngineUrl(context));
+                .attr("src", getClientEngineUrl(context))
+                .attr(DEFER_ATTRIBUTE, true);
     }
 
     protected static JsonObject getApplicationParameters(

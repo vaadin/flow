@@ -24,8 +24,10 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.Prerenderer;
 import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
@@ -401,12 +403,10 @@ public class UI extends Component
      * <p>
      * Please note that the command might be invoked on a different thread or
      * later on the current thread, which means that custom thread locals might
-     * not have the expected values when the command is executed. Inheritable
-     * values in {@link CurrentInstance} will have the same values as when this
-     * method was invoked. {@link UI#getCurrent()},
-     * {@link VaadinSession#getCurrent()} and {@link VaadinService#getCurrent()}
-     * are set according to this UI before executing the command.
-     * Non-inheritable CurrentInstance values including
+     * not have the expected values when the command is executed.
+     * {@link UI#getCurrent()}, {@link VaadinSession#getCurrent()} and
+     * {@link VaadinService#getCurrent()} are set according to this UI before
+     * executing the command. Other standard CurrentInstance values such as
      * {@link VaadinService#getCurrentRequest()} and
      * {@link VaadinService#getCurrentResponse()} will not be defined.
      * </p>
@@ -611,6 +611,26 @@ public class UI extends Component
     @Override
     public Element getElement() {
         return Element.get(getNode());
+    }
+
+    /**
+     * Returns the pre-render version of the UI, or an empty optional if nothing
+     * should be pre-rendered.
+     * <p>
+     * When returning an element, the element must always be of type
+     * <code>body</code>.
+     * <p>
+     * By default returns the body element and the children attached to the UI.
+     *
+     * @return an element with the pre-rendered DOM structure of the UI and its
+     *         children
+     * @see Component#prerender()
+     * @see Prerenderer#prerenderElementTree(Element)
+     */
+    @Override
+    protected Optional<Node> prerender() {
+        // overridden because of additional javadocs
+        return super.prerender();
     }
 
     /**

@@ -86,11 +86,17 @@ public class Router implements Serializable {
         ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
             String newLocation = e.getLocation();
 
-            navigate(ui, new Location(newLocation), false);
+            navigate(ui, new Location(newLocation));
         });
 
         Location location = new Location(path);
-        navigate(ui, location, true);
+        int statusCode = navigate(ui, location);
+
+        VaadinResponse response = VaadinService.getCurrentResponse();
+        if (response != null) {
+            response.setStatus(statusCode);
+        }
+
     }
 
     /**
@@ -100,12 +106,9 @@ public class Router implements Serializable {
      *            the UI to update
      * @param location
      *            the location to navigate to
+     * @return the HTTP status code resulting from the navigation
      */
-    public void navigate(UI ui, Location location) {
-        navigate(ui, location, false);
-    }
-
-    private void navigate(UI ui, Location location, boolean initialRequest) {
+    public int navigate(UI ui, Location location) {
         // Read volatile field only once per navigation
         ImmutableRouterConfiguration currentConfig = configuration;
         assert currentConfig.isConfigured();
@@ -135,17 +138,9 @@ public class Router implements Serializable {
         if (!handler.isPresent()) {
             NavigationHandler errorHandler = configuration.getErrorHandler();
             handler = Optional.of(errorHandler);
-
-            // for initial request return 404 access code
-            if (initialRequest) {
-                VaadinResponse response = VaadinService.getCurrentResponse();
-                if (response != null) {
-                    response.setStatus(404);
-                }
-            }
         }
 
-        handler.get().handle(navigationEvent);
+        return handler.get().handle(navigationEvent);
     }
 
     // Non-private to enable testing

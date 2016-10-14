@@ -67,12 +67,12 @@ public class BeanModelType extends ModelType {
     }
 
     /**
-     * Creates a JS proxy instance for accessing the give model map based on the
-     * properties in this type.
+     * Creates a JS proxy instance for accessing the given model map based on
+     * the properties in this type.
      *
      * @param model
      *            the model map to read property values from
-     * @return a JS proxy for type type
+     * @return a JS proxy for the model map
      */
     public Object createProxy(NodeMap model) {
         Object proxy = JavaScriptObject.createObject();

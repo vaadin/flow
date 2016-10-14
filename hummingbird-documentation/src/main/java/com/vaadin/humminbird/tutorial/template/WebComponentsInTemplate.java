@@ -26,7 +26,7 @@ public class WebComponentsInTemplate {
     class PaperTextarea extends HtmlComponent {
     }
 
-    @Tag("vaadin-combo-box")
+    @Tag("vaadin-date-picker")
     @HtmlImport("bower_components/vaadin-date-picker/vaadin-date-picker.html")
     class VaadinDatePicker extends HtmlComponent {
     }
