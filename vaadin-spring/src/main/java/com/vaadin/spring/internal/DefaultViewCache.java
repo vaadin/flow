@@ -56,23 +56,22 @@ public class DefaultViewCache implements ViewCache {
     public DefaultViewCache() {
         Navigator navigator = getCurrentUI().getNavigator();
         if (!(navigator instanceof SpringNavigator)) {
-            throw new IllegalStateException("Navigator is not a SpringNavigator");
+            throw new IllegalStateException(
+                    "Navigator is not a SpringNavigator");
         }
         listener = new ViewActivationListener() {
-            
             @Override
-            public void onViewActivated(ViewActivationEvent event) {
+            public void viewActivated(ViewActivationEvent event) {
                 if (!event.isActivated()) {
                     viewDeactivated(event.getViewName());
                 } else {
-                    viewActivated(event.getViewName());
+                    DefaultViewCache.this.viewActivated(event.getViewName());
                 }
             }
-            
         };
-        ((SpringNavigator)navigator).addViewActivationListener(listener);
+        ((SpringNavigator) navigator).addViewActivationListener(listener);
     }
-    
+
     /**
      * Called by {@link com.vaadin.spring.navigator.SpringViewProvider} when a
      * view scoped view is about to be created.
@@ -148,16 +147,18 @@ public class DefaultViewCache implements ViewCache {
 
     @PreDestroy
     void destroy() {
-        LOGGER.trace("View cache [{}] has been destroyed, destroying all bean stores");
+        LOGGER.trace(
+                "View cache [{}] has been destroyed, destroying all bean stores");
         for (ViewBeanStore beanStore : new HashSet<ViewBeanStore>(
                 beanStores.values())) {
             beanStore.destroy();
         }
         Navigator navigator = getCurrentUI().getNavigator();
         if (!(navigator instanceof SpringNavigator)) {
-            throw new IllegalStateException("Navigator is not a SpringNavigator");
+            throw new IllegalStateException(
+                    "Navigator is not a SpringNavigator");
         }
-        ((SpringNavigator)navigator).removeViewActivationListener(listener);
+        ((SpringNavigator) navigator).removeViewActivationListener(listener);
         Assert.isTrue(beanStores.isEmpty(),
                 "beanStores should have been emptied by the destruction callbacks");
     }
@@ -167,18 +168,19 @@ public class DefaultViewCache implements ViewCache {
         if (beanStore == null) {
             UI ui = getCurrentUI();
             if (ui == null) {
-                throw new IllegalStateException("No UI bound to current thread");
+                throw new IllegalStateException(
+                        "No UI bound to current thread");
             }
             beanStore = new ViewBeanStore(ui, viewName,
                     new BeanStore.DestructionCallback() {
 
-                private static final long serialVersionUID = 5580606280246825742L;
+                        private static final long serialVersionUID = 5580606280246825742L;
 
-                @Override
-                public void beanStoreDestroyed(BeanStore beanStore) {
-                    beanStores.remove(viewName);
-                }
-            });
+                        @Override
+                        public void beanStoreDestroyed(BeanStore beanStore) {
+                            beanStores.remove(viewName);
+                        }
+                    });
             beanStores.put(viewName, beanStore);
         }
         return beanStore;
@@ -194,8 +196,8 @@ public class DefaultViewCache implements ViewCache {
     private ViewBeanStore getBeanStore(String viewName) {
         ViewBeanStore beanStore = beanStores.get(viewName);
         if (beanStore == null) {
-            throw new IllegalStateException("The view " + viewName
-                    + " has not been created");
+            throw new IllegalStateException(
+                    "The view " + viewName + " has not been created");
         }
         return beanStore;
     }
@@ -228,5 +230,5 @@ public class DefaultViewCache implements ViewCache {
         }
 
     }
-    
+
 }

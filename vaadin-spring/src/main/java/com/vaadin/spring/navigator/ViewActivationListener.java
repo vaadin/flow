@@ -18,10 +18,18 @@ package com.vaadin.spring.navigator;
 import java.io.Serializable;
 import java.util.EventObject;
 
+import com.vaadin.navigator.ViewChangeListener;
+
 /**
- * Invoked when a view is activated/deactivated
- * @author lorenzo
+ * Invoked when a view is activated or deactivated. View activation listeners
+ * match Spring scope changes better than {@link ViewChangeListener}, and should
+ * be used instead of them.
+ * <p>
+ * On each view change, there are typically two events fired: first a
+ * deactivation event for the old view (if any) and then an activation event for
+ * the new view.
  *
+ * @author lorenzo
  */
 public interface ViewActivationListener extends Serializable {
 
@@ -34,34 +42,39 @@ public interface ViewActivationListener extends Serializable {
         private boolean activated;
         private String viewName;
 
-        public ViewActivationEvent(Object source, boolean activated, String viewName) {
+        public ViewActivationEvent(Object source, boolean activated,
+                String viewName) {
             super(source);
             this.activated = activated;
             this.viewName = viewName;
         }
-        
+
         /**
-         * Returns <code>true</code> is the view is activated, false if it's deactivated 
+         * Returns <code>true</code> is the view is activated, false if it's
+         * deactivated
+         *
          * @return
          */
         public boolean isActivated() {
             return activated;
         }
-        
+
         /**
          * Returns the view name
+         *
          * @return
          */
         public String getViewName() {
             return viewName;
         }
-        
+
     }
 
     /**
-     * Invoked when a view is activated/deactivated
+     * Invoked when a view is activated or deactivated.
+     *
      * @param event
      */
-    void onViewActivated(ViewActivationEvent event);
-    
+    void viewActivated(ViewActivationEvent event);
+
 }
