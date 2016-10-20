@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener;
 import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.spring.navigator.ViewActivationListener;
 import com.vaadin.ui.UI;
@@ -55,21 +56,23 @@ public class DefaultViewCache implements ViewCache {
     @SuppressWarnings("serial")
     public DefaultViewCache() {
         Navigator navigator = getCurrentUI().getNavigator();
-        if (!(navigator instanceof SpringNavigator)) {
-            throw new IllegalStateException(
-                    "Navigator is not a SpringNavigator");
-        }
-        listener = new ViewActivationListener() {
-            @Override
-            public void viewActivated(ViewActivationEvent event) {
-                if (!event.isActivated()) {
-                    viewDeactivated(event.getViewName());
-                } else {
-                    DefaultViewCache.this.viewActivated(event.getViewName());
+        if (navigator instanceof SpringNavigator) {
+            listener = new ViewActivationListener() {
+                @Override
+                public void viewActivated(ViewActivationEvent event) {
+                    if (!event.isActivated()) {
+                        viewDeactivated(event.getViewName());
+                    } else {
+                        DefaultViewCache.this
+                                .viewActivated(event.getViewName());
+                    }
                 }
-            }
-        };
-        ((SpringNavigator) navigator).addViewActivationListener(listener);
+            };
+            ((SpringNavigator) navigator).addViewActivationListener(listener);
+        } else {
+            LOGGER.warn(
+                    "The Navigator used does not extend SpringNavigator. View scope support may be limited, and future versions of Vaadin Spring may remove support for using a plain Navigator.");
+        }
     }
 
     /**
@@ -154,11 +157,11 @@ public class DefaultViewCache implements ViewCache {
             beanStore.destroy();
         }
         Navigator navigator = getCurrentUI().getNavigator();
-        if (!(navigator instanceof SpringNavigator)) {
-            throw new IllegalStateException(
-                    "Navigator is not a SpringNavigator");
+        if (navigator instanceof SpringNavigator) {
+            // not in legacy mode
+            ((SpringNavigator) navigator)
+                    .removeViewActivationListener(listener);
         }
-        ((SpringNavigator) navigator).removeViewActivationListener(listener);
         Assert.isTrue(beanStores.isEmpty(),
                 "beanStores should have been emptied by the destruction callbacks");
     }
@@ -202,7 +205,10 @@ public class DefaultViewCache implements ViewCache {
         return beanStore;
     }
 
-    class ViewBeanStore extends SessionLockingBeanStore {
+    // ViewChangeListener is only used when the navigator is not a
+    // SpringNavigator
+    class ViewBeanStore extends SessionLockingBeanStore
+            implements ViewChangeListener {
 
         private static final long serialVersionUID = -7655740852919880134L;
 
@@ -218,15 +224,41 @@ public class DefaultViewCache implements ViewCache {
             if (navigator == null) {
                 throw new IllegalStateException("UI has no Navigator");
             }
-            LOGGER.trace("Adding [{}} as view change listener to [{}]", this,
-                    navigator);
+            // backwards compatibility
+            if (!(navigator instanceof SpringNavigator)) {
+                LOGGER.trace("Adding [{}} as view change listener to [{}]",
+                        this, navigator);
+                navigator.addViewChangeListener(this);
+            }
         }
 
         @Override
         public void destroy() {
-            LOGGER.trace("Removing [{}] as view change listener from [{}]",
-                    this, navigator);
+            // backwards compatibility
+            if (!(navigator instanceof SpringNavigator)) {
+                LOGGER.trace("Removing [{}] as view change listener from [{}]",
+                        this, navigator);
+                navigator.removeViewChangeListener(this);
+            }
             super.destroy();
+        }
+
+        // only used if the navigator is not a SpringNavigator (backwards
+        // compatibility mode)
+        @Override
+        public boolean beforeViewChange(ViewChangeEvent event) {
+            return true;
+        }
+
+        // only used if the navigator is not a SpringNavigator (backwards
+        // compatibility mode)
+        @Override
+        public void afterViewChange(ViewChangeEvent viewChangeEvent) {
+            if (viewName.equals(viewChangeEvent.getViewName())) {
+                viewActivated(viewName);
+            } else {
+                viewDeactivated(viewName);
+            }
         }
 
     }
