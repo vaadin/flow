@@ -15,7 +15,6 @@
  */
 package com.vaadin.spring.server;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,45 +22,45 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
 
+import com.vaadin.navigator.Navigator.SingleComponentContainerViewDisplay;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.ui.Panel;
 import com.vaadin.ui.UI;
 
 /**
  * Test for normal (full) use cases of SpringUIProvider with automatic
- * navigation configuration on the view with the ViewContainer annotation on
- * multiple fields.
+ * navigation configuration on the view with a Panel as the view container.
  */
 @ContextConfiguration
 @WebAppConfiguration
-// Ignored as the expected IllegalStateExption comes already on context
-// initialization before JUnit gets control
-// TODO test by creating the WebApplicationContext by hand, with a suitable
-// configuration
-@Ignore
-public class SpringUIProviderTestWithViewContainerOnMultipleFields
+public class SpringUIProviderTestWithViewContainerAnnotationOnBean
         extends AbstractSpringUIProviderTest {
 
     @SpringUI
     private static class TestUI extends UI {
-        @ViewContainer
-        private Panel container = new Panel();
-
-        @ViewContainer
-        private Panel container2 = new Panel();
 
         @Override
         protected void init(VaadinRequest request) {
-            setContent(container);
         }
+    }
+
+    @UIScope
+    public static class MyPanel extends Panel {
     }
 
     @Configuration
     @EnableVaadinNavigation
     static class Config extends AbstractSpringUIProviderTest.Config {
+        @ViewContainer
+        @Bean
+        public MyPanel myPanel() {
+            return new MyPanel();
+        }
+
         // this gets configured by the UI provider
         @Bean
         public TestUI ui() {
@@ -69,11 +68,27 @@ public class SpringUIProviderTestWithViewContainerOnMultipleFields
         }
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
+    public void testConfigureNavigator() {
+        TestUI ui = createUi(TestUI.class);
+        Assert.isInstanceOf(SingleComponentContainerViewDisplay.class,
+                ui.getNavigator().getDisplay(),
+                "Navigator is not configured for SingleComponentContainerViewDisplay");
+    }
+
+    @Test
     public void testFindViewContainer() throws Exception {
         TestUI ui = createUi(TestUI.class);
-        Assert.isInstanceOf(Panel.class, getUiProvider().findViewContainer(ui),
+        Assert.isInstanceOf(MyPanel.class,
+                getUiProvider().findViewContainer(ui),
                 "View container is not a Panel");
+    }
+
+    @Test
+    public void testFindViewContainerMultipleTimes() throws Exception {
+        testFindViewContainer();
+        testFindViewContainer();
+        testFindViewContainer();
     }
 
 }

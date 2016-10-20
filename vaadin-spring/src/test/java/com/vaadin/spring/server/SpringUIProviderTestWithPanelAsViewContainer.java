@@ -85,4 +85,11 @@ public class SpringUIProviderTestWithPanelAsViewContainer
                 "View container is not a Panel");
     }
 
+    @Test
+    public void testFindViewContainerMultipleTimes() throws Exception {
+        testFindViewContainer();
+        testFindViewContainer();
+        testFindViewContainer();
+    }
+
 }

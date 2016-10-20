@@ -15,52 +15,148 @@
  */
 package com.vaadin.spring.internal;
 
-import java.lang.reflect.Field;
+import java.util.Map;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.support.BeanDefinitionValidationException;
-import org.springframework.util.ReflectionUtils;
-import org.springframework.util.ReflectionUtils.FieldCallback;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.BeanNameGenerator;
+import org.springframework.beans.factory.support.DefaultBeanNameGenerator;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.type.StandardMethodMetadata;
 
+import com.vaadin.navigator.ViewDisplay;
 import com.vaadin.spring.annotation.ViewContainer;
+import com.vaadin.spring.server.SpringUIProvider;
+import com.vaadin.ui.Component;
 
-public class ViewContainerPostProcessor implements BeanPostProcessor {
-    private Object viewContainer = null;
+/**
+ * Bean post processor that scans for {@link ViewContainer} annotations on UI
+ * scoped beans or bean classes and registers
+ * {@link ViewContainerRegistrationBean} instances for them for
+ * {@link SpringUIProvider}.
+ *
+ * @author Vaadin Ltd
+ */
+public class ViewContainerPostProcessor implements BeanPostProcessor,
+        ApplicationContextAware, BeanFactoryAware {
+    private ApplicationContext applicationContext;
+    private ConfigurableListableBeanFactory beanFactory;
+
+    private BeanNameGenerator beanNameGenerator = new DefaultBeanNameGenerator();
 
     @Override
     public Object postProcessAfterInitialization(final Object bean,
             String beanName) throws BeansException {
-        ReflectionUtils.doWithFields(bean.getClass(), new FieldCallback() {
-            @Override
-            public void doWith(Field field)
-                    throws IllegalArgumentException, IllegalAccessException {
-                if (field.isAnnotationPresent(ViewContainer.class)) {
-                    if (viewContainer == null) {
-                        field.setAccessible(true);
-                        viewContainer = field.get(bean);
-                        field.setAccessible(false);
-                    } else {
-                        throw new BeanDefinitionValidationException(
-                                "Multiple definitions of @"
-                                        + ViewContainer.class.getSimpleName()
-                                        + " on fields, including "
-                                        + bean.getClass() + "."
-                                        + field.getName());
-                    }
+        final Class<?> clazz = bean.getClass();
+        if (!Component.class.isAssignableFrom(clazz)
+                && !ViewDisplay.class.isAssignableFrom(clazz)) {
+            return bean;
+        }
+        if (beanFactory != null) {
+            BeanDefinition beanDefinition = beanFactory
+                    .getMergedBeanDefinition(beanName);
+            // ideally would check beanDefinition.getScope() for UI scope, but
+            // scope is not always available
+
+            // look for annotations on factory methods
+            if (beanDefinition.getSource() instanceof StandardMethodMetadata) {
+                StandardMethodMetadata metadata = (StandardMethodMetadata) beanDefinition
+                        .getSource();
+                Map<String, Object> annotationAttributes = metadata
+                        .getAnnotationAttributes(ViewContainer.class.getName());
+                if (annotationAttributes != null) {
+                    registerViewContainerBean(beanName);
                 }
             }
-        });
+        }
+        // look for annotations on classes
+        if (clazz.isAnnotationPresent(ViewContainer.class)) {
+            registerViewContainerBean(clazz);
+        }
+        return bean;
+    }
+
+    /**
+     * Create a view container registration bean definition to allow accessing
+     * annotated view containers for the current UI scope.
+     *
+     * @param clazz
+     *            bean class having the view container annotation, not null
+     */
+    protected void registerViewContainerBean(Class<?> clazz) {
+        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) applicationContext;
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder
+                .genericBeanDefinition(ViewContainerRegistrationBean.class);
+
+        // information needed to extract the values from the current UI scoped
+        // beans
+        builder.addPropertyValue("beanClass", clazz);
+
+        builder.setScope(UIScopeImpl.VAADIN_UI_SCOPE_NAME);
+        builder.setRole(BeanDefinition.ROLE_SUPPORT);
+        AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+        String name = getBeanNameGenerator().generateBeanName(beanDefinition,
+                registry);
+        registry.registerBeanDefinition(name, beanDefinition);
+    }
+
+    /**
+     * Create a view container registration bean definition to allow accessing
+     * annotated view containers for the current UI scope.
+     *
+     * @param beanName
+     *            name of the bean having the view container annotation, not
+     *            null
+     */
+    protected void registerViewContainerBean(String beanName) {
+        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) applicationContext;
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder
+                .genericBeanDefinition(ViewContainerRegistrationBean.class);
+
+        // information needed to extract the values from the current UI scoped
+        // beans
+        builder.addPropertyValue("beanName", beanName);
+
+        builder.setScope(UIScopeImpl.VAADIN_UI_SCOPE_NAME);
+        builder.setRole(BeanDefinition.ROLE_SUPPORT);
+        AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
+        String name = getBeanNameGenerator().generateBeanName(beanDefinition,
+                registry);
+        registry.registerBeanDefinition(name, beanDefinition);
+    }
+
+    @Override
+    public Object postProcessBeforeInitialization(final Object bean,
+            String beanName) throws BeansException {
         return bean;
     }
 
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName)
-            throws BeansException {
-        return bean;
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
     }
 
-    public Object getViewContainer() {
-        return viewContainer;
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) {
+        if (beanFactory instanceof ConfigurableListableBeanFactory) {
+            this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
+        }
     }
+
+    public BeanNameGenerator getBeanNameGenerator() {
+        return beanNameGenerator;
+    }
+
+    public void setBeanNameGenerator(BeanNameGenerator beanNameGenerator) {
+        this.beanNameGenerator = beanNameGenerator;
+    }
+
 }

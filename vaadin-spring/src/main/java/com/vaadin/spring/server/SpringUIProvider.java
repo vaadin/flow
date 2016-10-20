@@ -36,6 +36,7 @@ import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.internal.UIID;
 import com.vaadin.spring.internal.ViewContainerPostProcessor;
+import com.vaadin.spring.internal.ViewContainerRegistrationBean;
 import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.SingleComponentContainer;
@@ -259,33 +260,34 @@ public class SpringUIProvider extends UIProvider {
     }
 
     protected Object findViewContainer(UI ui) {
-        final String[] viewContainerBeanNames = getWebApplicationContext()
-                .getBeanNamesForAnnotation(ViewContainer.class);
-        // TODO are all these beans in the correct scope and otherwise
-        // applicable for the UI?
-        if (viewContainerBeanNames.length == 0) {
-            // look for the annotation on fields
-            ViewContainerPostProcessor postProcessor = getViewContainerPostProcessor();
-            if (postProcessor != null
-                    && postProcessor.getViewContainer() != null) {
-                return postProcessor.getViewContainer();
-            } else {
+        try {
+            ViewContainerRegistrationBean viewContainerRegistration = getWebApplicationContext()
+                    .getBean(ViewContainerRegistrationBean.class);
+            return viewContainerRegistration
+                    .getViewContainer(getWebApplicationContext());
+        } catch (NoUniqueBeanDefinitionException e) {
+            throw e;
+        } catch (NoSuchBeanDefinitionException e) {
+            // fallback with getBeanNamesForAnnotation()
+            logger.debug(
+                    "Looking for a ViewContainer bean based on bean level annotations");
+            final String[] viewContainerBeanNames = getWebApplicationContext()
+                    .getBeanNamesForAnnotation(ViewContainer.class);
+            if (viewContainerBeanNames.length == 0) {
                 logger.debug(
                         "No view container defined for the UI " + ui.getId());
                 return null;
             }
+            if (viewContainerBeanNames.length > 1) {
+                logger.error("Multiple view containers defined for the UI "
+                        + ui.getId() + ": "
+                        + Arrays.toString(viewContainerBeanNames));
+                throw new NoUniqueBeanDefinitionException(Object.class,
+                        Arrays.asList(viewContainerBeanNames));
+            }
+            return getWebApplicationContext()
+                    .getBean(viewContainerBeanNames[0]);
         }
-        if (viewContainerBeanNames.length > 1) {
-            logger.error(
-                    "Multiple view containers defined for the UI " + ui.getId()
-                            + ": " + Arrays.toString(viewContainerBeanNames));
-            throw new IllegalStateException(
-                    "A UI must only have one view containers, but multiple view containers are defined for UI "
-                            + ui.getId());
-        }
-        Object viewContainer = getWebApplicationContext()
-                .getBean(viewContainerBeanNames[0]);
-        return viewContainer;
     }
 
     protected ViewContainerPostProcessor getViewContainerPostProcessor() {
@@ -301,7 +303,7 @@ public class SpringUIProvider extends UIProvider {
             // This is somewhat noisy as potentially logged for every UI
             // created.
             logger.info(ViewContainerPostProcessor.class.getName()
-                    + " is not active, not checking for @ViewContainer annotations on fields");
+                    + " is not active");
             return null;
         }
     }
