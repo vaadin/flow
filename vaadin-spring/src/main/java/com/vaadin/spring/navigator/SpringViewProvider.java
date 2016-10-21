@@ -325,6 +325,8 @@ public class SpringViewProvider implements ViewProvider {
                     viewCache.viewCreated(viewName, view);
                 }
             } else {
+                // view scope is not active for non-view-scope views as we don't
+                // hook into their lifecycle
                 view = getViewFromApplicationContextAndCheckAccess(beanName);
             }
         }

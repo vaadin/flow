@@ -108,7 +108,7 @@ public class DefaultViewCache implements ViewCache {
         ViewBeanStore beanStore = getOrCreateBeanStore(viewName);
         if (viewInstance == null) {
             LOGGER.trace(
-                    "There was a problem creating the view [{}] in cache [{)], destroying its bean store",
+                    "There was a problem creating the view [{}] in cache [{}], destroying its bean store",
                     viewName, this);
             beanStore.destroy();
         }
@@ -121,12 +121,17 @@ public class DefaultViewCache implements ViewCache {
 
     private void viewDeactivated(String viewName) {
         LOGGER.trace(
-                "View [{}] deactivated in cache [{}], destroying its bean store",
+                "View [{}] deactivated in cache [{}], cleaning up view scoped bean stores",
                 viewName, this);
         if (viewName.equals(activeView)) {
             activeView = null;
         }
-        getBeanStore(viewName).destroy();
+        // If no bean store exists, not a view scoped view.
+        // Bypassing getBeanStore() not to use its error detection.
+        ViewBeanStore beanStore = beanStores.get(viewName);
+        if (beanStore != null) {
+            beanStore.destroy();
+        }
         LOGGER.trace("Bean stores stored in cache [{}]: {}", this,
                 beanStores.size());
     }
