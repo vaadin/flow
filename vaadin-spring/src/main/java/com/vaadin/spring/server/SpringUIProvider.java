@@ -15,9 +15,14 @@
  */
 package com.vaadin.spring.server;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +72,8 @@ public class SpringUIProvider extends UIProvider {
     private transient WebApplicationContext webApplicationContext = null;
     private final Map<String, Class<? extends UI>> pathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
     private final Map<String, Class<? extends UI>> wildcardPathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
+
+    private ServletContext servletContext;
 
     public SpringUIProvider(VaadinSession vaadinSession) {
         this.vaadinSession = vaadinSession;
@@ -204,6 +211,53 @@ public class SpringUIProvider extends UIProvider {
     }
 
     /**
+     * Create theme directory in the servlet context (if possible) to support
+     * caching of themes compiled on the fly also in applications deployed as
+     * JARs.
+     * <p>
+     * Any errors are logged and otherwise ignored, as this only helps caching.
+     *
+     * @param theme
+     *            name of the theme
+     */
+    protected void createThemeDirectory(String theme) {
+        Path path = null;
+        try {
+            // support caching of compiled SCSS in applications packaged as JARs
+            ServletContext servletContext = getServletContext();
+            if (servletContext != null) {
+                String root = servletContext.getRealPath("/");
+                if (root != null && Files.isDirectory(Paths.get(root))) {
+                    path = Paths.get(servletContext
+                            .getRealPath("/VAADIN/themes/" + theme));
+                    System.err.println("Creating directory " + path);
+                    Files.createDirectories(path);
+                    System.err.println("Created directory " + path);
+                }
+            }
+        } catch (Exception e) {
+            logger.info(
+                    "Unable to create the directory [{}] for caching of themes compiled on the fly",
+                    path);
+        }
+    }
+
+    protected ServletContext getServletContext() {
+        if (servletContext == null) {
+            try {
+                servletContext = getWebApplicationContext()
+                        .getBean(ServletContext.class);
+            } catch (NoSuchBeanDefinitionException e) {
+                // any further error handling is done by callers as this is
+                // optional for some uses
+                logger.debug("Unable to access the servlet context", e);
+                return null;
+            }
+        }
+        return servletContext;
+    }
+
+    /**
      * Configures a UI to use the navigator found by {@link #getNavigator()} if
      * there is a {@link ViewContainer} annotation.
      *
@@ -314,6 +368,9 @@ public class SpringUIProvider extends UIProvider {
         String theme = super.getTheme(event);
         if (theme != null) {
             theme = resolvePropertyPlaceholders(theme);
+
+            // optionally create a directory for cached themes
+            createThemeDirectory(theme);
         }
         return theme;
     }
