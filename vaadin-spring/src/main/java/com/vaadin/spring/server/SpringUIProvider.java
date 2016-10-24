@@ -15,9 +15,7 @@
  */
 package com.vaadin.spring.server;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -221,18 +219,17 @@ public class SpringUIProvider extends UIProvider {
      *            name of the theme
      */
     protected void createThemeDirectory(String theme) {
-        Path path = null;
+        File path = null;
         try {
             // support caching of compiled SCSS in applications packaged as JARs
             ServletContext servletContext = getServletContext();
             if (servletContext != null) {
                 String root = servletContext.getRealPath("/");
-                if (root != null && Files.isDirectory(Paths.get(root))) {
-                    path = Paths.get(servletContext
+                if (root != null && new File(root).isDirectory()) {
+                    path = new File(servletContext
                             .getRealPath("/VAADIN/themes/" + theme));
-                    System.err.println("Creating directory " + path);
-                    Files.createDirectories(path);
-                    System.err.println("Created directory " + path);
+                    logger.debug("Creating directory [{}]", path);
+                    path.mkdirs();
                 }
             }
         } catch (Exception e) {
