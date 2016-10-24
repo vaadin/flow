@@ -22,13 +22,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.navigator.SpringNavigator;
-import com.vaadin.ui.UI;
 
 /**
  * Test SpringUIProvider for the case where the application has a custom
@@ -41,10 +39,7 @@ public class SpringUIProviderTestWithCustomAndDefaultNavigatorBean
 
     @SpringUI
     @ViewContainer
-    private static class TestUI extends UI {
-        @Override
-        protected void init(VaadinRequest request) {
-        }
+    private static class TestUI extends DummyUI {
     }
 
     private static class MyNavigator extends SpringNavigator {

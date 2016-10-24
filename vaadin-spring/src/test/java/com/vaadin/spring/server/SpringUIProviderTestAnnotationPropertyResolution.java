@@ -24,10 +24,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.UI;
 
 /**
  * Test for resolution of the SpringUI path, Theme and Title annotations in
@@ -41,10 +39,7 @@ public class SpringUIProviderTestAnnotationPropertyResolution
     @SpringUI(path = "${vaadin.ui.path:mypath}")
     @Theme("${vaadin.theme:mytheme}")
     @Title("${vaadin.page.title:My Application}")
-    private static class TestUI extends UI {
-        @Override
-        protected void init(VaadinRequest request) {
-        }
+    private static class TestUI extends DummyUI {
     }
 
     @Configuration

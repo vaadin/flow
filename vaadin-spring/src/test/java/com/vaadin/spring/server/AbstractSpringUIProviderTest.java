@@ -15,6 +15,11 @@
  */
 package com.vaadin.spring.server;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Locale;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Before;
@@ -25,8 +30,14 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.UICreateEvent;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinServletService;
+import com.vaadin.server.VaadinSession;
+import com.vaadin.server.WrappedSession;
 import com.vaadin.spring.annotation.EnableVaadin;
 import com.vaadin.spring.internal.UIScopeImpl;
 import com.vaadin.spring.test.util.SingletonBeanStoreRetrievalStrategy;
@@ -38,12 +49,25 @@ import com.vaadin.ui.UI;
 @DirtiesContext
 public abstract class AbstractSpringUIProviderTest {
 
+    public static abstract class DummyUI extends UI {
+        @Override
+        protected void init(VaadinRequest request) {
+        }
+    }
+
+    public static abstract class DummyView implements View {
+        @Override
+        public void enter(ViewChangeEvent event) {
+        }
+    }
+
     @Configuration
     @EnableVaadin
-    protected static class Config {
+    public static class Config {
     }
 
     protected static final int TEST_UIID = 123;
+    protected static final String TEST_SESSION_ID = "TestSessionID";
 
     @Autowired
     private WebApplicationContext applicationContext;
@@ -76,6 +100,20 @@ public abstract class AbstractSpringUIProviderTest {
     @SuppressWarnings("unchecked")
     protected <T extends UI> T createUi(Class<T> uiClass) {
         return (T) getUiProvider().createInstance(buildUiCreateEvent(uiClass));
+    }
+
+    protected VaadinSession createVaadinSessionMock() {
+        WrappedSession wrappedSession = mock(WrappedSession.class);
+        VaadinService vaadinService = mock(VaadinService.class);
+
+        VaadinSession session = mock(VaadinSession.class);
+        when(session.getState()).thenReturn(VaadinSession.State.OPEN);
+        when(session.getSession()).thenReturn(wrappedSession);
+        when(session.getService()).thenReturn(vaadinService);
+        when(session.getSession().getId()).thenReturn(TEST_SESSION_ID);
+        when(session.hasLock()).thenReturn(true);
+        when(session.getLocale()).thenReturn(Locale.US);
+        return session;
     }
 
 }

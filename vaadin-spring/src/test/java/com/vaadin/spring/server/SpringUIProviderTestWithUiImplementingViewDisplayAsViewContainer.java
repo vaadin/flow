@@ -24,11 +24,9 @@ import org.springframework.util.Assert;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewDisplay;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.ViewContainer;
-import com.vaadin.ui.UI;
 
 /**
  * Test for normal (full) use cases of SpringUIProvider with automatic
@@ -41,11 +39,7 @@ public class SpringUIProviderTestWithUiImplementingViewDisplayAsViewContainer
 
     @SpringUI
     @ViewContainer
-    private static class TestUI extends UI implements ViewDisplay {
-        @Override
-        protected void init(VaadinRequest request) {
-        }
-
+    private static class TestUI extends DummyUI implements ViewDisplay {
         @Override
         public void showView(View view) {
         }

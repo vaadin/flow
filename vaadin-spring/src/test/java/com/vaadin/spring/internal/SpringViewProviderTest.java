@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.spring.server;
+package com.vaadin.spring.internal;
 
 import java.util.Collection;
 
@@ -35,6 +35,7 @@ import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.spring.navigator.SpringViewProvider;
+import com.vaadin.spring.server.AbstractSpringUIProviderTest;
 import com.vaadin.ui.UI;
 
 /**
@@ -46,10 +47,7 @@ public class SpringViewProviderTest extends AbstractSpringUIProviderTest {
 
     @SpringUI
     @ViewContainer
-    private static class TestUI1 extends UI {
-        @Override
-        protected void init(VaadinRequest request) {
-        }
+    private static class TestUI1 extends DummyUI {
     }
 
     @SpringUI(path = "other")

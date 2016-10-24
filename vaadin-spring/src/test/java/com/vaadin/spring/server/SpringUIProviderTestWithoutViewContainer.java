@@ -22,10 +22,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
 
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.ui.UI;
 
 /**
  * Test for normal (full) use cases of SpringUIProvider with automatic
@@ -37,10 +35,7 @@ public class SpringUIProviderTestWithoutViewContainer
         extends AbstractSpringUIProviderTest {
 
     @SpringUI
-    private static class TestUI extends UI {
-        @Override
-        protected void init(VaadinRequest request) {
-        }
+    private static class TestUI extends DummyUI {
     }
 
     @Configuration

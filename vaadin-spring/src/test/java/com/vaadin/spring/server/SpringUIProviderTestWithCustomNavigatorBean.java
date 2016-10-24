@@ -23,11 +23,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
 
 import com.vaadin.navigator.Navigator.SingleComponentContainerViewDisplay;
-import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.navigator.SpringNavigator;
-import com.vaadin.ui.UI;
 
 /**
  * Test SpringUIProvider for the case where the application has a custom
@@ -40,10 +38,7 @@ public class SpringUIProviderTestWithCustomNavigatorBean
 
     @SpringUI
     @ViewContainer
-    private static class TestUI extends UI {
-        @Override
-        protected void init(VaadinRequest request) {
-        }
+    private static class TestUI extends DummyUI {
     }
 
     private static class MyNavigator extends SpringNavigator {
