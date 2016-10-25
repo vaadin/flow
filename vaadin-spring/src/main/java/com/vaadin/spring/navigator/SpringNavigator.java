@@ -19,12 +19,19 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import com.vaadin.navigator.NavigationStateManager;
 import com.vaadin.navigator.Navigator;
+import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.navigator.ViewDisplay;
+import com.vaadin.navigator.ViewProvider;
 import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.spring.navigator.ViewActivationListener.ViewActivationEvent;
 import com.vaadin.ui.ComponentContainer;
@@ -39,6 +46,12 @@ import com.vaadin.ui.UI;
  */
 @UIScope
 public class SpringNavigator extends Navigator {
+
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(SpringNavigator.class);
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Autowired
     private SpringViewProvider viewProvider;
@@ -200,6 +213,53 @@ public class SpringNavigator extends Navigator {
             ViewDisplay display) {
         super.init(ui, stateManager, display);
         addProvider(viewProvider);
+    }
+
+    /**
+     * Registers a view class for the view to show when no other view matches
+     * the navigation state. This implicitly sets an appropriate error view
+     * provider and overrides any previous
+     * {@link #setErrorProvider(ViewProvider)} call.
+     * <p>
+     * A bean of the given type is fetched on demand from the application
+     * context to be used as the error view. As a fallback mechanism for
+     * backwards compatibility, {@link Class#newInstance()} is used if no such
+     * bean is found.
+     * <p>
+     * Note that an error view should not be shared between UIs, and thus should
+     * typically be UI or view scoped.
+     *
+     * @param viewClass
+     *            The View class whose instance should be used as the error
+     *            view.
+     */
+    @Override
+    public void setErrorView(final Class<? extends View> viewClass) {
+        setErrorProvider(new ViewProvider() {
+            @Override
+            public View getView(String viewName) {
+                try {
+                    return applicationContext.getBean(viewClass);
+                } catch (NoUniqueBeanDefinitionException e) {
+                    throw e;
+                } catch (NoSuchBeanDefinitionException e) {
+                    // fallback mechanism
+                    LOGGER.info(
+                            "Could not find error view bean of class [{}] in application context, creating it with Class.newInstance()",
+                            viewClass.getName());
+                    try {
+                        return viewClass.newInstance();
+                    } catch (Exception e2) {
+                        throw new RuntimeException(e2);
+                    }
+                }
+            }
+
+            @Override
+            public String getViewName(String navigationState) {
+                return navigationState;
+            }
+        });
     }
 
 }
