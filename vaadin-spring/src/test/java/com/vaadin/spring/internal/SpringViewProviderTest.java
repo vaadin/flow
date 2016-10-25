@@ -17,26 +17,33 @@ package com.vaadin.spring.internal;
 
 import java.util.Collection;
 
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.navigator.View;
 import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.server.VaadinRequest;
+import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.SpringView;
+import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.annotation.ViewScope;
+import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.spring.server.AbstractSpringUIProviderTest;
+import com.vaadin.spring.test.util.TestSpringNavigator;
 import com.vaadin.ui.UI;
+import com.vaadin.util.CurrentInstance;
 
 /**
  * Test SpringViewProvider.
@@ -113,10 +120,38 @@ public class SpringViewProviderTest extends AbstractSpringUIProviderTest {
             return new TestView3();
         }
 
+        @Bean
+        @UIScope
+        public SpringNavigator vaadinNavigator() {
+            return new TestSpringNavigator();
+        }
     }
 
     @Autowired
     private WebApplicationContext applicationContext;
+
+    private TestUI1 ui;
+
+    @Before
+    public void setupUi() {
+        // need a UI to set everything up
+        ui = createUi(TestUI1.class);
+
+        VaadinSession session = createVaadinSessionMock();
+        CurrentInstance.set(VaadinSession.class, session);
+        ui.setSession(session);
+        UI.setCurrent(ui);
+        // SpringViewProvider is UI scoped, so needs to be fetched after
+        // createUi()
+        applicationContext.getBean(SpringViewProvider.class);
+    }
+
+    @After
+    public void teardownUi() {
+        ui.setSession(null);
+        UI.setCurrent(null);
+        CurrentInstance.set(VaadinSession.class, null);
+    }
 
     @Test
     public void testListViewsForUI1() throws Exception {
@@ -128,12 +163,31 @@ public class SpringViewProviderTest extends AbstractSpringUIProviderTest {
         SpringViewProvider viewProvider = applicationContext
                 .getBean(SpringViewProvider.class);
         Collection<String> views = viewProvider.getViewNamesForCurrentUI();
-        Assert.isTrue(2 == views.size(), "Wrong number of views returned");
-        Assert.isTrue(views.contains(""),
-                "Root view not returned by SpringViewProvider");
-        Assert.isTrue(views.contains("view2"),
-                "Root view not returned by SpringViewProvider");
+        Assert.assertTrue("Wrong number of views returned", 2 == views.size());
+        Assert.assertTrue("Root view not returned by SpringViewProvider",
+                views.contains(""));
+        Assert.assertTrue("Root view not returned by SpringViewProvider",
+                views.contains("view2"));
         UI.setCurrent(null);
+    }
+
+    @Test
+    public void navigateToSameView() throws Exception {
+        View view1 = getView("");
+        View view1b = getView("");
+        Assert.assertNotSame("Expected new view instance on re-navigation",
+                view1, view1b);
+    }
+
+    protected View getView(String viewName) {
+        // use the navigator instead of the view provider to also get the error
+        // view
+        getNavigator().navigateTo(viewName);
+        return getNavigator().getCurrentView();
+    }
+
+    protected SpringNavigator getNavigator() {
+        return (SpringNavigator) ui.getNavigator();
     }
 
 }

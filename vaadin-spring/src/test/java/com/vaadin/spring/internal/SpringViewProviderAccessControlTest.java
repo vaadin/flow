@@ -34,10 +34,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.vaadin.navigator.NavigationStateManager;
-import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
-import com.vaadin.navigator.ViewDisplay;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.access.ViewAccessControl;
 import com.vaadin.spring.access.ViewInstanceAccessControl;
@@ -50,6 +47,7 @@ import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.spring.navigator.SpringViewProvider;
 import com.vaadin.spring.server.AbstractSpringUIProviderTest;
+import com.vaadin.spring.test.util.TestSpringNavigator;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
 
@@ -179,34 +177,7 @@ public class SpringViewProviderAccessControlTest
         @Bean
         @UIScope
         public SpringNavigator vaadinNavigator() {
-            // customized navigator to bypass most dependencies
-            SpringNavigator navigator = new SpringNavigator() {
-                @Override
-                public void init(UI ui, ViewDisplay display) {
-                    init(ui, new NavigationStateManager() {
-                        private String state;
-
-                        @Override
-                        public void setState(String state) {
-                            this.state = state;
-                        }
-
-                        @Override
-                        public void setNavigator(Navigator navigator) {
-                        }
-
-                        @Override
-                        public String getState() {
-                            return state;
-                        }
-                    }, new ViewDisplay() {
-                        @Override
-                        public void showView(View view) {
-                        }
-                    });
-                }
-            };
-            return navigator;
+            return new TestSpringNavigator();
         }
     }
 
@@ -347,7 +318,7 @@ public class SpringViewProviderAccessControlTest
                 getView("noview") instanceof MyErrorView);
     }
 
-    private View getView(String viewName) {
+    protected View getView(String viewName) {
         // use the navigator instead of the view provider to also get the error
         // view
         getNavigator().navigateTo(viewName);
@@ -355,11 +326,11 @@ public class SpringViewProviderAccessControlTest
     }
 
     // note that these is also the option to set an error view instance
-    private void setErrorViewClass(Class<? extends View> errorViewClass) {
+    protected void setErrorViewClass(Class<? extends View> errorViewClass) {
         getNavigator().setErrorView(errorViewClass);
     }
 
-    private SpringNavigator getNavigator() {
+    protected SpringNavigator getNavigator() {
         return (SpringNavigator) ui.getNavigator();
     }
 

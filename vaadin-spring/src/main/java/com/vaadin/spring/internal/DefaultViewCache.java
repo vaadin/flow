@@ -48,6 +48,12 @@ public class DefaultViewCache implements ViewCache {
     private Map<String, ViewBeanStore> beanStores = new HashMap<String, ViewBeanStore>();
 
     private String viewUnderConstruction = null;
+    // During the re-creation of a view with the same name, keep the old context
+    // after view creation until the scope has actually changed.
+    // oldViewBeanStore is used during view creation, and newViewBeanStore after
+    // view creation until view activation.
+    private ViewBeanStore oldViewBeanStore = null;
+    private ViewBeanStore newViewBeanStore = null;
 
     private String activeView = null;
 
@@ -86,6 +92,14 @@ public class DefaultViewCache implements ViewCache {
     @Override
     public void creatingView(String viewName) {
         LOGGER.trace("Creating view [{}] in cache [{}]", viewName, this);
+
+        // keep the old bean store until we have truly switched views in the
+        // navigator
+        oldViewBeanStore = beanStores.get(viewName);
+        if (oldViewBeanStore != null) {
+            beanStores.remove(viewName);
+        }
+
         getOrCreateBeanStore(viewName);
         viewUnderConstruction = viewName;
     }
@@ -108,15 +122,29 @@ public class DefaultViewCache implements ViewCache {
         ViewBeanStore beanStore = getOrCreateBeanStore(viewName);
         if (viewInstance == null) {
             LOGGER.trace(
-                    "There was a problem creating the view [{}] in cache [{}], destroying its bean store",
+                    "There was a problem creating the view [{}] in cache [{}], destroying its bean store and restoring the old one (if any)",
                     viewName, this);
             beanStore.destroy();
+            // nothing to change in next viewActivated()
+            beanStore = null;
         }
+        // temporarily revert to the old bean store until the scope actually
+        // changes
+        newViewBeanStore = beanStore;
+        beanStores.put(viewName, oldViewBeanStore);
+        oldViewBeanStore = null;
     }
 
     private void viewActivated(String viewName) {
         LOGGER.trace("View [{}] activated in cache [{}]", viewName, this);
         activeView = viewName;
+
+        // actually activate the scope for the new view
+        if (newViewBeanStore != null
+                && viewName.equals(newViewBeanStore.viewName)) {
+            beanStores.put(viewName, oldViewBeanStore);
+        }
+        newViewBeanStore = null;
     }
 
     private void viewDeactivated(String viewName) {
