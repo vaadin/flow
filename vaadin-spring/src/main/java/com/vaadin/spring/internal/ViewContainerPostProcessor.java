@@ -15,9 +15,12 @@
  */
 package com.vaadin.spring.internal;
 
-import java.util.Map;
-
+import com.vaadin.navigator.ViewDisplay;
+import com.vaadin.spring.annotation.ViewContainer;
+import com.vaadin.spring.server.SpringUIProvider;
+import com.vaadin.ui.Component;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -30,12 +33,10 @@ import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.DefaultBeanNameGenerator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.type.StandardMethodMetadata;
 
-import com.vaadin.navigator.ViewDisplay;
-import com.vaadin.spring.annotation.ViewContainer;
-import com.vaadin.spring.server.SpringUIProvider;
-import com.vaadin.ui.Component;
+import java.util.Map;
 
 /**
  * Bean post processor that scans for {@link ViewContainer} annotations on UI
@@ -88,11 +89,21 @@ public class ViewContainerPostProcessor implements BeanPostProcessor,
      * Create a view container registration bean definition to allow accessing
      * annotated view containers for the current UI scope.
      *
-     * @param clazz
-     *            bean class having the view container annotation, not null
+     * @param clazz bean class having the view container annotation, not null
      */
     protected void registerViewContainerBean(Class<?> clazz) {
-        BeanDefinitionRegistry registry = (BeanDefinitionRegistry) applicationContext;
+        BeanDefinitionRegistry registry = null;
+        if (applicationContext instanceof BeanDefinitionRegistry) {
+            registry = (BeanDefinitionRegistry) applicationContext;
+        } else if (applicationContext instanceof ConfigurableApplicationContext) {
+            ConfigurableListableBeanFactory beanFactory = ((ConfigurableApplicationContext) applicationContext).getBeanFactory();
+            if (beanFactory instanceof BeanDefinitionRegistry)
+                registry = (BeanDefinitionRegistry) beanFactory;
+        }
+        if (registry == null) {
+            throw new BeanDefinitionStoreException("BeanDefinitionRegistry is not accessible");
+        }
+
         BeanDefinitionBuilder builder = BeanDefinitionBuilder
                 .genericBeanDefinition(ViewContainerRegistrationBean.class);
 
@@ -112,9 +123,8 @@ public class ViewContainerPostProcessor implements BeanPostProcessor,
      * Create a view container registration bean definition to allow accessing
      * annotated view containers for the current UI scope.
      *
-     * @param beanName
-     *            name of the bean having the view container annotation, not
-     *            null
+     * @param beanName name of the bean having the view container annotation, not
+     *                 null
      */
     protected void registerViewContainerBean(String beanName) {
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) applicationContext;
