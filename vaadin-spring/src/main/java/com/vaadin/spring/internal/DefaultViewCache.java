@@ -131,7 +131,11 @@ public class DefaultViewCache implements ViewCache {
         // temporarily revert to the old bean store until the scope actually
         // changes
         newViewBeanStore = beanStore;
-        beanStores.put(viewName, oldViewBeanStore);
+        if (oldViewBeanStore != null) {
+            beanStores.put(viewName, oldViewBeanStore);
+        } else {
+            beanStores.remove(viewName);
+        }
         oldViewBeanStore = null;
     }
 
@@ -142,7 +146,7 @@ public class DefaultViewCache implements ViewCache {
         // actually activate the scope for the new view
         if (newViewBeanStore != null
                 && viewName.equals(newViewBeanStore.viewName)) {
-            beanStores.put(viewName, oldViewBeanStore);
+            beanStores.put(viewName, newViewBeanStore);
         }
         newViewBeanStore = null;
     }
