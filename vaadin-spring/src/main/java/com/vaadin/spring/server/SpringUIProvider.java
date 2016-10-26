@@ -263,12 +263,14 @@ public class SpringUIProvider extends UIProvider {
      *            automatic navigation
      */
     protected void configureNavigator(UI ui) {
-        Object viewContainer = findViewContainer(ui);
-        if (viewContainer == null) {
-            return;
-        }
+        // this test first as it is cheaper than looking for ViewContainers
+        // in case the backup mechanism would be used
         SpringNavigator navigator = getNavigator();
         if (navigator == null) {
+            return;
+        }
+        Object viewContainer = findViewContainer(ui);
+        if (viewContainer == null) {
             return;
         }
 
