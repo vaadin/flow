@@ -53,6 +53,9 @@
 	<!-- IE 11 should use gecko -->
 	<set-property name="user.agent" value="gecko1_8,safari" />
 
+	<!-- If no proper user agent is found, at least try some, e.g. with crawlers --> 
+	<set-property-fallback name="user.agent" value="safari" />
+
 	<replace-with
 		class="com.vaadin.client.communication.DefaultConnectionStateHandler">
 		<when-type-is class="com.vaadin.client.communication.ConnectionStateHandler" />
