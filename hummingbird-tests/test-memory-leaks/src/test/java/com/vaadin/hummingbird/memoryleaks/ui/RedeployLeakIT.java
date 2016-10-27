@@ -35,9 +35,8 @@ import org.eclipse.jetty.webapp.WebXmlConfiguration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
-import com.vaadin.hummingbird.testutil.FixedPhantomJSDriver;
 
 /**
  * Test that verifies no leaks happen during redeployment of a war. Uses Jetty
@@ -66,7 +65,7 @@ public class RedeployLeakIT {
         // DO NOT RUN FROM ECLIPSE
         // The test uses files from the target folder
         setup(7778);
-        FixedPhantomJSDriver driver = new FixedPhantomJSDriver(
+        PhantomJSDriver driver = new PhantomJSDriver(
                 DesiredCapabilities.phantomjs());
         try {
             driver.get("http://localhost:7778/");

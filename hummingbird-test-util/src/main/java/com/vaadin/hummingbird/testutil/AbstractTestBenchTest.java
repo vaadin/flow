@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Rule;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -159,9 +160,8 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     protected void setupPhantomJsDriver(Capabilities extraCapabilities) {
         DesiredCapabilities cap = DesiredCapabilities.phantomjs();
         cap.merge(extraCapabilities);
-        FixedPhantomJSDriver driver = new FixedPhantomJSDriver(cap);
+        PhantomJSDriver driver = new PhantomJSDriver(cap);
         setDriver(driver);
-        driver.setTestBenchDriverProxy((TestBenchDriverProxy) getDriver());
     }
 
     /**

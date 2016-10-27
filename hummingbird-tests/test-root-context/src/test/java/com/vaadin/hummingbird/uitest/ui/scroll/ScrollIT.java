@@ -354,9 +354,8 @@ public class ScrollIT extends PhantomJSTest {
     }
 
     private void scrollYBy(int deltaY, int deltaX) {
-        getTestBenchCommandExecutor()
-                .executeScript("window.scrollBy(" + Integer.toString(deltaX)
-                        + "," + Integer.toString(deltaY) + ");");
+        executeScript("window.scrollBy(" + Integer.toString(deltaX) + ","
+                + Integer.toString(deltaY) + ");");
     }
 
     private void clickLink(String linkText) {
