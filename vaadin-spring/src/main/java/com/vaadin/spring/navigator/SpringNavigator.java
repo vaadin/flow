@@ -209,7 +209,7 @@ public class SpringNavigator extends Navigator {
      * registered for the navigator.
      */
     @Override
-    protected void init(UI ui, NavigationStateManager stateManager,
+    public void init(UI ui, NavigationStateManager stateManager,
             ViewDisplay display) {
         super.init(ui, stateManager, display);
         addProvider(viewProvider);
