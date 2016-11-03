@@ -42,7 +42,7 @@ import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.spring.annotation.ViewContainer;
+import com.vaadin.spring.annotation.SpringViewDisplay;
 import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.spring.navigator.SpringViewProvider;
@@ -60,7 +60,7 @@ public class SpringViewProviderAccessControlTest
         extends AbstractSpringUIProviderTest {
 
     @SpringUI
-    @ViewContainer
+    @SpringViewDisplay
     private static class TestUI1 extends DummyUI {
     }
 

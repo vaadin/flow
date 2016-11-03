@@ -28,7 +28,7 @@ import com.vaadin.spring.VaadinNavigatorConfiguration;
 
 /**
  * Brings in the machinery to configure automatic navigation based on
- * {@link ViewContainer} annotations. This annotation should be added on a
+ * {@link SpringViewDisplay} annotations. This annotation should be added on a
  * {@link Configuration} class of the application to automatically import
  * {@link VaadinNavigatorConfiguration}.
  *

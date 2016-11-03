@@ -37,10 +37,10 @@ import com.vaadin.server.UIProvider;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.annotation.ViewContainer;
+import com.vaadin.spring.annotation.SpringViewDisplay;
 import com.vaadin.spring.internal.UIID;
-import com.vaadin.spring.internal.ViewContainerPostProcessor;
-import com.vaadin.spring.internal.ViewContainerRegistrationBean;
+import com.vaadin.spring.internal.SpringViewDisplayPostProcessor;
+import com.vaadin.spring.internal.SpringViewDisplayRegistrationBean;
 import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.SingleComponentContainer;
@@ -256,37 +256,37 @@ public class SpringUIProvider extends UIProvider {
 
     /**
      * Configures a UI to use the navigator found by {@link #getNavigator()} if
-     * there is a {@link ViewContainer} annotation.
+     * there is a {@link SpringViewDisplay} annotation.
      *
      * @param ui
      *            the Spring managed UI instance for which to configure
      *            automatic navigation
      */
     protected void configureNavigator(UI ui) {
-        // this test first as it is cheaper than looking for ViewContainers
+        // this test first as it is cheaper than looking for SpringViewDisplays
         // in case the backup mechanism would be used
         SpringNavigator navigator = getNavigator();
         if (navigator == null) {
             return;
         }
-        Object viewContainer = findViewContainer(ui);
-        if (viewContainer == null) {
+        Object springViewDisplay = findSpringViewDisplay(ui);
+        if (springViewDisplay == null) {
             return;
         }
 
-        if (viewContainer instanceof ViewDisplay) {
-            navigator.init(ui, (ViewDisplay) viewContainer);
-        } else if (viewContainer instanceof SingleComponentContainer) {
-            navigator.init(ui, (SingleComponentContainer) viewContainer);
-        } else if (viewContainer instanceof ComponentContainer) {
-            navigator.init(ui, (ComponentContainer) viewContainer);
+        if (springViewDisplay instanceof ViewDisplay) {
+            navigator.init(ui, (ViewDisplay) springViewDisplay);
+        } else if (springViewDisplay instanceof SingleComponentContainer) {
+            navigator.init(ui, (SingleComponentContainer) springViewDisplay);
+        } else if (springViewDisplay instanceof ComponentContainer) {
+            navigator.init(ui, (ComponentContainer) springViewDisplay);
         } else {
             logger.error(
-                    "View container does not implement ViewDisplay/SingleComponentContainer/ComponentContainer: "
-                            + viewContainer);
+                    "View display does not implement ViewDisplay/SingleComponentContainer/ComponentContainer: "
+                            + springViewDisplay);
             throw new IllegalStateException(
-                    "View container does not implement ViewDisplay/SingleComponentContainer/ComponentContainer: "
-                            + viewContainer);
+                    "View display does not implement ViewDisplay/SingleComponentContainer/ComponentContainer: "
+                            + springViewDisplay);
         }
     }
 
@@ -313,50 +313,50 @@ public class SpringUIProvider extends UIProvider {
         }
     }
 
-    protected Object findViewContainer(UI ui) {
+    protected Object findSpringViewDisplay(UI ui) {
         try {
-            ViewContainerRegistrationBean viewContainerRegistration = getWebApplicationContext()
-                    .getBean(ViewContainerRegistrationBean.class);
-            return viewContainerRegistration
-                    .getViewContainer(getWebApplicationContext());
+            SpringViewDisplayRegistrationBean springViewDisplayRegistration = getWebApplicationContext()
+                    .getBean(SpringViewDisplayRegistrationBean.class);
+            return springViewDisplayRegistration
+                    .getSpringViewDisplay(getWebApplicationContext());
         } catch (NoUniqueBeanDefinitionException e) {
             throw e;
         } catch (NoSuchBeanDefinitionException e) {
             // fallback with getBeanNamesForAnnotation()
             logger.debug(
-                    "Looking for a ViewContainer bean based on bean level annotations");
-            final String[] viewContainerBeanNames = getWebApplicationContext()
-                    .getBeanNamesForAnnotation(ViewContainer.class);
-            if (viewContainerBeanNames.length == 0) {
+                    "Looking for a SpringViewDisplay bean based on bean level annotations");
+            final String[] springViewDisplayBeanNames = getWebApplicationContext()
+                    .getBeanNamesForAnnotation(SpringViewDisplay.class);
+            if (springViewDisplayBeanNames.length == 0) {
                 logger.debug(
-                        "No view container defined for the UI " + ui.getId());
+                        "No view display defined for the UI " + ui.getId());
                 return null;
             }
-            if (viewContainerBeanNames.length > 1) {
-                logger.error("Multiple view containers defined for the UI "
+            if (springViewDisplayBeanNames.length > 1) {
+                logger.error("Multiple view displays defined for the UI "
                         + ui.getId() + ": "
-                        + Arrays.toString(viewContainerBeanNames));
+                        + Arrays.toString(springViewDisplayBeanNames));
                 throw new NoUniqueBeanDefinitionException(Object.class,
-                        Arrays.asList(viewContainerBeanNames));
+                        Arrays.asList(springViewDisplayBeanNames));
             }
             return getWebApplicationContext()
-                    .getBean(viewContainerBeanNames[0]);
+                    .getBean(springViewDisplayBeanNames[0]);
         }
     }
 
-    protected ViewContainerPostProcessor getViewContainerPostProcessor() {
+    protected SpringViewDisplayPostProcessor getSpringViewDisplayPostProcessor() {
         try {
             return getWebApplicationContext()
-                    .getBean(ViewContainerPostProcessor.class);
+                    .getBean(SpringViewDisplayPostProcessor.class);
         } catch (NoUniqueBeanDefinitionException e) {
             logger.error(
-                    "Multiple " + ViewContainerPostProcessor.class.getName()
+                    "Multiple " + SpringViewDisplayPostProcessor.class.getName()
                             + " beans exist");
             throw e;
         } catch (NoSuchBeanDefinitionException e) {
             // This is somewhat noisy as potentially logged for every UI
             // created.
-            logger.info(ViewContainerPostProcessor.class.getName()
+            logger.info(SpringViewDisplayPostProcessor.class.getName()
                     + " is not active");
             return null;
         }

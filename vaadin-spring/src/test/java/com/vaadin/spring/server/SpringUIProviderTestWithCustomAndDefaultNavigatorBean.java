@@ -25,7 +25,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.spring.annotation.ViewContainer;
+import com.vaadin.spring.annotation.SpringViewDisplay;
 import com.vaadin.spring.navigator.SpringNavigator;
 
 /**
@@ -38,7 +38,7 @@ public class SpringUIProviderTestWithCustomAndDefaultNavigatorBean
         extends AbstractSpringUIProviderTest {
 
     @SpringUI
-    @ViewContainer
+    @SpringViewDisplay
     private static class TestUI extends DummyUI {
     }
 

@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.spring.internal.ViewContainerPostProcessor;
+import com.vaadin.spring.internal.SpringViewDisplayPostProcessor;
 import com.vaadin.spring.navigator.SpringNavigator;
 
 /**
@@ -42,8 +42,8 @@ public class VaadinNavigatorConfiguration {
     }
 
     @Bean
-    public static ViewContainerPostProcessor viewContainerPostProcessor() {
-        return new ViewContainerPostProcessor();
+    public static SpringViewDisplayPostProcessor springViewDisplayPostProcessor() {
+        return new SpringViewDisplayPostProcessor();
     }
 
 }

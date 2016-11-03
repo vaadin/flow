@@ -22,39 +22,25 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
 
-import com.vaadin.navigator.Navigator.SingleComponentContainerViewDisplay;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.spring.annotation.ViewContainer;
-import com.vaadin.ui.Panel;
 
 /**
  * Test for normal (full) use cases of SpringUIProvider with automatic
- * navigation configuration on the view with a Panel as the view container.
+ * navigation configuration on the view but no view display defined.
  */
 @ContextConfiguration
 @WebAppConfiguration
-public class SpringUIProviderTestWithViewContainerAnnotationOnBean
+public class SpringUIProviderTestWithoutSpringViewDisplay
         extends AbstractSpringUIProviderTest {
 
     @SpringUI
     private static class TestUI extends DummyUI {
     }
 
-    @UIScope
-    public static class MyPanel extends Panel {
-    }
-
     @Configuration
     @EnableVaadinNavigation
     static class Config extends AbstractSpringUIProviderTest.Config {
-        @ViewContainer
-        @Bean
-        public MyPanel myPanel() {
-            return new MyPanel();
-        }
-
         // this gets configured by the UI provider
         @Bean
         public TestUI ui() {
@@ -65,24 +51,15 @@ public class SpringUIProviderTestWithViewContainerAnnotationOnBean
     @Test
     public void testConfigureNavigator() {
         TestUI ui = createUi(TestUI.class);
-        Assert.isInstanceOf(SingleComponentContainerViewDisplay.class,
-                ui.getNavigator().getDisplay(),
-                "Navigator is not configured for SingleComponentContainerViewDisplay");
+        Assert.isNull(ui.getNavigator(),
+                "Navigator is configured even though there is no SpringViewDisplay");
     }
 
     @Test
-    public void testFindViewContainer() throws Exception {
+    public void testFindSpringViewDisplay() throws Exception {
         TestUI ui = createUi(TestUI.class);
-        Assert.isInstanceOf(MyPanel.class,
-                getUiProvider().findViewContainer(ui),
-                "View container is not a Panel");
-    }
-
-    @Test
-    public void testFindViewContainerMultipleTimes() throws Exception {
-        testFindViewContainer();
-        testFindViewContainer();
-        testFindViewContainer();
+        Assert.isNull(getUiProvider().findSpringViewDisplay(ui),
+                "View display is not a Panel");
     }
 
 }

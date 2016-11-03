@@ -15,6 +15,7 @@
  */
 package com.vaadin.spring.server;
 
+import com.vaadin.spring.annotation.SpringViewDisplay;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,7 +25,6 @@ import org.springframework.util.Assert;
 
 import com.vaadin.navigator.Navigator.SingleComponentContainerViewDisplay;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.navigator.SpringNavigator;
 
 /**
@@ -37,7 +37,7 @@ public class SpringUIProviderTestWithCustomNavigatorBean
         extends AbstractSpringUIProviderTest {
 
     @SpringUI
-    @ViewContainer
+    @SpringViewDisplay
     private static class TestUI extends DummyUI {
     }
 
@@ -74,10 +74,10 @@ public class SpringUIProviderTestWithCustomNavigatorBean
     }
 
     @Test
-    public void testFindViewContainer() throws Exception {
+    public void testFindSpringViewDisplay() throws Exception {
         TestUI ui = createUi(TestUI.class);
-        Assert.isInstanceOf(TestUI.class, getUiProvider().findViewContainer(ui),
-                "View container is not a TestUI");
+        Assert.isInstanceOf(TestUI.class, getUiProvider().findSpringViewDisplay(ui),
+                "View display is not a TestUI");
     }
 
 }

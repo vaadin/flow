@@ -33,10 +33,10 @@ import com.vaadin.ui.SingleComponentContainer;
 /**
  * Stereotype annotation for a bean (implementing either {@link ViewDisplay},
  * {@link SingleComponentContainer} or {@link ComponentContainer}) that should
- * act as a view container for Vaadin Navigator.
+ * act as a view display for Vaadin Navigator.
  * <p>
- * There should only be one bean annotated as the view container in the scope of
- * a UI. If a view container bean implements multiple interfaces, it is
+ * There should only be one bean annotated as the view display in the scope of
+ * a UI. If a view display bean implements multiple interfaces, it is
  * primarily treated as a {@link ViewDisplay} if possible.
  * <p>
  * This annotation can be used either on a class or on a bean factory method.
@@ -47,5 +47,6 @@ import com.vaadin.ui.SingleComponentContainer;
 @Retention(RUNTIME)
 @Target({ TYPE, METHOD })
 @Documented
-public @interface ViewContainer {
+@SpringComponent
+public @interface SpringViewDisplay {
 }

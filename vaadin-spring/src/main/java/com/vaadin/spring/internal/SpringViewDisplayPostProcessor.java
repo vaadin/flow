@@ -16,7 +16,7 @@
 package com.vaadin.spring.internal;
 
 import com.vaadin.navigator.ViewDisplay;
-import com.vaadin.spring.annotation.ViewContainer;
+import com.vaadin.spring.annotation.SpringViewDisplay;
 import com.vaadin.spring.server.SpringUIProvider;
 import com.vaadin.ui.Component;
 import org.springframework.beans.BeansException;
@@ -39,14 +39,14 @@ import org.springframework.core.type.StandardMethodMetadata;
 import java.util.Map;
 
 /**
- * Bean post processor that scans for {@link ViewContainer} annotations on UI
+ * Bean post processor that scans for {@link SpringViewDisplay} annotations on UI
  * scoped beans or bean classes and registers
- * {@link ViewContainerRegistrationBean} instances for them for
+ * {@link SpringViewDisplayRegistrationBean} instances for them for
  * {@link SpringUIProvider}.
  *
  * @author Vaadin Ltd
  */
-public class ViewContainerPostProcessor implements BeanPostProcessor,
+public class SpringViewDisplayPostProcessor implements BeanPostProcessor,
         ApplicationContextAware, BeanFactoryAware {
     private ApplicationContext applicationContext;
     private ConfigurableListableBeanFactory beanFactory;
@@ -72,26 +72,26 @@ public class ViewContainerPostProcessor implements BeanPostProcessor,
                 StandardMethodMetadata metadata = (StandardMethodMetadata) beanDefinition
                         .getSource();
                 Map<String, Object> annotationAttributes = metadata
-                        .getAnnotationAttributes(ViewContainer.class.getName());
+                        .getAnnotationAttributes(SpringViewDisplay.class.getName());
                 if (annotationAttributes != null) {
-                    registerViewContainerBean(beanName);
+                    registerSpringViewDisplayBean(beanName);
                 }
             }
         }
         // look for annotations on classes
-        if (clazz.isAnnotationPresent(ViewContainer.class)) {
-            registerViewContainerBean(clazz);
+        if (clazz.isAnnotationPresent(SpringViewDisplay.class)) {
+            registerSpringViewDisplayBean(clazz);
         }
         return bean;
     }
 
     /**
-     * Create a view container registration bean definition to allow accessing
-     * annotated view containers for the current UI scope.
+     * Create a view display registration bean definition to allow accessing
+     * annotated view displays for the current UI scope.
      *
-     * @param clazz bean class having the view container annotation, not null
+     * @param clazz bean class having the view display annotation, not null
      */
-    protected void registerViewContainerBean(Class<?> clazz) {
+    protected void registerSpringViewDisplayBean(Class<?> clazz) {
         BeanDefinitionRegistry registry = null;
         if (applicationContext instanceof BeanDefinitionRegistry) {
             registry = (BeanDefinitionRegistry) applicationContext;
@@ -105,7 +105,7 @@ public class ViewContainerPostProcessor implements BeanPostProcessor,
         }
 
         BeanDefinitionBuilder builder = BeanDefinitionBuilder
-                .genericBeanDefinition(ViewContainerRegistrationBean.class);
+                .genericBeanDefinition(SpringViewDisplayRegistrationBean.class);
 
         // information needed to extract the values from the current UI scoped
         // beans
@@ -120,16 +120,16 @@ public class ViewContainerPostProcessor implements BeanPostProcessor,
     }
 
     /**
-     * Create a view container registration bean definition to allow accessing
-     * annotated view containers for the current UI scope.
+     * Create a view display registration bean definition to allow accessing
+     * annotated view displays for the current UI scope.
      *
-     * @param beanName name of the bean having the view container annotation, not
+     * @param beanName name of the bean having the view display annotation, not
      *                 null
      */
-    protected void registerViewContainerBean(String beanName) {
+    protected void registerSpringViewDisplayBean(String beanName) {
         BeanDefinitionRegistry registry = (BeanDefinitionRegistry) applicationContext;
         BeanDefinitionBuilder builder = BeanDefinitionBuilder
-                .genericBeanDefinition(ViewContainerRegistrationBean.class);
+                .genericBeanDefinition(SpringViewDisplayRegistrationBean.class);
 
         // information needed to extract the values from the current UI scoped
         // beans

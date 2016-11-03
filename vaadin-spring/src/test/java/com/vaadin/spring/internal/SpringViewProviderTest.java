@@ -17,6 +17,7 @@ package com.vaadin.spring.internal;
 
 import java.util.Collection;
 
+import com.vaadin.spring.annotation.SpringViewDisplay;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,7 +37,6 @@ import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.spring.annotation.SpringView;
 import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.spring.annotation.ViewContainer;
 import com.vaadin.spring.annotation.ViewScope;
 import com.vaadin.spring.navigator.SpringNavigator;
 import com.vaadin.spring.navigator.SpringViewProvider;
@@ -53,12 +53,12 @@ import com.vaadin.util.CurrentInstance;
 public class SpringViewProviderTest extends AbstractSpringUIProviderTest {
 
     @SpringUI
-    @ViewContainer
+    @SpringViewDisplay
     private static class TestUI1 extends DummyUI {
     }
 
     @SpringUI(path = "other")
-    // TODO @ViewContainer
+    // TODO @SpringViewDisplay
     private static class TestUI2 extends UI {
         @Override
         protected void init(VaadinRequest request) {

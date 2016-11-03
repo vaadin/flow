@@ -18,45 +18,36 @@ package com.vaadin.spring.server;
 import org.junit.Test;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.util.Assert;
 
-import com.vaadin.navigator.Navigator.SingleComponentContainerViewDisplay;
+import com.vaadin.navigator.View;
+import com.vaadin.navigator.ViewDisplay;
 import com.vaadin.spring.annotation.EnableVaadinNavigation;
 import com.vaadin.spring.annotation.SpringUI;
-import com.vaadin.spring.annotation.UIScope;
-import com.vaadin.spring.annotation.ViewContainer;
-import com.vaadin.ui.Panel;
+import com.vaadin.spring.annotation.SpringViewDisplay;
 
 /**
  * Test for normal (full) use cases of SpringUIProvider with automatic
- * navigation configuration on the view with a Panel as the view container.
+ * navigation configuration on the view and the UI implementing ViewDisplay.
  */
 @ContextConfiguration
 @WebAppConfiguration
-public class SpringUIProviderTestWithPanelAsViewContainer
+public class SpringUIProviderTestWithUiImplementingViewDisplayAsSpringViewDisplay
         extends AbstractSpringUIProviderTest {
 
     @SpringUI
-    private static class TestUI extends DummyUI {
-    }
-
-    @UIScope
-    @Component
-    @ViewContainer
-    private static class MyPanel extends Panel {
+    @SpringViewDisplay
+    private static class TestUI extends DummyUI implements ViewDisplay {
+        @Override
+        public void showView(View view) {
+        }
     }
 
     @Configuration
     @EnableVaadinNavigation
     static class Config extends AbstractSpringUIProviderTest.Config {
-        @Bean
-        public MyPanel myPanel() {
-            return new MyPanel();
-        }
-
         // this gets configured by the UI provider
         @Bean
         public TestUI ui() {
@@ -65,26 +56,25 @@ public class SpringUIProviderTestWithPanelAsViewContainer
     }
 
     @Test
+    public void testGetNavigator() throws Exception {
+        // need a UI for the scope of the Navigator
+        TestUI ui = createUi(TestUI.class);
+        Assert.notNull(ui.getNavigator(),
+                "Navigator not available from SpringUIProvider");
+    }
+
+    @Test
     public void testConfigureNavigator() {
         TestUI ui = createUi(TestUI.class);
-        Assert.isInstanceOf(SingleComponentContainerViewDisplay.class,
-                ui.getNavigator().getDisplay(),
-                "Navigator is not configured for SingleComponentContainerViewDisplay");
+        Assert.isTrue(ui.getNavigator().getDisplay() instanceof TestUI,
+                "Navigator is not configured for a custom ViewDisplay");
     }
 
     @Test
-    public void testFindViewContainer() throws Exception {
+    public void testFindSpringViewDisplay() throws Exception {
         TestUI ui = createUi(TestUI.class);
-        Assert.isInstanceOf(MyPanel.class,
-                getUiProvider().findViewContainer(ui),
-                "View container is not a Panel");
-    }
-
-    @Test
-    public void testFindViewContainerMultipleTimes() throws Exception {
-        testFindViewContainer();
-        testFindViewContainer();
-        testFindViewContainer();
+        Assert.isInstanceOf(TestUI.class, getUiProvider().findSpringViewDisplay(ui),
+                "View display is not a TestUI");
     }
 
 }
