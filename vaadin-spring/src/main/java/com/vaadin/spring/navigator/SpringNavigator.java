@@ -15,17 +15,6 @@
  */
 package com.vaadin.spring.navigator;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
-import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-
 import com.vaadin.navigator.NavigationStateManager;
 import com.vaadin.navigator.Navigator;
 import com.vaadin.navigator.View;
@@ -33,10 +22,24 @@ import com.vaadin.navigator.ViewChangeListener.ViewChangeEvent;
 import com.vaadin.navigator.ViewDisplay;
 import com.vaadin.navigator.ViewProvider;
 import com.vaadin.spring.annotation.UIScope;
+import com.vaadin.spring.internal.UIScopeImpl;
 import com.vaadin.spring.navigator.ViewActivationListener.ViewActivationEvent;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.SingleComponentContainer;
 import com.vaadin.ui.UI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionValidationException;
+import org.springframework.context.ApplicationContext;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A Navigator that automatically uses {@link SpringViewProvider} and allows
@@ -226,8 +229,7 @@ public class SpringNavigator extends Navigator {
      * backwards compatibility, {@link Class#newInstance()} is used if no such
      * bean is found.
      * <p>
-     * Note that an error view should not be shared between UIs, and thus should
-     * typically be UI or view scoped.
+     * Note that an error view bean must be UI or prototype scoped.
      *
      * @param viewClass
      *            The View class whose instance should be used as the error
@@ -235,6 +237,25 @@ public class SpringNavigator extends Navigator {
      */
     @Override
     public void setErrorView(final Class<? extends View> viewClass) {
+        if(viewClass == null) {
+            setErrorProvider(null);
+            return;
+        }
+        String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(applicationContext, viewClass);
+        /*
+            Beans count==0 here means fallback into direct class instantiation
+            No need to check for the scope then
+        */
+        if (beanNames.length > 1) {
+            throw new NoUniqueBeanDefinitionException(viewClass);
+        } else if (beanNames.length == 1) {
+            BeanDefinition beanDefinition = viewProvider.getBeanDefinitionRegistry().getBeanDefinition(beanNames[0]);
+            String scope = beanDefinition.getScope();
+            if (!UIScopeImpl.VAADIN_UI_SCOPE_NAME.equals(scope) && ! "prototype".equals(scope)) {
+                throw new BeanDefinitionValidationException("Error view must have UI or prototype scope");
+            }
+        }
+
         setErrorProvider(new ViewProvider() {
             @Override
             public View getView(String viewName) {
