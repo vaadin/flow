@@ -45,11 +45,12 @@ To make the component easier to use, you can add an API for getting and setting 
   public void setValue(String value) {
     input.setValue(value);
   }
-  public void setLabel(String labelText) {
-    label.setText(labelText);
-  }
+  
   public String getLabel() {
     return label.getText();
+  }
+  public void setLabel(String labelText) {
+    label.setText(labelText);
   }
 ----
 

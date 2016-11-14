@@ -45,12 +45,12 @@ public class CompositeBasic {
             input.setValue(value);
         }
 
-        public void setLabel(String labelText) {
-            label.setText(labelText);
-        }
-
         public String getLabel() {
             return label.getText();
+        }
+
+        public void setLabel(String labelText) {
+            label.setText(labelText);
         }
     }
 
