@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -50,6 +51,7 @@ import com.vaadin.util.CurrentInstance;
  */
 @ContextConfiguration
 @WebAppConfiguration
+@TestPropertySource(properties = "view.name.key=view4")
 public class SpringViewProviderTest extends AbstractSpringUIProviderTest {
 
     @SpringUI
@@ -86,6 +88,20 @@ public class SpringViewProviderTest extends AbstractSpringUIProviderTest {
         }
     }
 
+    @SpringView(name = "${view.name.key}", ui = TestUI1.class)
+    private static class TestView4 implements View {
+        @Override
+        public void enter(ViewChangeEvent event) {
+        }
+    }
+    
+    @SpringView(name = "${undefined.view.name.key:default}", ui = TestUI1.class)
+    private static class TestView5 implements View {
+        @Override
+        public void enter(ViewChangeEvent event) {
+        }
+    }    
+
     @Configuration
     @EnableVaadinNavigation
     static class Config extends AbstractSpringUIProviderTest.Config {
@@ -118,6 +134,18 @@ public class SpringViewProviderTest extends AbstractSpringUIProviderTest {
         @ViewScope
         public TestView3 view3() {
             return new TestView3();
+        }
+
+        @Bean
+        @ViewScope
+        public TestView4 view4() {
+            return new TestView4();
+        }
+
+        @Bean
+        @ViewScope
+        public TestView5 view5() {
+        	return new TestView5();
         }
 
         @Bean
@@ -163,11 +191,15 @@ public class SpringViewProviderTest extends AbstractSpringUIProviderTest {
         SpringViewProvider viewProvider = applicationContext
                 .getBean(SpringViewProvider.class);
         Collection<String> views = viewProvider.getViewNamesForCurrentUI();
-        Assert.assertTrue("Wrong number of views returned", 2 == views.size());
+        Assert.assertTrue("Wrong number of views returned", 4 == views.size());
         Assert.assertTrue("Root view not returned by SpringViewProvider",
                 views.contains(""));
         Assert.assertTrue("Root view not returned by SpringViewProvider",
                 views.contains("view2"));
+        Assert.assertTrue("Root view not returned by SpringViewProvider",
+        		views.contains("view4"));
+        Assert.assertTrue("Root view not returned by SpringViewProvider",
+        		views.contains("default"));
         UI.setCurrent(null);
     }
 

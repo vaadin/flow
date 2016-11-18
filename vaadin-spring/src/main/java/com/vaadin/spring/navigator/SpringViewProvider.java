@@ -212,7 +212,8 @@ public class SpringViewProvider implements ViewProvider {
 
     protected String getViewNameFromAnnotation(Class<?> beanClass,
             SpringView annotation) {
-        return Conventions.deriveMappingForView(beanClass, annotation);
+        String viewName = Conventions.deriveMappingForView(beanClass, annotation);
+        return getWebApplicationContext().getEnvironment().resolvePlaceholders(viewName);
     }
 
     /**
