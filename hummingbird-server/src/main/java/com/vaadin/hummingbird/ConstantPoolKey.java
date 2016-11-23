@@ -18,9 +18,9 @@ package com.vaadin.hummingbird;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+
+import com.vaadin.hummingbird.util.MessageDigestUtil;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -84,7 +84,7 @@ public class ConstantPoolKey implements Serializable {
     }
 
     /**
-     * Calculates the key of a JSON value by Base 64 encoding the first 128 bits
+     * Calculates the key of a JSON value by Base 64 encoding the first 64 bits
      * of the SHA-256 digest of the JSON's string representation.
      *
      * @param json
@@ -92,12 +92,11 @@ public class ConstantPoolKey implements Serializable {
      * @return the key uniquely identifying the given JSON value
      */
     private static String calculateHash(JsonValue json) {
-        byte[] jsonBytes = json.toJson().getBytes(StandardCharsets.UTF_16);
-        byte[] digest = getMessageDigest().digest(jsonBytes);
+        byte[] digest = MessageDigestUtil.sha256(json.toJson());
 
         /*
          * Only use first 64 bits to keep id string short (1 in 100 000 000
-         * collision risk with 500 000 items). 64 bits base64 -> 11 chars
+         * collision risk with 500 000 items). 64 bits base64 -> 11 ASCII chars
          */
         ByteBuffer truncatedDigest = ByteBuffer.wrap(digest, 0, 8);
 
@@ -106,17 +105,4 @@ public class ConstantPoolKey implements Serializable {
         return StandardCharsets.US_ASCII.decode(base64Bytes).toString();
     }
 
-    private static MessageDigest getMessageDigest() {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            assert digest.getDigestLength() == 32;
-            return digest;
-        } catch (NoSuchAlgorithmException e) {
-            throw new UnsupportedOperationException(
-                    "Your Java implementation does not support SHA-256, "
-                            + "even though it is required by the Java specificion. "
-                            + "Change to an implementation which follows the specification.",
-                    e);
-        }
-    }
 }

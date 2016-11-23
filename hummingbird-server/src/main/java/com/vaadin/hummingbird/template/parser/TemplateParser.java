@@ -18,10 +18,12 @@ package com.vaadin.hummingbird.template.parser;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.vaadin.external.jsoup.Jsoup;
@@ -37,6 +39,7 @@ import com.vaadin.hummingbird.template.DelegateResolver;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.hummingbird.util.MessageDigestUtil;
 
 /**
  * Parser for an Angular 2-like template syntax.
@@ -52,6 +55,14 @@ public class TemplateParser {
 
     private static final Collection<TemplateNodeBuilderFactory<?>> FACTORIES = loadFactories();
     private static final Collection<TemplateNodeBuilderFactory<?>> DEFAULT_FACTORIES = loadDefaultFactories();
+
+    /**
+     * Maps the hash of a template file's outer HTML (after resolving includes)
+     * to the corresponding immutable root template node. The primary reason for
+     * reusing template nodes is to avoid leaking memory in the global mapping
+     * from template node ids to template node instances.
+     */
+    private static final ConcurrentHashMap<ByteBuffer, TemplateNode> templateCache = new ConcurrentHashMap<>();
 
     private TemplateParser() {
         // Only static methods
@@ -139,6 +150,15 @@ public class TemplateParser {
             TemplateResolver templateResolver) {
         Element rootElement = getRootElement(bodyFragment, templateResolver);
 
+        byte[] hash = MessageDigestUtil.sha256(rootElement.outerHtml());
+
+        // Identity is based on contents for ByteBuffer, but not for byte[]
+        ByteBuffer key = ByteBuffer.wrap(hash);
+
+        return templateCache.computeIfAbsent(key, ignore -> parse(rootElement));
+    }
+
+    private static TemplateNode parse(Element rootElement) {
         Optional<TemplateNodeBuilder> templateBuilder = createBuilder(
                 rootElement);
         assert templateBuilder.isPresent();

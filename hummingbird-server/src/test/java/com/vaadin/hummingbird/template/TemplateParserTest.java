@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import org.junit.Assert;
@@ -332,6 +334,17 @@ public class TemplateParserTest {
         Assert.assertTrue(binding.isPresent());
         Assert.assertEquals("background-color:red",
                 binding.get().getValue(null));
+    }
+
+    @Test
+    public void tempalteNodesReused() {
+        String templateString = "<div></div>";
+
+        TemplateNode a = TemplateParser.parse(templateString, null);
+        TemplateNode b = TemplateParser.parse(new ByteArrayInputStream(
+                templateString.getBytes(StandardCharsets.UTF_8)), null);
+
+        Assert.assertSame(a, b);
     }
 
 }
