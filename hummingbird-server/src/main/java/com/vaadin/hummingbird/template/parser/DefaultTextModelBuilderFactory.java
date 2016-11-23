@@ -29,7 +29,6 @@ import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.nodes.TextNode;
 import com.vaadin.hummingbird.template.ChildSlotBuilder;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
-import com.vaadin.hummingbird.template.TemplateIncludeBuilder;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
 
@@ -46,7 +45,6 @@ public class DefaultTextModelBuilderFactory
     private static final String TEXT_BINDING_PREFIX = "{{";
     private static final String AT_DELIMITER = "@";
     private static final String CHILD = AT_DELIMITER + "child" + AT_DELIMITER;
-    private static final String INCLUDE_PREFIX = AT_DELIMITER + "include ";
 
     /**
      * Creates a new factory.
@@ -78,9 +76,8 @@ public class DefaultTextModelBuilderFactory
 
         int bindingIndex = text.indexOf(TEXT_BINDING_PREFIX);
         int childIndex = text.indexOf(CHILD);
-        int includeIndex = text.indexOf(INCLUDE_PREFIX);
 
-        if (bindingIndex < 0 && childIndex < 0 && includeIndex < 0) {
+        if (bindingIndex < 0 && childIndex < 0) {
             builders.add(new TextTemplateBuilder(
                     new StaticBindingValueProvider(text)));
         } else {
@@ -89,8 +86,6 @@ public class DefaultTextModelBuilderFactory
                     templateResolver, bindingIndex));
             handlers.put(childIndex, createChildHandler(text, builders,
                     templateResolver, childIndex));
-            handlers.put(includeIndex, getIncludeHandler(text, builders,
-                    templateResolver, includeIndex));
             Optional<Runnable> handler = handlers.keySet().stream()
                     .filter(index -> index.compareTo(0) >= 0).sorted()
                     .map(handlers::get).filter(Objects::nonNull).findFirst();
@@ -116,30 +111,6 @@ public class DefaultTextModelBuilderFactory
 
         collectBuilders(text.substring(childIndex + CHILD.length()), builders,
                 templateResolver);
-    }
-
-    private Runnable getIncludeHandler(String text,
-            List<TemplateNodeBuilder> builders,
-            TemplateResolver templateResolver, int includeIndex) {
-        int index = text.indexOf(AT_DELIMITER,
-                INCLUDE_PREFIX.length() + includeIndex);
-        if (index >= 0) {
-            return () -> handleInclude(text, builders, templateResolver,
-                    includeIndex, index);
-        }
-        return null;
-    }
-
-    private void handleInclude(String text, List<TemplateNodeBuilder> builders,
-            TemplateResolver templateResolver, int includeIndex,
-            int suffixIndex) {
-        handleStaticPrefix(text, builders, includeIndex);
-        builders.add(new TemplateIncludeBuilder(templateResolver, text
-                .substring(INCLUDE_PREFIX.length() + includeIndex, suffixIndex)
-                .trim()));
-
-        collectBuilders(text.substring(suffixIndex + AT_DELIMITER.length()),
-                builders, templateResolver);
     }
 
     private Runnable createBindingHandler(String text,
