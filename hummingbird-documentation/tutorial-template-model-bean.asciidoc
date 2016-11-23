@@ -89,7 +89,7 @@ public interface FormModel extends TemplateModel {
 }
 ----
 
-The method `setPerson` is annotated with the `@Exclude` annotation to avoid 
+The method `setPerson` is annotated with the `@Exclude` annotation to avoid
 importing the `id` property whose type is unsupported.
 In the template you can initialize the model by setting a new person instance to it:
 
@@ -109,8 +109,8 @@ public class Form extends Template {
 ----
 [TIP]
 Alternatively you can use the `@Include` annotation and provide a list of properties that you want import.
-All other properties will be excluded. In this specific case the 
-`@Import({"firstName","lastName","age"})` annotation does the same as the `@Exclude("id")` annotation. 
+All other properties will be excluded. In this specific case the
+`@Include({"firstName","lastName","age"})` annotation does the same as the `@Exclude("id")` annotation. 
 
 [NOTE]
 If you later on update the `Person person` bean created in the constructor, nothing will happen to the model. The bean values are copied by `setPerson` and the bean is not attached to the model in any way.
