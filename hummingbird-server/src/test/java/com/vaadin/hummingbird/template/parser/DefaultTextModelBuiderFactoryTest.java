@@ -23,14 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.external.jsoup.nodes.TextNode;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.template.ChildSlotNode;
 import com.vaadin.hummingbird.template.ElementTemplateNode;
 import com.vaadin.hummingbird.template.TemplateNode;
-import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TextTemplateNode;
 
 public class DefaultTextModelBuiderFactoryTest {
@@ -164,12 +162,15 @@ public class DefaultTextModelBuiderFactoryTest {
 
     private List<TemplateNode> getNodesAndCheckIncludePath(String includeText,
             boolean verify, String... expected) {
-        DefaultTextModelBuilderFactory factory = new DefaultTextModelBuilderFactory();
         TestTemplateResolver resolver = new TestTemplateResolver();
-        TemplateNodeBuilder builder = factory
-                .createBuilder(new TextNode(includeText, ""), resolver, null);
-        List<TemplateNode> nodes = builder
-                .build(TemplateParser.parse("<div></div>", null));
+        TemplateNode rootNode = TemplateParser
+                .parse("<div>" + includeText + "</div>", resolver);
+
+        List<TemplateNode> nodes = new ArrayList<>();
+        for (int i = 0; i < rootNode.getChildCount(); i++) {
+            nodes.add(rootNode.getChild(i));
+        }
+
         if (verify) {
             resolver.verify(expected);
         }

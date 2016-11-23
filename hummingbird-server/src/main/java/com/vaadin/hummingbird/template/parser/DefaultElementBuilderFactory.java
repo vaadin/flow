@@ -22,7 +22,6 @@ import java.util.stream.Stream;
 import com.vaadin.external.jsoup.nodes.Attribute;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;
-
 import com.vaadin.hummingbird.template.AbstractBindingValueProvider;
 import com.vaadin.hummingbird.template.ElementTemplateBuilder;
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
@@ -47,7 +46,6 @@ public class DefaultElementBuilderFactory
 
     @Override
     public TemplateNodeBuilder createBuilder(Element element,
-            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         ElementTemplateBuilder builder = new ElementTemplateBuilder(
                 element.tagName());
