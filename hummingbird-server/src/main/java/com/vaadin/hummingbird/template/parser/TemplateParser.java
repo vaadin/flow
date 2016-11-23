@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.template.parser;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,8 +27,13 @@ import java.util.stream.Collectors;
 import com.vaadin.external.jsoup.Jsoup;
 import com.vaadin.external.jsoup.nodes.Comment;
 import com.vaadin.external.jsoup.nodes.Document;
+import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;
+import com.vaadin.external.jsoup.nodes.TextNode;
 import com.vaadin.external.jsoup.select.Elements;
+import com.vaadin.external.jsoup.select.NodeTraversor;
+import com.vaadin.external.jsoup.select.NodeVisitor;
+import com.vaadin.hummingbird.template.DelegateResolver;
 import com.vaadin.hummingbird.template.TemplateNode;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TemplateParseException;
@@ -41,6 +47,8 @@ public class TemplateParser {
 
     private static final String ROOT_CLARIFICATION = "If the template contains <html> and <body> tags,"
             + " then only the contents of the <body> tag will be used.";
+
+    private static final String INCLUDE_PREFIX = "@include ";
 
     private static final Collection<TemplateNodeBuilderFactory<?>> FACTORIES = loadFactories();
     private static final Collection<TemplateNodeBuilderFactory<?>> DEFAULT_FACTORIES = loadDefaultFactories();
@@ -62,31 +70,11 @@ public class TemplateParser {
      */
     public static TemplateNode parse(InputStream templateStream,
             TemplateResolver templateResolver) {
-        return parse(templateStream, templateResolver, null);
-    }
-
-    /**
-     * Parses the template from the given input stream to a tree of template
-     * nodes.
-     * <p>
-     * Optionally sets the given parent template node, if given.
-     *
-     * @param templateStream
-     *            the input stream containing the template to parse, not
-     *            <code>null</code>
-     * @param templateResolver
-     *            the resolver to use to look up included files
-     * @param parent
-     *            the parent template node, can be <code>null</code>
-     * @return the template node at the root of the parsed template tree
-     */
-    public static TemplateNode parse(InputStream templateStream,
-            TemplateResolver templateResolver, TemplateNode parent) {
         assert templateStream != null;
         try {
             Document document = Jsoup.parse(templateStream, null, "");
 
-            return parse(parent, document, templateResolver);
+            return parse(document, templateResolver);
         } catch (IOException e) {
             throw new TemplateParseException("Error reading template data", e);
         }
@@ -107,7 +95,7 @@ public class TemplateParser {
 
         Document document = Jsoup.parseBodyFragment(templateString);
 
-        return parse(null, document, templateResolver);
+        return parse(document, templateResolver);
     }
 
     private static Collection<TemplateNodeBuilderFactory<?>> loadFactories() {
@@ -124,8 +112,8 @@ public class TemplateParser {
         return factories;
     }
 
-    private static TemplateNode parse(TemplateNode parent,
-            Document bodyFragment, TemplateResolver templateResolver) {
+    private static Element getRootElement(Document bodyFragment,
+            TemplateResolver templateResolver) {
         Elements children = bodyFragment.body().children();
 
         int childNodeSize = children.size();
@@ -140,18 +128,122 @@ public class TemplateParser {
             }
         }
 
+        Element rootElement = children.get(0);
+
+        populateIncludes(rootElement, templateResolver);
+
+        return rootElement;
+    }
+
+    private static TemplateNode parse(Document bodyFragment,
+            TemplateResolver templateResolver) {
+        Element rootElement = getRootElement(bodyFragment, templateResolver);
+
         Optional<TemplateNodeBuilder> templateBuilder = createBuilder(
-                children.get(0), templateResolver);
+                rootElement);
         assert templateBuilder.isPresent();
-        List<? extends TemplateNode> nodes = templateBuilder.get()
-                .build(parent);
+        List<? extends TemplateNode> nodes = templateBuilder.get().build(null);
         assert nodes.size() == 1;
         return nodes.get(0);
     }
 
+    private static void populateIncludes(Element element,
+            TemplateResolver resolver) {
+        // Explicitly collect since we cannot do replacements while traversing
+        List<TextNode> includeNodes = collectIncludeNodes(element);
+
+        includeNodes.forEach(textNode -> splitInclude(textNode, resolver));
+    }
+
+    private static void splitInclude(TextNode nodeToSplit,
+            TemplateResolver resolver) {
+        while (nodeToSplit != null) {
+            String text = nodeToSplit.getWholeText();
+
+            int includeStart = text.indexOf(INCLUDE_PREFIX);
+            if (includeStart == -1) {
+                return;
+            }
+
+            int includeEnd = text.indexOf('@',
+                    includeStart + INCLUDE_PREFIX.length());
+            if (includeEnd == -1) {
+                return;
+            }
+
+            int includeLength = includeEnd - includeStart;
+
+            String includeFileName = text.substring(
+                    includeStart + INCLUDE_PREFIX.length(), includeEnd).trim();
+
+            Element replacement = loadInclude(includeFileName, resolver);
+
+            // Split the original node into an untouched prefix, the actual
+            // include statement and (if there's more text) a remainder
+            TextNode includeStatement = nodeToSplit.splitText(includeStart);
+            TextNode remainder = null;
+            if (includeStatement.getWholeText().length() > includeLength + 1) {
+                remainder = includeStatement.splitText(includeLength + 1);
+            }
+
+            includeStatement.replaceWith(replacement);
+
+            // Continue splitting the rest of the node
+            nodeToSplit = remainder;
+        }
+    }
+
+    private static Element loadInclude(String includeFileName,
+            TemplateResolver resolver) {
+        // Need a new resolver so that includes from the included file are
+        // relative to that file (directory)
+        DelegateResolver subResolver = new DelegateResolver(resolver,
+                getFolder(includeFileName));
+        try (InputStream templateContentStream = resolver
+                .resolve(includeFileName)) {
+            Document document = Jsoup.parse(templateContentStream, null, "");
+            return getRootElement(document, subResolver);
+        } catch (IOException e) {
+            throw new TemplateParseException(
+                    "Unable to read template include for '" + includeFileName
+                            + "'",
+                    e);
+        }
+    }
+
+    private static String getFolder(String relativeFilename) {
+        String folder = new File(relativeFilename).getParent();
+        if (folder != null) {
+            return folder;
+        } else {
+            return ".";
+        }
+    }
+
+    private static List<TextNode> collectIncludeNodes(Element element) {
+        List<TextNode> includeNodes = new ArrayList<>();
+        new NodeTraversor(new NodeVisitor() {
+            @Override
+            public void head(Node node, int depth) {
+                // nop
+            }
+
+            @Override
+            public void tail(Node node, int depth) {
+                if (node instanceof TextNode) {
+                    TextNode textNode = (TextNode) node;
+                    String text = textNode.getWholeText();
+                    if (text.contains(INCLUDE_PREFIX)) {
+                        includeNodes.add(textNode);
+                    }
+                }
+            }
+        }).traverse(element);
+        return includeNodes;
+    }
+
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private static Optional<TemplateNodeBuilder> createBuilder(Node node,
-            TemplateResolver templateResolver) {
+    private static Optional<TemplateNodeBuilder> createBuilder(Node node) {
         if (node instanceof Comment) {
             return Optional.empty();
         }
@@ -167,8 +259,8 @@ public class TemplateParser {
         assert list.size() == 1;
 
         TemplateNodeBuilderFactory factory = list.get(0);
-        return Optional.of(factory.createBuilder(node, templateResolver,
-                n -> createBuilder((Node) n, templateResolver)));
+        return Optional
+                .of(factory.createBuilder(node, n -> createBuilder((Node) n)));
     }
 
     private static List<TemplateNodeBuilderFactory<?>> filterApplicable(

@@ -20,7 +20,6 @@ import java.util.function.Function;
 
 import com.vaadin.external.jsoup.nodes.DataNode;
 import com.vaadin.external.jsoup.nodes.Node;
-
 import com.vaadin.hummingbird.template.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.TemplateNodeBuilder;
 import com.vaadin.hummingbird.template.TextTemplateBuilder;
@@ -44,7 +43,6 @@ public class DataNodeFactory extends AbstractTemplateBuilderFactory<DataNode> {
 
     @Override
     public TemplateNodeBuilder createBuilder(DataNode node,
-            TemplateResolver templateResolver,
             Function<Node, Optional<TemplateNodeBuilder>> builderProducer) {
         String data = node.getWholeData();
 
