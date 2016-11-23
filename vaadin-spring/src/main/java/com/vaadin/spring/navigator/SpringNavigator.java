@@ -24,6 +24,7 @@ import com.vaadin.navigator.ViewProvider;
 import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.spring.internal.UIScopeImpl;
 import com.vaadin.spring.navigator.ViewActivationListener.ViewActivationEvent;
+import com.vaadin.spring.server.SpringVaadinServletService;
 import com.vaadin.ui.ComponentContainer;
 import com.vaadin.ui.SingleComponentContainer;
 import com.vaadin.ui.UI;
@@ -54,7 +55,7 @@ public class SpringNavigator extends Navigator {
             .getLogger(SpringNavigator.class);
 
     @Autowired
-    private ApplicationContext applicationContext;
+    private transient ApplicationContext applicationContext;
 
     @Autowired
     private SpringViewProvider viewProvider;
@@ -241,7 +242,7 @@ public class SpringNavigator extends Navigator {
             setErrorProvider(null);
             return;
         }
-        String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(applicationContext, viewClass);
+        String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(getWebApplicationContext(), viewClass);
         /*
             Beans count==0 here means fallback into direct class instantiation
             No need to check for the scope then
@@ -260,7 +261,7 @@ public class SpringNavigator extends Navigator {
             @Override
             public View getView(String viewName) {
                 try {
-                    return applicationContext.getBean(viewClass);
+                    return getWebApplicationContext().getBean(viewClass);
                 } catch (NoUniqueBeanDefinitionException e) {
                     throw e;
                 } catch (NoSuchBeanDefinitionException e) {
@@ -282,5 +283,22 @@ public class SpringNavigator extends Navigator {
             }
         });
     }
+    
+    protected ApplicationContext getWebApplicationContext() {
+        if (applicationContext == null) {
+            // Assume we have serialized and deserialized and Navigator is
+            // trying to find a view so UI.getCurrent() is available
+            UI ui = UI.getCurrent();
+            if (ui == null) {
+                throw new IllegalStateException(
+                        "Could not find application context and no current UI is available");
+            }
+            applicationContext = ((SpringVaadinServletService) ui.getSession()
+                    .getService()).getWebApplicationContext();
+        }
+
+        return applicationContext;
+    }
+
 
 }

@@ -71,7 +71,7 @@ public class SpringUIProvider extends UIProvider {
     private final Map<String, Class<? extends UI>> pathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
     private final Map<String, Class<? extends UI>> wildcardPathToUIMap = new ConcurrentHashMap<String, Class<? extends UI>>();
 
-    private ServletContext servletContext;
+    private transient ServletContext servletContext;
 
     public SpringUIProvider(VaadinSession vaadinSession) {
         this.vaadinSession = vaadinSession;
