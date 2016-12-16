@@ -15,6 +15,9 @@
  */
 package com.vaadin.spring.server;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -145,4 +148,45 @@ public class SpringVaadinServlet extends VaadinServlet {
         }
     }
 
+    /**
+     * Check if this is a request for a static resource and, if it is, return the
+     * resource path.
+     *
+     * @param request http client request
+     * @return static file path or null if the request is not for a static resource.
+     *
+     */
+    @Override
+    protected String getStaticFilePath(HttpServletRequest request) {
+    /*
+      Under spring environment, all requests are intercepted with DispatcherServlet, and then mapped to
+      SpringVaadinServlet with VaadinServletConfiguration, and a static resource prefix (/VAADIN) is not present nor in
+      getPathInfo(), nor in getServletPath() after that. Here request URL is manually decoded to detect the prefix and
+      handle static resources properly.
+
+      This method is a copy of a hack from VaadinServlet.java of version 7 to support static resource handling in any case.
+      TODO fix static resource request mapping for spring application
+    */
+        String staticFilePath = super.getStaticFilePath(request);
+        if (staticFilePath == null) {
+
+            try {
+                String decodedRequestURI = URLDecoder.decode(
+                        request.getRequestURI(), StandardCharsets.UTF_8.name());
+                if (decodedRequestURI.startsWith("/VAADIN/")) {
+                    return decodedRequestURI;
+                }
+
+                String decodedContextPath = URLDecoder.decode(
+                        request.getContextPath(), StandardCharsets.UTF_8.name());
+                if (decodedRequestURI.startsWith(decodedContextPath + "/VAADIN/")) {
+                    return decodedRequestURI.substring(decodedContextPath.length());
+                }
+            } catch (UnsupportedEncodingException exception) {
+                // cannot happen since UTF8 is always supported
+                throw new RuntimeException(exception);
+            }
+        }
+        return staticFilePath;
+    }
 }
