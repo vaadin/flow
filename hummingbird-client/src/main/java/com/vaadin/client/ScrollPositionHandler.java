@@ -295,10 +295,12 @@ public class ScrollPositionHandler {
     }
 
     private void captureCurrentScrollPositions() {
+        // window.pageX/YOffset is an alias for scrollX/Y but also works in IE11
+
         yPositions.set(currentHistoryIndex,
-                Double.valueOf(Browser.getWindow().getScrollY()));
+                Double.valueOf(Browser.getWindow().getPageYOffset()));
         xPositions.set(currentHistoryIndex,
-                Double.valueOf(Browser.getWindow().getScrollX()));
+                Double.valueOf(Browser.getWindow().getPageXOffset()));
     }
 
     private JsonObject createStateObjectWithHistoryIndexAndToken() {
