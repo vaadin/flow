@@ -32,8 +32,6 @@ import org.springframework.util.Assert;
 import com.vaadin.server.ClientConnector;
 import com.vaadin.server.ServiceDestroyEvent;
 import com.vaadin.server.ServiceDestroyListener;
-import com.vaadin.server.SessionDestroyEvent;
-import com.vaadin.server.SessionDestroyListener;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.ui.UI;
 import com.vaadin.util.CurrentInstance;
@@ -116,6 +114,24 @@ public class UIScopeImpl implements Scope, BeanFactoryPostProcessor {
     }
 
     /**
+     * Cleans up everything associated with all UI scopes of a specific session.
+     *
+     * @param session
+     *            the Vaadin session for which to do the clean up, not
+     *            <code>null</code>
+     */
+    public static void cleanupSession(VaadinSession session) {
+        assert session != null;
+
+        UIStore uiStore = session.getAttribute(UIStore.class);
+        if (uiStore != null) {
+            LOGGER.debug("Vaadin session has been destroyed, destroying [{}]",
+                    uiStore);
+            uiStore.destroy();
+        }
+    }
+
+    /**
      * Implementation of {@link BeanStoreRetrievalStrategy} that stores the
      * {@link BeanStore} in the current {@link com.vaadin.server.VaadinSession}.
      */
@@ -174,8 +190,7 @@ public class UIScopeImpl implements Scope, BeanFactoryPostProcessor {
         }
     }
 
-    static class UIStore implements SessionDestroyListener,
-            ServiceDestroyListener, Serializable {
+    static class UIStore implements ServiceDestroyListener, Serializable {
 
         private static final long serialVersionUID = -2964924681534104416L;
 
@@ -196,7 +211,6 @@ public class UIScopeImpl implements Scope, BeanFactoryPostProcessor {
         UIStore(VaadinSession session) {
             sessionId = session.getSession().getId();
             this.session = session;
-            this.session.getService().addSessionDestroyListener(this);
             this.session.getService().addServiceDestroyListener(this);
             this.session.setAttribute(UIStore.class, this);
         }
@@ -230,7 +244,6 @@ public class UIScopeImpl implements Scope, BeanFactoryPostProcessor {
         void destroy() {
             LOGGER.trace("Destroying [{}]", this);
             session.setAttribute(BeanStore.class, null);
-            session.getService().removeSessionDestroyListener(this);
             session.getService().removeServiceDestroyListener(this);
             for (BeanStore beanStore : new HashSet<BeanStore>(
                     beanStoreMap.values())) {
@@ -245,16 +258,6 @@ public class UIScopeImpl implements Scope, BeanFactoryPostProcessor {
             LOGGER.debug("Vaadin service has been destroyed, destroying [{}]",
                     this);
             destroy();
-        }
-
-        @Override
-        public void sessionDestroy(SessionDestroyEvent event) {
-            if (event.getSession().equals(session)) {
-                LOGGER.debug(
-                        "Vaadin session has been destroyed, destroying [{}]",
-                        this);
-                destroy();
-            }
         }
 
         @Override

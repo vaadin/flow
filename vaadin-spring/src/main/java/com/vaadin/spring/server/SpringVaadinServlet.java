@@ -30,6 +30,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import com.vaadin.server.DefaultUIProvider;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.ServiceException;
+import com.vaadin.server.SessionDestroyEvent;
+import com.vaadin.server.SessionDestroyListener;
 import com.vaadin.server.SessionInitEvent;
 import com.vaadin.server.SessionInitListener;
 import com.vaadin.server.UIProvider;
@@ -37,6 +39,8 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.server.VaadinServletRequest;
 import com.vaadin.server.VaadinServletService;
 import com.vaadin.server.VaadinSession;
+import com.vaadin.spring.internal.UIScopeImpl;
+import com.vaadin.spring.internal.VaadinSessionScope;
 
 /**
  * Subclass of the standard {@link com.vaadin.server.VaadinServlet Vaadin
@@ -67,7 +71,8 @@ public class SpringVaadinServlet extends VaadinServlet {
 
     @Override
     protected void servletInitialized() throws ServletException {
-        getService().addSessionInitListener(new SessionInitListener() {
+        VaadinServletService service = getService();
+        service.addSessionInitListener(new SessionInitListener() {
 
             private static final long serialVersionUID = -6307820453486668084L;
 
@@ -95,6 +100,15 @@ public class SpringVaadinServlet extends VaadinServlet {
                 // add Spring UI provider
                 SpringUIProvider uiProvider = new SpringUIProvider(session);
                 session.addUIProvider(uiProvider);
+            }
+        });
+        service.addSessionDestroyListener(new SessionDestroyListener() {
+            @Override
+            public void sessionDestroy(SessionDestroyEvent event) {
+                VaadinSession session = event.getSession();
+
+                UIScopeImpl.cleanupSession(session);
+                VaadinSessionScope.cleanupSession(session);
             }
         });
     }
