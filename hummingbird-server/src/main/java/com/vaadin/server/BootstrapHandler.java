@@ -41,6 +41,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -64,33 +65,34 @@ import java.util.regex.Pattern;
  * @since 7.0.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
+    private static final Logger logger = Logger.getLogger(BootstrapHandler.class.getName());
 
     static final String PRE_RENDER_INFO_TEXT = "This is only a pre-rendered version. Remove ?prerender=only to see the full version";
+    static String clientEngineFile;
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "hummingbird.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
             + "hummingbird.gwtStatsEvents.push(event); " + "return true;};};";
 
-    private static final String TYPE_TEXT_JAVASCRIPT = "text/javascript";
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String META_TAG = "meta";
-    private static final String DEFER_ATTRIBUTE = "defer";
 
     /**
      * Location of client nocache file, relative to the context root.
      */
-    private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_PATH
-            + "/client.nocache.js";
+    private static final String CLIENT_ENGINE_NOCACHE_FILE = ApplicationConstants.CLIENT_ENGINE_PATH + "/client.nocache.js";
+    private static final Pattern SCRIPT_END_TAG_PATTERN = Pattern.compile("</(script)", Pattern.CASE_INSENSITIVE);
+    private static final String BOOTSTRAP_JS;
 
-    private static String bootstrapJS;
-    static String clientEngineFile;
-
-    private static Pattern scriptEndTagPattern = Pattern.compile("</(script)",
-            Pattern.CASE_INSENSITIVE);
-
-    private static Logger getLogger() {
-        return Logger.getLogger(BootstrapHandler.class.getName());
+    private static Element createJavaScriptElement(@Nullable String sourceUrl) {
+        Element jsElement = new Element(Tag.valueOf("script"), "")
+                .attr("type", "text/javascript")
+                .attr("defer", true);
+        if (sourceUrl != null) {
+            jsElement = jsElement.attr("src", sourceUrl);
+        }
+        return jsElement;
     }
 
     static {
@@ -98,10 +100,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         try (InputStream stream = BootstrapHandler.class
                 .getResourceAsStream("BootstrapHandler.js");
              BufferedReader bf = new BufferedReader(new InputStreamReader(
-                     stream, StandardCharsets.UTF_8));) {
+                     stream, StandardCharsets.UTF_8))) {
             StringBuilder sb = new StringBuilder();
             bf.lines().forEach(sb::append);
-            bootstrapJS = sb.toString();
+            BOOTSTRAP_JS = sb.toString();
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -116,7 +118,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 clientEngineFile = ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                         + p.getProperty("jsFile");
             } else {
-                getLogger().warning(
+                logger.warning(
                         "No compile.properties available on initialization, "
                                 + "could not read client engine file name.");
             }
@@ -379,22 +381,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         if (context.getSession().getBrowser().isPhantomJS()) {
             // Collections polyfill needed only for PhantomJS
-
-            head.appendElement("script").attr("type", "text/javascript").attr(
-                    "src",
-                    context.getUriResolver()
-                            .resolveVaadinUri("context://"
-                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/es6-collections.js"));
+            head.appendChild(createJavaScriptElement(context.getUriResolver().resolveVaadinUri(
+                    "context://" + ApplicationConstants.VAADIN_STATIC_FILES_PATH + "server/es6-collections.js")));
         }
 
-        head.appendElement("script").attr("type", "text/javascript")
-                .attr("src",
-                        context.getUriResolver()
-                                .resolveVaadinUri("context://"
-                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                        + "server/webcomponents-lite.min.js"))
-                .attr(DEFER_ATTRIBUTE, true);
+        head.appendChild(createJavaScriptElement(context.getUriResolver().resolveVaadinUri(
+                "context://" + ApplicationConstants.VAADIN_STATIC_FILES_PATH + "server/webcomponents-lite.min.js")));
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -402,16 +394,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         if (context.getPreRenderMode().includeLiveVersion()) {
             head.appendChild(getBootstrapScript(initialUIDL, context));
-            head.appendChild(getClientEngineScript(context));
+            head.appendChild(createJavaScriptElement(getClientEngineUrl(context)));
         }
 
     }
 
-    private static void includeDependencies(Element head,
-                                            JsonObject initialUIDL, BootstrapContext context) {
+    private static void includeDependencies(Element head, JsonObject initialUIDL, BootstrapContext context) {
         // Extract style sheets and load them eagerly
-        JsonArray dependencies = initialUIDL
-                .getArray(DependencyList.DEPENDENCY_KEY);
+        JsonArray dependencies = initialUIDL.getArray(DependencyList.DEPENDENCY_KEY);
         if (dependencies == null || dependencies.length() == 0) {
             // No dependencies at all
             return;
@@ -489,40 +479,28 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String versionQueryParam = "?v=" + Version.getFullVersion();
 
         // Load client-side dependencies for push support
-        String pushJS = ServletHelper.getContextRootRelativePath(request) + "/";
+        String pushJSPath = ServletHelper.getContextRootRelativePath(request) + "/";
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
-            pushJS += ApplicationConstants.VAADIN_PUSH_JS;
+            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
         } else {
-            pushJS += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
-        pushJS += versionQueryParam;
+        pushJSPath += versionQueryParam;
 
-        return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT).attr("src", pushJS)
-                .attr(DEFER_ATTRIBUTE, true);
+        return createJavaScriptElement(pushJSPath);
     }
 
-    private static Element getBootstrapScript(JsonValue initialUIDL,
-                                              BootstrapContext context) {
-        Element mainScript = new Element(Tag.valueOf("script"), "").attr("type",
-                TYPE_TEXT_JAVASCRIPT);
-
-        StringBuilder builder = new StringBuilder();
-        builder.append("//<![CDATA[\n");
-        builder.append(getBootstrapJS(initialUIDL, context));
-
-        builder.append("//]]>");
-        mainScript.appendChild(
-                new DataNode(builder.toString(), mainScript.baseUri()));
+    private static Element getBootstrapScript(JsonValue initialUIDL, BootstrapContext context) {
+        String scriptData = "//<![CDATA[\n" + getBootstrapJS(initialUIDL, context) + "//]]>";
+        Element mainScript = createJavaScriptElement(null);
+        mainScript.appendChild(new DataNode(scriptData, mainScript.baseUri()));
         return mainScript;
     }
 
-    private static String getBootstrapJS(JsonValue initialUIDL,
-                                         BootstrapContext context) {
-        boolean productionMode = context.getSession().getConfiguration()
-                .isProductionMode();
+    private static String getBootstrapJS(JsonValue initialUIDL, BootstrapContext context) {
+        boolean productionMode = context.getSession().getConfiguration().isProductionMode();
         String result = getBootstrapJS();
         JsonObject appConfig = context.getApplicationParameters();
 
@@ -535,7 +513,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String initialUIDLString = JsonUtil.stringify(initialUIDL, indent);
         // Browser interpret </script> as end of script no matter if it is
         // inside a string or not so we must escape it
-        initialUIDLString = scriptEndTagPattern.matcher(initialUIDLString)
+        initialUIDLString = SCRIPT_END_TAG_PATTERN.matcher(initialUIDLString)
                 .replaceAll("<\\\\x2F$1");
 
         if (!productionMode) {
@@ -549,13 +527,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         result = result.replace("{{INITIAL_UIDL}}", initialUIDLString);
         result = result.replace("{{CONFIG_JSON}}", appConfigString);
         return result;
-    }
-
-    private static Element getClientEngineScript(BootstrapContext context) {
-        return new Element(Tag.valueOf("script"), "")
-                .attr("type", TYPE_TEXT_JAVASCRIPT)
-                .attr("src", getClientEngineUrl(context))
-                .attr(DEFER_ATTRIBUTE, true);
     }
 
     protected static JsonObject getApplicationParameters(
@@ -678,10 +649,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return Optional.ofNullable(title);
     }
 
-    protected UI createAndInitUI(Class<? extends UI> uiClass,
-                                 VaadinRequest request, VaadinSession session) {
-        Integer uiId = Integer.valueOf(session.getNextUIid());
-
+    protected UI createAndInitUI(Class<? extends UI> uiClass, VaadinRequest request, VaadinSession session) {
         UI ui = ReflectTools.createInstance(uiClass);
 
         // Initialize some fields for a newly created UI
@@ -691,16 +659,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 session.getService().getDeploymentConfiguration()::getPushMode);
         ui.getPushConfiguration().setPushMode(pushMode);
 
-        AnnotationReader.getPushTransport(uiClass)
-                .ifPresent(ui.getPushConfiguration()::setTransport);
+        AnnotationReader.getPushTransport(uiClass).ifPresent(ui.getPushConfiguration()::setTransport);
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
-
-        ui.doInit(request, uiId.intValue());
-
+        ui.doInit(request, session.getNextUIid());
         session.addUI(ui);
-
         return ui;
     }
 
@@ -718,8 +682,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
             writeSecurityKeyUIDL(json, session);
         }
-        if (getLogger().isLoggable(Level.FINE)) {
-            getLogger().fine("Initial UIDL:" + json.asString());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Initial UIDL:" + json.asString());
         }
         return json;
     }
@@ -749,11 +713,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static String getBootstrapJS() {
-        if (bootstrapJS == null) {
+        if (BOOTSTRAP_JS == null) {
             throw new BootstrapException(
                     "BootstrapHandler.js has not been loaded during initialization");
         }
-        return bootstrapJS;
+        return BOOTSTRAP_JS;
     }
 
     private static String getClientEngineUrl(BootstrapContext context) {
