@@ -16,21 +16,6 @@
 
 package com.vaadin.server;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
@@ -50,12 +35,26 @@ import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.util.ReflectTools;
-
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -98,8 +97,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // read bootstrap javascript template
         try (InputStream stream = BootstrapHandler.class
                 .getResourceAsStream("BootstrapHandler.js");
-                BufferedReader bf = new BufferedReader(new InputStreamReader(
-                        stream, StandardCharsets.UTF_8));) {
+             BufferedReader bf = new BufferedReader(new InputStreamReader(
+                     stream, StandardCharsets.UTF_8));) {
             StringBuilder sb = new StringBuilder();
             bf.lines().forEach(sb::append);
             bootstrapJS = sb.toString();
@@ -139,7 +138,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private VaadinUriResolver uriResolver;
 
         protected BootstrapContext(VaadinRequest request,
-                VaadinResponse response, VaadinSession session, UI ui) {
+                                   VaadinResponse response, VaadinSession session, UI ui) {
             this.request = request;
             this.response = response;
             this.session = session;
@@ -232,7 +231,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * Checks if the application is running in production mode.
          *
          * @return <code>true</code> if in production mode, <code>false</code>
-         *         otherwise.
+         * otherwise.
          */
         public boolean isProductionMode() {
             return request.getService().getDeploymentConfiguration()
@@ -242,13 +241,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     enum PreRenderMode {
-        PRE_AND_LIVE, PRE_ONLY, LIVE_ONLY;
+        PRE_AND_LIVE,
+        PRE_ONLY,
+        LIVE_ONLY;
 
         /**
          * Checks if a live version of the application should be rendered.
          *
          * @return <code>true</code> if a live version should be rendered,
-         *         <code>false</code> otherwise
+         * <code>false</code> otherwise
          */
         public boolean includeLiveVersion() {
             return this == PRE_AND_LIVE || this == LIVE_ONLY;
@@ -258,7 +259,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          * Checks if a pre-render version of the application should be included.
          *
          * @return <code>true</code> if a pre-render version should be included,
-         *         <code>false</code> otherwise
+         * <code>false</code> otherwise
          */
         public boolean includePreRenderVersion() {
             return this == PRE_AND_LIVE || this == PRE_ONLY;
@@ -284,7 +285,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
+                                             VaadinRequest request, VaadinResponse response) throws IOException {
         // Find UI class
         Class<? extends UI> uiClass = getUIClass(request);
 
@@ -329,7 +330,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void setupDocumentHead(Element head, JsonObject initialUIDL,
-            BootstrapContext context) {
+                                          BootstrapContext context) {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
                 .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
 
@@ -407,7 +408,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void includeDependencies(Element head,
-            JsonObject initialUIDL, BootstrapContext context) {
+                                            JsonObject initialUIDL, BootstrapContext context) {
         // Extract style sheets and load them eagerly
         JsonArray dependencies = initialUIDL
                 .getArray(DependencyList.DEPENDENCY_KEY);
@@ -421,13 +422,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         com.vaadin.hummingbird.util.JsonUtil.objectStream(dependencies)
                 .filter(includeStyleSheets).forEach(stylesheet -> {
-                    Element link = head.appendElement("link");
-                    link.attr("rel", "stylesheet");
-                    link.attr("type", "text/css");
-                    String url = stylesheet.getString(DependencyList.KEY_URL);
-                    url = context.getUriResolver().resolveVaadinUri(url);
-                    link.attr("href", url);
-                });
+            Element link = head.appendElement("link");
+            link.attr("rel", "stylesheet");
+            link.attr("type", "text/css");
+            String url = stylesheet.getString(DependencyList.KEY_URL);
+            url = context.getUriResolver().resolveVaadinUri(url);
+            link.attr("href", url);
+        });
 
         // Remove from initial UIDL
         JsonArray otherDependencies = com.vaadin.hummingbird.util.JsonUtil
@@ -438,7 +439,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void setupDocumentBody(Document document,
-            BootstrapContext context) {
+                                          BootstrapContext context) {
         Element body;
         if (!context.getPreRenderMode().includePreRenderVersion()) {
             document.head().after("<body></body>");
@@ -504,7 +505,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static Element getBootstrapScript(JsonValue initialUIDL,
-            BootstrapContext context) {
+                                              BootstrapContext context) {
         Element mainScript = new Element(Tag.valueOf("script"), "").attr("type",
                 TYPE_TEXT_JAVASCRIPT);
 
@@ -519,7 +520,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static String getBootstrapJS(JsonValue initialUIDL,
-            BootstrapContext context) {
+                                         BootstrapContext context) {
         boolean productionMode = context.getSession().getConfiguration()
                 .isProductionMode();
         String result = getBootstrapJS();
@@ -641,8 +642,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     /**
      * Gets the service URL as a URL relative to the request URI.
      *
-     * @param context
-     *            the bootstrap context
+     * @param context the bootstrap context
      * @return the relative service URL
      */
     protected static String getServiceUrl(BootstrapContext context) {
@@ -663,8 +663,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Resolves the initial page title for the given bootstrap context and
      * cancels any pending JS execution for it.
      *
-     * @param context
-     *            the bootstrap context
+     * @param context the bootstrap context
      * @return the optional initial page title
      */
     protected static Optional<String> resolvePageTitle(
@@ -680,7 +679,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     protected UI createAndInitUI(Class<? extends UI> uiClass,
-            VaadinRequest request, VaadinSession session) {
+                                 VaadinRequest request, VaadinSession session) {
         Integer uiId = Integer.valueOf(session.getNextUIid());
 
         UI ui = ReflectTools.createInstance(uiClass);
@@ -709,8 +708,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Generates the initial UIDL message which is included in the initial
      * bootstrap page.
      *
-     * @param ui
-     *            the UI for which the UIDL should be generated
+     * @param ui the UI for which the UIDL should be generated
      * @return a JSON object with the initial UIDL message
      */
     protected static JsonObject getInitialUidl(UI ui) {
@@ -730,19 +728,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Writes the security key (and generates one if needed) to the given JSON
      * object.
      *
-     * @param response
-     *            the response JSON object to write security key into
-     * @param session
-     *            the vaadin session to which the security key belongs
+     * @param response the response JSON object to write security key into
+     * @param session  the vaadin session to which the security key belongs
      */
     private static void writeSecurityKeyUIDL(JsonObject response,
-            VaadinSession session) {
+                                             VaadinSession session) {
         String seckey = session.getCsrfToken();
         response.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID, seckey);
     }
 
     private static void putValueOrNull(JsonObject object, String key,
-            String value) {
+                                       String value) {
         assert object != null;
         assert key != null;
         if (value == null) {
@@ -788,8 +784,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * <p>
      * This method is protected for testing purposes.
      *
-     * @param request
-     *            the request for the UI
+     * @param request the request for the UI
      * @return the UI class for the request
      */
     protected static Class<? extends UI> getUIClass(VaadinRequest request) {
@@ -819,14 +814,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Returns the specified viewport content for the given UI class, specified
      * with {@link Viewport} or {@link ViewportGeneratorClass} annotations.
      *
-     * @param uiClass
-     *            the ui class whose viewport to get
-     * @param request
-     *            the request for the ui
+     * @param uiClass the ui class whose viewport to get
+     * @param request the request for the ui
      * @return the content value string for viewport meta tag
      */
     private static String getViewportContent(Class<? extends UI> uiClass,
-            VaadinRequest request) {
+                                             VaadinRequest request) {
         String viewportContent = null;
         Optional<Viewport> viewportAnnotation = AnnotationReader
                 .getAnnotationFor(uiClass, Viewport.class);
