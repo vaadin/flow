@@ -26,3 +26,7 @@ phantomjsdriver.log
 bower_components
 node
 node_modules
+
+# Intellij Idea files
+.idea
+*.iml
