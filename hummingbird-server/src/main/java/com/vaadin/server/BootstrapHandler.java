@@ -31,8 +31,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
@@ -68,9 +66,6 @@ import elemental.json.impl.JsonUtil;
  * @since 7.0.0
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
-    private static final Logger LOGGER = Logger
-            .getLogger(BootstrapHandler.class.getName());
-
     static final String PRE_RENDER_INFO_TEXT = "This is only a pre-rendered version. Remove ?prerender=only to see the full version";
     static String clientEngineFile;
 
@@ -91,13 +86,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             .compile("</(script)", Pattern.CASE_INSENSITIVE);
     private static final String BOOTSTRAP_JS;
 
-    private static Element createJavaScriptElement(@Nullable String sourceUrl) {
+    private static Element createJavaScriptElement(String sourceUrl) {
         Element jsElement = new Element(Tag.valueOf("script"), "")
                 .attr("type", "text/javascript").attr("defer", true);
         if (sourceUrl != null) {
             jsElement = jsElement.attr("src", sourceUrl);
         }
         return jsElement;
+    }
+
+    private static Logger getLogger() {
+        return Logger.getLogger(BootstrapHandler.class.getName());
     }
 
     static {
@@ -123,7 +122,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 clientEngineFile = ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                         + p.getProperty("jsFile");
             } else {
-                LOGGER.warning(
+                getLogger().warning(
                         "No compile.properties available on initialization, "
                                 + "could not read client engine file name.");
             }
@@ -308,8 +307,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return true;
     }
 
-    static Document getBootstrapPage(BootstrapContext context)
-            throws IOException {
+    static Document getBootstrapPage(BootstrapContext context) {
         Document document = new Document("");
         DocumentType doctype = new DocumentType("html", "", "",
                 document.baseUri());
@@ -700,8 +698,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (session.getConfiguration().isXsrfProtectionEnabled()) {
             writeSecurityKeyUIDL(json, session);
         }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Initial UIDL:" + json.asString());
+        if (getLogger().isLoggable(Level.FINE)) {
+            getLogger().fine("Initial UIDL:" + json.asString());
         }
         return json;
     }
