@@ -11,9 +11,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
+import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Id;
 import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.StyleSheet;
@@ -43,6 +42,7 @@ public class BootstrapHandlerTest {
     @StyleSheet("relative.css")
     @StyleSheet("context://context.css")
     @JavaScript("myjavascript.js")
+    @HtmlImport("www.com")
     private class TestUI extends UI {
 
         @Override
@@ -491,7 +491,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void styleSheetsNotInUidl() throws Exception {
+    public void styleSheetsAndJavaScriptNotInUidl() throws Exception {
         initUI(testUI, createVaadinRequest(null));
 
         Document page = BootstrapHandler.getBootstrapPage(
@@ -511,7 +511,8 @@ public class BootstrapHandlerTest {
 
         String uidlData = uidlScriptTag.data();
         Assert.assertTrue(uidlData.contains("var uidl ="));
-        Assert.assertTrue(uidlData.contains("myjavascript.js"));
+        Assert.assertTrue(uidlData.contains("www.com"));
+        Assert.assertFalse(uidlData.contains("myjavascript.js"));
         Assert.assertFalse(uidlData.contains("context.css"));
         Assert.assertFalse(uidlData.contains("relative.css"));
 
@@ -559,18 +560,9 @@ public class BootstrapHandlerTest {
 
     private HttpServletRequest createRequest(String preRenderParameter) {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.doAnswer(new Answer<String>() {
-            @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
-                return preRenderParameter;
-            }
-        }).when(request).getParameter("prerender");
-        Mockito.doAnswer(new Answer<String>() {
-            @Override
-            public String answer(InvocationOnMock invocation) throws Throwable {
-                return "";
-            }
-        }).when(request).getServletPath();
+        Mockito.doAnswer(invocation -> preRenderParameter).when(request)
+                .getParameter("prerender");
+        Mockito.doAnswer(invocation -> "").when(request).getServletPath();
         return request;
     }
 

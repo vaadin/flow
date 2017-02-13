@@ -26,7 +26,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -352,7 +351,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement("title").appendText(title.get());
         }
 
-        includeDependencies(head, initialUIDL, context);
+        includeDependencies(head, initialUIDL, context.getUriResolver());
 
         Element styles = head.appendElement("style").attr("type", "text/css");
         styles.appendText("html, body {height:100%;margin:0;}");
@@ -405,7 +404,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static void includeDependencies(Element head,
-            JsonObject initialUIDL, BootstrapContext context) {
+            JsonObject initialUIDL, VaadinUriResolver resolver) {
         // Extract style sheets and load them eagerly
         JsonArray dependencies = initialUIDL
                 .getArray(DependencyList.DEPENDENCY_KEY);
@@ -414,25 +413,41 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return;
         }
 
-        Predicate<? super JsonObject> includeStyleSheets = object -> DependencyList.TYPE_STYLESHEET
-                .equals(object.getString(DependencyList.KEY_TYPE));
-
-        com.vaadin.hummingbird.util.JsonUtil.objectStream(dependencies)
-                .filter(includeStyleSheets).forEach(stylesheet -> {
-                    Element link = head.appendElement("link");
-                    link.attr("rel", "stylesheet");
-                    link.attr("type", "text/css");
-                    String url = stylesheet.getString(DependencyList.KEY_URL);
-                    url = context.getUriResolver().resolveVaadinUri(url);
-                    link.attr("href", url);
-                });
+        JsonArray uidlDependencies = com.vaadin.hummingbird.util.JsonUtil
+                .objectStream(dependencies)
+                .filter(dependency -> isUidlDependency(head, resolver,
+                        dependency))
+                .collect(com.vaadin.hummingbird.util.JsonUtil.asArray());
 
         // Remove from initial UIDL
-        JsonArray otherDependencies = com.vaadin.hummingbird.util.JsonUtil
-                .objectStream(dependencies).filter(includeStyleSheets.negate())
-                .collect(com.vaadin.hummingbird.util.JsonUtil.asArray());
-        initialUIDL.put(DependencyList.DEPENDENCY_KEY, otherDependencies);
+        initialUIDL.put(DependencyList.DEPENDENCY_KEY, uidlDependencies);
 
+    }
+
+    private static boolean isUidlDependency(Element head,
+            VaadinUriResolver resolver, JsonObject dependency) {
+        String dependencyKey = dependency.getString(DependencyList.KEY_TYPE);
+        if (DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
+            addStyleSheet(head, resolver, dependency);
+            return false;
+        } else if (DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
+            addJavaScript(head, dependency);
+            return false;
+        }
+        return true;
+    }
+
+    private static void addStyleSheet(Element head, VaadinUriResolver resolver,
+            JsonObject styleSheet) {
+        Element link = head.appendElement("link").attr("rel", "stylesheet")
+                .attr("type", "text/css");
+        String url = styleSheet.getString(DependencyList.KEY_URL);
+        link.attr("href", resolver.resolveVaadinUri(url));
+    }
+
+    private static void addJavaScript(Element head, JsonObject javaScript) {
+        head.appendChild(createJavaScriptElement(
+                javaScript.getString(DependencyList.KEY_URL)));
     }
 
     private static void setupDocumentBody(Document document,
