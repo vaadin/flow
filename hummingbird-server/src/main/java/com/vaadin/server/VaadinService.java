@@ -1737,8 +1737,11 @@ public abstract class VaadinService implements Serializable {
         }
 
         FutureAccess pendingAccess;
+
+        // Dump all current instances, not only the ones dumped by setCurrent
         Map<Class<?>, CurrentInstance> oldInstances = CurrentInstance
-                .setCurrent(session);
+                .getInstances();
+        CurrentInstance.setCurrent(session);
         try {
             while ((pendingAccess = session.getPendingAccessQueue()
                     .poll()) != null) {
