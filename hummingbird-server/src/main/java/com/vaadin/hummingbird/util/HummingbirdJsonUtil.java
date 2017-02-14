@@ -40,7 +40,7 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  */
-public class HummingbirdJsonUtil {
+public final class HummingbirdJsonUtil {
 
     /**
      * Collects a stream of JSON values to a JSON array.
@@ -232,7 +232,7 @@ public class HummingbirdJsonUtil {
      *
      * @return the collector
      */
-    public static Collector<JsonValue, ?, JsonArray> asArray() {
+    public static Collector<JsonValue, JsonArray, JsonArray> asArray() {
         return new JsonArrayCollector();
     }
 

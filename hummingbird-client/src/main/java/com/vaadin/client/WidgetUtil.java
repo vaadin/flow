@@ -110,7 +110,7 @@ public class WidgetUtil {
         if (GWT.isScript()) {
             return toPrettyJsonJsni(json);
         } else {
-            // Don't use HummingbirdJsonUtil.stringify here or SDM will break
+            // Don't use JsonUtil.stringify here or SDM will break
             return json.toJson();
         }
     }
