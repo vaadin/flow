@@ -21,8 +21,6 @@ import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
-import com.vaadin.client.hummingbird.collection.JsMap;
-import com.vaadin.ui.Dependency;
 import com.vaadin.ui.DependencyList;
 
 import elemental.json.JsonArray;
