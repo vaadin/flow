@@ -1,5 +1,9 @@
 package com.vaadin.server;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -198,18 +202,17 @@ public class BootstrapHandlerTest {
         String overriddenPageTitle = "overridden";
         testUI.getPage().setTitle(overriddenPageTitle);
 
-        Assert.assertEquals(overriddenPageTitle,
+        assertEquals(overriddenPageTitle,
                 BootstrapHandler.resolvePageTitle(context).get());
 
-        Assert.assertEquals(0, testUI.getInternals()
-                .dumpPendingJavaScriptInvocations().size());
+        assertEquals(0, testUI.getInternals().dumpPendingJavaScriptInvocations()
+                .size());
     }
 
     @Test
     public void testInitialPageTitle_nullTitle_noTitle() {
         initUI(testUI, createVaadinRequest(null));
-        Assert.assertFalse(
-                BootstrapHandler.resolvePageTitle(context).isPresent());
+        assertFalse(BootstrapHandler.resolvePageTitle(context).isPresent());
     }
 
     @Test
@@ -226,7 +229,7 @@ public class BootstrapHandlerTest {
             HttpServletRequest request = createRequest(parameter);
             BootstrapContext context = new BootstrapContext(
                     new VaadinServletRequest(request, null), null, null, null);
-            Assert.assertEquals(parametertoMode.get(parameter),
+            assertEquals(parametertoMode.get(parameter),
                     context.getPreRenderMode());
         }
     }
@@ -235,15 +238,15 @@ public class BootstrapHandlerTest {
     public void prerenderOnlyNoUidlAndDoesNotStartApp() throws Exception {
         initUI(testUI, createVaadinRequest(PreRenderMode.PRE_ONLY));
         Document page = BootstrapHandler.getBootstrapPage(context);
-        Assert.assertFalse(page.outerHtml().contains("uidl"));
-        Assert.assertFalse(page.outerHtml().contains("initApplication"));
+        assertFalse(page.outerHtml().contains("uidl"));
+        assertFalse(page.outerHtml().contains("initApplication"));
     }
 
     @Test
     public void prerenderOnlyNotification() throws Exception {
         initUI(testUI, createVaadinRequest(PreRenderMode.PRE_ONLY));
         Document page = BootstrapHandler.getBootstrapPage(context);
-        Assert.assertTrue(page.outerHtml()
+        assertTrue(page.outerHtml()
                 .contains(BootstrapHandler.PRE_RENDER_INFO_TEXT));
     }
 
@@ -252,7 +255,7 @@ public class BootstrapHandlerTest {
         deploymentConfiguration.setProductionMode(true);
         initUI(testUI, createVaadinRequest(PreRenderMode.PRE_ONLY));
         Document page = BootstrapHandler.getBootstrapPage(context);
-        Assert.assertFalse(page.outerHtml()
+        assertFalse(page.outerHtml()
                 .contains(BootstrapHandler.PRE_RENDER_INFO_TEXT));
     }
 
@@ -267,9 +270,9 @@ public class BootstrapHandlerTest {
 
         Element div = (Element) body.childNode(0);
         TextNode textNode = (TextNode) body.childNode(1);
-        Assert.assertEquals("bar", div.attr("foo"));
-        Assert.assertEquals("foobar", div.text());
-        Assert.assertEquals("Hello world", textNode.text());
+        assertEquals("bar", div.attr("foo"));
+        assertEquals("foobar", div.text());
+        assertEquals("Hello world", textNode.text());
     }
 
     @Test
@@ -281,7 +284,7 @@ public class BootstrapHandlerTest {
         Element body = page.body();
 
         Node div = body.childNode(2);
-        Assert.assertEquals(0, div.childNodeSize());
+        assertEquals(0, div.childNodeSize());
     }
 
     @Test
@@ -318,11 +321,11 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, prerenderTestUI));
         Element body = page.body();
 
-        Assert.assertEquals(2, body.childNodeSize());
+        assertEquals(2, body.childNodeSize());
 
         Element div = (Element) body.childNode(0);
-        Assert.assertEquals("bar", div.attr("foo"));
-        Assert.assertEquals("foobar", div.text());
+        assertEquals("bar", div.attr("foo"));
+        assertEquals("foobar", div.text());
 
     }
 
@@ -334,9 +337,9 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, prerenderTestUI));
         Element body = page.body();
 
-        Assert.assertEquals(2, body.childNodeSize());
+        assertEquals(2, body.childNodeSize());
         TextNode textNode = (TextNode) body.childNode(0);
-        Assert.assertEquals("FOOBAR", textNode.text());
+        assertEquals("FOOBAR", textNode.text());
     }
 
     @Test
@@ -347,7 +350,7 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, prerenderTestUI));
         Element body = page.body();
 
-        Assert.assertEquals(2, body.childNodeSize());
+        assertEquals(2, body.childNodeSize());
         Element overriddenTemplate = (Element) body.childNode(0);
         verifyMeterElement(overriddenTemplate);
     }
@@ -360,10 +363,10 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, prerenderTestUI));
         Element body = page.body();
 
-        Assert.assertEquals(2, body.childNodeSize());
+        assertEquals(2, body.childNodeSize());
         Element overriddenComposite = (Element) body.childNode(0);
         verifyMeterElement(overriddenComposite);
-        Assert.assertEquals("baz", overriddenComposite.attr("bar"));
+        assertEquals("baz", overriddenComposite.attr("bar"));
     }
 
     @Test
@@ -374,13 +377,13 @@ public class BootstrapHandlerTest {
                 new BootstrapContext(request, null, session, prerenderTestUI));
         Element body = page.body();
 
-        Assert.assertEquals(2, body.childNodeSize());
+        assertEquals(2, body.childNodeSize());
         // template with mapped composite that overrides pre-render
         Element templateRoot = (Element) body.childNode(0);
         Element anotherOverriddenComposite = (Element) templateRoot
                 .childNode(0);
         verifyMeterElement(anotherOverriddenComposite);
-        Assert.assertEquals("baz", anotherOverriddenComposite.attr("bar"));
+        assertEquals("baz", anotherOverriddenComposite.attr("bar"));
 
     }
 
@@ -393,8 +396,8 @@ public class BootstrapHandlerTest {
         Element body = page.body();
 
         // component not pre-render, only noscript
-        Assert.assertEquals(1, body.childNodeSize());
-        Assert.assertEquals("noscript", body.child(0).tagName());
+        assertEquals(1, body.childNodeSize());
+        assertEquals("noscript", body.child(0).tagName());
     }
 
     @Test
@@ -408,16 +411,16 @@ public class BootstrapHandlerTest {
         Element body = page.body();
         // web component excluded from pre-render, only noscript
 
-        Assert.assertEquals(3, body.childNodeSize());
+        assertEquals(3, body.childNodeSize());
         // component that has a custom element inside
         Element customElements = (Element) body.childNode(0);
-        Assert.assertEquals("div", customElements.tagName());
-        Assert.assertEquals(0, customElements.childNodeSize());
+        assertEquals("div", customElements.tagName());
+        assertEquals(0, customElements.childNodeSize());
 
         // component that has a custom element inside, but is filtered
         Element customElementPrerenderOverride = (Element) body.childNode(1);
-        Assert.assertEquals("div", customElementPrerenderOverride.tagName());
-        Assert.assertEquals(1, customElementPrerenderOverride.childNodeSize());
+        assertEquals("div", customElementPrerenderOverride.tagName());
+        assertEquals(1, customElementPrerenderOverride.childNodeSize());
     }
 
     @Test
@@ -429,9 +432,9 @@ public class BootstrapHandlerTest {
         Element body = page.body();
 
         Element div = body.child(0);
-        Assert.assertEquals("div", div.tagName());
-        Assert.assertEquals(1, div.childNodeSize());
-        Assert.assertEquals("<span>Grid below</span>", div.html());
+        assertEquals("div", div.tagName());
+        assertEquals(1, div.childNodeSize());
+        assertEquals("<span>Grid below</span>", div.html());
     }
 
     @Test
@@ -452,8 +455,8 @@ public class BootstrapHandlerTest {
         Document page = BootstrapHandler.getBootstrapPage(bootstrapContext);
         Element body = page.body();
 
-        Assert.assertEquals(1, body.childNodeSize());
-        Assert.assertEquals("noscript", body.child(0).tagName());
+        assertEquals(1, body.childNodeSize());
+        assertEquals("noscript", body.child(0).tagName());
     }
 
     @Test
@@ -463,8 +466,8 @@ public class BootstrapHandlerTest {
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
         Element body = page.body();
-        Assert.assertEquals(1, body.children().size());
-        Assert.assertEquals("noscript", body.children().get(0).tagName());
+        assertEquals(1, body.children().size());
+        assertEquals("noscript", body.children().get(0).tagName());
     }
 
     @Test
@@ -477,21 +480,21 @@ public class BootstrapHandlerTest {
 
         Elements relativeCssLinks = head.getElementsByAttributeValue("href",
                 "relative.css");
-        Assert.assertEquals(1, relativeCssLinks.size());
+        assertEquals(1, relativeCssLinks.size());
         Element relativeLinkElement = relativeCssLinks.get(0);
-        Assert.assertEquals("link", relativeLinkElement.tagName());
-        Assert.assertEquals("text/css", relativeLinkElement.attr("type"));
+        assertEquals("link", relativeLinkElement.tagName());
+        assertEquals("text/css", relativeLinkElement.attr("type"));
 
         Elements contextCssLinks = head.getElementsByAttributeValue("href",
                 "./context.css");
-        Assert.assertEquals(1, contextCssLinks.size());
+        assertEquals(1, contextCssLinks.size());
         Element contextLinkElement = contextCssLinks.get(0);
-        Assert.assertEquals("link", contextLinkElement.tagName());
-        Assert.assertEquals("text/css", contextLinkElement.attr("type"));
+        assertEquals("link", contextLinkElement.tagName());
+        assertEquals("text/css", contextLinkElement.attr("type"));
     }
 
     @Test
-    public void styleSheetsAndJavaScriptNotInUidl() throws Exception {
+    public void styleSheetsAndJavaScriptNotInUidl() {
         initUI(testUI, createVaadinRequest(null));
 
         Document page = BootstrapHandler.getBootstrapPage(
@@ -510,12 +513,25 @@ public class BootstrapHandlerTest {
         Assert.assertNotNull(uidlScriptTag);
 
         String uidlData = uidlScriptTag.data();
-        Assert.assertTrue(uidlData.contains("var uidl ="));
-        Assert.assertTrue(uidlData.contains("www.com"));
-        Assert.assertFalse(uidlData.contains("myjavascript.js"));
-        Assert.assertFalse(uidlData.contains("context.css"));
-        Assert.assertFalse(uidlData.contains("relative.css"));
+        assertTrue(uidlData.contains("var uidl ="));
+        assertTrue(uidlData.contains("www.com"));
+        assertFalse(uidlData.contains("myjavascript.js"));
+        assertFalse(uidlData.contains("context.css"));
+        assertFalse(uidlData.contains("relative.css"));
+    }
 
+    @Test
+    public void everyJavaScriptIsIncludedWithDeferAttribute() {
+        initUI(testUI, createVaadinRequest(null));
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements jsElements = page.getElementsByTag("script");
+        Elements deferElements = page.getElementsByAttribute("defer");
+
+        assertEquals(jsElements, deferElements);
+        assertTrue(deferElements.stream().map(element -> element.attr("src"))
+                .anyMatch("myjavascript.js"::equals));
     }
 
     @Test // #1134
@@ -527,9 +543,9 @@ public class BootstrapHandlerTest {
 
         Element body = page.head().nextElementSibling();
 
-        Assert.assertEquals("body", body.tagName());
-        Assert.assertEquals("html", body.parent().tagName());
-        Assert.assertEquals(2, body.parent().childNodeSize());
+        assertEquals("body", body.tagName());
+        assertEquals("html", body.parent().tagName());
+        assertEquals(2, body.parent().childNodeSize());
     }
 
     @Test // #1134
@@ -541,9 +557,9 @@ public class BootstrapHandlerTest {
 
         Element body = page.head().nextElementSibling();
 
-        Assert.assertEquals("body", body.tagName());
-        Assert.assertEquals("html", body.parent().tagName());
-        Assert.assertEquals(2, body.parent().childNodeSize());
+        assertEquals("body", body.tagName());
+        assertEquals("html", body.parent().tagName());
+        assertEquals(2, body.parent().childNodeSize());
     }
 
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {
@@ -567,10 +583,10 @@ public class BootstrapHandlerTest {
     }
 
     private static void verifyMeterElement(Element meter) {
-        Assert.assertEquals("meter", meter.tagName());
-        Assert.assertEquals("foo", meter.className());
-        Assert.assertEquals("1000", meter.attr("max"));
-        Assert.assertEquals("500", meter.attr("value"));
+        assertEquals("meter", meter.tagName());
+        assertEquals("foo", meter.className());
+        assertEquals("1000", meter.attr("max"));
+        assertEquals("500", meter.attr("value"));
     }
 
     private static com.vaadin.hummingbird.dom.Element createMeterElement() {
