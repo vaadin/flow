@@ -58,6 +58,8 @@ public class DependencyLoader {
      *            a dependency URL to load, will be translated using
      *            {@link #translateVaadinUri(String)} before it is loaded, not
      *            {@code null}
+     * @param loader
+     *            function which takes care of loading the dependency URL
      */
     public void loadDependencies(final String dependencyUrl,
             final BiConsumer<String, ResourceLoadListener> loader) {
@@ -169,8 +171,7 @@ public class DependencyLoader {
                 loadDependencies(url, resourceLoader::loadScript);
                 break;
             default:
-                Console.error(
-                        "Unknown dependency type " + type);
+                Console.error("Unknown dependency type " + type);
             }
         }
     }
