@@ -243,7 +243,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
                 addStyleSheet(head, resolver, dependency);
             } else if (DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
-                addJavaScript(head, dependency);
+                addJavaScript(head, resolver, dependency);
             } else {
                 uidlDependencies.set(uidlDependenciesIndex++, dependency);
             }
@@ -261,9 +261,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         link.attr("href", resolver.resolveVaadinUri(url));
     }
 
-    private static void addJavaScript(Element head, JsonObject javaScript) {
-        head.appendChild(createJavaScriptElement(
-                javaScript.getString(DependencyList.KEY_URL)));
+    private static void addJavaScript(Element head, VaadinUriResolver resolver,
+            JsonObject javaScript) {
+        String url = javaScript.getString(DependencyList.KEY_URL);
+        head.appendChild(
+                createJavaScriptElement(resolver.resolveVaadinUri(url)));
     }
 
     private static void setupDocumentBody(Document document,
