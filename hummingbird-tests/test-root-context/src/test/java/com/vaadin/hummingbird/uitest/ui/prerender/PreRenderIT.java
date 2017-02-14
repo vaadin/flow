@@ -111,8 +111,9 @@ public class PreRenderIT extends PhantomJSTest {
     public void prerenderIsVisible() throws IOException {
         testBench().resizeViewPortTo(1000, 800);
         testBench().disableWaitForVaadin();
-        open("delay");
+        openUsingJs("delay");
 
+        waitForElementPresent(By.id("tpl-link-bound"));
         WebElement linkBound = findElement(By.id("tpl-link-bound"));
         Assert.assertNull(linkBound.getAttribute("href"));
 
