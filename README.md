@@ -67,3 +67,18 @@ Building a package
 The distribution package is built and installed into the local Maven repository by doing
 
 1. mvn install
+
+Running SuperDevMode
+=====
+
+To start superDevMode do to the hummingbird-client package and run the maven command:
+
+1. mvn -Psdm clean install gwt:compile gwt:run-codeserver
+
+In eclipse run .launch files from hummingbird-client/eclipse in the order:
+
+1. Compile ClientEngine.launch
+2. Super Dev Mode.launch
+
+Navigate to [localhost:9876](localhost:9876) and use the bookmarks to control
+dev mode.
