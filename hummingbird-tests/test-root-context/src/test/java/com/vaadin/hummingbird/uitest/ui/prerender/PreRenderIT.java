@@ -19,12 +19,10 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.testcategory.ScreenshotTests;
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 import com.vaadin.shared.ApplicationConstants;
 
@@ -106,7 +104,6 @@ public class PreRenderIT extends PhantomJSTest {
         }
     }
 
-    @Category(ScreenshotTests.class)
     @Test
     public void prerenderIsVisible() throws IOException {
         testBench().resizeViewPortTo(1000, 800);
@@ -116,8 +113,6 @@ public class PreRenderIT extends PhantomJSTest {
         waitForElementPresent(By.id("tpl-link-bound"));
         WebElement linkBound = findElement(By.id("tpl-link-bound"));
         Assert.assertNull(linkBound.getAttribute("href"));
-
-        verifyScreenshot("prendered_application");
 
         // <meter> added by delayed JS dependency when client engine processes
         // initialUIDL for dependencies
