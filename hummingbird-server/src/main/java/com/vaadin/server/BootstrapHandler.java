@@ -65,16 +65,12 @@ import elemental.json.impl.JsonUtil;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
     static final String PRE_RENDER_INFO_TEXT = "This is only a pre-rendered version. Remove ?prerender=only to see the full version";
-    static String clientEngineFile;
-
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "hummingbird.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
             + "hummingbird.gwtStatsEvents.push(event); " + "return true;};};";
-
     private static final String CONTENT_ATTRIBUTE = "content";
     private static final String META_TAG = "meta";
-
     /**
      * Location of client nocache file, relative to the context root.
      */
@@ -83,19 +79,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final Pattern SCRIPT_END_TAG_PATTERN = Pattern
             .compile("</(script)", Pattern.CASE_INSENSITIVE);
     private static final String BOOTSTRAP_JS;
-
-    private static Element createJavaScriptElement(String sourceUrl) {
-        Element jsElement = new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript").attr("defer", true);
-        if (sourceUrl != null) {
-            jsElement = jsElement.attr("src", sourceUrl);
-        }
-        return jsElement;
-    }
-
-    private static Logger getLogger() {
-        return Logger.getLogger(BootstrapHandler.class.getName());
-    }
+    static String clientEngineFile;
 
     static {
         // read bootstrap javascript template
@@ -129,180 +113,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
     }
 
-    protected static class BootstrapContext {
-
-        private final VaadinRequest request;
-        private final VaadinResponse response;
-        private final VaadinSession session;
-        private final UI ui;
-
-        private String appId;
-        private PushMode pushMode;
-        private JsonObject applicationParameters;
-        private VaadinUriResolver uriResolver;
-
-        protected BootstrapContext(VaadinRequest request,
-                VaadinResponse response, VaadinSession session, UI ui) {
-            this.request = request;
-            this.response = response;
-            this.session = session;
-            this.ui = ui;
+    private static Element createJavaScriptElement(String sourceUrl) {
+        Element jsElement = new Element(Tag.valueOf("script"), "")
+                .attr("type", "text/javascript").attr("defer", true);
+        if (sourceUrl != null) {
+            jsElement = jsElement.attr("src", sourceUrl);
         }
-
-        public VaadinResponse getResponse() {
-            return response;
-        }
-
-        public VaadinRequest getRequest() {
-            return request;
-        }
-
-        public VaadinSession getSession() {
-            return session;
-        }
-
-        public UI getUI() {
-            return ui;
-        }
-
-        public PushMode getPushMode() {
-            if (pushMode == null) {
-
-                pushMode = getUI().getPushConfiguration().getPushMode();
-                if (pushMode == null) {
-                    pushMode = getRequest().getService()
-                            .getDeploymentConfiguration().getPushMode();
-                }
-
-                if (pushMode.isEnabled()
-                        && !getRequest().getService().ensurePushAvailable()) {
-                    /*
-                     * Fall back if not supported (ensurePushAvailable will log
-                     * information to the developer the first time this happens)
-                     */
-                    pushMode = PushMode.DISABLED;
-                }
-            }
-            return pushMode;
-        }
-
-        public String getAppId() {
-            if (appId == null) {
-                appId = getRequest().getService().getMainDivId(getSession(),
-                        getRequest());
-            }
-            return appId;
-        }
-
-        public JsonObject getApplicationParameters() {
-            if (applicationParameters == null) {
-                applicationParameters = BootstrapHandler
-                        .getApplicationParameters(this);
-            }
-
-            return applicationParameters;
-        }
-
-        public VaadinUriResolver getUriResolver() {
-            if (uriResolver == null) {
-                uriResolver = new BootstrapUriResolver(this);
-            }
-
-            return uriResolver;
-        }
-
-        /**
-         * Gets the pre-rendering mode.
-         * <p>
-         * The pre-rendering mode can be "pre-render only", "pre-render and live
-         * " or "live only" and is only meant for testing.
-         *
-         * @return the mode to use for pre-rendering
-         */
-        public PreRenderMode getPreRenderMode() {
-            String preParam = request.getParameter("prerender");
-            if (preParam != null) {
-                if ("only".equals(preParam)) {
-                    return PreRenderMode.PRE_ONLY;
-                } else if ("no".equals(preParam)) {
-                    return PreRenderMode.LIVE_ONLY;
-                }
-            }
-            return PreRenderMode.PRE_AND_LIVE;
-        }
-
-        /**
-         * Checks if the application is running in production mode.
-         *
-         * @return <code>true</code> if in production mode, <code>false</code>
-         *         otherwise.
-         */
-        public boolean isProductionMode() {
-            return request.getService().getDeploymentConfiguration()
-                    .isProductionMode();
-        }
-
+        return jsElement;
     }
 
-    enum PreRenderMode {
-        PRE_AND_LIVE, PRE_ONLY, LIVE_ONLY;
-
-        /**
-         * Checks if a live version of the application should be rendered.
-         *
-         * @return <code>true</code> if a live version should be rendered,
-         *         <code>false</code> otherwise
-         */
-        public boolean includeLiveVersion() {
-            return this == PRE_AND_LIVE || this == LIVE_ONLY;
-        }
-
-        /**
-         * Checks if a pre-render version of the application should be included.
-         *
-         * @return <code>true</code> if a pre-render version should be included,
-         *         <code>false</code> otherwise
-         */
-        public boolean includePreRenderVersion() {
-            return this == PRE_AND_LIVE || this == PRE_ONLY;
-        }
-    }
-
-    private static class BootstrapUriResolver extends VaadinUriResolver {
-        private final BootstrapContext context;
-
-        protected BootstrapUriResolver(BootstrapContext bootstrapContext) {
-            context = bootstrapContext;
-        }
-
-        @Override
-        protected String getContextRootUrl() {
-            String root = context.getApplicationParameters()
-                    .getString(ApplicationConstants.CONTEXT_ROOT_URL);
-            assert root.endsWith("/");
-            return root;
-        }
-
-    }
-
-    @Override
-    public boolean synchronizedHandleRequest(VaadinSession session,
-            VaadinRequest request, VaadinResponse response) throws IOException {
-        // Find UI class
-        Class<? extends UI> uiClass = getUIClass(request);
-
-        UI ui = createAndInitUI(uiClass, request, session);
-
-        BootstrapContext context = new BootstrapContext(request, response,
-                session, ui);
-
-        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
-                response::setDateHeader);
-
-        Document document = getBootstrapPage(context);
-        writeBootstrapPage(response, document.outerHtml());
-
-        return true;
+    private static Logger getLogger() {
+        return Logger.getLogger(BootstrapHandler.class.getName());
     }
 
     static Document getBootstrapPage(BootstrapContext context) {
@@ -413,28 +234,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return;
         }
 
-        JsonArray uidlDependencies = com.vaadin.hummingbird.util.JsonUtil
-                .objectStream(dependencies)
-                .filter(dependency -> isUidlDependency(head, resolver,
-                        dependency))
-                .collect(com.vaadin.hummingbird.util.JsonUtil.asArray());
+        JsonArray uidlDependencies = Json.createArray();
+        int uidlDependenciesIndex = 0;
+        for (int i = 0; i < dependencies.length(); i++) {
+            JsonObject dependency = dependencies.getObject(i);
+            String dependencyKey = dependency
+                    .getString(DependencyList.KEY_TYPE);
+            if (DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
+                addStyleSheet(head, resolver, dependency);
+            } else if (DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
+                addJavaScript(head, dependency);
+            } else {
+                uidlDependencies.set(uidlDependenciesIndex++, dependency);
+            }
+        }
 
         // Remove from initial UIDL
         initialUIDL.put(DependencyList.DEPENDENCY_KEY, uidlDependencies);
-
-    }
-
-    private static boolean isUidlDependency(Element head,
-            VaadinUriResolver resolver, JsonObject dependency) {
-        String dependencyKey = dependency.getString(DependencyList.KEY_TYPE);
-        if (DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
-            addStyleSheet(head, resolver, dependency);
-            return false;
-        } else if (DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
-            addJavaScript(head, dependency);
-            return false;
-        }
-        return true;
     }
 
     private static void addStyleSheet(Element head, VaadinUriResolver resolver,
@@ -676,27 +492,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return Optional.ofNullable(title);
     }
 
-    protected UI createAndInitUI(Class<? extends UI> uiClass,
-            VaadinRequest request, VaadinSession session) {
-        UI ui = ReflectTools.createInstance(uiClass);
-
-        // Initialize some fields for a newly created UI
-        ui.getInternals().setSession(session);
-
-        PushMode pushMode = AnnotationReader.getPushMode(uiClass).orElseGet(
-                session.getService().getDeploymentConfiguration()::getPushMode);
-        ui.getPushConfiguration().setPushMode(pushMode);
-
-        AnnotationReader.getPushTransport(uiClass)
-                .ifPresent(ui.getPushConfiguration()::setTransport);
-
-        // Set thread local here so it is available in init
-        UI.setCurrent(ui);
-        ui.doInit(request, session.getNextUIid());
-        session.addUI(ui);
-        return ui;
-    }
-
     /**
      * Generates the initial UIDL message which is included in the initial
      * bootstrap page.
@@ -842,5 +637,202 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .getViewport(request);
         }
         return viewportContent;
+    }
+
+    @Override
+    public boolean synchronizedHandleRequest(VaadinSession session,
+            VaadinRequest request, VaadinResponse response) throws IOException {
+        // Find UI class
+        Class<? extends UI> uiClass = getUIClass(request);
+
+        UI ui = createAndInitUI(uiClass, request, session);
+
+        BootstrapContext context = new BootstrapContext(request, response,
+                session, ui);
+
+        ServletHelper.setResponseNoCacheHeaders(response::setHeader,
+                response::setDateHeader);
+
+        Document document = getBootstrapPage(context);
+        writeBootstrapPage(response, document.outerHtml());
+
+        return true;
+    }
+
+    protected UI createAndInitUI(Class<? extends UI> uiClass,
+            VaadinRequest request, VaadinSession session) {
+        UI ui = ReflectTools.createInstance(uiClass);
+
+        // Initialize some fields for a newly created UI
+        ui.getInternals().setSession(session);
+
+        PushMode pushMode = AnnotationReader.getPushMode(uiClass).orElseGet(
+                session.getService().getDeploymentConfiguration()::getPushMode);
+        ui.getPushConfiguration().setPushMode(pushMode);
+
+        AnnotationReader.getPushTransport(uiClass)
+                .ifPresent(ui.getPushConfiguration()::setTransport);
+
+        // Set thread local here so it is available in init
+        UI.setCurrent(ui);
+        ui.doInit(request, session.getNextUIid());
+        session.addUI(ui);
+        return ui;
+    }
+
+    enum PreRenderMode {
+        PRE_AND_LIVE, PRE_ONLY, LIVE_ONLY;
+
+        /**
+         * Checks if a live version of the application should be rendered.
+         *
+         * @return <code>true</code> if a live version should be rendered,
+         *         <code>false</code> otherwise
+         */
+        public boolean includeLiveVersion() {
+            return this == PRE_AND_LIVE || this == LIVE_ONLY;
+        }
+
+        /**
+         * Checks if a pre-render version of the application should be included.
+         *
+         * @return <code>true</code> if a pre-render version should be included,
+         *         <code>false</code> otherwise
+         */
+        public boolean includePreRenderVersion() {
+            return this == PRE_AND_LIVE || this == PRE_ONLY;
+        }
+    }
+
+    protected static class BootstrapContext {
+
+        private final VaadinRequest request;
+        private final VaadinResponse response;
+        private final VaadinSession session;
+        private final UI ui;
+
+        private String appId;
+        private PushMode pushMode;
+        private JsonObject applicationParameters;
+        private VaadinUriResolver uriResolver;
+
+        protected BootstrapContext(VaadinRequest request,
+                VaadinResponse response, VaadinSession session, UI ui) {
+            this.request = request;
+            this.response = response;
+            this.session = session;
+            this.ui = ui;
+        }
+
+        public VaadinResponse getResponse() {
+            return response;
+        }
+
+        public VaadinRequest getRequest() {
+            return request;
+        }
+
+        public VaadinSession getSession() {
+            return session;
+        }
+
+        public UI getUI() {
+            return ui;
+        }
+
+        public PushMode getPushMode() {
+            if (pushMode == null) {
+
+                pushMode = getUI().getPushConfiguration().getPushMode();
+                if (pushMode == null) {
+                    pushMode = getRequest().getService()
+                            .getDeploymentConfiguration().getPushMode();
+                }
+
+                if (pushMode.isEnabled()
+                        && !getRequest().getService().ensurePushAvailable()) {
+                    /*
+                     * Fall back if not supported (ensurePushAvailable will log
+                     * information to the developer the first time this happens)
+                     */
+                    pushMode = PushMode.DISABLED;
+                }
+            }
+            return pushMode;
+        }
+
+        public String getAppId() {
+            if (appId == null) {
+                appId = getRequest().getService().getMainDivId(getSession(),
+                        getRequest());
+            }
+            return appId;
+        }
+
+        public JsonObject getApplicationParameters() {
+            if (applicationParameters == null) {
+                applicationParameters = BootstrapHandler
+                        .getApplicationParameters(this);
+            }
+
+            return applicationParameters;
+        }
+
+        public VaadinUriResolver getUriResolver() {
+            if (uriResolver == null) {
+                uriResolver = new BootstrapUriResolver(this);
+            }
+
+            return uriResolver;
+        }
+
+        /**
+         * Gets the pre-rendering mode.
+         * <p>
+         * The pre-rendering mode can be "pre-render only", "pre-render and live
+         * " or "live only" and is only meant for testing.
+         *
+         * @return the mode to use for pre-rendering
+         */
+        public PreRenderMode getPreRenderMode() {
+            String preParam = request.getParameter("prerender");
+            if (preParam != null) {
+                if ("only".equals(preParam)) {
+                    return PreRenderMode.PRE_ONLY;
+                } else if ("no".equals(preParam)) {
+                    return PreRenderMode.LIVE_ONLY;
+                }
+            }
+            return PreRenderMode.PRE_AND_LIVE;
+        }
+
+        /**
+         * Checks if the application is running in production mode.
+         *
+         * @return <code>true</code> if in production mode, <code>false</code>
+         *         otherwise.
+         */
+        public boolean isProductionMode() {
+            return request.getService().getDeploymentConfiguration()
+                    .isProductionMode();
+        }
+
+    }
+
+    private static class BootstrapUriResolver extends VaadinUriResolver {
+        private final BootstrapContext context;
+
+        protected BootstrapUriResolver(BootstrapContext bootstrapContext) {
+            context = bootstrapContext;
+        }
+
+        @Override
+        protected String getContextRootUrl() {
+            String root = context.getApplicationParameters()
+                    .getString(ApplicationConstants.CONTEXT_ROOT_URL);
+            assert root.endsWith("/");
+            return root;
+        }
+
     }
 }
