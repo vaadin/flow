@@ -29,58 +29,58 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonNull;
 
-public class JsonUtilTest {
+public class HummingbirdJsonUtilTest {
     @Test
     public void testEquals() {
         // Equal
         Assert.assertTrue(
-                JsonUtil.jsonEquals(Json.create(true), Json.create(true)));
+                HummingbirdJsonUtil.jsonEquals(Json.create(true), Json.create(true)));
         Assert.assertTrue(
-                JsonUtil.jsonEquals(Json.create("foo"), Json.create("foo")));
+                HummingbirdJsonUtil.jsonEquals(Json.create("foo"), Json.create("foo")));
         Assert.assertTrue(
-                JsonUtil.jsonEquals(Json.create(3.14), Json.create(3.14)));
+                HummingbirdJsonUtil.jsonEquals(Json.create(3.14), Json.create(3.14)));
         Assert.assertTrue(
-                JsonUtil.jsonEquals(Json.createNull(), Json.createNull()));
+                HummingbirdJsonUtil.jsonEquals(Json.createNull(), Json.createNull()));
         Assert.assertTrue(
-                JsonUtil.jsonEquals(createTestObject1(), createTestObject1()));
+                HummingbirdJsonUtil.jsonEquals(createTestObject1(), createTestObject1()));
         Assert.assertTrue(
-                JsonUtil.jsonEquals(createTestArray1(), createTestArray1()));
+                HummingbirdJsonUtil.jsonEquals(createTestArray1(), createTestArray1()));
 
         // Non-equal with matching types
         Assert.assertFalse(
-                JsonUtil.jsonEquals(Json.create(true), Json.create(false)));
+                HummingbirdJsonUtil.jsonEquals(Json.create(true), Json.create(false)));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(Json.create("foo"), Json.create("oof")));
+                HummingbirdJsonUtil.jsonEquals(Json.create("foo"), Json.create("oof")));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(Json.create(3.14), Json.create(3.142)));
+                HummingbirdJsonUtil.jsonEquals(Json.create(3.14), Json.create(3.142)));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(createTestObject1(), createTestObject2()));
+                HummingbirdJsonUtil.jsonEquals(createTestObject1(), createTestObject2()));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(createTestArray1(), createTestArray2()));
+                HummingbirdJsonUtil.jsonEquals(createTestArray1(), createTestArray2()));
 
         // Non-equal with different types
         Assert.assertFalse(
-                JsonUtil.jsonEquals(Json.create(true), Json.create("true")));
+                HummingbirdJsonUtil.jsonEquals(Json.create(true), Json.create("true")));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(Json.create(3.14), Json.create("3.14")));
+                HummingbirdJsonUtil.jsonEquals(Json.create(3.14), Json.create("3.14")));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(Json.createNull(), Json.create("null")));
+                HummingbirdJsonUtil.jsonEquals(Json.createNull(), Json.create("null")));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(Json.createObject(), Json.create("{}")));
+                HummingbirdJsonUtil.jsonEquals(Json.createObject(), Json.create("{}")));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(Json.createArray(), Json.create(0)));
+                HummingbirdJsonUtil.jsonEquals(Json.createArray(), Json.create(0)));
         Assert.assertFalse(
-                JsonUtil.jsonEquals(createTestArray1(), createTestObject1()));
+                HummingbirdJsonUtil.jsonEquals(createTestArray1(), createTestObject1()));
     }
 
     @Test(expected = AssertionError.class)
     public void testEquals_firstNull_throws() {
-        JsonUtil.jsonEquals(null, Json.createNull());
+        HummingbirdJsonUtil.jsonEquals(null, Json.createNull());
     }
 
     @Test(expected = AssertionError.class)
     public void testEquals_secondNull_throws() {
-        JsonUtil.jsonEquals(Json.createNull(), null);
+        HummingbirdJsonUtil.jsonEquals(Json.createNull(), null);
     }
 
     private static JsonObject createTestObject1() {
@@ -105,63 +105,63 @@ public class JsonUtilTest {
 
     private static JsonArray createTestArray1() {
         return Stream.of(Json.create("foo"), Json.createObject())
-                .collect(JsonUtil.asArray());
+                .collect(HummingbirdJsonUtil.asArray());
     }
 
     private static JsonArray createTestArray2() {
         return Stream.of(Json.create("bar"), Json.createArray())
-                .collect(JsonUtil.asArray());
+                .collect(HummingbirdJsonUtil.asArray());
     }
 
     @Test
     public void collectEmptyStream() {
         Stream<JsonValue> jsonValueStream = Stream.empty();
-        JsonArray a = jsonValueStream.collect(JsonUtil.asArray());
+        JsonArray a = jsonValueStream.collect(HummingbirdJsonUtil.asArray());
         Assert.assertEquals(0, a.length());
     }
 
     @Test(expected = AssertionError.class)
     public void createObjectStreamForNull() {
-        JsonUtil.objectStream(null);
+        HummingbirdJsonUtil.objectStream(null);
     }
 
     @Test(expected = AssertionError.class)
     public void createNumberStreamForNull() {
-        JsonUtil.numberStream(null);
+        HummingbirdJsonUtil.numberStream(null);
     }
 
     @Test(expected = AssertionError.class)
     public void createStreamForNull() {
-        JsonUtil.stream(null);
+        HummingbirdJsonUtil.stream(null);
     }
 
     @Test
     public void testStream() {
         JsonArray array = createTestArray1();
-        List<JsonValue> list = JsonUtil.stream(array)
+        List<JsonValue> list = HummingbirdJsonUtil.stream(array)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(2, list.size());
         Assert.assertEquals("foo", list.get(0).asString());
         Assert.assertTrue(
-                JsonUtil.jsonEquals(list.get(1), Json.createObject()));
+                HummingbirdJsonUtil.jsonEquals(list.get(1), Json.createObject()));
     }
 
     @Test
     public void testObjectStream() {
         JsonArray array = Stream.of(Json.createObject(), createTestObject1(),
-                createTestObject2()).collect(JsonUtil.asArray());
+                createTestObject2()).collect(HummingbirdJsonUtil.asArray());
 
-        List<JsonObject> objects = JsonUtil.objectStream(array)
+        List<JsonObject> objects = HummingbirdJsonUtil.objectStream(array)
                 .collect(Collectors.toList());
 
         Assert.assertEquals(3, objects.size());
         Assert.assertTrue(
-                JsonUtil.jsonEquals(Json.createObject(), objects.get(0)));
+                HummingbirdJsonUtil.jsonEquals(Json.createObject(), objects.get(0)));
         Assert.assertTrue(
-                JsonUtil.jsonEquals(createTestObject1(), objects.get(1)));
+                HummingbirdJsonUtil.jsonEquals(createTestObject1(), objects.get(1)));
         Assert.assertTrue(
-                JsonUtil.jsonEquals(createTestObject2(), objects.get(2)));
+                HummingbirdJsonUtil.jsonEquals(createTestObject2(), objects.get(2)));
     }
 
     @Test
@@ -169,25 +169,25 @@ public class JsonUtilTest {
         double[] values = new double[] { 3.14, 42, Double.MAX_VALUE };
 
         JsonArray array = DoubleStream.of(values).mapToObj(Json::create)
-                .collect(JsonUtil.asArray());
+                .collect(HummingbirdJsonUtil.asArray());
 
-        DoubleStream numberStream = JsonUtil.numberStream(array);
+        DoubleStream numberStream = HummingbirdJsonUtil.numberStream(array);
 
         Assert.assertArrayEquals(values, numberStream.toArray(), 0);
     }
 
     @Test
     public void testAsArray() {
-        Stream<JsonValue> stream = JsonUtil.stream(createTestArray1());
+        Stream<JsonValue> stream = HummingbirdJsonUtil.stream(createTestArray1());
 
-        JsonArray array = stream.collect(JsonUtil.asArray());
+        JsonArray array = stream.collect(HummingbirdJsonUtil.asArray());
 
-        Assert.assertTrue(JsonUtil.jsonEquals(createTestArray1(), array));
+        Assert.assertTrue(HummingbirdJsonUtil.jsonEquals(createTestArray1(), array));
     }
 
     @Test
     public void testCreateArray() {
-        JsonArray array = JsonUtil.createArray(Json.create("string"),
+        JsonArray array = HummingbirdJsonUtil.createArray(Json.create("string"),
                 Json.createNull());
 
         Assert.assertEquals(2, array.length());
@@ -197,7 +197,7 @@ public class JsonUtilTest {
 
     @Test
     public void testCreateEmptyArray() {
-        JsonArray array = JsonUtil.createArray();
+        JsonArray array = HummingbirdJsonUtil.createArray();
 
         Assert.assertEquals(0, array.length());
     }

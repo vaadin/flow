@@ -24,7 +24,7 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.hummingbird.JsonCodec;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.util.HummingbirdJsonUtil;
 
 import elemental.js.dom.JsElement;
 import elemental.json.Json;
@@ -68,7 +68,7 @@ public class ClientJsonCodecTest {
     @Test
     public void decodeWithTypeInfo_array() {
         JsonValue json = JsonCodec.encodeWithTypeInfo(
-                JsonUtil.createArray(Json.create("string"), Json.create(true)));
+                HummingbirdJsonUtil.createArray(Json.create("string"), Json.create(true)));
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, json);
 
@@ -91,7 +91,7 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtil.createArray(
+        JsonArray json = HummingbirdJsonUtil.createArray(
                 Json.create(JsonCodec.ELEMENT_TYPE), Json.create(node.getId()));
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
@@ -120,7 +120,7 @@ public class ClientJsonCodecTest {
     private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
         Assert.assertTrue(
                 actual.toJson() + " does not equal " + expected.toJson(),
-                JsonUtil.jsonEquals(expected, actual));
+                HummingbirdJsonUtil.jsonEquals(expected, actual));
     }
 
 }

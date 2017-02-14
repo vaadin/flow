@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.client.Registry;
 import com.vaadin.client.hummingbird.collection.JsArray;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.util.HummingbirdJsonUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -55,10 +55,10 @@ public class ExecuteJavaScriptProcessorTest {
     public void testExecute() {
         CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
 
-        JsonArray invocation1 = JsonUtil.createArray(Json.create("script1"));
+        JsonArray invocation1 = HummingbirdJsonUtil.createArray(Json.create("script1"));
         JsonArray invocation2 = Stream.of("param1", "param2", "script2")
-                .map(Json::create).collect(JsonUtil.asArray());
-        JsonArray invocations = JsonUtil.createArray(invocation1, invocation2);
+                .map(Json::create).collect(HummingbirdJsonUtil.asArray());
+        JsonArray invocations = HummingbirdJsonUtil.createArray(invocation1, invocation2);
 
         processor.execute(invocations);
 

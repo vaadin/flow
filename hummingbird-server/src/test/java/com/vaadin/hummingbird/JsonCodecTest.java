@@ -28,7 +28,7 @@ import org.junit.Test;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.util.HummingbirdJsonUtil;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -99,7 +99,7 @@ public class JsonCodecTest {
 
         // Array is escaped
         assertJsonEquals(
-                JsonUtil.createArray(Json.create(JsonCodec.ARRAY_TYPE),
+                HummingbirdJsonUtil.createArray(Json.create(JsonCodec.ARRAY_TYPE),
                         Json.createArray()),
                 JsonCodec.encodeWithTypeInfo(Json.createArray()));
     }
@@ -115,7 +115,7 @@ public class JsonCodecTest {
         JsonValue json = JsonCodec.encodeWithTypeInfo(element);
 
         assertJsonEquals(
-                JsonUtil.createArray(Json.create(JsonCodec.ELEMENT_TYPE),
+                HummingbirdJsonUtil.createArray(Json.create(JsonCodec.ELEMENT_TYPE),
                         Json.create(element.getNode().getId())),
                 json);
     }
@@ -144,7 +144,7 @@ public class JsonCodecTest {
     private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
         Assert.assertTrue(
                 actual.toJson() + " does not equal " + expected.toJson(),
-                JsonUtil.jsonEquals(expected, actual));
+                HummingbirdJsonUtil.jsonEquals(expected, actual));
     }
 
     @Test

@@ -24,7 +24,7 @@ import java.util.List;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.util.HummingbirdJsonUtil;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.JsonValue;
@@ -164,7 +164,7 @@ public class ListModelType<T> implements ModelType {
 
     @Override
     public JsonValue toJson() {
-        return JsonUtil.createArray(itemType.toJson());
+        return HummingbirdJsonUtil.createArray(itemType.toJson());
     }
 
     @Override

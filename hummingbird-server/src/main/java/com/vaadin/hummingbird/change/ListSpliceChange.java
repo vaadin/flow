@@ -23,7 +23,7 @@ import com.vaadin.hummingbird.ConstantPool;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.NodeList;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.util.HummingbirdJsonUtil;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.Json;
@@ -123,7 +123,7 @@ public class ListSpliceChange extends NodeFeatureChange {
             }
 
             JsonArray newItemsJson = newItems.stream().map(mapper)
-                    .collect(JsonUtil.asArray());
+                    .collect(HummingbirdJsonUtil.asArray());
             json.put(addKey, newItemsJson);
         }
     }
