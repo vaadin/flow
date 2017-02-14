@@ -32,10 +32,7 @@ public class Importing {
     @JavaScript("/js/script.js")
     @HtmlImport("/html/htmlimport.html")
     static class HtmlComponent extends Component implements HasText {
-
-        public HtmlComponent() {
-            setText("Text component");
-        }
+        // implementation omitted
     }
     //@formatter:on
 
