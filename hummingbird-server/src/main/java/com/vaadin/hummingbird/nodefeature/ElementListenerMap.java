@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.DomEvent;
 import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.util.JsonUtils;
 
 import elemental.json.Json;
 
@@ -120,7 +120,7 @@ public class ElementListenerMap extends NodeMap {
     private static ConstantPoolKey createConstantPoolKey(
             HashSet<String> eventData) {
         return new ConstantPoolKey(eventData.stream().map(Json::create)
-                .collect(JsonUtil.asArray()));
+                .collect(JsonUtils.asArray()));
     }
 
     private void removeListener(String eventType, DomEventListener listener) {

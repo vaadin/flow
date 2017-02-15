@@ -40,7 +40,7 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  */
-public class JsonUtil {
+public final class JsonUtils {
 
     /**
      * Collects a stream of JSON values to a JSON array.
@@ -84,7 +84,7 @@ public class JsonUtil {
             .unmodifiableSet(
                     EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
 
-    private JsonUtil() {
+    private JsonUtils() {
         // Static-only class
     }
 
@@ -223,7 +223,7 @@ public class JsonUtil {
      * @return a double stream of the values in the array
      */
     public static DoubleStream numberStream(JsonArray array) {
-        return JsonUtil.<JsonNumber> stream(array)
+        return JsonUtils.<JsonNumber> stream(array)
                 .mapToDouble(JsonNumber::getNumber);
     }
 
@@ -232,7 +232,7 @@ public class JsonUtil {
      *
      * @return the collector
      */
-    public static Collector<JsonValue, ?, JsonArray> asArray() {
+    public static Collector<JsonValue, JsonArray, JsonArray> asArray() {
         return new JsonArrayCollector();
     }
 
