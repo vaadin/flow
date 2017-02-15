@@ -1,0 +1,62 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+= Rerouting to another View
+
+For a basic routing tutorial, see <<tutorial-routing#,Defining View Routes and Navigating>>.
+
+The navigation can be rerouted dynamically if needed in the `onLocationChange(LocationChangeEvent)`
+
+For instance to reroute to the error view on when needed data is not available we could have:
+
+[source, java]
+----
+public class MyView extends Div implements View {
+  @Override
+  public void onLocationChange(LocationChangeEvent locationChangeEvent) {
+    // implementation omitted
+    Object record = getItem();
+
+    if (record == null) {
+      locationChangeEvent.rerouteToErrorView();
+      return;
+    }
+    // implementation omitted
+  }
+
+  private Object getItem() {
+    // no-op implementation
+    return null;
+  }
+}
+----
+
+The user can also be rerouted to another view (not necessarily the error view) using
+`rerouteTo(NavigationHandler)` or `rerouteTo(Class<? extends View>)` in `onLocationChange()`
+
+For example to reroute the user to the NoItemsView if no items exist:
+
+[source, java]
+----
+public class NoItemsView extends Div implements View {
+  public NoItemsView() {
+    setText("No items found.");
+  }
+}
+
+public class ItemsView extends Div implements View {
+  @Override
+  public void onLocationChange(LocationChangeEvent locationChangeEvent) {
+    // implementation omitted
+    Object record = getItem();
+
+    if (record == null) {
+      locationChangeEvent.rerouteTo(NoItemsView.class);
+    }
+  }
+
+  private Object getItem() {
+    // no-op implementation
+    return null;
+  }
+}
+----

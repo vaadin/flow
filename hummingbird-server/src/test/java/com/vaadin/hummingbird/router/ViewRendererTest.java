@@ -380,6 +380,7 @@ public class ViewRendererTest {
         Assert.assertEquals(201, statusCode);
     }
 
+    @Test
     public void testViewReroute() {
         TestViewRenderer renderer = new TestViewRenderer(RerouteView.class);
 
