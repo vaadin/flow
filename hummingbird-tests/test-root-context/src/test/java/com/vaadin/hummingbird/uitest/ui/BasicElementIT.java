@@ -26,7 +26,7 @@ import com.vaadin.annotations.Tag;
 
 public class BasicElementIT extends AbstractBasicElementComponentIT {
 
-    // #671
+    // #671, #1231
     @Test
     public void testAddRemoveComponentDuringSameRequest() {
         open();
@@ -34,9 +34,11 @@ public class BasicElementIT extends AbstractBasicElementComponentIT {
 
         List<WebElement> addremovecontainerChildren = findElement(
                 By.id("addremovecontainer")).findElements(By.tagName("div"));
-        Assert.assertEquals(1, addremovecontainerChildren.size());
-        Assert.assertEquals("ok",
+        Assert.assertEquals(2, addremovecontainerChildren.size());
+        Assert.assertEquals("to-remove",
                 addremovecontainerChildren.get(0).getAttribute("id"));
+        Assert.assertEquals("ok",
+                addremovecontainerChildren.get(1).getAttribute("id"));
         // verify the UI still works
 
         Assert.assertEquals(0, getThankYouCount());
