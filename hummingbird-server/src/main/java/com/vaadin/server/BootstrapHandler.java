@@ -245,7 +245,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             } else if (DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
                 addJavaScript(head, resolver, dependency);
             } else {
-                uidlDependencies.set(uidlDependenciesIndex++, dependency);
+                uidlDependencies.set(uidlDependenciesIndex, dependency);
+                uidlDependenciesIndex += 1;
             }
         }
 
