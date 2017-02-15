@@ -22,6 +22,7 @@ import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.hummingbird.JsonCodec;
 
+import elemental.dom.Node;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonType;
@@ -52,10 +53,8 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.ELEMENT_TYPE: {
-                int nodeId = (int) array.getNumber(1);
-                return tree.getNode(nodeId).getDomNode();
-            }
+            case JsonCodec.ELEMENT_TYPE:
+                return getDomNodeForEncodedElement(tree, array);
             case JsonCodec.ARRAY_TYPE:
                 return jsonArrayAsJsArray(array.getArray(1));
             default:
@@ -148,6 +147,16 @@ public class ClientJsonCodec {
             }
         }
         return jsArray;
+    }
+
+    private static Node getDomNodeForEncodedElement(StateTree tree,
+            JsonArray array) {
+        int nodeId = (int) array.getNumber(1);
+        if (array.length() == 3) {
+            return tree.getNode(nodeId).getDomNode(array.getNumber(2));
+        } else {
+            return tree.getNode(nodeId).getDomNode();
+        }
     }
 
 }
