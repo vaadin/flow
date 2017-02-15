@@ -709,8 +709,9 @@ public class Element implements Serializable {
      */
     public Element removeChild(int index) {
         if (index < 0 || index >= getChildCount()) {
-            throw new IllegalArgumentException(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN);
+            throw new IllegalArgumentException(String.format(
+                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "remove",
+                    index, getChildCount()));
 
         }
 
