@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Input;
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.util.JsonUtils;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -35,7 +35,7 @@ public class ExecJavaScriptView extends AbstractDivView {
                 "(function() {var t = $0.textContent; $0.textContent = $1.textContent; $1.textContent = t;})()",
                 alertButton, focusButton);
         Button logButton = createJsButton("Log", "logButton", "console.log($0)",
-                JsonUtil.createArray(Json.create("Hello world"),
+                JsonUtils.createArray(Json.create("Hello world"),
                         Json.create(true)));
 
         Button createElementButton = new Button("Create and update element",
