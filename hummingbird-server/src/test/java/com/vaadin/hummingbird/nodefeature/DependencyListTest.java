@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.nodefeature;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.util.JsonUtil;
+import com.vaadin.hummingbird.util.JsonUtils;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.ui.Dependency;
 import com.vaadin.ui.Dependency.Type;
@@ -43,7 +43,7 @@ public class DependencyListTest {
         expectedStyleSheetJson.put(DependencyList.KEY_URL, "/styleSheetUrl");
 
         Assert.assertEquals(1, deps.getPendingSendToClient().length());
-        Assert.assertTrue(JsonUtil.jsonEquals(expectedStyleSheetJson,
+        Assert.assertTrue(JsonUtils.jsonEquals(expectedStyleSheetJson,
                 deps.getPendingSendToClient().get(0)));
     }
 
@@ -59,7 +59,7 @@ public class DependencyListTest {
         expectedStyleSheetJson.put(DependencyList.KEY_URL, "styleSheetUrl");
 
         Assert.assertEquals(1, deps.getPendingSendToClient().length());
-        Assert.assertTrue(JsonUtil.jsonEquals(expectedStyleSheetJson,
+        Assert.assertTrue(JsonUtils.jsonEquals(expectedStyleSheetJson,
                 deps.getPendingSendToClient().get(0)));
     }
 
@@ -74,7 +74,7 @@ public class DependencyListTest {
         expectedJsJson.put(DependencyList.KEY_URL, "/jsUrl");
 
         Assert.assertEquals(1, deps.getPendingSendToClient().length());
-        Assert.assertTrue(JsonUtil.jsonEquals(expectedJsJson,
+        Assert.assertTrue(JsonUtils.jsonEquals(expectedJsJson,
                 deps.getPendingSendToClient().get(0)));
 
     }
@@ -90,7 +90,7 @@ public class DependencyListTest {
         expectedJsJson.put(DependencyList.KEY_URL, "jsUrl");
 
         Assert.assertEquals(1, deps.getPendingSendToClient().length());
-        Assert.assertTrue(JsonUtil.jsonEquals(expectedJsJson,
+        Assert.assertTrue(JsonUtils.jsonEquals(expectedJsJson,
                 deps.getPendingSendToClient().get(0)));
     }
 

@@ -40,6 +40,7 @@ import com.vaadin.external.jsoup.nodes.DocumentType;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.parser.Tag;
+import com.vaadin.hummingbird.util.JsonUtils;
 import com.vaadin.server.communication.AtmospherePushConnection;
 import com.vaadin.server.communication.UidlWriter;
 import com.vaadin.shared.ApplicationConstants;
@@ -419,7 +420,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Predicate<? super JsonObject> includeStyleSheets = object -> DependencyList.TYPE_STYLESHEET
                 .equals(object.getString(DependencyList.KEY_TYPE));
 
-        com.vaadin.hummingbird.util.JsonUtil.objectStream(dependencies)
+        JsonUtils.objectStream(dependencies)
                 .filter(includeStyleSheets).forEach(stylesheet -> {
                     Element link = head.appendElement("link");
                     link.attr("rel", "stylesheet");
@@ -430,9 +431,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 });
 
         // Remove from initial UIDL
-        JsonArray otherDependencies = com.vaadin.hummingbird.util.JsonUtil
+        JsonArray otherDependencies = JsonUtils
                 .objectStream(dependencies).filter(includeStyleSheets.negate())
-                .collect(com.vaadin.hummingbird.util.JsonUtil.asArray());
+                .collect(JsonUtils.asArray());
         initialUIDL.put(DependencyList.DEPENDENCY_KEY, otherDependencies);
 
     }
