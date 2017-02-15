@@ -50,7 +50,7 @@ public class DependencyLoader {
     }
 
     /**
-     * Loads the given dependencies using the given loader and ensures any
+     * Loads the given dependency using the given loader and ensures any
      * callbacks registered using {@link #runWhenDependenciesLoaded(Command)}
      * are run when all dependencies have been loaded.
      *
@@ -61,7 +61,7 @@ public class DependencyLoader {
      * @param loader
      *            function which takes care of loading the dependency URL
      */
-    public void loadDependencies(final String dependencyUrl,
+    public void loadDependency(final String dependencyUrl,
             final BiConsumer<String, ResourceLoadListener> loader) {
         assert dependencyUrl != null;
         assert loader != null;
@@ -162,13 +162,13 @@ public class DependencyLoader {
             String url = dependencyJson.getString(DependencyList.KEY_URL);
             switch (type) {
             case DependencyList.TYPE_STYLESHEET:
-                loadDependencies(url, resourceLoader::loadStylesheet);
+                loadDependency(url, resourceLoader::loadStylesheet);
                 break;
             case DependencyList.TYPE_HTML_IMPORT:
-                loadDependencies(url, resourceLoader::loadHtml);
+                loadDependency(url, resourceLoader::loadHtml);
                 break;
             case DependencyList.TYPE_JAVASCRIPT:
-                loadDependencies(url, resourceLoader::loadScript);
+                loadDependency(url, resourceLoader::loadScript);
                 break;
             default:
                 Console.error("Unknown dependency type " + type);
