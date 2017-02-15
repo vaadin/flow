@@ -18,7 +18,7 @@ package com.vaadin.hummingbird;
 import java.io.Serializable;
 
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.util.HummingbirdJsonUtil;
+import com.vaadin.hummingbird.util.JsonUtils;
 import com.vaadin.ui.Component;
 
 import elemental.json.Json;
@@ -95,7 +95,7 @@ public class JsonCodec {
     }
 
     private static JsonArray wrapComplexValue(int typeId, JsonValue value) {
-        return HummingbirdJsonUtil.createArray(Json.create(typeId), value);
+        return JsonUtils.createArray(Json.create(typeId), value);
     }
 
     /**

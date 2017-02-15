@@ -28,7 +28,7 @@ import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
-import com.vaadin.hummingbird.util.HummingbirdJsonUtil;
+import com.vaadin.hummingbird.util.JsonUtils;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinServlet;
@@ -68,14 +68,14 @@ public class UidlWriterTest {
         JsonArray json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);
 
-        JsonArray expectedJson = HummingbirdJsonUtil.createArray(
-                HummingbirdJsonUtil.createArray(
+        JsonArray expectedJson = JsonUtils.createArray(
+                JsonUtils.createArray(
                         // Null since element is not attached
                         Json.createNull(), Json.create("$0.focus()")),
-                HummingbirdJsonUtil.createArray(Json.create("Lives remaining:"),
+                JsonUtils.createArray(Json.create("Lives remaining:"),
                         Json.create(3), Json.create("console.log($0, $1)")));
 
-        Assert.assertTrue(HummingbirdJsonUtil.jsonEquals(expectedJson, json));
+        Assert.assertTrue(JsonUtils.jsonEquals(expectedJson, json));
     }
 
     @Tag("div")

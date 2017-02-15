@@ -33,7 +33,7 @@ import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.TemplateNode;
-import com.vaadin.hummingbird.util.HummingbirdJsonUtil;
+import com.vaadin.hummingbird.util.JsonUtils;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;
@@ -142,7 +142,7 @@ public class UidlWriter implements Serializable {
             List<JavaScriptInvocation> executeJavaScriptList) {
         return executeJavaScriptList.stream()
                 .map(UidlWriter::encodeExecuteJavaScript)
-                .collect(HummingbirdJsonUtil.asArray());
+                .collect(JsonUtils.asArray());
     }
 
     private static JsonArray encodeExecuteJavaScript(
@@ -155,7 +155,7 @@ public class UidlWriter implements Serializable {
                 .concat(parametersStream,
                         Stream.of(
                                 Json.create(executeJavaScript.getExpression())))
-                .collect(HummingbirdJsonUtil.asArray());
+                .collect(JsonUtils.asArray());
     }
 
     /**
