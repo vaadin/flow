@@ -3,9 +3,7 @@ package com.vaadin.hummingbird.contexttest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
@@ -47,13 +45,8 @@ public abstract class AbstractContextIT extends PhantomJSTest {
         findElementById("loadBlue").click();
 
         // Wait as the framework will not stop until the stylesheet is loaded
-        waitUntil(new ExpectedCondition<Boolean>() {
-            @Override
-            public Boolean apply(WebDriver input) {
-                return findElementById("hello").getCssValue("color")
-                        .equals(BLUE);
-            }
-        });
+        waitUntil(input -> findElementById("hello").getCssValue("color")
+                .equals(BLUE));
     }
 
     private void scriptInjection() {
