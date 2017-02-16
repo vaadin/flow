@@ -33,6 +33,7 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -402,6 +403,29 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         Reactive.flush();
 
         assertEquals(1, element.getChildElementCount());
+    }
+
+    public void testReAddNode() {
+        Binder.bind(node, element);
+
+        StateNode childToReadd = createChildNode("2");
+        children.splice(0, 0, JsCollections.array(createChildNode("1"),
+                childToReadd, createChildNode("3")));
+
+        Reactive.flush();
+
+        Node node = childToReadd.getDomNode();
+
+        assertEquals(3, element.getChildElementCount());
+
+        children.splice(1, 1);
+        children.splice(1, 0, JsCollections.array(childToReadd));
+
+        Reactive.flush();
+
+        StateNode statNode = (StateNode) children.get(1);
+        assertSame(childToReadd, statNode);
+        assertSame(node, statNode.getDomNode());
     }
 
     public void testEventFired() {
