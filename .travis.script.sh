@@ -11,8 +11,8 @@ then
 
 	# Trigger Sonar analysis
 	echo "Running Sonar"
-	mvn -B -e -V -P validation -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= -Dsonar.verbose=true -Dsonar.analysis.mode=issues -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.host.url=$SONAR_HOST -Dsonar.github.oauth=$SONAR_GITHUB_OAUTH -Dsonar.login=$SONAR_LOGIN -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar javadoc:javadoc
+	mvn -B -e -V -P -U validation -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= -Dsonar.verbose=true -Dsonar.analysis.mode=issues -Dsonar.github.repository=$TRAVIS_REPO_SLUG -Dsonar.host.url=$SONAR_HOST -Dsonar.github.oauth=$SONAR_GITHUB_OAUTH -Dsonar.login=$SONAR_LOGIN -Dsonar.github.pullRequest=$TRAVIS_PULL_REQUEST clean org.jacoco:jacoco-maven-plugin:prepare-agent verify sonar:sonar javadoc:javadoc
 else
 	# Something else than a "safe" pull request
-	mvn -B -e -V -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= verify javadoc:javadoc
+	mvn -B -e -V -U -Dmaven.javadoc.skip=false -Dvaadin.testbench.developer.license=$TESTBENCH_LICENSE -Dtest.excludegroup= verify javadoc:javadoc
 fi
