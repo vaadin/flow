@@ -6,7 +6,7 @@ For a basic routing tutorial, see <<tutorial-routing#,Defining View Routes and N
 
 The navigation can be rerouted dynamically to another view if needed in the `View#onLocationChange(LocationChangeEvent)` event.
 
-For example to reroute to the error view when data that is needed can not be found or is not available we could have the following functionality:
+For example to reroute to the error view, when data that is needed can not be found or is not available, we could have the following functionality:
 
 [source, java]
 ----
