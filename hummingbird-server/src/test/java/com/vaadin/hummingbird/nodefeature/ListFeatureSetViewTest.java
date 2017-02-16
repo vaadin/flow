@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.nodefeature;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,7 +25,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.AbstractListChange;
 import com.vaadin.hummingbird.nodefeature.NodeList.SetView;
 
 public class ListFeatureSetViewTest {
@@ -33,14 +34,14 @@ public class ListFeatureSetViewTest {
     private SetView<String> set;
 
     private static class TestFeature extends SerializableNodeList<String> {
-        private final ArrayList<ListSpliceChange> changes = new ArrayList<>();
+        private final ArrayList<AbstractListChange<String>> changes = new ArrayList<>();
 
         public TestFeature() {
             super(Mockito.mock(StateNode.class));
         }
 
         @Override
-        protected ArrayList<ListSpliceChange> getChangeTracker() {
+        protected List<AbstractListChange<String>> getChangeTracker() {
             // Default implementation calls unmocked method in StateNode
             return changes;
         }

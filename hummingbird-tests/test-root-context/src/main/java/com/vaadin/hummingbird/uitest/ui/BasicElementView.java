@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -78,7 +78,35 @@ public class BasicElementView extends AbstractDivView {
         s.set("color", "red");
         s.set("fontWeight", "bold");
 
-        mainElement.appendChild(helloWorldElement, button, input);
+        Element elementContainer = ElementFactory.createDiv();
+        elementContainer.setAttribute("id", "addremovecontainer");
+        Element addRemoveButton = ElementFactory
+                .createButton("Add and remove element");
+        addRemoveButton.setAttribute("id", "addremovebutton");
+
+        addRemoveButton.addEventListener("click", e -> {
+            // very basic usecase: append and then immediately remove
+            Element div = ElementFactory.createDiv("foobar");
+            elementContainer.appendChild(div);
+            elementContainer.removeChild(div);
+
+            // Now let's have two "add" operation and then two "remove"
+            // operation so that removal has an addition right before which
+            // targets different element
+            Element div2 = ElementFactory.createDiv("foobar");
+            elementContainer.appendChild(div);
+            elementContainer.appendChild(div2);
+
+            Element ok = ElementFactory.createDiv("OK");
+            ok.setAttribute("id", "ok");
+            elementContainer.appendChild(ok);
+
+            elementContainer.removeChild(div);
+            elementContainer.removeChild(div2);
+        });
+
+        mainElement.appendChild(helloWorldElement, button, input,
+                addRemoveButton, elementContainer);
     }
 
 }
