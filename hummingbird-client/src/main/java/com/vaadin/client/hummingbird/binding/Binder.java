@@ -59,9 +59,12 @@ public final class Binder {
         @Override
         public Node createAndBind(StateNode stateNode) {
             BindingStrategy<?> strategy = getApplicableStrategy(stateNode);
-            Node node = strategy.create(stateNode);
-            assert node != null;
-            stateNode.setDomNode(node);
+            Node node = stateNode.getDomNode();
+            if (stateNode.getDomNode() == null) {
+                node = strategy.create(stateNode);
+                assert node != null;
+                stateNode.setDomNode(node);
+            }
             bind(stateNode, node);
 
             return node;

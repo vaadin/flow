@@ -1,0 +1,60 @@
+<div id="history-panel">
+  
+  <h2 class="chart-title section-title">Last 12 Months in Total</h2>
+  
+  <vaadin-bar-chart id="barchart">
+    <chart-title text=""></chart-title>
+    <chart background-color="transparent" height="400" width="250"></chart>
+    <exporting enabled="false"></exporting>
+    <x-axis>
+      <categories>{{chartCategories}}</categories>
+      <labels step="1"></labels>
+      <title>
+        <style display="none"></style>
+      </title>
+      <labels>
+        <chart-style>{"color": "#000"}</chart-style>
+      </labels>
+    </x-axis>
+    <y-axis>
+      <title>
+        <style display="none"></style>
+      </title>
+    </y-axis>
+    <tooltip formatter="function() { return '$' + this.y.toFixed(2); }"></tooltip>
+    <data-series name="$" id="barchart-data">
+      <color>#ffc13f</color>
+    </data-series>
+    <legend enabled="false"></legend>
+  </vaadin-bar-chart>
+  
+  <vaadin-column-chart id="columnchart">
+    <title>
+      <style display="none"></style>
+    </title>
+    <chart background-color="transparent" height="200" width="450"></chart>
+    <exporting enabled="false"></exporting>
+    <x-axis>
+      <categories>{{chartCategories}}</categories>
+      <labels step="1"></labels>
+      <title>
+        <style display="none"></style>
+      </title>
+      <labels>
+        <chart-style>{"color": "#000"}</chart-style>
+      </labels>
+    </x-axis>
+    <y-axis>
+      <title>
+        <style display="none"></style>
+      </title>
+    </y-axis>
+    <tooltip formatter="function() { return '$' + this.y.toFixed(2); }"></tooltip>
+    <data-series name="$" id="columnchart-data">
+      <color>#ffc13f</color>
+    </data-series>
+    <legend enabled="false"></legend>
+  </vaadin-column-chart>
+    
+</div>  
+

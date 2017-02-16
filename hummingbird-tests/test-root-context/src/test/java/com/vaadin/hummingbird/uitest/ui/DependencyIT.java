@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,25 +67,23 @@ public class DependencyIT extends PhantomJSTest {
     @Test
     public void htmlInjection() {
         open();
+
         // Initial HTML import logs a message on the page
         findElement(By.cssSelector("body")).click();
-
         List<String> messages = getMessages();
-        Assert.assertEquals("Messagehandler initialized in HTML import 1",
-                messages.get(0));
-        Assert.assertEquals("Messagehandler initialized in HTML import 4",
-                messages.get(1));
-        Assert.assertEquals("HTML import 4 companion JS loaded",
-                messages.get(2));
+
+        Assert.assertEquals(3, messages.size());
+        assertTrue(messages.contains("HTML import 4 companion JS loaded"));
+        assertTrue(messages.contains("Messagehandler initialized in HTML import 1"));
+        assertTrue(messages.contains("Messagehandler initialized in HTML import 4"));
 
         // Inject html
         findElementById("loadHtml").click();
         messages = getMessages();
 
-        Assert.assertEquals("HTML import 2 loaded",
-                messages.get(messages.size() - 2));
-        Assert.assertEquals("HTML import 3 loaded",
-                messages.get(messages.size() - 1));
+        Assert.assertEquals(5, messages.size());
+        assertTrue(messages.contains("HTML import 2 loaded"));
+        assertTrue(messages.contains("HTML import 3 loaded"));
     }
 
     @Test
@@ -112,11 +112,11 @@ public class DependencyIT extends PhantomJSTest {
                 .stream().map(WebElement::getText).collect(Collectors.toList());
         Assert.assertEquals(3, errors.size());
         // The order for these can be random
-        Assert.assertTrue(errors
+        assertTrue(errors
                 .contains("Error loading http://localhost:8888/not-found.css"));
-        Assert.assertTrue(errors
+        assertTrue(errors
                 .contains("Error loading http://localhost:8888/not-found.js"));
-        Assert.assertTrue(errors.contains(
+        assertTrue(errors.contains(
                 "Error loading http://localhost:8888/not-found.html"));
     }
 
