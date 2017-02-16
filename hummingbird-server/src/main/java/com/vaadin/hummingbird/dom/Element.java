@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -709,8 +709,9 @@ public class Element implements Serializable {
      */
     public Element removeChild(int index) {
         if (index < 0 || index >= getChildCount()) {
-            throw new IllegalArgumentException(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN);
+            throw new IllegalArgumentException(String.format(
+                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "remove",
+                    index, getChildCount()));
 
         }
 

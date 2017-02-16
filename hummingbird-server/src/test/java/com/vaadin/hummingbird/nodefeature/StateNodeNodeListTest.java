@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,11 +26,9 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.ListAddChange;
+import com.vaadin.hummingbird.change.ListRemoveChange;
 import com.vaadin.hummingbird.change.NodeChange;
-import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
-import com.vaadin.hummingbird.nodefeature.ElementClassList;
-import com.vaadin.hummingbird.nodefeature.NodeList;
 
 public class StateNodeNodeListTest
         extends AbstractNodeFeatureTest<ElementChildrenList> {
@@ -48,10 +46,9 @@ public class StateNodeNodeListTest
 
         List<NodeChange> firstAddChanges = collectChanges(nodeList);
         Assert.assertEquals(1, firstAddChanges.size());
-        ListSpliceChange firstAddChange = (ListSpliceChange) firstAddChanges
+        ListAddChange<?> firstAddChange = (ListAddChange<?>) firstAddChanges
                 .get(0);
         Assert.assertEquals(0, firstAddChange.getIndex());
-        Assert.assertEquals(0, firstAddChange.getRemoveCount());
         Assert.assertEquals(Arrays.asList(value1),
                 firstAddChange.getNewItems());
 
@@ -62,10 +59,9 @@ public class StateNodeNodeListTest
 
         List<NodeChange> secondAddChanges = collectChanges(nodeList);
         Assert.assertEquals(1, secondAddChanges.size());
-        ListSpliceChange secondAddChange = (ListSpliceChange) secondAddChanges
+        ListAddChange<?> secondAddChange = (ListAddChange<?>) secondAddChanges
                 .get(0);
         Assert.assertEquals(0, secondAddChange.getIndex());
-        Assert.assertEquals(0, secondAddChange.getRemoveCount());
         Assert.assertEquals(Arrays.asList(value2),
                 secondAddChange.getNewItems());
 
@@ -77,10 +73,9 @@ public class StateNodeNodeListTest
 
         List<NodeChange> removeChanges = collectChanges(nodeList);
         Assert.assertEquals(1, removeChanges.size());
-        ListSpliceChange removeChange = (ListSpliceChange) removeChanges.get(0);
+        ListRemoveChange<?> removeChange = (ListRemoveChange<?>) removeChanges
+                .get(0);
         Assert.assertEquals(0, removeChange.getIndex());
-        Assert.assertEquals(1, removeChange.getRemoveCount());
-        Assert.assertEquals(Arrays.asList(), removeChange.getNewItems());
     }
 
     @Test
@@ -98,9 +93,8 @@ public class StateNodeNodeListTest
         List<NodeChange> changes = collectChanges(nodeList);
 
         Assert.assertEquals(1, changes.size());
-        ListSpliceChange change = (ListSpliceChange) changes.get(0);
+        ListAddChange<?> change = (ListAddChange<?>) changes.get(0);
         Assert.assertEquals(0, change.getIndex());
-        Assert.assertEquals(0, change.getRemoveCount());
         Assert.assertEquals(Arrays.asList(value1, value2),
                 change.getNewItems());
     }

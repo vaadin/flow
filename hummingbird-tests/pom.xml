@@ -19,6 +19,7 @@
 		<module>test-performance</module>
 		<module>test-scalability</module>
 		<module>test-memory-leaks</module>
+        <module>test-expense-manager-imperative</module>
 	</modules>
 
 	<properties>

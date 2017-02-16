@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,12 +39,8 @@ public class DependencyView extends AbstractDivView {
     private StreamResourceRegistration htmlImport2;
     private StreamResourceRegistration htmlImport3;
 
-    private StreamResourceRegistration htmlMixedImport1;
-    private StreamResourceRegistration htmlMixedImport2;
-
     @Tag("div")
-    @JavaScript("/test-files/html/htmlimport4-js.js")
-    @HtmlImport("/test-files/html/htmlimport4.html")
+    @HtmlImport("/test-files/html/orderedHtmlImport.html")
     static class HtmlComponent extends Component implements HasText {
 
         public HtmlComponent() {
@@ -83,16 +79,7 @@ public class DependencyView extends AbstractDivView {
 
         /* HTML & JS order */
         Button mixedOrder = new Button("Test HTML & JS order", e -> {
-            getPage().addJavaScript("/test-files/js/script1.js");
-
-            getPage().addHtmlImport(
-                    htmlMixedImport1.getResourceUri().toString());
-
-            getPage().addJavaScript("/test-files/js/script2.js");
-
-            getPage().addHtmlImport(
-                    htmlMixedImport2.getResourceUri().toString());
-
+            getPage().addHtmlImport("/test-files/html/combinedMixed.html");
         });
         mixedOrder.setId("loadMixed");
 
@@ -125,11 +112,6 @@ public class DependencyView extends AbstractDivView {
                 new HTMLImportStreamFactory("HTML import 2", 1000));
         htmlImport3 = registerResource(ui, "htmlimport3.html",
                 new HTMLImportStreamFactory("HTML import 3", 0));
-
-        htmlMixedImport1 = registerResource(ui, "mixedImport1.html",
-                new HTMLImportStreamFactory("Mixed HTML import 1", 1000));
-        htmlMixedImport2 = registerResource(ui, "mixedImport2.html",
-                new HTMLImportStreamFactory("Mixed HTML import 2", 0));
 
         getPage().addStyleSheet("/test-files/css/allred.css");
         getPage().addJavaScript("/test-files/js/body-click-listener.js");

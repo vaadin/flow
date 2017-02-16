@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.NullOwner;
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.ListSpliceChange;
+import com.vaadin.hummingbird.change.ListAddChange;
 import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
@@ -1544,7 +1544,7 @@ public class ElementTest {
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getFeature(SynchronizedPropertiesList.class)
                 .collectChanges(change -> i.addAndGet(
-                        ((ListSpliceChange) change).getNewItems().size()));
+                        ((ListAddChange<?>) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }
 
@@ -1594,7 +1594,7 @@ public class ElementTest {
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getFeature(SynchronizedPropertyEventsList.class)
                 .collectChanges(change -> i.addAndGet(
-                        ((ListSpliceChange) change).getNewItems().size()));
+                        ((ListAddChange<?>) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }
 

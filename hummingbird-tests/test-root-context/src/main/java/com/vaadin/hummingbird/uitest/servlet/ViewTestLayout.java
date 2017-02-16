@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -38,7 +38,9 @@ public class ViewTestLayout implements HasChildView {
 
         List<Class<? extends View>> classes = new ArrayList<>(
                 ViewTestServlet.getViewLocator().getAllViewClasses());
-        Collections.sort(classes, Comparator.comparing(Class::getName));
+        Comparator<Class<? extends View>> comparator = Comparator
+                .comparing(Class::getName);
+        Collections.sort(classes, comparator);
 
         String lastPackage = "";
         viewSelect.appendChild(ElementFactory.createOption());

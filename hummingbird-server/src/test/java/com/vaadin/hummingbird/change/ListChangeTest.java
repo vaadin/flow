@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2016 Vaadin Ltd.
+ * Copyright 2000-2017 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,14 +33,14 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class ListChangeTest {
-    private NodeList<?> feature = AbstractNodeFeatureTest
+    private NodeList<StateNode> feature = AbstractNodeFeatureTest
             .createFeature(ElementChildrenList.class);
 
     @Test
     public void testBasicJson() {
         StateNode child1 = StateNodeTest.createEmptyNode("child1");
         StateNode child2 = StateNodeTest.createEmptyNode("child2");
-        ListSpliceChange change = new ListSpliceChange(feature, true, 0, 1,
+        ListAddChange<StateNode> change = new ListAddChange<>(feature, true, 0,
                 Arrays.asList(child1, child2));
 
         JsonObject json = change.toJson(null);
@@ -53,8 +53,6 @@ public class ListChangeTest {
                 json.getString(JsonConstants.CHANGE_TYPE));
         Assert.assertEquals(0,
                 (int) json.getNumber(JsonConstants.CHANGE_SPLICE_INDEX));
-        Assert.assertEquals(1,
-                (int) json.getNumber(JsonConstants.CHANGE_SPLICE_REMOVE));
 
         JsonArray addNodes = json
                 .getArray(JsonConstants.CHANGE_SPLICE_ADD_NODES);
@@ -66,7 +64,7 @@ public class ListChangeTest {
 
     @Test
     public void testZeroRemoveNotInJson() {
-        ListSpliceChange change = new ListSpliceChange(feature, false, 1, 0,
+        ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1,
                 Arrays.asList());
 
         JsonObject json = change.toJson(null);
@@ -76,7 +74,7 @@ public class ListChangeTest {
 
     @Test
     public void testEmptyAddNotInJson() {
-        ListSpliceChange change = new ListSpliceChange(feature, false, 1, 0,
+        ListAddChange<StateNode> change = new ListAddChange<>(feature, false, 1,
                 Arrays.asList());
 
         JsonObject json = change.toJson(null);
