@@ -15,7 +15,9 @@
  */
 package com.vaadin.ui;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -81,13 +83,32 @@ public abstract class Composite<T extends Component> extends Component {
         Type type = GenericTypeReflector.getTypeParameter(
                 compositeClass.getGenericSuperclass(),
                 Composite.class.getTypeParameters()[0]);
-        if (type != null && type instanceof Class) {
+        if (type instanceof Class) {
             return ((Class<?>) type).asSubclass(Component.class);
         }
-        throw new IllegalStateException(
-                "Could not determine the composite content type for "
-                        + compositeClass.getName() + ". "
-                        + "You must override initContent() to create the content for composite subclasses where automatic type detection can't work.");
+        throw new IllegalStateException(getExceptionMessage(type));
+    }
+
+    private static String getExceptionMessage(Type type) {
+        if (type == null) {
+            return "Composite is used as raw type: either add type information or override initContent().";
+        }
+
+        String baseMessage = String.format(
+                "Could not determine the composite content type for %s. ",
+                type.getTypeName());
+
+        if (type instanceof TypeVariable) {
+            return baseMessage
+                    + "It is a TypeVariable: either specify exact type or override initContent().";
+        }
+
+        if (type instanceof ParameterizedType) {
+            return baseMessage
+                    + "It is a ParameterizedType: either specify exact type or override initContent().";
+        }
+
+        return baseMessage + "Override initContent().";
     }
 
     /**
