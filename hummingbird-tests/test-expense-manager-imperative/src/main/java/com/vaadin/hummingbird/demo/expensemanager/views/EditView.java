@@ -1,5 +1,7 @@
 package com.vaadin.hummingbird.demo.expensemanager.views;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 import com.vaadin.annotations.EventHandler;
@@ -184,7 +186,7 @@ public class EditView extends Div implements View {
             caption.setText("Edit Expense");
             merchant.setValue(current.getMerchant());
             total.setValue(current.getTotal().toString());
-            date.setValue(current.getDate());
+            date.setValue(current.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
             comment.setValue(current.getComment());
             image.setSrc(current.getReceiptUrl());
         }
@@ -213,7 +215,7 @@ public class EditView extends Div implements View {
         }
         current.setTotal(value);
 
-        current.setDate(date.getValue());
+        current.setDate(LocalDate.parse(date.getValue()));
         if (date.getValue() == null) {
             error.setText("Please set a date");
             return;

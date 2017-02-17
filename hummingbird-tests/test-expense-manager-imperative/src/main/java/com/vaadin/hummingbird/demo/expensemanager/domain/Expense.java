@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -24,7 +25,7 @@ import elemental.json.JsonValue;
  */
 public final class Expense implements Serializable {
 
-    private Date date = new Date();
+    private LocalDate date = LocalDate.now();
     private Integer id;
     private String merchant = "";
     private Double total = 0d;
@@ -35,33 +36,34 @@ public final class Expense implements Serializable {
     public final static SimpleDateFormat dtFormat = new SimpleDateFormat("yyyy-MM-dd");
     public final static DecimalFormat numFormat = new DecimalFormat("#,###.00");
 
-    public String getDate() {
-        return dtFormat.format(date);
+//    public String getDate() {
+//        return date;
+//    }
+
+    public LocalDate getDate() {
+        return date;
     }
 
-    public LocalDate localDate() {
-        return toLocalDate(date);
+    public void setDate(LocalDate dstr) {
+        this.date = dstr;
     }
 
-    public void setDate(String dstr) {
-        this.date = parseDate(dstr);
-    }
+//    public static Date parseDate(String dstr) {
+//        try {
+//            return dstr == null || dstr.isEmpty() ? null : dtFormat.parse(dstr);
+//        } catch (Exception e) {
+//            System.out.println(e.getMessage());
+//            throw new RuntimeException(e.getMessage());
+//        }
+//    }
 
-    public static Date parseDate(String dstr) {
-        try {
-            return dstr == null || dstr.isEmpty() ? null : dtFormat.parse(dstr);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-    public static LocalDate toLocalDate(Date date) {
-        return date == null ? null : LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), ZoneId.systemDefault()).toLocalDate();
-    }
+//    public static LocalDate toLocalDate(Date date) {
+//        return date == null ? null : LocalDateTime.ofInstant(Instant.ofEpochMilli(date.getTime()), ZoneId.systemDefault()).toLocalDate();
+//    }
 
-    public void setLocalDate(Date date) {
-        this.date = date;
-    }
+//    public void setLocalDate(Date date) {
+//        this.date = date;
+//    }
 
     public Integer getId() {
         return id;
@@ -132,7 +134,7 @@ public final class Expense implements Serializable {
         o.put("total", total);
         o.put("status", status);
         o.put("comment", comment);
-        o.put("date", getDate());
+        o.put("date", getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         return o;
     }
 
