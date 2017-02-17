@@ -18,7 +18,6 @@ package com.vaadin.util;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.io.Serializable;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -50,6 +49,7 @@ public class ReflectTools implements Serializable {
     static final String CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS = "Unable to create an instance of {0}. Make sure the class is static if it is an inner class.";
     static final String CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION = "Unable to create an instance of {0}. Make sure the class is public and that is has a public no-arg constructor.";
     static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of {0}. Make sure the class has a public no-arg constructor.";
+    static final String CREATE_INSTANCE_FAILED_LOCAL_CLASS = "Unable to create an instance of LocalClass {0}. Move class declaration outside the method.";
     static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of {0}. The constructor threw an exception.";
 
     /**
@@ -431,14 +431,16 @@ public class ReflectTools implements Serializable {
      * @return an instance of the class
      */
     public static <T> T createInstance(Class<T> cls) {
-        Constructor<T> constructor;
         try {
-            constructor = cls.getConstructor();
-            return constructor.newInstance();
+            return cls.getConstructor().newInstance();
         } catch (NoSuchMethodException e) {
             if (cls.isMemberClass() && !Modifier.isStatic(cls.getModifiers())) {
                 throw new IllegalArgumentException(MessageFormat.format(
                         CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
+                        cls.getName()), e);
+            } else if (cls.isLocalClass()) {
+                throw new IllegalArgumentException(MessageFormat.format(
+                        CREATE_INSTANCE_FAILED_LOCAL_CLASS,
                         cls.getName()), e);
             } else {
                 throw new IllegalArgumentException(MessageFormat.format(
