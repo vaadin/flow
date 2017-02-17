@@ -15,11 +15,11 @@
  */
 package com.vaadin.ui;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
@@ -46,9 +46,6 @@ import com.vaadin.util.ReflectTools;
  *            the type of the content
  */
 public abstract class Composite<T extends Component> extends Component {
-
-    private static final String MUST_OVERRIDE_INIT_CONTENT = "You must override initContent() to create the content for composite subclasses where automatic type detection can't work.";
-
     private T content;
 
     /**
@@ -75,52 +72,22 @@ public abstract class Composite<T extends Component> extends Component {
      */
     @SuppressWarnings("unchecked")
     protected T initContent() {
-        Class<? extends Component> contentType = findContentType(
-                (Class<? extends Composite<?>>) getClass());
-        if (contentType == null) {
-            throw new IllegalStateException(
-                    "Could not determine the composite content type for "
-                            + getClass().getName() + ". "
-                            + MUST_OVERRIDE_INIT_CONTENT);
-        }
-
-        return (T) ReflectTools.createInstance(contentType);
+        return (T) ReflectTools.createInstance(
+                findContentType((Class<? extends Composite<?>>) getClass()));
     }
 
     private static Class<? extends Component> findContentType(
             Class<? extends Composite<?>> compositeClass) {
-        Class<?> baseType = compositeClass;
-        while (baseType != Composite.class) {
-            Type genericParentType = baseType.getGenericSuperclass();
-            if (genericParentType instanceof ParameterizedType) {
-                ParameterizedType pt = (ParameterizedType) genericParentType;
-                if (pt.getRawType() == Composite.class) {
-                    Type[] typeArguments = pt.getActualTypeArguments();
-
-                    if (typeArguments.length != 1) {
-                        throw new IllegalStateException(
-                                "Automatic content type discovery does not work because "
-                                        + baseType
-                                        + " doesn't have exactly one type parameter. "
-                                        + MUST_OVERRIDE_INIT_CONTENT);
-                    }
-
-                    Type typeParameter = typeArguments[0];
-                    if (!(typeParameter instanceof Class)) {
-                        throw new IllegalStateException(
-                                "Automatic content type discovery does not work because "
-                                        + baseType
-                                        + " type parameter is variable. "
-                                        + MUST_OVERRIDE_INIT_CONTENT);
-                    }
-
-                    return ((Class<?>) typeParameter)
-                            .asSubclass(Component.class);
-                }
-            }
-            baseType = baseType.getSuperclass();
+        Type type = GenericTypeReflector.getTypeParameter(
+                compositeClass.getGenericSuperclass(),
+                Composite.class.getTypeParameters()[0]);
+        if (type != null && type instanceof Class) {
+            return ((Class<?>) type).asSubclass(Component.class);
         }
-        return null;
+        throw new IllegalStateException(
+                "Could not determine the composite content type for "
+                        + compositeClass.getName() + ". "
+                        + "You must override initContent() to create the content for composite subclasses where automatic type detection can't work.");
     }
 
     /**
