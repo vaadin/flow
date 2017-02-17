@@ -168,11 +168,26 @@ public class CompositeTest {
         composite.getContent();
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void genericCompositeContentType() {
-        class CompositeWithVariableType<C extends Component>
-                extends Composite<C> {
+    public static class CustomComponent<T> extends UI {
+    }
+
+    @Test
+    public void compositeContentTypeWithSpecifiedType() {
+        class CompositeWithCustomComponent
+                extends Composite<CustomComponent<List<String>>> {
         }
+
+        CompositeWithCustomComponent composite = new CompositeWithCustomComponent();
+
+        assertEquals(CustomComponent.class, composite.getContent().getClass());
+    }
+
+    public static class CompositeWithVariableType<C extends Component>
+            extends Composite<C> {
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void compositeContentTypeWithTypeVariable() {
         class CompositeWithComposite
                 extends Composite<CompositeWithVariableType<TestComponent>> {
         }

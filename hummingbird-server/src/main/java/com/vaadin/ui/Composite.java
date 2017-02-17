@@ -83,8 +83,8 @@ public abstract class Composite<T extends Component> extends Component {
         Type type = GenericTypeReflector.getTypeParameter(
                 compositeClass.getGenericSuperclass(),
                 Composite.class.getTypeParameters()[0]);
-        if (type instanceof Class) {
-            return ((Class<?>) type).asSubclass(Component.class);
+        if (type instanceof Class || type instanceof ParameterizedType) {
+            return GenericTypeReflector.erase(type).asSubclass(Component.class);
         }
         throw new IllegalStateException(getExceptionMessage(type));
     }
@@ -94,21 +94,15 @@ public abstract class Composite<T extends Component> extends Component {
             return "Composite is used as raw type: either add type information or override initContent().";
         }
 
-        String baseMessage = String.format(
-                "Could not determine the composite content type for %s. ",
-                type.getTypeName());
-
         if (type instanceof TypeVariable) {
-            return baseMessage
-                    + "It is a TypeVariable: either specify exact type or override initContent().";
+            return String.format(
+                    "Could not determine the composite content type for TypeVariable '%s'. "
+                            + "Either specify exact type or override initContent().",
+                    type.getTypeName());
         }
-
-        if (type instanceof ParameterizedType) {
-            return baseMessage
-                    + "It is a ParameterizedType: either specify exact type or override initContent().";
-        }
-
-        return baseMessage + "Override initContent().";
+        return String.format(
+                "Could not determine the composite content type for %s. Override initContent().",
+                type.getTypeName());
     }
 
     /**
