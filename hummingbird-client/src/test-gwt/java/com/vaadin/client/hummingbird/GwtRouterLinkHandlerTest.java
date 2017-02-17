@@ -144,24 +144,6 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         assertEventDefaultNotPrevented();
     }
 
-    // FIXME see https://github.com/vaadin/hummingbird/issues/1245 for details
-//    public void testRouterLink_anchorWithExternalRouterLink_eventNotIntercepted() {
-//        currentEvent = null;
-//        assertInvocations(0);
-//
-//        Element target = createTarget("a", "http://localhost:120/bar", true);
-//        boundElement.appendChild(target);
-//        try {
-//            fireClickEvent(target);
-//        } catch (JavaScriptException e) {
-//            // Happens because localhost:120 does not answer
-//            assertTrue(e.getMessage().contains("HttpHostConnectException"));
-//        }
-//
-//        assertInvocations(0);
-//        assertEventDefaultNotPrevented();
-//    }
-
     private void assertInvocations(int size) {
         assertEquals("Invalid rpc invocations amount", size,
                 invocations.length());
