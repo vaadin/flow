@@ -1,6 +1,5 @@
 package com.vaadin.client.hummingbird;
 
-import com.google.gwt.core.client.JavaScriptException;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.ScrollPositionHandler;
@@ -140,23 +139,6 @@ public class GwtRouterLinkHandlerTest extends ClientEngineTestBase {
         Element target = createTarget("a", "foobar", true);
         boundElement.appendChild(target);
         fireClickEvent(target, false, false, false, true);
-
-        assertInvocations(0);
-        assertEventDefaultNotPrevented();
-    }
-
-    public void testRouterLink_anchorWithExternalRouterLink_eventNotIntercepted() {
-        currentEvent = null;
-        assertInvocations(0);
-
-        Element target = createTarget("a", "http://localhost:120/bar", true);
-        boundElement.appendChild(target);
-        try {
-            fireClickEvent(target);
-        } catch (JavaScriptException e) {
-            // Happens because localhost:120 does not answer
-            assertTrue(e.getMessage().contains("HttpHostConnectException"));
-        }
 
         assertInvocations(0);
         assertEventDefaultNotPrevented();
