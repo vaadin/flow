@@ -1,0 +1,10 @@
+{
+  "csrfToken": "${securityKey}",
+    "rpc": [{
+        "type": "event",
+        "node": 78,
+        "event": "click"
+    }],
+    "syncId": ${syncId},
+    "clientId": ${clientId}
+}

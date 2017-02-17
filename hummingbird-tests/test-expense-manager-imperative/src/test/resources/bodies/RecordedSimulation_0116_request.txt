@@ -1,0 +1,21 @@
+{
+  "csrfToken": "${securityKey}",
+    "rpc": [{
+        "type": "pSync",
+        "node": 78,
+        "property": "active",
+        "value": false
+    }, {
+        "type": "pSync",
+        "node": 78,
+        "property": "focused",
+        "value": true
+    }, {
+        "type": "pSync",
+        "node": 78,
+        "property": "disabled",
+        "value": false
+    }],
+    "syncId": ${syncId},
+    "clientId": ${clientId}
+}

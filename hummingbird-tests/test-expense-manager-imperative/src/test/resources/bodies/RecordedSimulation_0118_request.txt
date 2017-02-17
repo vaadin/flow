@@ -1,0 +1,42 @@
+{
+  "csrfToken": "${securityKey}",
+    "rpc": [{
+        "type": "event",
+        "node": 105,
+        "event": "items-requested",
+        "data": {
+            "element.itemsParams.count": 50,
+            "element.itemsParams.index": 0
+        }
+    }, {
+        "type": "event",
+        "node": 105,
+        "event": "selected-items-changed",
+        "data": {
+            "element.selection.selected()": []
+        }
+    }, {
+        "type": "event",
+        "node": 105,
+        "event": "selected-items-changed",
+        "data": {
+            "element.selection.selected()": []
+        }
+    }, {
+        "type": "event",
+        "node": 105,
+        "event": "selected-items-changed",
+        "data": {
+            "element.selection.selected()": []
+        }
+    }, {
+        "type": "event",
+        "node": 105,
+        "event": "selected-items-changed",
+        "data": {
+            "element.selection.selected()": []
+        }
+    }],
+    "syncId": ${syncId},
+    "clientId": ${clientId}
+}

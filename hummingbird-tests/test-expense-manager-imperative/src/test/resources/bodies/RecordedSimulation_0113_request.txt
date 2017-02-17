@@ -1,0 +1,14 @@
+{
+  "csrfToken": "${securityKey}",
+    "rpc": [{
+        "type": "event",
+        "node": 7,
+        "event": "items-requested",
+        "data": {
+            "element.itemsParams.count": 25,
+            "element.itemsParams.index": 50
+        }
+    }],
+    "syncId": ${syncId},
+    "clientId": ${clientId}
+}
