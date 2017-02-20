@@ -1,10 +1,11 @@
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,20 +71,6 @@ public class CompositeTest {
 
     }
 
-    public class CompositeWithGenericType extends Composite<TestComponent> {
-        // That's all
-    }
-
-    public class CompositeWithComposite
-            extends Composite<CompositeWithVariableType<TestComponent>> {
-        // That's all
-    }
-
-    public class CompositeWithVariableType<C extends Component>
-            extends Composite<C> {
-        // That's all
-    }
-
     @Before
     public void setup() {
         compositeWithComponent = new CompositeWithComponent() {
@@ -109,13 +96,13 @@ public class CompositeTest {
 
     @Test
     public void getElement_compositeAndCompositeComponent() {
-        Assert.assertEquals(layoutInsideComposite.getElement(),
+        assertEquals(layoutInsideComposite.getElement(),
                 compositeWithComponent.getElement());
     }
 
     @Test
     public void getParentElement_compositeInLayout() {
-        Assert.assertEquals(layoutWithSingleComponentComposite.getElement(),
+        assertEquals(layoutWithSingleComponentComposite.getElement(),
                 compositeWithComponent.getElement().getParent());
     }
 
@@ -127,19 +114,19 @@ public class CompositeTest {
 
     @Test
     public void getParent_compositeInLayout() {
-        Assert.assertEquals(layoutWithSingleComponentComposite,
+        assertEquals(layoutWithSingleComponentComposite,
                 compositeWithComponent.getParent().get());
     }
 
     @Test
     public void getParent_componentInComposite() {
-        Assert.assertEquals(compositeWithComponent,
+        assertEquals(compositeWithComponent,
                 layoutInsideComposite.getParent().get());
     }
 
     @Test
     public void getParent_componentInLayoutInComposite() {
-        Assert.assertEquals(layoutInsideComposite,
+        assertEquals(layoutInsideComposite,
                 componentInsideLayoutInsideComposite.getParent().get());
     }
 
@@ -163,22 +150,86 @@ public class CompositeTest {
 
     @Test
     public void automaticCompositeContentType() {
+        class CompositeWithGenericType extends Composite<TestComponent> {
+        }
+
         CompositeWithGenericType instance = new CompositeWithGenericType();
 
-        Assert.assertEquals(TestComponent.class,
-                instance.getContent().getClass());
+        assertEquals(TestComponent.class, instance.getContent().getClass());
     }
 
     @Test(expected = IllegalStateException.class)
     public void compositeContentTypeWithVariableTypeParameter() {
+        class CompositeWithVariableType<C extends Component>
+                extends Composite<C> {
+        }
+
         CompositeWithVariableType<TestComponent> composite = new CompositeWithVariableType<>();
         composite.getContent();
     }
 
+    public static class CustomComponent<T> extends UI {
+    }
+
+    @Test
+    public void compositeContentTypeWithSpecifiedType() {
+        class CompositeWithCustomComponent
+                extends Composite<CustomComponent<List<String>>> {
+        }
+
+        CompositeWithCustomComponent composite = new CompositeWithCustomComponent();
+
+        assertEquals(CustomComponent.class, composite.getContent().getClass());
+    }
+
+    public static class CompositeWithVariableType<C extends Component>
+            extends Composite<C> {
+    }
+
     @Test(expected = IllegalStateException.class)
-    public void genericCompositeContentType() {
+    public void compositeContentTypeWithTypeVariable() {
+        class CompositeWithComposite
+                extends Composite<CompositeWithVariableType<TestComponent>> {
+        }
+
         CompositeWithComposite composite = new CompositeWithComposite();
         composite.getContent();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void rawContentType() {
+        class CompositeWithRawType extends Composite {
+        }
+
+        CompositeWithRawType composite = new CompositeWithRawType();
+        composite.getContent();
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void noDefaultConstructor() {
+        class NoDefaultConstructor extends Composite<Text> {
+        }
+
+        NoDefaultConstructor composite = new NoDefaultConstructor();
+        composite.getContent();
+    }
+
+    @Test
+    public void compositeHierarchy() {
+        class Class1<T extends Component> extends Composite<T> {
+        }
+        class Class2<T, V extends Component> extends Class1<V> {
+        }
+        class Class3<E extends Component> extends Class2<String, E> {
+        }
+        class Class4<A, B extends Component, C> extends Class3<B> {
+        }
+        class ComplexClass extends Class4<String, UI, Boolean> {
+        }
+
+        ComplexClass composite = new ComplexClass();
+
+        assertEquals(UI.class, composite.getContent().getClass());
     }
 
     // layoutWithSingleComponentComposite (TestLayout)
@@ -327,9 +378,9 @@ public class CompositeTest {
 
     public static void assertElementChildren(Element parent,
             Element... expected) {
-        Assert.assertEquals(expected.length, parent.getChildCount());
+        assertEquals(expected.length, parent.getChildCount());
         for (int i = 0; i < parent.getChildCount(); i++) {
-            Assert.assertEquals(expected[i], parent.getChild(i));
+            assertEquals(expected[i], parent.getChild(i));
         }
     }
 }
