@@ -78,8 +78,8 @@ public class ExpenseService {
                 expense.setStatus(statuses[0]);
             }
             expense.setTotal(random.nextDouble() * 200);
-            expense.setLocalDate(Date.from(
-                    time.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+            expense.setDate(
+                    time.atStartOfDay(ZoneId.systemDefault()).toLocalDate());
             save(expense);
         }
     }
@@ -159,7 +159,7 @@ public class ExpenseService {
                 return asc * f1.getTotal().compareTo(f2.getTotal());
             if (col == 1)
                 return asc * f1.getMerchant().compareTo(f2.getMerchant());
-            return asc * f1.localDate().compareTo(f2.localDate());
+            return asc * f1.getDate().compareTo(f2.getDate());
         });
     }
 
@@ -174,9 +174,9 @@ public class ExpenseService {
                 r = r || statuses[2].equals(o.getStatus());
             r = r || !f.neW && !f.prog && !f.reim;
             if (f.from != null)
-                r = r && o.localDate().isAfter(f.from);
+                r = r && o.getDate().isAfter(f.from);
             if (f.to != null)
-                r = r && o.localDate().isBefore(f.to);
+                r = r && o.getDate().isBefore(f.to);
             if (f.min != null)
                 r = r && o.getTotal() >= f.min;
             if (f.max != null)
@@ -199,18 +199,18 @@ public class ExpenseService {
         Expense expense = null;
         for (int i = 0; i < expenses.size(); i++) {
             if (expense != null
-                    && expense.localDate().getMonthValue() != expenses.get(i)
-                            .localDate().getMonthValue()) {
+                    && expense.getDate().getMonthValue() != expenses.get(i)
+                            .getDate().getMonthValue()) {
                 if (value > 0) {
                     dataArray.set(dataArray.length(), value);
 
-                    String monthName = expense.localDate().getMonth()
+                    String monthName = expense.getDate().getMonth()
                             .getDisplayName(TextStyle.SHORT, Locale.US);
                     String year = "";
                     if (dataArray.length() == 1
-                            || expense.localDate().getYear() != expenses.get(i)
-                                    .localDate().getYear()) {
-                        year = expense.localDate().getYear() + " ";
+                            || expense.getDate().getYear() != expenses.get(i)
+                                    .getDate().getYear()) {
+                        year = expense.getDate().getYear() + " ";
                     }
 
                     categories.append(year + monthName + ",");
@@ -220,7 +220,7 @@ public class ExpenseService {
 
             expense = expenses.get(i);
             value += expense.getTotal();
-            if (expense.localDate().isBefore(LocalDate.now().minusYears(1))) {
+            if (expense.getDate().isBefore(LocalDate.now().minusYears(1))) {
                 break;
             }
         }
