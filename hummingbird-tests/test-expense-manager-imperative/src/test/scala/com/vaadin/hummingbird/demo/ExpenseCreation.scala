@@ -45,7 +45,8 @@ class ExpenseCreation extends Simulation {
       .check(bodyString.saveAs("RESPONSE_DATA"))
       .check(storeUiId)
       .check(storeSecurityKey)
-    ).doIf(session => !session.contains("uiId")) {
+    )
+    .doIf(session => !session.contains("uiId")) {
       exec(session => {
         println("init failed with response:")
         println(session("RESPONSE_DATA").as[String])
@@ -400,17 +401,8 @@ class ExpenseCreation extends Simulation {
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0112_request.txt"))
     )
-      .exec(incrementIds)
-
-      .pause(854 milliseconds)
-      .exec(http("Request Items 51-75")
-        .post(uidlUrl)
-        .headers(uidlHeaders)
-        .body(ElFileBody("RecordedSimulation_0113_request.txt"))
-      )
-      .exec(incrementIds)
-
-      .pause(4)
+    .exec(incrementIds)
+    .pause(4)
   // load
 
   val openNewExpense =
@@ -419,15 +411,15 @@ class ExpenseCreation extends Simulation {
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0114_request.txt"))
     )
-      .exec(incrementIds)
-      .exec(http("Click new expense")
-        .post(uidlUrl)
-        .headers(uidlHeaders)
-        .body(ElFileBody("RecordedSimulation_0115_request.txt"))
-        .check(regex("""add":\["cancel"""))
-      )
-      .exec(incrementIds)
-      .pause(7)
+    .exec(incrementIds)
+    .exec(http("Click new expense")
+      .post(uidlUrl)
+      .headers(uidlHeaders)
+      .body(ElFileBody("RecordedSimulation_0115_request.txt"))
+      .check(regex("""add":\["cancel"""))
+    )
+    .exec(incrementIds)
+    .pause(7)
 
 
   // Open new Expense
@@ -438,33 +430,19 @@ class ExpenseCreation extends Simulation {
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0116_request.txt"))
     )
-      .exec(incrementIds)
+    .exec(incrementIds)
 
-//      .exec(http("request_117")
-//        .post(uidlUrl)
-//        .headers(uidlHeaders)
-//        .body(ElFileBody("RecordedSimulation_0117_request.txt"))
-//      )
-//      .exitHereIfFailed
-//      .exec(incrementIds)
-
-      .pause(419 milliseconds)
-      .exec(http("Click cancel in expense window")
-        .post(uidlUrl)
-        .headers(uidlHeaders)
-        .body(ElFileBody("RecordedSimulation_0118_request.txt"))
-      )
-      .exec(incrementIds)
-
-      .pause(933 milliseconds)
-      .exec(http("Request Items 51-75")
-        .post(uidlUrl)
-        .headers(uidlHeaders)
-        .body(ElFileBody("RecordedSimulation_0119_request.txt")))
-      .exec(incrementIds)
+    .pause(419 milliseconds)
+    .exec(http("Click cancel in expense window")
+      .post(uidlUrl)
+      .headers(uidlHeaders)
+      .body(ElFileBody("RecordedSimulation_0118_request.txt"))
+    )
+    .exec(incrementIds)
+    .pause(933 milliseconds)
   // cancel
 
-// Add .exitHereIfFailed.exec(getBowerFiles) after initialRequest if we want to test with those too.
+  // Add .exitHereIfFailed.exec(getBowerFiles) after initialRequest if we want to test with those too.
   val scn = scenario("RecordedSimulation").exec(
     initialRequest).exitHereIfFailed.exec(loadPage).exitHereIfFailed.exec(openNewExpense).exitHereIfFailed.exec(cancelNewExpense)
 

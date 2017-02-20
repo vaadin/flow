@@ -186,7 +186,7 @@ public class EditView extends Div implements View {
             caption.setText("Edit Expense");
             merchant.setValue(current.getMerchant());
             total.setValue(current.getTotal().toString());
-            date.setValue(current.getDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+            date.setValue(current.getDate().format(Expense.formatter));
             comment.setValue(current.getComment());
             image.setSrc(current.getReceiptUrl());
         }
