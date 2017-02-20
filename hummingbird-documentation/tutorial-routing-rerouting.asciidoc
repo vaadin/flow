@@ -60,3 +60,8 @@ public class ItemsView extends Div implements View {
   }
 }
 ----
+
+[NOTE]
+Rerouting won't affect the url and the URL in the browser will be shown as what was given for the actual navigation.
+Also history will be as if we actually navigated to the url and extra changes won't be added.
+Basically only the view contents will be changed on a reroute.
