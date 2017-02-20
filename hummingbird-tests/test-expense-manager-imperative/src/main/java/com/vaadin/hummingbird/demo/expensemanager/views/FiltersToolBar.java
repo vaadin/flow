@@ -1,5 +1,9 @@
 package com.vaadin.hummingbird.demo.expensemanager.views;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.components.paper.PaperButton;
 import com.vaadin.hummingbird.components.paper.PaperCheckbox;
@@ -74,7 +78,7 @@ public class FiltersToolBar extends Div implements View {
         dateFrom = new VaadinDatePicker();
         div5.add(dateFrom);
         dateFrom.addValueChangedListener(e -> {
-            filters.from = Expense.toLocalDate(Expense.parseDate(e.value));
+            filters.from = LocalDate.parse(e.value);
             updateUI();
         });
         dateFrom.setId("from");
@@ -89,7 +93,7 @@ public class FiltersToolBar extends Div implements View {
         dateTo = new VaadinDatePicker();
         div5.add(dateTo);
         dateTo.addValueChangedListener(e -> {
-            filters.to = Expense.toLocalDate(Expense.parseDate(e.value));
+            filters.to = LocalDate.parse(e.value);
             updateUI();
         });
         dateTo.setId("to");
