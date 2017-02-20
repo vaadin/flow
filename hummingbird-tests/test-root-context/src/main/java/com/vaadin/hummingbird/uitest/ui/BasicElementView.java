@@ -79,6 +79,11 @@ public class BasicElementView extends AbstractDivView {
         s.set("fontWeight", "bold");
 
         Element elementContainer = ElementFactory.createDiv();
+
+        Element toRemove = ElementFactory.createDiv("To Remove")
+                .setAttribute("id", "to-remove");
+        elementContainer.appendChild(toRemove);
+
         elementContainer.setAttribute("id", "addremovecontainer");
         Element addRemoveButton = ElementFactory
                 .createButton("Add and remove element");
@@ -89,6 +94,9 @@ public class BasicElementView extends AbstractDivView {
             Element div = ElementFactory.createDiv("foobar");
             elementContainer.appendChild(div);
             elementContainer.removeChild(div);
+
+            elementContainer.removeChild(toRemove);
+            elementContainer.appendChild(toRemove);
 
             // Now let's have two "add" operation and then two "remove"
             // operation so that removal has an addition right before which
@@ -107,6 +115,7 @@ public class BasicElementView extends AbstractDivView {
 
         mainElement.appendChild(helloWorldElement, button, input,
                 addRemoveButton, elementContainer);
+
     }
 
 }

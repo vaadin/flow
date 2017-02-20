@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.17-SNAPSHOT</version>
+		<version>0.0.18-SNAPSHOT</version>
 	</parent>
 	<artifactId>hummingbird-server</artifactId>
 	<name>Hummingbird Server</name>
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-push</artifactId>
-			<version>0.0.17-SNAPSHOT</version>
+			<version>0.0.18-SNAPSHOT</version>
 		</dependency>
 
 
@@ -94,10 +94,16 @@
 			<artifactId>byte-buddy</artifactId>
 			<version>1.4.0</version>
 		</dependency>
-		
+
+		<!-- Small reflection library -->
+		<dependency>
+			<groupId>com.googlecode.gentyref</groupId>
+			<artifactId>gentyref</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 
 		<!-- For manual testing with PostgreSQL (see SQLTestConstants) -->
-		<!-- <dependency> <groupId>postgresql</groupId> <artifactId>postgresql</artifactId> 
+		<!-- <dependency> <groupId>postgresql</groupId> <artifactId>postgresql</artifactId>
 			<version>9.1-901.jdbc3</version> <scope>test</scope> </dependency> -->
 
 	</dependencies>

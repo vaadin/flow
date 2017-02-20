@@ -95,6 +95,13 @@ public class ReflectToolsTest {
                 ConstructorThrowsExceptionClass.class);
     }
 
+    @Test
+    public void localClass() {
+        class LocalClass {
+        }
+        assertError(ReflectTools.CREATE_INSTANCE_FAILED_LOCAL_CLASS, LocalClass.class);
+    }
+
     private void assertError(String expectedError, Class<?> cls) {
         try {
             ReflectTools.createInstance(cls);
