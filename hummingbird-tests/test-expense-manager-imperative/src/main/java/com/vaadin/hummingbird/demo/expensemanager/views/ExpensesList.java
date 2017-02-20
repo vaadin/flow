@@ -31,7 +31,7 @@ public class ExpensesList extends Div implements View {
 
         grid.addItemsRequestedListener(e -> {
             JsonArray items = ExpenseService.INSTANCE.toJson(filters, col, asc,
-                    0, 500);
+                    e.index, e.count);
             e.callback(items, items.length());
         });
 
