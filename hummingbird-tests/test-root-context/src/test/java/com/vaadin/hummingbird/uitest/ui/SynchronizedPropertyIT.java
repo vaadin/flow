@@ -48,8 +48,10 @@ public class SynchronizedPropertyIT extends PhantomJSTest {
         WebElement syncOnKeyUp = findElement(By.id("syncOnKeyUp"));
         WebElement labelSyncOnKeyUp = findElement(By.id("syncOnKeyUpLabel"));
         syncOnKeyUp.sendKeys("123");
+        System.currentTimeMillis(); // minimal delay before checking text
         Assert.assertEquals("Server value: 123", labelSyncOnKeyUp.getText());
         syncOnKeyUp.sendKeys("456");
+        System.currentTimeMillis(); // minimal delay before checking text
         Assert.assertEquals("Server value: 123456", labelSyncOnKeyUp.getText());
     }
 
