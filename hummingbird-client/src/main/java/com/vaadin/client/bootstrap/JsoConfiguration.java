@@ -160,10 +160,9 @@ public final class JsoConfiguration extends JavaScriptObject {
      */
     public native String getAtmosphereJSVersion()
     /*-{
-        if ($wnd.jQueryVaadin != undefined){
-            return $wnd.jQueryVaadin.atmosphere.version;
-        }
-        else {
+        if (@com.vaadin.client.communication.AtmospherePushConnection::isAtmosphereLoaded()()) {
+            return $wnd.vaadinPush.atmosphere.version;
+        } else {
             return null;
         }
     }-*/;
