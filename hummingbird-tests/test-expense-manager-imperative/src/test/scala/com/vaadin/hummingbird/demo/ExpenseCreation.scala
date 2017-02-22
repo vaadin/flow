@@ -1,3 +1,4 @@
+package scala.com.vaadin.hummingbird.demo
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
