@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.LocationChangeEvent;
+import com.vaadin.hummingbird.router.RequestParameters;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.uitest.servlet.ViewClassLocator;
@@ -47,7 +48,7 @@ public class SerializationTest {
                 View view = viewClass.newInstance();
                 view.onLocationChange(new LocationChangeEvent(new Router(), ui,
                         new Location(""), Collections.emptyList(),
-                        Collections.emptyMap()));
+                        Collections.emptyMap(), RequestParameters.empty()));
                 try {
                     Assert.assertNotNull(serializeDeserialize(view));
                 } catch (Exception e) {

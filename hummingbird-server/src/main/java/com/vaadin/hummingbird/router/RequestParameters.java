@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.router;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
  *
  * @author Vaadin Ltd.
  */
-public class RequestParameters {
+public class RequestParameters implements Serializable {
     private final Map<String, String[]> fullParameterMap;
     private final Map<String, String> simpleParameterMap;
 

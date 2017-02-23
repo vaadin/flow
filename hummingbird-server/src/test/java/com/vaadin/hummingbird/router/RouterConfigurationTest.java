@@ -241,7 +241,7 @@ public class RouterConfigurationTest {
             conf.setParentView(ParentView.class, AnotherParentView.class);
         });
 
-        router.navigate(ui, new Location("route"));
+        router.navigate(ui, new Location("route"), RequestParameters.empty());
 
         Assert.assertEquals(ParentView.class,
                 router.getConfiguration().getParentView(TestView.class).get());
@@ -263,7 +263,7 @@ public class RouterConfigurationTest {
             conf.setParentView(ParentView.class, AnotherParentView.class);
         });
 
-        router.navigate(ui, new Location("route"));
+        router.navigate(ui, new Location("route"), RequestParameters.empty());
         Assert.assertEquals(ParentView.class,
                 router.getConfiguration().getParentView(TestView.class).get());
         Assert.assertEquals(AnotherParentView.class, router.getConfiguration()
@@ -545,29 +545,23 @@ public class RouterConfigurationTest {
     @Test(expected = IllegalArgumentException.class)
     public void testSetErrorView_nullView_throws() {
         Router router = new Router();
-        router.reconfigure(conf -> {
-            conf.setErrorView(null, ParentView.class);
-        });
+        router.reconfigure(conf -> conf.setErrorView(null, ParentView.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testSetErrorView_nullParentView_throws() {
         Router router = new Router();
-        router.reconfigure(conf -> {
-            conf.setErrorView(TestView.class, null);
-        });
+        router.reconfigure(conf -> conf.setErrorView(TestView.class, null));
     }
 
     @Test
     public void normalViewStatusCode() {
         Router router = new Router();
-        router.reconfigure(c -> {
-            c.setRoute("*", ParentView.class);
-        });
+        router.reconfigure(c -> c.setRoute("*", ParentView.class));
         int statusCode = router.getConfiguration()
                 .resolveRoute(new Location("")).get()
-                .handle(new NavigationEvent(router, new Location(""),
-                        new UI()));
+                .handle(new NavigationEvent(router, new Location(""), new UI(),
+                        RequestParameters.empty()));
 
         Assert.assertEquals(HttpServletResponse.SC_OK, statusCode);
     }
@@ -575,8 +569,9 @@ public class RouterConfigurationTest {
     @Test
     public void defaultErrorHandlerStatusCode() {
         Router router = new Router();
-        int statusCode = router.getConfiguration().getErrorHandler().handle(
-                new NavigationEvent(router, new Location(""), new UI()));
+        int statusCode = router.getConfiguration().getErrorHandler()
+                .handle(new NavigationEvent(router, new Location(""), new UI(),
+                        RequestParameters.empty()));
 
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }
@@ -587,8 +582,9 @@ public class RouterConfigurationTest {
         router.reconfigure(c -> {
             c.setErrorView(ParentView.class);
         });
-        int statusCode = router.getConfiguration().getErrorHandler().handle(
-                new NavigationEvent(router, new Location(""), new UI()));
+        int statusCode = router.getConfiguration().getErrorHandler()
+                .handle(new NavigationEvent(router, new Location(""), new UI(),
+                        RequestParameters.empty()));
 
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }

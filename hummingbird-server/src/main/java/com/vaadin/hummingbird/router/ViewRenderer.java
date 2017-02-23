@@ -184,7 +184,7 @@ public abstract class ViewRenderer implements NavigationHandler {
         }
 
         return new LocationChangeEvent(event.getSource(), event.getUI(),
-                event.getLocation(), viewChain, routePlaceholders);
+                event.getLocation(), viewChain, routePlaceholders, event.getRequestParameters());
     }
 
     /**

@@ -124,7 +124,7 @@ public class ViewRendererTest {
     private final Router router = new Router();
     private final UI ui = new UI();
     private final NavigationEvent dummyEvent = new NavigationEvent(router,
-            new Location(""), ui);
+            new Location(""), ui, RequestParameters.empty());
 
     @Test
     public void showSimpleView() {
@@ -261,7 +261,7 @@ public class ViewRendererTest {
     @Test
     public void routeParamtersInEvent() {
         router.reconfigure(c -> c.setRoute("foo/{name}/*", TestView.class));
-        router.navigate(ui, new Location("foo/bar/baz/"));
+        router.navigate(ui, new Location("foo/bar/baz/"), RequestParameters.empty());
         TestView testView = (TestView) ui.getInternals().getActiveViewChain()
                 .get(0);
 
