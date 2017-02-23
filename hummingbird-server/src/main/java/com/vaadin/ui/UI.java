@@ -19,6 +19,7 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -33,6 +34,7 @@ import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.router.Location;
+import com.vaadin.hummingbird.router.RequestParameters;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
@@ -665,12 +667,29 @@ public class UI extends Component
      * location must be a relative path without any ".." segments.
      *
      * @param location
-     *            the location to navigate to, not <code>null</code>
+     *            the location to navigate to, not {@code null}
      */
     public void navigateTo(String location) {
-        if (location == null) {
-            throw new IllegalArgumentException("Location may not be null");
-        }
+        navigateTo(location, RequestParameters.empty());
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given location and
+     * request parameters. The location must be a relative path without any ".."
+     * segments.
+     *
+     * @param location
+     *            the location to navigate to, not {@code null}
+     * @param requestParameters
+     *            request parameters that are used for navigation, not
+     *            {@code null}
+     */
+    public void navigateTo(String location,
+            RequestParameters requestParameters) {
+        Objects.requireNonNull(location, "Location may not be null");
+        Objects.requireNonNull(requestParameters,
+                "Request parameters may not be null");
+
         if (!getRouter().isPresent()) {
             throw new IllegalStateException(
                     "Can't navigate when UI has no router");
