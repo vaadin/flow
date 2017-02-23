@@ -172,6 +172,12 @@ public class ElementTemplateBindingStrategy
     private void bindOverrideNode(Element element, MapProperty overrideProperty,
             BinderContext context) {
         StateNode overrideNode = (StateNode) overrideProperty.getValue();
+        /*
+         * Fix for #1034: OverrideElementData feature could be not available yet
+         * at that point for {@code overrideNode}. Make it explicitly available
+         * so that binder knows how to handle it.
+         */
+        overrideNode.getMap(NodeFeatures.OVERRIDE_DATA);
 
         /*
          * bind checks that the we haven't already bound the same state node
