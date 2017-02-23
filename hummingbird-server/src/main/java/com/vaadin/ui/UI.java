@@ -19,7 +19,6 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -686,9 +685,12 @@ public class UI extends Component
      */
     public void navigateTo(String location,
             RequestParameters requestParameters) {
-        Objects.requireNonNull(location, "Location may not be null");
-        Objects.requireNonNull(requestParameters,
-                "Request parameters may not be null");
+        if (location == null) {
+            throw new IllegalArgumentException("Location may not be null");
+        }
+        if (requestParameters == null) {
+            throw new IllegalArgumentException("Request parameters may not be null");
+        }
 
         if (!getRouter().isPresent()) {
             throw new IllegalStateException(
@@ -700,7 +702,8 @@ public class UI extends Component
         // Enable navigating back
         getPage().getHistory().pushState(null, location);
 
-        getRouter().get().navigate(this, new Location(location));
+        getRouter().get().navigate(this, new Location(location),
+                requestParameters);
     }
 
     /**

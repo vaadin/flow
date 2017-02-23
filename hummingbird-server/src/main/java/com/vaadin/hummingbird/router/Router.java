@@ -75,7 +75,7 @@ public class Router implements Serializable {
 
         String pathInfo = initRequest.getPathInfo();
 
-        String path;
+        final String path;
         if (pathInfo == null) {
             path = "";
         } else {
@@ -83,14 +83,17 @@ public class Router implements Serializable {
             path = pathInfo.substring(1);
         }
 
+        final RequestParameters requestParameters = RequestParameters
+                .full(initRequest.getParameterMap());
+
         ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
             String newLocation = e.getLocation();
 
-            navigate(ui, new Location(newLocation));
+            navigate(ui, new Location(newLocation), requestParameters);
         });
 
         Location location = new Location(path);
-        int statusCode = navigate(ui, location);
+        int statusCode = navigate(ui, location, requestParameters);
 
         VaadinResponse response = VaadinService.getCurrentResponse();
         if (response != null) {
@@ -106,15 +109,18 @@ public class Router implements Serializable {
      *            the UI to update
      * @param location
      *            the location to navigate to
+     * @param requestParameters
+     *            request parameters that are used for navigation
      * @return the HTTP status code resulting from the navigation
      */
-    public int navigate(UI ui, Location location) {
+    public int navigate(UI ui, Location location,
+            RequestParameters requestParameters) {
         // Read volatile field only once per navigation
         ImmutableRouterConfiguration currentConfig = configuration;
         assert currentConfig.isConfigured();
 
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
-                ui);
+                ui, requestParameters);
 
         Optional<NavigationHandler> handler = currentConfig.getResolver()
                 .resolve(navigationEvent);

@@ -25,28 +25,34 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  */
 public class NavigationEvent extends EventObject {
-
     private final Location location;
     private final UI ui;
+    private final RequestParameters requestParameters;
 
     /**
      * Creates a new navigation event.
      *
      * @param router
-     *            the router handling the navigation, not <code>null</code>
+     *            the router handling the navigation, not {@code null}
      * @param location
-     *            the new location, not <code>null</code>
+     *            the new location, not {@code null}
      * @param ui
-     *            the UI in which the navigation occurs, not <code>null</code>
+     *            the UI in which the navigation occurs, not {@code null}
+     * @param requestParameters
+     *            request parameters that are used for navigation, not
+     *            {@code null}
      */
-    public NavigationEvent(Router router, Location location, UI ui) {
+    public NavigationEvent(Router router, Location location, UI ui,
+            RequestParameters requestParameters) {
         super(router);
 
         assert location != null;
         assert ui != null;
+        assert requestParameters != null;
 
         this.location = location;
         this.ui = ui;
+        this.requestParameters = requestParameters;
     }
 
     @Override
@@ -57,7 +63,7 @@ public class NavigationEvent extends EventObject {
     /**
      * Gets the new location.
      *
-     * @return the new location, not <code>null</code>
+     * @return the new location, not {@code null}
      */
     public Location getLocation() {
         return location;
@@ -70,5 +76,14 @@ public class NavigationEvent extends EventObject {
      */
     public UI getUI() {
         return ui;
+    }
+
+    /**
+     * Gets the request parameters used for navigation.
+     *
+     * @return the request parameters
+     */
+    public RequestParameters getRequestParameters() {
+        return requestParameters;
     }
 }
