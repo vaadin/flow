@@ -31,9 +31,9 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 import com.vaadin.hummingbird.template.parser.TemplateResolver;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class TemplateNodeTest {
+public class AngularTemplateNodeTest {
 
     private TemplateResolver nullTemplateResolver = new NullTemplateResolver();
 
@@ -88,7 +88,7 @@ public class TemplateNodeTest {
     }
 
     @HtmlTemplate("main.html")
-    public static class MainWithSubTemplate extends Template {
+    public static class MainWithSubTemplate extends AngularTemplate {
     }
 
     @Test

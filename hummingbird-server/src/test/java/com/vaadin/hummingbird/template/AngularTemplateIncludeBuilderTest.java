@@ -24,17 +24,17 @@ import org.junit.Test;
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class TemplateIncludeBuilderTest {
+public class AngularTemplateIncludeBuilderTest {
 
     @HtmlTemplate("main.html")
-    public static class IncludeTemplate extends Template {
+    public static class IncludeTemplate extends AngularTemplate {
 
     }
 
     @HtmlTemplate("includes-subfolder.html")
-    public static class MultipleIncludeTemplate extends Template {
+    public static class MultipleIncludeTemplate extends AngularTemplate {
 
     }
 

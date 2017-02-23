@@ -15,7 +15,7 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class TemplateWithScriptAndInlineStyleView extends Template {
+public class TemplateWithScriptAndInlineStyleView extends AngularTemplate {
 }

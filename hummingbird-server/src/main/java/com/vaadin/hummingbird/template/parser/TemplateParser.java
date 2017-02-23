@@ -131,10 +131,10 @@ public class TemplateParser {
         if (childNodeSize != 1) {
             if (childNodeSize == 0) {
                 throw new TemplateParseException(
-                        "Template must not be empty. " + ROOT_CLARIFICATION);
+                        "AngularTemplate must not be empty. " + ROOT_CLARIFICATION);
             } else {
                 throw new TemplateParseException(
-                        "Template must not have multiple root elements. "
+                        "AngularTemplate must not have multiple root elements. "
                                 + ROOT_CLARIFICATION);
             }
         }

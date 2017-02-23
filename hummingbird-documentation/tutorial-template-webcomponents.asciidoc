@@ -1,11 +1,11 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Using Web Components in a Template
+= Using Web Components in a AngularTemplate
 
-This tutorial covers how Web Components can be used in Templates. For a basic
-tutorial on Templates, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>.
+This tutorial covers how Web Components can be used in AngularTemplates. For a basic
+tutorial on AngularTemplates, see <<tutorial-template-basic#,Creating A Simple Component Using the AngularTemplate API>>.
 For a basic tutorial on Web Components, see <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>.
 
-Web Components can be used inside Templates just as any other HTML elements,
+Web Components can be used inside AngularTemplates just as any other HTML elements,
 but you need to declare the needed dependencies for the Web Component. Consider
 the following template code which uses three different Web Components:
 
@@ -19,9 +19,9 @@ the following template code which uses three different Web Components:
 ----
 
 For including the needed dependencies, you can use the `@Uses(Component.class)`
-annotation in your Template subclass to specify the Component class that declares
+annotation in your AngularTemplate subclass to specify the Component class that declares
 the actual dependencies needed. This way you can avoid repeating writing the path
-for the component's dependencies using the `@HtmlImport` tag for every Template which uses the Web
+for the component's dependencies using the `@HtmlImport` tag for every AngularTemplate which uses the Web
 Component.
 
 [source,java]
@@ -29,7 +29,7 @@ Component.
 @Uses(PaperInput.class)
 @Uses(PaperTextarea.class)
 @Uses(VaadinDatePicker.class)
-class Form extends Template {
+class Form extends AngularTemplate {
   // Implementation omitted
 }
 

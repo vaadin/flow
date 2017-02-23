@@ -19,7 +19,7 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Exclude;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 @CodeFor("tutorial-template-model-bean.asciidoc")
 public class BeanInTemplateModel {
@@ -79,7 +79,7 @@ public class BeanInTemplateModel {
         public Person getPerson();
     }
 
-    public class Form extends Template {
+    public class Form extends AngularTemplate {
         public Form() {
             Person person = new Person("John", "Doe", 82);
             getModel().setPerson(person);

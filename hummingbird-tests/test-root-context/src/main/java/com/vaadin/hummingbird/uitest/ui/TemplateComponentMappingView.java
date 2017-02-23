@@ -21,9 +21,9 @@ import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Input;
 import com.vaadin.hummingbird.html.Span;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class TemplateComponentMappingView extends Template {
+public class TemplateComponentMappingView extends AngularTemplate {
 
     static final String LOG_ID = "log";
 

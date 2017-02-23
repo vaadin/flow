@@ -16,9 +16,9 @@
 package com.vaadin.hummingbird.uitest.ui.template;
 
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class TemplateTextFormattingView extends Template {
+public class TemplateTextFormattingView extends AngularTemplate {
 
     public interface Model extends TemplateModel {
         public void setIntZero(int i);

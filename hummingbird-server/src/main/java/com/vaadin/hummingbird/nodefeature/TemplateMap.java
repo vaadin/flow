@@ -116,7 +116,7 @@ public class TemplateMap extends NodeMap {
 
         Optional<ChildSlotNode> maybeSlot = ChildSlotNode.find(rootTemplate);
         if (!maybeSlot.isPresent()) {
-            throw new IllegalStateException("Template has no child slot");
+            throw new IllegalStateException("AngularTemplate has no child slot");
         }
 
         ChildSlotNode childTemplateNode = maybeSlot.get();

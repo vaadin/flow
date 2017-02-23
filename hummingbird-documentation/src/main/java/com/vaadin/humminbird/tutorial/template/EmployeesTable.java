@@ -5,10 +5,10 @@ import java.util.List;
 import com.vaadin.annotations.Include;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 @CodeFor("tutorial-template-for.asciidoc")
-public class EmployeesTable extends Template {
+public class EmployeesTable extends AngularTemplate {
 
     public class Employee {
         private String name;

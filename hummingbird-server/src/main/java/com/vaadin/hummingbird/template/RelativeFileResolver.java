@@ -81,7 +81,7 @@ public class RelativeFileResolver implements TemplateResolver {
                 .getResourceAsStream(absoluteFilename.substring(1));
         if (templateContentStream == null) {
             throw new TemplateParseException(
-                    "Template " + absoluteFilename + " could not be found");
+                    "AngularTemplate " + absoluteFilename + " could not be found");
         }
         return templateContentStream;
     }

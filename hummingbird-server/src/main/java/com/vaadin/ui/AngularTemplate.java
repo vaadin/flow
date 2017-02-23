@@ -66,7 +66,7 @@ import com.vaadin.util.ReflectTools;
  *
  * @author Vaadin Ltd
  */
-public abstract class Template extends Component implements HasChildView {
+public abstract class AngularTemplate extends Component implements HasChildView {
     private final StateNode stateNode = TemplateElementStateProvider
             .createRootNode();
 
@@ -75,7 +75,7 @@ public abstract class Template extends Component implements HasChildView {
     /**
      * Creates a new template.
      */
-    public Template() {
+    public AngularTemplate() {
         // Will set element later
         super(null);
 
@@ -95,7 +95,7 @@ public abstract class Template extends Component implements HasChildView {
      * @param templateFileName
      *            the template file name, not {@code null}
      */
-    protected Template(String templateFileName) {
+    protected AngularTemplate(String templateFileName) {
         // Will set element later
         super(null);
 
@@ -109,7 +109,7 @@ public abstract class Template extends Component implements HasChildView {
      *            the HTML snippet input stream
      *
      */
-    protected Template(InputStream inputStream) {
+    protected AngularTemplate(InputStream inputStream) {
         // Will set element later
         super(null);
 
@@ -161,7 +161,7 @@ public abstract class Template extends Component implements HasChildView {
     }
 
     private void mapComponents(Class<?> cls) {
-        if (cls.getSuperclass() != Template.class) {
+        if (cls.getSuperclass() != AngularTemplate.class) {
             // Parent fields
             mapComponents(cls.getSuperclass());
         }

@@ -28,7 +28,7 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.parser.TemplateParser;
 import com.vaadin.hummingbird.template.parser.TemplateResolver;
 
-public class TemplateParserTest {
+public class AngularTemplateParserTest {
     private TemplateResolver nullTemplateResolver = new NullTemplateResolver();
 
     @Test

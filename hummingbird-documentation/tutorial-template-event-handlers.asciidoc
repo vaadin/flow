@@ -1,8 +1,8 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Handling User Events in a Template
+= Handling User Events in a AngularTemplate
 
 == Client Side Event Handlers
-Template defines a special syntax `(event-name)="javascriptCode"` for attaching client side event handlers to elements:
+AngularTemplate defines a special syntax `(event-name)="javascriptCode"` for attaching client side event handlers to elements:
 
 [source,html]
 ----
@@ -19,8 +19,8 @@ The `$element` variable refers to the element for which the event handler was de
 == Server Side Event Handlers
 To handle a DOM event in a template on the server side, you have two options:
 
-1. Use a client side listener which calls the server, e.g. `(event)=$server.myEventHandler(myParameters)` to invoke the `myEventHandler` method in the server side `Template` class.
-2. Find a reference to the element in the server `Template` class and attach a listener. This is similar to what is done in <<tutorial-event-listener#,Listening to User Events>>
+1. Use a client side listener which calls the server, e.g. `(event)=$server.myEventHandler(myParameters)` to invoke the `myEventHandler` method in the server side `AngularTemplate` class.
+2. Find a reference to the element in the server `AngularTemplate` class and attach a listener. This is similar to what is done in <<tutorial-event-listener#,Listening to User Events>>
 
 === Event Listener in the HTML Template
 In the following template a click listener is attached to the button and the event handler calls the `sayHello` method on the server:
@@ -41,7 +41,7 @@ The server side template class defines the published `sayHello` method using the
 
 [source,java]
 ----
-public class MyTemplate extends Template {
+public class MyTemplate extends AngularTemplate {
   public interface MyModel extends TemplateModel {
       public void setHelloText(String helloText);
   }
@@ -78,11 +78,11 @@ If you use a server side event listener, you can use the same template as above 
 </div>
 ----
 
-The server side `Template` will instead map the `<button>` element to a `Button` component and add a click listener to it:
+The server side `AngularTemplate` will instead map the `<button>` element to a `Button` component and add a click listener to it:
 
 [source,java]
 ----
-public class MyTemplate extends Template {
+public class MyTemplate extends AngularTemplate {
   public interface MyModel extends TemplateModel {
       public void setHelloText(String helloText);
   }
@@ -105,4 +105,4 @@ public class MyTemplate extends Template {
 ----
 
 The `@Id` annotation is used here to map a component to an element defined in the template with an appropriate identifier.
-See <<tutorial-template-components#,Adding Components to a Template>> for the details.
+See <<tutorial-template-components#,Adding Components to a AngularTemplate>> for the details.

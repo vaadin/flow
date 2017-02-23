@@ -18,11 +18,11 @@ package com.vaadin.hummingbird.uitest.ui.template;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.ui.Html;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 public class SvgView extends Div implements View {
 
-    public static class SvgTemplate extends Template {
+    public static class SvgTemplate extends AngularTemplate {
 
     }
 

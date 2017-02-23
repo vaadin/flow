@@ -25,8 +25,8 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.ComponentTest.TestComponent;
-import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
@@ -41,7 +41,7 @@ public class EventRpcHandlerTest {
     @Test
     public void templateRootElementEventListener() throws Exception {
         UI ui = new UI();
-        Template t = new InlineTemplate("<root><child></child></root>");
+        AngularTemplate t = new InlineTemplate("<root><child></child></root>");
         Element element = t.getElement();
         ui.add(t);
         AtomicInteger invoked = new AtomicInteger(0);
@@ -55,7 +55,7 @@ public class EventRpcHandlerTest {
     @Test
     public void templateChildElementEventListener() throws Exception {
         UI ui = new UI();
-        Template t = new InlineTemplate("<root><child></child></root>");
+        AngularTemplate t = new InlineTemplate("<root><child></child></root>");
         Element element = t.getElement().getChild(0);
         ui.add(t);
         AtomicInteger invoked = new AtomicInteger(0);

@@ -19,9 +19,9 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class JsInTemplateView extends Template {
+public class JsInTemplateView extends AngularTemplate {
     public interface JsInTemplateModel extends TemplateModel {
         public String getFirstName();
 

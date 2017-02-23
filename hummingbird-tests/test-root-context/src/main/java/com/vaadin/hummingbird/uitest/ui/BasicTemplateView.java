@@ -26,9 +26,9 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class BasicTemplateView extends Template implements View {
+public class BasicTemplateView extends AngularTemplate implements View {
 
     public interface Model extends TemplateModel {
         // Not actually always a string any more, but must define some type for

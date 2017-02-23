@@ -24,7 +24,7 @@ import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 /**
  * @author Vaadin Ltd
@@ -40,7 +40,7 @@ public class PropertyBindingTemplateView extends Div implements View {
         public void setWeight(double weight);
     }
 
-    public static class PropertyBindingTemplate extends Template {
+    public static class PropertyBindingTemplate extends AngularTemplate {
 
         public PropertyBindingTemplate() {
             super(new ByteArrayInputStream(

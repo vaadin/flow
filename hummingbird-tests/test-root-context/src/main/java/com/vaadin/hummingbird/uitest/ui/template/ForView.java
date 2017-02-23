@@ -20,9 +20,9 @@ import java.util.List;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class ForView extends Template {
+public class ForView extends AngularTemplate {
 
     public static class Item {
         private String text;

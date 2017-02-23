@@ -18,13 +18,13 @@ package com.vaadin.hummingbird.template;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class InlineTemplate extends Template {
+public class InlineTemplate extends AngularTemplate {
 
     /**
      * Creates a template instance with the given template HTML text.

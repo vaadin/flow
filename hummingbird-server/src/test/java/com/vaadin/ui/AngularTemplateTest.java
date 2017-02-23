@@ -44,16 +44,16 @@ import com.vaadin.ui.ComponentTest.TestComponent;
  * @author Vaadin Ltd
  *
  */
-public class TemplateTest {
+public class AngularTemplateTest {
 
-    private static class TestTemplate extends Template {
+    private static class TestTemplate extends AngularTemplate {
         TestTemplate() {
             super(new ByteArrayInputStream(
                     "<div>foo</div>".getBytes(StandardCharsets.UTF_8)));
         }
     }
 
-    private static class NullTemplate extends Template {
+    private static class NullTemplate extends AngularTemplate {
         NullTemplate() {
             super((String) null);
         }
@@ -160,22 +160,22 @@ public class TemplateTest {
     }
 
     @HtmlTemplate("samePackage.html")
-    private static class AnnotatedRelativePathTemplate extends Template {
+    private static class AnnotatedRelativePathTemplate extends AngularTemplate {
 
     }
 
     @HtmlTemplate("no-extension")
-    private static class AnnotatedNoExtensionTemplate extends Template {
+    private static class AnnotatedNoExtensionTemplate extends AngularTemplate {
 
     }
 
     @HtmlTemplate("/com/htmlSnippet.html")
-    private static class AnnotatedAbsolutePathTemplate extends Template {
+    private static class AnnotatedAbsolutePathTemplate extends AngularTemplate {
 
     }
 
     @HtmlTemplate("/root.html")
-    private static class AnnotatedRootPathTemplate extends Template {
+    private static class AnnotatedRootPathTemplate extends AngularTemplate {
     }
 
     private static class InheritedAnnotationTemplate
@@ -189,7 +189,7 @@ public class TemplateTest {
     }
 
     @HtmlTemplate("../hummingbird/template/main.html")
-    private static class TemplateDefaultConstructor extends Template {
+    private static class TemplateDefaultConstructor extends AngularTemplate {
         @Id("main")
         private TestSpan span;
     }
@@ -204,7 +204,7 @@ public class TemplateTest {
 
     @Test
     public void inputStreamInConstructor() {
-        Template template = new TestTemplate();
+        AngularTemplate template = new TestTemplate();
         Element element = template.getElement();
 
         Assert.assertEquals("div", element.getTag());
@@ -213,7 +213,7 @@ public class TemplateTest {
 
     @Test
     public void templateHasExpectedNamespaces() {
-        Template template = new TestTemplate();
+        AngularTemplate template = new TestTemplate();
         StateNode node = template.getElement().getNode();
 
         Assert.assertNotNull(node.getFeature(TemplateMap.class));

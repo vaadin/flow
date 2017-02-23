@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.template.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.ComponentTest.TestComponent;
-import com.vaadin.ui.TemplateTest.H1TestComponent;
+import com.vaadin.ui.AngularTemplateTest.H1TestComponent;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;

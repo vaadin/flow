@@ -26,7 +26,7 @@ import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import elemental.json.JsonObject;
 
 /**
- * Template node corresponding to a child slot in a template. This is
+ * AngularTemplate node corresponding to a child slot in a template. This is
  * represented as <code>@child@</code> in the template file.
  *
  * @author Vaadin Ltd

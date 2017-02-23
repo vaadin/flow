@@ -30,8 +30,8 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.template.InlineTemplate;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Template;
 import com.vaadin.ui.UI;
 
 import elemental.json.JsonValue;
@@ -197,7 +197,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_handlersContainsTemplateMethod() {
         UI ui = new UI();
 
-        Template template = new Template1();
+        AngularTemplate template = new Template1();
         ui.add(template);
 
         PublishedServerEventHandlers feature = template.getElement().getNode()
@@ -212,7 +212,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_methodHasBadArg_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new TemplateWithBadParametersMethod();
+        AngularTemplate template = new TemplateWithBadParametersMethod();
         ui.add(template);
     }
 
@@ -220,7 +220,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_twoMethodsWithTheSameName_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new ChildTemplateWithOverriddenMethod();
+        AngularTemplate template = new ChildTemplateWithOverriddenMethod();
         ui.add(template);
     }
 
@@ -228,7 +228,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_methodHasGoodArg_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new TemplateWithGoodParametersMethods();
+        AngularTemplate template = new TemplateWithGoodParametersMethods();
         ui.add(template);
 
         PublishedServerEventHandlers feature = template.getElement().getNode()
@@ -252,7 +252,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_methodReturnType_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new TemplateWithMethodReturnValue();
+        AngularTemplate template = new TemplateWithMethodReturnValue();
         ui.add(template);
     }
 
@@ -260,7 +260,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_methodCheckedExcepotion_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new TemplateWithMethodDeclaringCheckedException();
+        AngularTemplate template = new TemplateWithMethodDeclaringCheckedException();
         ui.add(template);
     }
 
@@ -268,7 +268,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_methodWithUncheckedException_handlersContainsTemplateMethod() {
         UI ui = new UI();
 
-        Template template = new TemplateWithMethodDeclaringUncheckedException();
+        AngularTemplate template = new TemplateWithMethodDeclaringUncheckedException();
         ui.add(template);
 
         PublishedServerEventHandlers feature = template.getElement().getNode()
@@ -284,7 +284,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_handlersContainsAllTemplateMethods() {
         UI ui = new UI();
 
-        Template template = new ChildTemplateWithMultipleMethods();
+        AngularTemplate template = new ChildTemplateWithMultipleMethods();
         ui.add(template);
 
         PublishedServerEventHandlers feature = template.getElement().getNode()
@@ -308,7 +308,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_handlersContainsOnlyOneTemplateMethod() {
         UI ui = new UI();
 
-        Template template = new ChildTemplateWithOverriddenMethod();
+        AngularTemplate template = new ChildTemplateWithOverriddenMethod();
         ui.add(template);
 
         PublishedServerEventHandlers feature = template.getElement().getNode()
@@ -324,7 +324,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_methodReturnTypeInSuperClass_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new ChildTemplateOfIncorrectTemplate();
+        AngularTemplate template = new ChildTemplateOfIncorrectTemplate();
         ui.add(template);
     }
 
@@ -332,7 +332,7 @@ public class PublishedServerEventHandlersTest {
     public void attach_overloadedMethod_ExceptionIsThrown() {
         UI ui = new UI();
 
-        Template template = new ChildTemplateWithOverloadedMethod();
+        AngularTemplate template = new ChildTemplateWithOverloadedMethod();
         ui.add(template);
     }
 
