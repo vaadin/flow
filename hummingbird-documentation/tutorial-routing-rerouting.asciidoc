@@ -1,0 +1,67 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+= Rerouting to another View
+
+For a basic routing tutorial, see <<tutorial-routing#,Defining View Routes and Navigating>>.
+
+The navigation can be rerouted dynamically to another view if needed in the `View#onLocationChange(LocationChangeEvent)` event.
+
+For example to reroute to the error view, when data that is needed can not be found or is not available, we could have the following functionality:
+
+[source, java]
+----
+public class MyView extends Div implements View {
+  @Override
+  public void onLocationChange(LocationChangeEvent locationChangeEvent) {
+    // implementation omitted
+    Object record = getItem();
+
+    if (record == null) {
+      locationChangeEvent.rerouteToErrorView();
+      return;
+    }
+    // implementation omitted
+  }
+
+  private Object getItem() {
+    // no-op implementation
+    return null;
+  }
+}
+----
+
+The user can also be rerouted to another view (not necessarily the error view) using
+`rerouteTo(NavigationHandler)` or `rerouteTo(Class<? extends View>)` in `View#onLocationChange(LocationChangeEvent)`
+
+For example to reroute the user to the NoItemsView if no item exists:
+
+[source, java]
+----
+public class NoItemsView extends Div implements View {
+  public NoItemsView() {
+    setText("No items found.");
+  }
+}
+
+public class ItemsView extends Div implements View {
+  @Override
+  public void onLocationChange(LocationChangeEvent locationChangeEvent) {
+    // implementation omitted
+    Object record = getItem();
+
+    if (record == null) {
+      locationChangeEvent.rerouteTo(NoItemsView.class);
+    }
+  }
+
+  private Object getItem() {
+    // no-op implementation
+    return null;
+  }
+}
+----
+
+[NOTE]
+Rerouting won't affect the browser address bar URL and will be shown as what was given for the actual navigation.
+Also history will be as if we actually navigated to the URL and extra changes won't be added.
+Basically only the view contents will be changed on a reroute.
