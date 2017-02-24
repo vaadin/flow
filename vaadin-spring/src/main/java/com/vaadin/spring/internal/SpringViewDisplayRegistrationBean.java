@@ -15,6 +15,8 @@
  */
 package com.vaadin.spring.internal;
 
+import java.io.Serializable;
+
 import org.springframework.context.ApplicationContext;
 
 import com.vaadin.spring.annotation.SpringViewDisplay;
@@ -28,7 +30,7 @@ import com.vaadin.spring.annotation.SpringViewDisplay;
  *
  * @author Vaadin Ltd
  */
-public class SpringViewDisplayRegistrationBean {
+public class SpringViewDisplayRegistrationBean implements Serializable {
 
     private Class<?> beanClass;
     private String beanName;
@@ -47,8 +49,8 @@ public class SpringViewDisplayRegistrationBean {
      * this method or {@link #setBeanName(String)} should be called.
      *
      * @param beanClass
-     *            class of the bean that contains the SpringViewDisplay annotation
-     *            or has it directly on the class
+     *            class of the bean that contains the SpringViewDisplay
+     *            annotation or has it directly on the class
      */
     public void setBeanClass(Class<?> beanClass) {
         this.beanClass = beanClass;
