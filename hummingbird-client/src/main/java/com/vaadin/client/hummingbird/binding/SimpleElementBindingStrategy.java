@@ -163,6 +163,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(ServerEventHandlerBinder
                 .bindServerEventHandlerNames(htmlNode, stateNode));
+
+        listeners.push(bindPolymerEventHandlerNames(htmlNode, stateNode));
     }
 
     @SuppressWarnings("unchecked")
@@ -500,6 +502,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 classList.add((String) add.get(i));
             }
         });
+    }
+
+    private EventRemover bindPolymerEventHandlerNames(Element element,
+            StateNode node) {
+        return ServerEventHandlerBinder.bindServerEventHandlerNames(
+                () -> WidgetUtil.crazyJsoCast(element), node,
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS, true);
     }
 
     private static EventDataExpression getOrCreateExpression(
