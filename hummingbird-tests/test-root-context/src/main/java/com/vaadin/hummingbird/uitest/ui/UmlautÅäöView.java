@@ -19,9 +19,9 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class UmlautÅäöView extends Template implements View {
+public class UmlautÅäöView extends AngularTemplate implements View {
 
     public UmlautÅäöView() {
         super(new ByteArrayInputStream(
