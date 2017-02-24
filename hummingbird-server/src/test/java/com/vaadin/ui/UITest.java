@@ -1,10 +1,15 @@
 package com.vaadin.ui;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -12,6 +17,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.hummingbird.router.RequestParameters;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
@@ -32,7 +38,7 @@ public class UITest {
     public void elementIsBody() {
         UI ui = new UI();
 
-        Assert.assertEquals("body", ui.getElement().getTag());
+        assertEquals("body", ui.getElement().getTag());
     }
 
     private static UI createAndInitTestUI(String initialLocation) {
@@ -85,7 +91,7 @@ public class UITest {
     public void testInitialLocation() {
         UI ui = createAndInitTestUI("foo/bar");
 
-        Assert.assertEquals("foo/bar",
+        assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
     }
 
@@ -95,8 +101,34 @@ public class UITest {
 
         ui.navigateTo("foo/bar");
 
-        Assert.assertEquals("foo/bar",
+        assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
+    }
+
+    private boolean requestHandled;
+
+    @Test
+    public void navigateWithParameters() {
+        requestHandled = false;
+        final String route = "params";
+        UI ui = createAndInitTestUI(route);
+        RequestParameters params = RequestParameters
+                .simple(Collections.singletonMap("test", "indeed"));
+
+        ui.getRouter().get().reconfigure(c -> c.setRoute(route, event -> {
+            assertEquals(params.getSimpleParameterMap(),
+                    event.getRequestParameters().getSimpleParameterMap());
+            assertEquals(params.getFullParameterMap(),
+                    event.getRequestParameters().getFullParameterMap());
+            requestHandled = true;
+            return HttpServletResponse.SC_OK;
+        }));
+
+        ui.navigateTo(route, params);
+
+        assertEquals(route,
+                ui.getInternals().getActiveViewLocation().getPath());
+        assertTrue("Request with RequestParameters was not handled.", requestHandled);
     }
 
     @Test
@@ -108,7 +140,7 @@ public class UITest {
         history.getHistoryStateChangeHandler().onHistoryStateChange(
                 new HistoryStateChangeEvent(history, null, "foo/bar"));
 
-        Assert.assertEquals("foo/bar",
+        assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
     }
 
@@ -144,7 +176,7 @@ public class UITest {
         Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
         Assert.assertFalse(
                 ui.getElement().getTextRecursively().contains("UI.init"));
-        Assert.assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
+        assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
     }
 
     @Test
@@ -188,8 +220,8 @@ public class UITest {
         ui.addAttachListener(events::add);
         initUI(ui, "", null);
 
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(ui, events.get(0).getSource());
+        assertEquals(1, events.size());
+        assertEquals(ui, events.get(0).getSource());
     }
 
     @Test
@@ -200,7 +232,7 @@ public class UITest {
         initUI(ui, "", null);
 
         ui.getSession().access(() -> ui.getInternals().setSession(null));
-        Assert.assertEquals(1, events.size());
-        Assert.assertEquals(ui, events.get(0).getSource());
+        assertEquals(1, events.size());
+        assertEquals(ui, events.get(0).getSource());
     }
 }

@@ -15,7 +15,11 @@
  */
 package com.vaadin.hummingbird.router;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -391,4 +395,29 @@ public class RouterTest {
             CurrentInstance.clearAll();
         }
     }
+
+    private boolean requestHandled;
+
+    @Test
+    public void navigateWithParameters() {
+        requestHandled = false;
+        RouterTestUI ui = new RouterTestUI();
+        Router router = ui.getRouter().get();
+        RequestParameters params = RequestParameters
+                .simple(Collections.singletonMap("test", "indeed"));
+
+        router.reconfigure(c -> c.setRoute("*", event -> {
+            assertEquals(params.getSimpleParameterMap(),
+                    event.getRequestParameters().getSimpleParameterMap());
+            assertEquals(params.getFullParameterMap(),
+                    event.getRequestParameters().getFullParameterMap());
+            requestHandled = true;
+            return HttpServletResponse.SC_OK;
+        }));
+
+        router.navigate(ui, new Location("."), params);
+
+        assertTrue("Request with RequestParameters was not handled.", requestHandled);
+    }
+
 }
