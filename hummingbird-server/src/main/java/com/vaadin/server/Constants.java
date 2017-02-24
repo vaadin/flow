@@ -119,4 +119,6 @@ public interface Constants {
 
     String INVALID_SECURITY_KEY_MSG = "Invalid security key.";
 
+    String WEB_COMPONENTS = "webComponents";
+
 }

@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
+import com.vaadin.annotations.WebComponents;
 import com.vaadin.external.jsoup.nodes.DataNode;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;
@@ -377,10 +378,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             + "server/es6-collections.js")));
         }
 
-        head.appendChild(createJavaScriptElement(context.getUriResolver()
-                .resolveVaadinUri("context://"
-                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                        + "server/webcomponents-lite.min.js")));
+        head.appendChild(createWebComponentsElement(context));
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -394,13 +392,45 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
-    private static Element createJavaScriptElement(String sourceUrl) {
+    private static Element createWebComponentsElement(
+            BootstrapContext context) {
+        Optional<WebComponents> webComponents = AnnotationReader
+                .getAnnotationFor(context.getUI().getClass(),
+                        WebComponents.class);
+        boolean isVersion1 = webComponents.isPresent()
+                && webComponents.get().value() == 1;
+        if (!webComponents.isPresent()) {
+            String version = context.getSession().getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.WEB_COMPONENTS,
+                            "");
+            isVersion1 = String.valueOf(1).equals(version);
+        }
+        if (isVersion1) {
+            return createJavaScriptElement(
+                    context.getUriResolver()
+                            .resolveVaadinUri("context://"
+                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                    + "server/webcomponents-1-lite.min.js"),
+                    false);
+        }
+        return createJavaScriptElement(context.getUriResolver()
+                .resolveVaadinUri("context://"
+                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                        + "server/webcomponents-lite.min.js"));
+    }
+
+    private static Element createJavaScriptElement(String sourceUrl,
+            boolean defer) {
         Element jsElement = new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript").attr("defer", true);
+                .attr("type", "text/javascript").attr("defer", defer);
         if (sourceUrl != null) {
             jsElement = jsElement.attr("src", sourceUrl);
         }
         return jsElement;
+    }
+
+    private static Element createJavaScriptElement(String sourceUrl) {
+        return createJavaScriptElement(sourceUrl, true);
     }
 
     private static void includeDependencies(Element head,

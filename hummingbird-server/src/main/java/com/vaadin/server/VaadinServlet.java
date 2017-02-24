@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.VaadinServletConfiguration;
 import com.vaadin.annotations.VaadinServletConfiguration.InitParameterName;
+import com.vaadin.annotations.WebComponents;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.shared.JsonConstants;
@@ -179,6 +180,12 @@ public class VaadinServlet extends HttpServlet implements Constants {
                             e);
                 }
             }
+        }
+        Optional<WebComponents> webComponents = AnnotationReader
+                .getAnnotationFor(getClass(), WebComponents.class);
+        if (webComponents.isPresent() && webComponents.get().value() == 1) {
+            initParameters.setProperty(Constants.WEB_COMPONENTS,
+                    String.valueOf(1));
         }
     }
 
@@ -485,8 +492,8 @@ public class VaadinServlet extends HttpServlet implements Constants {
     }
 
     /**
-     * Escapes characters to html entities. An exception is made for some
-     * "safe characters" to keep the text somewhat readable.
+     * Escapes characters to html entities. An exception is made for some "safe
+     * characters" to keep the text somewhat readable.
      *
      * @param unsafe
      * @return a safe string to be added inside an html tag
