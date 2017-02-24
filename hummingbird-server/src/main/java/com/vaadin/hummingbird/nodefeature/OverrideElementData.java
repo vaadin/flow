@@ -16,7 +16,7 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
 
 /**
  * Metadata for a state node holding data to override configuration of an

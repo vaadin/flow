@@ -19,7 +19,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.template.InlineTemplate;
+import com.vaadin.hummingbird.template.angular.InlineTemplate;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.util.ReflectTools;
 

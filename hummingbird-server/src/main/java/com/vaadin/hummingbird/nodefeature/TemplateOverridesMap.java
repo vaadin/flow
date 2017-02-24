@@ -17,7 +17,7 @@ package com.vaadin.hummingbird.nodefeature;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
-import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
 
 /**
  * Keeps track of state nodes holding data that overrides configuration of an

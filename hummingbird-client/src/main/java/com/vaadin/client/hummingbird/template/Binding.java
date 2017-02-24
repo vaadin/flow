@@ -15,7 +15,7 @@
  */
 package com.vaadin.client.hummingbird.template;
 
-import com.vaadin.hummingbird.template.BindingValueProvider;
+import com.vaadin.hummingbird.template.angular.BindingValueProvider;
 
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;

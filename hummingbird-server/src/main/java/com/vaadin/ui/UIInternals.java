@@ -41,7 +41,7 @@ import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.VaadinSession;

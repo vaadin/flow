@@ -23,7 +23,7 @@ import org.junit.Test;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.TemplateElementStateProviderTest;
-import com.vaadin.hummingbird.template.InlineTemplate;
+import com.vaadin.hummingbird.template.angular.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.ComponentTest.TestComponent;

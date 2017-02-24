@@ -20,8 +20,8 @@ import java.util.Optional;
 import com.vaadin.hummingbird.ConstantPoolKey;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.ChildSlotNode;
-import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.angular.ChildSlotNode;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 
 /**

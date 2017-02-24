@@ -21,9 +21,9 @@ import jsinterop.annotations.JsType;
 
 /**
  * Client-side representation of a
- * {@link com.vaadin.hummingbird.template.TextTemplateNode} received from the
+ * {@link com.vaadin.hummingbird.template.angular.TextTemplateNode} received from the
  * server. The properties are based on the output of
- * {@link com.vaadin.hummingbird.template.TextTemplateNode#populateJson(JsonObject)}
+ * {@link com.vaadin.hummingbird.template.angular.TextTemplateNode#populateJson(JsonObject)}
  * on the server.
  *
  * @author Vaadin Ltd
@@ -35,6 +35,6 @@ public interface TextTemplateNode extends TemplateNode {
      *
      * @return the text node content binding
      */
-    @JsProperty(name = com.vaadin.hummingbird.template.TextTemplateNode.BINDING_KEY)
+    @JsProperty(name = com.vaadin.hummingbird.template.angular.TextTemplateNode.BINDING_KEY)
     Binding getTextBinding();
 }

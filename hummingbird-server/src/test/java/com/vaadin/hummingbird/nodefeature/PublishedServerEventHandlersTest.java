@@ -29,7 +29,7 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
-import com.vaadin.hummingbird.template.InlineTemplate;
+import com.vaadin.hummingbird.template.angular.InlineTemplate;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;

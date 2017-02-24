@@ -24,6 +24,7 @@ import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
+import com.vaadin.hummingbird.template.angular.ChildSlotNode;
 
 import elemental.client.Browser;
 import elemental.dom.Node;
@@ -87,7 +88,7 @@ public class ChildSlotBindingStrategy extends AbstractTemplateStrategy<Node> {
 
     @Override
     protected String getTemplateType() {
-        return com.vaadin.hummingbird.template.ChildSlotNode.TYPE;
+        return ChildSlotNode.TYPE;
     }
 
     @Override

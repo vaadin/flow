@@ -32,8 +32,8 @@ import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.ModelValueBindingProvider;
-import com.vaadin.hummingbird.template.StaticBindingValueProvider;
+import com.vaadin.hummingbird.template.angular.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.angular.StaticBindingValueProvider;
 
 import elemental.dom.Node;
 import elemental.json.JsonObject;

@@ -21,9 +21,9 @@ import jsinterop.annotations.JsType;
 
 /**
  * Client-side representation of an
- * {@link com.vaadin.hummingbird.template.ElementTemplateNode} received from the
+ * {@link com.vaadin.hummingbird.template.angular.ElementTemplateNode} received from the
  * server. The properties are based on the output of
- * {@link com.vaadin.hummingbird.template.ElementTemplateNode#populateJson(JsonObject)}
+ * {@link com.vaadin.hummingbird.template.angular.ElementTemplateNode#populateJson(JsonObject)}
  * on the server.
  *
  * @author Vaadin Ltd

@@ -36,8 +36,8 @@ import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
-import com.vaadin.hummingbird.template.InlineTemplate;
-import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.hummingbird.template.angular.InlineTemplate;
+import com.vaadin.hummingbird.template.angular.TemplateParseException;
 import com.vaadin.ui.ComponentTest.TestComponent;
 
 /**
@@ -188,7 +188,7 @@ public class AngularTemplateTest {
 
     }
 
-    @HtmlTemplate("../hummingbird/template/main.html")
+    @HtmlTemplate("../hummingbird/template/angular/main.html")
     private static class TemplateDefaultConstructor extends AngularTemplate {
         @Id("main")
         private TestSpan span;

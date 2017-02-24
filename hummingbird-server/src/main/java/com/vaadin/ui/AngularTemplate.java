@@ -32,15 +32,15 @@ import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.template.RelativeFileResolver;
-import com.vaadin.hummingbird.template.TemplateNode;
-import com.vaadin.hummingbird.template.TemplateParseException;
+import com.vaadin.hummingbird.template.angular.RelativeFileResolver;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
+import com.vaadin.hummingbird.template.angular.TemplateParseException;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
 import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
-import com.vaadin.hummingbird.template.parser.TemplateParser;
-import com.vaadin.hummingbird.template.parser.TemplateResolver;
+import com.vaadin.hummingbird.template.angular.parser.TemplateParser;
+import com.vaadin.hummingbird.template.angular.parser.TemplateResolver;
 import com.vaadin.util.ReflectTools;
 
 /**
