@@ -5,10 +5,10 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>hummingbird-tests</artifactId>
-		<version>0.0.19-SNAPSHOT</version>
+		<version>0.0.18-SNAPSHOT</version>
 	</parent>
-	<artifactId>hummingbird-test-root-context</artifactId>
-	<name>Hummingbird root context tests</name>
+	<artifactId>hummingbird-test-polymer2</artifactId>
+	<name>Hummingbird polymer 2 tests</name>
 	<packaging>war</packaging>
 	<properties>
 		<maven.deploy.skip>true</maven.deploy.skip>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>hummingbird-test-resources</artifactId>
-			<version>0.0.19-SNAPSHOT</version>
+			<version>0.0.18-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 
@@ -68,7 +68,7 @@
 				<version>1.0</version>
 				<configuration>
 					<nodeVersion>${node.version}}</nodeVersion>
-					<npmVersion>${npm.version}}</npmVersion>
+                    <npmVersion>${npm.version}}</npmVersion>
 					<workingDirectory>frontend</workingDirectory>
 				</configuration>
 				<executions>
