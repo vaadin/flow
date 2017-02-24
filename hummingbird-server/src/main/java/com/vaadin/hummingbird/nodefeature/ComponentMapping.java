@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.nodefeature;
 import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Composite;
@@ -61,6 +62,10 @@ public class ComponentMapping extends ServerSideFeature {
             // ComponentMapping instance
             getNode().getFeature(PublishedServerEventHandlers.class)
                     .componentSet(component);
+            if (component instanceof PolymerTemplate) {
+                getNode().getFeature(PolymerServerEventHandlers.class)
+                        .componentSet((PolymerTemplate) component);
+            }
         }
     }
 
