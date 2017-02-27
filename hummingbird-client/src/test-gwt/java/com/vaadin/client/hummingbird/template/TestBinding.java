@@ -17,8 +17,8 @@ package com.vaadin.client.hummingbird.template;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.hummingbird.template.ModelValueBindingProvider;
-import com.vaadin.hummingbird.template.StaticBindingValueProvider;
+import com.vaadin.hummingbird.template.angular.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.angular.StaticBindingValueProvider;
 
 import elemental.json.JsonValue;
 import jsinterop.annotations.JsOverlay;

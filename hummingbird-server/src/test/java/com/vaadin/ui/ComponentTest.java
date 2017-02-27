@@ -43,7 +43,7 @@ import com.vaadin.hummingbird.event.ComponentEventBus;
 import com.vaadin.hummingbird.event.ComponentEventListener;
 import com.vaadin.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
-import com.vaadin.ui.TemplateTest.TestSpan;
+import com.vaadin.ui.AngularTemplateTest.TestSpan;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;

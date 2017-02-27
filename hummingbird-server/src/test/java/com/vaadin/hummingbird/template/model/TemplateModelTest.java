@@ -19,8 +19,8 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.template.InlineTemplate;
-import com.vaadin.ui.Template;
+import com.vaadin.hummingbird.template.angular.InlineTemplate;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {
@@ -863,7 +863,7 @@ public class TemplateModelTest {
         Assert.assertEquals(4, subProxy.getValue());
     }
 
-    private void setModelPropertyAndVerifyGetter(Template template,
+    private void setModelPropertyAndVerifyGetter(AngularTemplate template,
             Supplier<Object> getter, String beanPath, String property,
             Serializable expected) {
         ModelMap feature = getModelMap(template, beanPath);
@@ -871,19 +871,19 @@ public class TemplateModelTest {
         Assert.assertEquals(expected, getter.get());
     }
 
-    private void verifyModel(Template template, String beanPath,
+    private void verifyModel(AngularTemplate template, String beanPath,
             String property, Serializable expected) {
         ModelMap feature = getModelMap(template, beanPath);
         Assert.assertNotNull(feature);
         Assert.assertEquals(expected, feature.getValue(property));
     }
 
-    private ModelMap getModelMap(Template template, String beanPath) {
+    private ModelMap getModelMap(AngularTemplate template, String beanPath) {
         StateNode node = template.getElement().getNode();
         return ModelMap.get(node).resolveModelMap(beanPath);
     }
 
-    private ModelList getModelList(Template template, String beanPath) {
+    private ModelList getModelList(AngularTemplate template, String beanPath) {
         StateNode node = template.getElement().getNode();
         return ModelMap.get(node).resolveModelList(beanPath);
     }

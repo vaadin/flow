@@ -17,9 +17,9 @@ package com.vaadin.hummingbird.uitest.ui.template;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class FormView extends Template {
+public class FormView extends AngularTemplate {
 
     static final String ID_FIRST_NAME = "firstName";
     static final String ID_LAST_NAME = "lastName";

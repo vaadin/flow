@@ -24,9 +24,9 @@ import jsinterop.annotations.JsType;
 
 /**
  * Client-side representation of a generic
- * {@link com.vaadin.hummingbird.template.TemplateNode} received from the
+ * {@link com.vaadin.hummingbird.template.angular.TemplateNode} received from the
  * server. The properties are based on the output of
- * {@link com.vaadin.hummingbird.template.TemplateNode#toJson(java.util.function.Consumer)}
+ * {@link com.vaadin.hummingbird.template.angular.TemplateNode#toJson(java.util.function.Consumer)}
  * on the server.
  *
  * @author Vaadin Ltd
@@ -36,7 +36,7 @@ public interface TemplateNode {
     /**
      * Gets the template type. The possible type values are defined as constants
      * named <code>TYPE</code> in subclasses of
-     * {@link com.vaadin.hummingbird.template.TemplateNode} on the server.
+     * {@link com.vaadin.hummingbird.template.angular.TemplateNode} on the server.
      *
      * @return the template type
      */

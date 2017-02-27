@@ -32,13 +32,13 @@ import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinService;
 import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Text;
 
 @StyleSheet("/com/vaadin/hummingbird/uitest/prerender/prerender.css")
 public class PreRenderView extends Div implements View {
 
-    public static class PreTemplate extends Template {
+    public static class PreTemplate extends AngularTemplate {
 
         public PreTemplate() {
             getModel().setColored(true);

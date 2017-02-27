@@ -103,7 +103,7 @@ public class TemplateModelProxyHandler implements Serializable {
 
         @Override
         public String toString() {
-            return "Template Model for a state node with id "
+            return "AngularTemplate Model for a state node with id "
                     + $stateNode().getId();
         }
 
@@ -266,7 +266,7 @@ public class TemplateModelProxyHandler implements Serializable {
 
     private static String getUnsupportedMethodMessage(Method unsupportedMethod,
             Object[] args) {
-        return "Template Model does not support: " + unsupportedMethod.getName()
+        return "AngularTemplate Model does not support: " + unsupportedMethod.getName()
                 + " with return type: "
                 + unsupportedMethod.getReturnType().getName()
                 + (args == null ? " and no parameters"

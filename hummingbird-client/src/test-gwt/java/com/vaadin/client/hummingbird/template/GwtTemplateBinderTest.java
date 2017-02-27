@@ -33,9 +33,9 @@ import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.ChildSlotNode;
-import com.vaadin.hummingbird.template.ForTemplateNode;
-import com.vaadin.hummingbird.template.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.angular.ChildSlotNode;
+import com.vaadin.hummingbird.template.angular.ForTemplateNode;
+import com.vaadin.hummingbird.template.angular.ModelValueBindingProvider;
 
 import elemental.client.Browser;
 import elemental.dom.Document.Events;

@@ -15,8 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class TemplateWithPreTagsView extends Template {
+public class TemplateWithPreTagsView extends AngularTemplate {
 
 }

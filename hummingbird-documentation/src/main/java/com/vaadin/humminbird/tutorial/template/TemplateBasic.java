@@ -18,7 +18,7 @@ package com.vaadin.humminbird.tutorial.template;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 @CodeFor("tutorial-template-basic.asciidoc")
 public class TemplateBasic {
@@ -29,7 +29,7 @@ public class TemplateBasic {
         public String getName();
     }
 
-    public class Greeting extends Template {
+    public class Greeting extends AngularTemplate {
 
         @Override
         public GreetingModel getModel() {

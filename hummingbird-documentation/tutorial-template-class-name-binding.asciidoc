@@ -1,9 +1,9 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Binding Class Names in a Template
+= Binding Class Names in a AngularTemplate
 
-This is a tutorial for class name bindings in a template, for a generic tutorial on bindings see <<tutorial-template-bindings#,Binding Model Data in a Template>>.
+This is a tutorial for class name bindings in a template, for a generic tutorial on bindings see <<tutorial-template-bindings#,Binding Model Data in a AngularTemplate>>.
 
-Template offers more fine grained binding for class names compared to other properties. You can bind individual class names to individual model properties as follows:
+AngularTemplate offers more fine grained binding for class names compared to other properties. You can bind individual class names to individual model properties as follows:
 
 [source,html]
 ----

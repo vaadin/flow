@@ -17,6 +17,9 @@ cache:
   - hummingbird-tests/test-root-context/frontend/node
   - hummingbird-tests/test-root-context/frontend/node_modules
   - hummingbird-tests/test-root-context/frontend/bower_components
+  - hummingbird-tests/test-expense-manager-imperative/frontend/node
+  - hummingbird-tests/test-expense-manager-imperative/frontend/node_modules
+  - hummingbird-tests/test-expense-manager-imperative/frontend/bower_components
 before_cache:
   # remove all build artifacts
   - rm -rf $HOME/.m2/repository/com/vaadin/hummingbird

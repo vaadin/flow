@@ -19,7 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 /**
  * @author Vaadin Ltd
@@ -27,7 +27,7 @@ import com.vaadin.ui.Template;
  * @param <T>
  *            the model type for this inline template
  */
-public class InlineTemplate<T extends TemplateModel> extends Template {
+public class InlineTemplate<T extends TemplateModel> extends AngularTemplate {
 
     private Class<T> modelType;
 

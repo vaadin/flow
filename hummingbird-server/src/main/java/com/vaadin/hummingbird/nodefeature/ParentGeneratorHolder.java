@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.nodefeature;
 import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.template.AbstractControlTemplateNode;
+import com.vaadin.hummingbird.template.angular.AbstractControlTemplateNode;
 
 /**
  * Keeps track of an generator template node that might be needed for finding

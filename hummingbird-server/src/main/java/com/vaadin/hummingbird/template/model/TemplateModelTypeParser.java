@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.template.model;
 import java.lang.reflect.Method;
 
 import com.vaadin.hummingbird.util.ReflectionCache;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 /**
  * Parses and stores template model type information.
@@ -27,7 +27,7 @@ import com.vaadin.ui.Template;
  */
 public class TemplateModelTypeParser {
 
-    protected static final ReflectionCache<Template, Class<? extends TemplateModel>> cache = new ReflectionCache<>(
+    protected static final ReflectionCache<AngularTemplate, Class<? extends TemplateModel>> cache = new ReflectionCache<>(
             TemplateModelTypeParser::readTemplateModelType);
 
     private TemplateModelTypeParser() {
@@ -43,15 +43,15 @@ public class TemplateModelTypeParser {
      * @return the model type of the template
      */
     public static Class<? extends TemplateModel> getType(
-            Class<? extends Template> templateType) {
+            Class<? extends AngularTemplate> templateType) {
         return cache.get(templateType);
     }
 
     static Class<? extends TemplateModel> readTemplateModelType(
-            final Class<? extends Template> templateType) {
+            final Class<? extends AngularTemplate> templateType) {
 
         Class<?> type = templateType;
-        while (type != Template.class) {
+        while (type != AngularTemplate.class) {
             try {
                 Method method = type.getDeclaredMethod("getModel");
                 return method.getReturnType().asSubclass(TemplateModel.class);

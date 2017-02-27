@@ -5,14 +5,14 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.Uses;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.html.HtmlComponent;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 @CodeFor("tutorial-template-webcomponents.asciidoc")
 public class WebComponentsInTemplate {
     @Uses(PaperInput.class)
     @Uses(PaperTextarea.class)
     @Uses(VaadinDatePicker.class)
-    class Form extends Template {
+    class Form extends AngularTemplate {
         // Implementation omitted
     }
 

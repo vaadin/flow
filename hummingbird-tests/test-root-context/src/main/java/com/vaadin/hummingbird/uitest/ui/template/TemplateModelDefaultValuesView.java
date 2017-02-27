@@ -16,9 +16,9 @@
 package com.vaadin.hummingbird.uitest.ui.template;
 
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
-public class TemplateModelDefaultValuesView extends Template {
+public class TemplateModelDefaultValuesView extends AngularTemplate {
 
     public interface Model extends TemplateModel {
         public AllTypes getDefaultsInBean();

@@ -20,7 +20,7 @@ import java.util.Optional;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.template.TextTemplateNode;
+import com.vaadin.hummingbird.template.angular.TextTemplateNode;
 import com.vaadin.ui.Component;
 
 /**
