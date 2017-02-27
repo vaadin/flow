@@ -45,7 +45,7 @@ import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.hummingbird.template.AbstractControlTemplateNode;
+import com.vaadin.hummingbird.template.angular.AbstractControlTemplateNode;
 import com.vaadin.server.StreamResource;
 
 /**

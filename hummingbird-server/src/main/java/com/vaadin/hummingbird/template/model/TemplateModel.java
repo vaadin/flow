@@ -19,10 +19,10 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 /**
- * Interface for a {@link Template}'s model. Extending this interface and adding
+ * Interface for a {@link AngularTemplate}'s model. Extending this interface and adding
  * getters and setters makes it possible to easily bind data to a template.
  * <p>
  * It is also possible to import a Bean's properties to the model using

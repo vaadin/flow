@@ -25,8 +25,8 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.ClassList;
-import com.vaadin.hummingbird.template.BindingValueProvider;
-import com.vaadin.hummingbird.template.ElementTemplateNode;
+import com.vaadin.hummingbird.template.angular.BindingValueProvider;
+import com.vaadin.hummingbird.template.angular.ElementTemplateNode;
 import com.vaadin.hummingbird.util.JavaScriptSemantics;
 
 /**

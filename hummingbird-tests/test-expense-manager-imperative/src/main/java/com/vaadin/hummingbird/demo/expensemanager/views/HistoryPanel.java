@@ -9,14 +9,14 @@ import com.vaadin.hummingbird.demo.expensemanager.domain.ExpenseService;
 import com.vaadin.hummingbird.demo.expensemanager.domain.ExpenseService.Filters;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 import elemental.json.JsonArray;
 
 @Title("OverView")
 @HtmlImport("bower_components/expense-manager/src/elements.html")
 @StyleSheet("over-view.css")
-public class HistoryPanel extends Template implements View {
+public class HistoryPanel extends AngularTemplate implements View {
 
     public interface HistoryBean extends TemplateModel {
         void setChartCategories(String s);

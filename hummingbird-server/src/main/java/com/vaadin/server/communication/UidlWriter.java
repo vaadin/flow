@@ -32,7 +32,7 @@ import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.util.JsonUtils;
 import com.vaadin.server.SystemMessages;
 import com.vaadin.server.VaadinService;

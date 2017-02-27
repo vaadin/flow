@@ -1,7 +1,7 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Creating Template Contents Dynamically Based on a List of Items
 
-The Template API provides you a way to generate elements based on a list of items
+The AngularTemplate API provides you a way to generate elements based on a list of items
 by iterating them using a `*ngFor` for-loop.
 
 [source,html]
@@ -48,7 +48,7 @@ The name of the method should match the name in the `*ngFor` definition; data fo
 
 [source,java]
 ----
-public class EmployeesTable extends Template {
+public class EmployeesTable extends AngularTemplate {
   public interface EmployeesModel extends TemplateModel {
       @Include({ "name", "title", "email" })
       void setEmployees(List<Employee> employees);

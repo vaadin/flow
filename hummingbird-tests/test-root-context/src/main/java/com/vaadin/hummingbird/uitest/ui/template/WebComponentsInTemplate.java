@@ -20,11 +20,11 @@ import com.vaadin.annotations.Uses;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.uitest.ui.webcomponent.PaperSlider;
 import com.vaadin.hummingbird.uitest.ui.webcomponent.ProgressBubble;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 @Uses(PaperSlider.class)
 @Uses(ProgressBubble.class)
-public class WebComponentsInTemplate extends Template {
+public class WebComponentsInTemplate extends AngularTemplate {
 
     public interface Model extends TemplateModel {
         public int getValue();

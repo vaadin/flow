@@ -1,7 +1,7 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Creating A Simple Component Using the Template API
+= Creating A Simple Component Using the AngularTemplate API
 
-There are multiple ways you can create a component. This tutorial uses the `Template` API with no additional elements or components. For other component tutorials, see:
+There are multiple ways you can create a component. This tutorial uses the `AngularTemplate` API with no additional elements or components. For other component tutorials, see:
 
 * <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
 * <<tutorial-component-composite#,Creating a Component Using Existing Components>>
@@ -12,7 +12,7 @@ For tutorials about how to use different template features, see:
 * <<tutorial-template-bindings#,Binding Model Data in a Template>>
 * <<tutorial-template-include#,Including Templates in Templates>>
 * <<tutorial-template-event-handlers#,Handling User Events in a Template>>
-* <<tutorial-template-for#,Creating Template Contents Dynamically Based on a List of Items>>
+* <<tutorial-template-for#,Creating AngularTemplate Contents Dynamically Based on a List of Items>>
 * <<tutorial-template-webcomponents#,Using Web Components in a Template>>
 
 You can use a template to create a simple greeting component in this way:
@@ -43,7 +43,7 @@ public interface GreetingModel extends TemplateModel {
   public String getName();
 }
 
-public class Greeting extends Template {
+public class Greeting extends AngularTemplate {
 
   @Override
   public GreetingModel getModel() {

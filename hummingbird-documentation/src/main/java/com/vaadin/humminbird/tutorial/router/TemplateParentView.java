@@ -20,11 +20,11 @@ import com.vaadin.humminbird.tutorial.routing.Routing.CompanyView;
 import com.vaadin.humminbird.tutorial.routing.Routing.HomeView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.router.RouterConfigurator;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 @CodeFor("tutorial-routing-template-parent.asciidoc")
 public class TemplateParentView {
-    public class MainLayout extends Template {
+    public class MainLayout extends AngularTemplate {
         // Nothing needed here
     }
 

@@ -44,13 +44,13 @@ import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
-import com.vaadin.hummingbird.template.BindingValueProvider;
-import com.vaadin.hummingbird.template.ElementTemplateNode;
-import com.vaadin.hummingbird.template.StaticBindingValueProvider;
-import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.angular.BindingValueProvider;
+import com.vaadin.hummingbird.template.angular.ElementTemplateNode;
+import com.vaadin.hummingbird.template.angular.StaticBindingValueProvider;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.server.StreamResource;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Template;
 
 /**
  * Handles storing and retrieval of the state information for an element defined
@@ -421,10 +421,10 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         assert component != null;
 
         if (isTemplateRoot()) {
-            if (!(component instanceof Template)) {
+            if (!(component instanceof AngularTemplate)) {
                 throw new IllegalArgumentException(
                         "The component for a template root must extend "
-                                + Template.class.getName());
+                                + AngularTemplate.class.getName());
             }
             ElementStateProvider.super.setComponent(node, component);
         } else {

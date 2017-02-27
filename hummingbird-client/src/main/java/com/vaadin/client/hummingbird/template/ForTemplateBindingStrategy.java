@@ -173,7 +173,7 @@ public class ForTemplateBindingStrategy extends AbstractTemplateStrategy<Node> {
 
     @Override
     protected String getTemplateType() {
-        return com.vaadin.hummingbird.template.ForTemplateNode.TYPE;
+        return com.vaadin.hummingbird.template.angular.ForTemplateNode.TYPE;
     }
 
     @Override

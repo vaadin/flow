@@ -21,10 +21,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 /**
- * Defines the id of an element to map to inside a {@link Template}.
+ * Defines the id of an element to map to inside a {@link AngularTemplate}.
  *
  * @author Vaadin Ltd
  */

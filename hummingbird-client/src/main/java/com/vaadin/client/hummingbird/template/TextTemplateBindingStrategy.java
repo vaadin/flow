@@ -33,7 +33,7 @@ public class TextTemplateBindingStrategy
 
     @Override
     protected String getTemplateType() {
-        return com.vaadin.hummingbird.template.TextTemplateNode.TYPE;
+        return com.vaadin.hummingbird.template.angular.TextTemplateNode.TYPE;
     }
 
     @Override

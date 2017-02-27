@@ -12,7 +12,7 @@ import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.hummingbird.demo.expensemanager.views.EditView;
-import com.vaadin.hummingbird.template.RelativeFileResolver;
+import com.vaadin.hummingbird.template.angular.RelativeFileResolver;
 
 // Parse a HB template and print equivalent java code
 public class HBTemplateToJava {

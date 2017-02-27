@@ -16,9 +16,9 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.annotations.HtmlTemplate;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 @HtmlTemplate("main.html")
-public class TemplateIncludeView extends Template {
+public class TemplateIncludeView extends AngularTemplate {
     // No code needed, just includes the template
 }

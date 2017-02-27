@@ -28,7 +28,7 @@ import com.vaadin.external.jsoup.nodes.Node;
 import com.vaadin.external.jsoup.nodes.TextNode;
 import com.vaadin.external.jsoup.select.Elements;
 import com.vaadin.hummingbird.dom.Prerenderer;
-import com.vaadin.hummingbird.template.InlineTemplate;
+import com.vaadin.hummingbird.template.angular.InlineTemplate;
 import com.vaadin.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.server.BootstrapHandler.PreRenderMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;

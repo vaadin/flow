@@ -58,7 +58,7 @@ public class ElementTemplateBindingStrategy
 
     @Override
     protected String getTemplateType() {
-        return com.vaadin.hummingbird.template.ElementTemplateNode.TYPE;
+        return com.vaadin.hummingbird.template.angular.ElementTemplateNode.TYPE;
     }
 
     @Override

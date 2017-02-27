@@ -18,7 +18,7 @@ package com.vaadin.humminbird.tutorial.template;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 @CodeFor("tutorial-template-event-handlers.asciidoc")
 public class EventHandlers {
@@ -26,7 +26,7 @@ public class EventHandlers {
         public void setHelloText(String helloText);
     }
 
-    public class MyTemplate extends Template {
+    public class MyTemplate extends AngularTemplate {
 
         @Override
         public MyModel getModel() {

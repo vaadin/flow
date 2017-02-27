@@ -1,8 +1,8 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Binding Model Data in a Template
+= Binding Model Data in a AngularTemplate
 
-At the core of `Template` is the way model values are bound to different parts of the element tree defined by the template.
-To get started with using templates and learn how to set model values, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>.
+At the core of `AngularTemplate` is the way model values are bound to different parts of the element tree defined by the template.
+To get started with using templates and learn how to set model values, see <<tutorial-template-basic#,Creating A Simple Component Using the AngularTemplate API>>.
 
 == Binding Text Content
 
@@ -41,7 +41,7 @@ Many elements require you to use the property instead of the attribute to be abl
 
 == Binding Class Names
 
-There is special support for binding class names in a template, see <<tutorial-template-class-name-binding#,Binding Class Names in a Template>>.
+There is special support for binding class names in a template, see <<tutorial-template-class-name-binding#,Binding Class Names in a AngularTemplate>>.
 
 == Using JavaScript in Bindings
 

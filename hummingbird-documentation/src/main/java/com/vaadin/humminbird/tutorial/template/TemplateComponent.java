@@ -19,13 +19,13 @@ import com.vaadin.annotations.Id;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.Label;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.Template;
 
 @CodeFor("tutorial-template-components.asciidoc")
-public class TemplateComponent extends Template {
+public class TemplateComponent extends AngularTemplate {
 
-    public class MainPage extends Template {
+    public class MainPage extends AngularTemplate {
 
         @Id("content")
         private Div container;

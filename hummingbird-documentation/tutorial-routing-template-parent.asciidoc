@@ -1,10 +1,10 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
-== Using a Template as a Parent View
+== Using a AngularTemplate as a Parent View
 
 For general info about parent views, see <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>. For general information about templates, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>.
 
-A `Template` class can be used as a parent view by using `@child@` in the position where the child view should be displayed.
+A `AngularTemplate` class can be used as a parent view by using `@child@` in the position where the child view should be displayed.
 
 To define a parent view that shows the actual view below a heading a and a menu, `MainLayout.html` could look like this:
 [source,html]
@@ -20,7 +20,7 @@ To use the template file, you also need a basic template component class with a 
 
 [source,java]
 ----
-public class MainLayout extends Template {
+public class MainLayout extends AngularTemplate {
     // Nothing needed here
 }
 ----

@@ -20,8 +20,8 @@ import java.util.Optional;
 import com.vaadin.hummingbird.ConstantPoolKey;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.ChildSlotNode;
-import com.vaadin.hummingbird.template.TemplateNode;
+import com.vaadin.hummingbird.template.angular.ChildSlotNode;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 
 /**
@@ -116,7 +116,7 @@ public class TemplateMap extends NodeMap {
 
         Optional<ChildSlotNode> maybeSlot = ChildSlotNode.find(rootTemplate);
         if (!maybeSlot.isPresent()) {
-            throw new IllegalStateException("Template has no child slot");
+            throw new IllegalStateException("AngularTemplate has no child slot");
         }
 
         ChildSlotNode childTemplateNode = maybeSlot.get();

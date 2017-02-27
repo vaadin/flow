@@ -22,12 +22,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.vaadin.ui.Template;
+import com.vaadin.ui.AngularTemplate;
 
 /**
- * Allows to map a specific html file for {@link Template}.
+ * Allows to map a specific html file for {@link AngularTemplate}.
  *
- * @see Template
+ * @see AngularTemplate
  * @author Vaadin Ltd
  *
  */

@@ -1,7 +1,7 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 = Using Beans with a Template Model
 
-For an introduction to templates and template models, see <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
+For an introduction to templates and template models, see <<tutorial-template-basic#,Creating A Simple Component Using the AngularTemplate API>>
 
 Using beans in models provides you with an easy way of defining your model or reusing existing beans for the model. You can use any bean together with the model as long as it has a public no-arg constructor.
 
@@ -95,7 +95,7 @@ In the template you can initialize the model by setting a new person instance to
 
 [source,java]
 ----
-public class Form extends Template {
+public class Form extends AngularTemplate {
     public Form() {
         Person person = new Person("John", "Doe", 82);
         getModel().setPerson(person);
@@ -119,7 +119,7 @@ To update the values in the model, you can use `getModel().getPerson()` to get a
 
 [source,java]
 ----
-public class Form extends Template {
+public class Form extends AngularTemplate {
     @EventHandler
     public void setNameToJeff() {
         getModel().getPerson().setFirstName("Jeff");

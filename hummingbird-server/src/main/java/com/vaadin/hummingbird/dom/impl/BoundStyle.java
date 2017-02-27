@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Style;
-import com.vaadin.hummingbird.template.ElementTemplateNode;
+import com.vaadin.hummingbird.template.angular.ElementTemplateNode;
 
 /**
  * Handles inline styles for a template element.
