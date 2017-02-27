@@ -30,9 +30,9 @@ import elemental.json.JsonValue;
  */
 public interface BindingValueProvider extends Serializable {
 
-    public static final String TYPE_PROPERTY = "type";
+    String TYPE_PROPERTY = "type";
 
-    public static final String VALUE_PROPERTY = "value";
+    String VALUE_PROPERTY = "value";
 
     /**
      * Produces a value for the given state node.
