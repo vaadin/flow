@@ -16,11 +16,12 @@
 
 package com.vaadin.hummingbird.router;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -31,9 +32,7 @@ public class RequestParametersTest {
     public void emptyParameters() {
         RequestParameters emptyParams = RequestParameters.empty();
 
-        assertEquals(Collections.emptyMap(), emptyParams.getFullParameterMap());
-        assertEquals(Collections.emptyMap(),
-                emptyParams.getSimpleParameterMap());
+        assertEquals(Collections.emptyMap(), emptyParams.getParameters());
     }
 
     @Test
@@ -46,13 +45,11 @@ public class RequestParametersTest {
         RequestParameters simpleParams = RequestParameters
                 .simple(inputParameters);
 
-        assertEquals(inputParameters, simpleParams.getSimpleParameterMap());
-        Map<String, String[]> expectedFullParams = new HashMap<>();
-        expectedFullParams.put("one", new String[] { "1" });
-        expectedFullParams.put("two", new String[] { "2" });
-        expectedFullParams.put("three", new String[] { "3" });
-        assertMapsWithArraysEqual(expectedFullParams,
-                simpleParams.getFullParameterMap());
+        Map<String, List<String>> expectedFullParams = new HashMap<>();
+        expectedFullParams.put("one", Collections.singletonList("1"));
+        expectedFullParams.put("two", Collections.singletonList("2"));
+        expectedFullParams.put("three", Collections.singletonList("3"));
+        assertEquals(expectedFullParams, simpleParams.getParameters());
     }
 
     @Test
@@ -64,21 +61,10 @@ public class RequestParametersTest {
 
         RequestParameters fullParams = RequestParameters.full(inputParameters);
 
-        assertMapsWithArraysEqual(inputParameters,
-                fullParams.getFullParameterMap());
-        Map<String, String> expectedSimpleParams = new HashMap<>();
-        expectedSimpleParams.put("one", "1");
-        expectedSimpleParams.put("two", "2");
-        expectedSimpleParams.put("three", "3");
-
-        assertEquals(expectedSimpleParams, fullParams.getSimpleParameterMap());
-    }
-
-    private <T, K> void assertMapsWithArraysEqual(Map<T, K[]> expected,
-            Map<T, K[]> actual) {
-        assertEquals(expected.size(), actual.size());
-        assertEquals(expected.keySet(), actual.keySet());
-        expected.forEach((key, expectedArray) -> assertArrayEquals(
-                expectedArray, actual.get(key)));
+        Map<String, List<String>> expectedFullParams = new HashMap<>();
+        expectedFullParams.put("one", Arrays.asList("1", "11"));
+        expectedFullParams.put("two", Arrays.asList("2", "22"));
+        expectedFullParams.put("three", Collections.singletonList("3"));
+        assertEquals(expectedFullParams, fullParams.getParameters());
     }
 }

@@ -144,12 +144,31 @@ public class LocationChangeEvent extends EventObject {
     }
 
     /**
-     * Gets the request parameters used for navigation.
+     * Gets the request parameters used for navigation. For a quicker way of
+     * retrieving parameters, refer to
+     * {@link LocationChangeEvent#getRequestParameter(String)}
      *
-     * @return the request parameters
+     * @return the request parameters, not {@code null}
      */
     public RequestParameters getRequestParameters() {
         return requestParameters;
+    }
+
+    /**
+     * Gets first parameter that corresponds to specified {@code parameterName}.
+     * If there are multiple parameters corresponding to the same {@code parameterName}, the first one will be returned.
+     * To access all parameters, use {@link LocationChangeEvent#getRequestParameters()} method.
+     *
+     * @param parameterName
+     *            the name of a parameter to get
+     * @return first corresponding parameter or {@link Optional#empty()}, if no
+     *         parameters found for {@code parameterName} specified
+     */
+    public Optional<String> getRequestParameter(String parameterName) {
+        List<String> params = requestParameters.getParameters()
+                .getOrDefault(parameterName, Collections.emptyList());
+        return Optional
+                .ofNullable(params.isEmpty() ? null : params.iterator().next());
     }
 
     @Override

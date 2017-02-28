@@ -407,10 +407,10 @@ public class RouterTest {
                 .simple(Collections.singletonMap("test", "indeed"));
 
         router.reconfigure(c -> c.setRoute("*", event -> {
-            assertEquals(params.getSimpleParameterMap(),
-                    event.getRequestParameters().getSimpleParameterMap());
-            assertEquals(params.getFullParameterMap(),
-                    event.getRequestParameters().getFullParameterMap());
+            assertEquals(params.getParameters(),
+                    event.getRequestParameters().getParameters());
+            assertEquals(params.getParameters(),
+                    event.getRequestParameters().getParameters());
             requestHandled = true;
             return HttpServletResponse.SC_OK;
         }));

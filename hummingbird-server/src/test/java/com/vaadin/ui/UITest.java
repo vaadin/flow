@@ -116,10 +116,10 @@ public class UITest {
                 .simple(Collections.singletonMap("test", "indeed"));
 
         ui.getRouter().get().reconfigure(c -> c.setRoute(route, event -> {
-            assertEquals(params.getSimpleParameterMap(),
-                    event.getRequestParameters().getSimpleParameterMap());
-            assertEquals(params.getFullParameterMap(),
-                    event.getRequestParameters().getFullParameterMap());
+            assertEquals(params.getParameters(),
+                    event.getRequestParameters().getParameters());
+            assertEquals(params.getParameters(),
+                    event.getRequestParameters().getParameters());
             requestHandled = true;
             return HttpServletResponse.SC_OK;
         }));

@@ -39,8 +39,6 @@ public class RequestParametersView extends Div implements View {
 
     @Override
     public void onLocationChange(LocationChangeEvent locationChangeEvent) {
-        requestParamLabel.setText(locationChangeEvent.getRequestParameters()
-                .getSimpleParameterMap()
-                .getOrDefault(REQUEST_PARAM_NAME, NO_INPUT_TEXT));
+        requestParamLabel.setText(locationChangeEvent.getRequestParameter(REQUEST_PARAM_NAME).orElse(NO_INPUT_TEXT));
     }
 }
