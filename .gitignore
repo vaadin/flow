@@ -30,3 +30,7 @@ node_modules
 # Intellij Idea files
 .idea
 *.iml
+
+# Selenium driver folders
+selenium_standalone_zips
+driver

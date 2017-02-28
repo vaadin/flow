@@ -126,6 +126,9 @@ public class PolymerServerEventHandlers extends SerializableNodeList<String> {
         if (method.getParameterCount() == 0) {
             return;
         }
+        throw new IllegalStateException(String.format(Locale.ENGLISH,
+                "Event handler method '%s'.'%s' may not have parameters",
+                method.getDeclaringClass().getName(), method.getName()));
     }
 
 }

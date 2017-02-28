@@ -177,17 +177,16 @@ public class ServerEventHandlerBinder {
             int featureId, boolean ignoreMethodArguments) {
         NodeList serverEventHandlerNamesList = node.getList(featureId);
 
-        ServerEventObject object = null;
         if (serverEventHandlerNamesList.length() > 0) {
-            object = objectProvider.get();
-        }
+            ServerEventObject object = objectProvider.get();
 
-        for (int i = 0; i < serverEventHandlerNamesList.length(); i++) {
-            String serverEventHandlerName = (String) serverEventHandlerNamesList
-                    .get(i);
-            // ignore arguments for now
-            object.defineMethod(serverEventHandlerName, node,
-                    ignoreMethodArguments);
+            for (int i = 0; i < serverEventHandlerNamesList.length(); i++) {
+                String serverEventHandlerName = (String) serverEventHandlerNamesList
+                        .get(i);
+                // ignore arguments for now
+                object.defineMethod(serverEventHandlerName, node,
+                        ignoreMethodArguments);
+            }
         }
 
         return serverEventHandlerNamesList.addSpliceListener(e -> {
