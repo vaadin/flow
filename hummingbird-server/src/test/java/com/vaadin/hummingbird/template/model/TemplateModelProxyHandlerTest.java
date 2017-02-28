@@ -102,4 +102,17 @@ public class TemplateModelProxyHandlerTest {
                 template.getElement().getNode(),
                 new BeanModelType<>(BadModel.class, PropertyFilter.ACCEPT_ALL));
     }
+
+    // https://github.com/vaadin/hummingbird/issues/1205
+    public class NotStaticModel {
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void nonStaticNestedClass_throwsException() {
+        EmptyModelTemplate template = new EmptyModelTemplate();
+
+        TemplateModelProxyHandler.createModelProxy(
+                template.getElement().getNode(),
+                new BeanModelType<>(NotStaticModel.class, PropertyFilter.ACCEPT_ALL));
+    }
 }

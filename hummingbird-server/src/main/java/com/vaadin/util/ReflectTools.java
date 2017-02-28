@@ -420,7 +420,7 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Creates a instance of the given class with a no-arg constructor.
+     * Creates an instance of the given class with a no-arg constructor.
      * <p>
      * Catches all exceptions which might occur and wraps them in a
      * {@link IllegalArgumentException} with a descriptive error message hinting
@@ -431,42 +431,60 @@ public class ReflectTools implements Serializable {
      * @return an instance of the class
      */
     public static <T> T createInstance(Class<T> cls) {
+        return createProxyInstance(cls, cls);
+    }
+
+    /**
+     * Creates an instance of the given {@code proxyClass} with no-arg constructor.
+     * <p>
+     * Catches all exceptions which might occur and wraps them in a
+     * {@link IllegalArgumentException} with a descriptive error message hinting
+     * of what might be wrong with the class that could not be instantiated.
+     * Descriptive message is derived based on the information about the {@code originalClass}.
+     *
+     * @param proxyClass the proxy class to instantiate
+     * @param originalClass the class that is used to determine exception description, if creation fails
+     * @param <T> type of a proxy class
+     * @return instance of a proxyClass
+     * @throws IllegalArgumentException if class instance creation fails
+     */
+    public static <T> T createProxyInstance(Class<T> proxyClass, Class<?> originalClass) {
         try {
-            return cls.getConstructor().newInstance();
+            return proxyClass.getConstructor().newInstance();
         } catch (NoSuchMethodException e) {
-            if (cls.isMemberClass() && !Modifier.isStatic(cls.getModifiers())) {
+            if (originalClass.isMemberClass() && !Modifier.isStatic(originalClass.getModifiers())) {
                 throw new IllegalArgumentException(MessageFormat.format(
                         CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
-                        cls.getName()), e);
-            } else if (cls.isLocalClass()) {
+                        originalClass.getName()), e);
+            } else if (originalClass.isLocalClass()) {
                 throw new IllegalArgumentException(MessageFormat.format(
                         CREATE_INSTANCE_FAILED_LOCAL_CLASS,
-                        cls.getName()), e);
+                        originalClass.getName()), e);
             } else {
                 throw new IllegalArgumentException(MessageFormat.format(
                         CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
-                        cls.getName()), e);
+                        originalClass.getName()), e);
             }
         } catch (InstantiationException e) {
-            if (cls.isMemberClass() && !Modifier.isStatic(cls.getModifiers())) {
+            if (originalClass.isMemberClass() && !Modifier.isStatic(originalClass.getModifiers())) {
                 throw new IllegalArgumentException(MessageFormat.format(
                         CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
-                        cls.getName()), e);
+                        originalClass.getName()), e);
             } else {
                 throw new IllegalArgumentException(MessageFormat
-                        .format(CREATE_INSTANCE_FAILED, cls.getName()), e);
+                        .format(CREATE_INSTANCE_FAILED, originalClass.getName()), e);
             }
         } catch (IllegalAccessException e) {
             throw new IllegalArgumentException(MessageFormat.format(
-                    CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION, cls.getName()), e);
+                    CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION, originalClass.getName()), e);
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    MessageFormat.format(CREATE_INSTANCE_FAILED, cls.getName()),
+                    MessageFormat.format(CREATE_INSTANCE_FAILED, originalClass.getName()),
                     e);
         } catch (InvocationTargetException e) {
             throw new IllegalArgumentException(MessageFormat.format(
                     CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
-                    cls.getName()), e);
+                    originalClass.getName()), e);
         }
     }
 
