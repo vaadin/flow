@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 /**
  * Represents a relative URL made up of path segments, but lacking e.g. the
- * hostname and query string that can also be present in URLs.
+ * hostname that can also be present in URLs.
  *
  * @author Vaadin Ltd
  */
@@ -50,11 +50,11 @@ public class Location implements Serializable {
     }
 
     /**
-     * Creates a new location for the given relative path.
+     * Creates a new location for the given relative path and query parameters.
      *
      * @param path
-     *            the relative path, not <code>null</code>
-     * @param queryParameters query parameters information
+     *            the relative path, not {@code null}
+     * @param queryParameters query parameters information, not {@code null}
      */
     public Location(String path, QueryParameters queryParameters) {
         this(parsePath(path), queryParameters);
@@ -71,13 +71,13 @@ public class Location implements Serializable {
     }
 
     /**
-     * Creates a new location based on a list of path segments.
+     * Creates a new location based on a list of path segments and query parameters.
      *
      * @param segments
      *            a non-empty list of path segments, not {@code null} and not
      *            empty
      * @param queryParameters
-     *            query parameters information
+     *            query parameters information, not {@code null}
      */
     public Location(List<String> segments, QueryParameters queryParameters) {
         if (segments == null) {

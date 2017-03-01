@@ -17,6 +17,7 @@
 package com.vaadin.hummingbird.router;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,20 +37,43 @@ public class QueryParametersTest {
     }
 
     @Test
+    public void emptyParametersToQueryString() {
+        QueryParameters emptyParams = QueryParameters.empty();
+
+        assertEquals("", emptyParams.getQueryString());
+    }
+
+    @Test
     public void simpleParameters() {
         Map<String, String> inputParameters = new HashMap<>();
         inputParameters.put("one", "1");
         inputParameters.put("two", "2");
         inputParameters.put("three", "3");
 
-        QueryParameters simpleParams = QueryParameters
-                .simple(inputParameters);
+        QueryParameters simpleParams = QueryParameters.simple(inputParameters);
 
         Map<String, List<String>> expectedFullParams = new HashMap<>();
         expectedFullParams.put("one", Collections.singletonList("1"));
         expectedFullParams.put("two", Collections.singletonList("2"));
         expectedFullParams.put("three", Collections.singletonList("3"));
         assertEquals(expectedFullParams, simpleParams.getParameters());
+    }
+
+    @Test
+    public void simpleParametersToQueryString() {
+        Map<String, String> inputParameters = new HashMap<>();
+        inputParameters.put("one", "1");
+        inputParameters.put("two", "2");
+        inputParameters.put("three", "3");
+
+        QueryParameters simpleParams = QueryParameters.simple(inputParameters);
+
+        String queryString = simpleParams.getQueryString();
+        assertTrue(queryString.contains("one=1"));
+        assertTrue(queryString.contains("two=2"));
+        assertTrue(queryString.contains("three=3"));
+        assertTrue(queryString.contains("&"));
+        assertNumberOfOccurences(queryString, 2, "&");
     }
 
     @Test
@@ -66,5 +90,30 @@ public class QueryParametersTest {
         expectedFullParams.put("two", Arrays.asList("2", "22"));
         expectedFullParams.put("three", Collections.singletonList("3"));
         assertEquals(expectedFullParams, fullParams.getParameters());
+    }
+
+    @Test
+    public void complexParametersToQueryString() {
+        Map<String, String[]> inputParameters = new HashMap<>();
+        inputParameters.put("one", new String[] { "1", "11" });
+        inputParameters.put("two", new String[] { "2", "22" });
+        inputParameters.put("three", new String[] { "3" });
+
+        QueryParameters fullParams = QueryParameters.full(inputParameters);
+
+        String queryString = fullParams.getQueryString();
+        assertTrue(queryString.contains("one=1"));
+        assertTrue(queryString.contains("one=11"));
+        assertTrue(queryString.contains("two=2"));
+        assertTrue(queryString.contains("two=22"));
+        assertTrue(queryString.contains("three=3"));
+        assertNumberOfOccurences(queryString, 4, "&");
+    }
+
+    private void assertNumberOfOccurences(String stringToCheck,
+            int expectedNumber, String element) {
+        int actualNumbetOfOccurences = stringToCheck.length()
+                - stringToCheck.replace(element, "").length();
+        assertEquals(expectedNumber, actualNumbetOfOccurences);
     }
 }

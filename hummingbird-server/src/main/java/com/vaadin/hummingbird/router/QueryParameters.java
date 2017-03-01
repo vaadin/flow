@@ -28,6 +28,9 @@ import java.util.stream.Collectors;
  * @author Vaadin Ltd.
  */
 public class QueryParameters implements Serializable {
+    private static final String EQUALS_SIGN = "=";
+    private static final String AMPERSAND_SIGN = "&";
+
     private final Map<String, List<String>> parameters;
 
     private QueryParameters(Map<String, List<String>> parameters) {
@@ -94,5 +97,19 @@ public class QueryParameters implements Serializable {
      */
     public Map<String, List<String>> getParameters() {
         return parameters;
+    }
+
+    /**
+     * Turns query parameters into query string that contains all parameter
+     * names and their values. No guarantee on parameters' appearance order is
+     * made.
+     *
+     * @return query string
+     */
+    public String getQueryString() {
+        return parameters.entrySet().stream()
+                .flatMap(entry -> entry.getValue().stream()
+                        .map(value -> entry.getKey() + EQUALS_SIGN + value))
+                .collect(Collectors.joining(AMPERSAND_SIGN));
     }
 }
