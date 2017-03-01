@@ -26,11 +26,11 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class RequestParametersTest {
+public class QueryParametersTest {
 
     @Test
     public void emptyParameters() {
-        RequestParameters emptyParams = RequestParameters.empty();
+        QueryParameters emptyParams = QueryParameters.empty();
 
         assertEquals(Collections.emptyMap(), emptyParams.getParameters());
     }
@@ -42,7 +42,7 @@ public class RequestParametersTest {
         inputParameters.put("two", "2");
         inputParameters.put("three", "3");
 
-        RequestParameters simpleParams = RequestParameters
+        QueryParameters simpleParams = QueryParameters
                 .simple(inputParameters);
 
         Map<String, List<String>> expectedFullParams = new HashMap<>();
@@ -59,7 +59,7 @@ public class RequestParametersTest {
         inputParameters.put("two", new String[] { "2", "22" });
         inputParameters.put("three", new String[] { "3" });
 
-        RequestParameters fullParams = RequestParameters.full(inputParameters);
+        QueryParameters fullParams = QueryParameters.full(inputParameters);
 
         Map<String, List<String>> expectedFullParams = new HashMap<>();
         expectedFullParams.put("one", Arrays.asList("1", "11"));

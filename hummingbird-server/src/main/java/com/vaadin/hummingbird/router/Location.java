@@ -37,7 +37,7 @@ public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";
 
     private final List<String> segments;
-    private final RequestParameters requestParameters;
+    private final QueryParameters queryParameters;
 
     /**
      * Creates a new location for the given relative path.
@@ -49,9 +49,15 @@ public class Location implements Serializable {
         this(parsePath(path));
     }
 
-
-    public Location(String path, RequestParameters requestParameters) {
-        this(parsePath(path), requestParameters);
+    /**
+     * Creates a new location for the given relative path.
+     *
+     * @param path
+     *            the relative path, not <code>null</code>
+     * @param queryParameters query parameters information
+     */
+    public Location(String path, QueryParameters queryParameters) {
+        this(parsePath(path), queryParameters);
     }
 
     /**
@@ -61,10 +67,19 @@ public class Location implements Serializable {
      *            a non-empty list of path segments, not <code>null</code>
      */
     public Location(List<String> segments) {
-        this(segments, RequestParameters.empty());
+        this(segments, QueryParameters.empty());
     }
 
-    public Location(List<String> segments, RequestParameters requestParameters) {
+    /**
+     * Creates a new location based on a list of path segments.
+     *
+     * @param segments
+     *            a non-empty list of path segments, not {@code null} and not
+     *            empty
+     * @param queryParameters
+     *            query parameters information
+     */
+    public Location(List<String> segments, QueryParameters queryParameters) {
         if (segments == null) {
             throw new IllegalArgumentException("Segments cannot be null");
         }
@@ -72,9 +87,13 @@ public class Location implements Serializable {
             throw new IllegalArgumentException(
                     "There must be at least one segment");
         }
+        if (queryParameters == null) {
+            throw new IllegalArgumentException(
+                    "Query parameters cannot be null");
+        }
 
         this.segments = segments;
-        this.requestParameters = requestParameters;
+        this.queryParameters = queryParameters;
     }
 
     /**
@@ -87,12 +106,12 @@ public class Location implements Serializable {
     }
 
     /**
-     * Gets the request parameters used for current location
+     * Gets the request parameters used for current location.
      *
      * @return the request parameters
      */
-    public RequestParameters getRequestParameters() {
-        return requestParameters;
+    public QueryParameters getQueryParameters() {
+        return queryParameters;
     }
 
     /**
@@ -116,7 +135,7 @@ public class Location implements Serializable {
         if (subSegments.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(new Location(subSegments, requestParameters));
+            return Optional.of(new Location(subSegments, queryParameters));
         }
     }
 

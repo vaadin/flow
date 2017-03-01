@@ -33,7 +33,7 @@ import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.router.Location;
-import com.vaadin.hummingbird.router.RequestParameters;
+import com.vaadin.hummingbird.router.QueryParameters;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
@@ -669,27 +669,27 @@ public class UI extends Component
      *            the location to navigate to, not {@code null}
      */
     public void navigateTo(String location) {
-        navigateTo(location, RequestParameters.empty());
+        navigateTo(location, QueryParameters.empty());
     }
 
     /**
      * Updates this UI to show the view corresponding to the given location and
-     * request parameters. The location must be a relative path without any ".."
+     * query parameters. The location must be a relative path without any ".."
      * segments.
      *
      * @param location
      *            the location to navigate to, not {@code null}
-     * @param requestParameters
-     *            request parameters that are used for navigation, not
+     * @param queryParameters
+     *            query parameters that are used for navigation, not
      *            {@code null}
      */
     public void navigateTo(String location,
-            RequestParameters requestParameters) {
+            QueryParameters queryParameters) {
         if (location == null) {
             throw new IllegalArgumentException("Location may not be null");
         }
-        if (requestParameters == null) {
-            throw new IllegalArgumentException("Request parameters may not be null");
+        if (queryParameters == null) {
+            throw new IllegalArgumentException("Query parameters may not be null");
         }
 
         if (!getRouter().isPresent()) {
@@ -702,7 +702,7 @@ public class UI extends Component
         // Enable navigating back
         getPage().getHistory().pushState(null, location);
 
-        getRouter().get().navigate(this, new Location(location, requestParameters));
+        getRouter().get().navigate(this, new Location(location, queryParameters));
     }
 
     /**
