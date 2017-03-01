@@ -83,13 +83,13 @@ public class Router implements Serializable {
             path = pathInfo.substring(1);
         }
 
-        final RequestParameters requestParameters = RequestParameters
+        final QueryParameters queryParameters = QueryParameters
                 .full(initRequest.getParameterMap());
 
         ui.getPage().getHistory().setHistoryStateChangeHandler(e -> navigate(ui,
-                new Location(e.getLocation(), requestParameters)));
+                new Location(e.getLocation(), queryParameters)));
 
-        Location location = new Location(path, requestParameters);
+        Location location = new Location(path, queryParameters);
         int statusCode = navigate(ui, location);
 
         VaadinResponse response = VaadinService.getCurrentResponse();
@@ -159,12 +159,12 @@ public class Router implements Serializable {
 
         if (lastSegment.isEmpty()) {
             // New location without ending empty segment
-            return new Location(segments.subList(0, segments.size() - 1), location.getRequestParameters());
+            return new Location(segments.subList(0, segments.size() - 1), location.getQueryParameters());
         } else {
             // Add empty ending segment
             segments = new ArrayList<>(segments);
             segments.add("");
-            return new Location(segments, location.getRequestParameters());
+            return new Location(segments, location.getQueryParameters());
         }
     }
 

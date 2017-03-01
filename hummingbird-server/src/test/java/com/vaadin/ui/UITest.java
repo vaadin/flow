@@ -17,7 +17,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.vaadin.hummingbird.router.RequestParameters;
+import com.vaadin.hummingbird.router.QueryParameters;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.MockVaadinSession;
 import com.vaadin.server.VaadinRequest;
@@ -112,14 +112,14 @@ public class UITest {
         requestHandled = false;
         final String route = "params";
         UI ui = createAndInitTestUI(route);
-        RequestParameters params = RequestParameters
+        QueryParameters params = QueryParameters
                 .simple(Collections.singletonMap("test", "indeed"));
 
         ui.getRouter().get().reconfigure(c -> c.setRoute(route, event -> {
             assertEquals(params.getParameters(),
-                    event.getLocation().getRequestParameters().getParameters());
+                    event.getLocation().getQueryParameters().getParameters());
             assertEquals(params.getParameters(),
-                    event.getLocation().getRequestParameters().getParameters());
+                    event.getLocation().getQueryParameters().getParameters());
             requestHandled = true;
             return HttpServletResponse.SC_OK;
         }));
@@ -128,7 +128,7 @@ public class UITest {
 
         assertEquals(route,
                 ui.getInternals().getActiveViewLocation().getPath());
-        assertTrue("Request with RequestParameters was not handled.", requestHandled);
+        assertTrue("Request with QueryParameters was not handled.", requestHandled);
     }
 
     @Test

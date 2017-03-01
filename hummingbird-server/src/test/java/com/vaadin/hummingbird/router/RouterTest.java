@@ -403,21 +403,21 @@ public class RouterTest {
         requestHandled = false;
         RouterTestUI ui = new RouterTestUI();
         Router router = ui.getRouter().get();
-        RequestParameters params = RequestParameters
+        QueryParameters params = QueryParameters
                 .simple(Collections.singletonMap("test", "indeed"));
 
         router.reconfigure(c -> c.setRoute("*", event -> {
             assertEquals(params.getParameters(),
-                    event.getLocation().getRequestParameters().getParameters());
+                    event.getLocation().getQueryParameters().getParameters());
             assertEquals(params.getParameters(),
-                    event.getLocation().getRequestParameters().getParameters());
+                    event.getLocation().getQueryParameters().getParameters());
             requestHandled = true;
             return HttpServletResponse.SC_OK;
         }));
 
         router.navigate(ui, new Location(".", params));
 
-        assertTrue("Request with RequestParameters was not handled.", requestHandled);
+        assertTrue("Request with QueryParameters was not handled.", requestHandled);
     }
 
 }
