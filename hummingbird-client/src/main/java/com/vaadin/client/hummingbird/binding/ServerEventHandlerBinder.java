@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird.binding;
 
+import java.util.function.Supplier;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
@@ -56,12 +58,35 @@ public class ServerEventHandlerBinder {
          *            the node to use as an identifier when sending an event to
          *            the server
          */
-        public native void defineMethod(String methodName, StateNode node)
+        public void defineMethod(String methodName, StateNode node) {
+            defineMethod(methodName, node, false);
+        }
+
+        /**
+         * Defines a method with the given name to be a callback to the server
+         * for the given state node.
+         *
+         * @param methodName
+         *            the name of the method to add
+         * @param node
+         *            the node to use as an identifier when sending an event to
+         *            the server
+         * @param ignoreArguments
+         *            if {@code true} then the method parameters won't be sent
+         *            to the server (when the method is invoked)
+         */
+        public native void defineMethod(String methodName, StateNode node,
+                boolean ignoreArguments)
         /*-{
             this[methodName] = $entry(function() {
-                var args = Array.prototype.slice.call(arguments);
                 var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
-                tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
+                if ( ignoreArguments ){
+                    tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, []);
+                }
+                else {
+                    var args = Array.prototype.slice.call(arguments);
+                    tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
+                }
             });
         }-*/;
 
@@ -125,29 +150,58 @@ public class ServerEventHandlerBinder {
      */
     public static EventRemover bindServerEventHandlerNames(Element element,
             StateNode node) {
-        NodeList serverEventHandlerNamesList = node
-                .getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
+        return bindServerEventHandlerNames(() -> ServerEventObject.get(element),
+                node, NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS, false);
+    }
 
-        for (int i = 0; i < serverEventHandlerNamesList.length(); i++) {
-            String serverEventHandlerName = (String) serverEventHandlerNamesList
-                    .get(i);
-            ServerEventObject.get(element).defineMethod(serverEventHandlerName,
-                    node);
+    /**
+     * Registers all the server event handler names found in the feature with
+     * the {@code featureId} in the {@link ServerEventObject} {@code object}.
+     * Additionally listens to changes in the feature and updates server event
+     * object accordingly.
+     *
+     * @param objectProvider
+     *            the provider of the event object to update
+     * @param node
+     *            the state node containing the feature
+     * @param featureId
+     *            the feature id which contains event handler methods
+     * @param ignoreMethodArguments
+     *            if {@code true} then the event handler parameters won't be
+     *            sent to the server (when the method is invoked)
+     * @return a handle which can be used to remove the listener for the feature
+     */
+    public static EventRemover bindServerEventHandlerNames(
+            Supplier<ServerEventObject> objectProvider, StateNode node,
+            int featureId, boolean ignoreMethodArguments) {
+        NodeList serverEventHandlerNamesList = node.getList(featureId);
+
+        if (serverEventHandlerNamesList.length() > 0) {
+            ServerEventObject object = objectProvider.get();
+
+            for (int i = 0; i < serverEventHandlerNamesList.length(); i++) {
+                String serverEventHandlerName = (String) serverEventHandlerNamesList
+                        .get(i);
+                // ignore arguments for now
+                object.defineMethod(serverEventHandlerName, node,
+                        ignoreMethodArguments);
+            }
         }
 
         return serverEventHandlerNamesList.addSpliceListener(e -> {
+            ServerEventObject serverObject = objectProvider.get();
+
             JsArray<?> remove = e.getRemove();
             for (int i = 0; i < remove.length(); i++) {
-                ServerEventObject.get(element)
-                        .removeMethod((String) remove.get(i));
+                serverObject.removeMethod((String) remove.get(i));
             }
 
             JsArray<?> add = e.getAdd();
             for (int i = 0; i < add.length(); i++) {
-                ServerEventObject.get(element).defineMethod((String) add.get(i),
-                        node);
+                // ignore arguments for now
+                serverObject.defineMethod((String) add.get(i), node,
+                        ignoreMethodArguments);
             }
         });
     }
-
 }

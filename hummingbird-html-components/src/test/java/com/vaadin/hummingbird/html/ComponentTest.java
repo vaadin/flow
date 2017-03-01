@@ -36,7 +36,7 @@ import com.vaadin.ui.Component;
 
 public abstract class ComponentTest {
 
-    private Component component;
+    private HtmlComponent component;
     private List<ComponentProperty> properties = new ArrayList<>();
 
     @Before
@@ -83,13 +83,13 @@ public abstract class ComponentTest {
                 propertyName, propertyType, defaultValue, isOptional));
     }
 
-    protected Component createComponent() throws InstantiationException,
+    protected HtmlComponent createComponent() throws InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         String componentClass = getClass().getName().replace("Test", "");
-        return (Component) Class.forName(componentClass).newInstance();
+        return (HtmlComponent) Class.forName(componentClass).newInstance();
     }
 
-    protected Component getComponent() {
+    protected HtmlComponent getComponent() {
         return component;
     };
 
@@ -164,6 +164,26 @@ public abstract class ComponentTest {
                 .filter(p -> p.type == String.class)
                 .forEach(p -> testNullForStringPropertyWithEmptyStringDefault(
                         p));
+    }
+
+    @Test
+    public void setTitle() {
+        Assert.assertFalse(component.getTitle().isPresent());
+
+        component.setTitle("myTitle");
+
+        Assert.assertEquals("myTitle",
+                component.getElement().getAttribute("title"));
+        Assert.assertEquals("myTitle", component.getTitle().orElse(null));
+        Assert.assertFalse(component.getElement().hasProperty("title"));
+
+        component.setTitle("");
+        Assert.assertFalse(component.getTitle().isPresent());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setTitle_nullDisallowed() {
+        component.setTitle(null);
     }
 
     private Stream<ComponentProperty> getOptionalStringProperties() {

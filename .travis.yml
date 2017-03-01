@@ -25,4 +25,3 @@ before_cache:
   - rm -rf $HOME/.m2/repository/com/vaadin/hummingbird
   - rm -rf $HOME/.m2/repository/com/vaadin/hummingbird-*
 after_failure: ./.travis.after_failure.sh
-
