@@ -28,12 +28,13 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
-import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
@@ -142,6 +143,11 @@ public class NodeFeatures {
      * Id for {@link PublishedServerEventHandlers}.
      */
     public static final int PUBLISHED_SERVER_EVENT_HANDLERS = 22;
+
+    /**
+     * Id for {@link PolymerServerEventHandlers}.
+     */
+    public static final int POLYMER_SERVER_EVENT_HANDLERS = 23;
 
     /**
      * Key for {@link ElementData#getTag()}.

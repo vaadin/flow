@@ -22,7 +22,6 @@ import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.Binder;
-import com.vaadin.client.hummingbird.binding.ServerEventHandlerBinder.ServerEventObject;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
@@ -799,77 +798,6 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         assertEquals(1, element.getChildElementCount());
         assertEquals("CHILD", element.getFirstElementChild().getTagName());
-    }
-
-    public void testNoServerEventHandler_nothingInDom() {
-        Binder.bind(node, element);
-        Reactive.flush();
-        assertNull(WidgetUtil.getJsProperty(element, "$server"));
-    }
-
-    private void assertPublishedMethods(Element element, String... expected) {
-        JsArray<String> publishedServerMethods = getPublishedServerMethods(
-                element);
-        assertEquals(expected.length, publishedServerMethods.length());
-        for (int i = 0; i < expected.length; i++) {
-            assertTrue("$server does not contain " + expected[i],
-                    publishedServerMethods.remove(expected[i]));
-        }
-        assertTrue(publishedServerMethods.isEmpty());
-    }
-
-    public void testServerEventHandlerMethodInDom() {
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).add(0,
-                "publishedMethod");
-        Binder.bind(node, element);
-        Reactive.flush();
-        assertPublishedMethods(element, "publishedMethod");
-    }
-
-    public void testAddServerEventHandlerMethod() {
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).add(0,
-                "initialMethod");
-        Binder.bind(node, element);
-        Reactive.flush();
-        assertPublishedMethods(element, "initialMethod");
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).add(0,
-                "newFirstMethod");
-        assertPublishedMethods(element, "initialMethod", "newFirstMethod");
-    }
-
-    public void testRemoveServerEventHandlerMethod() {
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).add(0,
-                "method1");
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).add(1,
-                "method2");
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).add(2,
-                "method3");
-        Binder.bind(node, element);
-        assertPublishedMethods(element, "method1", "method2", "method3");
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).splice(1, 2);
-        assertPublishedMethods(element, "method1");
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).add(0,
-                "new1");
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).add(2,
-                "new2");
-        assertPublishedMethods(element, "new1", "method1", "new2");
-        JsArray<String> insert = JsCollections.array();
-        insert.push("foo");
-        insert.push("bar");
-        node.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).splice(0, 1,
-                insert);
-        assertPublishedMethods(element, "foo", "bar", "method1", "new2");
-
-    }
-
-    private JsArray<String> getPublishedServerMethods(Element element) {
-        ServerEventObject serverEventObject = WidgetUtil
-                .crazyJsoCast(WidgetUtil.getJsProperty(element, "$server"));
-        if (serverEventObject == null) {
-            return JsCollections.array();
-        } else {
-            return serverEventObject.getMethods();
-        }
     }
 
 }
