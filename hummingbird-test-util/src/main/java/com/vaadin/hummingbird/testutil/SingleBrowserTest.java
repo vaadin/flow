@@ -15,8 +15,11 @@
  */
 package com.vaadin.hummingbird.testutil;
 
+import java.io.File;
+
 import org.junit.Before;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -46,7 +49,13 @@ public class SingleBrowserTest extends ViewOrUITest {
             setDriver(new FirefoxDriver(DesiredCapabilities.firefox()));
             break;
         case CHROME:
-            setDriver(new ChromeDriver(DesiredCapabilities.chrome()));
+            String chrome = System.getenv("CHROME_BIN");
+            System.out.println("xxxxxxxxxxx " + chrome);
+            ChromeOptions options = new ChromeOptions();
+            if (chrome != null) {
+                options.setBinary(new File(chrome));
+            }
+            setDriver(new ChromeDriver(options));
             break;
         case PHANTOMJS:
         default:
