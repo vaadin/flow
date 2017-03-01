@@ -6,6 +6,13 @@ script: ./.travis.script.sh
 # Run on a dedicated Trusty VM to avoid random problems like "User limit of inotify watches reached"
 sudo: required
 dist: trusty
+addons:
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+
 
 # Cache requires a master build
 branches:
@@ -20,6 +27,7 @@ cache:
   - hummingbird-tests/test-expense-manager-imperative/frontend/node
   - hummingbird-tests/test-expense-manager-imperative/frontend/node_modules
   - hummingbird-tests/test-expense-manager-imperative/frontend/bower_components
+  - hummingbird-tests/test-polymer2/driver
 before_cache:
   # remove all build artifacts
   - rm -rf $HOME/.m2/repository/com/vaadin/hummingbird
