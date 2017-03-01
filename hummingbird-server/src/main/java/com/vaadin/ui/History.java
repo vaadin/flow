@@ -165,7 +165,7 @@ public class History implements Serializable {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJavaScript("history.pushState($0, '', $1)", state,
-                turnLocationIntoPath(location));
+                location.getPathWithQueryParameters());
     }
 
     /**
@@ -199,22 +199,7 @@ public class History implements Serializable {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJavaScript("history.replaceState($0, '', $1)",
-                state, turnLocationIntoPath(location));
-    }
-
-    private String turnLocationIntoPath(Location location) {
-        String basePath = location.getPath();
-        String params = location.getQueryParameters().getQueryString();
-        if (!params.isEmpty()) {
-            if (basePath.contains("?")) {
-                return basePath + "&" + params;
-            }
-            if (!basePath.endsWith("/")) {
-                basePath += "/";
-            }
-            return basePath + "?" + params;
-        }
-        return basePath;
+                state, location.getPathWithQueryParameters());
     }
 
     /**

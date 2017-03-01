@@ -300,23 +300,6 @@ public class RouterTest {
     }
 
     @Test
-    public void testToggleEndingSlash() {
-        Assert.assertEquals("foo", toggleEndingSlash("foo/"));
-
-        Assert.assertEquals("foo/", toggleEndingSlash("foo"));
-    }
-
-    private static String toggleEndingSlash(String withoutSlash) {
-        return Router.toggleEndingSlash(new Location(withoutSlash)).getPath();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testToggleEndingSlash_emtpyLocation() {
-        // Does not make sense to change the location to "/"
-        Router.toggleEndingSlash(new Location(""));
-    }
-
-    @Test
     public void testNavigateToEmptyLocation_triggersDefaultErrorView() {
         UI ui = new RouterTestUI();
 
@@ -417,7 +400,8 @@ public class RouterTest {
 
         router.navigate(ui, new Location(".", params));
 
-        assertTrue("Request with QueryParameters was not handled.", requestHandled);
+        assertTrue("Request with QueryParameters was not handled.",
+                requestHandled);
     }
 
 }

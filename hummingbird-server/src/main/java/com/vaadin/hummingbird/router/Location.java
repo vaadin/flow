@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
  */
 public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";
+    private static final String QUERY_SEPARATOR= "?";
+    private static final String PARAMETERS_SEPARATOR = "&";
 
     private final List<String> segments;
     private final QueryParameters queryParameters;
@@ -54,7 +56,8 @@ public class Location implements Serializable {
      *
      * @param path
      *            the relative path, not {@code null}
-     * @param queryParameters query parameters information, not {@code null}
+     * @param queryParameters
+     *            query parameters information, not {@code null}
      */
     public Location(String path, QueryParameters queryParameters) {
         this(parsePath(path), queryParameters);
@@ -71,7 +74,8 @@ public class Location implements Serializable {
     }
 
     /**
-     * Creates a new location based on a list of path segments and query parameters.
+     * Creates a new location based on a list of path segments and query
+     * parameters.
      *
      * @param segments
      *            a non-empty list of path segments, not {@code null} and not
@@ -146,6 +150,56 @@ public class Location implements Serializable {
      */
     public String getPath() {
         return segments.stream().collect(Collectors.joining("/"));
+    }
+
+    /**
+     * Gets the path string with {@link QueryParameters}.
+     *
+     * @return path string with parameters
+     */
+    public String getPathWithQueryParameters() {
+        String basePath = getPath();
+        String params = queryParameters.getQueryString();
+        if (params.isEmpty()) {
+            return basePath;
+        }
+
+        if (basePath.contains(QUERY_SEPARATOR)) {
+            return basePath + PARAMETERS_SEPARATOR + params;
+        }
+
+        if (!basePath.endsWith(PATH_SEPARATOR)) {
+            basePath = toggleTrailingSlash().getPath();
+        }
+        return basePath + QUERY_SEPARATOR + params;
+    }
+
+    /**
+     * Removes or adds slash to the end of the location path.
+     *
+     * @return location with updated path
+     */
+    Location toggleTrailingSlash() {
+        // Even Location for "" still contains one (empty) segment
+        assert !segments.isEmpty();
+
+        String lastSegment = segments.get(segments.size() - 1);
+
+        if (segments.size() == 1 && "".equals(lastSegment)) {
+            throw new IllegalArgumentException(
+                    "Can't toggle ending slash for the \"\" location");
+        }
+
+        if (lastSegment.isEmpty()) {
+            // New location without ending empty segment
+            return new Location(segments.subList(0, segments.size() - 1),
+                    queryParameters);
+        } else {
+            // Add empty ending segment
+            List<String> newSegments = new ArrayList<>(segments);
+            newSegments.add("");
+            return new Location(newSegments, queryParameters);
+        }
     }
 
     private static List<String> parsePath(String path) {
