@@ -16,20 +16,18 @@
 package com.vaadin.hummingbird.uitest.ui.template;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.vaadin.hummingbird.testutil.PhantomJSTest;
+import com.vaadin.hummingbird.testutil.SingleBrowserTest;
 import com.vaadin.testbench.By;
 
 /**
  * @author Vaadin Ltd
  *
  */
-public class EventHandlerIT extends PhantomJSTest {
+public class EventHandlerIT extends SingleBrowserTest {
 
     @Test
-    @Ignore("Phantom JS doesn't support Polymer")
     public void handleEventOnServer() {
         open();
 
