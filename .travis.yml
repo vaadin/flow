@@ -20,10 +20,8 @@ cache:
   - hummingbird-tests/test-expense-manager-imperative/frontend/node
   - hummingbird-tests/test-expense-manager-imperative/frontend/node_modules
   - hummingbird-tests/test-expense-manager-imperative/frontend/bower_components
-  - hummingbird-tests/hummingbird-tests/test-polymer2/driver
 before_cache:
   # remove all build artifacts
   - rm -rf $HOME/.m2/repository/com/vaadin/hummingbird
   - rm -rf $HOME/.m2/repository/com/vaadin/hummingbird-*
 after_failure: ./.travis.after_failure.sh
-
