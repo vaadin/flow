@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.uitest.ui.template;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.hummingbird.testutil.SingleBrowserTest;
@@ -28,6 +29,7 @@ import com.vaadin.testbench.By;
 public class EventHandlerIT extends SingleBrowserTest {
 
     @Test
+    @Ignore("Requires Chrome integration which is not yet done")
     public void handleEventOnServer() {
         open();
 

@@ -79,12 +79,12 @@ public class ServerEventHandlerBinder {
                 boolean ignoreArguments)
         /*-{
             this[methodName] = $entry(function() {
-                var args = Array.prototype.slice.call(arguments);
-                var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
                 if ( ignoreArguments ){
                     tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, []);
                 }
                 else {
+                    var args = Array.prototype.slice.call(arguments);
+                    var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
                     tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
                 }
             });
@@ -155,7 +155,6 @@ public class ServerEventHandlerBinder {
     }
 
     /**
-     * 
      * Registers all the server event handler names found in the feature with
      * the {@code featureId} in the {@link ServerEventObject} {@code object}.
      * Additionally listens to changes in the feature and updates server event
