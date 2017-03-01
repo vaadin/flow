@@ -13,19 +13,33 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui.template;
+package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.annotations.WebComponents;
-import com.vaadin.server.VaadinRequest;
+import com.vaadin.hummingbird.html.Div;
+
+import com.vaadin.hummingbird.router.LocationChangeEvent;
+import com.vaadin.hummingbird.router.View;
+import com.vaadin.ui.Page;
 import com.vaadin.ui.UI;
 
-@WebComponents(1)
-public class EventHandlerUI extends UI {
+public abstract class AbstractDivView extends Div implements View {
+
+    public AbstractDivView() {
+    }
+
+    protected void onShow() {
+
+    }
 
     @Override
-    protected void init(VaadinRequest request) {
-        EventHandlerPolymerTemplate template = new EventHandlerPolymerTemplate();
-        template.setId("template");
-        add(template);
+    public void onLocationChange(LocationChangeEvent event) {
+        onShow();
     }
+
+    protected Page getPage() {
+        // getUI not available in onLocationChange so leaving getCurrent here
+        // for now
+        return UI.getCurrent().getPage();
+    }
+
 }

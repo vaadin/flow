@@ -5,6 +5,8 @@
 # TRAVIS_SECURE_ENV_VARS == true if encrypted variables, e.g. SONAR_HOST is available
 # TRAVIS_REPO_SLUG == the repository, e.g. vaadin/vaadin
 
+export DISPLAY=:99.0
+sh -e /etc/init.d/xvfb start
 if [ "$TRAVIS_PULL_REQUEST" != "false" ] && [ "$TRAVIS_SECURE_ENV_VARS" == "true" ]
 then
 	# Pull request for master with secure vars (SONAR_GITHUB_OAUTH, SONAR_HOST) available

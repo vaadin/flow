@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.vaadin</groupId>
+		<artifactId>hummingbird-tests</artifactId>
+		<version>0.0.19-SNAPSHOT</version>
+	</parent>
+	<artifactId>hummingbird-test-base</artifactId>
+	<name>Hummingbird Test Base</name>
+	<description>Base classes for test UIs: Servlets and common UIs</description>
+	<packaging>jar</packaging>
+	<properties>
+		<maven.deploy.skip>true</maven.deploy.skip>
+	</properties>
+</project>

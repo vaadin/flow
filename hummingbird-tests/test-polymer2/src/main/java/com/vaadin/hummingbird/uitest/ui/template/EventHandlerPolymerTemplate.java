@@ -22,10 +22,6 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 
-/**
- * @author Vaadin Ltd
- *
- */
 @Tag("event-handler")
 @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/EventHandler.html")
 public class EventHandlerPolymerTemplate extends PolymerTemplate {

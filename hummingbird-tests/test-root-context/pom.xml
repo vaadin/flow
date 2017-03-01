@@ -21,6 +21,11 @@
 			<artifactId>hummingbird-test-resources</artifactId>
 			<version>0.0.19-SNAPSHOT</version>
 		</dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>hummingbird-test-base</artifactId>
+            <version>0.0.19-SNAPSHOT</version>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -67,8 +72,8 @@
 				<artifactId>frontend-maven-plugin</artifactId>
 				<version>1.0</version>
 				<configuration>
-					<nodeVersion>${node.version}}</nodeVersion>
-					<npmVersion>${npm.version}}</npmVersion>
+					<nodeVersion>${node.version}</nodeVersion>
+					<npmVersion>${npm.version}</npmVersion>
 					<workingDirectory>frontend</workingDirectory>
 				</configuration>
 				<executions>
