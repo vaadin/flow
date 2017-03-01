@@ -203,7 +203,6 @@ public class Location implements Serializable {
     }
 
     private static List<String> parsePath(String path) {
-        assert !path.startsWith(PATH_SEPARATOR) : "path should be relative";
         assert !path.contains("?") : "query string not yet supported";
 
         verifyRelativePath(path);

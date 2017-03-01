@@ -43,7 +43,7 @@ public class LocationTest {
         assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
     }
 
-    @Test(expected = AssertionError.class)
+    @Test(expected = IllegalArgumentException.class)
     public void parseLocationStartingWithSlash() {
         new Location("/foo/bar");
     }
