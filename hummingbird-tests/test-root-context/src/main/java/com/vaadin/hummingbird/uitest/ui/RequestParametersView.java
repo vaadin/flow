@@ -40,6 +40,6 @@ public class RequestParametersView extends Div implements View {
     @Override
     public void onLocationChange(LocationChangeEvent locationChangeEvent) {
         requestParamLabel.setText(locationChangeEvent
-                .getRequestParameter(REQUEST_PARAM_NAME).orElse(NO_INPUT_TEXT));
+                .getQueryParameter(REQUEST_PARAM_NAME).orElse(NO_INPUT_TEXT));
     }
 }

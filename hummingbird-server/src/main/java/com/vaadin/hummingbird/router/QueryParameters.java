@@ -23,24 +23,24 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Holds request parameters information.
+ * Holds query parameters information.
  *
  * @author Vaadin Ltd.
  */
-public class RequestParameters implements Serializable {
+public class QueryParameters implements Serializable {
     private final Map<String, List<String>> parameters;
 
-    private RequestParameters(Map<String, List<String>> parameters) {
+    private QueryParameters(Map<String, List<String>> parameters) {
         this.parameters = parameters;
     }
 
     /**
-     * Creates an empty request parameters information.
+     * Creates an empty query parameters information.
      *
-     * @return request parameters information
+     * @return query parameters information
      */
-    public static RequestParameters empty() {
-        return new RequestParameters(Collections.emptyMap());
+    public static QueryParameters empty() {
+        return new QueryParameters(Collections.emptyMap());
     }
 
     /**
@@ -48,11 +48,11 @@ public class RequestParameters implements Serializable {
      * may correspond to multiple values.
      *
      * @param parameters
-     *            request parameters map
-     * @return request parameters information
+     *            query parameters map
+     * @return query parameters information
      */
-    public static RequestParameters full(Map<String, String[]> parameters) {
-        return new RequestParameters(
+    public static QueryParameters full(Map<String, String[]> parameters) {
+        return new QueryParameters(
                 Collections.unmodifiableMap(convertArraysToLists(parameters)));
     }
 
@@ -68,11 +68,11 @@ public class RequestParameters implements Serializable {
      * corresponds to a single value.
      *
      * @param parameters
-     *            request parameters map
-     * @return request parameters information
+     *            query parameters map
+     * @return query parameters information
      */
-    public static RequestParameters simple(Map<String, String> parameters) {
-        return new RequestParameters(
+    public static QueryParameters simple(Map<String, String> parameters) {
+        return new QueryParameters(
                 Collections.unmodifiableMap(toFullParameters(parameters)));
     }
 
@@ -84,13 +84,13 @@ public class RequestParameters implements Serializable {
     }
 
     /**
-     * Returns request parameters information with support for multiple values
+     * Returns query parameters information with support for multiple values
      * corresponding single name.
      * <p>
      * Example: {@code https://example.com/?one=1&two=2&one=3} will result in
      * the corresponding map: {@code {"one" : [1, 3], "two": [2]}}
      *
-     * @return request parameters information
+     * @return query parameters information
      */
     public Map<String, List<String>> getParameters() {
         return parameters;
