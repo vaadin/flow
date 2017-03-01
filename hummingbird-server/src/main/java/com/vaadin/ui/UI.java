@@ -702,8 +702,7 @@ public class UI extends Component
         // Enable navigating back
         getPage().getHistory().pushState(null, location);
 
-        getRouter().get().navigate(this, new Location(location),
-                requestParameters);
+        getRouter().get().navigate(this, new Location(location, requestParameters));
     }
 
     /**

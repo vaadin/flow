@@ -41,13 +41,13 @@ public class LocationChangeEventTest {
         event = new LocationChangeEvent(ui.getRouter().get(), ui,
                 new Location(""),
                 Arrays.asList(new AnotherTestView(), new AnotherParentView()),
-                Collections.emptyMap(), RequestParameters.empty());
+                Collections.emptyMap());
 
         event.getSource().reconfigure(
                 c -> c.setParentView(TestView.class, ParentView.class));
 
         navigationEvent = new NavigationEvent(event.getSource(),
-                event.getLocation(), event.getUI(), RequestParameters.empty());
+                event.getLocation(), event.getUI());
     }
 
     @Test

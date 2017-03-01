@@ -241,7 +241,7 @@ public class RouterConfigurationTest {
             conf.setParentView(ParentView.class, AnotherParentView.class);
         });
 
-        router.navigate(ui, new Location("route"), RequestParameters.empty());
+        router.navigate(ui, new Location("route"));
 
         Assert.assertEquals(ParentView.class,
                 router.getConfiguration().getParentView(TestView.class).get());
@@ -263,7 +263,7 @@ public class RouterConfigurationTest {
             conf.setParentView(ParentView.class, AnotherParentView.class);
         });
 
-        router.navigate(ui, new Location("route"), RequestParameters.empty());
+        router.navigate(ui, new Location("route"));
         Assert.assertEquals(ParentView.class,
                 router.getConfiguration().getParentView(TestView.class).get());
         Assert.assertEquals(AnotherParentView.class, router.getConfiguration()
@@ -560,8 +560,8 @@ public class RouterConfigurationTest {
         router.reconfigure(c -> c.setRoute("*", ParentView.class));
         int statusCode = router.getConfiguration()
                 .resolveRoute(new Location("")).get()
-                .handle(new NavigationEvent(router, new Location(""), new UI(),
-                        RequestParameters.empty()));
+                .handle(new NavigationEvent(router, new Location(""),
+                        new UI()));
 
         Assert.assertEquals(HttpServletResponse.SC_OK, statusCode);
     }
@@ -569,9 +569,8 @@ public class RouterConfigurationTest {
     @Test
     public void defaultErrorHandlerStatusCode() {
         Router router = new Router();
-        int statusCode = router.getConfiguration().getErrorHandler()
-                .handle(new NavigationEvent(router, new Location(""), new UI(),
-                        RequestParameters.empty()));
+        int statusCode = router.getConfiguration().getErrorHandler().handle(
+                new NavigationEvent(router, new Location(""), new UI()));
 
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }
@@ -582,9 +581,8 @@ public class RouterConfigurationTest {
         router.reconfigure(c -> {
             c.setErrorView(ParentView.class);
         });
-        int statusCode = router.getConfiguration().getErrorHandler()
-                .handle(new NavigationEvent(router, new Location(""), new UI(),
-                        RequestParameters.empty()));
+        int statusCode = router.getConfiguration().getErrorHandler().handle(
+                new NavigationEvent(router, new Location(""), new UI()));
 
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, statusCode);
     }

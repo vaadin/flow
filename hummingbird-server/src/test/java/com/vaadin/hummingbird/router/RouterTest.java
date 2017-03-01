@@ -102,7 +102,7 @@ public class RouterTest {
 
         Location testLocation = new Location("");
 
-        router.navigate(ui, testLocation, RequestParameters.empty());
+        router.navigate(ui, testLocation);
 
         Assert.assertSame(testLocation, resolver.resolvedLocation.get());
         Assert.assertSame(testLocation,
@@ -157,7 +157,7 @@ public class RouterTest {
         Router router = new Router();
         router.reconfigure(c -> c.setResolver(event -> Optional.empty()));
 
-        router.navigate(ui, new Location(""), RequestParameters.empty());
+        router.navigate(ui, new Location(""));
 
         Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
         // 404 code should be sent ONLY on initial request
@@ -181,7 +181,7 @@ public class RouterTest {
         Router router = new Router();
         router.reconfigure(c -> c.setResolver(event -> Optional.empty()));
 
-        router.navigate(ui, new Location(""), RequestParameters.empty());
+        router.navigate(ui, new Location(""));
 
         Assert.assertTrue(ui.getElement().getTextRecursively().contains("404"));
     }
@@ -274,7 +274,7 @@ public class RouterTest {
             });
         });
 
-        router.navigate(new RouterTestUI(), new Location(""), RequestParameters.empty());
+        router.navigate(new RouterTestUI(), new Location(""));
 
         Assert.assertEquals("resolver", usedHandler.get());
     }
@@ -294,7 +294,7 @@ public class RouterTest {
             });
         });
 
-        router.navigate(new RouterTestUI(), new Location(""), RequestParameters.empty());
+        router.navigate(new RouterTestUI(), new Location(""));
 
         Assert.assertEquals("route", usedHandler.get());
     }
@@ -324,7 +324,7 @@ public class RouterTest {
         router.reconfigure(c -> {
         });
 
-        router.navigate(ui, new Location(""), RequestParameters.empty());
+        router.navigate(ui, new Location(""));
 
         Assert.assertEquals(new DefaultErrorView().getText(),
                 ui.getElement().getTextRecursively());
@@ -339,7 +339,7 @@ public class RouterTest {
             c.setErrorView(ErrorView.class);
         });
 
-        router.navigate(ui, new Location(""), RequestParameters.empty());
+        router.navigate(ui, new Location(""));
 
         Assert.assertEquals(new ErrorView().getText(),
                 ui.getElement().getTextRecursively());
@@ -355,11 +355,11 @@ public class RouterTest {
             c.setRoute("bar/*", TestView.class);
         });
 
-        router.navigate(ui, new Location("foo/bar/"), RequestParameters.empty());
+        router.navigate(ui, new Location("foo/bar/"));
         Assert.assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());
 
-        router.navigate(ui, new Location("bar"), RequestParameters.empty());
+        router.navigate(ui, new Location("bar"));
         Assert.assertEquals("bar/",
                 ui.getInternals().getActiveViewLocation().getPath());
     }
@@ -386,7 +386,7 @@ public class RouterTest {
             // Response status should be set when initializing
             Mockito.verify(response).setStatus(123);
 
-            router.navigate(ui, new Location("foo"), RequestParameters.empty());
+            router.navigate(ui, new Location("foo"));
 
             // Non-init navigation shouldn't set any status code
             Mockito.verifyNoMoreInteractions(response);
@@ -408,14 +408,14 @@ public class RouterTest {
 
         router.reconfigure(c -> c.setRoute("*", event -> {
             assertEquals(params.getParameters(),
-                    event.getRequestParameters().getParameters());
+                    event.getLocation().getRequestParameters().getParameters());
             assertEquals(params.getParameters(),
-                    event.getRequestParameters().getParameters());
+                    event.getLocation().getRequestParameters().getParameters());
             requestHandled = true;
             return HttpServletResponse.SC_OK;
         }));
 
-        router.navigate(ui, new Location("."), params);
+        router.navigate(ui, new Location(".", params));
 
         assertTrue("Request with RequestParameters was not handled.", requestHandled);
     }

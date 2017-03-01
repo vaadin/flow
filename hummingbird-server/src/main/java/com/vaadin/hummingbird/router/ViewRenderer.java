@@ -178,13 +178,13 @@ public abstract class ViewRenderer implements NavigationHandler {
         Map<String, String> routePlaceholders;
         if (route != null) {
             routePlaceholders = extractRoutePlaceholders(event.getLocation(),
-                    new RouteLocation(new Location(route)));
+                    new RouteLocation(new Location(route, event.getLocation().getRequestParameters())));
         } else {
             routePlaceholders = Collections.emptyMap();
         }
 
         return new LocationChangeEvent(event.getSource(), event.getUI(),
-                event.getLocation(), viewChain, routePlaceholders, event.getRequestParameters());
+                event.getLocation(), viewChain, routePlaceholders);
     }
 
     /**

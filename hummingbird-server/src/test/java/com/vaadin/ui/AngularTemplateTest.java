@@ -34,7 +34,6 @@ import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.Location;
-import com.vaadin.hummingbird.router.RequestParameters;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.ViewRendererTest.TestView;
 import com.vaadin.hummingbird.template.angular.InlineTemplate;
@@ -270,7 +269,7 @@ public class AngularTemplateTest {
         });
 
         UI ui = new UI();
-        router.navigate(ui, new Location(""), RequestParameters.empty());
+        router.navigate(ui, new Location(""));
 
         Assert.assertEquals(
                 Arrays.asList(TestView.class, TemplateParentView.class),
@@ -284,7 +283,7 @@ public class AngularTemplateTest {
         Assert.assertEquals("h1", uiContent.getChild(0).getTag());
         Assert.assertEquals("div", uiContent.getChild(1).getTag());
 
-        router.navigate(ui, new Location("empty"), RequestParameters.empty());
+        router.navigate(ui, new Location("empty"));
 
         Assert.assertEquals(Arrays.asList(TemplateParentView.class),
                 ui.getInternals().getActiveViewChain().stream()

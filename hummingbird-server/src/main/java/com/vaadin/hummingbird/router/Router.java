@@ -86,14 +86,11 @@ public class Router implements Serializable {
         final RequestParameters requestParameters = RequestParameters
                 .full(initRequest.getParameterMap());
 
-        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
-            String newLocation = e.getLocation();
+        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> navigate(ui,
+                new Location(e.getLocation(), requestParameters)));
 
-            navigate(ui, new Location(newLocation), requestParameters);
-        });
-
-        Location location = new Location(path);
-        int statusCode = navigate(ui, location, requestParameters);
+        Location location = new Location(path, requestParameters);
+        int statusCode = navigate(ui, location);
 
         VaadinResponse response = VaadinService.getCurrentResponse();
         if (response != null) {
@@ -109,18 +106,15 @@ public class Router implements Serializable {
      *            the UI to update
      * @param location
      *            the location to navigate to
-     * @param requestParameters
-     *            request parameters that are used for navigation
      * @return the HTTP status code resulting from the navigation
      */
-    public int navigate(UI ui, Location location,
-            RequestParameters requestParameters) {
+    public int navigate(UI ui, Location location) {
         // Read volatile field only once per navigation
         ImmutableRouterConfiguration currentConfig = configuration;
         assert currentConfig.isConfigured();
 
         NavigationEvent navigationEvent = new NavigationEvent(this, location,
-                ui, requestParameters);
+                ui);
 
         Optional<NavigationHandler> handler = currentConfig.getResolver()
                 .resolve(navigationEvent);
@@ -165,12 +159,12 @@ public class Router implements Serializable {
 
         if (lastSegment.isEmpty()) {
             // New location without ending empty segment
-            return new Location(segments.subList(0, segments.size() - 1));
+            return new Location(segments.subList(0, segments.size() - 1), location.getRequestParameters());
         } else {
             // Add empty ending segment
             segments = new ArrayList<>(segments);
             segments.add("");
-            return new Location(segments);
+            return new Location(segments, location.getRequestParameters());
         }
     }
 

@@ -36,7 +36,6 @@ public class LocationChangeEvent extends EventObject {
     private final List<View> viewChain;
     private final UI ui;
     private final Map<String, String> routePlaceholders;
-    private final RequestParameters requestParameters;
 
     private int statusCode = HttpServletResponse.SC_OK;
     private NavigationHandler rerouteTarget;
@@ -55,26 +54,20 @@ public class LocationChangeEvent extends EventObject {
      * @param routePlaceholders
      *            a map containing actual path segment values used for
      *            placeholders in the used route mapping, not {@code null}
-     * @param requestParameters
-     *            request parameters that are used for navigation, not
-     *            {@code null}
      */
     public LocationChangeEvent(Router router, UI ui, Location location,
-            List<View> viewChain, Map<String, String> routePlaceholders,
-            RequestParameters requestParameters) {
+            List<View> viewChain, Map<String, String> routePlaceholders) {
         super(router);
 
         assert ui != null;
         assert location != null;
         assert viewChain != null;
         assert routePlaceholders != null;
-        assert requestParameters != null;
 
         this.ui = ui;
         this.location = location;
         this.viewChain = Collections.unmodifiableList(viewChain);
         this.routePlaceholders = Collections.unmodifiableMap(routePlaceholders);
-        this.requestParameters = requestParameters;
     }
 
     /**
@@ -150,14 +143,16 @@ public class LocationChangeEvent extends EventObject {
      *
      * @return the request parameters, not {@code null}
      */
-    public RequestParameters getRequestParameters() {
-        return requestParameters;
+    public Map<String, List<String>> getRequestParameters() {
+        return location.getRequestParameters().getParameters();
     }
 
     /**
      * Gets first parameter that corresponds to specified {@code parameterName}.
-     * If there are multiple parameters corresponding to the same {@code parameterName}, the first one will be returned.
-     * To access all parameters, use {@link LocationChangeEvent#getRequestParameters()} method.
+     * If there are multiple parameters corresponding to the same
+     * {@code parameterName}, the first one will be returned. To access all
+     * parameters, use {@link LocationChangeEvent#getRequestParameters()}
+     * method.
      *
      * @param parameterName
      *            the name of a parameter to get
@@ -165,10 +160,9 @@ public class LocationChangeEvent extends EventObject {
      *         parameters found for {@code parameterName} specified
      */
     public Optional<String> getRequestParameter(String parameterName) {
-        List<String> params = requestParameters.getParameters()
-                .getOrDefault(parameterName, Collections.emptyList());
-        return Optional
-                .ofNullable(params.isEmpty() ? null : params.iterator().next());
+        return location.getRequestParameters().getParameters()
+                .getOrDefault(parameterName, Collections.emptyList()).stream()
+                .findFirst();
     }
 
     @Override

@@ -117,9 +117,9 @@ public class UITest {
 
         ui.getRouter().get().reconfigure(c -> c.setRoute(route, event -> {
             assertEquals(params.getParameters(),
-                    event.getRequestParameters().getParameters());
+                    event.getLocation().getRequestParameters().getParameters());
             assertEquals(params.getParameters(),
-                    event.getRequestParameters().getParameters());
+                    event.getLocation().getRequestParameters().getParameters());
             requestHandled = true;
             return HttpServletResponse.SC_OK;
         }));

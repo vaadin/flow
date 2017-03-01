@@ -34,9 +34,10 @@ import java.util.stream.Collectors;
  * @author Vaadin Ltd
  */
 public class Location implements Serializable {
-
     private static final String PATH_SEPARATOR = "/";
-    private List<String> segments;
+
+    private final List<String> segments;
+    private final RequestParameters requestParameters;
 
     /**
      * Creates a new location for the given relative path.
@@ -48,6 +49,11 @@ public class Location implements Serializable {
         this(parsePath(path));
     }
 
+
+    public Location(String path, RequestParameters requestParameters) {
+        this(parsePath(path), requestParameters);
+    }
+
     /**
      * Creates a new location based on a list of path segments.
      *
@@ -55,6 +61,10 @@ public class Location implements Serializable {
      *            a non-empty list of path segments, not <code>null</code>
      */
     public Location(List<String> segments) {
+        this(segments, RequestParameters.empty());
+    }
+
+    public Location(List<String> segments, RequestParameters requestParameters) {
         if (segments == null) {
             throw new IllegalArgumentException("Segments cannot be null");
         }
@@ -64,6 +74,7 @@ public class Location implements Serializable {
         }
 
         this.segments = segments;
+        this.requestParameters = requestParameters;
     }
 
     /**
@@ -73,6 +84,15 @@ public class Location implements Serializable {
      */
     public List<String> getSegments() {
         return Collections.unmodifiableList(segments);
+    }
+
+    /**
+     * Gets the request parameters used for current location
+     *
+     * @return the request parameters
+     */
+    public RequestParameters getRequestParameters() {
+        return requestParameters;
     }
 
     /**
@@ -96,7 +116,7 @@ public class Location implements Serializable {
         if (subSegments.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(new Location(subSegments));
+            return Optional.of(new Location(subSegments, requestParameters));
         }
     }
 

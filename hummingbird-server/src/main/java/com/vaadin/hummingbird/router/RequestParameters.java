@@ -84,8 +84,8 @@ public class RequestParameters implements Serializable {
     }
 
     /**
-     * Returns request parameters information, assuming that each parameter name
-     * may correspond to multiple values.
+     * Returns request parameters information with support for multiple values
+     * corresponding single name.
      * <p>
      * Example: {@code https://example.com/?one=1&two=2&one=3} will result in
      * the corresponding map: {@code {"one" : [1, 3], "two": [2]}}
