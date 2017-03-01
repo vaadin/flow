@@ -697,12 +697,12 @@ public class UI extends Component
                     "Can't navigate when UI has no router");
         }
 
-        Location.verifyRelativePath(location);
+        Location navigationLocation = new Location(location, queryParameters);
 
         // Enable navigating back
-        getPage().getHistory().pushState(null, location);
+        getPage().getHistory().pushState(null, navigationLocation);
 
-        getRouter().get().navigate(this, new Location(location, queryParameters));
+        getRouter().get().navigate(this, navigationLocation);
     }
 
     /**

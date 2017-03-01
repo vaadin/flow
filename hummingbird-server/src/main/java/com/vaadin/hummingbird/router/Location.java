@@ -176,7 +176,7 @@ public class Location implements Serializable {
      * @param path
      *            the (decoded) path to check, not null
      */
-    public static void verifyRelativePath(String path) {
+    private static void verifyRelativePath(String path) {
         assert path != null;
 
         try {

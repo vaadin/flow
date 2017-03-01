@@ -21,9 +21,8 @@ public class RouterLinkUI extends UI {
 
         addLinks();
 
-        getPage().getHistory().setHistoryStateChangeHandler(e -> {
-            location.setText(e.getLocation());
-        });
+        getPage().getHistory().setHistoryStateChangeHandler(
+                e -> location.setText(e.getLocation().getPath()));
 
         addImageLink();
     }

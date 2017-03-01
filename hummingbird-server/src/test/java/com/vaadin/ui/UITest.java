@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import com.vaadin.hummingbird.router.Location;
 import com.vaadin.hummingbird.router.QueryParameters;
 import com.vaadin.server.MockServletConfig;
 import com.vaadin.server.MockVaadinSession;
@@ -138,7 +139,7 @@ public class UITest {
         History history = ui.getPage().getHistory();
 
         history.getHistoryStateChangeHandler().onHistoryStateChange(
-                new HistoryStateChangeEvent(history, null, "foo/bar"));
+                new HistoryStateChangeEvent(history, null, new Location("foo/bar")));
 
         assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());

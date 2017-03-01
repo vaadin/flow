@@ -130,7 +130,7 @@ public class RouterTest {
 
         ui.getPage().getHistory().getHistoryStateChangeHandler()
                 .onHistoryStateChange(new HistoryStateChangeEvent(
-                        ui.getPage().getHistory(), null, "foo"));
+                        ui.getPage().getHistory(), null, new Location("foo")));
 
         Assert.assertEquals(Arrays.asList("foo"),
                 resolver.resolvedLocation.get().getSegments());

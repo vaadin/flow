@@ -86,8 +86,8 @@ public class Router implements Serializable {
         final QueryParameters queryParameters = QueryParameters
                 .full(initRequest.getParameterMap());
 
-        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> navigate(ui,
-                new Location(e.getLocation(), queryParameters)));
+        ui.getPage().getHistory().setHistoryStateChangeHandler(
+                e -> navigate(ui, e.getLocation()));
 
         Location location = new Location(path, queryParameters);
         int statusCode = navigate(ui, location);
@@ -159,7 +159,8 @@ public class Router implements Serializable {
 
         if (lastSegment.isEmpty()) {
             // New location without ending empty segment
-            return new Location(segments.subList(0, segments.size() - 1), location.getQueryParameters());
+            return new Location(segments.subList(0, segments.size() - 1),
+                    location.getQueryParameters());
         } else {
             // Add empty ending segment
             segments = new ArrayList<>(segments);
