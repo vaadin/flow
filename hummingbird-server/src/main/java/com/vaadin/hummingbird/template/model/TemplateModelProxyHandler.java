@@ -240,7 +240,7 @@ public class TemplateModelProxyHandler implements Serializable {
                 .getLoaded();
 
         return (node, modelType) -> {
-            Object instance = ReflectTools.createInstance(proxyType);
+            Object instance = ReflectTools.createProxyInstance(proxyType, modelType.getProxyType());
             ModelProxy modelProxy = (ModelProxy) instance;
             modelProxy.$stateNode(node);
             modelProxy.$modelType(modelType);

@@ -20,6 +20,9 @@ import java.text.MessageFormat;
 import org.junit.Assert;
 import org.junit.Test;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+
 public class ReflectToolsTest {
     public class NonStaticInnerClass {
         public NonStaticInnerClass() {
@@ -99,7 +102,38 @@ public class ReflectToolsTest {
     public void localClass() {
         class LocalClass {
         }
-        assertError(ReflectTools.CREATE_INSTANCE_FAILED_LOCAL_CLASS, LocalClass.class);
+        assertError(ReflectTools.CREATE_INSTANCE_FAILED_LOCAL_CLASS,
+                LocalClass.class);
+    }
+
+    @Test
+    public void createProxyForNonStaticInnerClass() {
+        Class<NonStaticInnerClass> originalClass = NonStaticInnerClass.class;
+        Class<?> proxyClass = createProxyClass(originalClass);
+
+        // Even though proxyClass was created on top of NonStaticInnerClass, the
+        // exception message does not show it.
+        // It's sort of a feature, because proxy class is created as a top-level
+        // class.
+        assertError(
+                ReflectTools.CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
+                proxyClass);
+
+        // This is how you get correct exception message.
+        try {
+            ReflectTools.createProxyInstance(proxyClass, originalClass);
+        } catch (IllegalArgumentException re) {
+            Assert.assertEquals(MessageFormat.format(
+                    ReflectTools.CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
+                    originalClass.getName()), re.getMessage());
+        }
+    }
+
+    private Class<?> createProxyClass(Class<?> originalClass) {
+        return new ByteBuddy().subclass(originalClass).make()
+                .load(originalClass.getClassLoader(),
+                        ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
     }
 
     private void assertError(String expectedError, Class<?> cls) {
