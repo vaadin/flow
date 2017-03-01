@@ -40,7 +40,7 @@ import com.vaadin.server.VaadinServlet;
  * Servlet for the application.
  */
 @WebServlet(urlPatterns = "/*", name = "ExpenseManagerServlet", asyncSupported = true)
-@VaadinServletConfiguration(routerConfigurator = RouterConf.class, productionMode = false)
+@VaadinServletConfiguration(ui = ExpenseManagerUI.class, routerConfigurator = RouterConf.class, productionMode = false)
 public class ExpenseManagerServlet extends VaadinServlet {
 
     /**
