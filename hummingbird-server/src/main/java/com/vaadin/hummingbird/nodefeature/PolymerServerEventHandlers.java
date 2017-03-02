@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,7 +27,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
+import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.util.ReflectTools;
@@ -126,9 +129,37 @@ public class PolymerServerEventHandlers extends SerializableNodeList<String> {
         if (method.getParameterCount() == 0) {
             return;
         }
-        throw new IllegalStateException(String.format(Locale.ENGLISH,
-                "Event handler method '%s'.'%s' may not have parameters",
-                method.getDeclaringClass().getName(), method.getName()));
+        Stream.of(method.getParameterTypes())
+                .forEach(type -> ensureSupportedParameterType(method, type));
+        Stream.of(method.getParameters())
+                .forEach(parameter -> ensureAnnotation(method, parameter));
+    }
+
+    private static void ensureAnnotation(Method method, Parameter parameter) {
+        if (!parameter.isAnnotationPresent(EventData.class)) {
+            throw new IllegalStateException(
+                    "No @EventData annotation on parameter "
+                            + parameter.getName().replace("arg", "")
+                            + " for EventHandler method" + method.getName());
+        }
+    }
+
+    private static void ensureSupportedParameterType(Method method,
+            Class<?> type) {
+        Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
+
+        if (parameterType.isArray()) {
+            ensureSupportedParameterType(method,
+                    parameterType.getComponentType());
+        } else if (!JsonCodec.canEncodeWithoutTypeInfo(parameterType)) {
+            String msg = String.format(Locale.ENGLISH,
+                    "The parameter types of event handler methods must be serializable to JSON."
+                            + " Component %s has method '%s' and annotated with %s "
+                            + "which declares parameter with non serializable to JSON type '%s'",
+                    method.getDeclaringClass().getName(), method.getName(),
+                    EventHandler.class.getName(), type.getName());
+            throw new IllegalStateException(msg);
+        }
     }
 
 }
