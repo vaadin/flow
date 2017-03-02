@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -48,9 +49,16 @@ public class LocationTest {
         new Location("/foo/bar");
     }
 
-    @Test(expected = AssertionError.class)
+    @Test
     public void parseLocationWithQueryString() {
-        new Location("path?query");
+        Location location = new Location("path?query");
+
+        assertEquals("path", location.getPath());
+        assertEquals(
+                Collections.singletonMap("query",
+                        Collections.singletonList("")),
+                location.getQueryParameters().getParameters());
+        assertEquals("path?query", location.getPathWithQueryParameters());
     }
 
     @Test
@@ -157,5 +165,21 @@ public class LocationTest {
         inputParameters.put("three", new String[] { "3" });
 
         return QueryParameters.full(inputParameters);
+    }
+
+    @Test
+    public void locationWithParamsInUrl() {
+        String initialPath = "foo/bar/?one&two=222";
+        QueryParameters queryParams = getQueryParameters();
+        Location location = new Location(initialPath, queryParams);
+
+        Map<String, List<String>> expectedMap = new HashMap<>();
+        expectedMap.put("one", Arrays.asList("1", "11", ""));
+        expectedMap.put("two", Arrays.asList("2", "22", "222"));
+        expectedMap.put("three", Collections.singletonList("3"));
+
+        assertEquals("foo/bar/", location.getPath());
+        assertEquals(expectedMap,
+                location.getQueryParameters().getParameters());
     }
 }

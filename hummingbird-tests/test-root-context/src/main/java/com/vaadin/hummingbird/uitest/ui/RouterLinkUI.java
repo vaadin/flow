@@ -17,12 +17,20 @@ public class RouterLinkUI extends UI {
         Element location = ElementFactory.createDiv("no location")
                 .setAttribute("id", "location");
 
+        Element queryParams = ElementFactory.createDiv("no queryParams")
+                .setAttribute("id", "queryParams");
+
         bodyElement.appendChild(location, new Element("p"));
+        bodyElement.appendChild(queryParams, new Element("p"));
 
         addLinks();
 
         getPage().getHistory().setHistoryStateChangeHandler(
-                e -> location.setText(e.getLocation().getPath()));
+                e -> {
+                    location.setText(e.getLocation().getPath());
+                    queryParams.setText(e.getLocation().getQueryParameters().getQueryString());
+                }
+        );
 
         addImageLink();
     }

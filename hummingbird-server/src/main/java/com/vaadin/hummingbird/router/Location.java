@@ -24,8 +24,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import javafx.util.Pair;
 
 /**
  * Represents a relative URL made up of path segments and query parameters, but
@@ -37,6 +40,8 @@ public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";
     private static final String QUERY_SEPARATOR = "?";
     private static final String PARAMETERS_SEPARATOR = "&";
+    private static final String PARAMETER_VALUES_SEPARATOR = "=";
+    private static final String ABSENT_PARAMETER_VALUE = "";
 
     private final List<String> segments;
     private final QueryParameters queryParameters;
@@ -48,7 +53,7 @@ public class Location implements Serializable {
      *            the relative path, not <code>null</code>
      */
     public Location(String path) {
-        this(parsePath(path));
+        this(path, QueryParameters.empty());
     }
 
     /**
@@ -60,7 +65,7 @@ public class Location implements Serializable {
      *            query parameters information, not {@code null}
      */
     public Location(String path, QueryParameters queryParameters) {
-        this(parsePath(path), queryParameters);
+        this(parsePath(path), parseParams(path, queryParameters));
     }
 
     /**
@@ -159,20 +164,20 @@ public class Location implements Serializable {
      */
     public String getPathWithQueryParameters() {
         String basePath = getPath();
+        assert !basePath.contains(
+                QUERY_SEPARATOR) : "Base path can not contain query separator="
+                        + QUERY_SEPARATOR;
+
         String params = queryParameters.getQueryString();
         if (params.isEmpty()) {
             return basePath;
-        }
-
-        if (basePath.contains(QUERY_SEPARATOR)) {
-            return basePath + PARAMETERS_SEPARATOR + params;
         }
         return basePath + QUERY_SEPARATOR + params;
     }
 
     /**
-     * Removes or adds slash to the end of the location path.
-     * Creates new {@link Location} instance instead of modifying the old one.
+     * Removes or adds slash to the end of the location path. Creates new
+     * {@link Location} instance instead of modifying the old one.
      *
      * @return new {@link Location} instance with updated path
      */
@@ -199,13 +204,44 @@ public class Location implements Serializable {
         }
     }
 
+    private static QueryParameters parseParams(String path,
+            QueryParameters userDefinedParameters) {
+        int beginIndex = path.indexOf(QUERY_SEPARATOR);
+        if (beginIndex < 0) {
+            return userDefinedParameters;
+        }
+
+        Map<String, List<String>> parsedParams = Arrays
+                .stream(path.substring(beginIndex + 1)
+                        .split(PARAMETERS_SEPARATOR))
+                .map(paramAndValue -> paramAndValue
+                        .split(PARAMETER_VALUES_SEPARATOR))
+                .map(paramAndValueArray -> new Pair<>(paramAndValueArray[0],
+                        paramAndValueArray.length == 1 ? ABSENT_PARAMETER_VALUE
+                                : paramAndValueArray[1]))
+                .collect(Collectors.toMap(Pair::getKey,
+                        pair -> Collections.singletonList(pair.getValue()),
+                        (values1, values2) -> {
+                            List<String> result = new ArrayList<>(values1);
+                            result.addAll(values2);
+                            return result;
+                        }));
+        return userDefinedParameters.addParameters(parsedParams);
+    }
+
     private static List<String> parsePath(String path) {
-        assert !path.contains("?") : "query string not yet supported";
+        final String basePath;
+        int endIndex = path.indexOf(QUERY_SEPARATOR);
+        if (endIndex > 0) {
+            basePath = path.substring(0, endIndex);
+        } else {
+            basePath = path;
+        }
 
-        verifyRelativePath(path);
+        verifyRelativePath(basePath);
 
-        List<String> splitList = Arrays.asList(path.split(PATH_SEPARATOR));
-        if (path.endsWith(PATH_SEPARATOR)) {
+        List<String> splitList = Arrays.asList(basePath.split(PATH_SEPARATOR));
+        if (basePath.endsWith(PATH_SEPARATOR)) {
             // Explicitly add "" to the end even though it's ignored by
             // String.split
             ArrayList<String> result = new ArrayList<>(splitList.size() + 1);

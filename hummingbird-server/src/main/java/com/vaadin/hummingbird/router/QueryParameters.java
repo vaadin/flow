@@ -16,8 +16,10 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,11 +32,12 @@ import java.util.stream.Collectors;
 public class QueryParameters implements Serializable {
     private static final String PARAMETER_VALUES_SEPARATOR = "=";
     private static final String PARAMETERS_SEPARATOR = "&";
+    private static final String ABSENT_PARAMETER_VALUE = "";
 
     private final Map<String, List<String>> parameters;
 
     private QueryParameters(Map<String, List<String>> parameters) {
-        this.parameters = parameters;
+        this.parameters = Collections.unmodifiableMap(parameters);
     }
 
     /**
@@ -55,8 +58,7 @@ public class QueryParameters implements Serializable {
      * @return query parameters information
      */
     public static QueryParameters full(Map<String, String[]> parameters) {
-        return new QueryParameters(
-                Collections.unmodifiableMap(convertArraysToLists(parameters)));
+        return new QueryParameters(convertArraysToLists(parameters));
     }
 
     private static Map<String, List<String>> convertArraysToLists(
@@ -64,6 +66,31 @@ public class QueryParameters implements Serializable {
         return fullParameters.entrySet().stream().collect(
                 Collectors.toMap(Map.Entry::getKey, entry -> Collections
                         .unmodifiableList(Arrays.asList(entry.getValue()))));
+    }
+
+    /**
+     * Merges current params with parameters in current {@link QueryParameters}.
+     * If same parameter name is presend in both {@link QueryParameters} and map
+     * passed, values will be united in single list, duplicate values are not
+     * eliminated, no order guarantees are given. Original instance is not
+     * changed hence new {@link QueryParameters} with merged parameters is
+     * created.
+     *
+     * @param newParameters
+     *            query parameters map to merge into existing parameters
+     * @return {@link QueryParameters} with merged parameters
+     */
+    public QueryParameters addParameters(
+            Map<String, List<String>> newParameters) {
+        Map<String, List<String>> updated = new HashMap<>(parameters);
+
+        newParameters.forEach((parameterName, parameterValues) -> updated
+                .merge(parameterName, parameterValues, (list1, list2) -> {
+                    List<String> result = new ArrayList<>(list1);
+                    result.addAll(list2);
+                    return Collections.unmodifiableList(result);
+                }));
+        return new QueryParameters(updated);
     }
 
     /**
@@ -75,8 +102,7 @@ public class QueryParameters implements Serializable {
      * @return query parameters information
      */
     public static QueryParameters simple(Map<String, String> parameters) {
-        return new QueryParameters(
-                Collections.unmodifiableMap(toFullParameters(parameters)));
+        return new QueryParameters(toFullParameters(parameters));
     }
 
     private static Map<String, List<String>> toFullParameters(
@@ -109,7 +135,10 @@ public class QueryParameters implements Serializable {
     public String getQueryString() {
         return parameters.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream()
-                        .map(value -> entry.getKey() + PARAMETER_VALUES_SEPARATOR + value))
+                        .map(value -> ABSENT_PARAMETER_VALUE.equals(value)
+                                ? entry.getKey()
+                                : entry.getKey() + PARAMETER_VALUES_SEPARATOR
+                                        + value))
                 .collect(Collectors.joining(PARAMETERS_SEPARATOR));
     }
 }

@@ -18,8 +18,10 @@ package com.vaadin.hummingbird.router;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +30,33 @@ import java.util.Map;
 import org.junit.Test;
 
 public class QueryParametersTest {
+
+    private Map<String, String> getSimpleInputParameters() {
+        Map<String, String> inputParameters = new HashMap<>();
+        inputParameters.put("one", "1");
+        inputParameters.put("two", "2");
+        inputParameters.put("three", "3");
+        return inputParameters;
+    }
+
+    private Map<String, String[]> getFullInputParameters() {
+        Map<String, String[]> inputParameters = new HashMap<>();
+        inputParameters.put("one", new String[] { "1", "11" });
+        inputParameters.put("two", new String[] { "2", "22" });
+        inputParameters.put("three", new String[] { "3" });
+        return inputParameters;
+    }
+
+    private void checkListsForImmutability(Collection<List<String>> lists) {
+        for (List<String> list : lists) {
+            try {
+                list.add("whatever");
+                fail("No list should have been mutable");
+            } catch (UnsupportedOperationException expected) {
+                // exception expected
+            }
+        }
+    }
 
     @Test
     public void emptyParameters() {
@@ -43,14 +72,16 @@ public class QueryParametersTest {
         assertEquals("", emptyParams.getQueryString());
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void underlyingMapUnmodifiable_empty() {
+        QueryParameters.empty().getParameters().put("one",
+                Collections.emptyList());
+    }
+
     @Test
     public void simpleParameters() {
-        Map<String, String> inputParameters = new HashMap<>();
-        inputParameters.put("one", "1");
-        inputParameters.put("two", "2");
-        inputParameters.put("three", "3");
-
-        QueryParameters simpleParams = QueryParameters.simple(inputParameters);
+        QueryParameters simpleParams = QueryParameters
+                .simple(getSimpleInputParameters());
 
         Map<String, List<String>> expectedFullParams = new HashMap<>();
         expectedFullParams.put("one", Collections.singletonList("1"));
@@ -61,12 +92,8 @@ public class QueryParametersTest {
 
     @Test
     public void simpleParametersToQueryString() {
-        Map<String, String> inputParameters = new HashMap<>();
-        inputParameters.put("one", "1");
-        inputParameters.put("two", "2");
-        inputParameters.put("three", "3");
-
-        QueryParameters simpleParams = QueryParameters.simple(inputParameters);
+        QueryParameters simpleParams = QueryParameters
+                .simple(getSimpleInputParameters());
 
         String queryString = simpleParams.getQueryString();
         assertTrue(queryString.contains("one=1"));
@@ -76,14 +103,23 @@ public class QueryParametersTest {
         assertNumberOfOccurences(queryString, 2, "&");
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void underlyingMapUnmodifiable_simple() {
+        QueryParameters params = QueryParameters
+                .simple(getSimpleInputParameters());
+        params.getParameters().put("one", Collections.emptyList());
+    }
+
+    @Test
+    public void underlyingListsUnmodifiable_simple() {
+        checkListsForImmutability(QueryParameters
+                .simple(getSimpleInputParameters()).getParameters().values());
+    }
+
     @Test
     public void complexParameters() {
-        Map<String, String[]> inputParameters = new HashMap<>();
-        inputParameters.put("one", new String[] { "1", "11" });
-        inputParameters.put("two", new String[] { "2", "22" });
-        inputParameters.put("three", new String[] { "3" });
-
-        QueryParameters fullParams = QueryParameters.full(inputParameters);
+        QueryParameters fullParams = QueryParameters
+                .full(getFullInputParameters());
 
         Map<String, List<String>> expectedFullParams = new HashMap<>();
         expectedFullParams.put("one", Arrays.asList("1", "11"));
@@ -94,12 +130,8 @@ public class QueryParametersTest {
 
     @Test
     public void complexParametersToQueryString() {
-        Map<String, String[]> inputParameters = new HashMap<>();
-        inputParameters.put("one", new String[] { "1", "11" });
-        inputParameters.put("two", new String[] { "2", "22" });
-        inputParameters.put("three", new String[] { "3" });
-
-        QueryParameters fullParams = QueryParameters.full(inputParameters);
+        QueryParameters fullParams = QueryParameters
+                .full(getFullInputParameters());
 
         String queryString = fullParams.getQueryString();
         assertTrue(queryString.contains("one=1"));
@@ -116,5 +148,62 @@ public class QueryParametersTest {
         int actualNumbetOfOccurences = stringToCheck.length()
                 - stringToCheck.replace(element, "").length();
         assertEquals(expectedNumber, actualNumbetOfOccurences);
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void underlyingMapUnmodifiable_full() {
+        QueryParameters.full(getFullInputParameters()).getParameters()
+                .put("one", Collections.emptyList());
+    }
+
+    @Test
+    public void underlyingListsUnmodifiable_full() {
+        checkListsForImmutability(QueryParameters.full(getFullInputParameters())
+                .getParameters().values());
+    }
+
+    @Test
+    public void addParameters_empty() {
+        QueryParameters empty = QueryParameters.empty();
+        QueryParameters fullParams = QueryParameters
+                .full(getFullInputParameters());
+
+        QueryParameters updated = empty
+                .addParameters(fullParams.getParameters());
+
+        assertEquals(fullParams.getParameters(), updated.getParameters());
+    }
+
+    @Test
+    public void addParameters_existing() {
+        QueryParameters simpleParams = QueryParameters
+                .simple(getSimpleInputParameters());
+        QueryParameters fullParams = QueryParameters
+                .full(getFullInputParameters());
+
+        QueryParameters updated = simpleParams
+                .addParameters(fullParams.getParameters());
+
+        Map<String, List<String>> expectedFullParams = new HashMap<>();
+        expectedFullParams.put("one", Arrays.asList("1", "1", "11"));
+        expectedFullParams.put("two", Arrays.asList("2", "2", "22"));
+        expectedFullParams.put("three", Arrays.asList("3", "3"));
+        assertEquals(expectedFullParams, updated.getParameters());
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void underlyingMapUnmodifiable_addParameters() {
+        QueryParameters updated = QueryParameters.empty().addParameters(
+                QueryParameters.full(getFullInputParameters()).getParameters());
+
+        updated.getParameters().put("whatever", Collections.emptyList());
+    }
+
+    @Test
+    public void underlyingListsUnmodifiable_addParameters() {
+        QueryParameters updated = QueryParameters.empty().addParameters(
+                QueryParameters.full(getFullInputParameters()).getParameters());
+
+        checkListsForImmutability(updated.getParameters().values());
     }
 }
