@@ -136,7 +136,9 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.pushState</code> in the browser with the given
-     * parameters.
+     * parameters. This is a shorthand method for
+     * {@link History#pushState(JsonValue, Location)}, creating {@link Location}
+     * from the string provided.
      *
      * @param state
      *            the JSON state to push to the history stack, or
@@ -170,7 +172,9 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.replaceState</code> in the browser with the given
-     * parameters.
+     * parameters. * This is a shorthand method for
+     * {@link History#replaceState(JsonValue, Location)}, creating
+     * {@link Location} from the string provided.
      *
      * @param state
      *            the JSON state to push to the history stack, or

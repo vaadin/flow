@@ -112,6 +112,7 @@ public class QueryParametersTest {
 
     private void assertNumberOfOccurences(String stringToCheck,
             int expectedNumber, String element) {
+        assertEquals(1, element.length());
         int actualNumbetOfOccurences = stringToCheck.length()
                 - stringToCheck.replace(element, "").length();
         assertEquals(expectedNumber, actualNumbetOfOccurences);

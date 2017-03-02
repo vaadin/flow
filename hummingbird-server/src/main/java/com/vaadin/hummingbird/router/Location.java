@@ -28,14 +28,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Represents a relative URL made up of path segments, but lacking e.g. the
- * hostname that can also be present in URLs.
+ * Represents a relative URL made up of path segments and query parameters, but
+ * lacking e.g. the hostname that can also be present in URLs.
  *
  * @author Vaadin Ltd
  */
 public class Location implements Serializable {
     private static final String PATH_SEPARATOR = "/";
-    private static final String QUERY_SEPARATOR= "?";
+    private static final String QUERY_SEPARATOR = "?";
     private static final String PARAMETERS_SEPARATOR = "&";
 
     private final List<String> segments;
@@ -167,17 +167,14 @@ public class Location implements Serializable {
         if (basePath.contains(QUERY_SEPARATOR)) {
             return basePath + PARAMETERS_SEPARATOR + params;
         }
-
-        if (!basePath.endsWith(PATH_SEPARATOR)) {
-            basePath = toggleTrailingSlash().getPath();
-        }
         return basePath + QUERY_SEPARATOR + params;
     }
 
     /**
      * Removes or adds slash to the end of the location path.
+     * Creates new {@link Location} instance instead of modifying the old one.
      *
-     * @return location with updated path
+     * @return new {@link Location} instance with updated path
      */
     Location toggleTrailingSlash() {
         // Even Location for "" still contains one (empty) segment

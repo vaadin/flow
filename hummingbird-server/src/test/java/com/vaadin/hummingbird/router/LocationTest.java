@@ -146,7 +146,7 @@ public class LocationTest {
 
         String pathWithParameters = location.getPathWithQueryParameters();
 
-        assertEquals(initialPath + '/' + '?' + queryParams.getQueryString(),
+        assertEquals(initialPath + '?' + queryParams.getQueryString(),
                 pathWithParameters);
     }
 

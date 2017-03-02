@@ -392,8 +392,6 @@ public class RouterTest {
         router.reconfigure(c -> c.setRoute("*", event -> {
             assertEquals(params.getParameters(),
                     event.getLocation().getQueryParameters().getParameters());
-            assertEquals(params.getParameters(),
-                    event.getLocation().getQueryParameters().getParameters());
             requestHandled = true;
             return HttpServletResponse.SC_OK;
         }));

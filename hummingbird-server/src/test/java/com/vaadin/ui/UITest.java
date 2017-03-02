@@ -119,8 +119,6 @@ public class UITest {
         ui.getRouter().get().reconfigure(c -> c.setRoute(route, event -> {
             assertEquals(params.getParameters(),
                     event.getLocation().getQueryParameters().getParameters());
-            assertEquals(params.getParameters(),
-                    event.getLocation().getQueryParameters().getParameters());
             requestHandled = true;
             return HttpServletResponse.SC_OK;
         }));
@@ -129,7 +127,8 @@ public class UITest {
 
         assertEquals(route,
                 ui.getInternals().getActiveViewLocation().getPath());
-        assertTrue("Request with QueryParameters was not handled.", requestHandled);
+        assertTrue("Request with QueryParameters was not handled.",
+                requestHandled);
     }
 
     @Test
@@ -138,8 +137,9 @@ public class UITest {
 
         History history = ui.getPage().getHistory();
 
-        history.getHistoryStateChangeHandler().onHistoryStateChange(
-                new HistoryStateChangeEvent(history, null, new Location("foo/bar")));
+        history.getHistoryStateChangeHandler()
+                .onHistoryStateChange(new HistoryStateChangeEvent(history, null,
+                        new Location("foo/bar")));
 
         assertEquals("foo/bar",
                 ui.getInternals().getActiveViewLocation().getPath());

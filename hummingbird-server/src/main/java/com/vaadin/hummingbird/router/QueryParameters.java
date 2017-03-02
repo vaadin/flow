@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
  * @author Vaadin Ltd.
  */
 public class QueryParameters implements Serializable {
-    private static final String EQUALS_SIGN = "=";
-    private static final String AMPERSAND_SIGN = "&";
+    private static final String PARAMETER_VALUES_SEPARATOR = "=";
+    private static final String PARAMETERS_SEPARATOR = "&";
 
     private final Map<String, List<String>> parameters;
 
@@ -109,7 +109,7 @@ public class QueryParameters implements Serializable {
     public String getQueryString() {
         return parameters.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream()
-                        .map(value -> entry.getKey() + EQUALS_SIGN + value))
-                .collect(Collectors.joining(AMPERSAND_SIGN));
+                        .map(value -> entry.getKey() + PARAMETER_VALUES_SEPARATOR + value))
+                .collect(Collectors.joining(PARAMETERS_SEPARATOR));
     }
 }
