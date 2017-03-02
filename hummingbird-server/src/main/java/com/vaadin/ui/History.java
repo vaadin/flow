@@ -172,7 +172,7 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.replaceState</code> in the browser with the given
-     * parameters. * This is a shorthand method for
+     * parameters. This is a shorthand method for
      * {@link History#replaceState(JsonValue, Location)}, creating
      * {@link Location} from the string provided.
      *
