@@ -61,7 +61,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     }
 
     /**
-     * Creates the ServerRpcHandler to use
+     * Creates the ServerRpcHandler to use.
      * 
      * @since
      * @return the ServerRpcHandler to use
