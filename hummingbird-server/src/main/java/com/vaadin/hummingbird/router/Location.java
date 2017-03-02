@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javafx.util.Pair;
-
 /**
  * Represents a relative URL made up of path segments and query parameters, but
  * lacking e.g. the hostname that can also be present in URLs.
@@ -47,25 +45,27 @@ public class Location implements Serializable {
     private final QueryParameters queryParameters;
 
     /**
-     * Creates a new location for the given relative path.
+     * Creates a new {@link Location} object for given location string. This
+     * string can contain relative path and query parameters, if needed.
      *
-     * @param path
-     *            the relative path, not <code>null</code>
+     * @param location
+     *            the relative location, not <code>null</code>
      */
-    public Location(String path) {
-        this(path, QueryParameters.empty());
+    public Location(String location) {
+        this(location, QueryParameters.empty());
     }
 
     /**
-     * Creates a new location for the given relative path and query parameters.
+     * Creates a new {@link Location} object for given location string and query
+     * parameters.
      *
-     * @param path
-     *            the relative path, not {@code null}
+     * @param location
+     *            the relative location, not {@code null}
      * @param queryParameters
      *            query parameters information, not {@code null}
      */
-    public Location(String path, QueryParameters queryParameters) {
-        this(parsePath(path), parseParams(path, queryParameters));
+    public Location(String location, QueryParameters queryParameters) {
+        this(parsePath(location.trim()), parseParams(location.trim(), queryParameters));
     }
 
     /**
@@ -216,23 +216,26 @@ public class Location implements Serializable {
                         .split(PARAMETERS_SEPARATOR))
                 .map(paramAndValue -> paramAndValue
                         .split(PARAMETER_VALUES_SEPARATOR))
-                .map(paramAndValueArray -> new Pair<>(paramAndValueArray[0],
-                        paramAndValueArray.length == 1 ? ABSENT_PARAMETER_VALUE
-                                : paramAndValueArray[1]))
-                .collect(Collectors.toMap(Pair::getKey,
-                        pair -> Collections.singletonList(pair.getValue()),
+                .collect(Collectors.toMap(array -> array[0],
+                        array -> Collections.singletonList(array.length == 1
+                                ? ABSENT_PARAMETER_VALUE : array[1]),
                         (values1, values2) -> {
                             List<String> result = new ArrayList<>(values1);
                             result.addAll(values2);
                             return result;
                         }));
-        return userDefinedParameters.addParameters(parsedParams);
+        return QueryParameters.uniteParameters(userDefinedParameters,
+                new QueryParameters(parsedParams));
     }
 
     private static List<String> parsePath(String path) {
         final String basePath;
         int endIndex = path.indexOf(QUERY_SEPARATOR);
-        if (endIndex > 0) {
+        if (endIndex == 0) {
+            throw new IllegalArgumentException(
+                    "Location '" + path + "' is incorrect, it cannot start with "
+                            + QUERY_SEPARATOR + "symbol");
+        } else if (endIndex > 0) {
             basePath = path.substring(0, endIndex);
         } else {
             basePath = path;

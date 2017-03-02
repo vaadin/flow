@@ -163,26 +163,26 @@ public class QueryParametersTest {
     }
 
     @Test
-    public void addParameters_empty() {
+    public void uniteParameters_empty() {
         QueryParameters empty = QueryParameters.empty();
         QueryParameters fullParams = QueryParameters
                 .full(getFullInputParameters());
 
-        QueryParameters updated = empty
-                .addParameters(fullParams.getParameters());
+        QueryParameters updated = QueryParameters.uniteParameters(empty,
+                fullParams);
 
         assertEquals(fullParams.getParameters(), updated.getParameters());
     }
 
     @Test
-    public void addParameters_existing() {
+    public void uniteParameters_existing() {
         QueryParameters simpleParams = QueryParameters
                 .simple(getSimpleInputParameters());
         QueryParameters fullParams = QueryParameters
                 .full(getFullInputParameters());
 
-        QueryParameters updated = simpleParams
-                .addParameters(fullParams.getParameters());
+        QueryParameters updated = QueryParameters.uniteParameters(simpleParams,
+                fullParams);
 
         Map<String, List<String>> expectedFullParams = new HashMap<>();
         expectedFullParams.put("one", Arrays.asList("1", "1", "11"));
@@ -193,16 +193,18 @@ public class QueryParametersTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void underlyingMapUnmodifiable_addParameters() {
-        QueryParameters updated = QueryParameters.empty().addParameters(
-                QueryParameters.full(getFullInputParameters()).getParameters());
+        QueryParameters updated = QueryParameters.uniteParameters(
+                QueryParameters.empty(),
+                QueryParameters.full(getFullInputParameters()));
 
         updated.getParameters().put("whatever", Collections.emptyList());
     }
 
     @Test
     public void underlyingListsUnmodifiable_addParameters() {
-        QueryParameters updated = QueryParameters.empty().addParameters(
-                QueryParameters.full(getFullInputParameters()).getParameters());
+        QueryParameters updated = QueryParameters.uniteParameters(
+                QueryParameters.empty(),
+                QueryParameters.full(getFullInputParameters()));
 
         checkListsForImmutability(updated.getParameters().values());
     }

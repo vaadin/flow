@@ -49,6 +49,11 @@ public class LocationTest {
         new Location("/foo/bar");
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void parseLocationWithQueryStringOnly() {
+        new Location("?hey=hola&zz=");
+    }
+
     @Test
     public void parseLocationWithQueryString() {
         Location location = new Location("path?query");
@@ -58,7 +63,7 @@ public class LocationTest {
                 Collections.singletonMap("query",
                         Collections.singletonList("")),
                 location.getQueryParameters().getParameters());
-        assertEquals("path?query", location.getPathWithQueryParameters());
+        assertEquals("path?query=", location.getPathWithQueryParameters());
     }
 
     @Test

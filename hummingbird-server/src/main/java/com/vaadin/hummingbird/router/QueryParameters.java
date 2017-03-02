@@ -32,12 +32,15 @@ import java.util.stream.Collectors;
 public class QueryParameters implements Serializable {
     private static final String PARAMETER_VALUES_SEPARATOR = "=";
     private static final String PARAMETERS_SEPARATOR = "&";
-    private static final String ABSENT_PARAMETER_VALUE = "";
 
     private final Map<String, List<String>> parameters;
 
-    private QueryParameters(Map<String, List<String>> parameters) {
-        this.parameters = Collections.unmodifiableMap(parameters);
+    public QueryParameters(Map<String, List<String>> parameters) {
+        this.parameters = Collections
+                .unmodifiableMap(parameters.entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey,
+                                entry -> Collections.unmodifiableList(
+                                        new ArrayList<>(entry.getValue())))));
     }
 
     /**
@@ -63,33 +66,35 @@ public class QueryParameters implements Serializable {
 
     private static Map<String, List<String>> convertArraysToLists(
             Map<String, String[]> fullParameters) {
-        return fullParameters.entrySet().stream().collect(
-                Collectors.toMap(Map.Entry::getKey, entry -> Collections
-                        .unmodifiableList(Arrays.asList(entry.getValue()))));
+        return fullParameters.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey, entry -> Arrays.asList(entry.getValue())));
     }
 
     /**
-     * Merges current params with parameters in current {@link QueryParameters}.
-     * If same parameter name is presend in both {@link QueryParameters} and map
-     * passed, values will be united in single list, duplicate values are not
-     * eliminated, no order guarantees are given. Original instance is not
-     * changed hence new {@link QueryParameters} with merged parameters is
-     * created.
+     * Unites query parameters from both instances into single, newly created,
+     * {@link QueryParameters}. If same parameter name is presend in both
+     * {@link QueryParameters}, values will be united in single list, duplicate
+     * values are not eliminated, no order guarantees are given.
      *
-     * @param newParameters
-     *            query parameters map to merge into existing parameters
-     * @return {@link QueryParameters} with merged parameters
+     * @param first
+     *            first of the parameters' set to be united
+     * @param second
+     *            second of the parameters' set to be united
+     *
+     * @return {@link QueryParameters} with united parameters
      */
-    public QueryParameters addParameters(
-            Map<String, List<String>> newParameters) {
-        Map<String, List<String>> updated = new HashMap<>(parameters);
+    public static QueryParameters uniteParameters(QueryParameters first,
+            QueryParameters second) {
+        Map<String, List<String>> updated = new HashMap<>(
+                first.getParameters());
 
-        newParameters.forEach((parameterName, parameterValues) -> updated
-                .merge(parameterName, parameterValues, (list1, list2) -> {
-                    List<String> result = new ArrayList<>(list1);
-                    result.addAll(list2);
-                    return Collections.unmodifiableList(result);
-                }));
+        second.getParameters().forEach(
+                (parameterName, parameterValues) -> updated.merge(parameterName,
+                        parameterValues, (list1, list2) -> {
+                            List<String> result = new ArrayList<>(list1);
+                            result.addAll(list2);
+                            return Collections.unmodifiableList(result);
+                        }));
         return new QueryParameters(updated);
     }
 
@@ -135,10 +140,8 @@ public class QueryParameters implements Serializable {
     public String getQueryString() {
         return parameters.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream()
-                        .map(value -> ABSENT_PARAMETER_VALUE.equals(value)
-                                ? entry.getKey()
-                                : entry.getKey() + PARAMETER_VALUES_SEPARATOR
-                                        + value))
+                        .map(value -> entry.getKey()
+                                + PARAMETER_VALUES_SEPARATOR + value))
                 .collect(Collectors.joining(PARAMETERS_SEPARATOR));
     }
 }
