@@ -128,20 +128,24 @@ public class ApplicationConnection {
         client.isActive = $entry(function() {
             return ap.@com.vaadin.client.ApplicationConnection::isActive()();
         });
-
+    
         client.getProfilingData = $entry(function() {
             var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
             var pd = [
                 smh.@com.vaadin.client.communication.MessageHandler::lastProcessingTime,
                     smh.@com.vaadin.client.communication.MessageHandler::totalProcessingTime
                 ];
-            pd = pd.concat(smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo);
+            if (null != smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo) {
+                pd = pd.concat(smh.@com.vaadin.client.communication.MessageHandler::serverTimingInfo);
+            } else {
+                pd = pd.concat(-1, -1);
+            }
             pd[pd.length] = smh.@com.vaadin.client.communication.MessageHandler::bootstrapTime;
             return pd;
         });
-
+    
         client.initializing = false;
-
+    
         $wnd.vaadin.clients[applicationId] = client;
     }-*/;
 
