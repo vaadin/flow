@@ -131,8 +131,10 @@ public class UidlWriter implements Serializable {
             response.put(JsonConstants.UIDL_KEY_EXECUTE,
                     encodeExecuteJavaScriptList(executeJavaScriptList));
         }
-
-        response.put("timings", createPerformanceData(ui));
+        if (!ui.getSession().getService().getDeploymentConfiguration()
+                .isProductionMode()) {
+            response.put("timings", createPerformanceData(ui));
+        }
         uiInternals.incrementServerId();
         return response;
     }
