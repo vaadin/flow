@@ -55,6 +55,11 @@
 			<artifactId>javax.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>jetty-continuation</artifactId>
+          <version>${jetty.version}</version>
+        </dependency>
 	</dependencies>
 	<build>
 		<plugins>

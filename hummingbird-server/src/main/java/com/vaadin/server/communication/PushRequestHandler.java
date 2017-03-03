@@ -29,8 +29,8 @@ import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereFramework.AtmosphereHandlerWrapper;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereInterceptor;
-import org.atmosphere.cpr.AtmosphereRequest;
-import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.AtmosphereRequestImpl;
+import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 
@@ -248,8 +248,9 @@ public class PushRequestHandler
             }
             try {
                 atmosphere.doCometSupport(
-                        AtmosphereRequest.wrap((VaadinServletRequest) request),
-                        AtmosphereResponse
+                        AtmosphereRequestImpl
+                                .wrap((VaadinServletRequest) request),
+                        AtmosphereResponseImpl
                                 .wrap((VaadinServletResponse) response));
             } catch (ServletException e) {
                 // TODO PUSH decide how to handle
