@@ -13,26 +13,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.template;
 
-import com.vaadin.annotations.HtmlImport;
+package com.vaadin.hummingbird.uitest.ui.template;
+
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
- * Component for an HTML element declared as a polymer component. The HTML
- * markup should be loaded using the {@link HtmlImport @HtmlImport} annotation
- * and the components should be associated with the web component element using
- * the {@link Tag @Tag} annotation.
- *
- * TODO kirill fix description or template search behavior
- *
- * @see HtmlImport
- * @see Tag
- *
- * @author Vaadin Ltd
+ * @author Vaadin Ltd.
  */
-public abstract class PolymerTemplate<M extends TemplateModel>
-        extends AbstractTemplate<M> {
+@Tag("my-template")
+public class OneWayPolymerBindingView extends PolymerTemplate<OneWayPolymerBindingView.MyModel> {
+    static final String MESSAGE = "message";
 
+    public interface MyModel extends TemplateModel {
+        void setMessage(String message);
+    }
+
+    public void setMessage(String message) {
+        getModel().setMessage(message);
+    }
+
+    public OneWayPolymerBindingView() {
+        setMessage(MESSAGE);
+    }
 }
