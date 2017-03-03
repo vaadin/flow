@@ -15,10 +15,10 @@
  */
 package com.vaadin.client.hummingbird.binding;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
-
-import jsinterop.annotations.JsFunction;
+import java.util.function.Consumer;
 
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
@@ -31,14 +31,18 @@ import com.vaadin.client.hummingbird.collection.JsMap.ForEachCallback;
 import com.vaadin.client.hummingbird.collection.JsSet;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.dom.DomElement.DomTokenList;
+import com.vaadin.client.hummingbird.model.BeanModelType;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
+import com.vaadin.client.hummingbird.template.Binding;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
+import com.vaadin.hummingbird.template.angular.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.angular.StaticBindingValueProvider;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
@@ -49,6 +53,7 @@ import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -56,6 +61,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  *
  */
+@SuppressWarnings("Duplicates")
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     @FunctionalInterface
@@ -176,6 +182,92 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .bindServerEventHandlerNames(htmlNode, stateNode));
 
         listeners.push(bindPolymerEventHandlerNames(context));
+
+        if (stateNode.hasFeature(NodeFeatures.POLYMER_TEMPLATE_MAP)) {
+            NodeMap polymerTemplateMap = stateNode
+                    .getMap(NodeFeatures.POLYMER_TEMPLATE_MAP);
+            MapProperty polymerModelBindings = polymerTemplateMap
+                    .getProperty(NodeFeatures.POLYMER_MODEL_BINDINGS);
+            JsonObject bindings = WidgetUtil
+                    .crazyJsCast(polymerModelBindings.getValue());
+            Arrays.stream(bindings.keys()).forEach(name -> {
+                Binding binding = WidgetUtil.crazyJsCast(bindings.get(name));
+                bind(stateNode, binding, value -> WidgetUtil
+                        .setJsProperty(htmlNode, name, value.orElse(null)));
+            });
+        }
+    }
+
+    /**
+     * Binds the {@code modelNode} using the given {@code binding} and
+     * {@code executor} to set the {@code binding} data to the node.
+     *
+     * @param modelNode
+     *            the state node containing model data, not {@code null}
+     * @param binding
+     *            binding data to set, not {@code null}
+     * @param executor
+     *            the operation to set the binding data to the node
+     */
+    private void bind(StateNode modelNode, Binding binding,
+            Consumer<Optional<Object>> executor) {
+        if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
+            Computation computation = Reactive
+                    .runWhenDepedenciesChange(() -> executor
+                            .accept(getModelBindingValue(modelNode, binding)));
+            modelNode.addUnregisterListener(event -> computation.stop());
+        } else {
+            // Only static bindings is known as a final call
+            assert binding.getType().equals(StaticBindingValueProvider.TYPE);
+            executor.accept(Optional.of(getStaticBindingValue(binding)));
+        }
+    }
+
+    /**
+     * Gets the value from the {@code node} for the {@code binding}.
+     *
+     * @param node
+     *            the state node, not {@code null}
+     * @param binding
+     *            binding data, not {@code null}
+     * @return map binding value, or an empty optional if no value for the
+     *         binding
+     */
+    private static Optional<Object> getModelBindingValue(StateNode node,
+            Binding binding) {
+        NodeMap model = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        String key = binding.getValue();
+        assert key != null;
+
+        String modelDescriptorId = (String) node
+                .getMap(NodeFeatures.POLYMER_TEMPLATE_MAP)
+                .getProperty(NodeFeatures.MODEL_DESCRIPTOR).getValue();
+
+        assert modelDescriptorId != null;
+
+        JsonObject modelDescriptor = node.getTree().getRegistry()
+                .getConstantPool().get(modelDescriptorId);
+
+        NativeFunction function = new NativeFunction("model",
+                "with(model) { return " + key + "}");
+
+        BeanModelType type = new BeanModelType(modelDescriptor);
+
+        Object proxy = type.createProxy(model);
+        return Optional.ofNullable(function.call(null, proxy));
+    }
+
+    /**
+     * Gets static biding value for the {@code binding}.
+     *
+     * @param binding
+     *            binding data, not {@code null}
+     * @return static binding value
+     */
+    private String getStaticBindingValue(Binding binding) {
+        assert binding != null;
+        return Optional.ofNullable(binding.getValue()).orElse("");
     }
 
     @SuppressWarnings("unchecked")

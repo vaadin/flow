@@ -103,7 +103,7 @@ public class TemplateModelProxyHandler implements Serializable {
 
         @Override
         public String toString() {
-            return "AngularTemplate Model for a state node with id "
+            return "Template Model for a state node with id "
                     + $stateNode().getId();
         }
 

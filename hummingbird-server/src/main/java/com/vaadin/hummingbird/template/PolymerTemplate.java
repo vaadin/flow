@@ -15,9 +15,17 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.ui.Component;
+import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.nodefeature.PolymerTemplateMap;
+import com.vaadin.hummingbird.template.angular.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.model.ModelDescriptor;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
@@ -30,6 +38,36 @@ import com.vaadin.ui.Component;
  *
  * @author Vaadin Ltd
  */
-public abstract class PolymerTemplate extends Component {
+public abstract class PolymerTemplate<M extends TemplateModel>
+        extends AbstractTemplate<M> {
+    public PolymerTemplate() {
+        String tagName = AnnotationReader
+                .getAnnotationFor(getClass(), Tag.class).map(Tag::value)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No tag annotation found"));
 
+        Element element = new Element(tagName);
+
+        ModelDescriptor<? extends M> modelDescriptor = ModelDescriptor
+                .get(getModelType());
+
+        element.getNode().getFeature(PolymerTemplateMap.class)
+                .setModelBindings(modelDescriptor.getPropertyNames()
+                        .collect(Collectors.toMap(Function.identity(),
+                                ModelValueBindingProvider::new)));
+        setElement(this, element);
+        stateNode = element.getNode();
+    }
+
+    @Override
+    protected ModelDescriptor<?> getModelDescriptor() {
+        return stateNode.getFeature(PolymerTemplateMap.class)
+                .getModelDescriptor();
+    }
+
+    @Override
+    protected void setModelDescriptor(ModelDescriptor<?> descriptor) {
+        stateNode.getFeature(PolymerTemplateMap.class)
+                .setModelDescriptor(descriptor);
+    }
 }
