@@ -63,7 +63,7 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
         collectEventHandlerMethods(component.getClass());
     }
 
-    private void collectEventHandlerMethods(Class<?> classWithAnnotations) {
+    protected void collectEventHandlerMethods(Class<?> classWithAnnotations) {
         List<Method> methods = new ArrayList<>();
         collectEventHandlerMethods(classWithAnnotations, methods);
         Map<String, Method> map = new HashMap<>();
@@ -83,7 +83,7 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
         map.keySet().forEach(this::add);
     }
 
-    private void collectEventHandlerMethods(Class<?> clazz,
+    protected void collectEventHandlerMethods(Class<?> clazz,
             Collection<Method> methods) {
         if (clazz.equals(Component.class)) {
             return;
@@ -131,7 +131,7 @@ public class PublishedServerEventHandlers extends SerializableNodeList<String> {
                 .forEach(type -> ensureSupportedParameterType(method, type));
     }
 
-    private static void ensureSupportedParameterType(Method method,
+    protected static void ensureSupportedParameterType(Method method,
             Class<?> type) {
         Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
         if (parameterType.isArray()) {

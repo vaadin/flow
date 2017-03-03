@@ -32,6 +32,7 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.template.PolymerTemplate;
+import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -40,7 +41,7 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  *
  */
-public class PolymerServerEventHandlers extends SerializableNodeList<String> {
+public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
 
     /**
      * Creates a new meta information list for the given state node.
@@ -59,32 +60,15 @@ public class PolymerServerEventHandlers extends SerializableNodeList<String> {
      * @param component
      *            the component instance which was set
      */
-    public <T extends PolymerTemplate> void componentSet(T component) {
+    @Override
+    public void componentSet(Component component) {
         assert component != null;
+        assert component instanceof PolymerTemplate;
         collectEventHandlerMethods(component.getClass());
     }
 
-    private void collectEventHandlerMethods(Class<?> classWithAnnotations) {
-        List<Method> methods = new ArrayList<>();
-        collectEventHandlerMethods(classWithAnnotations, methods);
-        Map<String, Method> map = new HashMap<>();
-        for (Method method : methods) {
-            Method existing = map.get(method.getName());
-            if (existing != null && !Arrays.equals(existing.getParameterTypes(),
-                    method.getParameterTypes())) {
-                String msg = String.format(Locale.ENGLISH,
-                        "There may be only one event handler method with the given name. "
-                                + "Class '%s' (considering its superclasses) "
-                                + "contains several event handler methods with the same name: '%s'",
-                        classWithAnnotations.getName(), method.getName());
-                throw new IllegalStateException(msg);
-            }
-            map.put(method.getName(), method);
-        }
-        map.keySet().forEach(this::add);
-    }
-
-    private void collectEventHandlerMethods(Class<?> clazz,
+    @Override
+    protected void collectEventHandlerMethods(Class<?> clazz,
             Collection<Method> methods) {
         if (clazz.equals(PolymerTemplate.class)) {
             return;
@@ -141,24 +125,6 @@ public class PolymerServerEventHandlers extends SerializableNodeList<String> {
                     "No @EventData annotation on parameter "
                             + parameter.getName().replace("arg", "")
                             + " for EventHandler method" + method.getName());
-        }
-    }
-
-    private static void ensureSupportedParameterType(Method method,
-            Class<?> type) {
-        Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
-
-        if (parameterType.isArray()) {
-            ensureSupportedParameterType(method,
-                    parameterType.getComponentType());
-        } else if (!JsonCodec.canEncodeWithoutTypeInfo(parameterType)) {
-            String msg = String.format(Locale.ENGLISH,
-                    "The parameter types of event handler methods must be serializable to JSON."
-                            + " Component %s has method '%s' and annotated with %s "
-                            + "which declares parameter with non serializable to JSON type '%s'",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    EventHandler.class.getName(), type.getName());
-            throw new IllegalStateException(msg);
         }
     }
 

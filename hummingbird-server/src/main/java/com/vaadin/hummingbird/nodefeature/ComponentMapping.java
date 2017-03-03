@@ -57,15 +57,16 @@ public class ComponentMapping extends ServerSideFeature {
                 || component instanceof Composite : "Only a Composite is allowed to remap a component";
         this.component = component;
 
-        if (getNode().hasFeature(PublishedServerEventHandlers.class)) {
+        Class<? extends NodeFeature> handlerClass = PublishedServerEventHandlers.class;
+        if(component instanceof PolymerTemplate) {
+            handlerClass = PolymerServerEventHandlers.class;
+        }
+
+        if (getNode().hasFeature(handlerClass)) {
             // Update directly to avoid having a listener stored for each
             // ComponentMapping instance
-            getNode().getFeature(PublishedServerEventHandlers.class)
-                    .componentSet(component);
-            if (component instanceof PolymerTemplate) {
-                getNode().getFeature(PolymerServerEventHandlers.class)
-                        .componentSet((PolymerTemplate) component);
-            }
+            ((PublishedServerEventHandlers)getNode().getFeature(handlerClass))
+                        .componentSet(component);
         }
     }
 
