@@ -21,8 +21,10 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -52,12 +54,6 @@ import elemental.json.impl.JsonUtil;
  * @since 7.1
  */
 public class ServerRpcHandler implements Serializable {
-
-    private static final HashMap<String, RpcInvocationHandler> HANDLERS = loadHandlers()
-            .stream()
-            .collect(Collectors.toMap(RpcInvocationHandler::getRpcType,
-                    Function.identity(),
-                    ServerRpcHandler::resolveHandlerConflicts, HashMap::new));
 
     /**
      * A data transfer object representing an RPC request sent by the client
@@ -307,6 +303,22 @@ public class ServerRpcHandler implements Serializable {
     }
 
     /**
+     * Gets {@link RpcInvocationHandler}s map where the key is the type of the
+     * handler gotten via {@link RpcInvocationHandler#getRpcType()}.
+     * <p>
+     * This map is used to delegate RPC requests to a specific invocation
+     * handler using the type of the request.
+     * <p>
+     * Subclasses can overwrite this method to return custom invocation
+     * handlers.
+     * 
+     * @return invocation handlers map
+     */
+    protected Map<String, RpcInvocationHandler> getInvocationHandlers() {
+        return Collections.unmodifiableMap(LazyInvocationHandlers.HANDLERS);
+    }
+
+    /**
      * Checks that the version reported by the client (widgetset) matches that
      * of the server.
      *
@@ -345,7 +357,7 @@ public class ServerRpcHandler implements Serializable {
             JsonArray invocationsData) {
 
         List<JsonObject> data = new ArrayList<>(invocationsData.length());
-        RpcInvocationHandler syncPropertyHandler = HANDLERS
+        RpcInvocationHandler syncPropertyHandler = getInvocationHandlers()
                 .get(JsonConstants.RPC_TYPE_PROPERTY_SYNC);
         for (int i = 0; i < invocationsData.length(); i++) {
             JsonObject invocationJson = invocationsData.getObject(i);
@@ -364,7 +376,7 @@ public class ServerRpcHandler implements Serializable {
 
     private void handleInvocationData(UI ui, JsonObject invocationJson) {
         String type = invocationJson.getString(JsonConstants.RPC_TYPE);
-        RpcInvocationHandler handler = HANDLERS.get(type);
+        RpcInvocationHandler handler = getInvocationHandlers().get(type);
         if (handler == null) {
             throw new IllegalArgumentException(
                     "Unsupported event type: " + type);
@@ -392,15 +404,6 @@ public class ServerRpcHandler implements Serializable {
         return Logger.getLogger(ServerRpcHandler.class.getName());
     }
 
-    private static List<RpcInvocationHandler> loadHandlers() {
-        List<RpcInvocationHandler> list = new ArrayList<>();
-        list.add(new EventRpcHandler());
-        list.add(new NavigationRpcHandler());
-        list.add(new PropertySyncRpcHandler());
-        list.add(new PublishedServerEventHandlerRpcHandler());
-        return list;
-    }
-
     private static RpcInvocationHandler resolveHandlerConflicts(
             RpcInvocationHandler handler1, RpcInvocationHandler handler2) {
         String msg = String.format(
@@ -410,4 +413,21 @@ public class ServerRpcHandler implements Serializable {
         throw new IllegalStateException(msg);
     }
 
+    private static class LazyInvocationHandlers {
+        private static final HashMap<String, RpcInvocationHandler> HANDLERS = loadHandlers()
+                .stream()
+                .collect(Collectors.toMap(RpcInvocationHandler::getRpcType,
+                        Function.identity(),
+                        ServerRpcHandler::resolveHandlerConflicts,
+                        HashMap::new));
+
+        private static List<RpcInvocationHandler> loadHandlers() {
+            List<RpcInvocationHandler> list = new ArrayList<>();
+            list.add(new EventRpcHandler());
+            list.add(new NavigationRpcHandler());
+            list.add(new PropertySyncRpcHandler());
+            list.add(new PublishedServerEventHandlerRpcHandler());
+            return list;
+        }
+    }
 }
