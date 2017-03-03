@@ -203,6 +203,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
      *
      * @param servletRegistration
      *            The servlet registration info for the servlet
+     * @param servletContext
+     *            the context of the servlet
      * @return false if the servlet is definitely not a Vaadin servlet, true
      *         otherwise
      */
