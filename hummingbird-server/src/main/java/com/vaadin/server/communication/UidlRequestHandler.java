@@ -53,11 +53,21 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
     public static final String UIDL_PATH = "UIDL/";
 
-    private ServerRpcHandler rpcHandler = new ServerRpcHandler();
+    private ServerRpcHandler rpcHandler;
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
         return ServletHelper.isRequestType(request, RequestType.UIDL);
+    }
+
+    /**
+     * Creates the ServerRpcHandler to use.
+     * 
+     * @since
+     * @return the ServerRpcHandler to use
+     */
+    protected ServerRpcHandler createRpcHandler() {
+        return new ServerRpcHandler();
     }
 
     @Override
@@ -74,7 +84,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         StringWriter stringWriter = new StringWriter();
 
         try {
-            rpcHandler.handleRpc(uI, request.getReader(), request);
+            getRpcHandler(session).handleRpc(uI, request.getReader(), request);
 
             writeUidl(uI, stringWriter);
         } catch (JsonException e) {
@@ -133,6 +143,14 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                 VaadinService.createSessionExpiredJSON());
 
         return true;
+    }
+
+    private ServerRpcHandler getRpcHandler(VaadinSession session) {
+        assert session.hasLock();
+        if (rpcHandler == null) {
+            rpcHandler = createRpcHandler();
+        }
+        return rpcHandler;
     }
 
     /**
