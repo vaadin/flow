@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -75,8 +76,24 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
         }
         Stream.of(clazz.getDeclaredMethods()).filter(
                 method -> method.isAnnotationPresent(EventHandler.class))
-                .forEach(method -> addEventHandlerMethod(method, methods));
+                .forEach(method -> {
+                    addEventHandlerMethod(method, methods);
+                    String[] parameters = getParameters(method);
+                    if(parameters.length > 0)
+                    getNode().getFeature(PolymerEventListenerMap.class).add(method.getName(),
+                            parameters);
+                });
         collectEventHandlerMethods(clazz.getSuperclass(), methods);
+    }
+
+    private String[] getParameters(Method method) {
+        Parameter[] parameters = method.getParameters();
+        List<String> params = new LinkedList<>();
+
+        Stream.of(parameters).forEach( parameter -> {
+            params.add(parameter.getAnnotation(EventData.class).value());
+        });
+        return params.toArray(new String[params.size()]);
     }
 
     private void addEventHandlerMethod(Method method,

@@ -17,15 +17,26 @@ package com.vaadin.client.hummingbird.binding;
 
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
+import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
+import elemental.events.Event;
 import elemental.events.EventRemover;
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Binds and updates <code>element.$server</code>.
@@ -59,7 +70,7 @@ public class ServerEventHandlerBinder {
          *            the server
          */
         public void defineMethod(String methodName, StateNode node) {
-            defineMethod(methodName, node, false);
+            defineMethod(methodName, node, null, false);
         }
 
         /**
@@ -76,19 +87,52 @@ public class ServerEventHandlerBinder {
          *            to the server (when the method is invoked)
          */
         public native void defineMethod(String methodName, StateNode node,
-                boolean ignoreArguments)
+                ServerEventObject element, boolean ignoreArguments)
         /*-{
             this[methodName] = $entry(function() {
                 var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
                 if ( ignoreArguments ){
                     tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, []);
-                }
-                else {
-                    var args = Array.prototype.slice.call(arguments);
+                } else {
+                    var args = this.@com.vaadin.client.hummingbird.binding.ServerEventHandlerBinder.ServerEventObject::getEventData(*)($wnd.event, element, methodName, node);
+                    if(args === null) {
+                        args = Array.prototype.slice.call(arguments);
+                    }
                     tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
                 }
             });
         }-*/;
+
+        public JsonArray getEventData(Event event, Element element,
+                String methodName, StateNode node) {
+            JsonArray data = Json.createArray();
+
+            ConstantPool constantPool = node.getTree().getRegistry()
+                    .getConstantPool();
+            String expressionConstantKey = (String) node
+                    .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+                    .getProperty(methodName).getValue();
+            assert expressionConstantKey != null;
+
+            assert constantPool.has(expressionConstantKey);
+
+            JsArray<String> dataExpressions = constantPool
+                    .get(expressionConstantKey);
+
+            for (int i = 0; i < dataExpressions.length(); i++) {
+                String expression = dataExpressions.get(i);
+
+                SimpleElementBindingStrategy.EventDataExpression dataExpression = SimpleElementBindingStrategy.getOrCreateExpression(
+                        expression);
+                JsonValue expressionValue = dataExpression.evaluate(event,
+                        element);
+                JsonObject eventData = Json.createObject();
+                eventData.put(expression, expressionValue);
+                data.set(i, eventData);
+            }
+
+            return data;
+        }
 
         /**
          * Removes a method with the given name.
@@ -183,7 +227,7 @@ public class ServerEventHandlerBinder {
                 String serverEventHandlerName = (String) serverEventHandlerNamesList
                         .get(i);
                 // ignore arguments for now
-                object.defineMethod(serverEventHandlerName, node,
+                object.defineMethod(serverEventHandlerName, node, object,
                         ignoreMethodArguments);
             }
         }
@@ -200,7 +244,7 @@ public class ServerEventHandlerBinder {
             for (int i = 0; i < add.length(); i++) {
                 // ignore arguments for now
                 serverObject.defineMethod((String) add.get(i), node,
-                        ignoreMethodArguments);
+                        serverObject, ignoreMethodArguments);
             }
         });
     }

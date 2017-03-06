@@ -150,6 +150,11 @@ public class NodeFeatures {
     public static final int POLYMER_SERVER_EVENT_HANDLERS = 23;
 
     /**
+     * Id for {@link PolymerEventListenerMap}.
+     */
+    public static final int POLYMER_EVENT_LISTENERS = 24;
+
+    /**
      * Key for {@link ElementData#getTag()}.
      */
     public static final String TAG = "tag";
