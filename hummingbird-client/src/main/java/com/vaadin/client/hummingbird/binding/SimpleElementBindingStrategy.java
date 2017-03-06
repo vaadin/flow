@@ -71,6 +71,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     @JsFunction
     @SuppressWarnings("unusable-by-js")
     protected interface EventDataExpression {
+        /**
+         * Callback interface for an event data expression parsed using new
+         * Function() in JavaScript.
+         * 
+         * @param event
+         *            Event to expand
+         * @param element
+         *            target Element
+         * @return Result of evaluated function
+         */
         JsonValue evaluate(Event event, Element element);
     }
 

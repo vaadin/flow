@@ -72,7 +72,7 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
         Stream.of(clazz.getDeclaredMethods()).filter(
                 method -> method.isAnnotationPresent(EventHandler.class))
                 .forEach(method -> {
-                    addEventHandlerMethod(method, methods);
+                    addPolymerEventHandlerMethod(method, methods);
                     String[] parameters = getParameters(method);
                     if (parameters.length > 0)
                         getNode().getFeature(PolymerEventListenerMap.class)
@@ -90,7 +90,7 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
         return params.toArray(new String[params.size()]);
     }
 
-    private void addEventHandlerMethod(Method method,
+    private void addPolymerEventHandlerMethod(Method method,
             Collection<Method> methods) {
         ensureSupportedParameterTypes(method);
         if (!void.class.equals(method.getReturnType())) {
