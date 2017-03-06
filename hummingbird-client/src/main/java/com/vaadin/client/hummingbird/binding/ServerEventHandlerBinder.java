@@ -105,6 +105,11 @@ public class ServerEventHandlerBinder {
 
         public JsonArray getEventData(Event event, Element element,
                 String methodName, StateNode node) {
+            if(!node
+                    .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS).hasPropertyValue(methodName)){
+                return null;
+            }
+
             JsonArray data = Json.createArray();
 
             ConstantPool constantPool = node.getTree().getRegistry()
@@ -112,9 +117,10 @@ public class ServerEventHandlerBinder {
             String expressionConstantKey = (String) node
                     .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
                     .getProperty(methodName).getValue();
-            assert expressionConstantKey != null;
 
-            assert constantPool.has(expressionConstantKey);
+            if(!constantPool.has(expressionConstantKey)) {
+                return null;
+            }
 
             JsArray<String> dataExpressions = constantPool
                     .get(expressionConstantKey);
