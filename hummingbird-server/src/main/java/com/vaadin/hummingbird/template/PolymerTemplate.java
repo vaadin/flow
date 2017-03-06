@@ -21,9 +21,9 @@ import com.vaadin.ui.Component;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
- * markup should be loaded using {@link HtmlImport @HstmlImport} annotation and
- * the components should be associated with the web component element using
- * {@link Tag @Tag} annotation.
+ * markup should be loaded using the {@link HtmlImport @HtmlImport} annotation
+ * and the components should be associated with the web component element using
+ * the {@link Tag @Tag} annotation.
  *
  * @see HtmlImport
  * @see Tag
