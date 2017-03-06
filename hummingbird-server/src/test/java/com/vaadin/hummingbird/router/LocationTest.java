@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -174,17 +173,17 @@ public class LocationTest {
 
     @Test
     public void locationWithParamsInUrl() {
-        String initialPath = "foo/bar/?one&two=222";
+        String initialPath = "foo/bar/";
         QueryParameters queryParams = getQueryParameters();
         Location location = new Location(initialPath, queryParams);
 
-        Map<String, List<String>> expectedMap = new HashMap<>();
-        expectedMap.put("one", Arrays.asList("1", "11", ""));
-        expectedMap.put("two", Arrays.asList("2", "22", "222"));
-        expectedMap.put("three", Collections.singletonList("3"));
-
         assertEquals("foo/bar/", location.getPath());
-        assertEquals(expectedMap,
+        assertEquals(queryParams.getParameters(),
                 location.getQueryParameters().getParameters());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void locationWithParamsInUrlAndParameters() {
+        new Location("foo/bar/?one&two=222", getQueryParameters());
     }
 }
