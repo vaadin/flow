@@ -38,6 +38,7 @@ import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
+import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
 
 /**
  * Registry of node feature id numbers and map keys shared between server and
