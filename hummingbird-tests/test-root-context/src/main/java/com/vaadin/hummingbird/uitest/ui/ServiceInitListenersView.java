@@ -13,23 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.template;
+package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.ui.Component;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Label;
+import com.vaadin.hummingbird.router.View;
 
 /**
- * Component for an HTML element declared as a polymer component. The HTML
- * markup should be loaded using the {@link HtmlImport @HtmlImport} annotation
- * and the components should be associated with the web component element using
- * the {@link Tag @Tag} annotation.
- *
- * @see HtmlImport
- * @see Tag
- *
  * @author Vaadin Ltd
+ *
  */
-public abstract class PolymerTemplate extends Component {
+public class ServiceInitListenersView extends Div implements View {
 
+    public ServiceInitListenersView() {
+        add(new Label(
+                "Init count: " + TestingServiceInitListener.getInitCount()));
+        add(new Label("Request count: "
+                + TestingServiceInitListener.getRequestCount()));
+    }
 }

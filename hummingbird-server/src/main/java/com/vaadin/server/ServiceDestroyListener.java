@@ -23,7 +23,6 @@ import java.io.Serializable;
  * been registered is destroyed.
  *
  * @see VaadinService#addServiceDestroyListener(ServiceDestroyListener)
- * @see VaadinService#removeServiceDestroyListener(ServiceDestroyListener)
  *
  * @since 7.2
  * @author Vaadin Ltd
