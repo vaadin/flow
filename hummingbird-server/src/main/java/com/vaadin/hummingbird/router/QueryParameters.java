@@ -35,6 +35,11 @@ public class QueryParameters implements Serializable {
 
     private final Map<String, List<String>> parameters;
 
+    /**
+     * Creates query parameters from parameter map.
+     *
+     * @param parameters the parameter map
+     */
     public QueryParameters(Map<String, List<String>> parameters) {
         this.parameters = Collections
                 .unmodifiableMap(parameters.entrySet().stream()
