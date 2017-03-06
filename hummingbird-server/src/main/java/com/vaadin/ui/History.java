@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.vaadin.hummingbird.router.Location;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.json.JsonValue;
@@ -43,7 +44,7 @@ public class History implements Serializable {
      * Note that this event is not fired when only the hash has changed!
      */
     public static class HistoryStateChangeEvent extends EventObject {
-        private final String location;
+        private final Location location;
         private final transient JsonValue state;
 
         /**
@@ -59,7 +60,7 @@ public class History implements Serializable {
          *            the new browser location, not <code>null</code>
          */
         public HistoryStateChangeEvent(History history, JsonValue state,
-                String location) {
+                Location location) {
             super(history);
 
             assert location != null;
@@ -78,7 +79,7 @@ public class History implements Serializable {
          *
          * @return the location, not null
          */
-        public String getLocation() {
+        public Location getLocation() {
             return location;
         }
 
@@ -135,7 +136,9 @@ public class History implements Serializable {
 
     /**
      * Invokes <code>history.pushState</code> in the browser with the given
-     * parameters.
+     * parameters. This is a shorthand method for
+     * {@link History#pushState(JsonValue, Location)}, creating {@link Location}
+     * from the string provided.
      *
      * @param state
      *            the JSON state to push to the history stack, or
@@ -145,10 +148,44 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void pushState(JsonValue state, String location) {
+        pushState(state,
+                Optional.ofNullable(location).map(Location::new).orElse(null));
+    }
+
+    /**
+     * Invokes <code>history.pushState</code> in the browser with the given
+     * parameters.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     */
+    public void pushState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJavaScript("history.pushState($0, '', $1)", state,
-                location);
+                location.getPathWithQueryParameters());
+    }
+
+    /**
+     * Invokes <code>history.replaceState</code> in the browser with the given
+     * parameters. This is a shorthand method for
+     * {@link History#replaceState(JsonValue, Location)}, creating
+     * {@link Location} from the string provided.
+     *
+     * @param state
+     *            the JSON state to push to the history stack, or
+     *            <code>null</code> to only change the location
+     * @param location
+     *            the new location to set in the browser, or <code>null</code>
+     *            to only change the JSON state
+     */
+    public void replaceState(JsonValue state, String location) {
+        replaceState(state,
+                Optional.ofNullable(location).map(Location::new).orElse(null));
     }
 
     /**
@@ -162,11 +199,11 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void replaceState(JsonValue state, String location) {
+    public void replaceState(JsonValue state, Location location) {
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJavaScript("history.replaceState($0, '', $1)",
-                state, location);
+                state, location.getPathWithQueryParameters());
     }
 
     /**
@@ -234,7 +271,6 @@ public class History implements Serializable {
      *            current page to be reloaded
      */
     public void go(int steps) {
-        ui.getPage().executeJavaScript("history.go($0)",
-                Integer.valueOf(steps));
+        ui.getPage().executeJavaScript("history.go($0)", steps);
     }
 }
