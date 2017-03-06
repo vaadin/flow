@@ -25,8 +25,6 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  * and the components should be associated with the web component element using
  * the {@link Tag @Tag} annotation.
  *
- * TODO kirill fix description or template search behavior
- *
  * @see HtmlImport
  * @see Tag
  *

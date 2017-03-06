@@ -16,9 +16,8 @@
     "tests"
   ],
   "dependencies": {
-    "paper-slider": "1.0.11",
-    "progress-bubble": "1.3.0",
-    "polymer": "1.5.0"
+    "paper-slider": "2.0-preview",
+    "polymer": "2.0-preview"
   }
 }
 
