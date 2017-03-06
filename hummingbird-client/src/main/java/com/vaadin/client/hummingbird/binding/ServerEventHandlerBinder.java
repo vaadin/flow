@@ -100,7 +100,21 @@ public class ServerEventHandlerBinder {
             });
         }-*/;
 
-        private JsonArray getEventData(Event event, Element element,
+        /**
+         * Collect extra data for element event if any has been sent from the
+         * server
+         * 
+         * @param event
+         *            The fired Event
+         * @param element
+         *            Target element
+         * @param methodName
+         *            Method name that is called
+         * @param node
+         *            Target node
+         * @return Array of extra event data
+         */
+        protected JsonArray getEventData(Event event, Element element,
                 String methodName, StateNode node) {
             if (!node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
                     .hasPropertyValue(methodName)) {
