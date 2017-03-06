@@ -130,7 +130,7 @@ public class ApplicationConnection {
         });
     
         client.getProfilingData = $entry(function() {
-            var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler();
+            var smh = ap.@com.vaadin.client.ApplicationConnection::registry.@com.vaadin.client.Registry::getMessageHandler()();
             var pd = [
                 smh.@com.vaadin.client.communication.MessageHandler::lastProcessingTime,
                     smh.@com.vaadin.client.communication.MessageHandler::totalProcessingTime
