@@ -102,7 +102,7 @@ public class ServerEventHandlerBinder {
 
         /**
          * Collect extra data for element event if any has been sent from the
-         * server
+         * server.
          * 
          * @param event
          *            The fired Event
