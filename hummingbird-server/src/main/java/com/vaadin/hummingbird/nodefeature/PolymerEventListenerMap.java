@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.hummingbird.nodefeature;
 
 import java.util.Arrays;
@@ -12,6 +27,12 @@ import com.vaadin.hummingbird.util.JsonUtils;
 
 import elemental.json.Json;
 
+/**
+ * Map of PolymerTemplate events with server-side listeners. The key set of this map
+ * describes the event types for which event date is present.
+ *
+ * @author Vaadin Ltd
+ */
 public class PolymerEventListenerMap extends NodeMap {
     /*
      * Shared empty serializable set instance to avoid allocating lots of memory
@@ -34,6 +55,14 @@ public class PolymerEventListenerMap extends NodeMap {
         super(node);
     }
 
+    /**
+     * Add eventData for an event type.
+     * @param eventType
+     *            the event type
+     * @param eventDataExpressions
+     *            the event data expressions
+     * @return handler to remove eventType data
+     */
     public EventRegistrationHandle add(String eventType,
             String[] eventDataExpressions) {
         assert eventType != null;

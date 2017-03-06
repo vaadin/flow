@@ -59,10 +59,6 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
         }
     };
 
-    public boolean isEmpty() {
-        return properties.size() == 0;
-    }
-
     /**
      * Creates a new map feature.
      *
@@ -73,6 +69,15 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
      */
     public NodeMap(int id, StateNode node) {
         super(id, node);
+    }
+
+    /**
+     * Check if this map has any properties
+     * 
+     * @return True if no properties in the map.
+     */
+    public boolean isEmpty() {
+        return properties.size() == 0;
     }
 
     /**

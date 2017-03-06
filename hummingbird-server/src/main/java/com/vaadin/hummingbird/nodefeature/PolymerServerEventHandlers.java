@@ -17,20 +17,15 @@ package com.vaadin.hummingbird.nodefeature;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
-import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.ui.Component;
@@ -79,9 +74,9 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
                 .forEach(method -> {
                     addEventHandlerMethod(method, methods);
                     String[] parameters = getParameters(method);
-                    if(parameters.length > 0)
-                    getNode().getFeature(PolymerEventListenerMap.class).add(method.getName(),
-                            parameters);
+                    if (parameters.length > 0)
+                        getNode().getFeature(PolymerEventListenerMap.class)
+                                .add(method.getName(), parameters);
                 });
         collectEventHandlerMethods(clazz.getSuperclass(), methods);
     }
@@ -90,9 +85,8 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
         Parameter[] parameters = method.getParameters();
         List<String> params = new LinkedList<>();
 
-        Stream.of(parameters).forEach( parameter -> {
-            params.add(parameter.getAnnotation(EventData.class).value());
-        });
+        Stream.of(parameters).forEach(parameter -> params
+                .add(parameter.getAnnotation(EventData.class).value()));
         return params.toArray(new String[params.size()]);
     }
 
