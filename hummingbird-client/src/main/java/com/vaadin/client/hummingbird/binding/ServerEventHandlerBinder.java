@@ -100,7 +100,7 @@ public class ServerEventHandlerBinder {
             });
         }-*/;
 
-        public JsonArray getEventData(Event event, Element element,
+        private JsonArray getEventData(Event event, Element element,
                 String methodName, StateNode node) {
             if (!node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
                     .hasPropertyValue(methodName)) {
