@@ -163,25 +163,25 @@ public class QueryParametersTest {
     }
 
     @Test
-    public void uniteParameters_empty() {
+    public void combineParameters_empty() {
         QueryParameters empty = QueryParameters.empty();
         QueryParameters fullParams = QueryParameters
                 .full(getFullInputParameters());
 
-        QueryParameters updated = QueryParameters.uniteParameters(empty,
+        QueryParameters updated = QueryParameters.combineParameters(empty,
                 fullParams);
 
         assertEquals(fullParams.getParameters(), updated.getParameters());
     }
 
     @Test
-    public void uniteParameters_existing() {
+    public void combineParameters_existing() {
         QueryParameters simpleParams = QueryParameters
                 .simple(getSimpleInputParameters());
         QueryParameters fullParams = QueryParameters
                 .full(getFullInputParameters());
 
-        QueryParameters updated = QueryParameters.uniteParameters(simpleParams,
+        QueryParameters updated = QueryParameters.combineParameters(simpleParams,
                 fullParams);
 
         Map<String, List<String>> expectedFullParams = new HashMap<>();
@@ -193,7 +193,7 @@ public class QueryParametersTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void underlyingMapUnmodifiable_addParameters() {
-        QueryParameters updated = QueryParameters.uniteParameters(
+        QueryParameters updated = QueryParameters.combineParameters(
                 QueryParameters.empty(),
                 QueryParameters.full(getFullInputParameters()));
 
@@ -202,7 +202,7 @@ public class QueryParametersTest {
 
     @Test
     public void underlyingListsUnmodifiable_addParameters() {
-        QueryParameters updated = QueryParameters.uniteParameters(
+        QueryParameters updated = QueryParameters.combineParameters(
                 QueryParameters.empty(),
                 QueryParameters.full(getFullInputParameters()));
 

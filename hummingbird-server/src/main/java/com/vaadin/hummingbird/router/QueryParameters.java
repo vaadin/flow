@@ -71,20 +71,20 @@ public class QueryParameters implements Serializable {
     }
 
     /**
-     * Unites query parameters from both instances into single, newly created,
+     * Combines query parameters from both instances into single, newly created,
      * {@link QueryParameters}. If same parameter name is presend in both
-     * {@link QueryParameters}, values will be united in single list, duplicate
+     * {@link QueryParameters}, values will be combined in single list, duplicate
      * values are not eliminated, no order guarantees are given.
      *
      * @param first
-     *            first of the parameters' set to be united
+     *            first of the parameters' set to be combined
      * @param second
-     *            second of the parameters' set to be united
+     *            second of the parameters' set to be combined
      *
-     * @return {@link QueryParameters} with united parameters
+     * @return {@link QueryParameters} with combined parameters
      */
-    public static QueryParameters uniteParameters(QueryParameters first,
-            QueryParameters second) {
+    public static QueryParameters combineParameters(QueryParameters first,
+                                                    QueryParameters second) {
         Map<String, List<String>> updated = new HashMap<>(
                 first.getParameters());
 

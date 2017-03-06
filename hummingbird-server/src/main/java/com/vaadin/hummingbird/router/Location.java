@@ -224,7 +224,7 @@ public class Location implements Serializable {
                             result.addAll(values2);
                             return result;
                         }));
-        return QueryParameters.uniteParameters(userDefinedParameters,
+        return QueryParameters.combineParameters(userDefinedParameters,
                 new QueryParameters(parsedParams));
     }
 
