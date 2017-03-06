@@ -57,7 +57,7 @@ public class Version implements Serializable {
         } else {
             VERSION = "@VERSION@";
         }
-        final String[] digits = VERSION.split("\\.", 4);
+        final String[] digits = VERSION.split("[-.]", 4);
         VERSION_MAJOR = Integer.parseInt(digits[0]);
         VERSION_MINOR = Integer.parseInt(digits[1]);
         int revision;
