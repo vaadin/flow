@@ -27,6 +27,8 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
     /** Cookie used to ignore browser checks. */
     public static final String FORCE_LOAD_COOKIE = "vaadinforceload=1";
 
+    public static final String CLOSING_BRACKET = "    }";
+
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -55,26 +57,80 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
     protected void writeBrowserTooOldPage(VaadinRequest request,
             VaadinResponse response) throws IOException {
         Writer page = response.getWriter();
-        WebBrowser b = VaadinSession.getCurrent().getBrowser();
+        WebBrowser browser = VaadinSession.getCurrent().getBrowser();
 
+        // @formatter:off
         page.write(
-                "<html><body><h1>I'm sorry, but your browser is not supported</h1>"
-                        + "<p>The version (" + b.getBrowserMajorVersion() + "."
-                        + b.getBrowserMinorVersion()
+                "<html>"
+                        + "<head>"
+                        + "  <style>"
+                        + "    html {"
+                        + "      background: #fff;"
+                        + "      color: #444;"
+                        + "      font: 400 1em/1.5 \"Helvetica Neue\", Roboto, \"Segoe UI\", sans-serif;"
+                        + "      padding: 2em;"
+                        + CLOSING_BRACKET
+                        + "    body {"
+                        + "      margin: 2em auto;"
+                        + "      width: 27em;"
+                        + "      max-width: 100%;"
+                        + CLOSING_BRACKET
+                        + "    h1 {"
+                        + "      line-height: 1.1;"
+                        + "      margin: 2em 0 1em;"
+                        + "      color: #000;"
+                        + "      font-weight: 400;"
+                        + CLOSING_BRACKET
+                        + "    em {"
+                        + "      font-size: 1.2em;"
+                        + "      font-style: normal;"
+                        + "      display: block;"
+                        + "      margin-bottom: 1.2em;"
+                        + CLOSING_BRACKET
+                        + "    p {"
+                        + "      margin: 0.5em 0 0;"
+                        + CLOSING_BRACKET
+                        + "    a {"
+                        + "      text-decoration: none;"
+                        + "      color: #007df0;"
+                        + CLOSING_BRACKET
+                        + "    sub {"
+                        + "      display: block;"
+                        + "      margin-top: 2.5em;"
+                        + "      text-align: center;"
+                        + "      border-top: 1px solid #eee;"
+                        + "      padding-top: 2em;"
+                        + CLOSING_BRACKET
+                        + "    sub,"
+                        + "    small {"
+                        + "      color: #999;"
+                        + CLOSING_BRACKET
+                        + "  </style>"
+                        + "</head>"
+                        + "<body><h1>I'm sorry, but your browser is not supported</h1>"
+                        + "<p>The version (" + browser.getBrowserMajorVersion()
+                        + "." + browser.getBrowserMinorVersion()
                         + ") of the browser you are using "
                         + " is outdated and not supported.</p>"
                         + "<p>You should <b>consider upgrading</b> to a more up-to-date browser.</p> "
                         + "<p>The most popular browsers are <b>"
                         + " <a href=\"https://www.google.com/chrome\">Chrome</a>,"
                         + " <a href=\"http://www.mozilla.com/firefox\">Firefox</a>,"
-                        + " <a href=\"https://www.microsoft.com/en-us/windows/microsoft-edge\">Edge</a>,"
+                        + (browser.isWindows()
+                                ? " <a href=\"https://www.microsoft.com/en-us/windows/microsoft-edge\">Edge</a>,"
+                                : "")
                         + " <a href=\"http://www.opera.com/browser\">Opera</a>"
                         + " and <a href=\"http://www.apple.com/safari\">Safari</a>.</b><br/>"
                         + "Upgrading to the latest version of one of these <b>will make the web safer, faster and better looking.</b></p>"
+                        + (browser.isIE()
+                                ? "<script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js\"></script>"
+                                        + "<p>If you can not upgrade your browser, please consider trying <a onclick=\"CFInstall.check({mode:'overlay'});return false;\" href=\"http://www.google.com/chromeframe\">Chrome Frame</a>.</p>"
+                                : "") //
                         + "<p><sub><a onclick=\"document.cookie='"
                         + FORCE_LOAD_COOKIE
                         + "';window.location.reload();return false;\" href=\"#\">Continue without updating</a> (not recommended)</sub></p>"
                         + "</body>\n" + "</html>");
+        // @formatter:on
 
         page.close();
     }
