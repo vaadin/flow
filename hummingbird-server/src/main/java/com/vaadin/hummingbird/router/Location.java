@@ -52,20 +52,30 @@ public class Location implements Serializable {
      *            the relative location, not <code>null</code>
      */
     public Location(String location) {
-        this(location, QueryParameters.empty());
+        this(parsePath(location.trim()), parseParams(location.trim()));
     }
 
     /**
      * Creates a new {@link Location} object for given location string and query
-     * parameters.
+     * parameters. Location string can not contain query parameters or exception
+     * will be thrown. To pass query parameters, either specify them in
+     * {@link QueryParameters} in this constructor, or use
+     * {@link Location#Location(String)}
      *
      * @param location
      *            the relative location, not {@code null}
      * @param queryParameters
      *            query parameters information, not {@code null}
+     * @throws IllegalArgumentException
+     *             if location string contains query parameters inside
      */
     public Location(String location, QueryParameters queryParameters) {
-        this(parsePath(location.trim()), parseParams(location.trim(), queryParameters));
+        this(parsePath(location.trim()), queryParameters);
+
+        if (location.contains(QUERY_SEPARATOR)) {
+            throw new IllegalArgumentException(
+                    "Location string can not contain query parameters in this constructor");
+        }
     }
 
     /**
@@ -204,11 +214,10 @@ public class Location implements Serializable {
         }
     }
 
-    private static QueryParameters parseParams(String path,
-            QueryParameters userDefinedParameters) {
+    private static QueryParameters parseParams(String path) {
         int beginIndex = path.indexOf(QUERY_SEPARATOR);
         if (beginIndex < 0) {
-            return userDefinedParameters;
+            return QueryParameters.empty();
         }
 
         Map<String, List<String>> parsedParams = Arrays
@@ -224,17 +233,16 @@ public class Location implements Serializable {
                             result.addAll(values2);
                             return result;
                         }));
-        return QueryParameters.combineParameters(userDefinedParameters,
-                new QueryParameters(parsedParams));
+        return new QueryParameters(parsedParams);
     }
 
     private static List<String> parsePath(String path) {
         final String basePath;
         int endIndex = path.indexOf(QUERY_SEPARATOR);
         if (endIndex == 0) {
-            throw new IllegalArgumentException(
-                    "Location '" + path + "' is incorrect, it cannot start with "
-                            + QUERY_SEPARATOR + "symbol");
+            throw new IllegalArgumentException("Location '" + path
+                    + "' is incorrect, it cannot start with " + QUERY_SEPARATOR
+                    + "symbol");
         } else if (endIndex > 0) {
             basePath = path.substring(0, endIndex);
         } else {

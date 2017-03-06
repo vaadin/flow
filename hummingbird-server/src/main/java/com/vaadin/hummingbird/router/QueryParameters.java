@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -73,34 +72,6 @@ public class QueryParameters implements Serializable {
             Map<String, String[]> fullParameters) {
         return fullParameters.entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey, entry -> Arrays.asList(entry.getValue())));
-    }
-
-    /**
-     * Combines query parameters from both instances into single, newly created,
-     * {@link QueryParameters}. If same parameter name is presend in both
-     * {@link QueryParameters}, values will be combined in single list, duplicate
-     * values are not eliminated, no order guarantees are given.
-     *
-     * @param first
-     *            first of the parameters' set to be combined
-     * @param second
-     *            second of the parameters' set to be combined
-     *
-     * @return {@link QueryParameters} with combined parameters
-     */
-    public static QueryParameters combineParameters(QueryParameters first,
-                                                    QueryParameters second) {
-        Map<String, List<String>> updated = new HashMap<>(
-                first.getParameters());
-
-        second.getParameters().forEach(
-                (parameterName, parameterValues) -> updated.merge(parameterName,
-                        parameterValues, (list1, list2) -> {
-                            List<String> result = new ArrayList<>(list1);
-                            result.addAll(list2);
-                            return Collections.unmodifiableList(result);
-                        }));
-        return new QueryParameters(updated);
     }
 
     /**
