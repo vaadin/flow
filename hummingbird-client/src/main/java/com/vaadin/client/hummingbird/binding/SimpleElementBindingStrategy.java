@@ -70,7 +70,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     @FunctionalInterface
     @JsFunction
     @SuppressWarnings("unusable-by-js")
-    protected interface EventDataExpression {
+    private interface EventDataExpression {
         /**
          * Callback interface for an event data expression parsed using new
          * Function() in JavaScript.
@@ -84,7 +84,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         JsonValue evaluate(Event event, Element element);
     }
 
-    protected static final JsMap<String, EventDataExpression> expressionCache = JsCollections
+    private static final JsMap<String, EventDataExpression> expressionCache = JsCollections
             .map();
 
     /**
@@ -534,7 +534,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS);
     }
 
-    protected static EventDataExpression getOrCreateExpression(
+    private static EventDataExpression getOrCreateExpression(
             String expressionString) {
         EventDataExpression expression = expressionCache.get(expressionString);
 

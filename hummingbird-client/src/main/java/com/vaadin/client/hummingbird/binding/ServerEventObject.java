@@ -1,10 +1,15 @@
 package com.vaadin.client.hummingbird.binding;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
@@ -15,11 +20,34 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * A representation of <code>element.$server</code>.
+ * A representation of a server object able to send notifications to the server
  *
  * @author Vaadin Ltd
  */
 public final class ServerEventObject extends JavaScriptObject {
+    /**
+     * Callback interface for an event data expression parsed using new
+     * Function() in JavaScript.
+     */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    private interface ServerEventDataExpression {
+        /**
+         * Callback interface for an event data expression parsed using new
+         * Function() in JavaScript.
+         *
+         * @param event
+         *            Event to expand
+         * @param serverEventObject
+         *            target server event handler object
+         * @return Result of evaluated function
+         */
+        JsonValue evaluate(Event event, ServerEventObject serverEventObject);
+    }
+
+    private static final JsMap<String, ServerEventDataExpression> expressionCache = JsCollections
+            .map();
 
     /**
      * JSO constructor.
@@ -55,7 +83,8 @@ public final class ServerEventObject extends JavaScriptObject {
      *            if {@code true} then the method parameters won't be sent to
      *            the server (when the method is invoked)
      */
-    public native void defineMethod(String methodName, StateNode node, boolean ignoreArguments)
+    public native void defineMethod(String methodName, StateNode node,
+            boolean ignoreArguments)
     /*-{
         this[methodName] = $entry(function() {
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
@@ -85,7 +114,7 @@ public final class ServerEventObject extends JavaScriptObject {
      *            Target node
      * @return Array of extra event data
      */
-    protected JsonArray getEventData(Event event, Element element,
+    protected JsonArray getEventData(Event event, ServerEventObject element,
             String methodName, StateNode node) {
         if (!node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
                 .hasPropertyValue(methodName)) {
@@ -106,8 +135,8 @@ public final class ServerEventObject extends JavaScriptObject {
         for (int i = 0; i < dataExpressions.length(); i++) {
             String expression = dataExpressions.get(i);
 
-            SimpleElementBindingStrategy.EventDataExpression dataExpression = SimpleElementBindingStrategy
-                    .getOrCreateExpression(expression);
+            ServerEventDataExpression dataExpression = getOrCreateExpression(
+                    expression);
             JsonValue expressionValue = dataExpression.evaluate(event, element);
             JsonObject eventData = Json.createObject();
             eventData.put(expression, expressionValue);
@@ -155,4 +184,17 @@ public final class ServerEventObject extends JavaScriptObject {
         return serverObject;
     }
 
+    protected static ServerEventDataExpression getOrCreateExpression(
+            String expressionString) {
+        ServerEventDataExpression expression = expressionCache
+                .get(expressionString);
+
+        if (expression == null) {
+            expression = NativeFunction.create("event", "element",
+                    "return (" + expressionString + ")");
+            expressionCache.set(expressionString, expression);
+        }
+
+        return expression;
+    }
 }
