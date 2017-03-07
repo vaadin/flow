@@ -20,7 +20,8 @@ import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
-@CodeFor("tutorial-template-event-handlers.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-event-handlers.asciidoc")
 public class EventHandlers {
     public interface MyModel extends TemplateModel {
         public void setHelloText(String helloText);
