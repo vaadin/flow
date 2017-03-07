@@ -526,8 +526,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 () -> WidgetUtil.crazyJsoCast(context.element), context.node,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
-                elementListeners.isEmpty());
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
     }
 
     private NodeMap getPolymerEventListenerMap(StateNode node) {

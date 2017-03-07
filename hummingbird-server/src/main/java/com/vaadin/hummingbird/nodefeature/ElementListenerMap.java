@@ -64,7 +64,7 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Adds a listener for a event created from a template method
+     * Adds a listener for a event created from a template method.
      *
      * @param methodName
      *            the name of the method

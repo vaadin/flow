@@ -73,10 +73,6 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
                 method -> method.isAnnotationPresent(EventHandler.class))
                 .forEach(method -> {
                     addPolymerEventHandlerMethod(method, methods);
-                    String[] parameters = getParameters(method);
-                    if (parameters.length > 0)
-                        getNode().getFeature(PolymerEventListenerMap.class)
-                                .add(method.getName(), parameters);
                 });
         collectEventHandlerMethods(clazz.getSuperclass(), methods);
     }
@@ -117,7 +113,12 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
             throw new IllegalStateException(msg);
         }
         methods.add(method);
+        addMethodParameters(method);
+    }
 
+    private void addMethodParameters(Method method) {
+        getNode().getFeature(PolymerEventListenerMap.class)
+                .add(method.getName(), getParameters(method));
     }
 
     private static void ensureSupportedParameterTypes(Method method) {
@@ -132,10 +133,11 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
 
     private static void ensureAnnotation(Method method, Parameter parameter) {
         if (!parameter.isAnnotationPresent(EventData.class)) {
-            throw new IllegalStateException(
-                    "No @EventData annotation on parameter "
-                            + parameter.getName().replace("arg", "")
-                            + " for EventHandler method" + method.getName());
+            String msg = String.format(
+                    "No @EventData annotation on parameter '%s'"
+                            + " for EventHandler method '%s'",
+                    parameter.getName().replace("arg", ""), method.getName());
+            throw new IllegalStateException(msg);
         }
     }
 

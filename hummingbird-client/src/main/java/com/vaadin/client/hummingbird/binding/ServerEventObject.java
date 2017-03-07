@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.client.hummingbird.binding;
 
 import jsinterop.annotations.JsFunction;
@@ -20,7 +35,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
- * A representation of a server object able to send notifications to the server
+ * A representation of a server object able to send notifications to the server.
  *
  * @author Vaadin Ltd
  */
@@ -66,37 +81,16 @@ public final class ServerEventObject extends JavaScriptObject {
      *            the node to use as an identifier when sending an event to the
      *            server
      */
-    public void defineMethod(String methodName, StateNode node) {
-        defineMethod(methodName, node, false);
-    }
-
-    /**
-     * Defines a method with the given name to be a callback to the server for
-     * the given state node.
-     *
-     * @param methodName
-     *            the name of the method to add
-     * @param node
-     *            the node to use as an identifier when sending an event to the
-     *            server
-     * @param ignoreArguments
-     *            if {@code true} then the method parameters won't be sent to
-     *            the server (when the method is invoked)
-     */
-    public native void defineMethod(String methodName, StateNode node,
-            boolean ignoreArguments)
+    public native void defineMethod(String methodName, StateNode node)
     /*-{
-        this[methodName] = $entry(function() {
+        this[methodName] = $entry(function(event) {
+            event = event || $wnd.event;
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
-            if ( ignoreArguments ){
-                tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, []);
-            } else {
-                var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)($wnd.event, this, methodName, node);
-                if(args === null) {
-                    args = Array.prototype.slice.call(arguments);
-                }
-                tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
+            var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, this, methodName, node);
+            if(args === null) {
+                args = Array.prototype.slice.call(arguments);
             }
+            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
         });
     }-*/;
 
@@ -116,34 +110,37 @@ public final class ServerEventObject extends JavaScriptObject {
      */
     protected JsonArray getEventData(Event event, ServerEventObject element,
             String methodName, StateNode node) {
-        if (!node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+        JsonArray dataArray = Json.createArray();
+
+        if (node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
                 .hasPropertyValue(methodName)) {
+
+            ConstantPool constantPool = node.getTree().getRegistry()
+                    .getConstantPool();
+            String expressionConstantKey = (String) node
+                    .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+                    .getProperty(methodName).getValue();
+
+            JsArray<String> dataExpressions = constantPool
+                    .get(expressionConstantKey);
+
+            for (int i = 0; i < dataExpressions.length(); i++) {
+                String expression = dataExpressions.get(i);
+
+                ServerEventDataExpression dataExpression = getOrCreateExpression(
+                        expression);
+                JsonValue expressionValue = dataExpression.evaluate(event,
+                        element);
+                JsonObject eventData = Json.createObject();
+                eventData.put(expression, expressionValue);
+
+                dataArray.set(i, eventData);
+            }
+        } else {
             return null;
         }
 
-        JsonArray data = Json.createArray();
-
-        ConstantPool constantPool = node.getTree().getRegistry()
-                .getConstantPool();
-        String expressionConstantKey = (String) node
-                .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
-                .getProperty(methodName).getValue();
-
-        JsArray<String> dataExpressions = constantPool
-                .get(expressionConstantKey);
-
-        for (int i = 0; i < dataExpressions.length(); i++) {
-            String expression = dataExpressions.get(i);
-
-            ServerEventDataExpression dataExpression = getOrCreateExpression(
-                    expression);
-            JsonValue expressionValue = dataExpression.evaluate(event, element);
-            JsonObject eventData = Json.createObject();
-            eventData.put(expression, expressionValue);
-            data.set(i, eventData);
-        }
-
-        return data;
+        return dataArray;
     }
 
     /**

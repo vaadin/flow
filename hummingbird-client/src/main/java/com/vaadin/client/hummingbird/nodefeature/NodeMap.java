@@ -72,15 +72,6 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     }
 
     /**
-     * Check if this map has any properties
-     * 
-     * @return True if no properties in the map.
-     */
-    public boolean isEmpty() {
-        return properties.size() == 0;
-    }
-
-    /**
      * Gets the property with a given name, creating it if necessary.
      * <p>
      * A {@link MapPropertyAddEvent} is fired if a new property instance is

@@ -52,7 +52,7 @@ public class ServerEventHandlerBinder {
     public static EventRemover bindServerEventHandlerNames(Element element,
             StateNode node) {
         return bindServerEventHandlerNames(() -> ServerEventObject.get(element),
-                node, NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS, false);
+                node, NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
     }
 
     /**
@@ -67,14 +67,11 @@ public class ServerEventHandlerBinder {
      *            the state node containing the feature
      * @param featureId
      *            the feature id which contains event handler methods
-     * @param ignoreMethodArguments
-     *            if {@code true} then the event handler parameters won't be
-     *            sent to the server (when the method is invoked)
      * @return a handle which can be used to remove the listener for the feature
      */
     public static EventRemover bindServerEventHandlerNames(
             Supplier<ServerEventObject> objectProvider, StateNode node,
-            int featureId, boolean ignoreMethodArguments) {
+            int featureId) {
         NodeList serverEventHandlerNamesList = node.getList(featureId);
 
         if (serverEventHandlerNamesList.length() > 0) {
@@ -84,8 +81,7 @@ public class ServerEventHandlerBinder {
                 String serverEventHandlerName = (String) serverEventHandlerNamesList
                         .get(i);
                 // ignore arguments for now
-                object.defineMethod(serverEventHandlerName, node,
-                        ignoreMethodArguments);
+                object.defineMethod(serverEventHandlerName, node);
             }
         }
 
@@ -100,8 +96,7 @@ public class ServerEventHandlerBinder {
             JsArray<?> add = e.getAdd();
             for (int i = 0; i < add.length(); i++) {
                 // ignore arguments for now
-                serverObject.defineMethod((String) add.get(i), node,
-                        ignoreMethodArguments);
+                serverObject.defineMethod((String) add.get(i), node);
             }
         });
     }
