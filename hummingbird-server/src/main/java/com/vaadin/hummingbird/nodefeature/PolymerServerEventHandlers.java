@@ -18,8 +18,6 @@ package com.vaadin.hummingbird.nodefeature;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -71,19 +69,19 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
         }
         Stream.of(clazz.getDeclaredMethods()).filter(
                 method -> method.isAnnotationPresent(EventHandler.class))
-                .forEach(method -> {
-                    addPolymerEventHandlerMethod(method, methods);
-                });
+                .forEach(method -> addPolymerEventHandlerMethod(method,
+                        methods));
         collectEventHandlerMethods(clazz.getSuperclass(), methods);
     }
 
     private String[] getParameters(Method method) {
         Parameter[] parameters = method.getParameters();
-        List<String> params = new LinkedList<>();
 
-        Stream.of(parameters).forEach(parameter -> params
-                .add(parameter.getAnnotation(EventData.class).value()));
-        return params.toArray(new String[params.size()]);
+        String[] eventData = Stream.of(parameters).map(
+                parameter -> parameter.getAnnotation(EventData.class).value())
+                .toArray(size -> new String[size]);
+
+        return eventData;
     }
 
     private void addPolymerEventHandlerMethod(Method method,
