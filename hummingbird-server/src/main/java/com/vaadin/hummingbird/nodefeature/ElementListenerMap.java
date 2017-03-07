@@ -64,19 +64,19 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Adds a listener for an event type.
+     * Adds a listener for a event created from a template method
      *
-     * @param eventType
-     *            the event type
+     * @param methodName
+     *            the name of the method
      * @param listener
      *            the listener to add
      * @param eventDataExpressions
      *            the event data expressions
      * @return a handle for removing the listener
      */
-    public EventRegistrationHandle add(String eventType,
+    public EventRegistrationHandle add(String methodName,
             DomEventListener listener, String[] eventDataExpressions) {
-        assert eventType != null;
+        assert methodName != null;
         assert listener != null;
         assert eventDataExpressions != null;
 
@@ -87,34 +87,34 @@ public class ElementListenerMap extends NodeMap {
 
         // Could optimize slightly by integrating the initialization into the
         // main logic, but that would make the code much harder to read
-        if (!contains(eventType)) {
-            assert !listeners.containsKey(eventType);
+        if (!contains(methodName)) {
+            assert !listeners.containsKey(methodName);
 
-            listeners.put(eventType, new ArrayList<>());
+            listeners.put(methodName, new ArrayList<>());
 
             // Make sure the "immutable" instance hasn't accidentally been
             // mutated
             assert emptyHashSet.isEmpty();
-            typeToExpressions.put(eventType, emptyHashSet);
-            put(eventType, createConstantPoolKey(emptyHashSet));
+            typeToExpressions.put(methodName, emptyHashSet);
+            put(methodName, createConstantPoolKey(emptyHashSet));
         }
 
-        listeners.get(eventType).add(listener);
+        listeners.get(methodName).add(listener);
 
         if (eventDataExpressions.length != 0) {
             HashSet<String> eventData = new HashSet<>(
-                    typeToExpressions.get(eventType));
+                    typeToExpressions.get(methodName));
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
                 // Update the constant pool reference if the value has changed
-                put(eventType, createConstantPoolKey(eventData));
+                put(methodName, createConstantPoolKey(eventData));
 
                 // Remember value for server-side use
-                typeToExpressions.put(eventType, eventData);
+                typeToExpressions.put(methodName, eventData);
             }
         }
 
-        return () -> removeListener(eventType, listener);
+        return () -> removeListener(methodName, listener);
     }
 
     private static ConstantPoolKey createConstantPoolKey(
