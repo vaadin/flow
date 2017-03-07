@@ -51,7 +51,7 @@ public class HistoryUI extends UI {
         addRow(createActionButton("clear", this::clear));
 
         history.setHistoryStateChangeHandler(e -> {
-            addStatus("New location: " + e.getLocation());
+            addStatus("New location: " + e.getLocation().getPath());
 
             e.getState().ifPresent(
                     state -> addStatus("New state: " + state.toJson()));

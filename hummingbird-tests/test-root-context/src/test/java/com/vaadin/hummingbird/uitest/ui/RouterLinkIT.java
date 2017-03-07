@@ -14,15 +14,16 @@ public class RouterLinkIT extends PhantomJSTest {
 
         verifySamePage();
 
-        testInsideServlet("foo", "foo");
-        testInsideServlet("./foobar", "foobar");
-        testInsideServlet("foo/bar", "foo/bar");
+        testInsideServlet("foo", "foo", "", "foo");
+        testInsideServlet("./foobar", "foobar", "", "foobar");
+        testInsideServlet("foo/bar", "foo/bar", "", "foo/bar");
 
-        testInsideServlet("./foobar?what=not", "foobar?what=not");
+        testInsideServlet("./foobar?what=not", "foobar", "what=not",
+                "foobar?what=not");
 
-        testInsideServlet("/run/baz", "baz");
+        testInsideServlet("/run/baz", "baz", "", "baz");
 
-        testInsideServlet("./foobar?what=not#fragment", "foobar?what=not",
+        testInsideServlet("./foobar?what=not#fragment", "foobar", "what=not",
                 "foobar?what=not#fragment");
 
         clickLink("empty");
@@ -65,16 +66,11 @@ public class RouterLinkIT extends PhantomJSTest {
         verifyPopStateEvent("image/link");
     }
 
-    private void testInsideServlet(String linkToTest,
-            String pathAfterServletMapping) {
-        testInsideServlet(linkToTest, pathAfterServletMapping,
-                pathAfterServletMapping);
-    }
-
     private void testInsideServlet(String linkToTest, String popStateLocation,
-            String pathAfterServletMapping) {
+            String parametersQuery, String pathAfterServletMapping) {
         clickLink(linkToTest);
         verifyInsideServletLocation(pathAfterServletMapping);
+        verifyParametersQuery(parametersQuery);
         verifyPopStateEvent(popStateLocation);
         verifySamePage();
     }
@@ -87,6 +83,11 @@ public class RouterLinkIT extends PhantomJSTest {
         Assert.assertEquals("Invalid URL",
                 getRootURL() + "/run/" + pathAfterServletMapping,
                 getDriver().getCurrentUrl());
+    }
+
+    private void verifyParametersQuery(String parametersQuery) {
+        Assert.assertEquals("Invalid server side event location", parametersQuery,
+                findElement(By.id("queryParams")).getText());
     }
 
     private void verifyPopStateEvent(String location) {

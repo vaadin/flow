@@ -50,7 +50,7 @@ public class HistoryAPI {
     private void onHistoryStateChange(HistoryStateChangeEvent event) {
         // site base url is www.abc.com/
         // user navigates back from abc.com/dashboard to abc.com/home
-        event.getLocation(); // returns "home"
+        event.getLocation().getPath(); // returns "home"
     }
 
 }
