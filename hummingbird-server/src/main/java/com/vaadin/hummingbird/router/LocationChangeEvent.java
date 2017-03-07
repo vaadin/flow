@@ -32,7 +32,6 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  */
 public class LocationChangeEvent extends EventObject {
-
     private final Location location;
     private final List<View> viewChain;
     private final UI ui;
@@ -45,16 +44,16 @@ public class LocationChangeEvent extends EventObject {
      * Creates a new location change event.
      *
      * @param router
-     *            the router that triggered the change, not <code>null</code>
+     *            the router that triggered the change, not {@code null}
      * @param ui
-     *            the UI in which the view is used, not <code>null</code>
+     *            the UI in which the view is used, not {@code null}
      * @param location
-     *            the new location, not <code>null</code>
+     *            the new location, not {@code null}
      * @param viewChain
-     *            the view chain that will be used, not <code>null</code>
+     *            the view chain that will be used, not {@code null}
      * @param routePlaceholders
      *            a map containing actual path segment values used for
-     *            placeholders in the used route mapping, not <code>null</code>
+     *            placeholders in the used route mapping, not {@code null}
      */
     public LocationChangeEvent(Router router, UI ui, Location location,
             List<View> viewChain, Map<String, String> routePlaceholders) {
@@ -74,7 +73,7 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Gets the new location.
      *
-     * @return the new location, not <code>null</code>
+     * @return the new location, not {@code null}
      */
     public Location getLocation() {
         return location;
@@ -85,7 +84,7 @@ public class LocationChangeEvent extends EventObject {
      * <p>
      * This is the same as the most deeply nested view in the view chain.
      *
-     * @return the view being shown, not <code>null</code>
+     * @return the view being shown, not {@code null}
      */
     public View getView() {
         return viewChain.get(0);
@@ -95,7 +94,7 @@ public class LocationChangeEvent extends EventObject {
      * Gets the chain of views that will be nested inside the UI, starting from
      * the most deeply nested view.
      *
-     * @return the view chain, not <code>null</code>
+     * @return the view chain, not {@code null}
      */
     public List<View> getViewChain() {
         return viewChain;
@@ -104,7 +103,7 @@ public class LocationChangeEvent extends EventObject {
     /**
      * Gets the UI in which the view is shown.
      *
-     * @return the UI, not <code>null</code>
+     * @return the UI, not {@code null}
      */
     public UI getUI() {
         return ui;
@@ -114,8 +113,8 @@ public class LocationChangeEvent extends EventObject {
      * Gets the part of the location that matched the <code>*</code> part of the
      * route.
      *
-     * @return the wildcard part of the path, or <code>null</code> if not using
-     *         a wildcard route
+     * @return the wildcard part of the path, or {@code null} if not using a
+     *         wildcard route
      */
     public String getPathWildcard() {
         return getPathParameter("*");
@@ -126,15 +125,43 @@ public class LocationChangeEvent extends EventObject {
      * of the route.
      *
      * @param placeholderName
-     *            the name of the placeholder, not <code>null</code>
-     * @return the placeholder value, or <code>null</code> if the placeholder
-     *         name was not present in the route
+     *            the name of the placeholder, not {@code null}
+     * @return the placeholder value, or {@code null} if the placeholder name
+     *         was not present in the route
      */
     public String getPathParameter(String placeholderName) {
         assert placeholderName != null;
         assert !placeholderName.contains("{") && !placeholderName.contains("}");
 
         return routePlaceholders.get(placeholderName);
+    }
+
+    /**
+     * Gets the query parameters used for navigation. If only the first value of
+     * parameter list is important, please use
+     * {@link LocationChangeEvent#getQueryParameter(String)}
+     *
+     * @return the query parameters, not {@code null}
+     */
+    public Map<String, List<String>> getQueryParameters() {
+        return location.getQueryParameters().getParameters();
+    }
+
+    /**
+     * Gets first parameter that corresponds to specified {@code parameterName}.
+     * If there are multiple parameters corresponding to the same
+     * {@code parameterName}, the first one will be returned. To access all
+     * parameters, use {@link LocationChangeEvent#getQueryParameters()} method.
+     *
+     * @param parameterName
+     *            the name of a parameter to get
+     * @return first corresponding query parameter or {@link Optional#empty()},
+     *         if no parameters found for {@code parameterName} specified
+     */
+    public Optional<String> getQueryParameter(String parameterName) {
+        return location.getQueryParameters().getParameters()
+                .getOrDefault(parameterName, Collections.emptyList()).stream()
+                .findFirst();
     }
 
     @Override
@@ -183,7 +210,7 @@ public class LocationChangeEvent extends EventObject {
      * effect.
      *
      * @param rerouteTarget
-     *            the navigation handler to use, or <code>null</code> to clear a
+     *            the navigation handler to use, or {@code null} to clear a
      *            previously set reroute target
      */
     public void rerouteTo(NavigationHandler rerouteTarget) {
@@ -213,7 +240,7 @@ public class LocationChangeEvent extends EventObject {
      * effect.
      *
      * @param viewType
-     *            the view type to display, not <code>null</code>
+     *            the view type to display, not {@code null}
      */
     public void rerouteTo(Class<? extends View> viewType) {
         rerouteTo(new StaticViewRenderer(viewType, null));

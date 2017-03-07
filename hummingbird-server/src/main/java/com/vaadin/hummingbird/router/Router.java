@@ -16,8 +16,6 @@
 package com.vaadin.hummingbird.router;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -75,7 +73,7 @@ public class Router implements Serializable {
 
         String pathInfo = initRequest.getPathInfo();
 
-        String path;
+        final String path;
         if (pathInfo == null) {
             path = "";
         } else {
@@ -83,13 +81,13 @@ public class Router implements Serializable {
             path = pathInfo.substring(1);
         }
 
-        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> {
-            String newLocation = e.getLocation();
+        final QueryParameters queryParameters = QueryParameters
+                .full(initRequest.getParameterMap());
 
-            navigate(ui, new Location(newLocation));
-        });
+        ui.getPage().getHistory().setHistoryStateChangeHandler(
+                e -> navigate(ui, e.getLocation()));
 
-        Location location = new Location(path);
+        Location location = new Location(path, queryParameters);
         int statusCode = navigate(ui, location);
 
         VaadinResponse response = VaadinService.getCurrentResponse();
@@ -126,7 +124,7 @@ public class Router implements Serializable {
         // Redirect foo/bar <-> foo/bar/ if there is no mapping for the given
         // location but there is a mapping for the other
         if (!handler.isPresent() && !location.getPath().isEmpty()) {
-            Location toggledLocation = toggleEndingSlash(location);
+            Location toggledLocation = location.toggleTrailingSlash();
             Optional<NavigationHandler> toggledHandler = currentConfig
                     .resolveRoute(toggledLocation);
             if (toggledHandler.isPresent()) {
@@ -141,31 +139,6 @@ public class Router implements Serializable {
         }
 
         return handler.get().handle(navigationEvent);
-    }
-
-    // Non-private to enable testing
-    static Location toggleEndingSlash(Location location) {
-        List<String> segments = location.getSegments();
-
-        // Even Location for "" still contains one (empty) segment
-        assert !segments.isEmpty();
-
-        String lastSegment = segments.get(segments.size() - 1);
-
-        if (segments.size() == 1 && "".equals(lastSegment)) {
-            throw new IllegalArgumentException(
-                    "Can't toggle ending slash for the \"\" location");
-        }
-
-        if (lastSegment.isEmpty()) {
-            // New location without ending empty segment
-            return new Location(segments.subList(0, segments.size() - 1));
-        } else {
-            // Add empty ending segment
-            segments = new ArrayList<>(segments);
-            segments.add("");
-            return new Location(segments);
-        }
     }
 
     /**

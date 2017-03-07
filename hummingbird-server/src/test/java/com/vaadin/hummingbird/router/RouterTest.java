@@ -126,7 +126,7 @@ public class RouterTest {
 
         ui.getPage().getHistory().getHistoryStateChangeHandler()
                 .onHistoryStateChange(new HistoryStateChangeEvent(
-                        ui.getPage().getHistory(), null, "foo"));
+                        ui.getPage().getHistory(), null, new Location("foo")));
 
         Assert.assertEquals(Arrays.asList("foo"),
                 resolver.resolvedLocation.get().getSegments());
@@ -293,23 +293,6 @@ public class RouterTest {
         router.navigate(new RouterTestUI(), new Location(""));
 
         Assert.assertEquals("route", usedHandler.get());
-    }
-
-    @Test
-    public void testToggleEndingSlash() {
-        Assert.assertEquals("foo", toggleEndingSlash("foo/"));
-
-        Assert.assertEquals("foo/", toggleEndingSlash("foo"));
-    }
-
-    private static String toggleEndingSlash(String withoutSlash) {
-        return Router.toggleEndingSlash(new Location(withoutSlash)).getPath();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testToggleEndingSlash_emtpyLocation() {
-        // Does not make sense to change the location to "/"
-        Router.toggleEndingSlash(new Location(""));
     }
 
     @Test

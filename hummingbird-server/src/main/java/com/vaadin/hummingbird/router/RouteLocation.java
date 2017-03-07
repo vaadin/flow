@@ -63,7 +63,7 @@ public class RouteLocation extends Location {
      *            the original location
      */
     public RouteLocation(Location location) {
-        super(location.getSegments());
+        super(location.getSegments(), location.getQueryParameters());
     }
 
     /**

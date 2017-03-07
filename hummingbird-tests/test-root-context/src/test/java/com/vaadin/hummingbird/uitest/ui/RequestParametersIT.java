@@ -13,6 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.hummingbird.uitest.ui;
 
 import org.junit.Assert;
@@ -22,19 +23,25 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-public class TemplateIncludeIT extends PhantomJSTest {
+/**
+ * @author Vaadin Ltd.
+ */
+public class RequestParametersIT extends PhantomJSTest {
 
     @Test
-    public void ensureCorrectDom() {
+    public void noParameters() {
         open();
-        WebElement root = findElement(By.id("root"));
-        String outerHtml = root.getAttribute("outerHTML");
-        String expected = "<div id=\"root\">" //
-                + "<div id=\"header\"> <span>Menu item 1</span> <span>Menu item 2</span> <span>Menu item 3</span> </div>" //
-                + "<div id=\"content\">Here goes the content</div>" //
-                + "<div id=\"footer\"> <span>Footer goes here</span> </div></div>";
-        expected = expected.replaceAll(">[ \r\n]*<", "><");
-        outerHtml = outerHtml.replaceAll(">[ \r\n]*<", "><");
-        Assert.assertEquals(expected, outerHtml);
+        WebElement label = findElement(By.id(RequestParametersView.REQUEST_PARAM_ID));
+
+        Assert.assertEquals(RequestParametersView.NO_INPUT_TEXT, label.getText());
+    }
+
+    @Test
+    public void parameterProvided() {
+        String paramValue = "Super-intelligent shade of the colour blue";
+        open(String.format("%s=%s", RequestParametersView.REQUEST_PARAM_NAME, paramValue));
+        WebElement label = findElement(By.id(RequestParametersView.REQUEST_PARAM_ID));
+
+        Assert.assertEquals(paramValue, label.getText());
     }
 }

@@ -13,26 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.hummingbird.uitest.ui;
 
-package com.vaadin.server;
-
-import java.io.Serializable;
+import com.vaadin.hummingbird.html.Div;
+import com.vaadin.hummingbird.html.Label;
+import com.vaadin.hummingbird.router.View;
 
 /**
- * Listener that gets notified when the {@link VaadinService} to which it has
- * been registered is destroyed.
- *
- * @see VaadinService#addServiceDestroyListener(ServiceDestroyListener)
- *
- * @since 7.2
  * @author Vaadin Ltd
+ *
  */
-public interface ServiceDestroyListener extends Serializable {
-    /**
-     * Invoked when a service is destroyed.
-     *
-     * @param event
-     *            the event
-     */
-    void serviceDestroy(ServiceDestroyEvent event);
+public class ServiceInitListenersView extends Div implements View {
+
+    public ServiceInitListenersView() {
+        add(new Label(
+                "Init count: " + TestingServiceInitListener.getInitCount()));
+        add(new Label("Request count: "
+                + TestingServiceInitListener.getRequestCount()));
+    }
 }

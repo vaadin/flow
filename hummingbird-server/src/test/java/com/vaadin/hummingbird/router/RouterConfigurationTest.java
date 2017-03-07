@@ -545,25 +545,19 @@ public class RouterConfigurationTest {
     @Test(expected = IllegalArgumentException.class)
     public void testSetErrorView_nullView_throws() {
         Router router = new Router();
-        router.reconfigure(conf -> {
-            conf.setErrorView(null, ParentView.class);
-        });
+        router.reconfigure(conf -> conf.setErrorView(null, ParentView.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testSetErrorView_nullParentView_throws() {
         Router router = new Router();
-        router.reconfigure(conf -> {
-            conf.setErrorView(TestView.class, null);
-        });
+        router.reconfigure(conf -> conf.setErrorView(TestView.class, null));
     }
 
     @Test
     public void normalViewStatusCode() {
         Router router = new Router();
-        router.reconfigure(c -> {
-            c.setRoute("*", ParentView.class);
-        });
+        router.reconfigure(c -> c.setRoute("*", ParentView.class));
         int statusCode = router.getConfiguration()
                 .resolveRoute(new Location("")).get()
                 .handle(new NavigationEvent(router, new Location(""),
