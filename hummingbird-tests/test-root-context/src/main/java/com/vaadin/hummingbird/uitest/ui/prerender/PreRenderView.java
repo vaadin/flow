@@ -30,9 +30,9 @@ import com.vaadin.hummingbird.uitest.ui.DependencyView;
 import com.vaadin.hummingbird.uitest.ui.DependencyView.JSStreamFactory;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinService;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Text;
 
 @StyleSheet("/com/vaadin/hummingbird/uitest/prerender/prerender.css")
@@ -69,7 +69,7 @@ public class PreRenderView extends Div implements View {
     protected void onAttach(AttachEvent attachEvent) {
         if (null != VaadinService.getCurrentRequest().getParameter("delay")) {
             jsImport = DependencyView.registerResource(attachEvent.getUI(),
-                    "some.js", new JSStreamFactory("delayed import", 5000) {
+                    "some.js", new JSStreamFactory("delayed import", 7000) {
                         @Override
                         protected InputStream stringToStream(String jsString) {
                             byte[] bytes = "window.document.body.appendChild(window.document.createElement('meter'));"
