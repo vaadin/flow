@@ -18,7 +18,8 @@ package com.vaadin.humminbird.tutorial.template;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
-@CodeFor("tutorial-template-class-name-binding.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-class-name-binding.asciidoc")
 public class TemplateClassBinding {
     static class A {
         public interface MyModel extends TemplateModel {
