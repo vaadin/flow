@@ -25,7 +25,6 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  */
 public class NavigationEvent extends EventObject {
-
     private final Location location;
     private final UI ui;
 
@@ -33,11 +32,11 @@ public class NavigationEvent extends EventObject {
      * Creates a new navigation event.
      *
      * @param router
-     *            the router handling the navigation, not <code>null</code>
+     *            the router handling the navigation, not {@code null}
      * @param location
-     *            the new location, not <code>null</code>
+     *            the new location, not {@code null}
      * @param ui
-     *            the UI in which the navigation occurs, not <code>null</code>
+     *            the UI in which the navigation occurs, not {@code null}
      */
     public NavigationEvent(Router router, Location location, UI ui) {
         super(router);
@@ -57,7 +56,7 @@ public class NavigationEvent extends EventObject {
     /**
      * Gets the new location.
      *
-     * @return the new location, not <code>null</code>
+     * @return the new location, not {@code null}
      */
     public Location getLocation() {
         return location;
