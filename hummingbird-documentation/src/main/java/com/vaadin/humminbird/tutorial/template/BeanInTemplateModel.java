@@ -21,7 +21,8 @@ import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
-@CodeFor("tutorial-template-model-bean.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-model-bean.asciidoc")
 public class BeanInTemplateModel {
     public class Person {
         private String firstName, lastName;

@@ -20,7 +20,8 @@ import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
-@CodeFor("tutorial-template-basic.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-basic.asciidoc")
 public class TemplateBasic {
 
     public interface GreetingModel extends TemplateModel {
