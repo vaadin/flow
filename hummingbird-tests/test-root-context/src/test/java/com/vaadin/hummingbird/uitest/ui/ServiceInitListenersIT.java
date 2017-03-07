@@ -15,26 +15,35 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
+import com.vaadin.testbench.By;
 
-public class TemplateIncludeIT extends PhantomJSTest {
+/**
+ * @author Vaadin Ltd
+ *
+ */
+public class ServiceInitListenersIT extends PhantomJSTest {
 
     @Test
-    public void ensureCorrectDom() {
+    public void testServiceInitListenerTriggered() {
         open();
-        WebElement root = findElement(By.id("root"));
-        String outerHtml = root.getAttribute("outerHTML");
-        String expected = "<div id=\"root\">" //
-                + "<div id=\"header\"> <span>Menu item 1</span> <span>Menu item 2</span> <span>Menu item 3</span> </div>" //
-                + "<div id=\"content\">Here goes the content</div>" //
-                + "<div id=\"footer\"> <span>Footer goes here</span> </div></div>";
-        expected = expected.replaceAll(">[ \r\n]*<", "><");
-        outerHtml = outerHtml.replaceAll(">[ \r\n]*<", "><");
-        Assert.assertEquals(expected, outerHtml);
+
+        List<WebElement> labels = findElements(By.tagName("label"));
+        Assert.assertNotEquals(labels.get(0).getText(), 0,
+                extractCount(labels.get(0).getText()));
+        Assert.assertNotEquals(labels.get(1).getText(), 0,
+                extractCount(labels.get(1).getText()));
+    }
+
+    private int extractCount(String logRow) {
+        // Assuming row pattern is "label: 1"
+        String substring = logRow.replaceAll("[^:]*:\\s*", "");
+        return Integer.parseInt(substring);
     }
 }

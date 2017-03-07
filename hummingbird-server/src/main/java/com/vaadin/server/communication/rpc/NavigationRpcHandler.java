@@ -15,6 +15,7 @@
  */
 package com.vaadin.server.communication.rpc;
 
+import com.vaadin.hummingbird.router.Location;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.History;
 import com.vaadin.ui.History.HistoryStateChangeEvent;
@@ -51,7 +52,7 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
                     .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
 
             HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
-                    state, location);
+                    state, new Location(location));
             historyStateChangeHandler.onHistoryStateChange(event);
         }
     }
