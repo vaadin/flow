@@ -17,7 +17,8 @@ package com.vaadin.humminbird.tutorial.template;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-include.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-include.asciidoc")
 public class TemplateInclude {
     // Needed by the test although there is no Java code in the tutorial
 }
