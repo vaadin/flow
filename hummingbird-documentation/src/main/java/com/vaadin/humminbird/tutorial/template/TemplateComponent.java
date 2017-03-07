@@ -22,7 +22,8 @@ import com.vaadin.hummingbird.html.Label;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
 
-@CodeFor("tutorial-template-components.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-components.asciidoc")
 public class TemplateComponent extends AngularTemplate {
 
     public class MainPage extends AngularTemplate {

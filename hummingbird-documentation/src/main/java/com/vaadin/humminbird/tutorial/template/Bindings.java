@@ -17,7 +17,8 @@ package com.vaadin.humminbird.tutorial.template;
 
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 
-@CodeFor("tutorial-template-bindings.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-bindings.asciidoc")
 public class Bindings {
     /*
      * No java code in the tutorial, but there must be a java file for each
