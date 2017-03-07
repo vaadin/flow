@@ -21,7 +21,7 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.binding.ServerEventHandlerBinder;
-import com.vaadin.client.hummingbird.binding.ServerEventHandlerBinder.ServerEventObject;
+import com.vaadin.client.hummingbird.binding.ServerEventObject;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;

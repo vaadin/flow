@@ -25,7 +25,7 @@ import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.binding.Binder;
-import com.vaadin.client.hummingbird.binding.ServerEventHandlerBinder.ServerEventObject;
+import com.vaadin.client.hummingbird.binding.ServerEventObject;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.reactive.Reactive;
