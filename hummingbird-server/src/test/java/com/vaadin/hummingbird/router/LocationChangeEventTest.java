@@ -43,9 +43,8 @@ public class LocationChangeEventTest {
                 Arrays.asList(new AnotherTestView(), new AnotherParentView()),
                 Collections.emptyMap());
 
-        event.getSource().reconfigure(c -> {
-            c.setParentView(TestView.class, ParentView.class);
-        });
+        event.getSource().reconfigure(
+                c -> c.setParentView(TestView.class, ParentView.class));
 
         navigationEvent = new NavigationEvent(event.getSource(),
                 event.getLocation(), event.getUI());

@@ -24,28 +24,58 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Represents a relative URL made up of path segments, but lacking e.g. the
- * hostname and query string that can also be present in URLs.
+ * Represents a relative URL made up of path segments and query parameters, but
+ * lacking e.g. the hostname that can also be present in URLs.
  *
  * @author Vaadin Ltd
  */
 public class Location implements Serializable {
-
     private static final String PATH_SEPARATOR = "/";
-    private List<String> segments;
+    private static final String QUERY_SEPARATOR = "?";
+    private static final String PARAMETERS_SEPARATOR = "&";
+    private static final String PARAMETER_VALUES_SEPARATOR = "=";
+    private static final String ABSENT_PARAMETER_VALUE = "";
+
+    private final List<String> segments;
+    private final QueryParameters queryParameters;
 
     /**
-     * Creates a new location for the given relative path.
+     * Creates a new {@link Location} object for given location string. This
+     * string can contain relative path and query parameters, if needed.
      *
-     * @param path
-     *            the relative path, not <code>null</code>
+     * @param location
+     *            the relative location, not <code>null</code>
      */
-    public Location(String path) {
-        this(parsePath(path));
+    public Location(String location) {
+        this(parsePath(location.trim()), parseParams(location.trim()));
+    }
+
+    /**
+     * Creates a new {@link Location} object for given location string and query
+     * parameters. Location string can not contain query parameters or exception
+     * will be thrown. To pass query parameters, either specify them in
+     * {@link QueryParameters} in this constructor, or use
+     * {@link Location#Location(String)}
+     *
+     * @param location
+     *            the relative location, not {@code null}
+     * @param queryParameters
+     *            query parameters information, not {@code null}
+     * @throws IllegalArgumentException
+     *             if location string contains query parameters inside
+     */
+    public Location(String location, QueryParameters queryParameters) {
+        this(parsePath(location.trim()), queryParameters);
+
+        if (location.contains(QUERY_SEPARATOR)) {
+            throw new IllegalArgumentException(
+                    "Location string can not contain query parameters in this constructor");
+        }
     }
 
     /**
@@ -55,6 +85,20 @@ public class Location implements Serializable {
      *            a non-empty list of path segments, not <code>null</code>
      */
     public Location(List<String> segments) {
+        this(segments, QueryParameters.empty());
+    }
+
+    /**
+     * Creates a new location based on a list of path segments and query
+     * parameters.
+     *
+     * @param segments
+     *            a non-empty list of path segments, not {@code null} and not
+     *            empty
+     * @param queryParameters
+     *            query parameters information, not {@code null}
+     */
+    public Location(List<String> segments, QueryParameters queryParameters) {
         if (segments == null) {
             throw new IllegalArgumentException("Segments cannot be null");
         }
@@ -62,8 +106,13 @@ public class Location implements Serializable {
             throw new IllegalArgumentException(
                     "There must be at least one segment");
         }
+        if (queryParameters == null) {
+            throw new IllegalArgumentException(
+                    "Query parameters cannot be null");
+        }
 
         this.segments = segments;
+        this.queryParameters = queryParameters;
     }
 
     /**
@@ -73,6 +122,15 @@ public class Location implements Serializable {
      */
     public List<String> getSegments() {
         return Collections.unmodifiableList(segments);
+    }
+
+    /**
+     * Gets the request parameters used for current location.
+     *
+     * @return the request parameters
+     */
+    public QueryParameters getQueryParameters() {
+        return queryParameters;
     }
 
     /**
@@ -96,7 +154,7 @@ public class Location implements Serializable {
         if (subSegments.isEmpty()) {
             return Optional.empty();
         } else {
-            return Optional.of(new Location(subSegments));
+            return Optional.of(new Location(subSegments, queryParameters));
         }
     }
 
@@ -109,14 +167,92 @@ public class Location implements Serializable {
         return segments.stream().collect(Collectors.joining("/"));
     }
 
+    /**
+     * Gets the path string with {@link QueryParameters}.
+     *
+     * @return path string with parameters
+     */
+    public String getPathWithQueryParameters() {
+        String basePath = getPath();
+        assert !basePath.contains(
+                QUERY_SEPARATOR) : "Base path can not contain query separator="
+                        + QUERY_SEPARATOR;
+
+        String params = queryParameters.getQueryString();
+        if (params.isEmpty()) {
+            return basePath;
+        }
+        return basePath + QUERY_SEPARATOR + params;
+    }
+
+    /**
+     * Removes or adds slash to the end of the location path. Creates new
+     * {@link Location} instance instead of modifying the old one.
+     *
+     * @return new {@link Location} instance with updated path
+     */
+    Location toggleTrailingSlash() {
+        // Even Location for "" still contains one (empty) segment
+        assert !segments.isEmpty();
+
+        String lastSegment = segments.get(segments.size() - 1);
+
+        if (segments.size() == 1 && "".equals(lastSegment)) {
+            throw new IllegalArgumentException(
+                    "Can't toggle ending slash for the \"\" location");
+        }
+
+        if (lastSegment.isEmpty()) {
+            // New location without ending empty segment
+            return new Location(segments.subList(0, segments.size() - 1),
+                    queryParameters);
+        } else {
+            // Add empty ending segment
+            List<String> newSegments = new ArrayList<>(segments);
+            newSegments.add("");
+            return new Location(newSegments, queryParameters);
+        }
+    }
+
+    private static QueryParameters parseParams(String path) {
+        int beginIndex = path.indexOf(QUERY_SEPARATOR);
+        if (beginIndex < 0) {
+            return QueryParameters.empty();
+        }
+
+        Map<String, List<String>> parsedParams = Arrays
+                .stream(path.substring(beginIndex + 1)
+                        .split(PARAMETERS_SEPARATOR))
+                .map(paramAndValue -> paramAndValue
+                        .split(PARAMETER_VALUES_SEPARATOR))
+                .collect(Collectors.toMap(array -> array[0],
+                        array -> Collections.singletonList(array.length == 1
+                                ? ABSENT_PARAMETER_VALUE : array[1]),
+                        (values1, values2) -> {
+                            List<String> result = new ArrayList<>(values1);
+                            result.addAll(values2);
+                            return result;
+                        }));
+        return new QueryParameters(parsedParams);
+    }
+
     private static List<String> parsePath(String path) {
-        assert !path.startsWith(PATH_SEPARATOR) : "path should be relative";
-        assert !path.contains("?") : "query string not yet supported";
+        final String basePath;
+        int endIndex = path.indexOf(QUERY_SEPARATOR);
+        if (endIndex == 0) {
+            throw new IllegalArgumentException("Location '" + path
+                    + "' is incorrect, it cannot start with " + QUERY_SEPARATOR
+                    + "symbol");
+        } else if (endIndex > 0) {
+            basePath = path.substring(0, endIndex);
+        } else {
+            basePath = path;
+        }
 
-        verifyRelativePath(path);
+        verifyRelativePath(basePath);
 
-        List<String> splitList = Arrays.asList(path.split(PATH_SEPARATOR));
-        if (path.endsWith(PATH_SEPARATOR)) {
+        List<String> splitList = Arrays.asList(basePath.split(PATH_SEPARATOR));
+        if (basePath.endsWith(PATH_SEPARATOR)) {
             // Explicitly add "" to the end even though it's ignored by
             // String.split
             ArrayList<String> result = new ArrayList<>(splitList.size() + 1);
@@ -137,7 +273,7 @@ public class Location implements Serializable {
      * @param path
      *            the (decoded) path to check, not null
      */
-    public static void verifyRelativePath(String path) {
+    private static void verifyRelativePath(String path) {
         assert path != null;
 
         try {
