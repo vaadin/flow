@@ -7,7 +7,8 @@ import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.html.HtmlComponent;
 import com.vaadin.ui.AngularTemplate;
 
-@CodeFor("tutorial-template-webcomponents.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-webcomponents.asciidoc")
 public class WebComponentsInTemplate {
     @Uses(PaperInput.class)
     @Uses(PaperTextarea.class)

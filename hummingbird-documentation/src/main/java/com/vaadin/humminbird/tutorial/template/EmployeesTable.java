@@ -7,7 +7,8 @@ import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
-@CodeFor("tutorial-template-for.asciidoc")
+@Deprecated
+@CodeFor("deprecated/tutorial-template-for.asciidoc")
 public class EmployeesTable extends AngularTemplate {
 
     public class Employee {
