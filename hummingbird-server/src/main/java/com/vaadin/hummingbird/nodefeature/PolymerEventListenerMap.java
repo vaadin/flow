@@ -28,8 +28,8 @@ import com.vaadin.hummingbird.util.JsonUtils;
 import elemental.json.Json;
 
 /**
- * Map of PolymerTemplate events with server-side listeners. The key set of this map
- * describes the event types for which event date is present.
+ * Map of PolymerTemplate events with server-side listeners. The key set of this
+ * map describes the event types for which event date is present.
  *
  * @author Vaadin Ltd
  */
@@ -56,16 +56,17 @@ public class PolymerEventListenerMap extends NodeMap {
     }
 
     /**
-     * Add eventData for an event type.
-     * @param eventType
-     *            the event type
+     * Adds a listener for a event created from a template method.
+     * 
+     * @param methodName
+     *            the name of the method
      * @param eventDataExpressions
      *            the event data expressions
      * @return handler to remove eventType data
      */
-    public EventRegistrationHandle add(String eventType,
+    public EventRegistrationHandle add(String methodName,
             String[] eventDataExpressions) {
-        assert eventType != null;
+        assert methodName != null;
         assert eventDataExpressions != null;
 
         if (typeToExpressions == null) {
@@ -74,28 +75,28 @@ public class PolymerEventListenerMap extends NodeMap {
 
         // Could optimize slightly by integrating the initialization into the
         // main logic, but that would make the code much harder to read
-        if (!contains(eventType)) {
+        if (!contains(methodName)) {
             // Make sure the "immutable" instance hasn't accidentally been
             // mutated
             assert emptyHashSet.isEmpty();
-            typeToExpressions.put(eventType, emptyHashSet);
-            put(eventType, createConstantPoolKey(emptyHashSet));
+            typeToExpressions.put(methodName, emptyHashSet);
+            put(methodName, createConstantPoolKey(emptyHashSet));
         }
 
         if (eventDataExpressions.length != 0) {
             HashSet<String> eventData = new HashSet<>(
-                    typeToExpressions.get(eventType));
+                    typeToExpressions.get(methodName));
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
                 // Update the constant pool reference if the value has changed
-                put(eventType, createConstantPoolKey(eventData));
+                put(methodName, createConstantPoolKey(eventData));
 
                 // Remember value for server-side use
-                typeToExpressions.put(eventType, eventData);
+                typeToExpressions.put(methodName, eventData);
             }
         }
 
-        return () -> removeListener(eventType);
+        return () -> removeListener(methodName);
     }
 
     private static ConstantPoolKey createConstantPoolKey(
