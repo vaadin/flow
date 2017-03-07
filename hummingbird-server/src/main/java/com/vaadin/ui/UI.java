@@ -33,6 +33,7 @@ import com.vaadin.hummingbird.nodefeature.LoadingIndicatorConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.hummingbird.router.Location;
+import com.vaadin.hummingbird.router.QueryParameters;
 import com.vaadin.hummingbird.router.Router;
 import com.vaadin.server.Command;
 import com.vaadin.server.ErrorEvent;
@@ -665,23 +666,43 @@ public class UI extends Component
      * location must be a relative path without any ".." segments.
      *
      * @param location
-     *            the location to navigate to, not <code>null</code>
+     *            the location to navigate to, not {@code null}
      */
     public void navigateTo(String location) {
+        navigateTo(location, QueryParameters.empty());
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given location and
+     * query parameters. The location must be a relative path without any ".."
+     * segments.
+     *
+     * @param location
+     *            the location to navigate to, not {@code null}
+     * @param queryParameters
+     *            query parameters that are used for navigation, not
+     *            {@code null}
+     */
+    public void navigateTo(String location,
+            QueryParameters queryParameters) {
         if (location == null) {
             throw new IllegalArgumentException("Location may not be null");
         }
+        if (queryParameters == null) {
+            throw new IllegalArgumentException("Query parameters may not be null");
+        }
+
         if (!getRouter().isPresent()) {
             throw new IllegalStateException(
                     "Can't navigate when UI has no router");
         }
 
-        Location.verifyRelativePath(location);
+        Location navigationLocation = new Location(location, queryParameters);
 
         // Enable navigating back
-        getPage().getHistory().pushState(null, location);
+        getPage().getHistory().pushState(null, navigationLocation);
 
-        getRouter().get().navigate(this, new Location(location));
+        getRouter().get().navigate(this, navigationLocation);
     }
 
     /**
