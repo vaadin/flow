@@ -58,15 +58,15 @@ public class ComponentMapping extends ServerSideFeature {
         this.component = component;
 
         Class<? extends NodeFeature> handlerClass = PublishedServerEventHandlers.class;
-        if(component instanceof PolymerTemplate) {
+        if (component instanceof PolymerTemplate) {
             handlerClass = PolymerServerEventHandlers.class;
         }
 
         if (getNode().hasFeature(handlerClass)) {
             // Update directly to avoid having a listener stored for each
             // ComponentMapping instance
-            ((PublishedServerEventHandlers)getNode().getFeature(handlerClass))
-                        .componentSet(component);
+            ((AbstractServerEventHandlers) getNode().getFeature(handlerClass))
+                    .componentSet(component);
         }
     }
 

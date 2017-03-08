@@ -35,7 +35,7 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  *
  */
-public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
+public class PolymerServerEventHandlers extends AbstractServerEventHandlers<PolymerTemplate> {
 
     /**
      * Creates a new meta information list for the given state node.
@@ -47,79 +47,21 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
         super(node);
     }
 
-    /**
-     * Called by {@link ComponentMapping} whenever a component instance has been
-     * set for the node.
-     *
-     * @param component
-     *            the component instance which was set
-     */
     @Override
-    public void componentSet(Component component) {
-        assert component != null;
-        assert component instanceof PolymerTemplate;
-        collectEventHandlerMethods(component.getClass());
+    protected Class getType() {
+        return PolymerTemplate.class;
     }
 
     @Override
-    protected void collectEventHandlerMethods(Class<?> clazz,
+    protected void addEventHandlerMethod(Method method,
             Collection<Method> methods) {
-        if (clazz.equals(PolymerTemplate.class)) {
-            return;
-        }
-        Stream.of(clazz.getDeclaredMethods()).filter(
-                method -> method.isAnnotationPresent(EventHandler.class))
-                .forEach(method -> addPolymerEventHandlerMethod(method,
-                        methods));
-        collectEventHandlerMethods(clazz.getSuperclass(), methods);
-    }
+        super.addEventHandlerMethod(method, methods);
 
-    private String[] getParameters(Method method) {
-        Parameter[] parameters = method.getParameters();
-
-        String[] eventData = Stream.of(parameters).map(
-                parameter -> parameter.getAnnotation(EventData.class).value())
-                .toArray(size -> new String[size]);
-
-        return eventData;
-    }
-
-    private void addPolymerEventHandlerMethod(Method method,
-            Collection<Method> methods) {
-        ensureSupportedParameterTypes(method);
-        if (!void.class.equals(method.getReturnType())) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Only void event handler methods are supported. "
-                            + "Template component '%s' has method '%s' "
-                            + "annotated with '%s' whose return type is not void but %s",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    EventHandler.class.getName(),
-                    method.getReturnType().getSimpleName());
-            throw new IllegalStateException(msg);
-        }
-        Optional<Class<?>> checkedException = Stream
-                .of(method.getExceptionTypes())
-                .filter(ReflectTools::isCheckedException).findFirst();
-        if (checkedException.isPresent()) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Event handler method may not declare checked exceptions. "
-                            + "Template component '%s' has method '%s' which "
-                            + "declares checked exception '%s' and annotated with '%s'",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    checkedException.get().getName(),
-                    EventHandler.class.getName());
-            throw new IllegalStateException(msg);
-        }
-        methods.add(method);
         addMethodParameters(method);
     }
 
-    private void addMethodParameters(Method method) {
-        getNode().getFeature(PolymerEventListenerMap.class)
-                .add(method.getName(), getParameters(method));
-    }
-
-    private static void ensureSupportedParameterTypes(Method method) {
+    @Override
+    protected void ensureSupportedParameterTypes(Method method) {
         if (method.getParameterCount() == 0) {
             return;
         }
@@ -137,6 +79,19 @@ public class PolymerServerEventHandlers extends PublishedServerEventHandlers {
                     parameter.getName().replace("arg", ""), method.getName());
             throw new IllegalStateException(msg);
         }
+    }
+
+    private void addMethodParameters(Method method) {
+        getNode().getFeature(PolymerEventListenerMap.class)
+                .add(method.getName(), getParameters(method));
+    }
+
+    private String[] getParameters(Method method) {
+        Parameter[] parameters = method.getParameters();
+
+        return Stream.of(parameters).map(
+                parameter -> parameter.getAnnotation(EventData.class).value())
+                .toArray(size -> new String[size]);
     }
 
 }
