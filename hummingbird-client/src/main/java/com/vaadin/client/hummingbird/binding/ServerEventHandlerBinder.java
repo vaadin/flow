@@ -17,8 +17,6 @@ package com.vaadin.client.hummingbird.binding;
 
 import java.util.function.Supplier;
 
-import com.google.gwt.core.client.JavaScriptObject;
-import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
@@ -28,108 +26,11 @@ import elemental.dom.Element;
 import elemental.events.EventRemover;
 
 /**
- * Binds and updates <code>element.$server</code>.
+ * Binds and updates server object able to send notifications to the server.
  *
  * @author Vaadin Ltd
  */
 public class ServerEventHandlerBinder {
-
-    /**
-     * A representation of <code>element.$server</code>.
-     *
-     * @author Vaadin Ltd
-     */
-    public static final class ServerEventObject extends JavaScriptObject {
-
-        /**
-         * JSO constructor.
-         */
-        protected ServerEventObject() {
-
-        }
-
-        /**
-         * Defines a method with the given name to be a callback to the server
-         * for the given state node.
-         *
-         * @param methodName
-         *            the name of the method to add
-         * @param node
-         *            the node to use as an identifier when sending an event to
-         *            the server
-         */
-        public void defineMethod(String methodName, StateNode node) {
-            defineMethod(methodName, node, false);
-        }
-
-        /**
-         * Defines a method with the given name to be a callback to the server
-         * for the given state node.
-         *
-         * @param methodName
-         *            the name of the method to add
-         * @param node
-         *            the node to use as an identifier when sending an event to
-         *            the server
-         * @param ignoreArguments
-         *            if {@code true} then the method parameters won't be sent
-         *            to the server (when the method is invoked)
-         */
-        public native void defineMethod(String methodName, StateNode node,
-                boolean ignoreArguments)
-        /*-{
-            this[methodName] = $entry(function() {
-                var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
-                if ( ignoreArguments ){
-                    tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, []);
-                }
-                else {
-                    var args = Array.prototype.slice.call(arguments);
-                    tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
-                }
-            });
-        }-*/;
-
-        /**
-         * Removes a method with the given name.
-         *
-         * @param methodName
-         *            the name of the method to remove
-         */
-        public native void removeMethod(String methodName)
-        /*-{
-           delete this[methodName];
-        }-*/;
-
-        /**
-         * Gets the defined methods.
-         *
-         * @return an array of defined method names
-         */
-        public native JsArray<String> getMethods()
-        /*-{
-           return Object.keys(this);
-        }-*/;
-
-        /**
-         * Gets or creates <code>element.$server</code> for the given element.
-         *
-         * @param element
-         *            the element to use
-         * @return a reference to the <code>$server</code> object in the element
-         */
-        public static ServerEventObject get(Element element) {
-            ServerEventObject serverObject = WidgetUtil
-                    .crazyJsoCast(WidgetUtil.getJsProperty(element, "$server"));
-            if (serverObject == null) {
-                serverObject = (ServerEventObject) JavaScriptObject
-                        .createObject();
-                WidgetUtil.setJsProperty(element, "$server", serverObject);
-            }
-            return serverObject;
-        }
-
-    }
 
     private ServerEventHandlerBinder() {
         // Only static methods
@@ -138,7 +39,7 @@ public class ServerEventHandlerBinder {
     /**
      * Registers all the server event handler names found in the
      * {@link NodeFeatures#PUBLISHED_SERVER_EVENT_HANDLERS} feature in the state
-     * node as <code>element.$server.&lt;methodName&gt;</code>. Additionally
+     * node as <code>serverObject.&lt;methodName&gt;</code>. Additionally
      * listens to changes in the feature and updates <code>$server</code>
      * accordingly.
      *
@@ -151,7 +52,7 @@ public class ServerEventHandlerBinder {
     public static EventRemover bindServerEventHandlerNames(Element element,
             StateNode node) {
         return bindServerEventHandlerNames(() -> ServerEventObject.get(element),
-                node, NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS, false);
+                node, NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
     }
 
     /**
@@ -166,14 +67,11 @@ public class ServerEventHandlerBinder {
      *            the state node containing the feature
      * @param featureId
      *            the feature id which contains event handler methods
-     * @param ignoreMethodArguments
-     *            if {@code true} then the event handler parameters won't be
-     *            sent to the server (when the method is invoked)
      * @return a handle which can be used to remove the listener for the feature
      */
     public static EventRemover bindServerEventHandlerNames(
             Supplier<ServerEventObject> objectProvider, StateNode node,
-            int featureId, boolean ignoreMethodArguments) {
+            int featureId) {
         NodeList serverEventHandlerNamesList = node.getList(featureId);
 
         if (serverEventHandlerNamesList.length() > 0) {
@@ -183,8 +81,7 @@ public class ServerEventHandlerBinder {
                 String serverEventHandlerName = (String) serverEventHandlerNamesList
                         .get(i);
                 // ignore arguments for now
-                object.defineMethod(serverEventHandlerName, node,
-                        ignoreMethodArguments);
+                object.defineMethod(serverEventHandlerName, node);
             }
         }
 
@@ -199,8 +96,7 @@ public class ServerEventHandlerBinder {
             JsArray<?> add = e.getAdd();
             for (int i = 0; i < add.length(); i++) {
                 // ignore arguments for now
-                serverObject.defineMethod((String) add.get(i), node,
-                        ignoreMethodArguments);
+                serverObject.defineMethod((String) add.get(i), node);
             }
         });
     }
