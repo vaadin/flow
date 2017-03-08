@@ -95,6 +95,7 @@ public class NodeFeatureTest {
                 NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
         expectedIds.put(PolymerServerEventHandlers.class,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
+        expectedIds.put(PolymerEventListenerMap.class, NodeFeatures.POLYMER_EVENT_LISTENERS);
 
         Assert.assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());

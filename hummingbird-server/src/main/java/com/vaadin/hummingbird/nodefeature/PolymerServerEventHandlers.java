@@ -16,20 +16,13 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.lang.reflect.Parameter;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.EventData;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.template.PolymerTemplate;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Methods which are published as event-handlers on the client side.
@@ -37,7 +30,8 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  *
  */
-public class PolymerServerEventHandlers extends SerializableNodeList<String> {
+public class PolymerServerEventHandlers
+        extends AbstractServerEventHandlers<PolymerTemplate> {
 
     /**
      * Creates a new meta information list for the given state node.
@@ -49,86 +43,46 @@ public class PolymerServerEventHandlers extends SerializableNodeList<String> {
         super(node);
     }
 
-    /**
-     * Called by {@link ComponentMapping} whenever a component instance has been
-     * set for the node.
-     *
-     * @param component
-     *            the component instance which was set
-     */
-    public <T extends PolymerTemplate> void componentSet(T component) {
-        assert component != null;
-        collectEventHandlerMethods(component.getClass());
-    }
-
-    private void collectEventHandlerMethods(Class<?> classWithAnnotations) {
-        List<Method> methods = new ArrayList<>();
-        collectEventHandlerMethods(classWithAnnotations, methods);
-        Map<String, Method> map = new HashMap<>();
-        for (Method method : methods) {
-            Method existing = map.get(method.getName());
-            if (existing != null && !Arrays.equals(existing.getParameterTypes(),
-                    method.getParameterTypes())) {
-                String msg = String.format(Locale.ENGLISH,
-                        "There may be only one event handler method with the given name. "
-                                + "Class '%s' (considering its superclasses) "
-                                + "contains several event handler methods with the same name: '%s'",
-                        classWithAnnotations.getName(), method.getName());
-                throw new IllegalStateException(msg);
-            }
-            map.put(method.getName(), method);
-        }
-        map.keySet().forEach(this::add);
-    }
-
-    private void collectEventHandlerMethods(Class<?> clazz,
+    @Override
+    protected void addEventHandlerMethod(Method method,
             Collection<Method> methods) {
-        if (clazz.equals(PolymerTemplate.class)) {
-            return;
-        }
-        Stream.of(clazz.getDeclaredMethods()).filter(
-                method -> method.isAnnotationPresent(EventHandler.class))
-                .forEach(method -> addEventHandlerMethod(method, methods));
-        collectEventHandlerMethods(clazz.getSuperclass(), methods);
+        super.addEventHandlerMethod(method, methods);
+
+        addMethodParameters(method);
     }
 
-    private void addEventHandlerMethod(Method method,
-            Collection<Method> methods) {
-        ensureSupportedParameterTypes(method);
-        if (!void.class.equals(method.getReturnType())) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Only void event handler methods are supported. "
-                            + "Template component '%s' has method '%s' "
-                            + "annotated with '%s' whose return type is not void but %s",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    EventHandler.class.getName(),
-                    method.getReturnType().getSimpleName());
-            throw new IllegalStateException(msg);
-        }
-        Optional<Class<?>> checkedException = Stream
-                .of(method.getExceptionTypes())
-                .filter(ReflectTools::isCheckedException).findFirst();
-        if (checkedException.isPresent()) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Event handler method may not declare checked exceptions. "
-                            + "Template component '%s' has method '%s' which "
-                            + "declares checked exception '%s' and annotated with '%s'",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    checkedException.get().getName(),
-                    EventHandler.class.getName());
-            throw new IllegalStateException(msg);
-        }
-        methods.add(method);
-
-    }
-
-    private static void ensureSupportedParameterTypes(Method method) {
+    @Override
+    protected void ensureSupportedParameterTypes(Method method) {
         if (method.getParameterCount() == 0) {
             return;
         }
-        throw new IllegalStateException(String.format(Locale.ENGLISH,
-                "Event handler method '%s'.'%s' may not have parameters",
-                method.getDeclaringClass().getName(), method.getName()));
+        Stream.of(method.getParameterTypes())
+                .forEach(type -> ensureSupportedParameterType(method, type));
+        Stream.of(method.getParameters())
+                .forEach(parameter -> ensureAnnotation(method, parameter));
+    }
+
+    private static void ensureAnnotation(Method method, Parameter parameter) {
+        if (!parameter.isAnnotationPresent(EventData.class)) {
+            String msg = String.format(
+                    "No @EventData annotation on parameter '%s'"
+                            + " for EventHandler method '%s'",
+                    parameter.getName().replace("arg", ""), method.getName());
+            throw new IllegalStateException(msg);
+        }
+    }
+
+    private void addMethodParameters(Method method) {
+        getNode().getFeature(PolymerEventListenerMap.class)
+                .add(method.getName(), getParameters(method));
+    }
+
+    private String[] getParameters(Method method) {
+        Parameter[] parameters = method.getParameters();
+
+        return Stream.of(parameters).map(
+                parameter -> parameter.getAnnotation(EventData.class).value())
+                .toArray(size -> new String[size]);
     }
 
 }
