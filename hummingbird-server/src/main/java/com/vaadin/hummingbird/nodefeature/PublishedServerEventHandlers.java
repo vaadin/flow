@@ -42,11 +42,6 @@ public class PublishedServerEventHandlers
     }
 
     @Override
-    protected Class getType() {
-        return Component.class;
-    }
-
-    @Override
     protected void ensureSupportedParameterTypes(Method method) {
         if (method.getParameterCount() == 0) {
             return;

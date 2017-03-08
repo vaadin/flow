@@ -16,6 +16,9 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
@@ -35,7 +40,8 @@ import com.vaadin.util.ReflectTools;
  * Abstract class for collecting Methods which are published as
  * <code>serverObject.&lt;name&gt;</code> on the client side.
  *
- * @param <T> Component type for setComponent(T component)
+ * @param <T>
+ *            Component type for setComponent(T component)
  *
  * @author Vaadin Ltd
  */
@@ -51,13 +57,6 @@ public abstract class AbstractServerEventHandlers<T>
     public AbstractServerEventHandlers(StateNode node) {
         super(node);
     }
-
-    /**
-     * Get the class for this List object.
-     *
-     * @return List object class
-     */
-    protected abstract Class getType();
 
     /**
      * Validate parameter support for given method. Should validate parameter
@@ -187,4 +186,29 @@ public abstract class AbstractServerEventHandlers<T>
         }
     }
 
+    private final Class<T> getType() {
+        Type type = GenericTypeReflector.getTypeParameter(
+                getClass().getGenericSuperclass(),
+                getClass().getSuperclass().getTypeParameters()[0]);
+        if (type instanceof Class || type instanceof ParameterizedType) {
+            return (Class<T>) GenericTypeReflector.erase(type);
+        }
+        throw new IllegalStateException(getExceptionMessage(type));
+    }
+
+    private static String getExceptionMessage(Type type) {
+        if (type == null) {
+            return "AbstractServerEventHandlers is used as raw type: either add type information or override collectEventHandlerMethods(Class<?> clazz, Collection<Method> methods).";
+        }
+
+        if (type instanceof TypeVariable) {
+            return String.format(
+                    "Could not determine the composite content type for TypeVariable '%s'. "
+                            + "Either specify exact type or override collectEventHandlerMethods().",
+                    type.getTypeName());
+        }
+        return String.format(
+                "Could not determine the composite content type for %s. Override collectEventHandlerMethods().",
+                type.getTypeName());
+    }
 }

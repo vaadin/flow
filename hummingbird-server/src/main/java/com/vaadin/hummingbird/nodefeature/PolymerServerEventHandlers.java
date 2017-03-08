@@ -44,11 +44,6 @@ public class PolymerServerEventHandlers
     }
 
     @Override
-    protected Class getType() {
-        return PolymerTemplate.class;
-    }
-
-    @Override
     protected void addEventHandlerMethod(Method method,
             Collection<Method> methods) {
         super.addEventHandlerMethod(method, methods);
