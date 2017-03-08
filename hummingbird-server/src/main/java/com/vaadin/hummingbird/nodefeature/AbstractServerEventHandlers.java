@@ -35,8 +35,9 @@ import com.vaadin.util.ReflectTools;
  * Abstract class for collecting Methods which are published as
  * <code>serverObject.&lt;name&gt;</code> on the client side.
  *
- * @author Vaadin Ltd
+ * @param <T> Component type for setComponent(T component)
  *
+ * @author Vaadin Ltd
  */
 public abstract class AbstractServerEventHandlers<T>
         extends SerializableNodeList<String> {
@@ -52,7 +53,7 @@ public abstract class AbstractServerEventHandlers<T>
     }
 
     /**
-     * Get the class for this List object
+     * Get the class for this List object.
      *
      * @return List object class
      */
@@ -80,7 +81,7 @@ public abstract class AbstractServerEventHandlers<T>
     }
 
     /**
-     * Collect methods annotated with {@link EventHandler} for give class
+     * Collect methods annotated with {@link EventHandler} for given class.
      * 
      * @param classWithAnnotations
      *            Class to collect methods for
@@ -106,7 +107,7 @@ public abstract class AbstractServerEventHandlers<T>
     }
 
     /**
-     * Collect all Methods annotated with {@link EventHandler}
+     * Collect all Methods annotated with {@link EventHandler}.
      *
      * @param clazz
      *            Class to check methods for
@@ -125,10 +126,12 @@ public abstract class AbstractServerEventHandlers<T>
     }
 
     /**
-     * Add an event handler to the NodeList
+     * Add an event handler to the NodeList.
      * 
      * @param method
+     *            Method to verify and add
      * @param methods
+     *            Collection to add method to
      */
     protected void addEventHandlerMethod(Method method,
             Collection<Method> methods) {
