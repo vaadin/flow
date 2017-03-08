@@ -61,13 +61,8 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         Reactive.reset();
 
         registry = new Registry() {
-
-            @Override
-            public ConstantPool getConstantPool() {
-                if (super.getConstantPool() == null) {
-                    set(ConstantPool.class, new ConstantPool());
-                }
-                return super.getConstantPool();
+            {
+                set(ConstantPool.class, new ConstantPool());
             }
         };
 
