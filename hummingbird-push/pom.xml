@@ -11,7 +11,7 @@
 	<name>Hummingbird Push</name>
 	<packaging>jar</packaging>
 	<properties>
-		<atmosphere.runtime.version>2.2.9.vaadin2</atmosphere.runtime.version>
+		<atmosphere.runtime.version>2.4.5.vaadin1</atmosphere.runtime.version>
 	</properties>
 
 	<dependencies>
