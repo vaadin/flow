@@ -15,23 +15,11 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Component;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Methods which are published as <code>element.$server.&lt;name&gt;</code> on
@@ -40,7 +28,8 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  *
  */
-public class PublishedServerEventHandlers extends AbstractServerEventHandlers<Component> {
+public class PublishedServerEventHandlers
+        extends AbstractServerEventHandlers<Component> {
 
     /**
      * Creates a new meta information list for the given state node.

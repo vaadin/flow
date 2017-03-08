@@ -18,16 +18,11 @@ package com.vaadin.hummingbird.nodefeature;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
-import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventData;
-import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.template.PolymerTemplate;
-import com.vaadin.ui.Component;
-import com.vaadin.util.ReflectTools;
 
 /**
  * Methods which are published as event-handlers on the client side.
@@ -35,7 +30,8 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  *
  */
-public class PolymerServerEventHandlers extends AbstractServerEventHandlers<PolymerTemplate> {
+public class PolymerServerEventHandlers
+        extends AbstractServerEventHandlers<PolymerTemplate> {
 
     /**
      * Creates a new meta information list for the given state node.
