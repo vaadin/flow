@@ -64,7 +64,7 @@ public class ElementListenerMap extends NodeMap {
     }
 
     /**
-     * Adds a listener for an event type.
+     * Add eventData for an event type.
      *
      * @param eventType
      *            the event type
