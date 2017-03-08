@@ -1,0 +1,13 @@
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
+<dom-module id="event-handler">
+  <template>
+    <button on-click="handleClick">Click me</button>
+  </template>
+  <script>
+    class EventHandler extends Polymer.Element {
+      static get is() { return 'event-handler' }
+    }
+    customElements.define(EventHandler.is, EventHandler);
+  </script>
+</dom-module>

@@ -13,7 +13,6 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>test-base</module>
 		<module>test-resources</module>
 		<module>test-root-context</module>
 		<module>test-subcontext</module>
@@ -21,7 +20,6 @@
 		<module>test-scalability</module>
 		<module>test-memory-leaks</module>
 		<module>test-expense-manager-imperative</module>
-        <module>test-polymer2</module>
 	</modules>
 
 	<properties>
