@@ -26,7 +26,7 @@ import elemental.dom.Element;
 import elemental.events.EventRemover;
 
 /**
- * Binds and updates <code>element.$server</code>.
+ * Binds and updates server object able to send notifications to the server.
  *
  * @author Vaadin Ltd
  */
@@ -39,7 +39,7 @@ public class ServerEventHandlerBinder {
     /**
      * Registers all the server event handler names found in the
      * {@link NodeFeatures#PUBLISHED_SERVER_EVENT_HANDLERS} feature in the state
-     * node as <code>element.$server.&lt;methodName&gt;</code>. Additionally
+     * node as <code>serverObject.&lt;methodName&gt;</code>. Additionally
      * listens to changes in the feature and updates <code>$server</code>
      * accordingly.
      *

@@ -86,7 +86,7 @@ public final class ServerEventObject extends JavaScriptObject {
         this[methodName] = $entry(function(event) {
             event = event || $wnd.event;
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
-            var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, this, methodName, node);
+            var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, methodName, node);
             if(args === null) {
                 args = Array.prototype.slice.call(arguments);
             }
@@ -100,16 +100,14 @@ public final class ServerEventObject extends JavaScriptObject {
      * 
      * @param event
      *            The fired Event
-     * @param element
-     *            Target element
      * @param methodName
      *            Method name that is called
      * @param node
      *            Target node
      * @return Array of extra event data
      */
-    protected JsonArray getEventData(Event event, ServerEventObject element,
-            String methodName, StateNode node) {
+    private JsonArray getEventData(Event event, String methodName,
+            StateNode node) {
         JsonArray dataArray = Json.createArray();
 
         if (node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
@@ -130,7 +128,7 @@ public final class ServerEventObject extends JavaScriptObject {
                 ServerEventDataExpression dataExpression = getOrCreateExpression(
                         expression);
                 JsonValue expressionValue = dataExpression.evaluate(event,
-                        element);
+                        this);
                 JsonObject eventData = Json.createObject();
                 eventData.put(expression, expressionValue);
 
