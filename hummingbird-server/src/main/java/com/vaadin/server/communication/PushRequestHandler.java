@@ -29,8 +29,8 @@ import org.atmosphere.cpr.AtmosphereFramework;
 import org.atmosphere.cpr.AtmosphereFramework.AtmosphereHandlerWrapper;
 import org.atmosphere.cpr.AtmosphereHandler;
 import org.atmosphere.cpr.AtmosphereInterceptor;
-import org.atmosphere.cpr.AtmosphereRequest;
-import org.atmosphere.cpr.AtmosphereResponse;
+import org.atmosphere.cpr.AtmosphereRequestImpl;
+import org.atmosphere.cpr.AtmosphereResponseImpl;
 import org.atmosphere.interceptor.HeartbeatInterceptor;
 import org.atmosphere.util.VoidAnnotationProcessor;
 
@@ -222,6 +222,10 @@ public class PushRequestHandler
         // Disable Atmosphere's message about commercial support
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
+        // Suppress JSR356 detection, see
+        // https://github.com/Atmosphere/atmosphere/issues/2104
+        atmosphere.addInitParameter(ApplicationConfig.WEBSOCKET_SUPPRESS_JSR356,
+                "true");
 
         try {
             atmosphere.init(vaadinServletConfig);
@@ -253,8 +257,9 @@ public class PushRequestHandler
             }
             try {
                 atmosphere.doCometSupport(
-                        AtmosphereRequest.wrap((VaadinServletRequest) request),
-                        AtmosphereResponse
+                        AtmosphereRequestImpl
+                                .wrap((VaadinServletRequest) request),
+                        AtmosphereResponseImpl
                                 .wrap((VaadinServletResponse) response));
             } catch (ServletException e) {
                 // TODO PUSH decide how to handle
