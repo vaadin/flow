@@ -34,6 +34,9 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 /**
  * @author Vaadin Ltd
@@ -146,6 +149,42 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         assertEquals(methodName, serverMethods.keySet().iterator().next());
         assertEquals(0, serverMethods.get(methodName).length());
         assertEquals(node, serverRpcNodes.get(methodName));
+    }
+
+    public void testPolymerMockedEventHandlerWithEventData() {
+        String methodName = "eventHandler";
+        String methodId = "handlerId";
+        String eventData = "event.button";
+
+        node.getList(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS).add(0,
+                methodName);
+        node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+                .getProperty(methodName).setValue(methodId);
+
+        JsonObject json = Json.createObject();
+        JsonArray array = Json.createArray();
+        array.set(0, eventData);
+        json.put(methodId, array);
+
+        node.getTree().getRegistry().getConstantPool().importFromJson(json);
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        NativeFunction mockedFunction = new NativeFunction("this." + methodName
+                + "({button: 2, altKey: false, clientX: 50, clientY: 100})");
+        mockedFunction.apply(element, JsCollections.array());
+
+        assertEquals("The amount of server methods was not as expected", 1,
+                serverMethods.size());
+        assertEquals("Expected method did not match", methodName,
+                serverMethods.keySet().iterator().next());
+        assertEquals("Wrong amount of method arguments", 1,
+                serverMethods.get(methodName).length());
+        assertEquals("Gotten argument wasn't as expected", "2", WidgetUtil
+                .getJsProperty(serverMethods.get(methodName).get(0), eventData)
+                .toString());
+        assertEquals("Method node did not match the expected node.", node,
+                serverRpcNodes.get(methodName));
     }
 
     private void assertServerEventHandlerMethodInDom(int id,

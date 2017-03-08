@@ -108,10 +108,10 @@ public final class ServerEventObject extends JavaScriptObject {
      */
     private JsonArray getEventData(Event event, String methodName,
             StateNode node) {
-        JsonArray dataArray = Json.createArray();
 
         if (node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
                 .hasPropertyValue(methodName)) {
+            JsonArray dataArray = Json.createArray();
 
             ConstantPool constantPool = node.getTree().getRegistry()
                     .getConstantPool();
@@ -134,11 +134,10 @@ public final class ServerEventObject extends JavaScriptObject {
 
                 dataArray.set(i, eventData);
             }
-        } else {
-            return null;
+            return dataArray;
         }
 
-        return dataArray;
+        return null;
     }
 
     /**
