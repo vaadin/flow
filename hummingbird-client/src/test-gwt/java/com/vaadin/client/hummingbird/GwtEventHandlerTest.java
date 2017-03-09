@@ -175,9 +175,8 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 serverMethods.keySet().iterator().next());
         assertEquals("Wrong amount of method arguments", 1,
                 serverMethods.get(methodName).length());
-        assertEquals("Gotten argument wasn't as expected", "2", WidgetUtil
-                .getJsProperty(serverMethods.get(methodName).get(0), eventData)
-                .toString());
+        assertEquals("Gotten argument wasn't as expected", "2",
+                        serverMethods.get(methodName).get(0).toString());
         assertEquals("Method node did not match the expected node.", node,
                 serverRpcNodes.get(methodName));
     }

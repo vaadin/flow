@@ -31,7 +31,6 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -83,8 +82,8 @@ public final class ServerEventObject extends JavaScriptObject {
      */
     public native void defineMethod(String methodName, StateNode node)
     /*-{
-        this[methodName] = $entry(function() {
-            var event = arguments[0] || $wnd.event;
+        this[methodName] = $entry(function(eventParameter) {
+            var event = eventParameter || $wnd.event;
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
             var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, methodName, node);
             if(args === null) {
@@ -96,7 +95,8 @@ public final class ServerEventObject extends JavaScriptObject {
 
     /**
      * Collect extra data for element event if any has been sent from the
-     * server.
+     * server. Note! Data is sent in the array in the same order as defined on
+     * the server side.
      * 
      * @param event
      *            The fired Event
@@ -112,7 +112,6 @@ public final class ServerEventObject extends JavaScriptObject {
         if (node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
                 .hasPropertyValue(methodName)) {
             JsonArray dataArray = Json.createArray();
-
             ConstantPool constantPool = node.getTree().getRegistry()
                     .getConstantPool();
             String expressionConstantKey = (String) node
@@ -129,10 +128,8 @@ public final class ServerEventObject extends JavaScriptObject {
                         expression);
                 JsonValue expressionValue = dataExpression.evaluate(event,
                         this);
-                JsonObject eventData = Json.createObject();
-                eventData.put(expression, expressionValue);
 
-                dataArray.set(i, eventData);
+                dataArray.set(i, expressionValue);
             }
             return dataArray;
         }
