@@ -25,6 +25,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -40,7 +44,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.vaadin.hummingbird.uitest.servlet.CustomDeploymentConfiguration.Conf;
-import com.vaadin.hummingbird.uitest.ui.EmptyUI;
 import com.vaadin.server.DefaultDeploymentConfiguration;
 import com.vaadin.server.DeploymentConfiguration;
 import com.vaadin.server.ServiceException;
@@ -76,8 +79,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
         if (initParameter != null) {
             Collections.addAll(defaultPackages, initParameter.split(","));
         }
-        String str = EmptyUI.class.getName().replace('.', '/') + ".class";
-        URL url = getService().getClassLoader().getResource(str);
+        URL url = getService().getClassLoader().getResource(".");
         if ("file".equals(url.getProtocol())) {
             String path = url.getPath();
             try {
@@ -85,23 +87,33 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             } catch (URISyntaxException e) {
                 getLogger().log(Level.FINE, "Failed to decode url", e);
             }
-            File comVaadinTests = new File(path).getParentFile()
-                    .getParentFile();
-            addDirectories(comVaadinTests, defaultPackages, "com.vaadin.tests");
+            try {
+                addDirectories(new File(url.getPath()), defaultPackages);
+            } catch (IOException exception) {
+                throw new RuntimeException(
+                        "Unable to scan classpath to find packages", exception);
+            }
 
         }
     }
 
-    private void addDirectories(File parent, LinkedHashSet<String> packages,
-            String parentPackage) {
-        packages.add(parentPackage);
+    private void addDirectories(File parent, LinkedHashSet<String> packages)
+            throws IOException {
+        Path root = parent.toPath();
+        Files.walkFileTree(parent.toPath(), new SimpleFileVisitor<Path>() {
 
-        for (File f : parent.listFiles()) {
-            if (f.isDirectory()) {
-                String newPackage = parentPackage + "." + f.getName();
-                addDirectories(f, packages, newPackage);
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc)
+                    throws IOException {
+                File file = dir.toFile();
+                if (file.isDirectory()) {
+                    Path relative = root.relativize(file.toPath());
+                    packages.add(relative.toString().replace(File.separatorChar,
+                            '.'));
+                }
+                return super.postVisitDirectory(dir, exc);
             }
-        }
+        });
     }
 
     @Override
