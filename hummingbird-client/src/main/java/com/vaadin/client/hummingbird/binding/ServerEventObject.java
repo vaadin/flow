@@ -83,8 +83,8 @@ public final class ServerEventObject extends JavaScriptObject {
      */
     public native void defineMethod(String methodName, StateNode node)
     /*-{
-        this[methodName] = $entry(function(event) {
-            event = event || $wnd.event;
+        this[methodName] = $entry(function() {
+            var event = arguments[0] || $wnd.event;
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
             var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, methodName, node);
             if(args === null) {

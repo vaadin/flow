@@ -42,7 +42,7 @@ public class FaviconHandler implements RequestHandler {
         VaadinServletRequest httpRequest = (VaadinServletRequest) request;
         boolean isFavicon = httpRequest.getContextPath().isEmpty()
                 && httpRequest.getServletPath().isEmpty()
-                && httpRequest.getPathInfo().equals("/favicon.ico");
+                && "/favicon.ico".equals(httpRequest.getPathInfo());
         if (isFavicon) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
