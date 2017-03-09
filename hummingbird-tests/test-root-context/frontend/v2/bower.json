@@ -1,8 +1,7 @@
 {
-  "name": "test-root-context",
+  "name": "test-polymer2",
   "homepage": "https://github.com/vaadin/hummingbird",
   "authors": [
-    "Artur Signell <artur@vaadin.com>"
   ],
   "description": "",
   "main": "",
@@ -16,9 +15,7 @@
     "tests"
   ],
   "dependencies": {
-    "paper-slider": "1.0.11",
-    "progress-bubble": "1.3.0",
-    "polymer": "1.5.0"
+    "polymer": "Polymer/polymer#2.0-preview"
   }
 }
 

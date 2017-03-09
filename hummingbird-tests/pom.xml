@@ -74,6 +74,7 @@
 					<systemPropertyVariables>
 						<serverPort>${server.port}</serverPort>
 						<phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
+                        <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
 					</systemPropertyVariables>
 					<excludedGroups>${test.excludegroup}</excludedGroups>
 				</configuration>
