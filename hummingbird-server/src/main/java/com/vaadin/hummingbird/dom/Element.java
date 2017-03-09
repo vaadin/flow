@@ -73,6 +73,8 @@ public class Element implements Serializable {
                 "setTextContent(String)");
         illegalPropertyReplacements.put("classList", "getClassList()");
         illegalPropertyReplacements.put("className", "getClassList()");
+        illegalPropertyReplacements.put("outerHTML",
+                "getParent().setProperty('innertHTML',value)");
     }
 
     private final ElementStateProvider stateProvider;
@@ -864,6 +866,9 @@ public class Element implements Serializable {
     private Element setRawProperty(String name, Serializable value) {
         verifySetPropertyName(name);
 
+        if ("innerHTML".equals(name)) {
+            removeAllChildren();
+        }
         stateProvider.setProperty(getNode(), name, value, true);
 
         return this;
