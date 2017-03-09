@@ -16,15 +16,20 @@
 package com.vaadin.hummingbird.uitest.servlet;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.uitest.ui.EmptyUI;
 
 public class ViewClassLocator {
     private LinkedHashMap<String, Class<? extends View>> views = new LinkedHashMap<>();
@@ -32,54 +37,67 @@ public class ViewClassLocator {
 
     public ViewClassLocator(ClassLoader classLoader) {
         this.classLoader = classLoader;
-        String str = EmptyUI.class.getName().replace('.', '/') + ".class";
-        URL url = classLoader.getResource(str);
+        URL url = classLoader.getResource(".");
         if ("file".equals(url.getProtocol())) {
             String path = url.getPath();
-            File testFolder = new File(path).getParentFile();
+            File testFolder = new File(path);
 
             // This scans parts of the classpath. If it becomes slow, we have to
             // remove this or make the scanning lazy
-            findViews(testFolder, views, EmptyUI.class.getPackage().getName());
-            getLogger().info("Found " + views.size() + " views");
+            try {
+                findViews(testFolder, views);
+                getLogger().info("Found " + views.size() + " views");
+            } catch (IOException exception) {
+                throw new RuntimeException(
+                        "Unable to scan classpath to find views", exception);
+            }
         } else {
             throw new RuntimeException(
-                    "Could not find EmptyUI.class using a file:// URL. Got URL: "
+                    "Could not find 'com' package using a file:// URL. Got URL: "
                             + url);
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void findViews(File parent,
-            LinkedHashMap<String, Class<? extends View>> packages,
-            String parentPackage) {
+            LinkedHashMap<String, Class<? extends View>> packages)
+            throws IOException {
+        Path root = parent.toPath();
+        Files.walkFileTree(parent.toPath(), new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path path,
+                    BasicFileAttributes attrs) throws IOException {
+                tryLoadClass(root, path);
+                return super.visitFile(path, attrs);
+            }
+        });
 
-        for (File f : parent.listFiles()) {
-            if (f.isDirectory()) {
-                String newPackage = parentPackage + "." + f.getName();
-                findViews(f, views, newPackage);
-            } else if (f.getName().endsWith(".class")
-                    && !f.getName().contains("$")) {
-                String className = parentPackage + "."
-                        + f.getName().replace(".class", "");
-                try {
-                    Class<?> cls = classLoader.loadClass(className);
-                    if (View.class.isAssignableFrom(cls)
-                            && !Modifier.isAbstract(cls.getModifiers())) {
-                        try {
-                            // Only include views which have a no-arg
-                            // constructor
-                            Constructor<?> constructor = cls.getConstructor();
-                            assert constructor != null;
-                            views.put(cls.getSimpleName(),
-                                    (Class<? extends View>) cls);
-                        } catch (Exception e) {
-                            // InlineTemplate or similar
-                        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void tryLoadClass(Path root, Path path) {
+        File file = path.toFile();
+        if (file.getName().endsWith(".class")
+                && !file.getName().contains("$")) {
+            Path relative = root.relativize(path);
+            String className = relative.toString()
+                    .replace(File.separatorChar, '.').replace(".class", "");
+            try {
+                Class<?> cls = classLoader.loadClass(className);
+                if (View.class.isAssignableFrom(cls)
+                        && !Modifier.isAbstract(cls.getModifiers())) {
+                    try {
+                        // Only include views which have a no-arg
+                        // constructor
+                        Constructor<?> constructor = cls.getConstructor();
+                        assert constructor != null;
+                        views.put(cls.getSimpleName(),
+                                (Class<? extends View>) cls);
+                    } catch (Exception e) {
+                        // InlineTemplate or similar
                     }
-                } catch (Exception e) {
-                    getLogger().warning("Unable to load class " + className);
                 }
+            } catch (Exception e) {
+                getLogger().warning("Unable to load class " + className);
             }
         }
     }
