@@ -50,6 +50,7 @@ public class SingleBrowserTest extends ViewOrUITest {
             break;
         case PHANTOMJS:
             setupPhantomJsDriver();
+            break;
         default:
             throw new IllegalStateException(
                     "Don't know how to execute test with the browser "
