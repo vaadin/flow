@@ -15,10 +15,10 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import com.vaadin.hummingbird.ConstantPoolKey;
 import com.vaadin.hummingbird.StateNode;
@@ -37,13 +37,13 @@ public class PolymerEventListenerMap extends NodeMap {
     /*
      * Shared empty serializable set instance to avoid allocating lots of memory
      * for the default case of no event data expressions at all. Cannot easily
-     * make the instance immutable while still implementing HashSet. To avoid
+     * make the instance immutable while still implementing ArrayList. To avoid
      * accidental modification, we instead assert that it's empty when it's
      * used.
      */
-    private static final HashSet<String> emptyHashSet = new HashSet<>();
+    private static final ArrayList<String> emptyArrayList = new ArrayList<>(0);
 
-    private HashMap<String, Set<String>> typeToExpressions;
+    private HashMap<String, List<String>> typeToExpressions;
 
     /**
      * Creates a new map feature for the given node.
@@ -78,13 +78,13 @@ public class PolymerEventListenerMap extends NodeMap {
         if (!contains(methodName)) {
             // Make sure the "immutable" instance hasn't accidentally been
             // mutated
-            assert emptyHashSet.isEmpty();
-            typeToExpressions.put(methodName, emptyHashSet);
-            put(methodName, createConstantPoolKey(emptyHashSet));
+            assert emptyArrayList.isEmpty();
+            typeToExpressions.put(methodName, emptyArrayList);
+            put(methodName, createConstantPoolKey(emptyArrayList));
         }
 
         if (eventDataExpressions.length != 0) {
-            HashSet<String> eventData = new HashSet<>(
+            ArrayList<String> eventData = new ArrayList<>(
                     typeToExpressions.get(methodName));
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
@@ -100,7 +100,7 @@ public class PolymerEventListenerMap extends NodeMap {
     }
 
     private static ConstantPoolKey createConstantPoolKey(
-            HashSet<String> eventData) {
+            ArrayList<String> eventData) {
         return new ConstantPoolKey(eventData.stream().map(Json::create)
                 .collect(JsonUtils.asArray()));
     }
