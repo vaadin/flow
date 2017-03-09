@@ -25,6 +25,7 @@ import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
@@ -36,12 +37,10 @@ import com.vaadin.ui.Component;
  */
 public abstract class AbstractTemplate<M extends TemplateModel>
         extends Component implements HasChildView {
-    protected final StateNode stateNode = TemplateElementStateProvider.createRootNode();
+    protected final StateNode stateNode = TemplateElementStateProvider
+            .createRootNode();
 
     private transient M model;
-
-    AbstractTemplate() {
-    }
 
     protected AbstractTemplate(Element element) {
         super(element);
@@ -128,5 +127,17 @@ public abstract class AbstractTemplate<M extends TemplateModel>
     protected Class<? extends M> getModelType() {
         return (Class<M>) (((ParameterizedType) getClass()
                 .getGenericSuperclass()).getActualTypeArguments()[0]);
+    }
+
+    /**
+     * Sets root of the template.
+     *
+     * @param templateRoot
+     *            template root to set
+     */
+    protected void setTemplateRoot(TemplateNode templateRoot) {
+        stateNode.getFeature(TemplateMap.class).setRootTemplate(templateRoot);
+        Element rootElement = Element.get(stateNode);
+        setElement(this, rootElement);
     }
 }

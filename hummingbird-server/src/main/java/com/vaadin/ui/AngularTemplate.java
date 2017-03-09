@@ -26,7 +26,6 @@ import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.template.AbstractTemplate;
@@ -128,16 +127,9 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
     private void setTemplateElement(InputStream inputStream,
             TemplateResolver templateResolver) {
         try (InputStream templateContentStream = inputStream) {
-
             TemplateNode templateRoot = TemplateParser
                     .parse(templateContentStream, templateResolver);
-
-            stateNode.getFeature(TemplateMap.class)
-                    .setRootTemplate(templateRoot);
-
-            Element rootElement = Element.get(stateNode);
-
-            setElement(this, rootElement);
+            setTemplateRoot(templateRoot);
         } catch (IOException e) {
             throw new TemplateParseException("Error reading template", e);
         }

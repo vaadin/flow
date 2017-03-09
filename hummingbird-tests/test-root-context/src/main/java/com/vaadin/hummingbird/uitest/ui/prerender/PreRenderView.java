@@ -30,6 +30,7 @@ import com.vaadin.hummingbird.uitest.ui.DependencyView;
 import com.vaadin.hummingbird.uitest.ui.DependencyView.JSStreamFactory;
 import com.vaadin.server.StreamResourceRegistration;
 import com.vaadin.server.VaadinService;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.Text;

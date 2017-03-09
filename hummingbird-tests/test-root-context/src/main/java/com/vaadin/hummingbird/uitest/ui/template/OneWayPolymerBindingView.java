@@ -31,6 +31,8 @@ public class OneWayPolymerBindingView extends PolymerTemplate<OneWayPolymerBindi
 
     public interface ReadonlyMessageModel extends TemplateModel {
         void setMessage(String message);
+
+        String getMessage();
     }
 
     public OneWayPolymerBindingView() {
