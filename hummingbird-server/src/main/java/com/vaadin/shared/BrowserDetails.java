@@ -98,6 +98,7 @@ public class BrowserDetails implements Serializable {
             isFirefox = false;
             isWebKit = false;
             isGecko = false;
+            isPhantomJS = false;
         }
 
         // Rendering engine version
