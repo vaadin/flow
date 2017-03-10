@@ -13,24 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui.template;
+package com.vaadin.hummingbird.testcategory;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+/**
+ * Tests that requires Chrome browser for their execution should be annotated
+ * with @ {@code Category(ChromeTests.class} so they can be optionally excluded
+ * from the build when needed.
+ * 
+ * @author Vaadin Ltd
+ *
+ */
+public interface ChromeTests {
 
-import com.vaadin.hummingbird.testcategory.ChromeTests;
-import com.vaadin.hummingbird.testutil.SingleBrowserTest;
-import com.vaadin.testbench.By;
-
-@Category(ChromeTests.class)
-public class EventHandlerIT extends SingleBrowserTest {
-
-    @Test
-    public void handleEventOnServer() {
-        open();
-
-        findElement(By.id("template")).click();
-        Assert.assertTrue(isElementPresent(By.id("event-handler-result")));
-    }
 }
