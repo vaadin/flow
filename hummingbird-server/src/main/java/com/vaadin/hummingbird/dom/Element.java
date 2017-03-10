@@ -73,6 +73,8 @@ public class Element implements Serializable {
                 "setTextContent(String)");
         illegalPropertyReplacements.put("classList", "getClassList()");
         illegalPropertyReplacements.put("className", "getClassList()");
+        illegalPropertyReplacements.put("outerHTML",
+                "getParent().setProperty('innertHTML',value)");
     }
 
     private final ElementStateProvider stateProvider;
@@ -544,7 +546,12 @@ public class Element implements Serializable {
 
     /**
      * Gets the number of child elements.
+     * <p>
+     * If the property "innerHTML" has been set explicitly then its value (the
+     * new element structure) won't be populated on the server side and this
+     * method will return <code>0</code>.
      *
+     * @see #setProperty(String, String)
      * @return the number of child elements
      */
     public int getChildCount() {
@@ -553,7 +560,12 @@ public class Element implements Serializable {
 
     /**
      * Returns the child element at the given position.
+     * <p>
+     * If property "innerHTML" has been set explicitly then its value (the new
+     * element structure) won't be populated on the server side and this method
+     * will not work.
      *
+     * @see #setProperty(String, String)
      * @param index
      *            the index of the child element to return
      * @return the child element
@@ -570,6 +582,12 @@ public class Element implements Serializable {
 
     /**
      * Gets all the children of this element.
+     * <p>
+     * If property "innerHTML" has been set explicitly then its value (the new
+     * element structure) won't be populated on the server side and this method
+     * returns an empty stream.
+     * 
+     * @see #setProperty(String, String)
      *
      * @return a stream of children
      */
@@ -785,6 +803,10 @@ public class Element implements Serializable {
      * changes made on the client side are not reflected back to the server
      * unless configured using {@link #addSynchronizedProperty(String)} and
      * {@link #addSynchronizedPropertyEvent(String)}.
+     * <p>
+     * The "innerHTML" property has an impact on the descendants structure of
+     * the element. So setting the "innerHTML" property removes all the
+     * children.
      *
      * @param name
      *            the property name, not <code>null</code>
@@ -864,6 +886,9 @@ public class Element implements Serializable {
     private Element setRawProperty(String name, Serializable value) {
         verifySetPropertyName(name);
 
+        if ("innerHTML".equals(name)) {
+            removeAllChildren();
+        }
         stateProvider.setProperty(getNode(), name, value, true);
 
         return this;
