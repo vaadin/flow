@@ -142,7 +142,11 @@ public class ApplicationRunnerServlet extends VaadinServlet {
 
     private String getApplicationRunnerApplicationClassName(
             HttpServletRequest request) {
-        return getApplicationRunnerURIs(request).applicationClassname;
+        try {
+            return getClassToRun().getName();
+        } catch (ClassNotFoundException e) {
+            return getApplicationRunnerURIs(request).applicationClassname;
+        }
     }
 
     private final static class ProxyDeploymentConfiguration
@@ -227,14 +231,15 @@ public class ApplicationRunnerServlet extends VaadinServlet {
             // uris.runner = runner;
             uris.applicationClassname = applicationClassname;
         }
+
         return uris;
     }
 
     private Class<?> getClassToRun() throws ClassNotFoundException {
         Class<?> appClass = null;
 
-        String baseName = getApplicationRunnerApplicationClassName(
-                request.get());
+        String baseName = getApplicationRunnerURIs(
+                request.get()).applicationClassname;
         try {
             appClass = getClass().getClassLoader().loadClass(baseName);
             return appClass;
