@@ -32,7 +32,6 @@ import com.vaadin.server.VaadinSession;
  * resource if servlet mapping is "/*".
  * 
  * @author Vaadin Ltd
- *
  */
 public class FaviconHandler implements RequestHandler {
 

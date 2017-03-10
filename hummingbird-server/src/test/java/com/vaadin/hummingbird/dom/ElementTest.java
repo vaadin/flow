@@ -1039,6 +1039,23 @@ public class ElementTest {
         element.setProperty("textContent", "foo");
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void setOuterHtmlProeprty_throws() {
+        Element element = new Element("element");
+        element.setProperty("outerHTML", "<br>");
+    }
+
+    @Test
+    public void setInnerHtmlProeprty_setValueAndRemoveAllChildren() {
+        Element element = new Element("element");
+        element.appendChild(ElementFactory.createAnchor(),
+                ElementFactory.createDiv());
+        element.setProperty("innerHTML", "<br>");
+
+        Assert.assertEquals(0, element.getChildCount());
+        Assert.assertEquals("<br>", element.getProperty("innerHTML"));
+    }
+
     @Test
     public void testGetTextContentProperty() {
         Element element = ElementFactory.createDiv();
