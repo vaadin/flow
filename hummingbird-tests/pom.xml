@@ -33,6 +33,7 @@
 			concurrent running of test modules. -->
 		<server.port>8888</server.port>
 		<server.stop.port>8889</server.stop.port>
+        <test.chrome></test.chrome>
 		<!-- Don't run screenshot tests by default -->
 		<test.excludegroup>com.vaadin.hummingbird.testcategory.ScreenshotTests</test.excludegroup>
 	</properties>
@@ -76,7 +77,7 @@
 						<phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
                         <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
 					</systemPropertyVariables>
-					<excludedGroups>${test.excludegroup}</excludedGroups>
+					<excludedGroups>${test.excludegroup}, ${test.chrome}</excludedGroups>
 				</configuration>
 			</plugin>
 			<!-- jetty plugin for those child modules that need it -->
