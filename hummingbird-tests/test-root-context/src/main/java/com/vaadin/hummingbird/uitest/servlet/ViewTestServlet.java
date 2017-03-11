@@ -22,7 +22,6 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.annotations.VaadinServletConfiguration;
-import com.vaadin.annotations.WebComponents;
 import com.vaadin.hummingbird.router.NavigationEvent;
 import com.vaadin.hummingbird.router.NavigationHandler;
 import com.vaadin.hummingbird.router.Resolver;
@@ -35,7 +34,6 @@ import com.vaadin.server.VaadinServletService;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
 @VaadinServletConfiguration(productionMode = false, routerConfigurator = ViewTestConfigurator.class)
-@WebComponents(1)
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;

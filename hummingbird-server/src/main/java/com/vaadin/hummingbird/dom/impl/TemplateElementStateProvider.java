@@ -39,6 +39,7 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
+import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
 import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
@@ -68,7 +69,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             ComponentMapping.class, TemplateMap.class,
             ParentGeneratorHolder.class, PublishedServerEventHandlers.class,
             TemplateOverridesMap.class, ModelMap.class,
-            PolymerServerEventHandlers.class };
+            PolymerServerEventHandlers.class, PolymerEventListenerMap.class };
 
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
@@ -78,7 +79,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                     ElementListenerMap.class, SynchronizedPropertiesList.class,
                     SynchronizedPropertyEventsList.class,
                     PublishedServerEventHandlers.class,
-                    PolymerServerEventHandlers.class)
+                    PolymerServerEventHandlers.class, PolymerEventListenerMap.class)
             .toArray(Class[]::new);
 
     private static final Predicate<? super String> excludeCustomAttributes = name -> !CustomAttribute

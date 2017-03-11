@@ -25,17 +25,18 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  * @author Vaadin Ltd.
  */
 @Tag("my-template")
-@HtmlImport("OneWayPolymerBindingView.html")
-public class OneWayPolymerBindingView extends PolymerTemplate<OneWayPolymerBindingView.ReadonlyMessageModel> {
+@HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/OneWayPolymerBinding.html")
+public class OneWayPolymerBindingTemplate
+        extends PolymerTemplate<OneWayPolymerBindingTemplate.MessageModel> {
     static final String MESSAGE = "testMessage";
 
-    public interface ReadonlyMessageModel extends TemplateModel {
+    public interface MessageModel extends TemplateModel {
         void setMessage(String message);
 
         String getMessage();
     }
 
-    public OneWayPolymerBindingView() {
+    public OneWayPolymerBindingTemplate() {
         getModel().setMessage(MESSAGE);
     }
 }

@@ -17,8 +17,11 @@
 package com.vaadin.hummingbird.template;
 
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Optional;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
@@ -125,8 +128,29 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      */
     @SuppressWarnings("unchecked")
     protected Class<? extends M> getModelType() {
-        return (Class<M>) (((ParameterizedType) getClass()
-                .getGenericSuperclass()).getActualTypeArguments()[0]);
+        Type type = GenericTypeReflector.getTypeParameter(
+                getClass().getGenericSuperclass(),
+                AbstractTemplate.class.getTypeParameters()[0]);
+        if (type instanceof Class || type instanceof ParameterizedType) {
+            return (Class<M>) GenericTypeReflector.erase(type);
+        }
+        throw new IllegalStateException(getExceptionMessage(type));
+    }
+
+    private static String getExceptionMessage(Type type) {
+        if (type == null) {
+            return "AbstractTemplate is used as raw type: either add type information or override getModelType().";
+        }
+
+        if (type instanceof TypeVariable) {
+            return String.format(
+                    "Could not determine the composite content type for TypeVariable '%s'. "
+                            + "Either specify exact type or override getModelType().",
+                    type.getTypeName());
+        }
+        return String.format(
+                "Could not determine the composite content type for %s. Override getModelType().",
+                type.getTypeName());
     }
 
     /**
