@@ -2,7 +2,8 @@
 
 <dom-module id="event-handler">
   <template>
-    <button on-click="handleClick">Click me</button>
+    <button on-click="handleClick" id="handle">Click me</button>
+    <button on-click="sendData" id="send">Send event data to the server</button>
   </template>
   <script>
     class EventHandler extends Polymer.Element {

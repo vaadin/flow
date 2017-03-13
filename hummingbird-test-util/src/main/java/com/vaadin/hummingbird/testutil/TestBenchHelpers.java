@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.testutil;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -144,6 +146,50 @@ public class TestBenchHelpers extends TestBenchTestCase {
                     .getWrappedElement();
         }
         Assert.assertEquals(unwrappedExpected, unwrappedActual);
+    }
+
+    /**
+     * Returns <code>true</code> if a component can be found with given By
+     * selector in the shadow DOM of the {@code webComponent}.
+     * 
+     * @param webComponent
+     *            the web component owning shadow DOM to start search from
+     * @param by
+     *            the selector used to find element
+     * @return <code>true</code> if the component can be found
+     */
+    protected boolean isPresentInShadowRoot(WebElement webComponent, By by) {
+        return !findInShadowRoot(webComponent, by).isEmpty();
+    }
+
+    /**
+     * Find the first {@link WebElement} using the given {@link By} selector.
+     * 
+     * @param webComponent
+     *            the web component owning shadow DOM to start search from
+     * @param by
+     *            the selector used to find element
+     * @return an optional element, or an empty optional if no element found
+     */
+    protected Optional<WebElement> getInShadowRoot(WebElement webComponent,
+            By by) {
+        return findInShadowRoot(webComponent, by).stream().findFirst();
+    }
+
+    /**
+     * Find all {@link WebElement}s using the given {@link By} selector.
+     * 
+     * @param webComponent
+     *            the web component owning shadow DOM to start search from
+     * @param by
+     *            the selector used to find elements
+     * @return a list of found elements
+     */
+    protected List<WebElement> findInShadowRoot(WebElement webComponent,
+            By by) {
+        WebElement root = (WebElement) getCommandExecutor()
+                .executeScript("return arguments[0].shadowRoot", webComponent);
+        return root.findElements(by);
     }
 
 }

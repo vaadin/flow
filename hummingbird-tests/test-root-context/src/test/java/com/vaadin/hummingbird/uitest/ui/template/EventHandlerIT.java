@@ -15,9 +15,12 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testcategory.ChromeTests;
 import com.vaadin.hummingbird.testutil.SingleBrowserTest;
@@ -30,7 +33,25 @@ public class EventHandlerIT extends SingleBrowserTest {
     public void handleEventOnServer() {
         open();
 
-        findElement(By.id("template")).click();
-        Assert.assertTrue(isElementPresent(By.id("event-handler-result")));
+        WebElement template = findElement(By.id("template"));
+        getInShadowRoot(template, By.id("handle")).get().click();
+        Assert.assertTrue(
+                "Unable to find server event handler invocation confirmation. "
+                        + "Looks like 'click' event handler has not been invoked on the server side",
+                isElementPresent(By.id("event-handler-result")));
+
+        getInShadowRoot(template, By.id("send")).get().click();
+        WebElement container = findElement(By.id("event-data"));
+        List<WebElement> divs = container.findElements(By.tagName("div"));
+
+        Assert.assertEquals(
+                "Unexpected 'button' event data in the received event handler parameter",
+                "button: 0", divs.get(1).getText());
+        Assert.assertEquals(
+                "Unexpected 'type' event data in the received event handler parameter",
+                "type: click", divs.get(2).getText());
+        Assert.assertEquals(
+                "Unexpected 'tag' event data in the received event handler parameter",
+                "tag: button", divs.get(3).getText());
     }
 }
