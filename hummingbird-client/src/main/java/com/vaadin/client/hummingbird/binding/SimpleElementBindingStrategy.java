@@ -18,8 +18,6 @@ package com.vaadin.client.hummingbird.binding;
 import java.util.Objects;
 import java.util.Optional;
 
-import jsinterop.annotations.JsFunction;
-
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
@@ -49,6 +47,7 @@ import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -174,8 +173,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(ServerEventHandlerBinder
                 .bindServerEventHandlerNames(htmlNode, stateNode));
-
-        listeners.push(bindPolymerEventHandlerNames(context));
     }
 
     @SuppressWarnings("unchecked")
@@ -513,24 +510,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 classList.add((String) add.get(i));
             }
         });
-    }
-
-    private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
-        NodeMap elementListeners = getPolymerEventListenerMap(context.node);
-        elementListeners.forEachProperty((property,
-                name) -> bindEventHandlerProperty(property, context));
-
-        elementListeners.addPropertyAddListener(
-                event -> bindEventHandlerProperty(event.getProperty(),
-                        context));
-
-        return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                () -> WidgetUtil.crazyJsoCast(context.element), context.node,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
-    }
-
-    private NodeMap getPolymerEventListenerMap(StateNode node) {
-        return node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS);
     }
 
     private static EventDataExpression getOrCreateExpression(
