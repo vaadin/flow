@@ -16,6 +16,7 @@
 
 package com.vaadin.server;
 
+import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -89,14 +90,14 @@ public class DefaultDeploymentConfiguration
             String defaultValue) {
         String val = null;
 
-        // Try application properties
-        val = getApplicationProperty(propertyName);
+        // Try system properties
+        val = getSystemProperty(propertyName);
         if (val != null) {
             return val;
         }
 
-        // Try system properties
-        val = getSystemProperty(propertyName);
+        // Try application properties
+        val = getApplicationProperty(propertyName);
         if (val != null) {
             return val;
         }
@@ -138,7 +139,16 @@ public class DefaultDeploymentConfiguration
         }
 
         // Try lowercased system properties
-        val = System.getProperty(pkgName + parameterName.toLowerCase());
+        val = System.getProperty(
+                pkgName + parameterName.toLowerCase(Locale.ENGLISH));
+
+        if (val != null) {
+            return val;
+        }
+
+        // version prefixed with just "vaadin."
+        val = System.getProperty("vaadin." + parameterName);
+
         return val;
     }
 
