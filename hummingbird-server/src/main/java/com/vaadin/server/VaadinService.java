@@ -52,6 +52,7 @@ import com.vaadin.hummingbird.router.Router;
 import com.vaadin.hummingbird.router.RouterConfigurator;
 import com.vaadin.server.ServletHelper.RequestType;
 import com.vaadin.server.communication.AtmospherePushConnection;
+import com.vaadin.server.communication.FaviconHandler;
 import com.vaadin.server.communication.HeartbeatHandler;
 import com.vaadin.server.communication.SessionRequestHandler;
 import com.vaadin.server.communication.StreamResourceRequestHandler;
@@ -253,6 +254,7 @@ public abstract class VaadinService implements Serializable {
     protected List<RequestHandler> createRequestHandlers()
             throws ServiceException {
         ArrayList<RequestHandler> handlers = new ArrayList<>();
+        handlers.add(new FaviconHandler());
         handlers.add(new SessionRequestHandler());
         handlers.add(new HeartbeatHandler());
         handlers.add(new UidlRequestHandler());
