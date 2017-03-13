@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
+import java.util.Locale;
+
+import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
@@ -31,5 +34,20 @@ public class EventHandlerPolymerTemplate extends PolymerTemplate {
         Element label = ElementFactory.createLabel("Event handler is invoked");
         label.setAttribute("id", "event-handler-result");
         getParent().get().getElement().appendChild(label);
+    }
+
+    @EventHandler
+    private void sendData(@EventData("event.button") int button,
+            @EventData("event.type") String type,
+            @EventData("event.srcElement.tagName") String tag) {
+        Element container = ElementFactory.createDiv();
+        container.appendChild(ElementFactory
+                .createDiv("Recieved event from the client with the data:"));
+        container.appendChild(ElementFactory.createDiv("button: " + button));
+        container.appendChild(ElementFactory.createDiv("type: " + type));
+        container.appendChild(ElementFactory
+                .createDiv("tag: " + tag.toLowerCase(Locale.ENGLISH)));
+        container.setAttribute("id", "event-data");
+        getParent().get().getElement().appendChild(container);
     }
 }

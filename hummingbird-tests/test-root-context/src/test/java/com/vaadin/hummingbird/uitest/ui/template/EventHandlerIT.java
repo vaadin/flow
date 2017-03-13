@@ -15,9 +15,12 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testcategory.ChromeTests;
 import com.vaadin.hummingbird.testutil.SingleBrowserTest;
@@ -30,7 +33,16 @@ public class EventHandlerIT extends SingleBrowserTest {
     public void handleEventOnServer() {
         open();
 
-        findElement(By.id("template")).click();
+        WebElement template = findElement(By.id("template"));
+        getInShadowRoot(template, By.id("handle")).get().click();
         Assert.assertTrue(isElementPresent(By.id("event-handler-result")));
+
+        getInShadowRoot(template, By.id("send")).get().click();
+        WebElement container = findElement(By.id("event-data"));
+        List<WebElement> divs = container.findElements(By.tagName("div"));
+
+        Assert.assertEquals("button: 0", divs.get(1).getText());
+        Assert.assertEquals("type: click", divs.get(2).getText());
+        Assert.assertEquals("tag: button", divs.get(3).getText());
     }
 }
