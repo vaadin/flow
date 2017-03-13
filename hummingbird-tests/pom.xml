@@ -34,7 +34,6 @@
 		<server.port>8888</server.port>
 		<server.stop.port>8889</server.stop.port>
 		<!-- Don't run screenshot tests by default -->
-		<test.excludegroup>com.vaadin.hummingbird.testcategory.ScreenshotTests</test.excludegroup>
 	</properties>
 
 	<dependencies>
@@ -200,6 +199,33 @@
 				<maven.javadoc.skip>true</maven.javadoc.skip>
 			</properties>
 		</profile>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <test.excludegroup>com.vaadin.hummingbird.testcategory.ScreenshotTests</test.excludegroup>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <test.excludegroup></test.excludegroup>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-tests-teamcity</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <test.excludegroup>com.vaadin.hummingbird.testcategory.ChromeTests</test.excludegroup>
+            </properties>
+        </profile>
 
 	</profiles>
 
