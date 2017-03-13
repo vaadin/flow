@@ -1,0 +1,71 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+
+= Creating A Simple Component Using the Template API
+
+There are multiple ways you can create a component. This tutorial uses the `PolymerTemplate` API with no additional elements or components. For other component tutorials, see:
+
+* <<../tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
+* <<../tutorial-component-composite#,Creating a Component Using Existing Components>>
+* <<../tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
+
+For tutorials about how to use different template features, see:
+
+* <<tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
+* <<tutorial-template-event-handlers#,Handling User Events in a Template>>
+
+You can use a template to create a simple "Hello World" component in this way:
+
+[source,html]
+----
+<link rel="import" href="/bower_components/polymer/polymer.html">
+
+<dom-module id="hello-world">
+    <template>
+       <div>
+          Hello, world !
+       </div> 
+    </template>
+
+    <script>
+        class HelloWorld extends Polymer.Element {
+            static get is() {
+                return 'hello-world';
+            }
+        }
+        customElements.define(HelloWorld.is, HelloWorld);
+    </script>
+</dom-module>
+----
+
+To be able to use this template you need to create a template class which extends `PolymerTemplate`, 
+set its tag name matching the polymer `dom-module` id attribute and add the html import.
+
+[source,java]
+----
+@Tag("hello-world")
+@HtmlImport("/com/example/HelloWorld.html")
+public class HelloWorld extends PolymerTemplate {
+
+}
+----
+
+The `/com/example/HelloWorld.html` is the URL to your polymer template declaration file.
+
+[NOTE] Java class name and template file name doesn't have to match each other.
+
+[NOTE] You should take care about proper handling of the polymer template file URL. 
+It should be somehow available as a web resource. It means that either your servlet 
+should be able to handle classpath resources if the file is somwehere in your classpath or
+some additional configuration is required to the WAR file so that the resource 
+becomes available via the URL.
+
+
+You can use `HelloWorld` like any other component.
+
+[source,java]
+----
+HelloWorld hello = new HelloWorld();
+
+Div layout = new Div();
+layout.add(hello);
+----
