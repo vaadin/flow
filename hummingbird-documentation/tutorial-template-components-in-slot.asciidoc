@@ -121,7 +121,7 @@ To define a parent view that shows the actual view below a heading a and a menu,
 </dom-module>
 ----
 
-To use the template file, you also need a basic template component class with a html import for the template file.
+To use the template file, you also need a basic template component class with an html import for the template file.
 Right now you need to also extend the `HasChildView` interface and implement the `setChildView(View)` for example like this:
 [source,java]
 ----
