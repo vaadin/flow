@@ -39,17 +39,19 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
+import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
+import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
+import com.vaadin.hummingbird.template.AbstractTemplate;
 import com.vaadin.hummingbird.template.angular.BindingValueProvider;
 import com.vaadin.hummingbird.template.angular.ElementTemplateNode;
 import com.vaadin.hummingbird.template.angular.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.server.StreamResource;
-import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
 
 /**
@@ -66,7 +68,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     private static Class<? extends NodeFeature>[] rootNodeFeatures = new Class[] {
             ComponentMapping.class, TemplateMap.class,
             ParentGeneratorHolder.class, PublishedServerEventHandlers.class,
-            TemplateOverridesMap.class, ModelMap.class };
+            TemplateOverridesMap.class, ModelMap.class,
+            PolymerServerEventHandlers.class, PolymerEventListenerMap.class };
 
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] overrideNodeFeatures = Stream
@@ -75,7 +78,8 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                     ElementAttributeMap.class, ElementPropertyMap.class,
                     ElementListenerMap.class, SynchronizedPropertiesList.class,
                     SynchronizedPropertyEventsList.class,
-                    PublishedServerEventHandlers.class)
+                    PublishedServerEventHandlers.class,
+                    PolymerServerEventHandlers.class, PolymerEventListenerMap.class)
             .toArray(Class[]::new);
 
     private static final Predicate<? super String> excludeCustomAttributes = name -> !CustomAttribute
@@ -421,10 +425,10 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         assert component != null;
 
         if (isTemplateRoot()) {
-            if (!(component instanceof AngularTemplate)) {
+            if (!(component instanceof AbstractTemplate)) {
                 throw new IllegalArgumentException(
                         "The component for a template root must extend "
-                                + AngularTemplate.class.getName());
+                                + AbstractTemplate.class.getName());
             }
             ElementStateProvider.super.setComponent(node, component);
         } else {

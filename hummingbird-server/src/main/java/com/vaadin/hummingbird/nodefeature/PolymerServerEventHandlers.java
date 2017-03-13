@@ -31,7 +31,7 @@ import com.vaadin.hummingbird.template.PolymerTemplate;
  *
  */
 public class PolymerServerEventHandlers
-        extends AbstractServerEventHandlers<PolymerTemplate> {
+        extends AbstractServerEventHandlers<PolymerTemplate<?>> {
 
     /**
      * Creates a new meta information list for the given state node.

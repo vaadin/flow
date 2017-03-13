@@ -15,9 +15,13 @@
  */
 package com.vaadin.hummingbird.template;
 
+import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.ui.Component;
+import com.vaadin.hummingbird.template.angular.ElementTemplateBuilder;
+import com.vaadin.hummingbird.template.angular.ModelValueBindingProvider;
+import com.vaadin.hummingbird.template.model.ModelDescriptor;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
@@ -30,6 +34,25 @@ import com.vaadin.ui.Component;
  *
  * @author Vaadin Ltd
  */
-public abstract class PolymerTemplate extends Component {
+public abstract class PolymerTemplate<M extends TemplateModel>
+        extends AbstractTemplate<M> {
+    public PolymerTemplate() {
+        super(null);
 
+        String tagName = AnnotationReader
+                .getAnnotationFor(getClass(), Tag.class).map(Tag::value)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No tag annotation found"));
+
+        ElementTemplateBuilder elementTemplateBuilder = new ElementTemplateBuilder(
+                tagName);
+        ModelDescriptor<? extends M> modelDescriptor = ModelDescriptor
+                .get(getModelType());
+        modelDescriptor.getPropertyNames()
+                .forEach(propertyName -> elementTemplateBuilder.setProperty(
+                        propertyName, new ModelValueBindingProvider(
+                                propertyName)));
+
+        setTemplateRoot(elementTemplateBuilder.build(null).iterator().next());
+    }
 }

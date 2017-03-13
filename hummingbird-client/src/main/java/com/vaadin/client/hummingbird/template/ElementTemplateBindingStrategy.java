@@ -17,14 +17,19 @@ package com.vaadin.client.hummingbird.template;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.StateTree;
 import com.vaadin.client.hummingbird.binding.BinderContext;
 import com.vaadin.client.hummingbird.binding.ServerEventHandlerBinder;
 import com.vaadin.client.hummingbird.binding.ServerEventObject;
 import com.vaadin.client.hummingbird.collection.JsArray;
+import com.vaadin.client.hummingbird.collection.JsCollections;
+import com.vaadin.client.hummingbird.collection.JsMap;
 import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
+import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
@@ -34,7 +39,9 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.events.EventRemover;
+import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 import jsinterop.annotations.JsFunction;
 
 /**
@@ -47,6 +54,51 @@ public class ElementTemplateBindingStrategy
         extends AbstractTemplateStrategy<Element> {
 
     /**
+     * Just a context class whose instance is passed as a parameter between the
+     * operations of various kind to be able to access the data like listeners,
+     * node and element which they operate on.
+     * <p>
+     * It's used to avoid having methods with a long numbers of parameters and
+     * because the strategy instance is stateless.
+     *
+     */
+    private static class BindingContext {
+        private final Element element;
+        private final StateNode node;
+
+        private final JsMap<String, Computation> listenerBindings = JsCollections
+                .map();
+        private final JsMap<String, EventRemover> listenerRemovers = JsCollections
+                .map();
+
+        private BindingContext(StateNode node, Element element) {
+            this.node = node;
+            this.element = element;
+        }
+    }
+
+    /**
+     * Callback interface for an event data expression parsed using new
+     * Function() in JavaScript.
+     */
+    @FunctionalInterface
+    @JsFunction
+    @SuppressWarnings("unusable-by-js")
+    private interface EventDataExpression {
+        /**
+         * Callback interface for an event data expression parsed using new
+         * Function() in JavaScript.
+         *
+         * @param event
+         *            Event to expand
+         * @param element
+         *            target Element
+         * @return Result of evaluated function
+         */
+        JsonValue evaluate(Event event, Element element);
+    }
+
+    /**
      * Event handler listener interface.
      */
     @FunctionalInterface
@@ -55,6 +107,9 @@ public class ElementTemplateBindingStrategy
     private interface EventHandler {
         void handle(Event event, JavaScriptObject serverProxy, Element element);
     }
+
+    private static final JsMap<String, EventDataExpression> expressionCache = JsCollections
+            .map();
 
     @Override
     protected String getTemplateType() {
@@ -149,6 +204,110 @@ public class ElementTemplateBindingStrategy
                                 element));
             }
         }
+        bindPolymerEventHandlerNames(
+                new BindingContext(templateStateNode, element));
+    }
+
+    private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
+        NodeMap elementListeners = context.node
+                .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS);
+        elementListeners.forEachProperty((property,
+                name) -> bindEventHandlerProperty(property, context));
+        elementListeners.addPropertyAddListener(
+                event -> bindEventHandlerProperty(event.getProperty(),
+                        context));
+
+        return ServerEventHandlerBinder.bindServerEventHandlerNames(
+                () -> WidgetUtil.crazyJsoCast(context.element), context.node,
+                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
+    }
+
+    private void bindEventHandlerProperty(MapProperty eventHandlerProperty,
+            BindingContext context) {
+        String name = eventHandlerProperty.getName();
+        assert !context.listenerBindings.has(name);
+
+        Computation computation = Reactive.runWhenDepedenciesChange(() -> {
+            boolean hasValue = eventHandlerProperty.hasValue();
+            boolean hasListener = context.listenerRemovers.has(name);
+
+            if (hasValue != hasListener) {
+                if (hasValue) {
+                    addEventHandler(name, context);
+                } else {
+                    removeEventHandler(name, context);
+                }
+            }
+        });
+
+        context.listenerBindings.set(name, computation);
+
+    }
+
+    private void removeEventHandler(String eventType, BindingContext context) {
+        EventRemover remover = context.listenerRemovers.get(eventType);
+        context.listenerRemovers.delete(eventType);
+
+        assert remover != null;
+        remover.remove();
+    }
+
+    private void addEventHandler(String eventType, BindingContext context) {
+        assert !context.listenerRemovers.has(eventType);
+
+        EventRemover remover = context.element.addEventListener(eventType,
+                event -> handleDomEvent(event, context.element, context.node),
+                false);
+
+        context.listenerRemovers.set(eventType, remover);
+    }
+
+    private void handleDomEvent(Event event, Element element, StateNode node) {
+        String type = event.getType();
+
+        NodeMap listenerMap = node.getMap(NodeFeatures.ELEMENT_LISTENERS);
+
+        ConstantPool constantPool = node.getTree().getRegistry()
+                .getConstantPool();
+        String expressionConstantKey = (String) listenerMap.getProperty(type)
+                .getValue();
+        assert expressionConstantKey != null;
+
+        assert constantPool.has(expressionConstantKey);
+
+        JsArray<String> dataExpressions = constantPool
+                .get(expressionConstantKey);
+
+        JsonObject eventData = null;
+        if (!dataExpressions.isEmpty()) {
+            eventData = Json.createObject();
+
+            for (int i = 0; i < dataExpressions.length(); i++) {
+                String expressionString = dataExpressions.get(i);
+
+                EventDataExpression expression = getOrCreateExpression(
+                        expressionString);
+
+                JsonValue expressionValue = expression.evaluate(event, element);
+
+                eventData.put(expressionString, expressionValue);
+            }
+        }
+
+        node.getTree().sendEventToServer(node, type, eventData);
+    }
+
+    private static EventDataExpression getOrCreateExpression(
+            String expressionString) {
+        EventDataExpression expression = expressionCache.get(expressionString);
+
+        if (expression == null) {
+            expression = NativeFunction.create("event", "element",
+                    "return (" + expressionString + ")");
+            expressionCache.set(expressionString, expression);
+        }
+
+        return expression;
     }
 
     private void bindProperties(StateNode stateNode,
