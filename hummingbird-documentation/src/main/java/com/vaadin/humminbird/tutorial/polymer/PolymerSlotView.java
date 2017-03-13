@@ -45,7 +45,7 @@ public class PolymerSlotView {
     @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/MainLayout.html")
     public class MainLayout extends PolymerTemplate implements HasChildView {
 
-        View childView;
+        private View childView;
 
         @Override
         public void setChildView(View childView) {

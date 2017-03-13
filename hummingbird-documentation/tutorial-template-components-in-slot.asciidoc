@@ -129,7 +129,7 @@ Right now you need to also extend the `HasChildView` interface and implement the
 @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/MainLayout.html")
 public class MainLayout extends PolymerTemplate implements HasChildView {
 
-    View childView;
+    private View childView;
 
     @Override
     public void setChildView(View childView) {

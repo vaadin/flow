@@ -47,6 +47,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-routing-error-view#,Defining an Error View>>
 ** <<tutorial-routing-rerouting",Rerouting to another View>>
 * Polymer template
+** <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 ** <<tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
 * Misc
 ** <<tutorial-execute-javascript#,Executing JavaScript>>
