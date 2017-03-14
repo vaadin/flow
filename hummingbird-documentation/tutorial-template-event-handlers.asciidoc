@@ -2,17 +2,10 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 = Handling User Events in a PolymerTemplate
 
 == Client Side Event Handlers
-PolymerTemplate defines a special syntax `on-_event_="javascriptCode"` for attaching client side event handlers to elements:
+`PolymerTemplate` defines a special syntax `on-_event_="methodName"` for attaching client side event handlers to elements.
+(*Note!* that the method should be without any arguments and have no parenthesis)
 
-[source,html]
-----
-<button on-click="window.alert('Hello');">Say hello</button>
-----
-
-Clicking on the `<button>` will now show an alert in the browser.
-You can listen to any event using the `on-_event_` syntax, it does not matter if it is a built-in browser event or a custom event from e.g. a web component.
-
-To wire the event to a Polymer.Element method you can write a template as:
+To wire an event to a `Polymer.Element` method you can write a template as:
 [source,html]
 ----
 <dom-module id="x-custom">
@@ -34,10 +27,13 @@ To wire the event to a Polymer.Element method you can write a template as:
 </dom-module>
 ----
 
-== Server-Side Event Handlers
-To handle a DOM event in a template on the server side you can create a method with the event name and annotate it with @EventHandler.
+Clicking on the `<button>` will now show an alert in the browser.
+You can listen to any event using the `on-_event_` syntax, it does not matter if it is a built-in browser event or a custom event from e.g. a web component.
 
-So to listen to handleClick on the server you could have the template as:
+== Server-Side Event Handlers
+To handle a DOM event in a template on the server side you can create a method with the event name and annotate it with `@EventHandler`.
+
+So to listen to the `handleClick` event on the server you could have the template as:
 [source,html]
 ----
 <dom-module id="event-handler">
@@ -68,6 +64,9 @@ public class EventHandlerPolymerTemplate extends PolymerTemplate {
 ----
 
 The framework will wire up the client-side event when having the `@EventHandler` annotation on the method `handleClick()`.
+[NOTE]
+If a case arises where there is a client-side implementation of the server event handler the client side method will
+be executed before the server-side event handler method is called.
 
 === Adding Event Data to server-side event
 
