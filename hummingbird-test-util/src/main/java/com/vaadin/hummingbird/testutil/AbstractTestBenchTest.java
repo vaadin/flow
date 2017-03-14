@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Rule;
-import org.junit.runner.RunWith;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -42,7 +41,6 @@ import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
-import com.vaadin.testbench.parallel.ParallelRunner;
 
 /**
  * Abstract base class for hummingbird TestBench tests, which are based on a
@@ -50,7 +48,6 @@ import com.vaadin.testbench.parallel.ParallelRunner;
  */
 @RunOnHub("tb3-hub.intra.itmill.com")
 @BrowserFactory(DefaultBrowserFactory.class)
-@RunWith(ParallelRunner.class)
 @LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
