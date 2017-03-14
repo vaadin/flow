@@ -2,7 +2,6 @@ package com.vaadin.hummingbird.test.performance;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
@@ -42,10 +41,15 @@ import net.lightbody.bmp.proxy.CaptureType;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 public class HelloWorldIT extends AbstractTestBenchTest {
 
     private BrowserMobProxyServer proxyServer;
+
+    @Override
+    public void setup() throws Exception {
+        // Disable common driver setup. The driver is set explicitly in the
+        // test
+    }
 
     @Override
     protected String getTestPath() {
@@ -90,8 +94,7 @@ public class HelloWorldIT extends AbstractTestBenchTest {
 
         LocalTime start = LocalTime.now();
         open();
-        AtomicReference<WebElement> buttonHolder = new AtomicReference<>(
-                null);
+        AtomicReference<WebElement> buttonHolder = new AtomicReference<>(null);
         waitUntil(new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver arg0) {
@@ -148,13 +151,12 @@ public class HelloWorldIT extends AbstractTestBenchTest {
     }
 
     @Override
-    protected String getRootURL() {
+    protected String getDeploymentHostname() {
         // Can't use localhost or 127.0.0.1 because PhantomJS ignores the proxy
         // Waiting for https://github.com/ariya/phantomjs/pull/12703 to be
         // merged...
         try {
-            String ip = InetAddress.getLocalHost().getHostAddress();
-            return "http://" + ip + ":" + SERVER_PORT;
+            return InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }

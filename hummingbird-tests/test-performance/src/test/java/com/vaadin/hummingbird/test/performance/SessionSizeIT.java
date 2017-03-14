@@ -36,8 +36,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.testutil.AbstractTestBenchTest;
 
-// Extending AbstractTestBenchTest to get a consistent getTestURL() method
-public class SessionSizeIT extends AbstractTestBenchTest {
+public class SessionSizeIT {
 
     private static final Pattern usagePattern = Pattern
             .compile("Heap usage with (\\d+) UIs: (\\d+)");
@@ -52,11 +51,6 @@ public class SessionSizeIT extends AbstractTestBenchTest {
             this.uiCount = uiCount;
             this.memoryUsage = memoryUsage;
         }
-    }
-
-    @Override
-    protected String getTestPath() {
-        return HelloWorldUI.PATH;
     }
 
     @Test
@@ -128,9 +122,8 @@ public class SessionSizeIT extends AbstractTestBenchTest {
 
     private void openTestUIs(int uiCount, int buttonCount) {
         // Submit to executor
-        List<Future<?>> futures = Stream
-                .generate(() -> uiOpenExecutor
-                        .submit(() -> openSession(buttonCount)))
+        List<Future<?>> futures = Stream.generate(
+                () -> uiOpenExecutor.submit(() -> openSession(buttonCount)))
                 .limit(uiCount).collect(Collectors.toList());
 
         // Wait for all tasks to finish
@@ -177,5 +170,11 @@ public class SessionSizeIT extends AbstractTestBenchTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getTestURL(String... parameters) {
+        return AbstractTestBenchTest.getTestURL(
+                "http://localhost:" + AbstractTestBenchTest.SERVER_PORT,
+                HelloWorldUI.PATH, parameters);
     }
 }

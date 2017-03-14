@@ -32,7 +32,7 @@ import com.vaadin.ui.AngularTemplate;
 @CodeFor("tutorial-template-components-in-slot.asciidoc")
 public class PolymerSlotView {
     @Tag("component-container")
-    @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/ComponentContainer.html")
+    @HtmlImport("/com/example/ComponentContainer.html")
     public class ComponentContainer extends PolymerTemplate {
 
         public ComponentContainer() {
@@ -42,7 +42,7 @@ public class PolymerSlotView {
     }
 
     @Tag("main-layout")
-    @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/MainLayout.html")
+    @HtmlImport("/com/example/MainLayout.html")
     public class MainLayout extends PolymerTemplate implements HasChildView {
 
         private View childView;

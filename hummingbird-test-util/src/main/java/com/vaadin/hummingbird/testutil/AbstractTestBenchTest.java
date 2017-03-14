@@ -27,8 +27,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.runner.RunWith;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -36,13 +34,11 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.testbench.ScreenshotOnFailureRule;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
-import com.vaadin.testbench.parallel.ParallelRunner;
 
 /**
  * Abstract base class for hummingbird TestBench tests, which are based on a
@@ -50,16 +46,8 @@ import com.vaadin.testbench.parallel.ParallelRunner;
  */
 @RunOnHub("tb3-hub.intra.itmill.com")
 @BrowserFactory(DefaultBrowserFactory.class)
-@RunWith(ParallelRunner.class)
 @LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
-
-    /**
-     * The rule used for screenshot failures.
-     */
-    @Rule
-    public ScreenshotOnFailureRule screenshotOnFailure = new ScreenshotOnFailureRule(
-            this, true);
 
     /**
      * Default port for test server, possibly overridden with system property.
@@ -134,23 +122,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * @return the URL for the test
      */
     protected String getTestURL(String... parameters) {
-        String url = getRootURL();
-        while (url.endsWith("/")) {
-            url = url.substring(0, url.length() - 1);
-        }
-        url = url + getTestPath();
-
-        if (parameters != null && parameters.length != 0) {
-            if (!url.contains("?")) {
-                url += "?";
-            } else {
-                url += "&";
-            }
-
-            url += Arrays.stream(parameters).collect(Collectors.joining("&"));
-        }
-
-        return url;
+        return getTestURL(getRootURL(), getTestPath(), parameters);
     }
 
     /**
@@ -277,7 +249,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Used to determine what URL to initially open for the test
+     * Used to determine what URL to initially open for the test.
      *
      * @return the host name of development server
      */
@@ -294,28 +266,35 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                         || nwInterface.isVirtual()) {
                     continue;
                 }
-                Enumeration<InetAddress> addresses = nwInterface
-                        .getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    InetAddress address = addresses.nextElement();
-                    if (address.isLoopbackAddress()) {
-                        continue;
-                    }
-                    if (address.isSiteLocalAddress()) {
-                        return address.getHostAddress();
-                    }
+                Optional<String> address = getHostAddress(nwInterface);
+                if (address.isPresent()) {
+                    return address.get();
                 }
             }
         } catch (SocketException e) {
-            throw new RuntimeException("Could not enumerate ");
+            throw new RuntimeException("Could not find the host name", e);
         }
 
         throw new RuntimeException(
                 "No compatible (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) ip address found.");
     }
 
+    private Optional<String> getHostAddress(NetworkInterface nwInterface) {
+        Enumeration<InetAddress> addresses = nwInterface.getInetAddresses();
+        while (addresses.hasMoreElements()) {
+            InetAddress address = addresses.nextElement();
+            if (address.isLoopbackAddress()) {
+                continue;
+            }
+            if (address.isSiteLocalAddress()) {
+                return Optional.of(address.getHostAddress());
+            }
+        }
+        return Optional.empty();
+    }
+
     /**
-     * Used to determine what port the test is running on
+     * Used to determine what port the test is running on.
      *
      * @return The port the test is running on, by default 8888
      */
@@ -369,5 +348,38 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             return Optional.of(localExecution);
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns the URL to be used for the test.
+     *
+     * @param parameters
+     *            query string parameters to add to the url
+     * @param rootUrl
+     *            the root URL of the server (hostname + port)
+     * @param testPath
+     *            the path of the test
+     *
+     * @return the URL for the test
+     */
+    public static String getTestURL(String rootUrl, String testPath,
+            String... parameters) {
+        while (rootUrl.endsWith("/")) {
+            rootUrl = rootUrl.substring(0, rootUrl.length() - 1);
+        }
+        rootUrl = rootUrl + testPath;
+
+        if (parameters != null && parameters.length != 0) {
+            if (!rootUrl.contains("?")) {
+                rootUrl += "?";
+            } else {
+                rootUrl += "&";
+            }
+
+            rootUrl += Arrays.stream(parameters)
+                    .collect(Collectors.joining("&"));
+        }
+
+        return rootUrl;
     }
 }

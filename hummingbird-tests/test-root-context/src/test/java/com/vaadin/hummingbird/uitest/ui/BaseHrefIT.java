@@ -22,10 +22,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.hummingbird.testutil.LocalExecution;
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 
-@LocalExecution(active = false)
 public class BaseHrefIT extends PhantomJSTest {
 
     @Test
