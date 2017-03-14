@@ -54,4 +54,20 @@ public class EventHandlerIT extends SingleBrowserTest {
                 "Unexpected 'tag' event data in the received event handler parameter",
                 "tag: button", divs.get(3).getText());
     }
+
+    @Test
+    public void testOverriddenClientServerEvent() {
+        open();
+
+        WebElement template = findElement(By.id("template"));
+        getInShadowRoot(template, By.id("overridden")).get().click();
+
+        Assert.assertTrue(
+                "Unable to find server event handler invocation confirmation.",
+                isElementPresent(By.id("overridden-event-handler-result")));
+
+        Assert.assertEquals("Received result wasn't updated by client!",
+                "Overridden server event was invoked with result: ClientSide handler",
+                findElement(By.id("overridden-event-handler-result")).getText());
+    }
 }

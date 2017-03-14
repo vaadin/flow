@@ -4,10 +4,16 @@
   <template>
     <button on-click="handleClick" id="handle">Click me</button>
     <button on-click="sendData" id="send">Send event data to the server</button>
+    <button on-click="overriddenClick" id="overridden">Client and server event</button>
   </template>
   <script>
     class EventHandler extends Polymer.Element {
       static get is() { return 'event-handler' }
+
+      overriddenClick(event) {
+          var event = event || window.event;
+          event.result = "ClientSide handler";
+      }
     }
     customElements.define(EventHandler.is, EventHandler);
   </script>
