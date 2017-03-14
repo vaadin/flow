@@ -19,15 +19,12 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.testcategory.ChromeTests;
-import com.vaadin.hummingbird.testutil.SingleBrowserTest;
+import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
-@Category(ChromeTests.class)
-public class EventHandlerIT extends SingleBrowserTest {
+public class EventHandlerIT extends ChromeBrowserTest {
 
     @Test
     public void handleEventOnServer() {
@@ -54,4 +51,5 @@ public class EventHandlerIT extends SingleBrowserTest {
                 "Unexpected 'tag' event data in the received event handler parameter",
                 "tag: button", divs.get(3).getText());
     }
+
 }

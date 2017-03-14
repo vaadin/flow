@@ -1,204 +1,207 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.vaadin</groupId>
-		<artifactId>hummingbird-project</artifactId>
-		<version>0.0.20-SNAPSHOT</version>
-	</parent>
-	<artifactId>hummingbird-tests</artifactId>
-	<name>Hummingbird tests</name>
-	<description>Test modules for Hummingbird</description>
-	<packaging>pom</packaging>
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>hummingbird-project</artifactId>
+        <version>0.0.20-SNAPSHOT</version>
+    </parent>
+    <artifactId>hummingbird-tests</artifactId>
+    <name>Hummingbird tests</name>
+    <description>Test modules for Hummingbird</description>
+    <packaging>pom</packaging>
 
-	<modules>
-		<module>test-resources</module>
-		<module>test-root-context</module>
-		<module>test-subcontext</module>
-		<module>test-performance</module>
-		<module>test-scalability</module>
-		<module>test-memory-leaks</module>
-		<module>test-expense-manager-imperative</module>
-	</modules>
+    <modules>
+        <module>test-resources</module>
+        <module>test-root-context</module>
+        <module>test-subcontext</module>
+        <module>test-performance</module>
+        <module>test-scalability</module>
+        <module>test-memory-leaks</module>
+        <module>test-expense-manager-imperative</module>
+    </modules>
 
-	<properties>
-		<!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already 
-			in use' -->
-		<jetty.version>9.3.7.v20160115</jetty.version>
-		<!-- Don't care about coding style for tests -->
-		<sonar.skip>true</sonar.skip>
-		<maven.deploy.skip>true</maven.deploy.skip>
-		<!-- Used in the tests, should be overridden for each module to support 
-			concurrent running of test modules. -->
-		<server.port>8888</server.port>
-		<server.stop.port>8889</server.stop.port>
-		<!-- Don't run screenshot tests by default -->
-	</properties>
+    <properties>
+        <!-- Jetty 9.3.8/9.3.9 causes the build to fail with 'address already 
+            in use' -->
+        <jetty.version>9.3.7.v20160115</jetty.version>
+        <!-- Don't care about coding style for tests -->
+        <sonar.skip>true</sonar.skip>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <!-- Used in the tests, should be overridden for each module to support 
+            concurrent running of test modules. -->
+        <server.port>8888</server.port>
+        <server.stop.port>8889</server.stop.port>
+        <!-- Don't run screenshot tests by default -->
+    </properties>
 
-	<dependencies>
-		<!-- Project dependencies -->
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird</artifactId>
-			<version>0.0.20-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vaadin</groupId>
-			<artifactId>hummingbird-test-util</artifactId>
-			<version>0.0.20-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<!-- export test server port to integration tests -->
-					<systemPropertyVariables>
-						<serverPort>${server.port}</serverPort>
-						<phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
+    <dependencies>
+        <!-- Project dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>hummingbird</artifactId>
+            <version>0.0.20-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>hummingbird-test-util</artifactId>
+            <version>0.0.20-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- export test server port to integration tests -->
+                    <systemPropertyVariables>
+                        <serverPort>${server.port}</serverPort>
+                        <phantomjs.binary.path>${phantomjs.binary}</phantomjs.binary.path>
                         <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
-					</systemPropertyVariables>
-					<excludedGroups>${test.excludegroup}</excludedGroups>
-				</configuration>
-			</plugin>
-			<!-- jetty plugin for those child modules that need it -->
-			<plugin>
-				<groupId>org.eclipse.jetty</groupId>
-				<artifactId>jetty-maven-plugin</artifactId>
-				<version>${jetty.version}</version>
-				<!-- Jetty execution is mapped in those modules that actually use Jetty -->
-				<configuration>
-					<webAppConfig>
-						<webInfIncludeJarPattern>.*/hummingbird-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
-						<containerIncludeJarPattern>^$</containerIncludeJarPattern>
-						<resourceBases>
-							<!-- Make the frontend directory containing the Bower files available 
-								for jetty:run when run from command line (Eclipse profile handles Eclipse) -->
-							<resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-							<resourceBase>${project.basedir}/frontend</resourceBase>
-						</resourceBases>
-					</webAppConfig>
-					<scanIntervalSeconds>-1</scanIntervalSeconds>
-					<httpConnector>
-						<port>${server.port}</port>
-					</httpConnector>
-					<stopPort>${server.stop.port}</stopPort>
-					<stopKey>foo</stopKey>
-					<stopWait>5</stopWait>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>com.github.klieber</groupId>
-				<artifactId>phantomjs-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>install</goal>
-						</goals>
-						<configuration>
-							<version>${phantomjs.version}</version>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-		<pluginManagement>
-			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											com.github.klieber
-										</groupId>
-										<artifactId>
-											phantomjs-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.7,)
-										</versionRange>
-										<goals>
-											<goal>install</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
-	<profiles>
-		<profile>
-			<id>eclipse</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.eclipse.jetty</groupId>
-						<artifactId>jetty-maven-plugin</artifactId>
-						<version>${jetty.version}</version>
-						<configuration>
-							<webAppConfig>
-								<webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
-								<!-- Configure all project META-INF/resources directories for Jetty 
-									as resource folders as Jetty inside Eclipse is run with "Resolve workspace 
-									artifacts" and this does not create any JARs. Jetty only scans JARs for META-INF/resources 
-									folders -->
-								<resourceBases>
-									<!-- these paths are relative to the project where the profile is 
-										triggered -->
-									<resourceBase>${project.basedir}/src/main/webapp</resourceBase>
-									<resourceBase>${project.basedir}/frontend</resourceBase>
-									<resourceBase>${project.basedir}/../../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../../hummingbird-client/target/classes/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
-									<resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>
-								</resourceBases>
-							</webAppConfig>
-							<!-- force default ports so that running IT tests from IDE work -->
-							<httpConnector>
-								<port>8888</port>
-							</httpConnector>
-							<stopPort>8889</stopPort>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-		<profile>
-			<id>validation</id>
-			<properties>
-				<maven.javadoc.skip>true</maven.javadoc.skip>
-			</properties>
-		</profile>
+                    </systemPropertyVariables>
+                    <excludedGroups>${test.excludegroup}</excludedGroups>
+                </configuration>
+            </plugin>
+            <!-- jetty plugin for those child modules that need it -->
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <!-- Jetty execution is mapped in those modules that actually 
+                    use Jetty -->
+                <configuration>
+                    <webAppConfig>
+                        <webInfIncludeJarPattern>.*/hummingbird-.*.jar$|.*/test-resources-.*.jar$</webInfIncludeJarPattern>
+                        <containerIncludeJarPattern>^$</containerIncludeJarPattern>
+                        <resourceBases>
+                            <!-- Make the frontend directory containing the 
+                                Bower files available for jetty:run when run from command line (Eclipse profile 
+                                handles Eclipse) -->
+                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+                            <resourceBase>${project.basedir}/frontend</resourceBase>
+                        </resourceBases>
+                    </webAppConfig>
+                    <scanIntervalSeconds>-1</scanIntervalSeconds>
+                    <httpConnector>
+                        <port>${server.port}</port>
+                    </httpConnector>
+                    <stopPort>${server.stop.port}</stopPort>
+                    <stopKey>foo</stopKey>
+                    <stopWait>5</stopWait>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.klieber</groupId>
+                <artifactId>phantomjs-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>install</goal>
+                        </goals>
+                        <configuration>
+                            <version>${phantomjs.version}</version>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!--This plugin's configuration is used to store Eclipse 
+                    m2e settings only. It has no influence on the Maven build itself. -->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            com.github.klieber
+                                        </groupId>
+                                        <artifactId>
+                                            phantomjs-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [0.7,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>install</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+    <profiles>
+        <profile>
+            <id>eclipse</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <version>${jetty.version}</version>
+                        <configuration>
+                            <webAppConfig>
+                                <webInfIncludeJarPattern>^$</webInfIncludeJarPattern>
+                                <!-- Configure all project META-INF/resources 
+                                    directories for Jetty as resource folders as Jetty inside Eclipse is run 
+                                    with "Resolve workspace artifacts" and this does not create any JARs. Jetty 
+                                    only scans JARs for META-INF/resources folders -->
+                                <resourceBases>
+                                    <!-- these paths are relative to the 
+                                        project where the profile is triggered -->
+                                    <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+                                    <resourceBase>${project.basedir}/frontend</resourceBase>
+                                    <resourceBase>${project.basedir}/../../hummingbird-server/src/main/resources/META-INF/resources</resourceBase>
+                                    <resourceBase>${project.basedir}/../../hummingbird-client/target/classes/META-INF/resources</resourceBase>
+                                    <resourceBase>${project.basedir}/../../hummingbird-push/src/main/resources/META-INF/resources</resourceBase>
+                                    <resourceBase>${project.basedir}/../test-resources/src/main/resources/META-INF/resources</resourceBase>
+                                </resourceBases>
+                            </webAppConfig>
+                            <!-- force default ports so that running IT tests 
+                                from IDE work -->
+                            <httpConnector>
+                                <port>8888</port>
+                            </httpConnector>
+                            <stopPort>8889</stopPort>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>validation</id>
+            <properties>
+                <maven.javadoc.skip>true</maven.javadoc.skip>
+            </properties>
+        </profile>
         <profile>
             <id>default</id>
             <activation>
@@ -217,16 +220,7 @@
                 <test.excludegroup></test.excludegroup>
             </properties>
         </profile>
-        <profile>
-            <id>all-tests-teamcity</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup>com.vaadin.hummingbird.testcategory.ChromeTests</test.excludegroup>
-            </properties>
-        </profile>
 
-	</profiles>
+    </profiles>
 
 </project>

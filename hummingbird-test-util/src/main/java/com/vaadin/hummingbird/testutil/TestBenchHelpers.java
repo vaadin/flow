@@ -27,12 +27,12 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.vaadin.testbench.TestBenchTestCase;
+import com.vaadin.testbench.parallel.ParallelTest;
 
 /**
  * Helpers for running testbench tests.
  */
-public class TestBenchHelpers extends TestBenchTestCase {
+public class TestBenchHelpers extends ParallelTest {
     /**
      * Waits up to 10s for the given condition to become true. Use e.g. as
      * {@link #waitUntil(ExpectedCondition)}.
