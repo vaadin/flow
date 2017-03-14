@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Assert;
 import org.junit.Rule;
-import org.junit.runner.RunWith;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -42,7 +41,6 @@ import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
-import com.vaadin.testbench.parallel.ParallelRunner;
 
 /**
  * Abstract base class for hummingbird TestBench tests, which are based on a
@@ -50,7 +48,6 @@ import com.vaadin.testbench.parallel.ParallelRunner;
  */
 @RunOnHub("tb3-hub.intra.itmill.com")
 @BrowserFactory(DefaultBrowserFactory.class)
-@RunWith(ParallelRunner.class)
 @LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
@@ -277,7 +274,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Used to determine what URL to initially open for the test
+     * Used to determine what URL to initially open for the test.
      *
      * @return the host name of development server
      */
@@ -294,28 +291,35 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                         || nwInterface.isVirtual()) {
                     continue;
                 }
-                Enumeration<InetAddress> addresses = nwInterface
-                        .getInetAddresses();
-                while (addresses.hasMoreElements()) {
-                    InetAddress address = addresses.nextElement();
-                    if (address.isLoopbackAddress()) {
-                        continue;
-                    }
-                    if (address.isSiteLocalAddress()) {
-                        return address.getHostAddress();
-                    }
+                Optional<String> address = getHostAddress(nwInterface);
+                if (address.isPresent()) {
+                    return address.get();
                 }
             }
         } catch (SocketException e) {
-            throw new RuntimeException("Could not enumerate ");
+            throw new RuntimeException("Could not find the host name", e);
         }
 
         throw new RuntimeException(
                 "No compatible (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) ip address found.");
     }
 
+    private Optional<String> getHostAddress(NetworkInterface nwInterface) {
+        Enumeration<InetAddress> addresses = nwInterface.getInetAddresses();
+        while (addresses.hasMoreElements()) {
+            InetAddress address = addresses.nextElement();
+            if (address.isLoopbackAddress()) {
+                continue;
+            }
+            if (address.isSiteLocalAddress()) {
+                return Optional.of(address.getHostAddress());
+            }
+        }
+        return Optional.empty();
+    }
+
     /**
-     * Used to determine what port the test is running on
+     * Used to determine what port the test is running on.
      *
      * @return The port the test is running on, by default 8888
      */

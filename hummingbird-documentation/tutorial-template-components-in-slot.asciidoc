@@ -33,7 +33,7 @@ and the server-side template as:
 [source,java]
 ----
 @Tag("component-container")
-@HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/ComponentContainer.html")
+@HtmlImport("/com/example/ComponentContainer.html")
 public class ComponentContainer extends PolymerTemplate {
 
     public ComponentContainer() {
@@ -126,7 +126,7 @@ Right now you need to also extend the `HasChildView` interface and implement the
 [source,java]
 ----
 @Tag("main-layout")
-@HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/MainLayout.html")
+@HtmlImport("/com/example/ComponentContainer.html")
 public class MainLayout extends PolymerTemplate implements HasChildView {
 
     private View childView;

@@ -1,0 +1,109 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Handling User Events in a PolymerTemplate
+
+== Client Side Event Handlers
+`PolymerTemplate` defines a special syntax `on-_event_="methodName"` for attaching client side event handlers to elements.
+(*Note!* that the method should be without any arguments and have no parenthesis)
+
+To wire an event to a `Polymer.Element` method you can write a template as:
+[source,html]
+----
+<dom-module id="x-custom">
+  <template>
+    <button on-click="handleClick">Say hello</button>
+  </template>
+  <script>
+    class XCustom extends Polymer.Element {
+
+      static get is() {return 'x-custom'}
+
+      handleClick() {
+        console.log('Button was clicked.');
+        window.alert('Hello');
+      }
+    }
+    customElements.define(XCustom.is, XCustom);
+  </script>
+</dom-module>
+----
+
+Clicking on the `<button>` will now show an alert in the browser.
+You can listen to any event using the `on-_event_` syntax, it does not matter if it is a built-in browser event or a custom event from e.g. a web component.
+
+== Server-Side Event Handlers
+To handle a DOM event in a template on the server side you can create a method with the event name and annotate it with `@EventHandler`.
+
+So to listen to the `handleClick` event on the server you could have the template as:
+[source,html]
+----
+<dom-module id="event-handler">
+  <template>
+    <button on-click="handleClick">Click me</button>
+  </template>
+  <script>
+    class EventHandler extends Polymer.Element {
+      static get is() { return 'event-handler' }
+    }
+    customElements.define(EventHandler.is, EventHandler);
+  </script>
+</dom-module>
+----
+
+And define the server class as:
+[source,java]
+----
+@Tag("event-handler")
+@HtmlImport("/com/example/EventHandler.html")
+public class EventHandlerPolymerTemplate extends PolymerTemplate {
+
+    @EventHandler
+    private void handleClick() {
+        System.out.println("Recieved a handle click event");
+    }
+}
+----
+
+The framework will wire up the client-side event when having the `@EventHandler` annotation on the method `handleClick()`.
+[NOTE]
+If a case arises where there is a client-side implementation of the server event handler the client side method will
+be executed before the server-side event handler method is called.
+
+=== Adding Event Data to server-side event
+
+An event can also include additional information about what has happened, e.g. which mouse button was used for a click event.
+When you use `@EventHandler` annotation, all constructor parameters should have an `@EventData` annotation that tells the framework what data to send from the browser.
+
+[source,html]
+----
+<!-- same template as for the server-side event handler -->
+  <template>
+    <button on-click="handleClick">Click me</button>
+  </template>
+----
+
+To get some extra data on event type and element tag name the server class definition could be built like:
+[source,java]
+----
+@Tag("event-handler")
+@HtmlImport("/com/example/EventHandler.html")
+public class EventDataHandlerPolymerTemplate extends PolymerTemplate {
+
+    @EventHandler
+    private void sendData(@EventData("event.altKey") boolean altPressed,
+            @EventData("event.srcElement.tagName") String tag,
+            @EventData("event.offsetX") int offsetX,
+            @EventData("event.offsetY") int offsetY) {
+        System.out.println("Event alt pressed: " + altPressed);
+        System.out.println("Event tag: " + tag.toLowerCase(Locale.ENGLISH));
+        System.out.println("Click position on element: [" + offsetX + ", "+ offsetY +"]");
+    }
+}
+----
+
+Now the client would send the extra information back to the server for `event.type`, `event.srcElement.tagName` and the `event.offset[X/Y]` can then be
+used like normal variables.
+
+[NOTE]
+The server will throw an exception if the `EventData` can not be converted to given format.
+for instance you could get the exception `java.lang.ClassCastException: Cannot cast elemental.json.impl.JreJsonNumber to elemental.json.JsonObject`
+Also the client might throw exceptions if the value given for `EventData` can not be executed or converted to Json.
