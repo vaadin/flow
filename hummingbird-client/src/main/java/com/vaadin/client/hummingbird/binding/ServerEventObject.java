@@ -86,7 +86,7 @@ public final class ServerEventObject extends JavaScriptObject {
     public native void defineMethod(String methodName, StateNode node)
     /*-{
         this[methodName] = $entry(function(eventParameter) {
-            if(Object.getOwnPropertyNames(Object.getPrototypeOf(this)).toString().includes(methodName)) {
+            if(Object.getPrototypeOf(this)[methodName] !== undefined) {
                 Object.getPrototypeOf(this)[methodName].call();
             }
             var event = eventParameter || $wnd.event;

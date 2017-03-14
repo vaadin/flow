@@ -53,13 +53,8 @@ public class EventHandlerIT extends SingleBrowserTest {
         Assert.assertEquals(
                 "Unexpected 'tag' event data in the received event handler parameter",
                 "tag: button", divs.get(3).getText());
-    }
 
-    @Test
-    public void testOverriddenClientServerEvent() {
-        open();
-
-        WebElement template = findElement(By.id("template"));
+        // Check event functionality for event with both client and server handler
         getInShadowRoot(template, By.id("overridden")).get().click();
 
         Assert.assertTrue(
