@@ -43,7 +43,8 @@ public class PolymerTemplateEvents {
         @EventHandler
         private void sendData(@EventData("event.altKey") boolean altPressed,
                 @EventData("event.srcElement.tagName") String tag,
-                @EventData("event.offsetX") int offsetX, @EventData("event.offsetY") int offsetY) {
+                @EventData("event.offsetX") int offsetX,
+                @EventData("event.offsetY") int offsetY) {
             System.out.println("Event alt pressed: " + altPressed);
             System.out.println("Event tag: " + tag.toLowerCase(Locale.ENGLISH));
             System.out.println("Click position on element: [" + offsetX + ", "+ offsetY +"]");

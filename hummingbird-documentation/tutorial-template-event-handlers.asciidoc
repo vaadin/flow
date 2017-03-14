@@ -95,7 +95,7 @@ public class EventDataHandlerPolymerTemplate extends PolymerTemplate {
             @EventData("event.offsetY") int offsetY) {
         System.out.println("Event alt pressed: " + altPressed);
         System.out.println("Event tag: " + tag.toLowerCase(Locale.ENGLISH));
-        System.out.println("Click position on element: [" + offsetX + ", "+ offsetY +"]";
+        System.out.println("Click position on element: [" + offsetX + ", "+ offsetY +"]");
     }
 }
 ----
