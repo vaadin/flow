@@ -27,7 +27,7 @@ import com.vaadin.hummingbird.template.PolymerTemplate;
 @CodeFor("tutorial-template-event-handlers.asciidoc")
 public class PolymerTemplateEvents {
     @Tag("event-handler")
-    @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/EventHandler.html")
+    @HtmlImport("/com/example/EventHandler.html")
     public class EventHandlerPolymerTemplate extends PolymerTemplate {
 
         @EventHandler
@@ -37,7 +37,7 @@ public class PolymerTemplateEvents {
     }
 
     @Tag("event-handler")
-    @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/EventHandler.html")
+    @HtmlImport("/com/example/EventHandler.html")
     public class EventDataHandlerPolymerTemplate extends PolymerTemplate {
 
         @EventHandler
