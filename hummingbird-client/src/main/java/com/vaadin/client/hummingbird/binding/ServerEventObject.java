@@ -75,7 +75,7 @@ public final class ServerEventObject extends JavaScriptObject {
      * the given state node.
      *
      * Note! If the Polymer.Element contains a implementation for
-     * {@param methodName} it will be run before the server-side method.
+     * {@code methodName} it will be run before the server-side method.
      *
      * @param methodName
      *            the name of the method to add
