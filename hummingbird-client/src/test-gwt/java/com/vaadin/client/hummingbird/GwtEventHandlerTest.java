@@ -181,6 +181,54 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 serverRpcNodes.get(methodName));
     }
 
+    public void testPolymerMockedEventHandlerWithDefaultImplementation() {
+        String methodName = "eventHandler";
+
+        node.getList(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS).add(0,
+                methodName);
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        setPrototypeEventHandler(element, methodName);
+
+        NativeFunction mockedFunction = new NativeFunction("this." + methodName
+                + "({button: 2}, 'Extra String argument')");
+        mockedFunction.apply(element, JsCollections.array());
+
+        JsonObject expectedResult = Json.createObject();
+        expectedResult.put("button", 2);
+        expectedResult.put("result", "Extra String argument");
+
+        assertEquals("The amount of server methods was not as expected", 1,
+                serverMethods.size());
+        assertEquals("Expected method did not match", methodName,
+                serverMethods.keySet().iterator().next());
+        assertEquals("Wrong amount of method arguments", 2,
+                serverMethods.get(methodName).length());
+        assertEquals("Gotten argument wasn't as expected", WidgetUtil.toPrettyJson(expectedResult),
+                WidgetUtil.toPrettyJson(WidgetUtil.crazyJsoCast(serverMethods.get(methodName).get(0))));
+        assertEquals("Method node did not match the expected node.", node,
+                serverRpcNodes.get(methodName));
+    }
+
+    /**
+     * Add a function to the element prototype ("default" function) for
+     * {@code methodName} that adds the second argument to the event (first
+     * argument) as a result
+     * 
+     * @param element
+     *            Element to add "default" method to
+     * @param methodName
+     *            Name of event to add method to
+     */
+    private native void setPrototypeEventHandler(Element element, String methodName)
+    /*-{
+        Object.getPrototypeOf(element)[methodName] = function(event) {
+            event.result = arguments[1];
+        }
+    }-*/;
+
     private void assertServerEventHandlerMethodInDom(int id,
             Consumer<Element> assertMethod, String method) {
         node.getList(id).add(0, method);
