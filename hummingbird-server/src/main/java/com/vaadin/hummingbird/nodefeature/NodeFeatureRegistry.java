@@ -81,8 +81,6 @@ public class NodeFeatureRegistry {
                 PolymerServerEventHandlers::new);
         registerFeature(PolymerEventListenerMap.class,
                 PolymerEventListenerMap::new);
-        registerFeature(PolymerTemplateMap.class,
-                PolymerTemplateMap::new);
     }
 
     private NodeFeatureRegistry() {

@@ -45,7 +45,6 @@ import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
 import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
-import com.vaadin.hummingbird.nodefeature.PolymerTemplateMap;
 import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
@@ -77,7 +76,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
             ParentGeneratorHolder.class, PublishedServerEventHandlers.class,
             PolymerServerEventHandlers.class, PolymerEventListenerMap.class,
-            ModelMap.class, PolymerTemplateMap.class };
+            ModelMap.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist

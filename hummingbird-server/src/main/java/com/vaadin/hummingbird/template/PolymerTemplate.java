@@ -15,15 +15,12 @@
  */
 package com.vaadin.hummingbird.template;
 
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.nodefeature.PolymerTemplateMap;
-import com.vaadin.hummingbird.template.angular.ModelValueBindingProvider;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
@@ -43,38 +40,34 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  */
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
+    private transient Element templateElement;
 
     /**
      * Creates a new template.
      */
     public PolymerTemplate() {
-        String tagName = AnnotationReader
-                .getAnnotationFor(getClass(), Tag.class).map(Tag::value)
-                .orElseThrow(() -> new IllegalStateException(
-                        "No tag annotation found"));
+        setElement(this, getTemplateElement());
+    }
 
-        Element element = new Element(tagName);
-
-        ModelDescriptor<? extends M> modelDescriptor = ModelDescriptor
-                .get(getModelType());
-
-        element.getNode().getFeature(PolymerTemplateMap.class)
-                .setModelBindings(modelDescriptor.getPropertyNames()
-                        .collect(Collectors.toMap(Function.identity(),
-                                ModelValueBindingProvider::new)));
-        setElement(this, element);
-        stateNode = element.getNode();
+    private Element getTemplateElement() {
+        if (templateElement == null) {
+            String tagName = AnnotationReader
+                    .getAnnotationFor(getClass(), Tag.class).map(Tag::value)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "No '@Tag' annotation found, please annotate the template class with this annotation " +
+                                    "and specify corresponding Polymer element tag there to be able to use Polymer functionality."));
+            templateElement = new Element(tagName);
+        }
+        return templateElement;
     }
 
     @Override
-    protected ModelDescriptor<? extends TemplateModel> getModelDescriptor() {
-        return stateNode.getFeature(PolymerTemplateMap.class)
-                .getModelDescriptor();
-    }
-
-    @Override
-    protected void setModelDescriptor(ModelDescriptor<? extends TemplateModel> descriptor) {
-        stateNode.getFeature(PolymerTemplateMap.class)
-                .setModelDescriptor(descriptor);
+    protected StateNode createTemplateStateNode() {
+        Element element = getTemplateElement();
+        ModelDescriptor.get(getModelType()).getPropertyNames()
+                .forEach(propertyName -> element.getNode()
+                        .getFeature(ModelMap.class).setValue(propertyName,
+                                propertyName));
+        return element.getNode();
     }
 }

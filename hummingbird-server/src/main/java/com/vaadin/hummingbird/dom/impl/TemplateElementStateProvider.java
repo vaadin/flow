@@ -44,7 +44,6 @@ import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
-import com.vaadin.hummingbird.template.AbstractTemplate;
 import com.vaadin.hummingbird.template.angular.BindingValueProvider;
 import com.vaadin.hummingbird.template.angular.ElementTemplateNode;
 import com.vaadin.hummingbird.template.angular.StaticBindingValueProvider;
@@ -425,7 +424,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             if (!(component instanceof AngularTemplate)) {
                 throw new IllegalArgumentException(
                         "The component for a template root must extend "
-                                + AbstractTemplate.class.getName());
+                                + AngularTemplate.class.getName());
             }
             ElementStateProvider.super.setComponent(node, component);
         } else {

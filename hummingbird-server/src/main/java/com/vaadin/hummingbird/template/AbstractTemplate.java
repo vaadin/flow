@@ -24,7 +24,6 @@ import java.util.Optional;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.View;
@@ -32,7 +31,6 @@ import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
-import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.Component;
 
 /**
@@ -43,21 +41,12 @@ import com.vaadin.ui.Component;
  */
 public abstract class AbstractTemplate<M extends TemplateModel>
         extends Component implements HasChildView {
-    protected StateNode stateNode = TemplateElementStateProvider
-            .createRootNode();
+    private final StateNode stateNode = createTemplateStateNode();
 
     private transient M model;
 
     protected AbstractTemplate() {
         super(null);
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
-        // initialize the model so that all properties are available in the
-        // underlying node's ModelMap
-        getModel();
     }
 
     /**
@@ -81,37 +70,26 @@ public abstract class AbstractTemplate<M extends TemplateModel>
         ModelDescriptor<? extends M> descriptor = ModelDescriptor
                 .get(getModelType());
 
-        ModelDescriptor<?> oldDescriptor = getModelDescriptor();
-        if (oldDescriptor == null) {
-            setModelDescriptor(descriptor);
-        } else {
-            /*
-             * Can have an existing descriptor if createTemplateModelInstance
-             * has been run previously but the transient model field has been
-             * cleared. Let's just verify that we're still seeing the same
-             * definition.
-             */
-            assert oldDescriptor.toJson().toJson()
-                    .equals(descriptor.toJson().toJson());
+        if (stateNode.hasFeature(TemplateMap.class)) {
+            ModelDescriptor<?> oldDescriptor = stateNode
+                    .getFeature(TemplateMap.class).getModelDescriptor();
+            if (oldDescriptor == null) {
+                stateNode.getFeature(TemplateMap.class)
+                        .setModelDescriptor(descriptor);
+            } else {
+                /*
+                 * Can have an existing descriptor if
+                 * createTemplateModelInstance has been run previously but the
+                 * transient model field has been cleared. Let's just verify
+                 * that we're still seeing the same definition.
+                 */
+                assert oldDescriptor.toJson().toJson()
+                        .equals(descriptor.toJson().toJson());
+            }
         }
-
         return TemplateModelProxyHandler.createModelProxy(stateNode,
                 descriptor);
     }
-
-    /**
-     * Gets current descriptor of a model.
-     *
-     * @return model descriptor
-     */
-    protected abstract ModelDescriptor<? extends TemplateModel> getModelDescriptor();
-
-    /**
-     * Sets new descriptor for a model.
-     *
-     * @param descriptor model descriptor
-     */
-    protected abstract void setModelDescriptor(ModelDescriptor<? extends TemplateModel> descriptor);
 
     /**
      * Finds an element with the given id inside this template.
@@ -121,7 +99,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * @return an optional element with the id, or an empty Optional if no
      *         element with the given id was found
      */
-    public Optional<Element> getElementById(String id) {
+    protected Optional<Element> getElementById(String id) {
         return stateNode.getFeature(TemplateMap.class).getRootTemplate()
                 .findElement(stateNode, id);
     }
@@ -179,4 +157,11 @@ public abstract class AbstractTemplate<M extends TemplateModel>
         Element rootElement = Element.get(stateNode);
         setElement(this, rootElement);
     }
+
+    /**
+     * Creates a {@link StateNode} that will be used for the template.
+     *
+     * @return template state node
+     */
+    protected abstract StateNode createTemplateStateNode();
 }

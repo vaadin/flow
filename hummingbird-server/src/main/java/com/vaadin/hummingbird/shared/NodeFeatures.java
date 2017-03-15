@@ -30,7 +30,6 @@ import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
 import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
-import com.vaadin.hummingbird.nodefeature.PolymerTemplateMap;
 import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -157,11 +156,6 @@ public class NodeFeatures {
     public static final int POLYMER_EVENT_LISTENERS = 24;
 
     /**
-     * Id for {@link PolymerTemplateMap}.
-     */
-    public static final int POLYMER_TEMPLATE_MAP = 25;
-
-    /**
      * Key for {@link ElementData#getTag()}.
      */
     public static final String TAG = "tag";
@@ -177,14 +171,9 @@ public class NodeFeatures {
     public static final String ROOT_TEMPLATE_ID = "root";
 
     /**
-     * Key for {@link TemplateMap#getModelDescriptor()} and {@link PolymerTemplateMap#getModelDescriptor()}.
+     * Key for {@link TemplateMap#getModelDescriptor()}.
      */
     public static final String MODEL_DESCRIPTOR = "descriptor";
-
-    /**
-     * Key for {@link PolymerTemplateMap#getModelBindings()}.
-     */
-    public static final String POLYMER_MODEL_BINDINGS = "polymerModelBindings";
 
     private NodeFeatures() {
         // Only static

@@ -16,6 +16,7 @@
 
 package com.vaadin.hummingbird.uitest.ui.template;
 
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.template.PolymerTemplate;
@@ -29,6 +30,12 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
 public class OneWayPolymerBindingTemplate
         extends PolymerTemplate<OneWayPolymerBindingTemplate.MessageModel> {
     static final String MESSAGE = "testMessage";
+    static final String NEW_MESSAGE = "newMessage";
+
+    @EventHandler
+    private void changeModelValue() {
+        getModel().setMessage(NEW_MESSAGE);
+    }
 
     public interface MessageModel extends TemplateModel {
         void setMessage(String message);

@@ -25,8 +25,9 @@ import java.util.stream.Stream;
 import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlTemplate;
 import com.vaadin.annotations.Id;
+import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.nodefeature.TemplateMap;
+import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.template.AbstractTemplate;
@@ -35,7 +36,6 @@ import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.template.angular.TemplateParseException;
 import com.vaadin.hummingbird.template.angular.parser.TemplateParser;
 import com.vaadin.hummingbird.template.angular.parser.TemplateResolver;
-import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
 import com.vaadin.util.ReflectTools;
@@ -197,12 +197,16 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
     }
 
     @Override
-    protected ModelDescriptor<? extends TemplateModel> getModelDescriptor() {
-        return stateNode.getFeature(TemplateMap.class).getModelDescriptor();
+    protected StateNode createTemplateStateNode() {
+        return TemplateElementStateProvider
+                .createRootNode();
     }
 
     @Override
-    protected void setModelDescriptor(ModelDescriptor<? extends TemplateModel> descriptor) {
-        stateNode.getFeature(TemplateMap.class).setModelDescriptor(descriptor);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        // initialize the model so that all properties are available in the
+        // underlying node's ModelMap
+        getModel();
     }
 }

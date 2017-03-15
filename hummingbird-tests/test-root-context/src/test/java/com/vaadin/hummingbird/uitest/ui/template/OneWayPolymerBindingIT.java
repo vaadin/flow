@@ -19,6 +19,7 @@ package com.vaadin.hummingbird.uitest.ui.template;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.hummingbird.testcategory.ChromeTests;
 import com.vaadin.hummingbird.testutil.SingleBrowserTest;
@@ -31,12 +32,26 @@ import com.vaadin.testbench.By;
 public class OneWayPolymerBindingIT extends SingleBrowserTest {
 
     @Test
-    public void oneWayBinding() {
+    public void initialModelValueIsPresent() {
         open();
 
         String messageDivText = getInShadowRoot(findElement(By.id("template")),
                 By.id("messageDiv")).get().getText();
         Assert.assertEquals(OneWayPolymerBindingTemplate.MESSAGE,
+                messageDivText);
+    }
+
+    @Test
+    public void modelValueChanged() {
+        open();
+
+        WebElement template = findElement(By.id("template"));
+
+        getInShadowRoot(template, By.id("changeModelValue")).get().click();
+
+        String messageDivText = getInShadowRoot(template, By.id("messageDiv"))
+                .get().getText();
+        Assert.assertEquals(OneWayPolymerBindingTemplate.NEW_MESSAGE,
                 messageDivText);
     }
 }
