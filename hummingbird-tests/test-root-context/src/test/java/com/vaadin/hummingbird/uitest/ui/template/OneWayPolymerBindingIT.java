@@ -32,21 +32,28 @@ import com.vaadin.testbench.By;
 public class OneWayPolymerBindingIT extends SingleBrowserTest {
 
     @Test
-    public void initialModelValueIsPresent() {
+    public void initialModelValueIsPresentAndModelUpdatesNormally() {
         open();
 
         WebElement template = findElement(By.id("template"));
 
         String messageDivText = getInShadowRoot(template, By.id("messageDiv"))
                 .get().getText();
+        String titleDivText = getInShadowRoot(template, By.id("titleDiv")).get()
+                .getText();
         Assert.assertEquals(OneWayPolymerBindingTemplate.MESSAGE,
                 messageDivText);
+        Assert.assertEquals("", titleDivText);
 
         getInShadowRoot(template, By.id("changeModelValue")).get().click();
 
         String changedMessageDivText = getInShadowRoot(template,
                 By.id("messageDiv")).get().getText();
+        titleDivText = getInShadowRoot(template, By.id("titleDiv")).get()
+                .getText();
+
         Assert.assertEquals(OneWayPolymerBindingTemplate.NEW_MESSAGE,
                 changedMessageDivText);
+        Assert.assertEquals("", titleDivText);
     }
 }

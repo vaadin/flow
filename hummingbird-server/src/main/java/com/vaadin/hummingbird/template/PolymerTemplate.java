@@ -46,6 +46,6 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         ModelDescriptor.get(getModelType()).getPropertyNames()
                 .forEach(propertyName -> getStateNode()
                         .getFeature(ModelMap.class).setValue(propertyName,
-                                propertyName));
+                                null));
     }
 }

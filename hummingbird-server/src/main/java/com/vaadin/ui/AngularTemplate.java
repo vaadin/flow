@@ -66,10 +66,6 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  */
 public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
-    private static StateNode createTemplateStateNode() {
-        return TemplateElementStateProvider.createRootNode();
-    }
-
     /**
      * Creates a new template.
      */
@@ -115,6 +111,10 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
         setTemplateElement(inputStream, relativeFilename -> {
             throw new IOException("No template resolver defined");
         });
+    }
+
+    private static StateNode createTemplateStateNode() {
+        return TemplateElementStateProvider.createRootNode();
     }
 
     private void setTemplateElement(String templateFileNameAndPath) {
