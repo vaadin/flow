@@ -406,10 +406,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             isVersion1 = String.valueOf(1).equals(version);
         }
         if (isVersion1) {
-            return createJavaScriptElement(context.getUriResolver()
-                    .resolveVaadinUri("context://"
-                            + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                            + "server/webcomponents-1-lite.min.js"));
+            return createJavaScriptElement(
+                    context.getUriResolver()
+                            .resolveVaadinUri("context://"
+                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                    + "server/webcomponents-1-lite.min.js"),
+                    false);
         }
         return createJavaScriptElement(context.getUriResolver()
                 .resolveVaadinUri("context://"
@@ -417,13 +419,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         + "server/webcomponents-lite.min.js"));
     }
 
-    private static Element createJavaScriptElement(String sourceUrl) {
+    private static Element createJavaScriptElement(String sourceUrl,
+                                                   boolean defer) {
         Element jsElement = new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript").attr("defer", true);
+                .attr("type", "text/javascript").attr("defer", defer);
         if (sourceUrl != null) {
             jsElement = jsElement.attr("src", sourceUrl);
         }
         return jsElement;
+    }
+
+    private static Element createJavaScriptElement(String sourceUrl) {
+        return createJavaScriptElement(sourceUrl, true);
     }
 
     private static void includeDependencies(Element head,

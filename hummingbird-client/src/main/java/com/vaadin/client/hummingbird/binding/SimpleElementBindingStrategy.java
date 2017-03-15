@@ -41,8 +41,6 @@ import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.template.Binding;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-import com.vaadin.hummingbird.template.angular.ModelValueBindingProvider;
-import com.vaadin.hummingbird.template.angular.StaticBindingValueProvider;
 
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
@@ -183,6 +181,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindPolymerEventHandlerNames(context));
 
+        bindModelProperties(stateNode, htmlNode);
+    }
+
+    private void bindModelProperties(StateNode stateNode, Element htmlNode) {
         if (stateNode.hasFeature(NodeFeatures.POLYMER_TEMPLATE_MAP)) {
             NodeMap polymerTemplateMap = stateNode
                     .getMap(NodeFeatures.POLYMER_TEMPLATE_MAP);
@@ -211,16 +213,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
      */
     private void bind(StateNode modelNode, Binding binding,
             Consumer<Optional<Object>> executor) {
-        if (ModelValueBindingProvider.TYPE.equals(binding.getType())) {
-            Computation computation = Reactive
-                    .runWhenDepedenciesChange(() -> executor
-                            .accept(getModelBindingValue(modelNode, binding)));
-            modelNode.addUnregisterListener(event -> computation.stop());
-        } else {
-            // Only static bindings is known as a final call
-            assert binding.getType().equals(StaticBindingValueProvider.TYPE);
-            executor.accept(Optional.of(getStaticBindingValue(binding)));
-        }
+        Computation computation = Reactive
+                .runWhenDepedenciesChange(() -> executor
+                        .accept(getModelBindingValue(modelNode, binding)));
+        modelNode.addUnregisterListener(event -> computation.stop());
     }
 
     /**

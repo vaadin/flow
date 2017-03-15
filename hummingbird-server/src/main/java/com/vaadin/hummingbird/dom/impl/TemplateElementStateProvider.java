@@ -50,6 +50,7 @@ import com.vaadin.hummingbird.template.angular.ElementTemplateNode;
 import com.vaadin.hummingbird.template.angular.StaticBindingValueProvider;
 import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.server.StreamResource;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.ui.Component;
 
 /**
@@ -421,7 +422,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
         assert component != null;
 
         if (isTemplateRoot()) {
-            if (!(component instanceof AbstractTemplate)) {
+            if (!(component instanceof AngularTemplate)) {
                 throw new IllegalArgumentException(
                         "The component for a template root must extend "
                                 + AbstractTemplate.class.getName());
