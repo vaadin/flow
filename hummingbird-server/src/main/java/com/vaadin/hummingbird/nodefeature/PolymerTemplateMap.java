@@ -26,6 +26,7 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.angular.BindingValueProvider;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -37,7 +38,7 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 public class PolymerTemplateMap extends NodeMap {
-    private ModelDescriptor<?> modelDescriptor;
+    private ModelDescriptor<? extends TemplateModel> modelDescriptor;
     private HashMap<String, BindingValueProvider> modelBindings = new HashMap<>();
 
     /**
@@ -56,7 +57,7 @@ public class PolymerTemplateMap extends NodeMap {
      * @param modelDescriptor
      *            the model descriptor to set, not <code>null</code>
      */
-    public void setModelDescriptor(ModelDescriptor<?> modelDescriptor) {
+    public void setModelDescriptor(ModelDescriptor<? extends TemplateModel> modelDescriptor) {
         assert modelDescriptor != null;
         assert !contains(NodeFeatures.MODEL_DESCRIPTOR);
 
@@ -71,7 +72,7 @@ public class PolymerTemplateMap extends NodeMap {
      * @return the model descriptor, or <code>null</code> if it has not yet been
      *         set
      */
-    public ModelDescriptor<?> getModelDescriptor() {
+    public ModelDescriptor<? extends TemplateModel> getModelDescriptor() {
         return modelDescriptor;
     }
 
