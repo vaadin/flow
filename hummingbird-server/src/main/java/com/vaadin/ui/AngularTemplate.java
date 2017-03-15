@@ -197,12 +197,12 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
     }
 
     @Override
-    protected ModelDescriptor<?> getModelDescriptor() {
+    protected ModelDescriptor<? extends TemplateModel> getModelDescriptor() {
         return stateNode.getFeature(TemplateMap.class).getModelDescriptor();
     }
 
     @Override
-    protected void setModelDescriptor(ModelDescriptor<?> descriptor) {
+    protected void setModelDescriptor(ModelDescriptor<? extends TemplateModel> descriptor) {
         stateNode.getFeature(TemplateMap.class).setModelDescriptor(descriptor);
     }
 }

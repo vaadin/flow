@@ -104,14 +104,14 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      *
      * @return model descriptor
      */
-    protected abstract ModelDescriptor<?> getModelDescriptor();
+    protected abstract ModelDescriptor<? extends TemplateModel> getModelDescriptor();
 
     /**
      * Sets new descriptor for a model.
      *
      * @param descriptor model descriptor
      */
-    protected abstract void setModelDescriptor(ModelDescriptor<?> descriptor);
+    protected abstract void setModelDescriptor(ModelDescriptor<? extends TemplateModel> descriptor);
 
     /**
      * Finds an element with the given id inside this template.

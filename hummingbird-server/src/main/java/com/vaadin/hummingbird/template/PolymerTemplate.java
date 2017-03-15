@@ -67,13 +67,13 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     }
 
     @Override
-    protected ModelDescriptor<?> getModelDescriptor() {
+    protected ModelDescriptor<? extends TemplateModel> getModelDescriptor() {
         return stateNode.getFeature(PolymerTemplateMap.class)
                 .getModelDescriptor();
     }
 
     @Override
-    protected void setModelDescriptor(ModelDescriptor<?> descriptor) {
+    protected void setModelDescriptor(ModelDescriptor<? extends TemplateModel> descriptor) {
         stateNode.getFeature(PolymerTemplateMap.class)
                 .setModelDescriptor(descriptor);
     }
