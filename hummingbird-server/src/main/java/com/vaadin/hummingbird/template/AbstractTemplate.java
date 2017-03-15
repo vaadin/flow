@@ -19,15 +19,12 @@ package com.vaadin.hummingbird.template;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.util.Optional;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
@@ -41,12 +38,17 @@ import com.vaadin.ui.Component;
  */
 public abstract class AbstractTemplate<M extends TemplateModel>
         extends Component implements HasChildView {
-    private final StateNode stateNode = createTemplateStateNode();
+    private final StateNode stateNode;
 
     private transient M model;
 
     protected AbstractTemplate() {
+        this.stateNode = getElement().getNode();
+    }
+
+    protected AbstractTemplate(StateNode stateNode) {
         super(null);
+        this.stateNode = stateNode;
     }
 
     /**
@@ -69,39 +71,20 @@ public abstract class AbstractTemplate<M extends TemplateModel>
     private M createTemplateModelInstance() {
         ModelDescriptor<? extends M> descriptor = ModelDescriptor
                 .get(getModelType());
-
-        if (stateNode.hasFeature(TemplateMap.class)) {
-            ModelDescriptor<?> oldDescriptor = stateNode
-                    .getFeature(TemplateMap.class).getModelDescriptor();
-            if (oldDescriptor == null) {
-                stateNode.getFeature(TemplateMap.class)
-                        .setModelDescriptor(descriptor);
-            } else {
-                /*
-                 * Can have an existing descriptor if
-                 * createTemplateModelInstance has been run previously but the
-                 * transient model field has been cleared. Let's just verify
-                 * that we're still seeing the same definition.
-                 */
-                assert oldDescriptor.toJson().toJson()
-                        .equals(descriptor.toJson().toJson());
-            }
-        }
+        updateModelDescriptor(descriptor);
         return TemplateModelProxyHandler.createModelProxy(stateNode,
                 descriptor);
     }
 
     /**
-     * Finds an element with the given id inside this template.
-     *
-     * @param id
-     *            the id to look for
-     * @return an optional element with the id, or an empty Optional if no
-     *         element with the given id was found
+     * Method that allows to update model descriptor, if needed.
+     * 
+     * @param currentDescriptor
+     *            current descriptor for a model
      */
-    protected Optional<Element> getElementById(String id) {
-        return stateNode.getFeature(TemplateMap.class).getRootTemplate()
-                .findElement(stateNode, id);
+    protected void updateModelDescriptor(
+            ModelDescriptor<? extends M> currentDescriptor) {
+        // No need to update descriptor by default
     }
 
     @Override
@@ -147,21 +130,11 @@ public abstract class AbstractTemplate<M extends TemplateModel>
     }
 
     /**
-     * Sets root of the template.
+     * Gets the state node for current template.
      *
-     * @param templateRoot
-     *            template root to set
+     * @return state node
      */
-    protected void setTemplateRoot(TemplateNode templateRoot) {
-        stateNode.getFeature(TemplateMap.class).setRootTemplate(templateRoot);
-        Element rootElement = Element.get(stateNode);
-        setElement(this, rootElement);
+    protected StateNode getStateNode() {
+        return stateNode;
     }
-
-    /**
-     * Creates a {@link StateNode} that will be used for the template.
-     *
-     * @return template state node
-     */
-    protected abstract StateNode createTemplateStateNode();
 }

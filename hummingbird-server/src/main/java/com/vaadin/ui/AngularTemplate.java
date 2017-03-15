@@ -28,6 +28,7 @@ import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
+import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
 import com.vaadin.hummingbird.template.AbstractTemplate;
@@ -36,6 +37,7 @@ import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.template.angular.TemplateParseException;
 import com.vaadin.hummingbird.template.angular.parser.TemplateParser;
 import com.vaadin.hummingbird.template.angular.parser.TemplateResolver;
+import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
 import com.vaadin.util.ReflectTools;
@@ -64,13 +66,16 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  */
 public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
+    private static StateNode createTemplateStateNode() {
+        return TemplateElementStateProvider.createRootNode();
+    }
 
     /**
      * Creates a new template.
      */
     public AngularTemplate() {
         // Will set element later
-        super();
+        super(createTemplateStateNode());
 
         HtmlTemplate annotation = getClass().getAnnotation(HtmlTemplate.class);
         if (annotation == null) {
@@ -90,7 +95,7 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
      */
     public AngularTemplate(String templateFileName) {
         // Will set element later
-        super();
+        super(createTemplateStateNode());
 
         setTemplateElement(templateFileName);
     }
@@ -104,7 +109,7 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
      */
     public AngularTemplate(InputStream inputStream) {
         // Will set element later
-        super();
+        super(createTemplateStateNode());
 
         // No support for @include@ when using this constructor right now
         setTemplateElement(inputStream, relativeFilename -> {
@@ -191,15 +196,35 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
         }
     }
 
-    @Override
-    protected Class<? extends TemplateModel> getModelType() {
-        return TemplateModelTypeParser.getType(getClass());
+    /**
+     * Finds an element with the given id inside this template.
+     *
+     * @param id
+     *            the id to look for
+     * @return an optional element with the id, or an empty Optional if no
+     *         element with the given id was found
+     */
+    private Optional<Element> getElementById(String id) {
+        return getStateNode().getFeature(TemplateMap.class).getRootTemplate()
+                .findElement(getStateNode(), id);
+    }
+
+    /**
+     * Sets root of the template.
+     *
+     * @param templateRoot
+     *            template root to set
+     */
+    private void setTemplateRoot(TemplateNode templateRoot) {
+        getStateNode().getFeature(TemplateMap.class)
+                .setRootTemplate(templateRoot);
+        Element rootElement = Element.get(getStateNode());
+        setElement(this, rootElement);
     }
 
     @Override
-    protected StateNode createTemplateStateNode() {
-        return TemplateElementStateProvider
-                .createRootNode();
+    protected Class<? extends TemplateModel> getModelType() {
+        return TemplateModelTypeParser.getType(getClass());
     }
 
     @Override
@@ -208,5 +233,25 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
         // initialize the model so that all properties are available in the
         // underlying node's ModelMap
         getModel();
+    }
+
+    @Override
+    protected void updateModelDescriptor(
+            ModelDescriptor<? extends TemplateModel> currentDescriptor) {
+        ModelDescriptor<?> oldDescriptor = getStateNode()
+                .getFeature(TemplateMap.class).getModelDescriptor();
+        if (oldDescriptor == null) {
+            getStateNode().getFeature(TemplateMap.class)
+                    .setModelDescriptor(currentDescriptor);
+        } else {
+            /*
+             * Can have an existing descriptor if createTemplateModelInstance
+             * has been run previously but the transient model field has been
+             * cleared. Let's just verify that we're still seeing the same
+             * definition.
+             */
+            assert oldDescriptor.toJson().toJson()
+                    .equals(currentDescriptor.toJson().toJson());
+        }
     }
 }

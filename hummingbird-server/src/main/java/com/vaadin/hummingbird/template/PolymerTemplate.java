@@ -15,11 +15,8 @@
  */
 package com.vaadin.hummingbird.template;
 
-import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
@@ -40,34 +37,15 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  */
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
-    private transient Element templateElement;
-
     /**
      * Creates a new template.
      */
     public PolymerTemplate() {
-        setElement(this, getTemplateElement());
-    }
+        super();
 
-    private Element getTemplateElement() {
-        if (templateElement == null) {
-            String tagName = AnnotationReader
-                    .getAnnotationFor(getClass(), Tag.class).map(Tag::value)
-                    .orElseThrow(() -> new IllegalStateException(
-                            "No '@Tag' annotation found, please annotate the template class with this annotation " +
-                                    "and specify corresponding Polymer element tag there to be able to use Polymer functionality."));
-            templateElement = new Element(tagName);
-        }
-        return templateElement;
-    }
-
-    @Override
-    protected StateNode createTemplateStateNode() {
-        Element element = getTemplateElement();
         ModelDescriptor.get(getModelType()).getPropertyNames()
-                .forEach(propertyName -> element.getNode()
+                .forEach(propertyName -> getStateNode()
                         .getFeature(ModelMap.class).setValue(propertyName,
                                 propertyName));
-        return element.getNode();
     }
 }

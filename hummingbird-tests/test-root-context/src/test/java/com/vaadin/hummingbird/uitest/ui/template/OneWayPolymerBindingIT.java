@@ -35,23 +35,18 @@ public class OneWayPolymerBindingIT extends SingleBrowserTest {
     public void initialModelValueIsPresent() {
         open();
 
-        String messageDivText = getInShadowRoot(findElement(By.id("template")),
-                By.id("messageDiv")).get().getText();
-        Assert.assertEquals(OneWayPolymerBindingTemplate.MESSAGE,
-                messageDivText);
-    }
-
-    @Test
-    public void modelValueChanged() {
-        open();
-
         WebElement template = findElement(By.id("template"));
-
-        getInShadowRoot(template, By.id("changeModelValue")).get().click();
 
         String messageDivText = getInShadowRoot(template, By.id("messageDiv"))
                 .get().getText();
-        Assert.assertEquals(OneWayPolymerBindingTemplate.NEW_MESSAGE,
+        Assert.assertEquals(OneWayPolymerBindingTemplate.MESSAGE,
                 messageDivText);
+
+        getInShadowRoot(template, By.id("changeModelValue")).get().click();
+
+        String changedMessageDivText = getInShadowRoot(template,
+                By.id("messageDiv")).get().getText();
+        Assert.assertEquals(OneWayPolymerBindingTemplate.NEW_MESSAGE,
+                changedMessageDivText);
     }
 }
