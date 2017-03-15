@@ -17,7 +17,6 @@
 package com.vaadin.hummingbird.uitest.ui.template;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,11 +31,11 @@ import com.vaadin.testbench.By;
 public class OneWayPolymerBindingIT extends SingleBrowserTest {
 
     @Test
-    @Ignore // TODO fix this test, messageDiv is hidden in the shadow dom
     public void oneWayBinding() {
         open();
 
-        String messageDivText = findElement(By.id("messageDiv")).getText();
+        String messageDivText = getInShadowRoot(findElement(By.id("template")),
+                By.id("messageDiv")).get().getText();
         Assert.assertEquals(OneWayPolymerBindingTemplate.MESSAGE,
                 messageDivText);
     }
