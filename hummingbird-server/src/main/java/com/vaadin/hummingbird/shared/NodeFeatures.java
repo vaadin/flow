@@ -177,7 +177,7 @@ public class NodeFeatures {
     public static final String ROOT_TEMPLATE_ID = "root";
 
     /**
-     * Key for {@link TemplateMap#getModelDescriptor()} and {@link PolymerTemplateMap#getModelDescriptor()}
+     * Key for {@link TemplateMap#getModelDescriptor()} and {@link PolymerTemplateMap#getModelDescriptor()}.
      */
     public static final String MODEL_DESCRIPTOR = "descriptor";
 

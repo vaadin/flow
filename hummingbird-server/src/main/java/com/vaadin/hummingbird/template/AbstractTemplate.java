@@ -37,6 +37,9 @@ import com.vaadin.ui.Component;
 
 /**
  * @author Vaadin Ltd.
+ *
+ * @param <M>
+ *            a model class that will be used for template data propagation
  */
 public abstract class AbstractTemplate<M extends TemplateModel>
         extends Component implements HasChildView {

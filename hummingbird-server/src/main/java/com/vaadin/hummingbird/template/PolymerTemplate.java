@@ -33,6 +33,9 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  * and the components should be associated with the web component element using
  * the {@link Tag @Tag} annotation.
  *
+ * @param <M>
+ *            a model class that will be used for template data propagation
+ *
  * @see HtmlImport
  * @see Tag
  *
@@ -40,6 +43,10 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  */
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
+
+    /**
+     * Creates a new template.
+     */
     public PolymerTemplate() {
         String tagName = AnnotationReader
                 .getAnnotationFor(getClass(), Tag.class).map(Tag::value)

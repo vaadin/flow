@@ -114,7 +114,7 @@ public class PolymerTemplateMap extends NodeMap {
      *
      * @return model bindings
      */
-    public HashMap<String, BindingValueProvider> getModelBindings() {
+    public Map<String, BindingValueProvider> getModelBindings() {
         return modelBindings;
     }
 }
