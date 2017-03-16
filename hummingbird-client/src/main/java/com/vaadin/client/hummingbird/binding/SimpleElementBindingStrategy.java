@@ -18,8 +18,6 @@ package com.vaadin.client.hummingbird.binding;
 import java.util.Objects;
 import java.util.Optional;
 
-import jsinterop.annotations.JsFunction;
-
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
@@ -49,6 +47,7 @@ import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -176,6 +175,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 .bindServerEventHandlerNames(htmlNode, stateNode));
 
         listeners.push(bindPolymerEventHandlerNames(context));
+
+        bindModelProperties(stateNode, htmlNode);
+    }
+
+    private void bindModelProperties(StateNode stateNode, Element htmlNode) {
+        Computation computation = Reactive.runWhenDepedenciesChange(
+                () -> stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                        .forEachProperty((property, key) -> WidgetUtil
+                                .setJsProperty(htmlNode, property.getName(),
+                                        property.getValue())));
+        stateNode.addUnregisterListener(event -> computation.stop());
     }
 
     @SuppressWarnings("unchecked")

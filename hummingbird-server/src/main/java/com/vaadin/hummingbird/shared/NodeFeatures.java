@@ -28,6 +28,7 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
+import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
 import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
@@ -38,7 +39,6 @@ import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
-import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
 
 /**
  * Registry of node feature id numbers and map keys shared between server and

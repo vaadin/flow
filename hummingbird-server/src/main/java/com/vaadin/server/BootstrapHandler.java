@@ -420,7 +420,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static Element createJavaScriptElement(String sourceUrl,
-            boolean defer) {
+                                                   boolean defer) {
         Element jsElement = new Element(Tag.valueOf("script"), "")
                 .attr("type", "text/javascript").attr("defer", defer);
         if (sourceUrl != null) {

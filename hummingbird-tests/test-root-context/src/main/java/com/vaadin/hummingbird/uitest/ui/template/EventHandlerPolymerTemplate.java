@@ -24,10 +24,11 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.template.PolymerTemplate;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 @Tag("event-handler")
 @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/EventHandler.html")
-public class EventHandlerPolymerTemplate extends PolymerTemplate {
+public class EventHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
 
     @EventHandler
     private void handleClick() {

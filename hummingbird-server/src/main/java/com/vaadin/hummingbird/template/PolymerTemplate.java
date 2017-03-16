@@ -17,7 +17,7 @@ package com.vaadin.hummingbird.template;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.ui.Component;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
@@ -25,11 +25,14 @@ import com.vaadin.ui.Component;
  * and the components should be associated with the web component element using
  * the {@link Tag @Tag} annotation.
  *
+ * @param <M>
+ *            a model class that will be used for template data propagation
+ *
  * @see HtmlImport
  * @see Tag
  *
  * @author Vaadin Ltd
  */
-public abstract class PolymerTemplate extends Component {
-
+public abstract class PolymerTemplate<M extends TemplateModel>
+        extends AbstractTemplate<M> {
 }

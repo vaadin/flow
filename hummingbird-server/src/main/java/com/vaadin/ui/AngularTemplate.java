@@ -31,16 +31,15 @@ import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.RouterConfiguration;
-import com.vaadin.hummingbird.router.View;
+import com.vaadin.hummingbird.template.AbstractTemplate;
 import com.vaadin.hummingbird.template.angular.RelativeFileResolver;
 import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.template.angular.TemplateParseException;
-import com.vaadin.hummingbird.template.model.ModelDescriptor;
-import com.vaadin.hummingbird.template.model.TemplateModel;
-import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
-import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
 import com.vaadin.hummingbird.template.angular.parser.TemplateParser;
 import com.vaadin.hummingbird.template.angular.parser.TemplateResolver;
+import com.vaadin.hummingbird.template.model.ModelDescriptor;
+import com.vaadin.hummingbird.template.model.TemplateModel;
+import com.vaadin.hummingbird.template.model.TemplateModelTypeParser;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -66,18 +65,13 @@ import com.vaadin.util.ReflectTools;
  *
  * @author Vaadin Ltd
  */
-public abstract class AngularTemplate extends Component implements HasChildView {
-    private final StateNode stateNode = TemplateElementStateProvider
-            .createRootNode();
-
-    private transient TemplateModel model;
-
+public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
     /**
      * Creates a new template.
      */
     public AngularTemplate() {
         // Will set element later
-        super(null);
+        super(createTemplateStateNode());
 
         HtmlTemplate annotation = getClass().getAnnotation(HtmlTemplate.class);
         if (annotation == null) {
@@ -95,9 +89,9 @@ public abstract class AngularTemplate extends Component implements HasChildView 
      * @param templateFileName
      *            the template file name, not {@code null}
      */
-    protected AngularTemplate(String templateFileName) {
+    public AngularTemplate(String templateFileName) {
         // Will set element later
-        super(null);
+        super(createTemplateStateNode());
 
         setTemplateElement(templateFileName);
     }
@@ -109,9 +103,9 @@ public abstract class AngularTemplate extends Component implements HasChildView 
      *            the HTML snippet input stream
      *
      */
-    protected AngularTemplate(InputStream inputStream) {
+    public AngularTemplate(InputStream inputStream) {
         // Will set element later
-        super(null);
+        super(createTemplateStateNode());
 
         // No support for @include@ when using this constructor right now
         setTemplateElement(inputStream, relativeFilename -> {
@@ -119,11 +113,8 @@ public abstract class AngularTemplate extends Component implements HasChildView 
         });
     }
 
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        // initialize the model so that all properties are available in the
-        // underlying node's ModelMap
-        getModel();
+    private static StateNode createTemplateStateNode() {
+        return TemplateElementStateProvider.createRootNode();
     }
 
     private void setTemplateElement(String templateFileNameAndPath) {
@@ -143,16 +134,9 @@ public abstract class AngularTemplate extends Component implements HasChildView 
     private void setTemplateElement(InputStream inputStream,
             TemplateResolver templateResolver) {
         try (InputStream templateContentStream = inputStream) {
-
             TemplateNode templateRoot = TemplateParser
                     .parse(templateContentStream, templateResolver);
-
-            stateNode.getFeature(TemplateMap.class)
-                    .setRootTemplate(templateRoot);
-
-            Element rootElement = Element.get(stateNode);
-
-            setElement(this, rootElement);
+            setTemplateRoot(templateRoot);
         } catch (IOException e) {
             throw new TemplateParseException("Error reading template", e);
         }
@@ -161,7 +145,7 @@ public abstract class AngularTemplate extends Component implements HasChildView 
     }
 
     private void mapComponents(Class<?> cls) {
-        if (cls.getSuperclass() != AngularTemplate.class) {
+        if (cls.getSuperclass() != AbstractTemplate.class) {
             // Parent fields
             mapComponents(cls.getSuperclass());
         }
@@ -221,48 +205,44 @@ public abstract class AngularTemplate extends Component implements HasChildView 
      *         element with the given id was found
      */
     private Optional<Element> getElementById(String id) {
-        return stateNode.getFeature(TemplateMap.class).getRootTemplate()
-                .findElement(stateNode, id);
-    }
-
-    @Override
-    public void setChildView(View childView) {
-        TemplateMap templateMap = stateNode.getFeature(TemplateMap.class);
-        if (childView == null) {
-            templateMap.setChild(null);
-        } else {
-            templateMap.setChild(childView.getElement().getNode());
-        }
+        return getStateNode().getFeature(TemplateMap.class).getRootTemplate()
+                .findElement(getStateNode(), id);
     }
 
     /**
-     * Returns the {@link TemplateModel model} of this template.
-     * <p>
-     * The type of the model will be the type that this method returns in the
-     * instance it is invoked on - meaning that you should override this method
-     * and return your own model type that extends {@link TemplateModel}.
+     * Sets root of the template.
      *
-     * @return the model of this template
-     * @see TemplateModel
+     * @param templateRoot
+     *            template root to set
      */
-    protected TemplateModel getModel() {
-        if (model == null) {
-            model = createTemplateModelInstance();
-        }
-        return model;
+    private void setTemplateRoot(TemplateNode templateRoot) {
+        getStateNode().getFeature(TemplateMap.class)
+                .setRootTemplate(templateRoot);
+        Element rootElement = Element.get(getStateNode());
+        setElement(this, rootElement);
     }
 
-    private TemplateModel createTemplateModelInstance() {
-        Class<? extends TemplateModel> modelType = getModelType();
+    @Override
+    protected Class<? extends TemplateModel> getModelType() {
+        return TemplateModelTypeParser.getType(getClass());
+    }
 
-        ModelDescriptor<? extends TemplateModel> descriptor = ModelDescriptor
-                .get(modelType);
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        // initialize the model so that all properties are available in the
+        // underlying node's ModelMap
+        getModel();
+    }
 
-        TemplateMap templateMap = stateNode.getFeature(TemplateMap.class);
-
-        ModelDescriptor<?> oldDescriptor = templateMap.getModelDescriptor();
+    @Override
+    protected void updateModelDescriptor(
+            ModelDescriptor<? extends TemplateModel> currentDescriptor) {
+        ModelDescriptor<?> oldDescriptor = getStateNode()
+                .getFeature(TemplateMap.class).getModelDescriptor();
         if (oldDescriptor == null) {
-            templateMap.setModelDescriptor(descriptor);
+            getStateNode().getFeature(TemplateMap.class)
+                    .setModelDescriptor(currentDescriptor);
         } else {
             /*
              * Can have an existing descriptor if createTemplateModelInstance
@@ -271,19 +251,7 @@ public abstract class AngularTemplate extends Component implements HasChildView 
              * definition.
              */
             assert oldDescriptor.toJson().toJson()
-                    .equals(descriptor.toJson().toJson());
+                    .equals(currentDescriptor.toJson().toJson());
         }
-
-        return TemplateModelProxyHandler.createModelProxy(stateNode,
-                descriptor);
-    }
-
-    /**
-     * Gets the type of the template model to use with with this template.
-     *
-     * @return the model type, not <code>null</code>
-     */
-    protected Class<? extends TemplateModel> getModelType() {
-        return TemplateModelTypeParser.getType(getClass());
     }
 }
