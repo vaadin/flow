@@ -17,8 +17,6 @@ package com.vaadin.hummingbird.template;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.hummingbird.nodefeature.ModelMap;
-import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
@@ -37,15 +35,4 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  */
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
-    /**
-     * Creates a new template.
-     */
-    public PolymerTemplate() {
-        super();
-
-        ModelDescriptor.get(getModelType()).getPropertyNames()
-                .forEach(propertyName -> getStateNode()
-                        .getFeature(ModelMap.class).setValue(propertyName,
-                                null));
-    }
 }
