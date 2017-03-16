@@ -80,7 +80,6 @@ public class ServerEventHandlerBinder {
             for (int i = 0; i < serverEventHandlerNamesList.length(); i++) {
                 String serverEventHandlerName = (String) serverEventHandlerNamesList
                         .get(i);
-                // ignore arguments for now
                 object.defineMethod(serverEventHandlerName, node);
             }
         }
@@ -95,7 +94,6 @@ public class ServerEventHandlerBinder {
 
             JsArray<?> add = e.getAdd();
             for (int i = 0; i < add.length(); i++) {
-                // ignore arguments for now
                 serverObject.defineMethod((String) add.get(i), node);
             }
         });

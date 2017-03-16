@@ -50,4 +50,11 @@ public class EventHandlerPolymerTemplate extends PolymerTemplate {
         container.setAttribute("id", "event-data");
         getParent().get().getElement().appendChild(container);
     }
+
+    @EventHandler
+    private void overriddenClick(@EventData("event.result") String result) {
+        Element label = ElementFactory.createLabel("Overridden server event was invoked with result: " + result);
+        label.setAttribute("id", "overridden-event-handler-result");
+        getParent().get().getElement().appendChild(label);
+    }
 }
