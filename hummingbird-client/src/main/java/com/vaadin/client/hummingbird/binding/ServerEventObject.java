@@ -73,6 +73,9 @@ public final class ServerEventObject extends JavaScriptObject {
     /**
      * Defines a method with the given name to be a callback to the server for
      * the given state node.
+     * <p>
+     * Note! If the Polymer.Element contains an implementation for
+     * {@code methodName} it will be run before the server-side method.
      *
      * @param methodName
      *            the name of the method to add
@@ -83,6 +86,10 @@ public final class ServerEventObject extends JavaScriptObject {
     public native void defineMethod(String methodName, StateNode node)
     /*-{
         this[methodName] = $entry(function(eventParameter) {
+            var prototype = Object.getPrototypeOf(this);
+            if(prototype[methodName] !== undefined) {
+                prototype[methodName].apply(this, arguments);
+            }
             var event = eventParameter || $wnd.event;
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
             var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, methodName, node);
