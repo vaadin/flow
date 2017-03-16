@@ -225,6 +225,9 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
     private native void setPrototypeEventHandler(Element element, String methodName)
     /*-{
         Object.getPrototypeOf(element)[methodName] = function(event) {
+            if(this !== element) {
+                throw "This and target element didn't match";
+            };
             event.result = arguments[1];
         }
     }-*/;
