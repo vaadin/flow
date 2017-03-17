@@ -13,23 +13,41 @@ For tutorials about how to use different template features, see:
 * <<tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
 * <<tutorial-template-event-handlers#,Handling User Events in a Template>>
 
-You can use a template to create a simple "Hello World" component in this way:
+This tutorial is based on `demo-hello-world-template` demo from https://github.com/vaadin/hummingbird-demo/ repository.
+
+We'll create a demo, that will be asking a user to input a name and will print a greeting on button click, using the input.
+
+=== Client side
+
+First, we need to define a template with all components:
 
 [source,html]
 ----
-<link rel="import" href="/bower_components/polymer/polymer.html">
-
 <dom-module id="hello-world">
     <template>
-       <div>
-          Hello, world !
-       </div> 
+        <div>
+            <input type="text" id="inputId">
+            <button id="helloButton" on-click="sayHello">Say hello</button>
+            <div id="greeting">
+                <template is="dom-if" if="[[text]]">
+                    Hello [[text]]!
+                </template>
+                <template is="dom-if" if="[[!text]]">
+                    Please enter your name
+                </template>
+            </div>
+        </div>
     </template>
-
     <script>
         class HelloWorld extends Polymer.Element {
             static get is() {
-                return 'hello-world';
+                return 'hello-world'
+            }
+
+            // same method is defined on a server side with the 'event.hello' value as a parameter value.
+            // it will always be called after client handlers are executed (after this method in this case)
+            sayHello(event) {
+                event.hello = this.$.inputId.value;
             }
         }
         customElements.define(HelloWorld.is, HelloWorld);
@@ -37,28 +55,103 @@ You can use a template to create a simple "Hello World" component in this way:
 </dom-module>
 ----
 
-To be able to use this template you need to create a template class which extends `PolymerTemplate`, 
-set its tag name matching the polymer `dom-module` id attribute and add the html import.
+As you can see, this is a Polymer template. All features used in the example are standard Polymer features.
+If you're unfamiliar with any of them, please refer to
+https://www.polymer-project.org/2.0/docs/about_20[Polymer project documentation page].
+
+In current demo, we have defined a regular template with regular elements, have specified one-way binding (`\[[text]]`)
+and basic declaration for Polymer element in `<script>` class.
+
+There is an event handler, `sayHello`.
+
+Notice that we have not specified the model at all, it will be propagated automatically from the server side.
+
+=== Server side
+
+To be able to use this template you need to create a Java class which extends `PolymerTemplate`,
+set its tag name matching the polymer `dom-module` id attribute and add the html imports for Polymer
+and existing template.
 
 [source,java]
 ----
 @Tag("hello-world")
+@HtmlImport("/polymer/location/polymer.html")
 @HtmlImport("/com/example/HelloWorld.html")
-public class HelloWorld extends PolymerTemplate {
+public class HelloWorld extends PolymerTemplate<HelloWorld.HelloWorldModel> {
 
+    /**
+     * Creates the hello world template.
+     */
+    public HelloWorld() {
+        setId("template");
+    }
+
+    /**
+     * Model for the template.
+     */
+    public interface HelloWorldModel extends TemplateModel {
+        /**
+         * Sets the text to show in the template.
+         *
+         * @param text
+         *            the text to show in the template
+         */
+        void setText(String text);
+    }
+
+    @EventHandler
+    private void sayHello(@EventData("event.hello") String inputValue) {
+        // Called from the template click handler
+        getModel().setText(inputValue);
+    }
 }
+
 ----
 
-The `/com/example/HelloWorld.html` is the URL to your polymer template declaration file.
+Here we have defined a class with imports, tag, model and event handler.
+
+====== Imports
+
+In order for a component to be processed correctly, we need to
+
+* import a Polymer library
+
+The `/polymer/location/polymer.html` is a link to Polymer library that should be imported in order to have the
+functionality working.
+
+[NOTE] You should take care about proper handling of the polymer template file URL.
+It should be somehow available as a web resource. It means that either your servlet
+should be able to handle classpath resources if the file is somwehere in your classpath or
+some additional configuration is required to the WAR file so that the resource
+becomes available via the URL.
+
+* bind a Java class with the template, by specifying `@HtmlImport` with path to a template
+
+The `/com/example/HelloWorld.html` is the URL to polymer template, declared earlier.
 
 [NOTE] Java class name and template file name doesn't have to match each other.
 
-[NOTE] You should take care about proper handling of the polymer template file URL. 
-It should be somehow available as a web resource. It means that either your servlet 
-should be able to handle classpath resources if the file is somwehere in your classpath or
-some additional configuration is required to the WAR file so that the resource 
-becomes available via the URL.
+====== Tag
 
+The tag corresponds to `<dom-module id="hello-world">` id attribute, it sets the tag value to current component.
+
+====== Model
+
+Model describes all properties that are passed to the html template and used on the client side.
+The model is simple Java interface, extending `TemplateModel` class and having getter and/or setter methods
+for properties.
+Model can be accessed via `getModel()` method after it's specified as a generic type of `PolymerTemplate` class.
+
+====== Event handler
+
+In this demo, there are two event handlers, one on the client side, one on the server side (a method, annotated as `@EventHandler`).
+The framework guarantees that server event will take place after client event.
+
+If no client event handler is needed, it can be omitted, server event handler will be executed still.
+In this case, client event is used to add extra property to an `event` object. This property is retrieved on a server side
+with help of the following construction: `@EventData("event.hello") String inputValue`
+
+=== Usage in code
 
 You can use `HelloWorld` like any other component.
 
