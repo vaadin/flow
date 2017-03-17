@@ -306,13 +306,27 @@ public class ResourceLoader {
     public static native void addOnloadHandler(Element element,
             ResourceLoadListener listener, ResourceLoadEvent event)
     /*-{
-        element.onload = $entry(function() {
+        var eventFired = false;
+        var loadHandler = $entry(function() {
+            if (eventFired) {
+              return;
+            }
+            eventFired = true;
             element.onload = null;
             element.onerror = null;
             element.onreadystatechange = null;
             listener.@com.vaadin.client.ResourceLoader.ResourceLoadListener::onLoad(Lcom/vaadin/client/ResourceLoader$ResourceLoadEvent;)(event);
         });
+        if ($wnd.HTMLImports && element.tagName === "LINK" && element.getAttribute("rel") === "import") {
+            $wnd.HTMLImports.whenReady(loadHandler);
+        } else {
+          element.onload = loadHandler;
+        }
         element.onerror = $entry(function() {
+            if (eventFired) {
+              return;
+            }
+            eventFired = true;
             element.onload = null;
             element.onerror = null;
             element.onreadystatechange = null;
