@@ -77,7 +77,7 @@ and existing template.
 @Tag("hello-world")
 @HtmlImport("/polymer/location/polymer.html")
 @HtmlImport("/com/example/HelloWorld.html")
-public class HelloWorld extends PolymerTemplate<HelloWorld.HelloWorldModel> {
+public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
 
     /**
      * Creates the hello world template.
@@ -86,29 +86,32 @@ public class HelloWorld extends PolymerTemplate<HelloWorld.HelloWorldModel> {
         setId("template");
     }
 
-    /**
-     * Model for the template.
-     */
-    public interface HelloWorldModel extends TemplateModel {
-        /**
-         * Sets the text to show in the template.
-         *
-         * @param text
-         *            the text to show in the template
-         */
-        void setText(String text);
-    }
-
     @EventHandler
     private void sayHello(@EventData("event.hello") String inputValue) {
         // Called from the template click handler
         getModel().setText(inputValue);
     }
 }
-
 ----
 
 Here we have defined a class with imports, tag, model and event handler.
+
+There is also a model reference, that is defined the following way:
+[source,java]
+----
+/**
+ * Model for the template.
+ */
+public interface HelloWorldModel extends TemplateModel {
+    /**
+     * Sets the text to show in the template.
+     *
+     * @param text
+     *            the text to show in the template
+     */
+    void setText(String text);
+}
+----
 
 ====== Imports
 
