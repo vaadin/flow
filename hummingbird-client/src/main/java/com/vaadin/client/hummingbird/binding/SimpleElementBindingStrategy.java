@@ -424,7 +424,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void bindEventHandlerProperty(MapProperty eventHandlerProperty,
             BindingContext context) {
         String name = eventHandlerProperty.getName();
-        assert !context.listenerBindings.has(name);
+        assert !context.listenerBindings
+                .has(name) : "Context already contains a binding for " + name;
 
         Computation computation = Reactive.runWhenDepedenciesChange(() -> {
             boolean hasValue = eventHandlerProperty.hasValue();
@@ -526,21 +527,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
-        NodeMap elementListeners = getPolymerEventListenerMap(context.node);
-        elementListeners.forEachProperty((property,
-                name) -> bindEventHandlerProperty(property, context));
-
-        elementListeners.addPropertyAddListener(
-                event -> bindEventHandlerProperty(event.getProperty(),
-                        context));
-
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 () -> WidgetUtil.crazyJsoCast(context.element), context.node,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
-    }
-
-    private NodeMap getPolymerEventListenerMap(StateNode node) {
-        return node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS);
+                NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS);
     }
 
     private static EventDataExpression getOrCreateExpression(

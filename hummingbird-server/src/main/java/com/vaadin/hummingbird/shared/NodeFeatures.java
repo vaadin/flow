@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.shared;
 
+import java.util.function.Consumer;
+
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
@@ -28,8 +30,6 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
-import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
-import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -39,6 +39,7 @@ import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
+import com.vaadin.hummingbird.nodefeature.ElementServerEventHandlers;
 
 /**
  * Registry of node feature id numbers and map keys shared between server and
@@ -146,14 +147,9 @@ public class NodeFeatures {
     public static final int PUBLISHED_SERVER_EVENT_HANDLERS = 22;
 
     /**
-     * Id for {@link PolymerServerEventHandlers}.
+     * Id for {@link ElementServerEventHandlers}.
      */
-    public static final int POLYMER_SERVER_EVENT_HANDLERS = 23;
-
-    /**
-     * Id for {@link PolymerEventListenerMap}.
-     */
-    public static final int POLYMER_EVENT_LISTENERS = 24;
+    public static final int ELEMENT_SERVER_EVENT_HANDLERS = 23;
 
     /**
      * Key for {@link ElementData#getTag()}.
@@ -174,6 +170,11 @@ public class NodeFeatures {
      * Key for {@link TemplateMap#getModelDescriptor()}.
      */
     public static final String MODEL_DESCRIPTOR = "descriptor";
+
+    /**
+     * Key for {@link com.vaadin.hummingbird.dom.Element#addCallback(String, Consumer, String...)}
+     */
+    public static final String ELEMENT_CALLBACK_DATA = "data";
 
     private NodeFeatures() {
         // Only static

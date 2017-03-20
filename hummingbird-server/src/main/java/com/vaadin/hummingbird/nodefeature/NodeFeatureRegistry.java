@@ -77,10 +77,8 @@ public class NodeFeatureRegistry {
         registerFeature(ModelList.class, ModelList::new);
         registerFeature(PublishedServerEventHandlers.class,
                 PublishedServerEventHandlers::new);
-        registerFeature(PolymerServerEventHandlers.class,
-                PolymerServerEventHandlers::new);
-        registerFeature(PolymerEventListenerMap.class,
-                PolymerEventListenerMap::new);
+        registerFeature(ElementServerEventHandlers.class,
+                ElementServerEventHandlers::new);
     }
 
     private NodeFeatureRegistry() {

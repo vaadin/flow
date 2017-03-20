@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateNodeTest;
+import com.vaadin.hummingbird.dom.ElementAttachEvent;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
@@ -93,9 +94,8 @@ public class NodeFeatureTest {
         expectedIds.put(ModelList.class, NodeFeatures.TEMPLATE_MODELLIST);
         expectedIds.put(PublishedServerEventHandlers.class,
                 NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
-        expectedIds.put(PolymerServerEventHandlers.class,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
-        expectedIds.put(PolymerEventListenerMap.class, NodeFeatures.POLYMER_EVENT_LISTENERS);
+        expectedIds.put(ElementServerEventHandlers
+                .class, NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS);
 
         Assert.assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());

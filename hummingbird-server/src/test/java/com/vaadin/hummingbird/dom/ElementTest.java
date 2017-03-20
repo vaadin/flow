@@ -109,6 +109,7 @@ public class ElementTest {
         ignore.add("as");
         // Possibly returns a remover or a wrapped return value in the future
         ignore.add("callFunction");
+        ignore.add("addCallback");
 
         for (Method m : Element.class.getDeclaredMethods()) {
             if (!Modifier.isPublic(m.getModifiers())) {

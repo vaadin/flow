@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,9 +35,12 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.CustomAttribute;
 import com.vaadin.hummingbird.nodefeature.ElementData;
+import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
+import com.vaadin.hummingbird.nodefeature.ElementServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
+import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.template.angular.AbstractElementTemplateNode;
 import com.vaadin.hummingbird.template.angular.TemplateNode;
 import com.vaadin.hummingbird.util.JavaScriptSemantics;
@@ -46,6 +50,7 @@ import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Page;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
 /**
@@ -1543,5 +1548,27 @@ public class Element implements Serializable {
                     jsParameters);
         });
 
+    }
+
+    /**
+     * Add client-side event listener with custom server side callback.
+     *
+     * @param name
+     *            Event name
+     * @param argConsumer
+     *            Callback accepting return arguments
+     * @param argumentExpressions
+     *            Expressions to evaluate for event
+     * @return a handle that can be used for removing the listener
+     */
+    public EventRegistrationHandle addCallback(String name,
+            Consumer<JsonArray> argConsumer, String... argumentExpressions) {
+        getNode().getFeature(ElementServerEventHandlers.class)
+                .addServerEvent(name);
+
+        return addEventListener(name,
+                domEvent -> argConsumer.accept(domEvent.getEventData()
+                        .getArray(NodeFeatures.ELEMENT_CALLBACK_DATA)),
+                argumentExpressions);
     }
 }

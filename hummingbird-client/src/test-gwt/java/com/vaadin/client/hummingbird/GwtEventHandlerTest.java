@@ -52,7 +52,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
     private Registry registry;
 
-    private Map<String, JsArray<?>> serverMethods = new HashMap<>();
+    private Map<String, JsonArray> serverMethods = new HashMap<>();
     private Map<String, StateNode> serverRpcNodes = new HashMap<>();
 
     @Override
@@ -71,7 +71,16 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
             @Override
             public void sendTemplateEventToServer(StateNode node,
                     String methodName, JsArray<?> argValues) {
-                serverMethods.put(methodName, argValues);
+                serverMethods.put(methodName,
+                        WidgetUtil.crazyJsCast(argValues));
+                serverRpcNodes.put(methodName, node);
+            }
+
+            @Override
+            public void sendEventToServer(StateNode node, String methodName,
+                    JsonObject eventData) {
+                serverMethods.put(methodName,
+                        eventData.getArray(NodeFeatures.ELEMENT_CALLBACK_DATA));
                 serverRpcNodes.put(methodName, node);
             }
         };
@@ -99,7 +108,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
     public void testPolymerServerEventHandlerMethodInDom() {
         assertServerEventHandlerMethodInDom(
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS,
                 element -> assertPolymerMethods(element,
                         new String[] { "eventHandler" }),
                 "eventHandler");
@@ -113,7 +122,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
     public void testAddPolymerServerEventHandlerMethod() {
         assertAddServerEventHandlerMethod(
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS,
                 this::assertPolymerMethods);
     }
 
@@ -125,13 +134,13 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
     public void testRemovePolymerServerEventHandlerMethod() {
         assertRemoveServerEventHandlerMethod(
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS,
                 this::assertPolymerMethods);
     }
 
     public void testPolymerMockedEventHandler() {
         String methodName = "eventHandler";
-        node.getList(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS).add(0,
+        node.getList(NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS).add(0,
                 methodName);
         Binder.bind(node, element);
         Reactive.flush();
@@ -151,10 +160,10 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         String methodId = "handlerId";
         String eventData = "event.button";
 
-        node.getList(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS).add(0,
+        node.getList(NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS).add(0,
                 methodName);
-        node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
-                .getProperty(methodName).setValue(methodId);
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty(methodName)
+                .setValue(methodId);
 
         JsonObject json = Json.createObject();
         JsonArray array = Json.createArray();
@@ -176,16 +185,29 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         assertEquals("Wrong amount of method arguments", 1,
                 serverMethods.get(methodName).length());
         assertEquals("Gotten argument wasn't as expected", "2",
-                        serverMethods.get(methodName).get(0).toString());
+                serverMethods.get(methodName).get(0).toString());
         assertEquals("Method node did not match the expected node.", node,
                 serverRpcNodes.get(methodName));
     }
 
     public void testPolymerMockedEventHandlerWithDefaultImplementation() {
         String methodName = "eventHandler";
+        String methodId = "handlerId";
+        String eventData = "event.button";
+        String eventData2 = "event.result";
 
-        node.getList(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS).add(0,
+        node.getList(NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS).add(0,
                 methodName);
+        node.getMap(NodeFeatures.ELEMENT_LISTENERS).getProperty(methodName)
+                .setValue(methodId);
+
+        JsonObject json = Json.createObject();
+        JsonArray array = Json.createArray();
+        array.set(0, eventData);
+        array.set(1, eventData2);
+        json.put(methodId, array);
+
+        node.getTree().getRegistry().getConstantPool().importFromJson(json);
 
         Binder.bind(node, element);
         Reactive.flush();
@@ -196,18 +218,19 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 + "({button: 2}, 'Extra String argument')");
         mockedFunction.apply(element, JsCollections.array());
 
-        JsonObject expectedResult = Json.createObject();
-        expectedResult.put("button", 2);
-        expectedResult.put("result", "Extra String argument");
+        JsonArray result = Json.createArray();
+        result.set(0, 2);
+        result.set(1, "Extra String argument");
 
         assertEquals("The amount of server methods was not as expected", 1,
                 serverMethods.size());
         assertEquals("Expected method did not match", methodName,
                 serverMethods.keySet().iterator().next());
-        assertEquals("Wrong amount of method arguments", 2,
+        assertEquals("Wrong amount of method arguments", result.length(),
                 serverMethods.get(methodName).length());
-        assertEquals("Gotten argument wasn't as expected", WidgetUtil.toPrettyJson(expectedResult),
-                WidgetUtil.toPrettyJson(WidgetUtil.crazyJsoCast(serverMethods.get(methodName).get(0))));
+        assertEquals("Gotten argument wasn't as expected",
+                WidgetUtil.toPrettyJson(result),
+                WidgetUtil.toPrettyJson(serverMethods.get(methodName)));
         assertEquals("Method node did not match the expected node.", node,
                 serverRpcNodes.get(methodName));
     }
@@ -222,7 +245,8 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
      * @param methodName
      *            Name of event to add method to
      */
-    private native void setPrototypeEventHandler(Element element, String methodName)
+    private native void setPrototypeEventHandler(Element element,
+            String methodName)
     /*-{
         Object.getPrototypeOf(element)[methodName] = function(event) {
             if(this !== element) {

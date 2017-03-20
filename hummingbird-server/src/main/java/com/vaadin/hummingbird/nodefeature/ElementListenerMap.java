@@ -19,8 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import com.vaadin.hummingbird.ConstantPoolKey;
 import com.vaadin.hummingbird.StateNode;
@@ -42,15 +41,15 @@ public class ElementListenerMap extends NodeMap {
     /*
      * Shared empty serializable set instance to avoid allocating lots of memory
      * for the default case of no event data expressions at all. Cannot easily
-     * make the instance immutable while still implementing HashSet. To avoid
+     * make the instance immutable while still implementing ArrayList. To avoid
      * accidental modification, we instead assert that it's empty when it's
      * used.
      */
-    private static final HashSet<String> emptyHashSet = new HashSet<>();
+    private static final ArrayList<String> emptyHashSet = new ArrayList<>();
 
     // Server-side only data
     private HashMap<String, ArrayList<DomEventListener>> listeners;
-    private HashMap<String, Set<String>> typeToExpressions;
+    private HashMap<String, List<String>> typeToExpressions;
 
     /**
      * Creates a new element listener map for the given node.
@@ -102,7 +101,7 @@ public class ElementListenerMap extends NodeMap {
         listeners.get(eventType).add(listener);
 
         if (eventDataExpressions.length != 0) {
-            HashSet<String> eventData = new HashSet<>(
+            ArrayList<String> eventData = new ArrayList<>(
                     typeToExpressions.get(eventType));
 
             if (eventData.addAll(Arrays.asList(eventDataExpressions))) {
@@ -118,7 +117,7 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private static ConstantPoolKey createConstantPoolKey(
-            HashSet<String> eventData) {
+            ArrayList<String> eventData) {
         return new ConstantPoolKey(eventData.stream().map(Json::create)
                 .collect(JsonUtils.asArray()));
     }
@@ -178,12 +177,12 @@ public class ElementListenerMap extends NodeMap {
      * @return an unmodifiable set of event data expressions, not
      *         <code>null</code>
      */
-    Set<String> getExpressions(String name) {
+    List<String> getExpressions(String name) {
         assert name != null;
         if (typeToExpressions == null) {
-            return Collections.emptySet();
+            return Collections.emptyList();
         } else {
-            return Collections.unmodifiableSet(typeToExpressions.get(name));
+            return Collections.unmodifiableList(typeToExpressions.get(name));
         }
     }
 }

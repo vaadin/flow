@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -80,7 +81,7 @@ public class ElementListenersTest
     public void testAddAndRemoveEventData() {
         ns.add("eventType", noOp, new String[] { "data1", "data2" });
 
-        Set<String> expressions = getExpressions("eventType");
+        List<String> expressions = getExpressions("eventType");
         Assert.assertTrue(expressions.contains("data1"));
         Assert.assertTrue(expressions.contains("data2"));
         Assert.assertFalse(expressions.contains("data3"));
@@ -132,7 +133,7 @@ public class ElementListenersTest
         Assert.assertEquals("true", capturedJson.get("baz").toJson());
     }
 
-    private Set<String> getExpressions(String name) {
+    private List<String> getExpressions(String name) {
         return ns.getExpressions(name);
     }
 }

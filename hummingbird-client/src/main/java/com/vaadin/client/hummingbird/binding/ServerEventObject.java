@@ -24,6 +24,8 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
@@ -31,6 +33,7 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -93,10 +96,12 @@ public final class ServerEventObject extends JavaScriptObject {
             var event = eventParameter || $wnd.event;
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
             var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, methodName, node);
-            if(args === null) {
+            if(args === null) {//&& !this.@com.vaadin.client.hummingbird.binding.ServerEventObject::containsMethod(*)(node, methodName)) {
                 args = Array.prototype.slice.call(arguments);
+                tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
+            } else {
+                tree.@com.vaadin.client.hummingbird.StateTree::sendEventToServer(*)(node, methodName, args);
             }
-            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
         });
     }-*/;
 
@@ -113,35 +118,48 @@ public final class ServerEventObject extends JavaScriptObject {
      *            Target node
      * @return Array of extra event data
      */
-    private JsonArray getEventData(Event event, String methodName,
+    private JsonObject getEventData(Event event, String methodName,
             StateNode node) {
 
-        if (node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
-                .hasPropertyValue(methodName)) {
+        if (node.getMap(NodeFeatures.ELEMENT_LISTENERS)
+                .hasPropertyValue(methodName) || containsMethod(node, methodName)) {
             JsonArray dataArray = Json.createArray();
             ConstantPool constantPool = node.getTree().getRegistry()
                     .getConstantPool();
             String expressionConstantKey = (String) node
-                    .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+                    .getMap(NodeFeatures.ELEMENT_LISTENERS)
                     .getProperty(methodName).getValue();
 
             JsArray<String> dataExpressions = constantPool
                     .get(expressionConstantKey);
 
-            for (int i = 0; i < dataExpressions.length(); i++) {
-                String expression = dataExpressions.get(i);
+            JsonObject o = Json.createObject();
+            if (dataExpressions != null) {
+                for (int i = 0; i < dataExpressions.length(); i++) {
+                    String expression = dataExpressions.get(i);
 
-                ServerEventDataExpression dataExpression = getOrCreateExpression(
-                        expression);
-                JsonValue expressionValue = dataExpression.evaluate(event,
-                        this);
+                    ServerEventDataExpression dataExpression = getOrCreateExpression(
+                            expression);
+                    JsonValue expressionValue = dataExpression.evaluate(event,
+                            this);
 
-                dataArray.set(i, expressionValue);
+                    dataArray.set(i, expressionValue);
+                }
             }
-            return dataArray;
+            o.put(NodeFeatures.ELEMENT_CALLBACK_DATA, dataArray);
+            return o;
         }
 
         return null;
+    }
+
+    private boolean containsMethod(StateNode node, String methodName) {
+        NodeList list = node.getList(NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS);
+        for (int i = 0; i < list.length(); i++) {
+            if (list.get(i).equals(methodName))
+                return true;
+        }
+        return false;
     }
 
     /**
