@@ -27,8 +27,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.runner.RunWith;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -36,13 +34,11 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.testbench.ScreenshotOnFailureRule;
 import com.vaadin.testbench.annotations.BrowserConfiguration;
 import com.vaadin.testbench.annotations.BrowserFactory;
 import com.vaadin.testbench.annotations.RunOnHub;
 import com.vaadin.testbench.parallel.Browser;
 import com.vaadin.testbench.parallel.DefaultBrowserFactory;
-import com.vaadin.testbench.parallel.ParallelRunner;
 
 /**
  * Abstract base class for hummingbird TestBench tests, which are based on a
@@ -50,16 +46,8 @@ import com.vaadin.testbench.parallel.ParallelRunner;
  */
 @RunOnHub("tb3-hub.intra.itmill.com")
 @BrowserFactory(DefaultBrowserFactory.class)
-@RunWith(ParallelRunner.class)
 @LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
-
-    /**
-     * The rule used for screenshot failures.
-     */
-    @Rule
-    public ScreenshotOnFailureRule screenshotOnFailure = new ScreenshotOnFailureRule(
-            this, true);
 
     /**
      * Default port for test server, possibly overridden with system property.
@@ -307,9 +295,10 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
     }
 
     /**
-     * Used to determine what port the test is running on
+     * Used to determine what port the test is running on.
      *
-     * @return The port the test is running on, by default 8888
+     * @return The port the test is running on, by default
+     *         AbstractTestBenchTest.DEFAULT_SERVER_PORT
      */
     protected int getDeploymentPort() {
         return SERVER_PORT;
@@ -355,12 +344,9 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         if (USE_HUB) {
             return Optional.empty();
         }
-        LocalExecution localExecution = getClass()
-                .getAnnotation(LocalExecution.class);
-        if (localExecution != null && localExecution.active()) {
-            return Optional.of(localExecution);
-        }
-        return Optional.empty();
+        return Optional
+                .ofNullable(getClass().getAnnotation(LocalExecution.class))
+                .filter(LocalExecution::active);
     }
 
     private Optional<String> getHostAddress(NetworkInterface nwInterface) {
@@ -371,8 +357,8 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 continue;
             }
             if (address.isSiteLocalAddress()) {
+                return Optional.of(address.getHostAddress());
             }
-            return Optional.of(address.getHostAddress());
         }
         return Optional.empty();
     }

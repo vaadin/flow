@@ -25,7 +25,7 @@ public class PhantomJSTest extends ViewOrUITest {
     @Override
     protected Optional<LocalExecution> getLocalExecution() {
         // Explicitly ignore any test Hub settings from the superclass
-        return Optional.of(AbstractTestBenchTest.class
+        return Optional.ofNullable(AbstractTestBenchTest.class
                 .getAnnotation(LocalExecution.class));
     }
 }
