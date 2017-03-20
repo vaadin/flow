@@ -131,11 +131,12 @@ https://github.com/eirslett/frontend-maven-plugin[frontend-maven-plugin]
 The latter way was used to create this example, you can reference
 https://github.com/vaadin/hummingbird-demo/[GitHub page] of a demo for more details.
 
-* bind a Java class with the template, by specifying `@HtmlImport` with path to a template
+* bind a Java class with the template, created earlier, by specifying `@HtmlImport` with path to a template
+
+[NOTE] Java class name and template file name doesn't have to match each other, this is just a resource file which you can put to any location.
+But you have to be sure that it's accessible via the web.
 
 The `/com/example/HelloWorld.html` is the URL of the polymer template file declared earlier.
-
-[NOTE] Java class name and template file name doesn't have to match each other.
 
 ====== Tag
 
