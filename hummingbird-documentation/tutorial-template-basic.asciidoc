@@ -59,18 +59,18 @@ As you can see, this is a Polymer template. All features used in the example are
 If you're unfamiliar with any of them, please refer to
 https://www.polymer-project.org/2.0/docs/about_20[Polymer project documentation page].
 
-In current demo, we have defined a regular template with regular elements, have specified one-way binding (`\[[text]]`)
+In the current demo, we have defined a regular template with regular elements, have specified one-way binding (`\[[text]]`)
 and basic declaration for Polymer element in `<script>` class.
 
-There is an event handler, `sayHello`.
+Note that there is an event handler `sayHello` that is triggered on `helloButton` click.
 
 Notice that we have not specified the model at all, it will be propagated automatically from the server side.
 
 === Server side
 
 To be able to use this template you need to create a Java class which extends `PolymerTemplate`,
-set its tag name matching the polymer `dom-module` id attribute and add the html imports for Polymer
-and existing template.
+set its tag name matching the polymer `dom-module` id attribute and add the html imports for Polymer library (`polymer.html`)
+and our template:
 
 [source,java]
 ----
@@ -122,15 +122,18 @@ In order for a component to be processed correctly, we need to
 The `/polymer/location/polymer.html` is a link to Polymer library that should be imported in order to have the
 functionality working.
 
-[NOTE] You should take care about proper handling of the polymer template file URL.
-It should be somehow available as a web resource. It means that either your servlet
-should be able to handle classpath resources if the file is somwehere in your classpath or
-some additional configuration is required to the WAR file so that the resource
-becomes available via the URL.
+[NOTE] You should take care about proper handling of the polymer template file URL, it should be available via URL.
+
+[NOTE] To get `polymer.html` into your project, you can use one of the ways provided by
+https://www.polymer-project.org/2.0/start/install-2-0[official Polymer page] or use Maven plugins, such as
+https://github.com/eirslett/frontend-maven-plugin[frontend-maven-plugin]
+
+The latter way was used to create this example, you can reference
+https://github.com/vaadin/hummingbird-demo/[GitHub page] of a demo for more details.
 
 * bind a Java class with the template, by specifying `@HtmlImport` with path to a template
 
-The `/com/example/HelloWorld.html` is the URL to polymer template, declared earlier.
+The `/com/example/HelloWorld.html` is the URL of the polymer template file declared earlier.
 
 [NOTE] Java class name and template file name doesn't have to match each other.
 
@@ -148,10 +151,11 @@ Model can be accessed via `getModel()` method after it's specified as a generic 
 ====== Event handler
 
 In this demo, there are two event handlers, one on the client side, one on the server side (a method, annotated as `@EventHandler`).
-The framework guarantees that server event will take place after client event.
+The framework guarantees that server will handle the event after the client.
 
-If no client event handler is needed, it can be omitted, server event handler will be executed still.
-In this case, client event is used to add extra property to an `event` object. This property is retrieved on a server side
+If no client event handler is needed, it can be omitted, the event will be handled on the server side still.
+
+In this demo, client event is used to add extra property to an `event` object. This property is retrieved on a server side
 with help of the following construction: `@EventData("event.hello") String inputValue`
 
 === Usage in code
