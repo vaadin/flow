@@ -29,9 +29,11 @@ import com.vaadin.spring.annotation.UIScope;
 import com.vaadin.spring.internal.DefaultViewCache;
 import com.vaadin.spring.internal.UIScopeImpl;
 import com.vaadin.spring.internal.VaadinSessionScope;
+import com.vaadin.spring.internal.VaadinSpringComponentFactory;
 import com.vaadin.spring.internal.ViewCache;
 import com.vaadin.spring.internal.ViewScopeImpl;
 import com.vaadin.spring.navigator.SpringViewProvider;
+import com.vaadin.ui.declarative.Design;
 
 /**
  * Spring configuration for registering the custom Vaadin scopes, the
@@ -80,6 +82,11 @@ public class VaadinConfiguration implements ApplicationContextAware,
         return new DefaultViewCache();
     }
 
+    @Bean
+    VaadinSpringComponentFactory componentFactory() {
+        return new VaadinSpringComponentFactory();
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext)
             throws BeansException {
@@ -95,7 +102,10 @@ public class VaadinConfiguration implements ApplicationContextAware,
     @Override
     public void postProcessBeanFactory(
             ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        // NOP
+
+        VaadinSpringComponentFactory componentFactory = beanFactory
+                .getBean(VaadinSpringComponentFactory.class);
+        Design.setComponentFactory(componentFactory);
     }
 
 }
