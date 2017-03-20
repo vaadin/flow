@@ -15,19 +15,48 @@
  */
 package com.vaadin.humminbird.tutorial.polymer;
 
+import com.vaadin.annotations.EventData;
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.template.PolymerTemplate;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 @CodeFor("tutorial-template-basic.asciidoc")
 public class HelloWorldTutorial {
 
-    @Tag("hello-world")
-    @HtmlImport("/com/example/HelloWorld.html")
-    public class HelloWorld extends PolymerTemplate {
+    /**
+     * Model for the template.
+     */
+    public interface HelloWorldModel extends TemplateModel {
+        /**
+         * Sets the text to show in the template.
+         *
+         * @param text
+         *            the text to show in the template
+         */
+        void setText(String text);
+    }
 
+    @Tag("hello-world")
+    @HtmlImport("/polymer/location/polymer.html")
+    @HtmlImport("/com/example/HelloWorld.html")
+    public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
+
+        /**
+         * Creates the hello world template.
+         */
+        public HelloWorld() {
+            setId("template");
+        }
+
+        @EventHandler
+        private void sayHello(@EventData("event.hello") String inputValue) {
+            // Called from the template click handler
+            getModel().setText(inputValue);
+        }
     }
 
     public void useTemplate() {
