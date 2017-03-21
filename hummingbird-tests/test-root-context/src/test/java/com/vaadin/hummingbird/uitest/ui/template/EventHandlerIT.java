@@ -19,12 +19,15 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
+import com.vaadin.hummingbird.testcategory.ChromeTests;
+import com.vaadin.hummingbird.testutil.SingleBrowserTest;
 import com.vaadin.testbench.By;
 
-public class EventHandlerIT extends ChromeBrowserTest {
+@Category(ChromeTests.class)
+public class EventHandlerIT extends SingleBrowserTest {
 
     @Test
     public void handleEventOnServer() {
@@ -62,5 +65,4 @@ public class EventHandlerIT extends ChromeBrowserTest {
                 "Overridden server event was invoked with result: ClientSide handler",
                 findElement(By.id("overridden-event-handler-result")).getText());
     }
-
 }
