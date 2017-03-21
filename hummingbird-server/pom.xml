@@ -152,6 +152,15 @@
                 <test.excludegroup></test.excludegroup>
             </properties>
         </profile>
+        <profile>
+            <id>all-tests-teamcity</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <test.excludegroup></test.excludegroup>
+            </properties>
+        </profile>
     </profiles>
 
 </project>
