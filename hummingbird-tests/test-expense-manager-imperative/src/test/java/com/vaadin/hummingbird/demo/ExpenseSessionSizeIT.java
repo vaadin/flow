@@ -21,18 +21,12 @@ import org.junit.Test;
 import com.vaadin.hummingbird.demo.expensemanager.MemoryUsageMonitor;
 import com.vaadin.hummingbird.testutil.AbstractTestBenchTest;
 
-// Extending AbstractTestBenchTest to get a consistent getTestURL() method
-public class ExpenseSessionSizeIT extends AbstractTestBenchTest {
+public class ExpenseSessionSizeIT {
 
     private static final Pattern usagePattern = Pattern
             .compile("Heap usage with (\\d+) UIs: (\\d+)");
 
     private static ExecutorService uiOpenExecutor;
-
-    @Override
-    protected String getTestPath() {
-        return "";
-    }
 
     private static class UsageReport {
         private final int uiCount;
@@ -135,7 +129,7 @@ public class ExpenseSessionSizeIT extends AbstractTestBenchTest {
     }
 
     private UsageReport getUsage() {
-        String statusUrl = getTestURL() + MemoryUsageMonitor.PATH;
+        String statusUrl = getTestURL(MemoryUsageMonitor.PATH);
 
         try {
             String line = IOUtils
@@ -161,5 +155,10 @@ public class ExpenseSessionSizeIT extends AbstractTestBenchTest {
         // value=&#39;&lt;value&gt;&#39;]
         System.out.println("##teamcity[buildStatisticValue key='" + key
                 + "' value='" + value + "']");
+    }
+
+    private String getTestURL(String path) {
+        return AbstractTestBenchTest.getTestURL(
+                "http://localhost:" + AbstractTestBenchTest.SERVER_PORT, path);
     }
 }
