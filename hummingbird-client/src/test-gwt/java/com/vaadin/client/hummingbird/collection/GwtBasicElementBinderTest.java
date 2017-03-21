@@ -84,6 +84,7 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
     private CollectingStateTree tree;
 
     private StateNode node;
+    private StateNode polymerNode;
 
     private NodeMap properties;
     private NodeMap attributes;
@@ -122,6 +123,14 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         nextId = node.getId() + 1;
 
         element = Browser.getDocument().createElement("div");
+
+        polymerNode = new StateNode(0, new StateTree(new Registry()));
+        // populate "element data" feature to be able to bind node as a plain
+        // element
+        polymerNode.getMap(NodeFeatures.ELEMENT_DATA);
+
+        element = Browser.getDocument().createElement("div");
+        Binder.bind(polymerNode, element);
     }
 
     public void testBindExistingProperty() {
@@ -798,6 +807,34 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         assertEquals(1, element.getChildElementCount());
         assertEquals("CHILD", element.getFirstElementChild().getTagName());
+    }
+
+    public void testPropertyAdded() {
+        String propertyName = "black";
+        String propertyValue = "coffee";
+
+        setModelProperty(polymerNode, propertyName, propertyValue);
+
+        assertEquals(propertyValue,
+                WidgetUtil.getJsProperty(element, propertyName));
+    }
+
+    public void testPropertyUpdated() {
+        String propertyName = "black";
+        String propertyValue = "coffee";
+        setModelProperty(polymerNode, propertyName, propertyValue);
+        String newValue = "tea";
+
+        setModelProperty(polymerNode, propertyName, newValue);
+
+        assertEquals(newValue, WidgetUtil.getJsProperty(element, propertyName));
+    }
+
+    private static void setModelProperty(StateNode stateNode, String name,
+                                         String value) {
+        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(name)
+                .setValue(value);
+        Reactive.flush();
     }
 
 }
