@@ -36,8 +36,7 @@ import org.junit.Test;
 
 import com.vaadin.hummingbird.testutil.AbstractTestBenchTest;
 
-// Extending AbstractTestBenchTest to get a consistent getTestURL() method
-public class SessionSizeIT extends AbstractTestBenchTest {
+public class SessionSizeIT {
 
     private static final Pattern usagePattern = Pattern
             .compile("Heap usage with (\\d+) UIs: (\\d+)");
@@ -52,11 +51,6 @@ public class SessionSizeIT extends AbstractTestBenchTest {
             this.uiCount = uiCount;
             this.memoryUsage = memoryUsage;
         }
-    }
-
-    @Override
-    protected String getTestPath() {
-        return HelloWorldUI.PATH;
     }
 
     @Test
@@ -128,9 +122,8 @@ public class SessionSizeIT extends AbstractTestBenchTest {
 
     private void openTestUIs(int uiCount, int buttonCount) {
         // Submit to executor
-        List<Future<?>> futures = Stream
-                .generate(() -> uiOpenExecutor
-                        .submit(() -> openSession(buttonCount)))
+        List<Future<?>> futures = Stream.generate(
+                () -> uiOpenExecutor.submit(() -> openSession(buttonCount)))
                 .limit(uiCount).collect(Collectors.toList());
 
         // Wait for all tasks to finish
@@ -144,7 +137,7 @@ public class SessionSizeIT extends AbstractTestBenchTest {
     }
 
     private UsageReport getUsage() {
-        String statusUrl = getTestURL() + ".." + MemoryUsageMonitor.PATH;
+        String statusUrl = getTestURL(MemoryUsageMonitor.PATH);
 
         try {
             String line = IOUtils
@@ -166,7 +159,7 @@ public class SessionSizeIT extends AbstractTestBenchTest {
     }
 
     private void openSession(int buttonCount) {
-        String url = getTestURL("buttons=" + buttonCount);
+        String url = getTestURL(HelloWorldUI.PATH, "buttons=" + buttonCount);
         try {
             String response = IOUtils.toString(new URL(url),
                     StandardCharsets.UTF_8);
@@ -178,4 +171,11 @@ public class SessionSizeIT extends AbstractTestBenchTest {
             throw new RuntimeException(e);
         }
     }
+
+    private String getTestURL(String path, String... params) {
+        return AbstractTestBenchTest.getTestURL(
+                "http://localhost:" + AbstractTestBenchTest.SERVER_PORT, path,
+                params);
+    }
+
 }
