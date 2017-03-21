@@ -122,7 +122,7 @@ public final class ServerEventObject extends JavaScriptObject {
             StateNode node) {
 
         if (node.getMap(NodeFeatures.ELEMENT_LISTENERS)
-                .hasPropertyValue(methodName) || containsMethod(node, methodName)) {
+                .hasPropertyValue(methodName)) {
             JsonArray dataArray = Json.createArray();
             ConstantPool constantPool = node.getTree().getRegistry()
                     .getConstantPool();
@@ -133,7 +133,7 @@ public final class ServerEventObject extends JavaScriptObject {
             JsArray<String> dataExpressions = constantPool
                     .get(expressionConstantKey);
 
-            JsonObject o = Json.createObject();
+            JsonObject object = Json.createObject();
             if (dataExpressions != null) {
                 for (int i = 0; i < dataExpressions.length(); i++) {
                     String expression = dataExpressions.get(i);
@@ -146,8 +146,12 @@ public final class ServerEventObject extends JavaScriptObject {
                     dataArray.set(i, expressionValue);
                 }
             }
-            o.put(NodeFeatures.ELEMENT_CALLBACK_DATA, dataArray);
-            return o;
+            object.put(NodeFeatures.ELEMENT_CALLBACK_DATA, dataArray);
+            return object;
+        } else if (containsMethod(node, methodName)) {
+            JsonObject object = Json.createObject();
+            object.put(NodeFeatures.ELEMENT_CALLBACK_DATA, Json.createArray());
+            return object;
         }
 
         return null;
