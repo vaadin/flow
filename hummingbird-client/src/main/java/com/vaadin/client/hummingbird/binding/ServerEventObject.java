@@ -31,7 +31,6 @@ import com.vaadin.hummingbird.shared.NodeFeatures;
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 

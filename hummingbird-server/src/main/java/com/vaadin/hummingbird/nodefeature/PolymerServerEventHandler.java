@@ -41,7 +41,7 @@ import elemental.json.JsonValue;
 
 /**
  * Collect methods annotated with {@link EventHandler} and register callbacks
- * for these methods to the PolymerTemplate component element
+ * for these methods to the PolymerTemplate component element.
  *
  * @author Vaadin Ltd
  *
