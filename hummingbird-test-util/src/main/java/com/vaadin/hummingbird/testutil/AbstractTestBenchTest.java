@@ -16,11 +16,17 @@
 package com.vaadin.hummingbird.testutil;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -28,20 +34,20 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.vaadin.hummingbird.router.View;
-import com.vaadin.testbench.ScreenshotOnFailureRule;
+import com.vaadin.testbench.annotations.BrowserConfiguration;
+import com.vaadin.testbench.annotations.BrowserFactory;
+import com.vaadin.testbench.annotations.RunOnHub;
+import com.vaadin.testbench.parallel.Browser;
+import com.vaadin.testbench.parallel.DefaultBrowserFactory;
 
 /**
  * Abstract base class for hummingbird TestBench tests, which are based on a
  * {@link View} class.
  */
+@RunOnHub("tb3-hub.intra.itmill.com")
+@BrowserFactory(DefaultBrowserFactory.class)
+@LocalExecution
 public abstract class AbstractTestBenchTest extends TestBenchHelpers {
-
-    /**
-     * The rule used for screenshot failures.
-     */
-    @Rule
-    public ScreenshotOnFailureRule screenshotOnFailure = new ScreenshotOnFailureRule(
-            this, true);
 
     /**
      * Default port for test server, possibly overridden with system property.
@@ -55,10 +61,13 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * {@value #SERVER_PORT_PROPERTY_KEY} or the default
      * {@value #DEFAULT_SERVER_PORT}.
      */
-    public static final String SERVER_PORT = System
-            .getProperty(SERVER_PORT_PROPERTY_KEY, DEFAULT_SERVER_PORT);
+    public static final int SERVER_PORT = Integer.parseInt(
+            System.getProperty(SERVER_PORT_PROPERTY_KEY, DEFAULT_SERVER_PORT));
 
-    private String hostnameAndPort = "http://localhost:" + SERVER_PORT;
+    public static final String USE_HUB_PROPERTY = "test.use.hub";
+
+    public static final boolean USE_HUB = Boolean.TRUE.toString()
+            .equals(System.getProperty(USE_HUB_PROPERTY, "false"));
 
     protected void open() {
         open((String[]) null);
@@ -92,9 +101,9 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * </p>
      * You will receive {@link NullPointerException} if you will use the
      * {@link com.vaadin.testbench.commands.TestBenchCommands#compareScreen(String)}
-     * method or any its overload before page is fully loaded.
-     * This happens because method {@link PhantomJSDriver#getScreenshotAs(OutputType)} receives empty base64 string
-     * as a command execution result.
+     * method or any its overload before page is fully loaded. This happens
+     * because method {@link PhantomJSDriver#getScreenshotAs(OutputType)}
+     * receives empty base64 string as a command execution result.
      *
      * @param parameters
      *            parameters to add to URL to open.
@@ -113,23 +122,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * @return the URL for the test
      */
     protected String getTestURL(String... parameters) {
-        String url = getRootURL();
-        while (url.endsWith("/")) {
-            url = url.substring(0, url.length() - 1);
-        }
-        url = url + getTestPath();
-
-        if (parameters != null && parameters.length != 0) {
-            if (!url.contains("?")) {
-                url += "?";
-            } else {
-                url += "&";
-            }
-
-            url += Arrays.stream(parameters).collect(Collectors.joining("&"));
-        }
-
-        return url;
+        return getTestURL(getRootURL(), getTestPath(), parameters);
     }
 
     /**
@@ -146,7 +139,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * @return the URL to the root
      */
     protected String getRootURL() {
-        return hostnameAndPort;
+        return "http://" + getDeploymentHostname() + ":" + getDeploymentPort();
     }
 
     /**
@@ -204,4 +197,186 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 testBench().compareScreen(identifier));
     }
 
+    /**
+     * Produces a collection of browsers to run the test on. This method is
+     * executed by the test runner when determining how many test methods to
+     * invoke and with what parameters. For each returned value a test method is
+     * ran and before running that,
+     * {@link #setDesiredCapabilities(DesiredCapabilities)} is invoked with the
+     * value returned by this method.
+     *
+     * @return The browsers to run the test on
+     */
+    @BrowserConfiguration
+    public List<DesiredCapabilities> getBrowsersToTest() {
+        if (getLocalExecution().isPresent()) {
+            return getBrowserCapabilities(getLocalExecution().get().value());
+        }
+        return getHubBrowsersToTest();
+    }
+
+    /**
+     * Gets the browsers capabilities list to execute test on the tests Hub.
+     * <p>
+     * This list will be used only for the tests Hub. Local test execution is
+     * managed by {@link LocalExecution} annotation.
+     * <p>
+     * The method {@link #getBrowsersToTest()} delegates the logic to this
+     * method in case {@link #getLocalExecution()} return value is an empty
+     * optional (i.e. the tests Hub is used).
+     * 
+     * @return the browsers capabilities list to execute test on the tests Hub
+     */
+    protected List<DesiredCapabilities> getHubBrowsersToTest() {
+        return getBrowserCapabilities(Browser.IE11, Browser.FIREFOX,
+                Browser.CHROME, Browser.PHANTOMJS);
+    }
+
+    /**
+     * Gets browser capabilities for the provided <code>browsers</code>.
+     * 
+     * @param browsers
+     *            a browsers list
+     * @return the capabilities for the given <code>browsers</code>
+     */
+    protected List<DesiredCapabilities> getBrowserCapabilities(
+            Browser... browsers) {
+        List<DesiredCapabilities> capabilities = new ArrayList<>();
+        for (Browser browser : browsers) {
+            capabilities.add(browser.getDesiredCapabilities());
+        }
+        return capabilities;
+    }
+
+    /**
+     * Used to determine what URL to initially open for the test.
+     *
+     * @return the host name of development server
+     */
+    protected String getDeploymentHostname() {
+        if (getLocalExecution().isPresent()) {
+            return "localhost";
+        }
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface
+                    .getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface nwInterface = interfaces.nextElement();
+                if (!nwInterface.isUp() || nwInterface.isLoopback()
+                        || nwInterface.isVirtual()) {
+                    continue;
+                }
+                Optional<String> address = getHostAddress(nwInterface);
+                if (address.isPresent()) {
+                    return address.get();
+                }
+            }
+        } catch (SocketException e) {
+            throw new RuntimeException("Could not find the host name", e);
+        }
+        throw new RuntimeException(
+                "No compatible (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) ip address found.");
+    }
+
+    /**
+     * Used to determine what port the test is running on.
+     *
+     * @return The port the test is running on, by default
+     *         AbstractTestBenchTest.DEFAULT_SERVER_PORT
+     */
+    protected int getDeploymentPort() {
+        return SERVER_PORT;
+    }
+
+    @Override
+    protected String getHubHostname() {
+        if (getLocalExecution().isPresent()) {
+            return "localhost";
+        }
+        return super.getHubHostname();
+    }
+
+    @Override
+    protected Browser getRunLocallyBrowser() {
+        if (getLocalExecution().isPresent()) {
+            return getLocalExecution().get().value();
+        }
+        return super.getRunLocallyBrowser();
+    }
+
+    @Override
+    protected String getRunLocallyBrowserVersion() {
+        if (getLocalExecution().isPresent()) {
+            return getLocalExecution().get().browserVersion();
+        }
+        return super.getRunLocallyBrowserVersion();
+    }
+
+    /**
+     * Gets local execution ({@link LocalExecution}) configuration for the test.
+     * <p>
+     * If this method return an empty optional then test with be run on the test
+     * Hub
+     * 
+     * @see LocalExecution
+     * 
+     * @return an optional configuration, or an empty optional if configuration
+     *         is disabled or not available
+     * 
+     */
+    protected Optional<LocalExecution> getLocalExecution() {
+        if (USE_HUB) {
+            return Optional.empty();
+        }
+        return Optional
+                .ofNullable(getClass().getAnnotation(LocalExecution.class))
+                .filter(LocalExecution::active);
+    }
+
+    private Optional<String> getHostAddress(NetworkInterface nwInterface) {
+        Enumeration<InetAddress> addresses = nwInterface.getInetAddresses();
+        while (addresses.hasMoreElements()) {
+            InetAddress address = addresses.nextElement();
+            if (address.isLoopbackAddress()) {
+                continue;
+            }
+            if (address.isSiteLocalAddress()) {
+                return Optional.of(address.getHostAddress());
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the URL to be used for the test.
+     *
+     * @param parameters
+     *            query string parameters to add to the url
+     * @param rootUrl
+     *            the root URL of the server (hostname + port)
+     * @param testPath
+     *            the path of the test
+     *
+     * @return the URL for the test
+     */
+    public static String getTestURL(String rootUrl, String testPath,
+            String... parameters) {
+        while (rootUrl.endsWith("/")) {
+            rootUrl = rootUrl.substring(0, rootUrl.length() - 1);
+        }
+        rootUrl = rootUrl + testPath;
+
+        if (parameters != null && parameters.length != 0) {
+            if (!rootUrl.contains("?")) {
+                rootUrl += "?";
+            } else {
+                rootUrl += "&";
+            }
+
+            rootUrl += Arrays.stream(parameters)
+                    .collect(Collectors.joining("&"));
+        }
+
+        return rootUrl;
+    }
 }

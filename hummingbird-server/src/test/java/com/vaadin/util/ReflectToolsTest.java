@@ -15,8 +15,6 @@
  */
 package com.vaadin.util;
 
-import java.text.MessageFormat;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -123,7 +121,7 @@ public class ReflectToolsTest {
         try {
             ReflectTools.createProxyInstance(proxyClass, originalClass);
         } catch (IllegalArgumentException re) {
-            Assert.assertEquals(MessageFormat.format(
+            Assert.assertEquals(String.format(
                     ReflectTools.CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
                     originalClass.getName()), re.getMessage());
         }
@@ -140,8 +138,7 @@ public class ReflectToolsTest {
         try {
             ReflectTools.createInstance(cls);
         } catch (IllegalArgumentException re) {
-            Assert.assertEquals(
-                    MessageFormat.format(expectedError, cls.getName()),
+            Assert.assertEquals(String.format(expectedError, cls.getName()),
                     re.getMessage());
         }
     }

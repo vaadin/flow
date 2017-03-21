@@ -2,7 +2,6 @@ package com.vaadin.hummingbird.test.performance;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
@@ -52,6 +51,11 @@ public class HelloWorldIT extends AbstractTestBenchTest {
         return HelloWorldUI.PATH;
     }
 
+    @Override
+    public void setup() throws Exception {
+        // Disable common setup. All required setup is done in the test.
+    }
+
     @Test
     public void timeUntilButtonPresent_5ms_1500KBs() throws Exception {
         // Intranet
@@ -90,8 +94,7 @@ public class HelloWorldIT extends AbstractTestBenchTest {
 
         LocalTime start = LocalTime.now();
         open();
-        AtomicReference<WebElement> buttonHolder = new AtomicReference<>(
-                null);
+        AtomicReference<WebElement> buttonHolder = new AtomicReference<>(null);
         waitUntil(new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver arg0) {
