@@ -23,7 +23,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -45,12 +44,12 @@ public class ReflectTools implements Serializable {
     private static final Pattern SETTER_STARTS = Pattern.compile("^set\\p{Lu}");
     private static final Pattern SETTER_GETTER_STARTS = Pattern
             .compile("^(set|get|is)");
-    static final String CREATE_INSTANCE_FAILED = "Unable to create an instance of {0}. Make sure it has a no-arg constructor";
-    static final String CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS = "Unable to create an instance of {0}. Make sure the class is static if it is an inner class.";
-    static final String CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION = "Unable to create an instance of {0}. Make sure the class is public and that is has a public no-arg constructor.";
-    static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of {0}. Make sure the class has a public no-arg constructor.";
-    static final String CREATE_INSTANCE_FAILED_LOCAL_CLASS = "Unable to create an instance of LocalClass {0}. Move class declaration outside the method.";
-    static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of {0}. The constructor threw an exception.";
+    static final String CREATE_INSTANCE_FAILED = "Unable to create an instance of '%s'. Make sure it has a no-arg constructor";
+    static final String CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS = "Cannot instantiate '%s'. Make sure the class is static if it is an inner class.";
+    static final String CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION = "Unable to create an instance of '%s'. Make sure the class is public and that is has a public no-arg constructor.";
+    static final String CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR = "Unable to create an instance of '%s'. Make sure the class has a public no-arg constructor.";
+    static final String CREATE_INSTANCE_FAILED_LOCAL_CLASS = "Cannot instantiate local class '%s'. Move class declaration outside the method.";
+    static final String CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION = "Unable to create an instance of '%s'. The constructor threw an exception.";
 
     /**
      * Locates the method in the given class. Returns null if the method is not
@@ -435,56 +434,76 @@ public class ReflectTools implements Serializable {
     }
 
     /**
-     * Creates an instance of the given {@code proxyClass} with no-arg constructor.
+     * Creates an instance of the given {@code proxyClass} with no-arg
+     * constructor.
      * <p>
      * Catches all exceptions which might occur and wraps them in a
      * {@link IllegalArgumentException} with a descriptive error message hinting
      * of what might be wrong with the class that could not be instantiated.
-     * Descriptive message is derived based on the information about the {@code originalClass}.
+     * Descriptive message is derived based on the information about the
+     * {@code originalClass}.
      *
-     * @param proxyClass the proxy class to instantiate
-     * @param originalClass the class that is used to determine exception description, if creation fails
-     * @param <T> type of a proxy class
+     * @param proxyClass
+     *            the proxy class to instantiate
+     * @param originalClass
+     *            the class that is used to determine exception description, if
+     *            creation fails
+     * @param <T>
+     *            type of a proxy class
      * @return instance of a proxyClass
-     * @throws IllegalArgumentException if class instance creation fails
+     * @throws IllegalArgumentException
+     *             if class instance creation fails
      */
-    public static <T> T createProxyInstance(Class<T> proxyClass, Class<?> originalClass) {
+    public static <T> T createProxyInstance(Class<T> proxyClass,
+            Class<?> originalClass) {
+        checkClassAccessability(originalClass);
         try {
             return proxyClass.getConstructor().newInstance();
         } catch (NoSuchMethodException e) {
-            if (originalClass.isMemberClass() && !Modifier.isStatic(originalClass.getModifiers())) {
-                throw new IllegalArgumentException(MessageFormat.format(
-                        CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
-                        originalClass.getName()), e);
-            } else if (originalClass.isLocalClass()) {
-                throw new IllegalArgumentException(MessageFormat.format(
-                        CREATE_INSTANCE_FAILED_LOCAL_CLASS,
-                        originalClass.getName()), e);
-            } else {
-                throw new IllegalArgumentException(MessageFormat.format(
-                        CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
-                        originalClass.getName()), e);
-            }
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_NO_PUBLIC_NOARG_CONSTRUCTOR,
+                    originalClass.getName()), e);
         } catch (InstantiationException e) {
-            if (originalClass.isMemberClass() && !Modifier.isStatic(originalClass.getModifiers())) {
-                throw new IllegalArgumentException(MessageFormat.format(
+            if (originalClass.isMemberClass()
+                    && !Modifier.isStatic(originalClass.getModifiers())) {
+                throw new IllegalArgumentException(String.format(
                         CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
                         originalClass.getName()), e);
             } else {
-                throw new IllegalArgumentException(MessageFormat
-                        .format(CREATE_INSTANCE_FAILED, originalClass.getName()), e);
+                throw new IllegalArgumentException(String.format(
+                        CREATE_INSTANCE_FAILED, originalClass.getName()), e);
             }
         } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(MessageFormat.format(
-                    CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION, originalClass.getName()), e);
-        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException(
-                    MessageFormat.format(CREATE_INSTANCE_FAILED, originalClass.getName()),
+                    String.format(CREATE_INSTANCE_FAILED_ACCESS_EXCEPTION,
+                            originalClass.getName()),
                     e);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED, originalClass.getName()), e);
         } catch (InvocationTargetException e) {
-            throw new IllegalArgumentException(MessageFormat.format(
+            throw new IllegalArgumentException(String.format(
                     CREATE_INSTANCE_FAILED_CONSTRUCTOR_THREW_EXCEPTION,
                     originalClass.getName()), e);
+        }
+    }
+
+    /**
+     * Makes a check whether the {@code clazz} is externally accessible for
+     * instantiation (e.g. it's not inner class (nested and not static) and is
+     * not a local class).
+     * 
+     * @param clazz
+     *            type to check
+     */
+    public static void checkClassAccessability(Class<?> clazz) {
+        if (clazz.isMemberClass() && !Modifier.isStatic(clazz.getModifiers())) {
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_FOR_NON_STATIC_MEMBER_CLASS,
+                    clazz.getName()));
+        } else if (clazz.isLocalClass()) {
+            throw new IllegalArgumentException(String.format(
+                    CREATE_INSTANCE_FAILED_LOCAL_CLASS, clazz.getName()));
         }
     }
 
