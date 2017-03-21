@@ -15,19 +15,17 @@
  */
 package com.vaadin.hummingbird.testutil;
 
-import org.junit.Before;
+import java.util.Optional;
 
 /**
- * Base class for TestBench tests for PhantomJS.
+ * Base class for TestBench tests for local PhantomJS tests ONLY.
  */
 public class PhantomJSTest extends ViewOrUITest {
 
-    /**
-     * Setup the PhantomJS driver.
-     */
-    @Before
-    public void setupDriver() {
-        setupPhantomJsDriver();
+    @Override
+    protected Optional<LocalExecution> getLocalExecution() {
+        // Explicitly ignore any test Hub settings from the superclass
+        return Optional.ofNullable(AbstractTestBenchTest.class
+                .getAnnotation(LocalExecution.class));
     }
-
 }
