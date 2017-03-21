@@ -22,14 +22,13 @@ import com.vaadin.hummingbird.nodefeature.ElementClassList;
 import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.ElementServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
-import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
-import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
@@ -146,14 +145,9 @@ public class NodeFeatures {
     public static final int PUBLISHED_SERVER_EVENT_HANDLERS = 22;
 
     /**
-     * Id for {@link PolymerServerEventHandlers}.
+     * Id for {@link ElementServerEventHandlers}.
      */
-    public static final int POLYMER_SERVER_EVENT_HANDLERS = 23;
-
-    /**
-     * Id for {@link PolymerEventListenerMap}.
-     */
-    public static final int POLYMER_EVENT_LISTENERS = 24;
+    public static final int ELEMENT_SERVER_EVENT_HANDLERS = 23;
 
     /**
      * Key for {@link ElementData#getTag()}.

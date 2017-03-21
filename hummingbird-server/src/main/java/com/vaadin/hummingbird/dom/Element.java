@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,6 +35,7 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.CustomAttribute;
 import com.vaadin.hummingbird.nodefeature.ElementData;
+import com.vaadin.hummingbird.nodefeature.ElementServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
@@ -46,6 +48,7 @@ import com.vaadin.ui.ComponentUtil;
 import com.vaadin.ui.Page;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -1543,5 +1546,33 @@ public class Element implements Serializable {
                     jsParameters);
         });
 
+    }
+
+    /**
+     * Add a client-side event property listener with custom server side
+     * callback.
+     * <p>
+     * {@code callback} will be used when a event by the name
+     * '{@code callbackEvent}' is fired on the client.
+     * <p>
+     * {@code callback} {@code JsonObject} will contain data in the format
+     * (argumentExpression, evaluatedValue)
+     *
+     * @param callbackEvent
+     *            event property for which the callback will be invoked
+     * @param callback
+     *            callback accepting return arguments
+     * @param argumentExpressions
+     *            expressions to evaluate for event
+     * @return a handle that can be used for removing the listener
+     */
+    public EventRegistrationHandle addCallback(String callbackEvent,
+            Consumer<JsonObject> callback, String... argumentExpressions) {
+        getNode().getFeature(ElementServerEventHandlers.class)
+                .addServerEvent(callbackEvent);
+
+        return addEventListener(callbackEvent,
+                domEvent -> callback.accept(domEvent.getEventData()),
+                argumentExpressions);
     }
 }

@@ -58,7 +58,7 @@ public class ConstantPool {
      *         otherwise <code>false</code>
      */
     public boolean has(String key) {
-        assert key != null;
+        assert key != null : "Can not check has for null key";
         return constants.has(key);
     }
 
@@ -73,7 +73,7 @@ public class ConstantPool {
     @SuppressWarnings("unchecked")
     // Returns any type to make it easier to use constants as JsInterop types
     public <T> T get(String key) {
-        assert key != null;
+        assert key != null : "Get for null key not accepted";
         return (T) constants.get(key);
     }
 

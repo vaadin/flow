@@ -24,13 +24,14 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.json.Json;
-import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -94,54 +95,70 @@ public final class ServerEventObject extends JavaScriptObject {
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
             var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, methodName, node);
             if(args === null) {
+                // AngularTemplate goes through this branch.
                 args = Array.prototype.slice.call(arguments);
+                tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
+            } else {
+                tree.@com.vaadin.client.hummingbird.StateTree::sendEventToServer(*)(node, methodName, args);
             }
-            tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
         });
     }-*/;
 
     /**
      * Collect extra data for element event if any has been sent from the
-     * server. Note! Data is sent in the array in the same order as defined on
-     * the server side.
+     * server.
      * 
      * @param event
-     *            The fired Event
+     *            the fired event
      * @param methodName
-     *            Method name that is called
+     *            method name that is called
      * @param node
-     *            Target node
-     * @return Array of extra event data
+     *            target node
+     * @return JsonObject containing evaluated data
      */
-    private JsonArray getEventData(Event event, String methodName,
+    private JsonObject getEventData(Event event, String methodName,
             StateNode node) {
 
-        if (node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+        if (node.getMap(NodeFeatures.ELEMENT_LISTENERS)
                 .hasPropertyValue(methodName)) {
-            JsonArray dataArray = Json.createArray();
             ConstantPool constantPool = node.getTree().getRegistry()
                     .getConstantPool();
             String expressionConstantKey = (String) node
-                    .getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+                    .getMap(NodeFeatures.ELEMENT_LISTENERS)
                     .getProperty(methodName).getValue();
 
             JsArray<String> dataExpressions = constantPool
                     .get(expressionConstantKey);
 
-            for (int i = 0; i < dataExpressions.length(); i++) {
-                String expression = dataExpressions.get(i);
+            JsonObject object = Json.createObject();
+            if (dataExpressions != null) {
+                for (int i = 0; i < dataExpressions.length(); i++) {
+                    String expression = dataExpressions.get(i);
 
-                ServerEventDataExpression dataExpression = getOrCreateExpression(
-                        expression);
-                JsonValue expressionValue = dataExpression.evaluate(event,
-                        this);
+                    ServerEventDataExpression dataExpression = getOrCreateExpression(
+                            expression);
+                    JsonValue expressionValue = dataExpression.evaluate(event,
+                            this);
 
-                dataArray.set(i, expressionValue);
+                    object.put(expression, expressionValue);
+                }
             }
-            return dataArray;
+            return object;
+        } else if (containsMethod(node, methodName)) {
+            return Json.createObject();
         }
 
         return null;
+    }
+
+    private boolean containsMethod(StateNode node, String methodName) {
+        NodeList list = node
+                .getList(NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS);
+        for (int i = 0; i < list.length(); i++) {
+            if (list.get(i).equals(methodName))
+                return true;
+        }
+        return false;
     }
 
     /**
