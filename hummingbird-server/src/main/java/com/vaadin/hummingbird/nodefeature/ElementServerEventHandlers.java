@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.nodefeature;
 import com.vaadin.hummingbird.StateNode;
 
 /**
- * Methods which are published as event-handlers on the client side.
+ * Methods which are published as event callbacks on the client side.
  *
  * @author Vaadin Ltd
  *

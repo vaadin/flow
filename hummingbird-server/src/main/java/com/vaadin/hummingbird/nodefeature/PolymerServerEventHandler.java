@@ -34,8 +34,14 @@ import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.server.communication.MethodInvocationUtil;
 import com.vaadin.util.ReflectTools;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
+import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+
 /**
- * Methods which are published as event-handlers on the client side.
+ * Collect methods annotated with {@link EventHandler} and register callbacks
+ * for these methods to the PolymerTemplate component element
  *
  * @author Vaadin Ltd
  *
@@ -64,11 +70,25 @@ public class PolymerServerEventHandler {
         Map<String, Method> map = collectEventHandlerMethods(
                 component.getClass());
 
-        map.keySet()
-                .forEach(method -> component.getElement().addCallback(method,
-                        data -> MethodInvocationUtil.invokeMethod(component,
-                                component.getClass(), method, data),
-                        getParameters(map.get(method))));
+        map.keySet().forEach(method -> {
+            String[] parameters = getParameters(map.get(method));
+
+            component.getElement().addCallback(method,
+                    data -> MethodInvocationUtil.invokeMethod(component,
+                            component.getClass(), method,
+                            collectMethodData(data, parameters)),
+                    parameters);
+        });
+    }
+
+    private JsonArray collectMethodData(JsonObject data, String[] parameters) {
+        JsonArray dataArray = Json.createArray();
+
+        for (int i = 0; i < parameters.length; i++) {
+            dataArray.set(i, (JsonValue) data.get(parameters[i]));
+        }
+
+        return dataArray;
     }
 
     protected Map<String, Method> collectEventHandlerMethods(

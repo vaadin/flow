@@ -52,7 +52,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
     private Registry registry;
 
-    private Map<String, JsonArray> serverMethods = new HashMap<>();
+    private Map<String, JsonObject> serverMethods = new HashMap<>();
     private Map<String, StateNode> serverRpcNodes = new HashMap<>();
 
     @Override
@@ -79,8 +79,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
             @Override
             public void sendEventToServer(StateNode node, String methodName,
                     JsonObject eventData) {
-                serverMethods.put(methodName,
-                        eventData.getArray(NodeFeatures.ELEMENT_CALLBACK_DATA));
+                serverMethods.put(methodName, eventData);
                 serverRpcNodes.put(methodName, node);
             }
         };
@@ -151,7 +150,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
         assertEquals(1, serverMethods.size());
         assertEquals(methodName, serverMethods.keySet().iterator().next());
-        assertEquals(0, serverMethods.get(methodName).length());
+        assertEquals(0, serverMethods.get(methodName).keys().length);
         assertEquals(node, serverRpcNodes.get(methodName));
     }
 
@@ -183,9 +182,9 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         assertEquals("Expected method did not match", methodName,
                 serverMethods.keySet().iterator().next());
         assertEquals("Wrong amount of method arguments", 1,
-                serverMethods.get(methodName).length());
+                serverMethods.get(methodName).keys().length);
         assertEquals("Gotten argument wasn't as expected", "2",
-                serverMethods.get(methodName).get(0).toString());
+                serverMethods.get(methodName).get(eventData).toString());
         assertEquals("Method node did not match the expected node.", node,
                 serverRpcNodes.get(methodName));
     }
@@ -195,6 +194,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         String methodId = "handlerId";
         String eventData = "event.button";
         String eventData2 = "event.result";
+        String extraArgument = "Extra String argument";
 
         node.getList(NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS).add(0,
                 methodName);
@@ -215,19 +215,19 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         setPrototypeEventHandler(element, methodName);
 
         NativeFunction mockedFunction = new NativeFunction("this." + methodName
-                + "({button: 2}, 'Extra String argument')");
+                + "({button: 2}, '" + extraArgument + "')");
         mockedFunction.apply(element, JsCollections.array());
 
-        JsonArray result = Json.createArray();
-        result.set(0, 2);
-        result.set(1, "Extra String argument");
+        JsonObject result = Json.createObject();
+        result.put("event.button", 2);
+        result.put("event.result", extraArgument);
 
         assertEquals("The amount of server methods was not as expected", 1,
                 serverMethods.size());
         assertEquals("Expected method did not match", methodName,
                 serverMethods.keySet().iterator().next());
-        assertEquals("Wrong amount of method arguments", result.length(),
-                serverMethods.get(methodName).length());
+        assertEquals("Wrong amount of method arguments", result.keys().length,
+                serverMethods.get(methodName).keys().length);
         assertEquals("Gotten argument wasn't as expected",
                 WidgetUtil.toPrettyJson(result),
                 WidgetUtil.toPrettyJson(serverMethods.get(methodName)));

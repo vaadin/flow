@@ -15,8 +15,6 @@
  */
 package com.vaadin.hummingbird.shared;
 
-import java.util.function.Consumer;
-
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
@@ -24,6 +22,7 @@ import com.vaadin.hummingbird.nodefeature.ElementClassList;
 import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.ElementServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
 import com.vaadin.hummingbird.nodefeature.ModelList;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
@@ -39,7 +38,6 @@ import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.nodefeature.TemplateOverridesMap;
 import com.vaadin.hummingbird.nodefeature.TextNodeMap;
-import com.vaadin.hummingbird.nodefeature.ElementServerEventHandlers;
 
 /**
  * Registry of node feature id numbers and map keys shared between server and
@@ -170,11 +168,6 @@ public class NodeFeatures {
      * Key for {@link TemplateMap#getModelDescriptor()}.
      */
     public static final String MODEL_DESCRIPTOR = "descriptor";
-
-    /**
-     * Key for {@link com.vaadin.hummingbird.dom.Element#addCallback(String, Consumer, String...)}
-     */
-    public static final String ELEMENT_CALLBACK_DATA = "data";
 
     private NodeFeatures() {
         // Only static

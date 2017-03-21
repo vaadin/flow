@@ -95,7 +95,8 @@ public final class ServerEventObject extends JavaScriptObject {
             var event = eventParameter || $wnd.event;
             var tree = node.@com.vaadin.client.hummingbird.StateNode::getTree()();
             var args = this.@com.vaadin.client.hummingbird.binding.ServerEventObject::getEventData(*)(event, methodName, node);
-            if(args === null) {//&& !this.@com.vaadin.client.hummingbird.binding.ServerEventObject::containsMethod(*)(node, methodName)) {
+            if(args === null) {
+                // AngularTemplate goes through this branch.
                 args = Array.prototype.slice.call(arguments);
                 tree.@com.vaadin.client.hummingbird.StateTree::sendTemplateEventToServer(*)(node, methodName, args);
             } else {
@@ -106,23 +107,21 @@ public final class ServerEventObject extends JavaScriptObject {
 
     /**
      * Collect extra data for element event if any has been sent from the
-     * server. Note! Data is sent in the array in the same order as defined on
-     * the server side.
+     * server.
      * 
      * @param event
-     *            The fired Event
+     *            the fired event
      * @param methodName
-     *            Method name that is called
+     *            method name that is called
      * @param node
-     *            Target node
-     * @return Array of extra event data
+     *            target node
+     * @return JsonObject containing evaluated data
      */
     private JsonObject getEventData(Event event, String methodName,
             StateNode node) {
 
         if (node.getMap(NodeFeatures.ELEMENT_LISTENERS)
                 .hasPropertyValue(methodName)) {
-            JsonArray dataArray = Json.createArray();
             ConstantPool constantPool = node.getTree().getRegistry()
                     .getConstantPool();
             String expressionConstantKey = (String) node
@@ -142,15 +141,12 @@ public final class ServerEventObject extends JavaScriptObject {
                     JsonValue expressionValue = dataExpression.evaluate(event,
                             this);
 
-                    dataArray.set(i, expressionValue);
+                    object.put(expression, expressionValue);
                 }
             }
-            object.put(NodeFeatures.ELEMENT_CALLBACK_DATA, dataArray);
             return object;
         } else if (containsMethod(node, methodName)) {
-            JsonObject object = Json.createObject();
-            object.put(NodeFeatures.ELEMENT_CALLBACK_DATA, Json.createArray());
-            return object;
+            return Json.createObject();
         }
 
         return null;

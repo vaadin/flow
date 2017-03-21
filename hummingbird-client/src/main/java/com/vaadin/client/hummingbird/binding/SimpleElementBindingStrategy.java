@@ -174,7 +174,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(ServerEventHandlerBinder
                 .bindServerEventHandlerNames(htmlNode, stateNode));
 
-        listeners.push(bindPolymerEventHandlerNames(context));
+        listeners.push(bindServerEventHandlerNames(context));
 
         bindModelProperties(stateNode, htmlNode);
     }
@@ -526,7 +526,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         });
     }
 
-    private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
+    private EventRemover bindServerEventHandlerNames(BindingContext context) {
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 () -> WidgetUtil.crazyJsoCast(context.element), context.node,
                 NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS);

@@ -178,7 +178,7 @@ public class ComponentEventBus implements Serializable {
 
     /**
      * Creates a list of data objects which can be passed to the constructor
-     * returned by {@link getEventConstructor(Class)} as parameters 3+.
+     * returned by {@link ComponentEventBusUtil#getEventConstructor(Class)} as parameters 3+.
      *
      * @param domEvent
      *            the DOM event containing the data
