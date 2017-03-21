@@ -44,6 +44,9 @@ import elemental.json.JsonValue;
  */
 public final class MethodInvocationUtil {
 
+    private MethodInvocationUtil() {
+    }
+
     /**
      * Invoke method using correct data types from JsonArray.
      *
@@ -141,11 +144,9 @@ public final class MethodInvocationUtil {
     private static JsonArray unwrapVarArgs(JsonArray argsFromClient,
             Method method) {
         int paramCount = method.getParameterCount();
-        if (argsFromClient.length() == paramCount) {
-            if (argsFromClient.get(paramCount - 1).getType()
-                    .equals(JsonType.ARRAY)) {
-                return argsFromClient;
-            }
+        if (argsFromClient.length() == paramCount && argsFromClient
+                .get(paramCount - 1).getType().equals(JsonType.ARRAY)) {
+            return argsFromClient;
         }
         JsonArray result = Json.createArray();
         JsonArray rest = Json.createArray();

@@ -32,7 +32,6 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.server.communication.MethodInvocationUtil;
-import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
 
 /**
@@ -48,13 +47,12 @@ public class PolymerServerEventHandler {
 
     /**
      * Get instance of PolymerServerEventHandler.
+     * 
      * @return
      */
     public static PolymerServerEventHandler instance() {
         return new PolymerServerEventHandler();
     }
-
-    Component component;
 
     /**
      * Bind event handlers for given {@link PolymerTemplate} component.
@@ -62,13 +60,19 @@ public class PolymerServerEventHandler {
      * @param component
      *            Component to bind event handlers for
      */
-    public void bindComponentMethods(PolymerTemplate<?> component) {
-        this.component = component;
+    public void bindComponentMethods(final PolymerTemplate<?> component) {
+        Map<String, Method> map = collectEventHandlerMethods(
+                component.getClass());
 
-        collectEventHandlerMethods(component.getClass());
+        map.keySet()
+                .forEach(method -> component.getElement().addCallback(method,
+                        data -> MethodInvocationUtil.invokeMethod(component,
+                                component.getClass(), method, data),
+                        getParameters(map.get(method))));
     }
 
-    protected void collectEventHandlerMethods(Class<?> classWithAnnotations) {
+    protected Map<String, Method> collectEventHandlerMethods(
+            Class<?> classWithAnnotations) {
         List<Method> methods = new ArrayList<>();
         collectEventHandlerMethods(classWithAnnotations, methods);
         Map<String, Method> map = new HashMap<>();
@@ -85,11 +89,7 @@ public class PolymerServerEventHandler {
             }
             map.put(method.getName(), method);
         }
-        map.keySet().forEach(
-                method -> component.getElement().addCallback(method, data -> {
-                    MethodInvocationUtil.invokeMethod(component,
-                            component.getClass(), method, data);
-                }, getParameters(map.get(method))));
+        return map;
     }
 
     /**

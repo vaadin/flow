@@ -25,7 +25,6 @@ import java.util.List;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.dom.DomEvent;
-import com.vaadin.hummingbird.dom.DomEventListener;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.ui.Component;

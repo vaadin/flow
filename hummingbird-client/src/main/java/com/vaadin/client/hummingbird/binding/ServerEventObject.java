@@ -24,7 +24,6 @@ import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
-import com.vaadin.client.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
@@ -158,7 +157,8 @@ public final class ServerEventObject extends JavaScriptObject {
     }
 
     private boolean containsMethod(StateNode node, String methodName) {
-        NodeList list = node.getList(NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS);
+        NodeList list = node
+                .getList(NodeFeatures.ELEMENT_SERVER_EVENT_HANDLERS);
         for (int i = 0; i < list.length(); i++) {
             if (list.get(i).equals(methodName))
                 return true;

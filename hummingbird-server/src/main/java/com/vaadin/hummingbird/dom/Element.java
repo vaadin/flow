@@ -35,7 +35,6 @@ import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.hummingbird.dom.impl.CustomAttribute;
 import com.vaadin.hummingbird.nodefeature.ElementData;
-import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
 import com.vaadin.hummingbird.nodefeature.ElementServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
