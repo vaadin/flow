@@ -18,18 +18,15 @@ package com.vaadin.hummingbird.uitest.ui.template;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.testcategory.ChromeTests;
-import com.vaadin.hummingbird.testutil.SingleBrowserTest;
+import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.By;
 
 /**
  * @author Vaadin Ltd.
  */
-@Category(ChromeTests.class)
-public class OneWayPolymerBindingIT extends SingleBrowserTest {
+public class OneWayPolymerBindingIT extends ChromeBrowserTest {
 
     @Test
     public void initialModelValueIsPresentAndModelUpdatesNormally() {
