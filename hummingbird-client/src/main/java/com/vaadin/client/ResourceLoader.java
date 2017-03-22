@@ -17,6 +17,7 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.Duration;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.RepeatingCommand;
 import com.google.gwt.user.client.Timer;
@@ -124,6 +125,9 @@ public class ResourceLoader {
             .map();
 
     private Registry registry;
+
+    private final boolean supportsHtmlWhenReady = GWT.isClient()
+            && supportsHtmlWhenReady();
 
     /**
      * Creates a new resource loader. You should not create you own resource
@@ -275,20 +279,55 @@ public class ResourceLoader {
             linkTag.setAttribute("rel", "import");
             linkTag.setAttribute("href", url);
 
-            addOnloadHandler(linkTag, new ResourceLoadListener() {
+            class LoadAndReadyListener
+                    implements ResourceLoadListener, Runnable {
+                private boolean errorFired = false;
+
+                @Override
+                public void run() {
+                    // Invoked through HTMLImports.whenReady
+                    if (!errorFired) {
+                        fireLoad(event);
+                    }
+                }
+
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
-                    fireLoad(event);
+                    if (!supportsHtmlWhenReady) {
+                        assert !errorFired;
+                        fireLoad(event);
+                    }
                 }
 
                 @Override
                 public void onError(ResourceLoadEvent event) {
+                    assert !errorFired;
+                    errorFired = true;
                     fireError(event);
                 }
-            }, event);
+            }
+            LoadAndReadyListener listener = new LoadAndReadyListener();
+
+            addOnloadHandler(linkTag, listener, event);
             getHead().appendChild(linkTag);
+
+            if (supportsHtmlWhenReady) {
+                addHtmlImportsReadyHandler(listener);
+            }
         }
     }
+
+    private static native boolean supportsHtmlWhenReady()
+    /*-{
+        return !!($wnd.HTMLImports && $wnd.HTMLImports.whenReady);
+    }-*/;
+
+    private static native void addHtmlImportsReadyHandler(Runnable handler)
+    /*-{
+        $wnd.HTMLImports.whenReady($entry(function() {
+            handler.@Runnable::run()();
+        }));
+    }-*/;
 
     /**
      * Adds an onload listener to the given element, which should be a link or a
