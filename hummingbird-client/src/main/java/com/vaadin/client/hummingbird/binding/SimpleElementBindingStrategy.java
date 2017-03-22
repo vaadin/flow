@@ -526,21 +526,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
-        NodeMap elementListeners = getPolymerEventListenerMap(context.node);
-        elementListeners.forEachProperty((property,
-                name) -> bindEventHandlerProperty(property, context));
-
-        elementListeners.addPropertyAddListener(
-                event -> bindEventHandlerProperty(event.getProperty(),
-                        context));
-
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 () -> WidgetUtil.crazyJsoCast(context.element), context.node,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
-    }
-
-    private NodeMap getPolymerEventListenerMap(StateNode node) {
-        return node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS);
     }
 
     private static EventDataExpression getOrCreateExpression(
