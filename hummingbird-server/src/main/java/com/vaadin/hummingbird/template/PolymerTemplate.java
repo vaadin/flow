@@ -17,6 +17,8 @@ package com.vaadin.hummingbird.template;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
@@ -35,4 +37,18 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
  */
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
+
+    /**
+     * Creates the component that is responsible for Polymer template
+     * functionality.
+     */
+    public PolymerTemplate() {
+        // This a workaround to propagate model to a Polymer template.
+        // Correct implementation will follow in
+        // https://github.com/vaadin/hummingbird/issues/1371
+
+        ModelMap modelMap = getStateNode().getFeature(ModelMap.class);
+        ModelDescriptor.get(getModelType()).getPropertyNames()
+                .forEach(propertyName -> modelMap.setValue(propertyName, null));
+    }
 }
