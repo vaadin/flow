@@ -318,4 +318,41 @@ public abstract class NodeMap extends NodeFeature {
         values.values().stream().filter(v -> v instanceof StateNode)
                 .forEach(v -> action.accept((StateNode) v));
     }
+
+    /**
+     * Receives a value update from the client. The map value is updated without
+     * creating a change record since the client already knows the current
+     * value. The value is only updated if
+     * {@link #mayUpdateFromClient(String, Serializable)} has been overridden to
+     * accept the value.
+     *
+     * @param key
+     *            the key to use
+     * @param value
+     *            the value to store
+     */
+    public void updateFromClient(String key, Serializable value) {
+        if (!mayUpdateFromClient(key, value)) {
+            throw new IllegalArgumentException("Feature " + toString()
+                    + " doesn't allow the client to update " + key);
+        }
+
+        put(key, value, false);
+    }
+
+    /**
+     * Checks whether the client is allowed to store the given value with the
+     * given key. Always returns <code>false</code> by default.
+     *
+     * @param key
+     *            the key to use
+     * @param value
+     *            the value to store
+     * @return <code>true</code> if the value update is accepted,
+     *         <code>false</code> if the value should not be allowed to be
+     *         updated
+     */
+    protected boolean mayUpdateFromClient(String key, Serializable value) {
+        return false;
+    }
 }

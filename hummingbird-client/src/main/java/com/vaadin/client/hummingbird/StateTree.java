@@ -20,6 +20,8 @@ import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
 import com.vaadin.client.hummingbird.collection.JsMap;
+import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.json.JsonArray;
@@ -172,20 +174,21 @@ public class StateTree {
     }
 
     /**
-     * Sends a property sync to the server.
+     * Sends a map property sync to the server.
      *
-     * @param node
-     *            the node containing the property
      * @param property
-     *            the property name
-     * @param value
-     *            the property value
+     *            the property that should have its value synced to the server,
+     *            not <code>null</code>
      */
-    public void sendPropertySyncToServer(StateNode node, String property,
-            Object value) {
+    public void sendNodePropertySyncToServer(MapProperty property) {
+        assert property != null;
+
+        NodeMap nodeMap = property.getMap();
+        StateNode node = nodeMap.getNode();
+
         assert assertValidNode(node);
-        registry.getServerConnector().sendPropertySyncMessage(node, property,
-                value);
+        registry.getServerConnector().sendNodeSyncMessage(node, nodeMap.getId(),
+                property.getName(), property.getValue());
     }
 
     /**

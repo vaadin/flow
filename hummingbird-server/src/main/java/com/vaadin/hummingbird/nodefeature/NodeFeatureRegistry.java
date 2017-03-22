@@ -15,9 +15,11 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -30,14 +32,13 @@ import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfiguration
  * @author Vaadin Ltd
  */
 public class NodeFeatureRegistry {
-    private static int nextNodeFeatureId = 0;
-
     // Non-private for testing purposes
     static final Map<Class<? extends NodeFeature>, NodeFeatureData> nodeFeatures = new HashMap<>();
+    private static final List<Class<? extends NodeFeature>> idToFeature = new ArrayList<>();
 
     private static class NodeFeatureData {
         private Function<StateNode, ? extends NodeFeature> factory;
-        private int id = nextNodeFeatureId++;
+        private int id = idToFeature.size();
 
         private <T extends NodeFeature> NodeFeatureData(
                 Function<StateNode, T> factory) {
@@ -90,6 +91,7 @@ public class NodeFeatureRegistry {
     private static <T extends NodeFeature> void registerFeature(Class<T> type,
             Function<StateNode, T> factory) {
         nodeFeatures.put(type, new NodeFeatureData(factory));
+        idToFeature.add(type);
     }
 
     /**
@@ -139,5 +141,17 @@ public class NodeFeatureRegistry {
                 + " has not been registered in NodeFeatureRegistry";
 
         return data;
+    }
+
+    /**
+     * Finds the node feature type corresponding to the give node feature id.
+     *
+     * @param featureId
+     *            the feature id for which to get a node feature type
+     *
+     * @return the node feature type
+     */
+    public static Class<? extends NodeFeature> getFeature(int featureId) {
+        return idToFeature.get(featureId);
     }
 }
