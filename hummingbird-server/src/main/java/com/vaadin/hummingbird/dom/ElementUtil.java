@@ -34,7 +34,7 @@ public class ElementUtil {
 
     public static final String A_STYLE_VALUE_CANNOT_BE_NULL = "A style value cannot be null";
     /**
-     * Pattern for maching valid tag names, according to
+     * Pattern for matching valid tag names, according to
      * https://www.w3.org/TR/html-markup/syntax.html#tag-name "HTML elements all
      * have names that only use characters in the range 0–9, a–z, and A–Z."
      */

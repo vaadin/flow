@@ -27,7 +27,7 @@ public class ClientEngineSizeIT {
             if (f.getName().endsWith(".cache.js")) {
                 if (cacheJsReported) {
                     throw new IOException(
-                            "Multiple uncompresed cache.js files found!");
+                            "Multiple uncompressed cache.js files found!");
                 }
                 printTeamcityStats("clientEngine", f.length());
                 cacheJsReported = true;

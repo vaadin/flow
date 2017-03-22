@@ -132,7 +132,7 @@ public class Heartbeat {
      */
     public final void setInterval(int heartbeatInterval) {
         Console.log(
-                "Setting hearbeat interval to " + heartbeatInterval + "sec.");
+                "Setting heartbeat interval to " + heartbeatInterval + "sec.");
         interval = heartbeatInterval;
         schedule();
     }

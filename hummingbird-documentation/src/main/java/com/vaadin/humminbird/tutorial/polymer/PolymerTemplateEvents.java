@@ -32,7 +32,7 @@ public class PolymerTemplateEvents {
 
         @EventHandler
         private void handleClick() {
-            System.out.println("Recieved a handle click event");
+            System.out.println("Received a handle click event");
         }
     }
 

@@ -261,7 +261,7 @@ public class StateTree {
             nodeFeatureDebugName.set(NodeFeatures.TEMPLATE_OVERRIDES,
                     "templateOverrides");
             nodeFeatureDebugName.set(NodeFeatures.OVERRIDE_DATA,
-                    "overideNodeData");
+                    "overrideNodeData");
         }
         if (nodeFeatureDebugName.has(id)) {
             return nodeFeatureDebugName.get(id);

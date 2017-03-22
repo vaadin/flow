@@ -334,7 +334,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 /*
                  * There's no current session, request or response when serving
                  * static resources, but there's still the current request
-                 * maintained by AppliationRunnerServlet, and there's most
+                 * maintained by ApplicationRunnerServlet, and there's most
                  * likely also a HttpSession containing a VaadinSession for that
                  * request.
                  */

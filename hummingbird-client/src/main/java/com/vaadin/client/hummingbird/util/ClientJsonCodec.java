@@ -70,7 +70,7 @@ public class ClientJsonCodec {
     /**
      * Decodes a value encoded on the server using
      * {@link JsonCodec#encodeWithoutTypeInfo(Object)}. This is a no-op in
-     * compiled JavaScipt since the JSON representation can be used as-is, but
+     * compiled JavaScript since the JSON representation can be used as-is, but
      * some special handling is needed for tests running in the JVM.
      *
      * @param json
@@ -131,7 +131,7 @@ public class ClientJsonCodec {
 
     /**
      * Converts a JSON array to a JS array. This is a no-op in compiled
-     * JavaScipt, but needs special handling for tests running in the JVM.
+     * JavaScript, but needs special handling for tests running in the JVM.
      *
      * @param jsonArray
      *            the JSON array to convert

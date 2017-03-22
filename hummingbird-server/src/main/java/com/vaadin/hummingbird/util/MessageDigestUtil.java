@@ -51,7 +51,7 @@ public class MessageDigestUtil {
         } catch (NoSuchAlgorithmException e) {
             throw new UnsupportedOperationException(
                     "Your Java implementation does not support SHA-256, "
-                            + "even though it is required by the Java specificion. "
+                            + "even though it is required by the Java specification. "
                             + "Change to an implementation which follows the specification.",
                     e);
         }

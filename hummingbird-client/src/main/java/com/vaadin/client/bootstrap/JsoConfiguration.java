@@ -92,7 +92,7 @@ public final class JsoConfiguration extends JavaScriptObject {
      *
      * @param name
      *            name of the configuration parameter
-     * @return integer value of the configuration paramter, or <code>null</code>
+     * @return integer value of the configuration parameter, or <code>null</code>
      *         if no value is defined
      */
     public native Integer getConfigInteger(String name)

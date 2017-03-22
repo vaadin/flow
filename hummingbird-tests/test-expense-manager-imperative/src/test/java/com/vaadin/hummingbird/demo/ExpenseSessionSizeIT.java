@@ -138,7 +138,7 @@ public class ExpenseSessionSizeIT {
 
             Matcher matcher = usagePattern.matcher(line);
             if (!matcher.matches()) {
-                throw new RuntimeException("Unexptected response: " + line);
+                throw new RuntimeException("Unexpected response: " + line);
             }
 
             int uiCount = Integer.parseInt(matcher.group(1));

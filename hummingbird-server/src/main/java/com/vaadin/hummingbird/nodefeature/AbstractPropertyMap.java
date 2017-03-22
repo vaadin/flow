@@ -64,7 +64,7 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *
      * @param name
      *            the name of the property
-     * @return <code>true</code> if there is a propety with the given name;
+     * @return <code>true</code> if there is a property with the given name;
      *         <code>false</code> if there is no property
      */
     public boolean hasProperty(String name) {
