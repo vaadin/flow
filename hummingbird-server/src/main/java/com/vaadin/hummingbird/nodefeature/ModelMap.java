@@ -256,4 +256,11 @@ public class ModelMap extends NodeMap {
         }
     }
 
+    @Override
+    protected boolean mayUpdateFromClient(String key, Serializable value) {
+        // Allow everything for now. Should figure out a sensible way of
+        // defining what's allowed separately.
+        return true;
+    }
+
 }

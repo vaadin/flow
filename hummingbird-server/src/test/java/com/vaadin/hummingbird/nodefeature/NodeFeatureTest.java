@@ -50,9 +50,7 @@ public class NodeFeatureTest {
                 StateNodeTest.createEmptyNode());
     }
 
-    @Test
-    public void testGetIdValues() {
-        // Verifies that the ids are the same as on the client side
+    private static Map<Class<? extends NodeFeature>, Integer> buildExpectedIdMap() {
         Map<Class<? extends NodeFeature>, Integer> expectedIds = new HashMap<>();
 
         expectedIds.put(ElementData.class, NodeFeatures.ELEMENT_DATA);
@@ -95,7 +93,15 @@ public class NodeFeatureTest {
                 NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
         expectedIds.put(PolymerServerEventHandlers.class,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
-        expectedIds.put(PolymerEventListenerMap.class, NodeFeatures.POLYMER_EVENT_LISTENERS);
+        expectedIds.put(PolymerEventListenerMap.class,
+                NodeFeatures.POLYMER_EVENT_LISTENERS);
+        return expectedIds;
+    }
+
+    @Test
+    public void testGetIdValues() {
+        // Verifies that the ids are the same as on the client side
+        Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
 
         Assert.assertEquals("The number of expected features is not up to date",
                 expectedIds.size(), NodeFeatureRegistry.nodeFeatures.size());
@@ -105,4 +111,15 @@ public class NodeFeatureTest {
                     expectedId.intValue(), NodeFeatureRegistry.getId(type));
         });
     }
+
+    @Test
+    public void testGetById() {
+        Map<Class<? extends NodeFeature>, Integer> expectedIds = buildExpectedIdMap();
+
+        expectedIds.forEach((expectedType, id) -> {
+            Assert.assertEquals("Unexpected type for id " + id, expectedType,
+                    NodeFeatureRegistry.getFeature(id));
+        });
+    }
+
 }
