@@ -1,0 +1,27 @@
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
+<dom-module id="model-properties">
+  <template>
+    <div>Model properties</div>
+    <div id="name-id">[[name]]</div>
+    <div id="visible-id">[[visible]]</div>
+    <div id="enable-id">[[enable]]</div>
+    <div id="age-id">[[age]]</div>
+    <div id="height-id">[[height]]</div>
+  </template>
+  <script>
+    class ModelProperties extends Polymer.Element {
+      static get is() { return 'model-properties' }
+
+      static get properties() {
+    	    return {
+    	        name : {
+    	        	type: String,
+    	        	value: 'foo'
+    	        }
+    	    }
+      }
+    }
+    customElements.define(ModelProperties.is, ModelProperties);
+  </script>
+</dom-module>
