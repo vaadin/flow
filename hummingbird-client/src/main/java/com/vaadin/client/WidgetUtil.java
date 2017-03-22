@@ -258,4 +258,17 @@ public class WidgetUtil {
     /*-{
         return !!value;
     }-*/;
+
+    /**
+     * Gets all JavaScript property names of the given object. This directly
+     * calls <code>Object.keys</code>.
+     *
+     * @param value
+     *            the value to get keys for
+     * @return an array of key names
+     */
+    public static native String[] getKeys(Object value)
+    /*-{
+      return Object.keys(value);
+    }-*/;
 }

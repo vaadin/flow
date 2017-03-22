@@ -132,9 +132,9 @@ public class JsonConstants implements Serializable {
     public static final String RPC_EVENT_TYPE = "event";
 
     /**
-     * Type value for property synchronizations sent from the client.
+     * Type value for model map synchronizations sent from the client.
      */
-    public static final String RPC_TYPE_PROPERTY_SYNC = "pSync";
+    public static final String RPC_TYPE_MAP_SYNC = "mSync";
 
     /**
      * Key holding the event data in event messages sent from the client.
@@ -146,6 +146,11 @@ public class JsonConstants implements Serializable {
      * {@link Page#executeJavaScript(String, Serializable...)} in UIDL messages.
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
+
+    /**
+     * Key used to hold the feature id when synchronizing node values.
+     */
+    public static final String RPC_FEATURE = "feature";
 
     /**
      * Key used to hold the name of the synchronized property.

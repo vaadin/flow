@@ -33,8 +33,8 @@ import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
 import com.vaadin.server.communication.rpc.EventRpcHandler;
+import com.vaadin.server.communication.rpc.MapSyncRpcHandler;
 import com.vaadin.server.communication.rpc.NavigationRpcHandler;
-import com.vaadin.server.communication.rpc.PropertySyncRpcHandler;
 import com.vaadin.server.communication.rpc.PublishedServerEventHandlerRpcHandler;
 import com.vaadin.server.communication.rpc.RpcInvocationHandler;
 import com.vaadin.shared.ApplicationConstants;
@@ -311,7 +311,7 @@ public class ServerRpcHandler implements Serializable {
      * <p>
      * Subclasses can overwrite this method to return custom invocation
      * handlers.
-     * 
+     *
      * @return invocation handlers map
      */
     protected Map<String, RpcInvocationHandler> getInvocationHandlers() {
@@ -357,15 +357,15 @@ public class ServerRpcHandler implements Serializable {
             JsonArray invocationsData) {
 
         List<JsonObject> data = new ArrayList<>(invocationsData.length());
-        RpcInvocationHandler syncPropertyHandler = getInvocationHandlers()
-                .get(JsonConstants.RPC_TYPE_PROPERTY_SYNC);
+        RpcInvocationHandler mapSyncHandler = getInvocationHandlers()
+                .get(JsonConstants.RPC_TYPE_MAP_SYNC);
         for (int i = 0; i < invocationsData.length(); i++) {
             JsonObject invocationJson = invocationsData.getObject(i);
             String type = invocationJson.getString(JsonConstants.RPC_TYPE);
             assert type != null;
-            if (JsonConstants.RPC_TYPE_PROPERTY_SYNC.equals(type)) {
+            if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
                 // Handle these before any RPC
-                syncPropertyHandler.handle(ui, invocationJson);
+                mapSyncHandler.handle(ui, invocationJson);
             } else {
                 data.add(invocationJson);
             }
@@ -425,7 +425,7 @@ public class ServerRpcHandler implements Serializable {
             List<RpcInvocationHandler> list = new ArrayList<>();
             list.add(new EventRpcHandler());
             list.add(new NavigationRpcHandler());
-            list.add(new PropertySyncRpcHandler());
+            list.add(new MapSyncRpcHandler());
             list.add(new PublishedServerEventHandlerRpcHandler());
             return list;
         }
