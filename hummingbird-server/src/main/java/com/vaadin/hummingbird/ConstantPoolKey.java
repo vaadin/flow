@@ -57,7 +57,7 @@ public class ConstantPoolKey implements Serializable {
     }
 
     /**
-     * Gets the id used to identify the referened JSON constant.
+     * Gets the id used to identify the referenced JSON constant.
      *
      * @return the id used to identify this value
      */
