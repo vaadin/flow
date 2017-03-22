@@ -800,4 +800,47 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertEquals("CHILD", element.getFirstElementChild().getTagName());
     }
 
+    public void testPropertyAdded() {
+        Binder.bind(node, element);
+        String propertyName = "black";
+        String propertyValue = "coffee";
+
+        setModelProperty(node, propertyName, propertyValue);
+
+        assertEquals(propertyValue,
+                WidgetUtil.getJsProperty(element, propertyName));
+    }
+
+    public void testPropertyUpdated() {
+        Binder.bind(node, element);
+        String propertyName = "black";
+        String propertyValue = "coffee";
+        setModelProperty(node, propertyName, propertyValue);
+        String newValue = "tea";
+
+        setModelProperty(node, propertyName, newValue);
+
+        assertEquals(newValue, WidgetUtil.getJsProperty(element, propertyName));
+    }
+
+    public void testUnregister() {
+        Binder.bind(node, element);
+        String propertyName = "black";
+        String propertyValue = "coffee";
+        setModelProperty(node, propertyName, propertyValue);
+        String notUpdatedValue = "bubblegum";
+
+        node.unregister();
+        setModelProperty(node, propertyName, notUpdatedValue);
+
+        assertEquals(propertyValue, WidgetUtil.getJsProperty(element, propertyName));
+    }
+
+    private static void setModelProperty(StateNode stateNode, String name,
+                                         String value) {
+        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(name)
+                .setValue(value);
+        Reactive.flush();
+    }
+
 }
