@@ -823,6 +823,19 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertEquals(newValue, WidgetUtil.getJsProperty(element, propertyName));
     }
 
+    public void testUnregister() {
+        Binder.bind(node, element);
+        String propertyName = "black";
+        String propertyValue = "coffee";
+        setModelProperty(node, propertyName, propertyValue);
+        String notUpdatedValue = "bubblegum";
+
+        node.unregister();
+        setModelProperty(node, propertyName, notUpdatedValue);
+
+        assertEquals(propertyValue, WidgetUtil.getJsProperty(element, propertyName));
+    }
+
     private static void setModelProperty(StateNode stateNode, String name,
                                          String value) {
         stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(name)
