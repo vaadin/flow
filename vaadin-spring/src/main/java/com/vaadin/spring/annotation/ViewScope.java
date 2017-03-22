@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Scope;
 import com.vaadin.spring.internal.ViewScopeImpl;
 
 /**
- * Stereotype annotation for Spring's {@code @Scope("vaadin-view)}. The
+ * Stereotype annotation for Spring's {@code @Scope("vaadin-view")}. The
  * lifecycle of a bean in this scope starts when a user navigates to a view that
  * refers to the bean, and ends when the user navigates out of the view (or the
  * Vaadin UI itself is destroyed). Please note that the
