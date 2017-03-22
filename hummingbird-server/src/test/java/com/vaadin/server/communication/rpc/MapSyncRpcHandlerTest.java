@@ -24,20 +24,18 @@ import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
 import com.vaadin.hummingbird.template.angular.InlineTemplate;
 import com.vaadin.shared.JsonConstants;
-import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.AngularTemplateTest.H1TestComponent;
+import com.vaadin.ui.ComponentTest.TestComponent;
 import com.vaadin.ui.UI;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class PropertySyncRpcHandlerTest {
+public class MapSyncRpcHandlerTest {
 
     private static final String NEW_VALUE = "newValue";
     private static final String DUMMY_EVENT = "dummy-event";
@@ -54,6 +52,7 @@ public class PropertySyncRpcHandlerTest {
 
     }
 
+    @Test
     public void templateSynchronizeRootElement() throws Exception {
         TemplateUsingStreamConstructor t = new TemplateUsingStreamConstructor();
         Element element = t.getElement();
@@ -94,7 +93,7 @@ public class PropertySyncRpcHandlerTest {
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,
             String eventType, Serializable value) throws Exception {
-        new PropertySyncRpcHandler().handle(ui,
+        new MapSyncRpcHandler().handle(ui,
                 createSyncPropertyInvocation(element, eventType, value));
     }
 
@@ -104,6 +103,8 @@ public class PropertySyncRpcHandlerTest {
         // Copied from ServerConnector
         JsonObject message = Json.createObject();
         message.put(JsonConstants.RPC_NODE, node.getId());
+        message.put(JsonConstants.RPC_FEATURE,
+                NodeFeatureRegistry.getId(ElementPropertyMap.class));
         message.put(JsonConstants.RPC_PROPERTY, property);
         message.put(JsonConstants.RPC_PROPERTY_VALUE,
                 JsonCodec.encodeWithoutTypeInfo(value));

@@ -18,6 +18,7 @@ package com.vaadin.client.hummingbird.binding;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
@@ -73,7 +74,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         /**
          * Callback interface for an event data expression parsed using new
          * Function() in JavaScript.
-         * 
+         *
          * @param event
          *            Event to expand
          * @param element
@@ -177,6 +178,37 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(bindPolymerEventHandlerNames(context));
 
         bindModelProperties(stateNode, htmlNode);
+
+        bindPolymerPropertyChangeListener(stateNode, htmlNode);
+    }
+
+    private native void bindPolymerPropertyChangeListener(StateNode node,
+            Element element)
+    /*-{
+      var originalFunction = element._propertiesChanged;
+      if (!originalFunction) {
+        // Ignore since this isn't a polymer element
+        return;
+      }
+      var self = this;
+      element._propertiesChanged = function(currentProps, changedProps, oldProps) {
+        originalFunction.apply(this, arguments);
+        $entry(function() {
+          self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+        })();
+      }
+    }-*/;
+
+    private void handlePropertiesChanged(JavaScriptObject changedProps,
+            StateNode node) {
+        String[] keys = WidgetUtil.getKeys(changedProps);
+        for (String propertyName : keys) {
+            Object currentValue = WidgetUtil.getJsProperty(changedProps,
+                    propertyName);
+
+            node.getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                    .getProperty(propertyName).syncToServer(currentValue);
+        }
     }
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode) {
@@ -311,23 +343,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         Object currentValue = WidgetUtil.getJsProperty(context.element,
                 propertyName);
 
-        // Server side value from tree
-        Object treeValue = null;
-
-        MapProperty treeProperty = context.node
-                .getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty(propertyName);
-        if (treeProperty.hasValue()) {
-            treeValue = treeProperty.getValue();
-        }
-
-        if (!Objects.equals(currentValue, treeValue)) {
-            context.node.getTree().sendPropertySyncToServer(context.node,
-                    propertyName, currentValue);
-            // Update tree so we don't send this again and again.
-            treeProperty.setValue(currentValue);
-        }
-
+        context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName).syncToServer(currentValue);
     }
 
     private EventRemover bindChildren(BindingContext context) {

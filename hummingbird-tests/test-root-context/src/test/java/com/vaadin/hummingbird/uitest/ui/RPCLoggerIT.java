@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.hummingbird.shared.NodeFeatures;
 import com.vaadin.hummingbird.testutil.PhantomJSTest;
 import com.vaadin.testbench.By;
 
@@ -57,7 +58,9 @@ public class RPCLoggerIT extends PhantomJSTest {
         Assert.assertEquals("Node is 5",
                 logs.get(1).findElement(By.className("node")).getText());
         json = logs.get(1).findElement(By.className("json")).getText();
-        Assert.assertTrue(json.contains("\"type\":\"pSync\""));
+        Assert.assertTrue(json.contains("\"type\":\"mSync\""));
+        Assert.assertTrue(json
+                .contains("\"feature\":" + NodeFeatures.ELEMENT_PROPERTIES));
         Assert.assertTrue(json.contains("\"node\":5"));
         Assert.assertTrue(json.contains("\"value\":\"foo\""));
     }
