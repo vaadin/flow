@@ -105,7 +105,7 @@ public class AtmospherePushConnection implements PushConnection {
          * counter so the following call to this method will return the
          * following fragment.
          * <p>
-         * This method should not be called if all fragments have been recieved
+         * This method should not be called if all fragments have been received
          * ({@link #hasNextFragment()} returns false).
          *
          * @return the next fragment
@@ -330,7 +330,7 @@ public class AtmospherePushConnection implements PushConnection {
             break;
         default:
             throw new IllegalStateException(
-                    "Got onOpen event when conncetion state is " + state
+                    "Got onOpen event when connection state is " + state
                             + ". This should never happen.");
         }
     }

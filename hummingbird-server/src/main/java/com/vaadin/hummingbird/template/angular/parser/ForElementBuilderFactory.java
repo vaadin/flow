@@ -75,7 +75,7 @@ public class ForElementBuilderFactory
         }
         if (!subBuilder.isPresent()) {
             throw new IllegalStateException(
-                    "Sub builder mising for *ngFor element " + element.html());
+                    "Sub builder missing for *ngFor element " + element.html());
         }
         if (!(subBuilder.get() instanceof ElementTemplateBuilder)) {
             throw new IllegalStateException("Sub builder for *ngFor element "

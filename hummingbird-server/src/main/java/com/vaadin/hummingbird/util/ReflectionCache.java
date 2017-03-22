@@ -84,7 +84,7 @@ public class ReflectionCache<C, T> {
     }
 
     /**
-     * Remvoes all mappings from this cache.
+     * Removes all mappings from this cache.
      */
     public void clear() {
         values.clear();

@@ -558,7 +558,7 @@ public class Profiler {
     }
 
     /**
-     * Outputs the time passed since various events recored in
+     * Outputs the time passed since various events recorded in
      * performance.timing if supported by the browser.
      */
     public static void logBootstrapTimings() {

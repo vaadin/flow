@@ -251,7 +251,7 @@ public class StateNode implements Serializable {
      * Checks whether this node is attached to a state tree.
      *
      * @return <code>true</code> if this node is attached; <code>false</code> if
-     *         this node is not atatched
+     *         this node is not attached
      */
     public boolean isAttached() {
         return parent != null && parent.isAttached();

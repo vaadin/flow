@@ -85,7 +85,7 @@ public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
             assertListFeatureEquals((NodeList) feature1, (NodeList) feature2);
         } else {
             Assert.fail(
-                    "Unknonwn feature type " + feature1.getClass().getName());
+                    "Unknown feature type " + feature1.getClass().getName());
         }
     }
 

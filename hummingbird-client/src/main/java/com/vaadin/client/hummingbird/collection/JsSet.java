@@ -61,7 +61,7 @@ public interface JsSet<V> {
     boolean delete(V value);
 
     /**
-     * Removes all vaues from this set.
+     * Removes all values from this set.
      */
     void clear();
 

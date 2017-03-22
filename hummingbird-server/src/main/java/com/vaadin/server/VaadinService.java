@@ -1377,7 +1377,7 @@ public abstract class VaadinService implements Serializable {
                                     ci.getInternalErrorMessage(), null,
                                     ci.getInternalErrorURL()));
                 } catch (IOException e) {
-                    // An exception occured while writing the response. Log
+                    // An exception occurred while writing the response. Log
                     // it and continue handling only the original error.
                     getLogger().log(Level.WARNING,
                             "Failed to write critical notification response to the client",
@@ -1405,7 +1405,7 @@ public abstract class VaadinService implements Serializable {
      * @param reponseString
      *            The actual response
      * @throws IOException
-     *             If an error occured while writing the response
+     *             If an error occurred while writing the response
      */
     public void writeStringResponse(VaadinResponse response, String contentType,
             String reponseString) throws IOException {
@@ -1599,7 +1599,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Checks whether Atmosphere is avilable for use
+     * Checks whether Atmosphere is available for use.
      *
      * @since 7.6
      * @return true if Atmosphere is available, false otherwise

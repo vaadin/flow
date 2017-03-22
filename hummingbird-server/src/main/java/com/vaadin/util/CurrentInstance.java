@@ -163,7 +163,7 @@ public class CurrentInstance implements Serializable {
                 }
             }
         } else {
-            assert type.isInstance(instance) : "Invald instance type";
+            assert type.isInstance(instance) : "Invalid instance type";
             if (map == null) {
                 map = new HashMap<>();
                 instances.set(map);
