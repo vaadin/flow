@@ -1,0 +1,14 @@
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
+<dom-module id="sub-property-model">
+  <template>
+    <div id="msg">[[status.message]]</div>
+    <button on-click="update" id="button">Update</button>
+  </template>
+  <script>
+    class SubPropertyModel extends Polymer.Element {
+      static get is() { return 'sub-property-model' }
+    }
+    customElements.define(SubPropertyModel.is, SubPropertyModel);
+  </script>
+</dom-module>
