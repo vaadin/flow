@@ -26,28 +26,15 @@ First, we need to define a template with all components:
 <dom-module id="hello-world">
     <template>
         <div>
-            <input type="text" id="inputId">
+            <paper-input id="inputId" value="{{userInput}}"></paper-input>
             <button id="helloButton" on-click="sayHello">Say hello</button>
-            <div id="greeting">
-                <template is="dom-if" if="[[text]]">
-                    Hello [[text]]!
-                </template>
-                <template is="dom-if" if="[[!text]]">
-                    Please enter your name
-                </template>
-            </div>
+            <div id="greeting">[[greeting]]</div>
         </div>
     </template>
     <script>
         class HelloWorld extends Polymer.Element {
             static get is() {
                 return 'hello-world'
-            }
-
-            // same method is defined on a server side with the 'event.hello' value as a parameter value.
-            // it will always be called after client handlers are executed (after this method in this case)
-            sayHello(event) {
-                event.hello = this.$.inputId.value;
             }
         }
         customElements.define(HelloWorld.is, HelloWorld);
@@ -59,8 +46,8 @@ As you can see, this is a Polymer template. All features used in the example are
 If you're unfamiliar with any of them, please refer to
 https://www.polymer-project.org/2.0/docs/about_20[Polymer project documentation page].
 
-In the current demo, we have defined a regular template with regular elements, have specified one-way binding (`\[[text]]`)
-and basic declaration for Polymer element in `<script>` class.
+In the current demo, we have defined a regular template with regular elements, have specified one-way binding (`\[[greeting]]`),
+two-way binding (`{{userInput}}`) and basic declaration for Polymer element in `<script>` class.
 
 Note that there is an event handler `sayHello` that is triggered on `helloButton` click.
 
@@ -75,21 +62,28 @@ and our template:
 [source,java]
 ----
 @Tag("hello-world")
-@HtmlImport("/polymer/location/polymer.html")
-@HtmlImport("/com/example/HelloWorld.html")
+@HtmlImport("js/bower_components/polymer/polymer.html")
+@HtmlImport("js/bower_components/paper-input/paper-input.html")
+@HtmlImport("components/HelloWorld.html")
 public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
+    private static final String EMPTY_NAME_GREETING = "Please enter your name";
 
     /**
      * Creates the hello world template.
      */
     public HelloWorld() {
         setId("template");
+        getModel().setGreeting(EMPTY_NAME_GREETING);
     }
 
     @EventHandler
-    private void sayHello(@EventData("event.hello") String inputValue) {
+    private void sayHello() {
         // Called from the template click handler
-        getModel().setText(inputValue);
+        getModel().setGreeting(Optional
+                .ofNullable(getModel().getUserInput())
+                .filter(string -> !string.isEmpty())
+                .map(greeting -> String.format("Hello %s!", greeting))
+                .orElse(EMPTY_NAME_GREETING));
     }
 }
 ----
@@ -104,12 +98,19 @@ There is also a model reference, that is defined the following way:
  */
 public interface HelloWorldModel extends TemplateModel {
     /**
-     * Sets the text to show in the template.
+     * Gets user input from corresponding template page.
      *
-     * @param text
-     *            the text to show in the template
+     * @return user input string
      */
-    void setText(String text);
+    String getUserInput();
+
+    /**
+     * Sets greeting that is displayed in corresponding template page.
+     *
+     * @param greeting
+     *            greeting string
+     */
+    void setGreeting(String greeting);
 }
 ----
 
@@ -131,6 +132,12 @@ https://github.com/eirslett/frontend-maven-plugin[frontend-maven-plugin]
 The latter way was used to create this example, you can reference
 https://github.com/vaadin/hummingbird-demo/[GitHub page] of a demo for more details.
 
+* import a Polymer components, if needed
+
+For clarity and demonstration purposes, this example uses https://github.com/PolymerElements/paper-input[paper-input.html] component.
+
+[NOTE] In order to retrieve and use the component in the demo, same rules as for `polymer.html` apply.
+
 * bind a Java class with the template, created earlier, by specifying `@HtmlImport` with path to a template
 
 [NOTE] Java class name and template file name doesn't have to match each other, this is just a resource file which you can put to any location.
@@ -151,13 +158,8 @@ Model can be accessed via `getModel()` method after it's specified as a generic 
 
 ====== Event handler
 
-In this demo, there are two event handlers, one on the client side, one on the server side (a method, annotated as `@EventHandler`).
-The framework guarantees that server will handle the event after the client.
-
-If no client event handler is needed, it can be omitted, the event will be handled on the server side still.
-
-In this demo, client event is used to add extra property to an `event` object. This property is retrieved on a server side
-with help of the following construction: `@EventData("event.hello") String inputValue`
+Server side has method, annotated with `@EventHandler` annotation, that is used to react on event form the client side, triggered
+by the `helloButton` button.
 
 === Usage in code
 
