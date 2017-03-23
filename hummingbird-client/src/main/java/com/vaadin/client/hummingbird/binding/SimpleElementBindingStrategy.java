@@ -17,6 +17,7 @@ package com.vaadin.client.hummingbird.binding;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
@@ -178,9 +179,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindPolymerEventHandlerNames(context));
 
-        bindModelProperties(stateNode, htmlNode);
-
         bindPolymerPropertyChangeListener(stateNode, htmlNode);
+
+        bindModelProperties(stateNode, htmlNode, "");
     }
 
     private native void bindPolymerPropertyChangeListener(StateNode node,
@@ -204,33 +205,68 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             JavaScriptObject changedPropertyPathsToValues, StateNode node) {
         String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
         for (String propertyName : keys) {
-            NodeMap map = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-            if (!map.hasPropertyValue(propertyName)) {
-                Console.debug(
-                        "Ignoring property change for property '" + propertyName
-                                + "' which isn't defined from the server");
+            handlePropertyChange(propertyName, () -> WidgetUtil
+                    .getJsProperty(changedPropertyPathsToValues, propertyName),
+                    node);
+        }
+    }
+
+    private void handlePropertyChange(String property,
+            Supplier<Object> valueProvider, StateNode node) {
+        // This is not the property value itself, its a parent node of the
+        // property
+        String[] properties = property.split("\\.");
+        StateNode model = node;
+        MapProperty mapProperty = null;
+        for (String prop : properties) {
+            NodeMap map = model.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            if (!map.hasPropertyValue(prop)) {
+                Console.debug("Ignoring property change for property '"
+                        + property + "' which isn't defined from the server");
                 /*
                  * Ignore instead of throwing since this is also invoked for
                  * third party polymer components that don't need to have
                  * property changes sent to the server.
                  */
-                continue;
+                return;
             }
-
-            Object currentValue = WidgetUtil
-                    .getJsProperty(changedPropertyPathsToValues, propertyName);
-
-            map.getProperty(propertyName).syncToServer(currentValue);
+            mapProperty = map.getProperty(prop);
+            if (mapProperty.getValue() instanceof StateNode) {
+                model = (StateNode) mapProperty.getValue();
+            }
         }
+        // Don't send to the server parent of the updated property
+        if (mapProperty.getValue() instanceof StateNode) {
+            return;
+        }
+
+        mapProperty.syncToServer(valueProvider.get());
     }
 
-    private void bindModelProperties(StateNode stateNode, Element htmlNode) {
+    private void bindModelProperties(StateNode stateNode, Element htmlNode,
+            String path) {
         Computation computation = Reactive.runWhenDepedenciesChange(
                 () -> stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
-                        .forEachProperty((property, key) -> WidgetUtil
-                                .setJsProperty(htmlNode, property.getName(),
-                                        property.getValue())));
+                        .forEachProperty((property, key) -> setSubProperties(
+                                htmlNode, property, path)));
         stateNode.addUnregisterListener(event -> computation.stop());
+    }
+
+    private void setSubProperties(Element htmlNode, MapProperty property,
+            String path) {
+        String newPath = path.isEmpty() ? property.getName()
+                : path + "." + property.getName();
+        if (property.getValue() instanceof StateNode) {
+            NativeFunction function = NativeFunction.create("path", "value",
+                    "this.set(path, {})");
+            function.call(htmlNode, newPath);
+            StateNode subNode = (StateNode) property.getValue();
+            bindModelProperties(subNode, htmlNode, newPath);
+        } else {
+            NativeFunction function = NativeFunction.create("path", "value",
+                    "this.set(path, value)");
+            function.call(htmlNode, newPath, property.getValue());
+        }
     }
 
     @SuppressWarnings("unchecked")

@@ -1,0 +1,19 @@
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
+<dom-module id="sub-property-model">
+  <template>
+    <div id="msg">[[status.message]]</div>
+    <button on-click="update" id="button">Update</button>
+    <button on-click="sync" id="sync">Update from the client to the server (sync)</button>
+  </template>
+  <script>
+    class SubPropertyModel extends Polymer.Element {
+      static get is() { return 'sub-property-model' }
+      
+      sync(){
+    	  this.set("status.message","Set from the client");
+      }
+    }
+    customElements.define(SubPropertyModel.is, SubPropertyModel);
+  </script>
+</dom-module>
