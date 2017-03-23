@@ -232,4 +232,20 @@ public class MapProperty implements ReactiveValue {
             return defaultValue;
         }
     }
+
+    /**
+     * Sets the value of this property and synchronizes the value to the server.
+     *
+     * @param newValue
+     *            the new value to set.
+     */
+    public void syncToServer(Object newValue) {
+        Object currentValue = hasValue() ? getValue() : null;
+
+        if (!Objects.equals(newValue, currentValue)) {
+            setValue(newValue);
+
+            getMap().getNode().getTree().sendNodePropertySyncToServer(this);
+        }
+    }
 }

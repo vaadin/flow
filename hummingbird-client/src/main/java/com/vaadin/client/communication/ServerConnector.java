@@ -109,22 +109,24 @@ public class ServerConnector {
     }
 
     /**
-     * Sends a property sync message to the server.
+     * Sends a node value sync message to the server.
      *
      * @param node
-     *            the node containing the property
-     * @param property
-     *            the property name
+     *            the node to update
+     * @param feature
+     *            the id of the node map feature to update
+     * @param key
+     *            the map key to update
      * @param value
-     *            the property value
+     *            the new value
      */
-    public void sendPropertySyncMessage(StateNode node, String property,
+    public void sendNodeSyncMessage(StateNode node, int feature, String key,
             Object value) {
         JsonObject message = Json.createObject();
-        message.put(JsonConstants.RPC_TYPE,
-                JsonConstants.RPC_TYPE_PROPERTY_SYNC);
+        message.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_MAP_SYNC);
         message.put(JsonConstants.RPC_NODE, node.getId());
-        message.put(JsonConstants.RPC_PROPERTY, property);
+        message.put(JsonConstants.RPC_FEATURE, feature);
+        message.put(JsonConstants.RPC_PROPERTY, key);
         message.put(JsonConstants.RPC_PROPERTY_VALUE,
                 ClientJsonCodec.encodeWithoutTypeInfo(value));
 

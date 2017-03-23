@@ -64,14 +64,17 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         }
 
         @Override
-        public void sendPropertySyncToServer(StateNode node, String property,
-                Object value) {
+        public void sendNodePropertySyncToServer(MapProperty property) {
+            StateNode node = property.getMap().getNode();
+            String propertyName = property.getName();
+            Object value = property.getValue();
+
             if (!synchronizedProperties.has(node)) {
                 synchronizedProperties.set(node, JsCollections.map());
             }
             JsMap<String, Object> nodeMap = synchronizedProperties.get(node);
-            assertFalse(nodeMap.has(property));
-            nodeMap.set(property, value);
+            assertFalse(nodeMap.has(propertyName));
+            nodeMap.set(propertyName, value);
         }
 
         public void clearSynchronizedProperties() {

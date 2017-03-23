@@ -19,36 +19,45 @@ import java.io.Serializable;
 
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.hummingbird.nodefeature.NodeFeatureRegistry;
+import com.vaadin.hummingbird.nodefeature.NodeMap;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
 
 /**
- * Property synchronization RPC handler.
- * 
- * @see JsonConstants#RPC_TYPE_PROPERTY_SYNC
- * 
+ * Model map synchronization RPC handler.
+ *
+ * @see JsonConstants#RPC_TYPE_MAP_SYNC
+ *
  * @author Vaadin Ltd
  *
  */
-public class PropertySyncRpcHandler extends AbstractRpcInvocationHandler {
+public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     public String getRpcType() {
-        return JsonConstants.RPC_TYPE_PROPERTY_SYNC;
+        return JsonConstants.RPC_TYPE_MAP_SYNC;
     }
 
     @Override
     protected void handleNode(StateNode node, JsonObject invocationJson) {
+        assert invocationJson.hasKey(JsonConstants.RPC_FEATURE);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY);
         assert invocationJson.hasKey(JsonConstants.RPC_PROPERTY_VALUE);
+
+        int featureId = (int) invocationJson
+                .getNumber(JsonConstants.RPC_FEATURE);
+        Class<? extends NodeFeature> feature = NodeFeatureRegistry
+                .getFeature(featureId);
+        assert NodeMap.class.isAssignableFrom(feature);
 
         String property = invocationJson.getString(JsonConstants.RPC_PROPERTY);
         Serializable value = JsonCodec.decodeWithoutTypeInfo(
                 invocationJson.get(JsonConstants.RPC_PROPERTY_VALUE));
-        node.getFeature(ElementPropertyMap.class).setProperty(property, value,
-                false);
+
+        ((NodeMap) node.getFeature(feature)).updateFromClient(property, value);
     }
 
 }

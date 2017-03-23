@@ -18,6 +18,8 @@ package com.vaadin.client.hummingbird.binding;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.google.gwt.core.client.JavaScriptObject;
+import com.vaadin.client.Console;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
@@ -73,7 +75,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         /**
          * Callback interface for an event data expression parsed using new
          * Function() in JavaScript.
-         * 
+         *
          * @param event
          *            Event to expand
          * @param element
@@ -177,6 +179,49 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(bindPolymerEventHandlerNames(context));
 
         bindModelProperties(stateNode, htmlNode);
+
+        bindPolymerPropertyChangeListener(stateNode, htmlNode);
+    }
+
+    private native void bindPolymerPropertyChangeListener(StateNode node,
+            Element element)
+    /*-{
+      var originalFunction = element._propertiesChanged;
+      if (!originalFunction) {
+        // Ignore since this isn't a polymer element
+        return;
+      }
+      var self = this;
+      element._propertiesChanged = function(currentProps, changedProps, oldProps) {
+        originalFunction.apply(this, arguments);
+        $entry(function() {
+          self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+        })();
+      }
+    }-*/;
+
+    private void handlePropertiesChanged(
+            JavaScriptObject changedPropertyPathsToValues, StateNode node) {
+        String[] keys = WidgetUtil.getKeys(changedPropertyPathsToValues);
+        for (String propertyName : keys) {
+            NodeMap map = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            if (!map.hasPropertyValue(propertyName)) {
+                Console.debug(
+                        "Ignoring property change for property '" + propertyName
+                                + "' which isn't defined from the server");
+                /*
+                 * Ignore instead of throwing since this is also invoked for
+                 * third party polymer components that don't need to have
+                 * property changes sent to the server.
+                 */
+                continue;
+            }
+
+            Object currentValue = WidgetUtil
+                    .getJsProperty(changedPropertyPathsToValues, propertyName);
+
+            map.getProperty(propertyName).syncToServer(currentValue);
+        }
     }
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode) {
@@ -311,23 +356,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         Object currentValue = WidgetUtil.getJsProperty(context.element,
                 propertyName);
 
-        // Server side value from tree
-        Object treeValue = null;
-
-        MapProperty treeProperty = context.node
-                .getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty(propertyName);
-        if (treeProperty.hasValue()) {
-            treeValue = treeProperty.getValue();
-        }
-
-        if (!Objects.equals(currentValue, treeValue)) {
-            context.node.getTree().sendPropertySyncToServer(context.node,
-                    propertyName, currentValue);
-            // Update tree so we don't send this again and again.
-            treeProperty.setValue(currentValue);
-        }
-
+        context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                .getProperty(propertyName).syncToServer(currentValue);
     }
 
     private EventRemover bindChildren(BindingContext context) {

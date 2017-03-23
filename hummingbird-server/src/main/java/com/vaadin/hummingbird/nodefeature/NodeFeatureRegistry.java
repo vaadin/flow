@@ -34,14 +34,16 @@ public class NodeFeatureRegistry {
 
     // Non-private for testing purposes
     static final Map<Class<? extends NodeFeature>, NodeFeatureData> nodeFeatures = new HashMap<>();
+    private static final Map<Integer, Class<? extends NodeFeature>> idToFeature = new HashMap<>();
 
     private static class NodeFeatureData {
-        private Function<StateNode, ? extends NodeFeature> factory;
-        private int id = nextNodeFeatureId++;
+        private final Function<StateNode, ? extends NodeFeature> factory;
+        private final int id;
 
         private <T extends NodeFeature> NodeFeatureData(
                 Function<StateNode, T> factory) {
             this.factory = factory;
+            id = nextNodeFeatureId++;
         }
     }
 
@@ -89,7 +91,9 @@ public class NodeFeatureRegistry {
 
     private static <T extends NodeFeature> void registerFeature(Class<T> type,
             Function<StateNode, T> factory) {
-        nodeFeatures.put(type, new NodeFeatureData(factory));
+        NodeFeatureData featureData = new NodeFeatureData(factory);
+        nodeFeatures.put(type, featureData);
+        idToFeature.put(featureData.id, type);
     }
 
     /**
@@ -139,5 +143,17 @@ public class NodeFeatureRegistry {
                 + " has not been registered in NodeFeatureRegistry";
 
         return data;
+    }
+
+    /**
+     * Finds the node feature type corresponding to the give node feature id.
+     *
+     * @param featureId
+     *            the feature id for which to get a node feature type
+     *
+     * @return the node feature type
+     */
+    public static Class<? extends NodeFeature> getFeature(int featureId) {
+        return idToFeature.get(featureId);
     }
 }
