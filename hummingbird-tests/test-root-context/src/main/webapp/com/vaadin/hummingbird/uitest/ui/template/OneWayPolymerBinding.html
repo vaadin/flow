@@ -20,6 +20,13 @@
         <div id="messageDiv">[[message]]</div>
         <div id="titleDiv">[[title]]</div>
         <button on-click="changeModelValue" id="changeModelValue">Change model value</button>
+
+        <template is="dom-if" if="[[!title]]">
+            <div id="titleDivConditional"></div>
+        </template>
+        <template is="dom-if" if="[[!nonExistingProperty]]">
+            <div id="nonExistingProperty"></div>
+        </template>
     </template>
     <script>
         class MyTemplate extends Polymer.Element {
