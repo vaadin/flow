@@ -8,8 +8,8 @@ To get started with using templates and learn how to set model values, see <<tut
 
 The value of a model property can be used as the text content of an element using `\[[propertyName]]` inside a tag.
 
-[source,html]
 .Sample HTML Template
+[source,html]
 ----
 <dom-module id="my-template">
     <template>
@@ -96,8 +96,8 @@ Text surrounded by double curly bracket {{ }} or double square bracket [[ ]] del
 
 Here is the server-side sample for tutorial html templates.
 
-[source,java]
 .PolymerTemplate class
+[source,java]
 ----
 @Tag("my-template")
 @HtmlImport("/com/example/PolymerBinding.html")
@@ -109,8 +109,8 @@ public class PolymerBindingTemplate extends PolymerTemplate<BindingModel> {
 }
 ----
 
-[source,java]
 .TemplateModel sample
+[source,java]
 ----
 public interface BindingModel extends TemplateModel {
     void setHostProperty(String propertyValue););
