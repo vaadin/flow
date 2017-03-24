@@ -113,7 +113,7 @@ public class PolymerBindingTemplate extends PolymerTemplate<BindingModel> {
 [source,java]
 ----
 public interface BindingModel extends TemplateModel {
-    void setHostProperty(String propertyValue););
+    void setHostProperty(String propertyValue);
     String getHostProperty();
 }
 ----
