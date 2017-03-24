@@ -41,7 +41,7 @@ For more information on these properties see: https://www.polymer-project.org/2.
 
 A binding written as `<div something="\[[model]]"></div>` is bound to the _property_ `something` because the property can typically be changed on the fly while the attribute is often used only for the initial value.
 
-When you what to explicitly bind to an attribute instead, use the attribute name followed by $:
+When you want to explicitly bind to an attribute instead, use the attribute name followed by $:
 
 [source,html]
 ----
