@@ -13,22 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.hummingbird.uitest.ui.template;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.UI;
 
-import com.vaadin.hummingbird.testcategory.ChromeTests;
-import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
+public class SubPropertyModelUI extends UI {
 
-@Category(ChromeTests.class)
-public class WebComponents1IT extends ChromeBrowserTest {
-
-    @Test
-    public void testPolyfillLoaded() {
-        open();
-
-        WebComponentsIT.assertScriptLoadedWithoutErrors(driver,
-                "/server/v1/webcomponents-lite.min.js");
+    @Override
+    protected void init(VaadinRequest request) {
+        SubPropertyModelTemplate template = new SubPropertyModelTemplate();
+        template.setId("template");
+        add(template);
     }
 }

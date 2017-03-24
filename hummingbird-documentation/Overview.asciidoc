@@ -49,7 +49,8 @@ These tutorials show how the different features are used.
 * Polymer template
 ** <<tutorial-template-basic#,Creating A Simple Component Using the Template API>>
 ** <<tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
-** <<tutorial-template-event-handlers#,Handling User Events in a Template>>
+** <<tutorial-template-event-handlers#,Handling User Events in a PolymerTemplate>>
+** <<tutorial-template-bindings#,Binding Model Data in a PolymerTemplate>>
 * Misc
 ** <<tutorial-execute-javascript#,Executing JavaScript>>
 ** <<tutorial-history-api#,The History API>>
