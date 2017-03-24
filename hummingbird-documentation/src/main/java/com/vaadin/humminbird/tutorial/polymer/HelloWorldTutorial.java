@@ -49,9 +49,7 @@ public class HelloWorldTutorial {
     }
 
     @Tag("hello-world")
-    @HtmlImport("js/bower_components/polymer/polymer.html")
-    @HtmlImport("js/bower_components/paper-input/paper-input.html")
-    @HtmlImport("components/HelloWorld.html")
+    @HtmlImport("/com/example/HelloWorld.html")
     public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
         private static final String EMPTY_NAME_GREETING = "Please enter your name";
 
@@ -66,9 +64,8 @@ public class HelloWorldTutorial {
         @EventHandler
         private void sayHello() {
             // Called from the template click handler
-            getModel().setGreeting(Optional
-                    .ofNullable(getModel().getUserInput())
-                    .filter(string -> !string.isEmpty())
+            getModel().setGreeting(Optional.ofNullable(getModel().getUserInput())
+                    .filter(userInput -> !userInput.isEmpty())
                     .map(greeting -> String.format("Hello %s!", greeting))
                     .orElse(EMPTY_NAME_GREETING));
         }

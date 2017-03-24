@@ -23,6 +23,9 @@ First, we need to define a template with all components:
 
 [source,html]
 ----
+<link rel="import" href="/polymer/location/polymer.html">
+<link rel="import" href="/paper-input/location/paper-input.html">
+
 <dom-module id="hello-world">
     <template>
         <div>
@@ -53,6 +56,28 @@ Note that there is an event handler `sayHello` that is triggered on `helloButton
 
 Notice that we have not specified the model at all, it will be propagated automatically from the server side.
 
+We've also imported some dependencies:
+
+* Polymer library
+
+The `/polymer/location/polymer.html` is a link to Polymer library that should be imported in order to have the
+functionality working.
+
+[NOTE] You should take care about proper handling of the polymer template file URL, it should be available via URL.
+
+[NOTE] To get `polymer.html` into your project, you can use one of the ways provided by
+https://www.polymer-project.org/2.0/start/install-2-0[official Polymer page] or use Maven plugins, such as
+https://github.com/eirslett/frontend-maven-plugin[frontend-maven-plugin]
+
+The latter way was used to create this example, you can reference
+https://github.com/vaadin/hummingbird-demo/[GitHub page] of a demo for more details.
+
+* paper-input Polymer component
+
+For clarity and demonstration purposes, this example uses https://github.com/PolymerElements/paper-input[paper-input.html] component.
+
+[NOTE] In order to retrieve and use the component in the demo, same rules as for `polymer.html` apply.
+
 === Server side
 
 To be able to use this template you need to create a Java class which extends `PolymerTemplate`,
@@ -62,9 +87,7 @@ and our template:
 [source,java]
 ----
 @Tag("hello-world")
-@HtmlImport("js/bower_components/polymer/polymer.html")
-@HtmlImport("js/bower_components/paper-input/paper-input.html")
-@HtmlImport("components/HelloWorld.html")
+@HtmlImport("/com/example/HelloWorld.html")
 public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
     private static final String EMPTY_NAME_GREETING = "Please enter your name";
 
@@ -79,9 +102,8 @@ public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
     @EventHandler
     private void sayHello() {
         // Called from the template click handler
-        getModel().setGreeting(Optional
-                .ofNullable(getModel().getUserInput())
-                .filter(string -> !string.isEmpty())
+        getModel().setGreeting(Optional.ofNullable(getModel().getUserInput())
+                .filter(userInput -> !userInput.isEmpty())
                 .map(greeting -> String.format("Hello %s!", greeting))
                 .orElse(EMPTY_NAME_GREETING));
     }
@@ -116,34 +138,14 @@ public interface HelloWorldModel extends TemplateModel {
 
 ====== Imports
 
-In order for a component to be processed correctly, we need to
-
-* import a Polymer library
-
-The `/polymer/location/polymer.html` is a link to Polymer library that should be imported in order to have the
-functionality working.
-
-[NOTE] You should take care about proper handling of the polymer template file URL, it should be available via URL.
-
-[NOTE] To get `polymer.html` into your project, you can use one of the ways provided by
-https://www.polymer-project.org/2.0/start/install-2-0[official Polymer page] or use Maven plugins, such as
-https://github.com/eirslett/frontend-maven-plugin[frontend-maven-plugin]
-
-The latter way was used to create this example, you can reference
-https://github.com/vaadin/hummingbird-demo/[GitHub page] of a demo for more details.
-
-* import a Polymer components, if needed
-
-For clarity and demonstration purposes, this example uses https://github.com/PolymerElements/paper-input[paper-input.html] component.
-
-[NOTE] In order to retrieve and use the component in the demo, same rules as for `polymer.html` apply.
-
-* bind a Java class with the template, created earlier, by specifying `@HtmlImport` with path to a template
+In order for a component to be processed correctly, we need tovbind a Java class with the template, created earlier, by specifying `@HtmlImport` with path to a template
 
 [NOTE] Java class name and template file name doesn't have to match each other, this is just a resource file which you can put to any location.
 But you have to be sure that it's accessible via the web.
 
 The `/com/example/HelloWorld.html` is the URL of the polymer template file declared earlier.
+
+If needed, more html resources can be imported using the same approach.
 
 ====== Tag
 
