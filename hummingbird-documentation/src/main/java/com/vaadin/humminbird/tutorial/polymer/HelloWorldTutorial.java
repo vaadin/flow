@@ -15,7 +15,8 @@
  */
 package com.vaadin.humminbird.tutorial.polymer;
 
-import com.vaadin.annotations.EventData;
+import java.util.Optional;
+
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
@@ -32,30 +33,41 @@ public class HelloWorldTutorial {
      */
     public interface HelloWorldModel extends TemplateModel {
         /**
-         * Sets the text to show in the template.
+         * Gets user input from corresponding template page.
          *
-         * @param text
-         *            the text to show in the template
+         * @return user input string
          */
-        void setText(String text);
+        String getUserInput();
+
+        /**
+         * Sets greeting that is displayed in corresponding template page.
+         *
+         * @param greeting
+         *            greeting string
+         */
+        void setGreeting(String greeting);
     }
 
     @Tag("hello-world")
-    @HtmlImport("/polymer/location/polymer.html")
     @HtmlImport("/com/example/HelloWorld.html")
     public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
+        private static final String EMPTY_NAME_GREETING = "Please enter your name";
 
         /**
          * Creates the hello world template.
          */
         public HelloWorld() {
             setId("template");
+            getModel().setGreeting(EMPTY_NAME_GREETING);
         }
 
         @EventHandler
-        private void sayHello(@EventData("event.hello") String inputValue) {
+        private void sayHello() {
             // Called from the template click handler
-            getModel().setText(inputValue);
+            getModel().setGreeting(Optional.ofNullable(getModel().getUserInput())
+                    .filter(userInput -> !userInput.isEmpty())
+                    .map(greeting -> String.format("Hello %s!", greeting))
+                    .orElse(EMPTY_NAME_GREETING));
         }
     }
 
