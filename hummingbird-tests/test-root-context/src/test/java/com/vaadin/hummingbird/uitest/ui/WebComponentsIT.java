@@ -15,15 +15,47 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class WebComponentsIT extends AbstractWebComponents {
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.stream.StreamSupport;
 
-    @Override
-    protected String getWebComponentsJSFile() {
-        return "webcomponents-lite.min.js";
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+
+import com.vaadin.hummingbird.testutil.PhantomJSTest;
+
+public class WebComponentsIT extends PhantomJSTest {
+
+    @Test
+    public void testPolyfillLoaded() {
+        open();
+
+        assertScriptLoadedWithoutErrors(driver,
+                "/server/webcomponents-lite.min.js");
     }
 
+    public static void assertScriptLoadedWithoutErrors(WebDriver driver,
+            String scriptSrcContents) {
+        Assert.assertTrue(driver.findElements(By.tagName("script")).stream()
+                .anyMatch(element -> {
+                    return element.getAttribute("src")
+                            .contains(scriptSrcContents);
+                }));
+
+        LogEntries logs = driver.manage().logs().get("browser");
+        if (logs != null) {
+            Optional<LogEntry> anyError = StreamSupport
+                    .stream(logs.spliterator(), true)
+                    .filter(entry -> entry.getLevel().intValue() > Level.INFO
+                            .intValue())
+                    .filter(entry -> !entry.getMessage()
+                            .contains("favicon.ico"))
+                    .findAny();
+            anyError.ifPresent(entry -> Assert.fail(entry.getMessage()));
+        }
+    }
 }

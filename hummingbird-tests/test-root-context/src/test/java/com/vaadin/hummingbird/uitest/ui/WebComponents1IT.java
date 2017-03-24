@@ -15,14 +15,20 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-/**
- * @author Vaadin Ltd
- *
- */
-public class WebComponents1IT extends AbstractWebComponents {
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
-    @Override
-    protected String getWebComponentsJSFile() {
-        return "webcomponents-1-lite.min.js";
+import com.vaadin.hummingbird.testcategory.ChromeTests;
+import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
+
+@Category(ChromeTests.class)
+public class WebComponents1IT extends ChromeBrowserTest {
+
+    @Test
+    public void testPolyfillLoaded() {
+        open();
+
+        WebComponentsIT.assertScriptLoadedWithoutErrors(driver,
+                "/server/v1/webcomponents-lite.min.js");
     }
 }
