@@ -181,7 +181,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         bindPolymerPropertyChangeListener(stateNode, htmlNode);
 
-        bindModelProperties(stateNode, htmlNode, "");
+        bindModelProperties(stateNode, htmlNode);
     }
 
     private native void bindPolymerPropertyChangeListener(StateNode node,
@@ -241,6 +241,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         mapProperty.syncToServer(valueProvider.get());
+    }
+
+    private void bindModelProperties(StateNode stateNode, Element htmlNode) {
+        bindModelProperties(stateNode, htmlNode, "");
     }
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
