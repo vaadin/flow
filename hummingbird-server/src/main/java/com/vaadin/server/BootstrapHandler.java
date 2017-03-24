@@ -372,10 +372,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         if (context.getSession().getBrowser().isPhantomJS()) {
             // Collections polyfill needed only for PhantomJS
-            head.appendChild(createJavaScriptElement(context.getUriResolver()
-                    .resolveVaadinUri("context://"
-                            + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                            + "server/es6-collections.js")));
+            head.appendChild(createJavaScriptElement(
+                    context.getUriResolver()
+                            .resolveVaadinUri("context://"
+                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                    + "server/es6-collections.js"),
+                    false));
         }
 
         head.appendChild(createWebComponentsElement(context));
@@ -410,7 +412,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     context.getUriResolver()
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/webcomponents-1-lite.min.js"),
+                                    + "server/v1/webcomponents-lite.min.js"),
                     false);
         }
         return createJavaScriptElement(context.getUriResolver()
@@ -420,7 +422,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static Element createJavaScriptElement(String sourceUrl,
-                                                   boolean defer) {
+            boolean defer) {
         Element jsElement = new Element(Tag.valueOf("script"), "")
                 .attr("type", "text/javascript").attr("defer", defer);
         if (sourceUrl != null) {

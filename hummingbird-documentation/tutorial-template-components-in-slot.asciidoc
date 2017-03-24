@@ -1,6 +1,6 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
 
-== Server-side components in Polymer2 template
+= Server-side components in Polymer2 template
 
 You can add child components to templates using the `Component` or `Element` API, but because PolymerTemplate uses the shadow DOM *the shadow tree is rendered instead of the elements children* that are in the light DOM.
 
