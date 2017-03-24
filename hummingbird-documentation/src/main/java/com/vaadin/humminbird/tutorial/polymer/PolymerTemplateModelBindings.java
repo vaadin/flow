@@ -15,12 +15,26 @@
  */
 package com.vaadin.humminbird.tutorial.polymer;
 
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.Tag;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
+import com.vaadin.hummingbird.template.PolymerTemplate;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 @CodeFor("tutorial-template-bindings.asciidoc")
 public class PolymerTemplateModelBindings {
-    /*
-     * No java code in the tutorial, but there must be a java file for each
-     * tutorial-*.asciidoc file.
-     */
+
+    @Tag("my-template")
+    @HtmlImport("/com/example/PolymerBinding.html")
+    public class PolymerBindingTemplate extends PolymerTemplate<BindingModel> {
+
+        public PolymerBindingTemplate() {
+            getModel().setHostProperty("Bound property");
+        }
+    }
+
+    public interface BindingModel extends TemplateModel {
+        void setHostProperty(String propertyValue);
+        String getHostProperty();
+    }
 }
