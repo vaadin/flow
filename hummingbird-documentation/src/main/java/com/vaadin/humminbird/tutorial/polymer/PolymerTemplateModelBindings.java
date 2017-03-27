@@ -52,11 +52,10 @@ public class PolymerTemplateModelBindings {
 
         @EventHandler
         private void save() {
-            Element label = ElementFactory
-                    .createLabel("Name: " + getModel().getName() +
+            Element label = ElementFactory.createLabel("Name: " + getModel().getName() +
                     ", isAccepted: " + getModel().getAccepted() + ", Size: " + getModel().getSize());
             label.getStyle().set("display", "block");
-            getParent().get().getElement().appendChild(label);
+            getElement().appendChild(label);
         }
 
         @EventHandler
