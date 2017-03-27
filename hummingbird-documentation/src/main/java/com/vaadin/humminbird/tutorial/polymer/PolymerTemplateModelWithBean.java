@@ -1,6 +1,7 @@
 package com.vaadin.humminbird.tutorial.polymer;
 
 import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.Exclude;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.hummingbird.template.model.TemplateModel;
@@ -35,28 +36,17 @@ public class PolymerTemplateModelWithBean {
             return lastName;
         }
 
-        public void setLastName(String lastName) {
-            this.lastName = lastName;
-        }
-
         public int getAge() {
             return age;
-        }
-
-        public void setAge(int age) {
-            this.age = age;
         }
 
         public Long getId() {
             return id;
         }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
     }
 
     public interface FormModel extends TemplateModel {
+        @Exclude("id")
         void setPerson(Person person);
         Person getPerson();
     }

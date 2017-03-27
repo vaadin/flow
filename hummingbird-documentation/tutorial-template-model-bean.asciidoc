@@ -74,24 +74,12 @@ public class Person {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
     public int getAge() {
         return age;
     }
 
-    public void setAge(int age) {
-        this.age = age;
-    }
-
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 }
 ----
@@ -102,10 +90,16 @@ You can specify your model to use a Person bean by adding a setter and a getter 
 [source,java]
 ----
 public interface FormModel extends TemplateModel {
+  @Exclude("id")
   void setPerson(Person person);
   Person getPerson();
 }
 ----
+
+[TIP]
+You can use the `@Include` annotation and provide a list of properties that you want import
+(all other properties will be excluded) or `@Exclude` for a list you want to exclude. In this specific case the
+`@Include({"firstName","lastName","age"})` would be the same as the shown `@Exclude("id")` annotation.
 
 In the template you can initialize the model by setting a new person instance to it:
 
@@ -119,11 +113,6 @@ public class Form extends PolymerTemplate<FormModel> {
     }
 }
 ----
-
-[TIP]
-You can use the `@Include` annotation and provide a list of properties that you want import
-(all other properties will be excluded) or `@Exclude` for a list you want to exclude. In this specific case the
-`@Include({"firstName","lastName","age"})` would be the same as the `@Exclude("id")` annotation.
 
 [NOTE]
 If you later on update the `Person person` bean created in the constructor, nothing will happen to the model. The bean values are copied by `setPerson` and the bean is not attached to the model in any way.
