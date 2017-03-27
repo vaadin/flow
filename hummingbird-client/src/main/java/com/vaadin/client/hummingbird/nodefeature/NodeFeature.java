@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird.nodefeature;
 
+import java.util.function.Function;
+
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.StateNode;
 
@@ -68,7 +70,20 @@ public abstract class NodeFeature {
      *
      * @return a JSON representation
      */
-    public abstract JsonValue getDebugJson();
+    public JsonValue getDebugJson() {
+        return convert(this::getAsDebugJson);
+    }
+
+    /**
+     * Convert the feature values into a {@link JsonValue} using provided
+     * {@code converter} for the values stored in the feature (i.e. primitive
+     * types, StateNodes).
+     * 
+     * @param converter
+     *            converter to convert values stored in the feature
+     * @return resulting converted value
+     */
+    public abstract JsonValue convert(Function<Object, JsonValue> converter);
 
     /**
      * Helper for getting a JSON representation of a child value.
