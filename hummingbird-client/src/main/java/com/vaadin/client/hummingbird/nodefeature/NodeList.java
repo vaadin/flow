@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.hummingbird.nodefeature;
 
+import java.util.function.Function;
+
 import com.vaadin.client.hummingbird.StateNode;
 import com.vaadin.client.hummingbird.collection.JsArray;
 import com.vaadin.client.hummingbird.collection.JsCollections;
@@ -156,17 +158,18 @@ public class NodeList extends NodeFeature implements ReactiveValue {
     }
 
     @Override
-    public JsonValue getDebugJson() {
+    public JsonValue convert(Function<Object, JsonValue> converter) {
         JsonArray json = Json.createArray();
 
         for (int i = 0; i < values.length(); i++) {
             Object value = values.get(i);
-            JsonValue jsonValue = getAsDebugJson(value);
+            JsonValue jsonValue = converter.apply(value);
 
             json.set(json.length(), jsonValue);
         }
 
         return json;
+
     }
 
     /**
