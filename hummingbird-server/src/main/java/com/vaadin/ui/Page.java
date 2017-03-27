@@ -167,6 +167,11 @@ public class Page implements Serializable {
      * element instance is not attached when the invocation is sent to the
      * client)
      * </ul>
+     * Note that the parameter variables can only be used in contexts where a
+     * JavaScript variable can be used. You should for instance do
+     * <code>'prefix' + $0</code> instead of <code>'prefix$0'</code> and
+     * <code>value[$0]</code> instead of <code>value.$0</code> since JavaScript
+     * variables aren't evaluated inside strings or property names.
      *
      * @param expression
      *            the JavaScript expression to invoke
