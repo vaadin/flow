@@ -36,6 +36,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.Assert;
 
 import com.vaadin.navigator.View;
@@ -176,8 +177,8 @@ public class SpringViewProvider implements ViewProvider {
         for (String beanName : viewBeanNames) {
             final Class<?> type = getWebApplicationContext().getType(beanName);
             if (View.class.isAssignableFrom(type)) {
-                final SpringView annotation = getWebApplicationContext()
-                        .findAnnotationOnBean(beanName, SpringView.class);
+                final SpringView annotation = AnnotatedElementUtils
+                        .findMergedAnnotation(type, SpringView.class);
                 final String viewName = getViewNameFromAnnotation(type,
                         annotation);
                 LOGGER.debug("Found SpringView bean [{}] with view name [{}]",
@@ -357,11 +358,10 @@ public class SpringViewProvider implements ViewProvider {
                     "bean did not implement View interface");
 
             final UI currentUI = UI.getCurrent();
-            final SpringView annotation = getWebApplicationContext()
-                    .findAnnotationOnBean(beanName, SpringView.class);
+            final SpringView annotation = AnnotatedElementUtils.findMergedAnnotation(type, SpringView.class);
 
             Assert.notNull(annotation,
-                    "class did not have a SpringView annotation");
+                    "class did not have a SpringView annotation or an alias for it");
 
             if (annotation.ui().length == 0) {
                 LOGGER.trace(
