@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -68,6 +70,26 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
 
     public static final boolean USE_HUB = Boolean.TRUE.toString()
             .equals(System.getProperty(USE_HUB_PROPERTY, "false"));
+
+    private boolean serverAvailabilityChecked;
+
+    /**
+     * Checks that server is available before running the actual test.
+     */
+    @Before
+    public void checkIfServerAvailable() {
+        if (!serverAvailabilityChecked) {
+            String rootUrl = getRootURL();
+            try {
+                new URL(rootUrl).openConnection().connect();
+            } catch (IOException e) {
+                Assert.fail(String.format(
+                        "Could not connect to %s please check that you have a web server started.",
+                        rootUrl));
+            }
+            serverAvailabilityChecked = true;
+        }
+    }
 
     protected void open() {
         open((String[]) null);
