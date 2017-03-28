@@ -289,7 +289,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
             }
-            assert feature != null;
+            assert feature != null : "Don't know how to convert node without map or list features";
             return feature.convert(this::convertToJson);
         } else {
             return WidgetUtil.crazyJsoCast(object);

@@ -70,9 +70,7 @@ public abstract class NodeFeature {
      *
      * @return a JSON representation
      */
-    public JsonValue getDebugJson() {
-        return convert(this::getAsDebugJson);
-    }
+    public abstract JsonValue getDebugJson();
 
     /**
      * Convert the feature values into a {@link JsonValue} using provided

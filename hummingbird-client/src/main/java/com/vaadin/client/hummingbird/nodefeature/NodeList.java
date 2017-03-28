@@ -158,14 +158,26 @@ public class NodeList extends NodeFeature implements ReactiveValue {
     }
 
     @Override
+    public JsonValue getDebugJson() {
+        JsonArray json = Json.createArray();
+
+        for (int i = 0; i < values.length(); i++) {
+            Object value = values.get(i);
+            JsonValue jsonValue = getAsDebugJson(value);
+
+            json.set(json.length(), jsonValue);
+        }
+
+        return json;
+    }
+
+    @Override
     public JsonValue convert(Function<Object, JsonValue> converter) {
         JsonArray json = Json.createArray();
 
         for (int i = 0; i < values.length(); i++) {
             Object value = values.get(i);
-            JsonValue jsonValue = converter.apply(value);
-
-            json.set(json.length(), jsonValue);
+            json.set(json.length(), converter.apply(value));
         }
 
         return json;

@@ -35,6 +35,11 @@ public class TestTutorialCodeCoverage {
     private static final Path location = new File(".").toPath();
     private static final Path javaLocation = location.resolve("src/main/java");
 
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+
+    private static final StringBuilder exceptions = new StringBuilder();
+    private static int exceptionAmount = 0;
+
     @Test
     public void verifyTutorialCode() throws IOException {
         Map<String, List<Path>> codeFileMap = new HashMap<>();
@@ -54,20 +59,24 @@ public class TestTutorialCodeCoverage {
                 .forEach(tutorialPath -> {
                     String tutorialName = location.relativize(tutorialPath)
                             .toString();
-                    Assert.assertTrue(
-                            "Should be at least one java file for "
-                                    + tutorialName,
-                            codeFileMap.containsKey(tutorialName));
+                    if (!codeFileMap.containsKey(tutorialName))
+                        addException("Should be at least one java file for "
+                                + tutorialName);
                 });
+        if(exceptionAmount > 0) {
+            exceptions.insert(0, String.format("%sFound %s problems with documentation", LINE_SEPARATOR, exceptionAmount));
+            Assert.fail(exceptions.toString());
+        }
     }
 
     private static void verifyTutorialCode(String tutorialName,
             List<Path> codeFiles) {
         File tutorialFile = new File(tutorialName);
         if (!tutorialFile.exists()) {
-            Assert.fail("Could not find tutorial file "
+            addException("Could not find tutorial file "
                     + tutorialFile.getAbsolutePath()
                     + " that was referenced from the java files " + codeFiles);
+            return;
         }
 
         Set<String> allowedLines = extractSnippets(codeFiles);
@@ -102,7 +111,7 @@ public class TestTutorialCodeCoverage {
                     } else {
                         String trimmedLine = trimWhitespace(line);
                         if (!allowedLines.contains(trimmedLine)) {
-                            Assert.fail(tutorialName
+                            addException(tutorialName
                                     + " has code not in the java file: "
                                     + line);
                         }
@@ -147,7 +156,7 @@ public class TestTutorialCodeCoverage {
 
             CodeFor codeFor = clazz.getAnnotation(CodeFor.class);
             if (codeFor == null) {
-                Assert.fail("Java file without @CodeFor: " + className);
+                addException("Java file without @CodeFor: " + className);
             } else {
                 String tutorialName = codeFor.value();
                 codeFiles.computeIfAbsent(tutorialName, n -> new ArrayList<>())
@@ -160,6 +169,14 @@ public class TestTutorialCodeCoverage {
 
     private static String trimWhitespace(String codeLine) {
         return codeLine.replaceAll("\\s", "");
+    }
+
+    private static void addException(String exception) {
+        exceptionAmount++;
+
+        exceptions.append(LINE_SEPARATOR);
+        exceptions.append(String.format("%s. ", exceptionAmount));
+        exceptions.append(exception);
     }
 
 }

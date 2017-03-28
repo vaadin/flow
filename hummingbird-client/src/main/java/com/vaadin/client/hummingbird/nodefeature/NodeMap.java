@@ -122,6 +122,23 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
     }
 
     @Override
+    public JsonValue getDebugJson() {
+        JsonObject json = WidgetUtil.createJsonObjectWithoutPrototype();
+
+        properties.forEach((p, n) -> {
+            if (p.hasValue()) {
+                json.put(n, getAsDebugJson(p.getValue()));
+            }
+        });
+
+        if (json.keys().length == 0) {
+            return null;
+        }
+
+        return json;
+    }
+
+    @Override
     public JsonValue convert(Function<Object, JsonValue> converter) {
         JsonObject json = WidgetUtil.createJsonObjectWithoutPrototype();
 
