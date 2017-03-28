@@ -370,15 +370,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "z-index: 10000;" //
                 + "}");
 
-        if (context.getSession().getBrowser().isPhantomJS()) {
-            // Collections polyfill needed only for PhantomJS
-            head.appendChild(createJavaScriptElement(
-                    context.getUriResolver()
-                            .resolveVaadinUri("context://"
-                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/es6-collections.js"),
-                    false));
-        }
+        // Collections polyfill needed for PhantomJS and maybe googlebot
+        head.appendChild(
+                createJavaScriptElement(
+                        context.getUriResolver()
+                                .resolveVaadinUri("context://"
+                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                        + "server/es6-collections.js"),
+                        false));
 
         head.appendChild(createWebComponentsElement(context));
 
