@@ -529,6 +529,10 @@ public class BootstrapHandlerTest {
         Elements jsElements = page.getElementsByTag("script");
         Elements deferElements = page.getElementsByAttribute("defer");
 
+        // Ignore polyfill that should be loaded immediately
+        jsElements.removeIf(
+                element -> element.attr("src").contains("es6-collections.js"));
+
         assertEquals(jsElements, deferElements);
         assertTrue(deferElements.stream().map(element -> element.attr("src"))
                 .anyMatch("myjavascript.js"::equals));
