@@ -34,7 +34,7 @@ You can set an element property value based on a model by using the property nam
 ----
 <dom-module id="my-template">
 <template>
-    <my-element my-property="[[hostProperty]]">
+    <my-element my-property="[[hostProperty]]"></my-element>
 </template>
 ...
 </dom-module>
