@@ -83,13 +83,10 @@ or
 --
 Text surrounded by double curly bracket {{ }} or double square bracket [[ ]] delimiters identify the host data being bound.
 
-* Double-curly brackets support both upward and downward data flow. see <<two-way-binding,Two-way binding>>.
+* Double-curly brackets support both upward and downward data flow. see <<two-way-binding,Two-way data binding>>.
 
 * Double square brackets are one-way, and support only downward data flow.
 --
-
-[[two-way-binding]]
-
 
 [[server-side-sample]]
 === Server-side model sample code
@@ -117,3 +114,176 @@ public interface BindingModel extends TemplateModel {
     String getHostProperty();
 }
 ----
+
+
+[[two-way-binding]]
+== Two-way data binding
+
+For two-way data binding the data flows in both directions client-to-server and server-to-client.
+
+To demonstrate the functionality lets create a TwoWayBindingModel with some a couple of different fields like:
+
+.Two-way template model
+[source,java]
+----
+public interface TwoWayBindingModel extends TemplateModel {
+    void setName(String name);
+    String getName();
+
+    void setAccepted(Boolean accepted);
+    Boolean getAccepted();
+
+    void setSize(String size);
+    String getSize();
+}
+----
+
+For the server-side PolymerTemplate we will set some default values to the model values and wire listeners for
+events `save` and `reset` as follows:
+
+.Two-way binding template
+[source,java]
+----
+@Tag("two-way-template")
+@HtmlImport("/com/example/PolymerTwoWayBinding.html")
+public class PolymerTwoWayBindingTemplate extends PolymerTemplate<TwoWayBindingModel> {
+
+    public PolymerTwoWayBindingTemplate() {
+        reset();
+    }
+
+    @EventHandler
+    private void save() {
+        Element label = ElementFactory.createLabel("Name: " + getModel().getName() +
+            ", isAccepted: " + getModel().getAccepted() + ", Size: " + getModel().getSize());
+        label.getStyle().set("display", "block");
+        getElement().appendChild(label);
+    }
+
+    @EventHandler
+    private void reset() {
+        getModel().setName("John");
+        getModel().setAccepted(false);
+        getModel().setSize("medium");
+    }
+}
+----
+
+On the client we will use different methods to bind  binding the model data:
+
+.Name string to an input using:
+ - Native input element
+ - Polymer element `paper-input`
+
+.Boolean accepted to a checkbox using:
+ - Native checkbox input
+ - Polymer element `paper-check-box`
+
+.Size string to a select element using:
+ - Native select
+ - Polymer elements `paper-radio-group` and `paper-radio-button`
+
+
+[NOTE]
+--
+Native elements need to specify a custom change event name in the annotation using the syntax: `target-prop="{{hostProp::target-change-event}}"` see. https://www.polymer-project.org/2.0/docs/devguide/data-binding#two-way-native[Two-way binding to a non-Polymer element]
+--
+
+.Polymer html template
+[source,html]
+----
+<!-- Import polymer and polymer components -->
+<link rel="import" href="/bower_components/polymer/polymer.html">
+<link href="/bower_components/paper-input/paper-input.html" rel="import">
+<link href="/bower_components/paper-radio-button/paper-radio-button.html" rel="import">
+<link href="/bower_components/paper-radio-group/paper-radio-group.html" rel="import">
+<link href="/bower_components/paper-checkbox/paper-checkbox.html" rel="import">
+
+<dom-module id="two-way-template">
+    <template>
+        <table>
+            <tr>
+                <td>Paper name:</td>
+                <td>
+                    <paper-input value="{{name}}"></paper-input>
+                </td>
+            </tr>
+            <tr>
+                <td>Input name:</td>
+                <td>
+                    <input value="{{name::input}}">
+                </td>
+            </tr>
+            <tr>
+                <td>Change name:</td>
+                <td>
+                    <input value="{{name::change}}">
+                </td>
+            </tr>
+            <tr>
+                <td>Input accepted:</td>
+                <td>
+                    <input type="checkbox" checked="{{accepted::change}}">
+                </td>
+            </tr>
+            <tr>
+                <td>Polymer accepted:</td>
+                <td>
+                    <paper-checkbox checked="{{accepted}}"></paper-checkbox>
+                </td>
+            </tr>
+            <tr>
+                <td>Size:</td>
+                <td>
+                    <paper-radio-group selected="{{size}}">
+                        <paper-radio-button name="small">Small</paper-radio-button>
+                        <paper-radio-button name="medium">Medium</paper-radio-button>
+                        <paper-radio-button name="large">Large</paper-radio-button>
+                    </paper-radio-group>
+                </td>
+            </tr>
+            <tr>
+                <td>Size:</td>
+                <td>
+                    <select value="{{size::change}}">
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <div>
+            <button on-click="save">Save values</button> <button on-click="reset">Reset values</button>
+        </div>
+        <slot></slot>
+    </template>
+
+    <script>
+        class TwoWayBinding extends Polymer.Element {
+            static get is() {
+                return 'two-way-template'
+            }
+        }
+        customElements.define(TwoWayBinding.is, TwoWayBinding);
+    </script>
+</dom-module>
+----
+
+In the template we use two-way bindings for each element and some elements bind to the same property.
+This will show up in a way that for example the value for name is changed in the paper-input element the value will be reflected to both "Input name:" and "Change name".
+
+[NOTE]
+--
+The two input bindings "Input name" and "Change name" have a small difference in the way they work.
+
+Input name binds using `{{name::input}}` and Change with `{{name::change}}` the given `target-change-event` lets polymer know which event
+to listen to for change notification.
+
+The functional difference is that `::input` will update while typed and `::change` when the value for the field changes (so e.g. onBlur event or for enter)
+--
+
+[NOTE]
+--
+For information on the element `<slot></slot>` see <<tutorial-template-components-in-slot#,Using <slot> in PolymerTemplates>>
+--

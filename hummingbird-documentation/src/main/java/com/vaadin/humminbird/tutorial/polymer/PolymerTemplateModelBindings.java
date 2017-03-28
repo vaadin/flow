@@ -15,9 +15,12 @@
  */
 package com.vaadin.humminbird.tutorial.polymer;
 
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
+import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
@@ -36,5 +39,41 @@ public class PolymerTemplateModelBindings {
     public interface BindingModel extends TemplateModel {
         void setHostProperty(String propertyValue);
         String getHostProperty();
+    }
+
+
+    @Tag("two-way-template")
+    @HtmlImport("/com/example/PolymerTwoWayBinding.html")
+    public class PolymerTwoWayBindingTemplate extends PolymerTemplate<TwoWayBindingModel> {
+
+        public PolymerTwoWayBindingTemplate() {
+            reset();
+        }
+
+        @EventHandler
+        private void save() {
+            Element label = ElementFactory.createLabel("Name: " + getModel().getName() +
+                    ", isAccepted: " + getModel().getAccepted() + ", Size: " + getModel().getSize());
+            label.getStyle().set("display", "block");
+            getElement().appendChild(label);
+        }
+
+        @EventHandler
+        private void reset() {
+            getModel().setName("John");
+            getModel().setAccepted(false);
+            getModel().setSize("medium");
+        }
+    }
+
+    public interface TwoWayBindingModel extends TemplateModel {
+        void setName(String name);
+        String getName();
+
+        void setAccepted(Boolean accepted);
+        Boolean getAccepted();
+
+        void setSize(String size);
+        String getSize();
     }
 }
