@@ -49,7 +49,7 @@ Bindings are not limited to binding to a part of the model but can be any valid 
 
 [source,html]
 ----
-Username: <span>{{firstName.toLowerCase() + "@example.com"}}</div>
+Username: <span>{{firstName.toLowerCase() + "@example.com"}}</span>
 ----
 
 JavaScript can also be used for really simple logic in a template binding, like hiding an element if there are no items:

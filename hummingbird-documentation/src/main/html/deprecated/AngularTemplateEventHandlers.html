@@ -1,0 +1,14 @@
+tutorial::deprecated/tutorial-template-event-handlers.asciidoc
+<button (click)="window.alert('Hello');">Say hello</button>
+
+<div>
+    <input id="name" />
+    <button (click)="$server.sayHello(name.value)">Say hello</button>
+    <span>{{helloText}}</span>
+</div>
+
+<div>
+    <input id="name" />
+    <button id="button">Say hello</button>
+    <span>{{helloText}}</span>
+</div>
