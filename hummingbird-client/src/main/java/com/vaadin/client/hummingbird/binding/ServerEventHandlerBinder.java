@@ -38,10 +38,9 @@ public class ServerEventHandlerBinder {
 
     /**
      * Registers all the server event handler names found in the
-     * {@link NodeFeatures#PUBLISHED_SERVER_EVENT_HANDLERS} feature in the state
-     * node as <code>serverObject.&lt;methodName&gt;</code>. Additionally
-     * listens to changes in the feature and updates <code>$server</code>
-     * accordingly.
+     * {@link NodeFeatures#CLIENT_DELEGATE_HANDLERS} feature in the state node
+     * as <code>serverObject.&lt;methodName&gt;</code>. Additionally listens to
+     * changes in the feature and updates <code>$server</code> accordingly.
      *
      * @param element
      *            the element to update
@@ -52,7 +51,7 @@ public class ServerEventHandlerBinder {
     public static EventRemover bindServerEventHandlerNames(Element element,
             StateNode node) {
         return bindServerEventHandlerNames(() -> ServerEventObject.get(element),
-                node, NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
+                node, NodeFeatures.CLIENT_DELEGATE_HANDLERS);
     }
 
     /**

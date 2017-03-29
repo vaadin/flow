@@ -111,7 +111,7 @@ public class PolymerServerEventHandlersTest {
     }
 
     private void addAndVerifyMethod(Method method) {
-        handlers.addEventHandlerMethod(method, methodCollector);
+        handlers.addHandlerMethod(method, methodCollector);
 
         assertEquals(1, methodCollector.size());
         assertEquals(method, methodCollector.iterator().next());

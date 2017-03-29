@@ -15,9 +15,11 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.ui.Component;
 
@@ -28,8 +30,7 @@ import com.vaadin.ui.Component;
  * @author Vaadin Ltd
  *
  */
-public class PublishedServerEventHandlers
-        extends AbstractServerEventHandlers<Component> {
+public class ClientDelegateHandlers extends AbstractServerHandlers<Component> {
 
     /**
      * Creates a new meta information list for the given state node.
@@ -37,8 +38,13 @@ public class PublishedServerEventHandlers
      * @param node
      *            the state node this list belongs to
      */
-    public PublishedServerEventHandlers(StateNode node) {
+    public ClientDelegateHandlers(StateNode node) {
         super(node);
+    }
+
+    @Override
+    protected Class<? extends Annotation> getHandlerAnnotation() {
+        return ClientDelegate.class;
     }
 
     @Override

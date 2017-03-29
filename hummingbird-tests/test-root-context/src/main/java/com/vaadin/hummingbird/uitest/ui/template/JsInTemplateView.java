@@ -15,7 +15,7 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.template.model.TemplateModel;
@@ -51,7 +51,7 @@ public class JsInTemplateView extends AngularTemplate {
     public static class ButtonWithEventHandler extends Button {
         private transient JsInTemplateModel model;
 
-        @EventHandler
+        @ClientDelegate
         public void updateModel() {
             model.setFirstName("ThroughButton");
             model.setItemCount(78);
@@ -77,7 +77,7 @@ public class JsInTemplateView extends AngularTemplate {
         buttonWithEventHandler.setModel(getModel());
     }
 
-    @EventHandler
+    @ClientDelegate
     public void updateModel() {
         getModel().setFirstName("Another");
         getModel().setItemCount(getModel().getItemCount() == 0 ? 3 : 0);

@@ -15,7 +15,7 @@
  */
 package com.vaadin.humminbird.tutorial.template;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.Exclude;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
@@ -91,7 +91,7 @@ public class BeanInTemplateModel {
             return (FormModel) super.getModel();
         }
 
-        @EventHandler
+        @ClientDelegate
         public void setNameToJeff() {
             getModel().getPerson().setFirstName("Jeff");
         }

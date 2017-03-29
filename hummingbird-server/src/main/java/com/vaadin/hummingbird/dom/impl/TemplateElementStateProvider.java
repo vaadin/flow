@@ -29,6 +29,7 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementStateProvider;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Style;
+import com.vaadin.hummingbird.nodefeature.ClientDelegateHandlers;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
@@ -39,7 +40,6 @@ import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.OverrideElementData;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
-import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
@@ -65,7 +65,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     @SuppressWarnings("unchecked")
     private static Class<? extends NodeFeature>[] rootNodeFeatures = new Class[] {
             ComponentMapping.class, TemplateMap.class,
-            ParentGeneratorHolder.class, PublishedServerEventHandlers.class,
+            ParentGeneratorHolder.class, ClientDelegateHandlers.class,
             TemplateOverridesMap.class, ModelMap.class };
 
     @SuppressWarnings("unchecked")
@@ -75,7 +75,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                     ElementAttributeMap.class, ElementPropertyMap.class,
                     ElementListenerMap.class, SynchronizedPropertiesList.class,
                     SynchronizedPropertyEventsList.class,
-                    PublishedServerEventHandlers.class)
+                    ClientDelegateHandlers.class)
             .toArray(Class[]::new);
 
     private static final Predicate<? super String> excludeCustomAttributes = name -> !CustomAttribute

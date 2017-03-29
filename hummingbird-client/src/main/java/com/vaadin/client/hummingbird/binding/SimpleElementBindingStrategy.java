@@ -180,6 +180,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindPolymerEventHandlerNames(context));
 
+        listeners.push(bindClientDelegateMethods(context));
+
         bindPolymerPropertyChangeListener(stateNode, htmlNode);
 
         bindModelProperties(stateNode, htmlNode);
@@ -622,6 +624,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
                 () -> WidgetUtil.crazyJsoCast(context.element), context.node,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
+    }
+
+    private EventRemover bindClientDelegateMethods(BindingContext context) {
+        return ServerEventHandlerBinder
+                .bindServerEventHandlerNames(context.element, context.node);
     }
 
     private static EventDataExpression getOrCreateExpression(
