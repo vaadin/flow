@@ -120,7 +120,7 @@ To update the values in the model, you can use `getModel().getPerson()` to get a
 [source,java]
 ----
 public class Form extends AngularTemplate {
-    @EventHandler
+    @ClientDelegate
     public void setNameToJeff() {
         getModel().getPerson().setFirstName("Jeff");
     }

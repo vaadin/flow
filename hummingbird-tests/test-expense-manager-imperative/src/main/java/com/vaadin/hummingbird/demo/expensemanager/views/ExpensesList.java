@@ -1,6 +1,6 @@
 package com.vaadin.hummingbird.demo.expensemanager.views;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.hummingbird.components.paper.PaperFab;
 import com.vaadin.hummingbird.components.vaadin.VaadinGrid;
 import com.vaadin.hummingbird.components.vaadin.VaadinGrid.Column;
@@ -73,7 +73,7 @@ public class ExpensesList extends Div implements View {
         paperFab.setId("add-button");
     }
 
-    @EventHandler
+    @ClientDelegate
     protected void showExpenseEditor() {
         UI.getCurrent().navigateTo("expense");
     }

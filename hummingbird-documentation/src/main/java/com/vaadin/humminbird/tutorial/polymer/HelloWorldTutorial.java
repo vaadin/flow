@@ -63,11 +63,14 @@ public class HelloWorldTutorial {
 
         @EventHandler
         private void sayHello() {
+            // @formatter:off
             // Called from the template click handler
-            getModel().setGreeting(Optional.ofNullable(getModel().getUserInput())
+            getModel().setGreeting(Optional
+                    .ofNullable(getModel().getUserInput())
                     .filter(userInput -> !userInput.isEmpty())
                     .map(greeting -> String.format("Hello %s!", greeting))
                     .orElse(EMPTY_NAME_GREETING));
+            // @formatter:on
         }
     }
 

@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.html.HtmlContainer;
 import com.vaadin.hummingbird.html.Label;
@@ -40,7 +40,7 @@ public class TemplateEventHandlerView extends Div implements View {
                     TemplateModel.class);
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method() {
             Label label = new Label("Event is received");
             label.setId("event-handler");
@@ -61,7 +61,7 @@ public class TemplateEventHandlerView extends Div implements View {
                     TemplateModel.class);
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method(String msg, int size, double value,
                 boolean visible, Double[] array, String... vararg) {
             Label label = new Label("Event data is received");
@@ -99,7 +99,7 @@ public class TemplateEventHandlerView extends Div implements View {
                     TemplateModel.class);
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method(JsonValue value) {
             Label label = new Label("Json object is received");
             label.setId("event-json");

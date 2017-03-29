@@ -633,9 +633,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private EventRemover bindClientDelegateMethods(BindingContext context) {
         if (context.node.hasFeature(NodeFeatures.CLIENT_DELEGATE_HANDLERS)) {
-            return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                    context.element, context.node,
-                    NodeFeatures.CLIENT_DELEGATE_HANDLERS);
+            return ServerEventHandlerBinder
+                    .bindServerEventHandlerNames(context.element, context.node);
         }
         return () -> {
         };

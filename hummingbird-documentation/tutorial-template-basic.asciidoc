@@ -102,10 +102,11 @@ public class HelloWorld extends PolymerTemplate<HelloWorldModel> {
     @EventHandler
     private void sayHello() {
         // Called from the template click handler
-        getModel().setGreeting(Optional.ofNullable(getModel().getUserInput())
-                .filter(userInput -> !userInput.isEmpty())
-                .map(greeting -> String.format("Hello %s!", greeting))
-                .orElse(EMPTY_NAME_GREETING));
+        getModel().setGreeting(Optional
+                    .ofNullable(getModel().getUserInput())
+                    .filter(userInput -> !userInput.isEmpty())
+                    .map(greeting -> String.format("Hello %s!", greeting))
+                    .orElse(EMPTY_NAME_GREETING));
     }
 }
 ----

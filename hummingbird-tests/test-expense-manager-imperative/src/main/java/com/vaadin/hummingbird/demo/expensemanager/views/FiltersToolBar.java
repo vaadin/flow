@@ -1,10 +1,8 @@
 package com.vaadin.hummingbird.demo.expensemanager.views;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.hummingbird.components.paper.PaperButton;
 import com.vaadin.hummingbird.components.paper.PaperCheckbox;
 import com.vaadin.hummingbird.components.paper.PaperIconButton;
@@ -289,7 +287,7 @@ public class FiltersToolBar extends Div implements View {
         input.setValue("");
     }
 
-    @EventHandler
+    @ClientDelegate
     protected void clearFilters() {
         dateFrom.setValue("");
         dateTo.setValue("");

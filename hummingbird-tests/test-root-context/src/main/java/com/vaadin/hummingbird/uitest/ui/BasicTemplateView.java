@@ -17,7 +17,7 @@ package com.vaadin.hummingbird.uitest.ui;
 
 import java.io.Serializable;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.Id;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
@@ -76,23 +76,23 @@ public class BasicTemplateView extends AngularTemplate implements View {
         return (Model) super.getModel();
     }
 
-    @EventHandler
+    @ClientDelegate
     private void setModelText() {
         setModelValue("text");
     }
 
-    @EventHandler
+    @ClientDelegate
     private void setModelBoolean() {
         setModelValue(Boolean.FALSE);
     }
 
-    @EventHandler
+    @ClientDelegate
     private void setAttributes() {
         input.setValue("updated");
         input.setPlaceholder("placeholder");
     }
 
-    @EventHandler
+    @ClientDelegate
     private void updateAttributeBinding() {
         getElement().getNode().getFeature(ModelMap.class).setValue("foo",
                 "bar");

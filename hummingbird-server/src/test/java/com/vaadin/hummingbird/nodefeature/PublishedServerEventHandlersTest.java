@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
@@ -43,7 +43,7 @@ public class PublishedServerEventHandlersTest {
             super("<div></div>");
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method() {
 
         }
@@ -51,7 +51,7 @@ public class PublishedServerEventHandlersTest {
 
     static class TemplateWithBadParametersMethod extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void method1(char arg) {
 
         }
@@ -59,47 +59,47 @@ public class PublishedServerEventHandlersTest {
 
     static class TemplateWithGoodParametersMethods extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void method1(String arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method2(Integer arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method3(Boolean arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method4(JsonValue arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method5(Integer[] arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method6(String... arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method7(int arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method8(double arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method9(boolean arg) {
 
         }
@@ -107,7 +107,7 @@ public class PublishedServerEventHandlersTest {
 
     static class TemplateWithMethodReturnValue extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected int op() {
             return 0;
         }
@@ -115,7 +115,7 @@ public class PublishedServerEventHandlersTest {
 
     static class TemplateWithMethodDeclaringCheckedException extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void op() throws IOException {
 
         }
@@ -124,7 +124,7 @@ public class PublishedServerEventHandlersTest {
     static class TemplateWithMethodDeclaringUncheckedException
             extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void op() throws NullPointerException {
 
         }
@@ -132,11 +132,11 @@ public class PublishedServerEventHandlersTest {
 
     static class ChildTemplateWithMultipleMethods extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void op() {
         }
 
-        @EventHandler
+        @ClientDelegate
         public void handle() {
         }
     }
@@ -144,7 +144,7 @@ public class PublishedServerEventHandlersTest {
     static class ChildTemplateWithOverriddenMethod extends Template1 {
 
         @Override
-        @EventHandler
+        @ClientDelegate
         protected void method() {
 
         }
@@ -154,7 +154,7 @@ public class PublishedServerEventHandlersTest {
             extends TemplateWithBadParametersMethod {
 
         @Override
-        @EventHandler
+        @ClientDelegate
         protected void method() {
 
         }
@@ -162,7 +162,7 @@ public class PublishedServerEventHandlersTest {
 
     static class ChildTemplateWithOverloadedMethod extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void method(int i) {
 
         }
@@ -175,7 +175,7 @@ public class PublishedServerEventHandlersTest {
     @Tag("div")
     static class NonTemplateComponentWithEventHandler extends Component {
 
-        @EventHandler
+        @ClientDelegate
         public void publishedMethod1() {
 
         }
@@ -343,8 +343,8 @@ public class PublishedServerEventHandlersTest {
         StateNode stateNode = new StateNode(ClientDelegateHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0, stateNode
-                .getFeature(ClientDelegateHandlers.class).size());
+        Assert.assertEquals(0,
+                stateNode.getFeature(ClientDelegateHandlers.class).size());
     }
 
     @Test
@@ -355,8 +355,8 @@ public class PublishedServerEventHandlersTest {
                 ClientDelegateHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0, stateNode
-                .getFeature(ClientDelegateHandlers.class).size());
+        Assert.assertEquals(0,
+                stateNode.getFeature(ClientDelegateHandlers.class).size());
     }
 
     @Test

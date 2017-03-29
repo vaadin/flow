@@ -15,7 +15,7 @@
  */
 package com.vaadin.humminbird.tutorial.template;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
@@ -34,7 +34,7 @@ public class EventHandlers {
             return (MyModel) super.getModel();
         }
 
-        @EventHandler
+        @ClientDelegate
         private void sayHello(String name) {
             getModel().setHelloText("Hello " + name);
         }

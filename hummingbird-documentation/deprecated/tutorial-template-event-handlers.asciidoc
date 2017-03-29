@@ -37,7 +37,7 @@ In the following template a click listener is attached to the button and the eve
 [NOTE]
 We can use `name.value` because the `<input>` element has `id="name"` and the browser makes these elements available in the global namespace using their id.
 
-The server side template class defines the published `sayHello` method using the `@EventHandler` annotation:
+The server side template class defines the published `sayHello` method using the `@ClientDelegate` annotation:
 
 [source,java]
 ----
@@ -50,7 +50,7 @@ public class MyTemplate extends AngularTemplate {
       return (MyModel) super.getModel();
   }
 
-  @EventHandler
+  @ClientDelegate
   private void sayHello(String name) {
     getModel().setHelloText("Hello " + name);
   }
@@ -62,7 +62,7 @@ The `sayHello` method is invoked whenever `$server.sayHello` is called on the cl
 [NOTE]
 Only `String`, `int`, `Integer`, `double`, `Double`, `boolean`, `Boolean`, `JsonValue` and arrays of all those types are supported parameter types.
 [NOTE]
-The `@EventHandler` method can have any access modifier (`private`/`protected`/`public`) but must return `void`.
+The `@ClientDelegate` method can have any access modifier (`private`/`protected`/`public`) but must return `void`.
 [NOTE]
 The `$server` variable is only available in template event handlers.
 

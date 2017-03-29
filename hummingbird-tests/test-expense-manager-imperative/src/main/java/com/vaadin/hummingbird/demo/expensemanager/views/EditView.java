@@ -1,10 +1,9 @@
 package com.vaadin.hummingbird.demo.expensemanager.views;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Title;
@@ -192,7 +191,7 @@ public class EditView extends Div implements View {
         }
     }
 
-    @EventHandler
+    @ClientDelegate
     protected void save() {
         error.setText(null);
 
@@ -232,18 +231,18 @@ public class EditView extends Div implements View {
         UI.getCurrent().navigateTo("overview");
     }
 
-    @EventHandler
+    @ClientDelegate
     protected void delete() {
         ExpenseService.INSTANCE.delete(current);
         UI.getCurrent().navigateTo("overview");
     }
 
-    @EventHandler
+    @ClientDelegate
     protected void close() {
         UI.getCurrent().navigateTo("overview");
     }
 
-    @EventHandler
+    @ClientDelegate
     protected void uploadSuccess() {
         Object o = VaadinSession.getCurrent().getSession()
                 .getAttribute("receipt-upload");

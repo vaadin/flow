@@ -15,7 +15,7 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
@@ -42,7 +42,7 @@ public class FormView extends AngularTemplate {
         getModel().setPerson(person);
     }
 
-    @EventHandler
+    @ClientDelegate
     public void updateModel() {
         Person p = getModel().getPerson();
         p.setFirstName(p.getFirstName() + "!");
