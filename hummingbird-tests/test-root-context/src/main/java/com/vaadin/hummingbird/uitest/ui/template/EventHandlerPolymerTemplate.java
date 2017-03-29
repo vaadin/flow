@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.uitest.ui.template;
 
 import java.util.Locale;
 
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
@@ -28,7 +29,8 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
 
 @Tag("event-handler")
 @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/EventHandler.html")
-public class EventHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> {
+public class EventHandlerPolymerTemplate
+        extends PolymerTemplate<TemplateModel> {
 
     @EventHandler
     private void handleClick() {
@@ -54,8 +56,17 @@ public class EventHandlerPolymerTemplate extends PolymerTemplate<TemplateModel> 
 
     @EventHandler
     private void overriddenClick(@EventData("event.result") String result) {
-        Element label = ElementFactory.createLabel("Overridden server event was invoked with result: " + result);
+        Element label = ElementFactory.createLabel(
+                "Overridden server event was invoked with result: " + result);
         label.setAttribute("id", "overridden-event-handler-result");
         getParent().get().getElement().appendChild(label);
+    }
+
+    @ClientDelegate
+    private void handleClientCall(String msg, boolean enabled) {
+        Element div = ElementFactory.createDiv(
+                "Call from client, message: " + msg + ", " + enabled);
+        div.setAttribute("id", "client-call");
+        getParent().get().getElement().appendChild(div);
     }
 }

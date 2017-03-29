@@ -15,12 +15,14 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventData;
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 
@@ -31,7 +33,7 @@ import com.vaadin.hummingbird.template.PolymerTemplate;
  *
  */
 public class PolymerServerEventHandlers
-        extends AbstractServerEventHandlers<PolymerTemplate<?>> {
+        extends AbstractServerHandlers<PolymerTemplate<?>> {
 
     /**
      * Creates a new meta information list for the given state node.
@@ -44,9 +46,9 @@ public class PolymerServerEventHandlers
     }
 
     @Override
-    protected void addEventHandlerMethod(Method method,
+    protected void addHandlerMethod(Method method,
             Collection<Method> methods) {
-        super.addEventHandlerMethod(method, methods);
+        super.addHandlerMethod(method, methods);
 
         addMethodParameters(method);
     }
@@ -60,6 +62,11 @@ public class PolymerServerEventHandlers
                 .forEach(type -> ensureSupportedParameterType(method, type));
         Stream.of(method.getParameters())
                 .forEach(parameter -> ensureAnnotation(method, parameter));
+    }
+
+    @Override
+    protected Class<? extends Annotation> getHandlerAnnotation() {
+        return EventHandler.class;
     }
 
     private static void ensureAnnotation(Method method, Parameter parameter) {
@@ -80,8 +87,10 @@ public class PolymerServerEventHandlers
     private String[] getParameters(Method method) {
         Parameter[] parameters = method.getParameters();
 
-        return Stream.of(parameters).map(
-                parameter -> parameter.getAnnotation(EventData.class).value())
+        return Stream.of(parameters).filter(
+                parameter -> parameter.getAnnotation(EventData.class) != null)
+                .map(parameter -> parameter.getAnnotation(EventData.class)
+                        .value())
                 .toArray(size -> new String[size]);
     }
 

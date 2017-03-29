@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
@@ -95,8 +96,8 @@ public class PublishedServerEventHandlerRpcHandler
         assert instance != null;
         List<Method> methods = Stream.of(clazz.getDeclaredMethods())
                 .filter(method -> methodName.equals(method.getName()))
-                .filter(method -> method
-                        .isAnnotationPresent(EventHandler.class))
+                .filter(method -> method.isAnnotationPresent(EventHandler.class)
+                        || method.isAnnotationPresent(ClientDelegate.class))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
             String msg = String.format(

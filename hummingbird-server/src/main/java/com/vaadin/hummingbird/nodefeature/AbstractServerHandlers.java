@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -30,8 +31,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
-import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.util.ReflectTools;
@@ -45,7 +44,7 @@ import com.vaadin.util.ReflectTools;
  *
  * @author Vaadin Ltd
  */
-public abstract class AbstractServerEventHandlers<T>
+public abstract class AbstractServerHandlers<T>
         extends SerializableNodeList<String> {
 
     /**
@@ -54,7 +53,7 @@ public abstract class AbstractServerEventHandlers<T>
      * @param node
      *            the state node this list belongs to
      */
-    public AbstractServerEventHandlers(StateNode node) {
+    public AbstractServerHandlers(StateNode node) {
         super(node);
     }
 
@@ -76,27 +75,27 @@ public abstract class AbstractServerEventHandlers<T>
      */
     public void componentSet(T component) {
         assert component != null;
-        collectEventHandlerMethods(component.getClass());
+        collectHandlerMethods(component.getClass());
     }
 
     /**
-     * Collect methods annotated with {@link EventHandler} for given class.
+     * Collect methods annotated with the handler annotation for given class.
      * 
      * @param classWithAnnotations
      *            Class to collect methods for
      */
-    protected void collectEventHandlerMethods(Class<?> classWithAnnotations) {
+    protected void collectHandlerMethods(Class<?> classWithAnnotations) {
         List<Method> methods = new ArrayList<>();
-        collectEventHandlerMethods(classWithAnnotations, methods);
+        collectHandlerMethods(classWithAnnotations, methods);
         Map<String, Method> map = new HashMap<>();
         for (Method method : methods) {
             Method existing = map.get(method.getName());
             if (existing != null && !Arrays.equals(existing.getParameterTypes(),
                     method.getParameterTypes())) {
                 String msg = String.format(Locale.ENGLISH,
-                        "There may be only one event handler method with the given name. "
+                        "There may be only one handler method with the given name. "
                                 + "Class '%s' (considering its superclasses) "
-                                + "contains several event handler methods with the same name: '%s'",
+                                + "contains several handler methods with the same name: '%s'",
                         classWithAnnotations.getName(), method.getName());
                 throw new IllegalStateException(msg);
             }
@@ -106,41 +105,40 @@ public abstract class AbstractServerEventHandlers<T>
     }
 
     /**
-     * Collect all Methods annotated with {@link EventHandler}.
+     * Collect all Methods annotated with the handler annotation.
      *
      * @param clazz
      *            Class to check methods for
      * @param methods
      *            Collection to add methods to
      */
-    protected void collectEventHandlerMethods(Class<?> clazz,
+    protected void collectHandlerMethods(Class<?> clazz,
             Collection<Method> methods) {
         if (clazz.equals(getType())) {
             return;
         }
         Stream.of(clazz.getDeclaredMethods()).filter(
-                method -> method.isAnnotationPresent(EventHandler.class))
-                .forEach(method -> addEventHandlerMethod(method, methods));
-        collectEventHandlerMethods(clazz.getSuperclass(), methods);
+                method -> method.isAnnotationPresent(getHandlerAnnotation()))
+                .forEach(method -> addHandlerMethod(method, methods));
+        collectHandlerMethods(clazz.getSuperclass(), methods);
     }
 
     /**
-     * Add an event handler to the NodeList.
+     * Add a handler to the NodeList.
      * 
      * @param method
      *            Method to verify and add
      * @param methods
      *            Collection to add method to
      */
-    protected void addEventHandlerMethod(Method method,
-            Collection<Method> methods) {
+    protected void addHandlerMethod(Method method, Collection<Method> methods) {
         ensureSupportedParameterTypes(method);
         if (!void.class.equals(method.getReturnType())) {
             String msg = String.format(Locale.ENGLISH,
-                    "Only void event handler methods are supported. "
+                    "Only void handler methods are supported. "
                             + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but %s",
                     method.getDeclaringClass().getName(), method.getName(),
-                    EventHandler.class.getName(),
+                    getHandlerAnnotation().getName(),
                     method.getReturnType().getSimpleName());
             throw new IllegalStateException(msg);
         }
@@ -149,39 +147,45 @@ public abstract class AbstractServerEventHandlers<T>
                 .filter(ReflectTools::isCheckedException).findFirst();
         if (checkedException.isPresent()) {
             String msg = String.format(Locale.ENGLISH,
-                    "Event handler method may not declare checked exceptions. "
+                    "Handler method may not declare checked exceptions. "
                             + "Component '%s' has method '%s' which declares checked exception '%s'"
                             + " and annotated with '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
                     checkedException.get().getName(),
-                    EventHandler.class.getName());
+                    getHandlerAnnotation().getName());
             throw new IllegalStateException(msg);
         }
         methods.add(method);
     }
 
     /**
+     * Gets the annotation which is used to mark methods as handlers.
+     * 
+     * @return the handler marker annotation
+     */
+    protected abstract Class<? extends Annotation> getHandlerAnnotation();
+
+    /**
      * Ensure that method parameter type is supported e.g. parameter types of
-     * event handler methods must be serializable to JSON.
+     * handler methods must be serializable to JSON.
      * 
      * @param method
      *            Method we are checking
      * @param type
      *            The parameter type
      */
-    protected static void ensureSupportedParameterType(Method method,
-            Class<?> type) {
+    protected void ensureSupportedParameterType(Method method, Class<?> type) {
         Class<?> parameterType = ReflectTools.convertPrimitiveType(type);
         if (parameterType.isArray()) {
             ensureSupportedParameterType(method,
                     parameterType.getComponentType());
         } else if (!JsonCodec.canEncodeWithoutTypeInfo(parameterType)) {
             String msg = String.format(Locale.ENGLISH,
-                    "The parameter types of event handler methods must be serializable to JSON."
+                    "The parameter types of handler methods must be serializable to JSON."
                             + " Component %s has method '%s' and annotated with %s "
                             + "which declares parameter with non serializable to JSON type '%s'",
                     method.getDeclaringClass().getName(), method.getName(),
-                    EventHandler.class.getName(), type.getName());
+                    getHandlerAnnotation().getName(), type.getName());
             throw new IllegalStateException(msg);
         }
     }
@@ -198,17 +202,17 @@ public abstract class AbstractServerEventHandlers<T>
 
     private static String getExceptionMessage(Type type) {
         if (type == null) {
-            return "AbstractServerEventHandlers is used as raw type: either add type information or override collectEventHandlerMethods(Class<?> clazz, Collection<Method> methods).";
+            return "AbstractServerHandlers is used as raw type: either add type information or override collectHandlerMethods(Class<?> clazz, Collection<Method> methods).";
         }
 
         if (type instanceof TypeVariable) {
             return String.format(
                     "Could not determine the composite content type for TypeVariable '%s'. "
-                            + "Either specify exact type or override collectEventHandlerMethods().",
+                            + "Either specify exact type or override collectHandlerMethods().",
                     type.getTypeName());
         }
         return String.format(
-                "Could not determine the composite content type for %s. Override collectEventHandlerMethods().",
+                "Could not determine the composite content type for %s. Override collectHandlerMethods().",
                 type.getTypeName());
     }
 }

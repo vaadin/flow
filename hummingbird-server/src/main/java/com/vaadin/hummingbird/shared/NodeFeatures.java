@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.shared;
 
+import com.vaadin.hummingbird.nodefeature.ClientDelegateHandlers;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
@@ -154,6 +155,11 @@ public class NodeFeatures {
      * Id for {@link PolymerEventListenerMap}.
      */
     public static final int POLYMER_EVENT_LISTENERS = 24;
+
+    /**
+     * Id for {@link ClientDelegateHandlers}.
+     */
+    public static final int CLIENT_DELEGATE_HANDLERS = 25;
 
     /**
      * Key for {@link ElementData#getTag()}.
