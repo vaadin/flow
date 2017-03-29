@@ -72,7 +72,7 @@ public class ServerEventHandlerBinder {
     public static EventRemover bindServerEventHandlerNames(Element element,
             StateNode node) {
         return bindServerEventHandlerNames(element, node,
-                NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
+                NodeFeatures.CLIENT_DELEGATE_HANDLERS);
     }
 
     /**

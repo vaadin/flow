@@ -1,0 +1,16 @@
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
+<dom-module id="list-binding">
+    <template>
+    <dom-repeat items="[[messages]]">
+      <template><div class='msg'>[[item.text]]</div></template>
+    </dom-repeat>
+    <button id="update" on-click="update">Update</button>
+  </template>
+  <script>
+    class ListBinding extends Polymer.Element {
+      static get is() { return 'list-binding' }
+    }
+    customElements.define(ListBinding.is, ListBinding);
+  </script>
+</dom-module>

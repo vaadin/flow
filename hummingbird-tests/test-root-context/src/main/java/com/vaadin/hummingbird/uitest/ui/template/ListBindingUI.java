@@ -13,12 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.humminbird.tutorial.template;
+package com.vaadin.hummingbird.uitest.ui.template;
 
-import com.vaadin.humminbird.tutorial.annotations.CodeFor;
+import com.vaadin.annotations.WebComponents;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.UI;
 
-@Deprecated
-@CodeFor("deprecated/tutorial-template-include.asciidoc")
-public class TemplateInclude {
-    // Needed by the test although there is no Java code in the tutorial
+/**
+ * @author Vaadin Ltd
+ *
+ */
+@WebComponents(1)
+public class ListBindingUI extends UI {
+
+    @Override
+    protected void init(VaadinRequest request) {
+        ListBindingTemplate template = new ListBindingTemplate();
+        template.setId("template");
+        add(template);
+    }
 }

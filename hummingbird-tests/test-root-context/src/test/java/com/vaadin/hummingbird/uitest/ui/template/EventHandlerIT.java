@@ -63,5 +63,10 @@ public class EventHandlerIT extends ChromeBrowserTest {
                 "Overridden server event was invoked with result: ClientSide handler",
                 findElement(By.id("overridden-event-handler-result"))
                         .getText());
+
+        getInShadowRoot(template, By.id("client")).get().click();
+
+        Assert.assertEquals("Call from client, message: foo, true",
+                findElement(By.id("client-call")).getText());
     }
 }

@@ -1,0 +1,21 @@
+tutorial::tutorial-template-basic.asciidoc
+<link rel="import" href="/polymer/location/polymer.html">
+<link rel="import" href="/paper-input/location/paper-input.html">
+
+<dom-module id="hello-world">
+    <template>
+        <div>
+            <paper-input id="inputId" value="{{userInput}}"></paper-input>
+            <button id="helloButton" on-click="sayHello">Say hello</button>
+            <div id="greeting">[[greeting]]</div>
+        </div>
+    </template>
+    <script>
+        class HelloWorld extends Polymer.Element {
+            static get is() {
+                return 'hello-world'
+            }
+        }
+        customElements.define(HelloWorld.is, HelloWorld);
+    </script>
+</dom-module>

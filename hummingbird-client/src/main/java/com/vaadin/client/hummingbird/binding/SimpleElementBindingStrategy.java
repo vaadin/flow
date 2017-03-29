@@ -34,6 +34,7 @@ import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.dom.DomElement.DomTokenList;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
+import com.vaadin.client.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
@@ -262,16 +263,38 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             String path) {
         String newPath = path.isEmpty() ? property.getName()
                 : path + "." + property.getName();
+        NativeFunction setValueFunction = NativeFunction.create("path", "value",
+                "this.set(path, value)");
         if (property.getValue() instanceof StateNode) {
-            NativeFunction function = NativeFunction.create("path", "value",
-                    "this.set(path, {})");
-            function.call(htmlNode, newPath);
             StateNode subNode = (StateNode) property.getValue();
-            bindModelProperties(subNode, htmlNode, newPath);
+
+            if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+                setValueFunction.call(htmlNode, newPath,
+                        convertToJson(subNode));
+            } else {
+                NativeFunction function = NativeFunction.create("path", "value",
+                        "this.set(path, {})");
+                function.call(htmlNode, newPath);
+                bindModelProperties(subNode, htmlNode, newPath);
+            }
         } else {
-            NativeFunction function = NativeFunction.create("path", "value",
-                    "this.set(path, value)");
-            function.call(htmlNode, newPath, property.getValue());
+            setValueFunction.call(htmlNode, newPath, property.getValue());
+        }
+    }
+
+    private JsonValue convertToJson(Object object) {
+        if (object instanceof StateNode) {
+            StateNode node = (StateNode) object;
+            NodeFeature feature = null;
+            if (node.hasFeature(NodeFeatures.TEMPLATE_MODELMAP)) {
+                feature = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+                feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
+            }
+            assert feature != null : "Don't know how to convert node without map or list features";
+            return feature.convert(this::convertToJson);
+        } else {
+            return WidgetUtil.crazyJsoCast(object);
         }
     }
 
@@ -598,15 +621,24 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
-        return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                () -> WidgetUtil.crazyJsoCast(context.element), context.node,
-                NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
+        if (context.node
+                .hasFeature(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS)) {
+            return ServerEventHandlerBinder.bindServerEventHandlerNames(
+                    () -> WidgetUtil.crazyJsoCast(context.element),
+                    context.node, NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
+        }
+        return () -> {
+        };
     }
 
     private EventRemover bindClientDelegateMethods(BindingContext context) {
-        return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                context.element, context.node,
-                NodeFeatures.CLIENT_DELEGATE_HANDLERS);
+        if (context.node.hasFeature(NodeFeatures.CLIENT_DELEGATE_HANDLERS)) {
+            return ServerEventHandlerBinder.bindServerEventHandlerNames(
+                    context.element, context.node,
+                    NodeFeatures.CLIENT_DELEGATE_HANDLERS);
+        }
+        return () -> {
+        };
     }
 
     private static EventDataExpression getOrCreateExpression(

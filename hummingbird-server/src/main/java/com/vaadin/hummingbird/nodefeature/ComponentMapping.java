@@ -62,7 +62,7 @@ public class ComponentMapping extends ServerSideFeature {
         this.component = component;
 
         List<Class<? extends NodeFeature>> featureClasses = Collections
-                .singletonList(PublishedServerEventHandlers.class);
+                .singletonList(ClientDelegateHandlers.class);
         if (component instanceof PolymerTemplate) {
             featureClasses = Arrays.asList(PolymerServerEventHandlers.class,
                     ClientDelegateHandlers.class);

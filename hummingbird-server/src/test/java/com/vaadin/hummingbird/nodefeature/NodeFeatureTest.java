@@ -89,8 +89,8 @@ public class NodeFeatureTest {
         expectedIds.put(ParentGeneratorHolder.class,
                 NodeFeatures.PARENT_GENERATOR);
         expectedIds.put(ModelList.class, NodeFeatures.TEMPLATE_MODELLIST);
-        expectedIds.put(PublishedServerEventHandlers.class,
-                NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS);
+        expectedIds.put(ClientDelegateHandlers.class,
+                NodeFeatures.CLIENT_DELEGATE_HANDLERS);
         expectedIds.put(PolymerServerEventHandlers.class,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
         expectedIds.put(PolymerEventListenerMap.class,

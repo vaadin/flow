@@ -31,7 +31,6 @@ import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
 import com.vaadin.hummingbird.nodefeature.PollConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
 import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
-import com.vaadin.hummingbird.nodefeature.PublishedServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap;
 import com.vaadin.hummingbird.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.hummingbird.nodefeature.ReconnectDialogConfigurationMap;
@@ -142,9 +141,9 @@ public class NodeFeatures {
     public static final int TEMPLATE_MODELLIST = 21;
 
     /**
-     * Id for {@link PublishedServerEventHandlers}.
+     * Id for {@link ClientDelegateHandlers}.
      */
-    public static final int PUBLISHED_SERVER_EVENT_HANDLERS = 22;
+    public static final int CLIENT_DELEGATE_HANDLERS = 22;
 
     /**
      * Id for {@link PolymerServerEventHandlers}.
@@ -155,11 +154,6 @@ public class NodeFeatures {
      * Id for {@link PolymerEventListenerMap}.
      */
     public static final int POLYMER_EVENT_LISTENERS = 24;
-
-    /**
-     * Id for {@link ClientDelegateHandlers}.
-     */
-    public static final int CLIENT_DELEGATE_HANDLERS = 25;
 
     /**
      * Key for {@link ElementData#getTag()}.

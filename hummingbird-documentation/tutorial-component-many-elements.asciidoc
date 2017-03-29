@@ -12,8 +12,10 @@ You can create a TextField component with support for a label using the followin
 [source,html]
 ----
 <div>
-  <label>
-  <input>
+    <label>
+        <input>
+    </label>
+</div>
 ----
 
 The component class looks like:

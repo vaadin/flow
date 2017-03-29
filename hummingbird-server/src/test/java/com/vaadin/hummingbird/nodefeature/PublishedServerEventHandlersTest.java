@@ -184,12 +184,12 @@ public class PublishedServerEventHandlersTest {
     @Test
     public void eventHandlersUnrelatedToAttach() {
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                PublishedServerEventHandlers.class);
+                ClientDelegateHandlers.class);
         stateNode.getFeature(ComponentMapping.class)
                 .setComponent(new Template1());
 
-        PublishedServerEventHandlers feature = stateNode
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = stateNode
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(1, feature.size());
     }
 
@@ -200,8 +200,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new Template1();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(Template1.class).findFirst().get(),
@@ -231,8 +231,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new TemplateWithGoodParametersMethods();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(10, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
@@ -271,8 +271,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new TemplateWithMethodDeclaringUncheckedException();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(2, feature.size());
         Assert.assertEquals(getDeclaredMethods(
                 TemplateWithMethodDeclaringUncheckedException.class).findFirst()
@@ -287,8 +287,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new ChildTemplateWithMultipleMethods();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(3, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
@@ -311,8 +311,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new ChildTemplateWithOverriddenMethod();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(ChildTemplateWithOverriddenMethod.class)
@@ -340,11 +340,11 @@ public class PublishedServerEventHandlersTest {
     public void attach_noFeature() {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
-        StateNode stateNode = new StateNode(PublishedServerEventHandlers.class);
+        StateNode stateNode = new StateNode(ClientDelegateHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
         Assert.assertEquals(0, stateNode
-                .getFeature(PublishedServerEventHandlers.class).size());
+                .getFeature(ClientDelegateHandlers.class).size());
     }
 
     @Test
@@ -352,11 +352,11 @@ public class PublishedServerEventHandlersTest {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                PublishedServerEventHandlers.class);
+                ClientDelegateHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
         Assert.assertEquals(0, stateNode
-                .getFeature(PublishedServerEventHandlers.class).size());
+                .getFeature(ClientDelegateHandlers.class).size());
     }
 
     @Test
@@ -365,8 +365,8 @@ public class PublishedServerEventHandlersTest {
         NonTemplateComponentWithEventHandler component = new NonTemplateComponentWithEventHandler();
         ui.add(component);
 
-        PublishedServerEventHandlers feature = component.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = component.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         assertListFeature(feature, "publishedMethod1");
     }
 
@@ -376,8 +376,8 @@ public class PublishedServerEventHandlersTest {
         NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
         ui.add(component);
 
-        PublishedServerEventHandlers feature = component.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = component.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         assertListFeature(feature);
     }
 
