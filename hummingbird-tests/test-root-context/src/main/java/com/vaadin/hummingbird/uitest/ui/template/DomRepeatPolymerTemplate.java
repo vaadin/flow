@@ -21,7 +21,6 @@ import java.util.List;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Include;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.template.PolymerTemplate;
@@ -39,9 +38,8 @@ public class DomRepeatPolymerTemplate
         private String name;
         private String title;
         private String email;
-        private long id;
 
-        public Employee(String name, String title, String email, long id) {
+        public Employee(String name, String title, String email) {
             this.name = name;
             this.title = title;
             this.email = email;
@@ -70,44 +68,24 @@ public class DomRepeatPolymerTemplate
         public void setEmail(String email) {
             this.email = email;
         }
-
-        public long getId() {
-            return id;
-        }
-
-        public void setId(long id) {
-            this.id = id;
-        }
     }
 
     public interface EmployeesModel extends TemplateModel {
-        @Include({ "name", "title", "email" })
         void setEmployees(List<Employee> employees);
 
-        List<Employee> getEmployees();
+        void setOldIndex(int oldIndex);
+
+        void setNewIndex(int newIndex);
     }
 
     @EventHandler
-    public void handleClick(@EventData("event.model.index") Integer index) {
-        System.out.println("old");
-        System.out.println(index);
-    }
-
-    @EventHandler
-    public void handleClick2(@RepeatIndex int index) {
-        System.out.println("new");
-        System.out.println(index);
+    public void handleClick(@EventData("event.model.index") int oldIndex,
+            @RepeatIndex int newIndex) {
+        getModel().setOldIndex(oldIndex);
+        getModel().setNewIndex(newIndex);
     }
 
     public void setEmployees(List<Employee> employees) {
         getModel().setEmployees(employees);
-    }
-
-    public List<Employee> getEmployees() {
-        return getModel().getEmployees();
-    }
-
-    public void updateTitle() {
-        getEmployees().forEach(employee -> employee.setTitle("Mr."));
     }
 }

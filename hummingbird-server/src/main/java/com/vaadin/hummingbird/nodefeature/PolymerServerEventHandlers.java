@@ -71,8 +71,8 @@ public class PolymerServerEventHandlers
         if (!Boolean.logicalXor(hasEventDataAnnotation,
                 hasRepeatIndexAnnotation)) {
             throw new IllegalStateException(String.format(
-                    "EventHandler method '%s' should have parameter '%s' annotated with exactly one of @EventData or @RepeatIndex annotations",
-                    getNormalizedParameterName(parameter), method.getName()));
+                    "EventHandler method '%s' should have parameter with index %s annotated with exactly one of @EventData or @RepeatIndex annotations",
+                    method.getName(), getParameterIndex(parameter)));
         } else if (hasEventDataAnnotation) {
             ensureSupportedParameterType(method, parameter.getType());
         } else {
@@ -80,14 +80,14 @@ public class PolymerServerEventHandlers
             if (!parameterType.equals(int.class)
                     && !parameterType.equals(Integer.class)) {
                 throw new IllegalStateException(String.format(
-                        "EventHandler method '%s' has parameter %s, annotated with @RepeatIndex that has incorrect type '%s', should be 'int' or 'Integer'",
-                        method.getName(), getNormalizedParameterName(parameter),
+                        "EventHandler method '%s' has parameter with index %s, annotated with @RepeatIndex that has incorrect type '%s', should be 'int' or 'Integer'",
+                        method.getName(), getParameterIndex(parameter),
                         parameterType));
             }
         }
     }
 
-    private static String getNormalizedParameterName(Parameter parameter) {
+    private static String getParameterIndex(Parameter parameter) {
         return parameter.getName().replace("arg", "");
     }
 

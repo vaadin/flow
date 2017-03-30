@@ -15,7 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
-import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.vaadin.annotations.WebComponents;
 import com.vaadin.server.VaadinRequest;
@@ -23,14 +24,19 @@ import com.vaadin.ui.UI;
 
 @WebComponents(1)
 public class DomRepeatUI extends UI {
+    static final int NUMBER_OF_EMPLOYEES = 3;
+    static final String OLD_INDEX_ID = "oldIndex";
+    static final String NEW_INDEX_ID = "newIndex";
+    static final String TR_ID_PREFIX = "name";
 
     @Override
     protected void init(VaadinRequest request) {
         DomRepeatPolymerTemplate template = new DomRepeatPolymerTemplate();
         template.setId("template");
-        DomRepeatPolymerTemplate.Employee employee1 = new DomRepeatPolymerTemplate.Employee("name1", "title1", "email1", 1L);
-        DomRepeatPolymerTemplate.Employee employee2 = new DomRepeatPolymerTemplate.Employee("name2", "title2", "email2", 2L);
-        template.setEmployees(Arrays.asList(employee1, employee2));
+        template.setEmployees(IntStream.range(0, NUMBER_OF_EMPLOYEES)
+                .mapToObj(i -> new DomRepeatPolymerTemplate.Employee("name" + i,
+                        "title" + i, "email" + i))
+                .collect(Collectors.toList()));
 
         add(template);
     }
