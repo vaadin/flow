@@ -9,7 +9,7 @@ using template repeater (dom-repeat).
 <dom-module id="employees-list">
     <template>
         <table>
-            <tr on-click="printId">
+            <tr on-click="processElement">
                 <th>Name</th><th>Title</th><th>Email</th>
             </tr>
             <template is="dom-repeat" items="[[employees]]">
