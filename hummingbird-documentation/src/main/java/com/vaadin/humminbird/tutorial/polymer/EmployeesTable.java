@@ -2,7 +2,9 @@ package com.vaadin.humminbird.tutorial.polymer;
 
 import java.util.List;
 
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Include;
+import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.humminbird.tutorial.annotations.CodeFor;
 import com.vaadin.humminbird.tutorial.polymer.EmployeesTable.EmployeesModel;
 import com.vaadin.hummingbird.template.PolymerTemplate;
@@ -72,6 +74,11 @@ public class EmployeesTable extends PolymerTemplate<EmployeesModel> {
     }
 
     public void updateTitle() {
-        getEmployees().stream().forEach(employee -> employee.setTitle("Mr."));
+        getEmployees().forEach(employee -> employee.setTitle("Mr."));
+    }
+
+    @EventHandler
+    public void processElement(@RepeatIndex int itemIndex) {
+        System.out.println(getEmployees().get(itemIndex).getName());
     }
 }
