@@ -15,7 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
@@ -28,23 +30,33 @@ import com.vaadin.testbench.By;
 public class ListBindingIT extends ChromeBrowserTest {
 
     @Test
-    public void listDataBindng() {
+    public void listDataBinding() {
         open();
 
-        WebElement webComponent = findElement(By.id("template"));
+        WebElement template = findElement(By.id("template"));
 
-        Optional<WebElement> msg = getInShadowRoot(webComponent,
+        Optional<WebElement> msg = getInShadowRoot(template,
                 By.className("msg"));
 
         Assert.assertEquals("foo", msg.get().getText());
 
-        getInShadowRoot(webComponent, By.id("update")).get().click();
+        getInShadowRoot(template, By.id("update")).get().click();
+        Map<String, Integer> expectedResults = new HashMap<>();
+        expectedResults.put("a", 0);
+        expectedResults.put("b", 1);
+        expectedResults.put("c", 2);
+        checkResult(template, expectedResults);
 
-        List<WebElement> msgs = findInShadowRoot(webComponent,
-                By.className("msg"));
+        getInShadowRoot(template, By.id("addElement")).get().click();
+        expectedResults.put("d", 4);
+        checkResult(template, expectedResults);
+    }
 
-        Assert.assertEquals("a", msgs.get(0).getText());
-        Assert.assertEquals("b", msgs.get(1).getText());
-        Assert.assertEquals("c", msgs.get(2).getText());
+    private void checkResult(WebElement template,
+            Map<String, Integer> expectedResults) {
+        List<WebElement> msgs = findInShadowRoot(template, By.className("msg"));
+
+        expectedResults.forEach((message, index) -> Assert.assertEquals(message,
+                msgs.get(index).getText()));
     }
 }

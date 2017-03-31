@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.uitest.ui.template;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.vaadin.annotations.EventHandler;
@@ -47,10 +48,12 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     }
 
     public interface ListBindingModel extends TemplateModel {
-        public void setMessages(List<Message> messages);
+        void setMessages(List<Message> messages);
+
+        List<Message> getMessages();
     }
 
-    public ListBindingTemplate() {
+    ListBindingTemplate() {
         getModel().setMessages(Collections.singletonList(new Message("foo")));
     }
 
@@ -60,4 +63,65 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
                 new Message("c")));
     }
 
+    @EventHandler
+    private void addElement() {
+        getModel().getMessages().add(new Message("d1"));
+    }
+
+    @EventHandler
+    private void addElementByIndex() {
+        List<Message> currentMessages = getModel().getMessages();
+        final int insertIndex = currentMessages.isEmpty() ? 0
+                : currentMessages.size() - 1;
+        currentMessages.add(insertIndex, new Message("d2"));
+    }
+
+    @EventHandler
+    private void addNumerousElementsByIndex() {
+        List<Message> newMessages = Arrays.asList(new Message("e1"),
+                new Message("f1"));
+        getModel().getMessages().addAll(0, newMessages);
+    }
+
+    @EventHandler
+    private void addNumerousElementsAtTheEnd() {
+        List<Message> newMessages = Arrays.asList(new Message("e2"),
+                new Message("f2"));
+        getModel().getMessages().addAll(newMessages);
+    }
+
+    @EventHandler
+    private void clearList() {
+        getModel().getMessages().clear();
+    }
+
+    @EventHandler
+    private void removeElementByIndex() {
+        List<Message> currentMessages = getModel().getMessages();
+        if (!currentMessages.isEmpty()) {
+            currentMessages.remove(currentMessages.size() - 1);
+        }
+    }
+
+    @EventHandler
+    private void removeElementViaIterator() {
+        if (!getModel().getMessages().isEmpty()) {
+            getModel().getMessages().iterator().remove();
+        }
+    }
+
+    @EventHandler
+    private void swapFirstAndLast() {
+        List<Message> messages = getModel().getMessages();
+        if (messages.size() > 1) {
+            Message first = messages.get(0);
+            messages.set(0, messages.get(messages.size() - 1));
+            messages.set(messages.size() - 1, first);
+        }
+    }
+
+    @EventHandler
+    private void sortAlphabetically() {
+        getModel().getMessages().sort(Comparator.comparing(Message::getText));
+    }
 }
