@@ -36,11 +36,11 @@ public class DomRepeatIT extends ChromeBrowserTest {
 
         for (int i = 0; i < DomRepeatUI.NUMBER_OF_EMPLOYEES; i++) {
             getInShadowRoot(template, By.id(DomRepeatUI.TR_ID_PREFIX + i)).get().click();
-            String oldIndex = getInShadowRoot(template, By.id(DomRepeatUI.OLD_INDEX_ID)).get().getText();
-            String newIndex = getInShadowRoot(template, By.id(DomRepeatUI.NEW_INDEX_ID)).get().getText();
+            String eventIndex = getInShadowRoot(template, By.id(DomRepeatUI.EVENT_INDEX_ID)).get().getText();
+            String repeatIndex = getInShadowRoot(template, By.id(DomRepeatUI.REPEAT_INDEX_ID)).get().getText();
 
-            Assert.assertEquals(oldIndex, newIndex);
-            Assert.assertEquals(i, Integer.parseInt(newIndex));
+            Assert.assertEquals(eventIndex, repeatIndex);
+            Assert.assertEquals(i, Integer.parseInt(repeatIndex));
         }
     }
 }

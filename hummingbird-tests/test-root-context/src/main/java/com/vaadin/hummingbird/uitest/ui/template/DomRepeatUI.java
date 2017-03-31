@@ -25,8 +25,8 @@ import com.vaadin.ui.UI;
 @WebComponents(1)
 public class DomRepeatUI extends UI {
     static final int NUMBER_OF_EMPLOYEES = 3;
-    static final String OLD_INDEX_ID = "oldIndex";
-    static final String NEW_INDEX_ID = "newIndex";
+    static final String EVENT_INDEX_ID = "eventIndex";
+    static final String REPEAT_INDEX_ID = "repeatIndex";
     static final String TR_ID_PREFIX = "name";
 
     @Override

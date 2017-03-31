@@ -73,16 +73,16 @@ public class DomRepeatPolymerTemplate
     public interface EmployeesModel extends TemplateModel {
         void setEmployees(List<Employee> employees);
 
-        void setOldIndex(int oldIndex);
+        void setEventIndex(int eventIndex);
 
-        void setNewIndex(int newIndex);
+        void setRepeatIndex(int repeatIndex);
     }
 
     @EventHandler
-    public void handleClick(@EventData("event.model.index") int oldIndex,
-            @RepeatIndex int newIndex) {
-        getModel().setOldIndex(oldIndex);
-        getModel().setNewIndex(newIndex);
+    public void handleClick(@EventData("event.model.index") int eventIndex,
+            @RepeatIndex int repeatIndex) {
+        getModel().setEventIndex(eventIndex);
+        getModel().setRepeatIndex(repeatIndex);
     }
 
     public void setEmployees(List<Employee> employees) {

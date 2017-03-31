@@ -71,7 +71,8 @@ public class PolymerServerEventHandlers
         if (!Boolean.logicalXor(hasEventDataAnnotation,
                 hasRepeatIndexAnnotation)) {
             throw new IllegalStateException(String.format(
-                    "EventHandler method '%s' should have parameter with index %s annotated with exactly one of @EventData or @RepeatIndex annotations",
+                    "EventHandler method '%s' should have the parameter with index %s annotated either with @EventData annotation (to get any particular data from the event)" +
+                            " or have 'int' or 'Integer' type and be annotated with @RepeatIndex annotation (to get element index in dom-repeat)",
                     method.getName(), getParameterIndex(parameter)));
         } else if (hasEventDataAnnotation) {
             ensureSupportedParameterType(method, parameter.getType());
