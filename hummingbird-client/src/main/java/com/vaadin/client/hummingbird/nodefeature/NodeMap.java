@@ -144,7 +144,11 @@ public class NodeMap extends NodeFeature implements ReactiveValue {
 
         properties.forEach((property, name) -> {
             if (property.hasValue()) {
-                json.put(name, converter.apply(property.getValue()));
+                // Crazy cast since otherwise SDM fails for string values since
+                // String is not a JSO
+                JsonValue jsonValue = WidgetUtil
+                        .crazyJsoCast(converter.apply(property.getValue()));
+                json.put(name, jsonValue);
             }
         });
 
