@@ -1,9 +1,12 @@
-tutorial::tutorial-template-list-bindings.asciidoc
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
 <dom-module id="employees-list">
     <template>
         <table>
-            <tr on-click="processElement">
-                <th>Name</th><th>Title</th><th>Email</th>
+            <tr>
+                <th>Name</th>
+                <th>Title</th>
+                <th>Email</th>
             </tr>
             <dom-repeat items="[[employees]]">
                 <template>
@@ -15,10 +18,14 @@ tutorial::tutorial-template-list-bindings.asciidoc
                 </template>
             </dom-repeat>
         </table>
+        <div id="eventIndex">[[eventIndex]]</div>
+        <div id="repeatIndex">[[repeatIndex]]</div>
     </template>
     <script>
         class EmployeesList extends Polymer.Element {
-            static get is() {return 'employees-list'}
+            static get is() {
+                return 'employees-list'
+            }
         }
         customElements.define(EmployeesList.is, EmployeesList);
     </script>

@@ -18,9 +18,11 @@ package com.vaadin.hummingbird.nodefeature;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventData;
+import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 
@@ -32,6 +34,7 @@ import com.vaadin.hummingbird.template.PolymerTemplate;
  */
 public class PolymerServerEventHandlers
         extends AbstractServerEventHandlers<PolymerTemplate<?>> {
+    private static final String REPEAT_INDEX_VALUE = "event.model.index";
 
     /**
      * Creates a new meta information list for the given state node.
@@ -53,23 +56,40 @@ public class PolymerServerEventHandlers
 
     @Override
     protected void ensureSupportedParameterTypes(Method method) {
-        if (method.getParameterCount() == 0) {
-            return;
-        }
-        Stream.of(method.getParameterTypes())
-                .forEach(type -> ensureSupportedParameterType(method, type));
         Stream.of(method.getParameters())
-                .forEach(parameter -> ensureAnnotation(method, parameter));
+                .forEach(parameter -> checkParameterTypeAndAnnotation(method,
+                        parameter));
     }
 
-    private static void ensureAnnotation(Method method, Parameter parameter) {
-        if (!parameter.isAnnotationPresent(EventData.class)) {
-            String msg = String.format(
-                    "No @EventData annotation on parameter '%s'"
-                            + " for EventHandler method '%s'",
-                    parameter.getName().replace("arg", ""), method.getName());
-            throw new IllegalStateException(msg);
+    private static void checkParameterTypeAndAnnotation(Method method,
+            Parameter parameter) {
+        boolean hasEventDataAnnotation = parameter
+                .isAnnotationPresent(EventData.class);
+        boolean hasRepeatIndexAnnotation = parameter
+                .isAnnotationPresent(RepeatIndex.class);
+
+        if (!Boolean.logicalXor(hasEventDataAnnotation,
+                hasRepeatIndexAnnotation)) {
+            throw new IllegalStateException(String.format(
+                    "EventHandler method '%s' should have the parameter with index %s annotated either with @EventData annotation (to get any particular data from the event)" +
+                            " or have 'int' or 'Integer' type and be annotated with @RepeatIndex annotation (to get element index in dom-repeat)",
+                    method.getName(), getParameterIndex(parameter)));
+        } else if (hasEventDataAnnotation) {
+            ensureSupportedParameterType(method, parameter.getType());
+        } else {
+            Class<?> parameterType = parameter.getType();
+            if (!parameterType.equals(int.class)
+                    && !parameterType.equals(Integer.class)) {
+                throw new IllegalStateException(String.format(
+                        "EventHandler method '%s' has parameter with index %s, annotated with @RepeatIndex that has incorrect type '%s', should be 'int' or 'Integer'",
+                        method.getName(), getParameterIndex(parameter),
+                        parameterType));
+            }
         }
+    }
+
+    private static String getParameterIndex(Parameter parameter) {
+        return parameter.getName().replace("arg", "");
     }
 
     private void addMethodParameters(Method method) {
@@ -78,11 +98,13 @@ public class PolymerServerEventHandlers
     }
 
     private String[] getParameters(Method method) {
-        Parameter[] parameters = method.getParameters();
-
-        return Stream.of(parameters).map(
-                parameter -> parameter.getAnnotation(EventData.class).value())
-                .toArray(size -> new String[size]);
+        return Stream.of(method.getParameters()).flatMap(parameter -> Stream.of(
+                Optional.ofNullable(parameter.getAnnotation(EventData.class))
+                        .map(EventData::value),
+                Optional.ofNullable(parameter.getAnnotation(RepeatIndex.class))
+                        .map(annotation -> REPEAT_INDEX_VALUE)))
+                .filter(Optional::isPresent).map(Optional::get)
+                .toArray(String[]::new);
     }
 
 }
