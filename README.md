@@ -82,3 +82,7 @@ In eclipse run .launch files from hummingbird-client/eclipse in the order:
 
 Navigate to [localhost:9876](localhost:9876) and use the bookmarks to control
 dev mode.
+
+> NOTE! SuperDevMode should be compiled before the application server is launched
+> as else the application won't be able to run SDM and you will receive the 
+> exception `Can't find any GWT Modules on this page.`
