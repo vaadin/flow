@@ -46,6 +46,7 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
         this.itemType = itemType;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public T get(int index) {
         StateNode modelNode = getModelList().get(index);
@@ -57,8 +58,8 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
             return TemplateModelProxyHandler.createModelProxy(modelNode,
                     (BeanModelType<T>) itemType);
         }
-        // TODO: throw
-        return null;
+        throw new IllegalStateException(
+                "Item type has unexpected type " + itemType + ". Don't know how to create a proxy for it");
     }
 
     @Override

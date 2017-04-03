@@ -187,32 +187,49 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                 }
             }
         } else if (ListModelType.isList(propertyType)) {
-            ParameterizedType pt = (ParameterizedType) propertyType;
-
-            Type itemType = pt.getActualTypeArguments()[0];
-            if (itemType instanceof ParameterizedType) {
-                return new ListModelType<>(
-                        (ComplexModelType<?>) getModelType(itemType,
-                                propertyFilter, propertyName, declaringClass));
-            } else {
-                if (!(itemType instanceof Class<?>)) {
-                    throw new InvalidTemplateModelException("Element type "
-                            + itemType.getTypeName()
-                            + " is not a valid Bean type. Used in class "
-                            + declaringClass.getSimpleName()
-                            + " with property named " + propertyName
-                            + " with list type " + propertyType.getTypeName());
-                }
-                Class<?> beansListItemType = (Class<?>) itemType;
-                return new ListModelType<>(
-                        new BeanModelType<>(beansListItemType, propertyFilter));
-            }
+            return getListModelType(propertyType, propertyFilter, propertyName,
+                    declaringClass);
         }
 
         throw new InvalidTemplateModelException("Type "
                 + propertyType.toString() + " is not supported. Used in class "
                 + declaringClass.getSimpleName() + " with property named "
                 + propertyName + ". " + ModelType.getSupportedTypesString());
+    }
+
+    private static ModelType getListModelType(Type propertyType,
+            PropertyFilter propertyFilter, String propertyName,
+            Class<?> declaringClass) {
+        assert ListModelType.isList(propertyType);
+        ParameterizedType pt = (ParameterizedType) propertyType;
+
+        Type itemType = pt.getActualTypeArguments()[0];
+        if (itemType instanceof ParameterizedType) {
+            ModelType modelType = getModelType(itemType, propertyFilter,
+                    propertyName, declaringClass);
+            if (modelType instanceof ComplexModelType<?>) {
+                return new ListModelType<>((ComplexModelType<?>) modelType);
+            } else {
+                throw new InvalidTemplateModelException("Element type "
+                        + itemType.getTypeName()
+                        + " is not a valid list item type. Used in class "
+                        + declaringClass.getSimpleName()
+                        + " with property named " + propertyName
+                        + " with list type " + propertyType.getTypeName());
+            }
+        } else {
+            if (!(itemType instanceof Class<?>)) {
+                throw new InvalidTemplateModelException("Element type "
+                        + itemType.getTypeName()
+                        + " is not a valid Bean type. Used in class "
+                        + declaringClass.getSimpleName()
+                        + " with property named " + propertyName
+                        + " with list type " + propertyType.getTypeName());
+            }
+            Class<?> beansListItemType = (Class<?>) itemType;
+            return new ListModelType<>(
+                    new BeanModelType<>(beansListItemType, propertyFilter));
+        }
     }
 
     /**
