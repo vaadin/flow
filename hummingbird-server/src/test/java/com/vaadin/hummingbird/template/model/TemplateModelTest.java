@@ -91,6 +91,18 @@ public class TemplateModelTest {
         List<Bean> getBeans();
     }
 
+    public interface ListInsideListBeanModel extends TemplateModel {
+        void setBeans(List<List<Bean>> beans);
+
+        List<List<Bean>> getBeans();
+    }
+
+    public interface ListInsideListInsideList extends TemplateModel {
+        void setBeans(List<List<List<Bean>>> beans);
+
+        List<List<List<Bean>>> getBeans();
+    }
+
     public interface SubBeanIface {
 
         String getValue();
