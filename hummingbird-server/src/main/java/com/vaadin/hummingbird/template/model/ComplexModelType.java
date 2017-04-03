@@ -21,6 +21,9 @@ import com.vaadin.hummingbird.StateNode;
  * A complex model type (represents either a list or a bean).
  *
  * @author Vaadin Ltd
+ * 
+ * @param <T>
+ *            the proxy type used by this type
  *
  */
 public interface ComplexModelType<T> extends ModelType {

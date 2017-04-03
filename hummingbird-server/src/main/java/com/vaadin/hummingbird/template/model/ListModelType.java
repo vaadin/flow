@@ -88,7 +88,7 @@ public class ListModelType<T> implements ComplexModelType<T> {
     public <C> ComplexModelType<C> cast(Class<C> proxyType) {
         if (getItemType() instanceof ListModelType<?>
                 && GenericTypeReflector.erase(proxyType).equals(List.class)) {
-            return (ComplexModelType<C>) this;
+            return (ListModelType<C>) this;
         }
         throw new IllegalArgumentException(
                 "Got " + proxyType + ", expected list type");
