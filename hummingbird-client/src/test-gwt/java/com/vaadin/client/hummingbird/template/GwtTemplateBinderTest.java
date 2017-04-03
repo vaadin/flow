@@ -688,13 +688,13 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals("foo", element.getAttribute("id"));
     }
 
-    public void testServerEventHandler_noArgs() {
+    public void testClientDelegateHandler_noArgs() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         String operation = "operation";
         templateNode.addEventHandler("click", "$server." + operation + "()");
 
-        stateNode.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).set(0,
+        stateNode.getList(NodeFeatures.CLIENT_DELEGATE_HANDLERS).set(0,
                 operation);
 
         Element element = createElement(templateNode);
@@ -713,14 +713,14 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         assertEquals(0, args.length());
     }
 
-    public void testServerEventHandler_args() {
+    public void testClientDelegateHandler_args() {
         TestElementTemplateNode templateNode = TestElementTemplateNode
                 .create("div");
         String operation = "operation";
         templateNode.addEventHandler("click", "$server." + operation
                 + "($wnd.booleanprop, $wnd.stringprop, $wnd.numberprop, $wnd.objectprop)");
 
-        stateNode.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).set(0,
+        stateNode.getList(NodeFeatures.CLIENT_DELEGATE_HANDLERS).set(0,
                 operation);
 
         Element element = createElement(templateNode);
@@ -825,7 +825,7 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         // add one item to the "collection" model
         modelList.add(0, varNode);
 
-        stateNode.getList(NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS).set(0,
+        stateNode.getList(NodeFeatures.CLIENT_DELEGATE_HANDLERS).set(0,
                 operation);
 
         Element element = createElement(parent);

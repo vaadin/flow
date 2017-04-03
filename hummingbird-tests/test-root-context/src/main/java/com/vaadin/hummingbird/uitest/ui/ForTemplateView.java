@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.uitest.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.html.Button;
 import com.vaadin.hummingbird.html.Div;
@@ -68,7 +68,7 @@ public class ForTemplateView extends Div implements View {
                     ItemListModel.class);
         }
 
-        @EventHandler
+        @ClientDelegate
         private void callRpc() {
             Label label = new Label("Server Event Handler is called");
             label.setId("server-rpc");

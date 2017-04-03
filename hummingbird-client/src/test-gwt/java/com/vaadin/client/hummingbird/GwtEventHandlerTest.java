@@ -89,9 +89,9 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         assertNull(WidgetUtil.getJsProperty(element, "$server"));
     }
 
-    public void testServerEventHandlerMethodInDom() {
+    public void testClientDelegateMethodInDom() {
         assertServerEventHandlerMethodInDom(
-                NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS,
+                NodeFeatures.CLIENT_DELEGATE_HANDLERS,
                 element -> assertPublishedMethods(element,
                         new String[] { "publishedMethod" }),
                 "publishedMethod");
@@ -105,9 +105,8 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 "eventHandler");
     }
 
-    public void testAddServerEventHandlerMethod() {
-        assertAddServerEventHandlerMethod(
-                NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS,
+    public void testAddClientDelegateHandlerMethod() {
+        assertAddServerEventHandlerMethod(NodeFeatures.CLIENT_DELEGATE_HANDLERS,
                 this::assertPublishedMethods);
     }
 
@@ -119,7 +118,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
     public void testRemoveServerEventHandlerMethod() {
         assertRemoveServerEventHandlerMethod(
-                NodeFeatures.PUBLISHED_SERVER_EVENT_HANDLERS,
+                NodeFeatures.CLIENT_DELEGATE_HANDLERS,
                 this::assertPublishedMethods);
     }
 
@@ -176,7 +175,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
         assertEquals("Wrong amount of method arguments", 1,
                 serverMethods.get(methodName).length());
         assertEquals("Gotten argument wasn't as expected", "2",
-                        serverMethods.get(methodName).get(0).toString());
+                serverMethods.get(methodName).get(0).toString());
         assertEquals("Method node did not match the expected node.", node,
                 serverRpcNodes.get(methodName));
     }
@@ -206,8 +205,10 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 serverMethods.keySet().iterator().next());
         assertEquals("Wrong amount of method arguments", 2,
                 serverMethods.get(methodName).length());
-        assertEquals("Gotten argument wasn't as expected", WidgetUtil.toPrettyJson(expectedResult),
-                WidgetUtil.toPrettyJson(WidgetUtil.crazyJsoCast(serverMethods.get(methodName).get(0))));
+        assertEquals("Gotten argument wasn't as expected",
+                WidgetUtil.toPrettyJson(expectedResult),
+                WidgetUtil.toPrettyJson(WidgetUtil
+                        .crazyJsoCast(serverMethods.get(methodName).get(0))));
         assertEquals("Method node did not match the expected node.", node,
                 serverRpcNodes.get(methodName));
     }
@@ -222,7 +223,8 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
      * @param methodName
      *            Name of event to add method to
      */
-    private native void setPrototypeEventHandler(Element element, String methodName)
+    private native void setPrototypeEventHandler(Element element,
+            String methodName)
     /*-{
         Object.getPrototypeOf(element)[methodName] = function(event) {
             if(this !== element) {

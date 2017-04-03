@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.StateTree;
@@ -36,14 +36,14 @@ import com.vaadin.ui.UI;
 
 import elemental.json.JsonValue;
 
-public class PublishedServerEventHandlersTest {
+public class ClientDelegteHandlersTest {
 
     static class Template1 extends InlineTemplate {
         public Template1() {
             super("<div></div>");
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method() {
 
         }
@@ -51,7 +51,7 @@ public class PublishedServerEventHandlersTest {
 
     static class TemplateWithBadParametersMethod extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void method1(char arg) {
 
         }
@@ -59,47 +59,47 @@ public class PublishedServerEventHandlersTest {
 
     static class TemplateWithGoodParametersMethods extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void method1(String arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method2(Integer arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method3(Boolean arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method4(JsonValue arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method5(Integer[] arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method6(String... arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method7(int arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method8(double arg) {
 
         }
 
-        @EventHandler
+        @ClientDelegate
         protected void method9(boolean arg) {
 
         }
@@ -107,7 +107,7 @@ public class PublishedServerEventHandlersTest {
 
     static class TemplateWithMethodReturnValue extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected int op() {
             return 0;
         }
@@ -115,7 +115,7 @@ public class PublishedServerEventHandlersTest {
 
     static class TemplateWithMethodDeclaringCheckedException extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void op() throws IOException {
 
         }
@@ -124,7 +124,7 @@ public class PublishedServerEventHandlersTest {
     static class TemplateWithMethodDeclaringUncheckedException
             extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void op() throws NullPointerException {
 
         }
@@ -132,11 +132,11 @@ public class PublishedServerEventHandlersTest {
 
     static class ChildTemplateWithMultipleMethods extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void op() {
         }
 
-        @EventHandler
+        @ClientDelegate
         public void handle() {
         }
     }
@@ -144,7 +144,7 @@ public class PublishedServerEventHandlersTest {
     static class ChildTemplateWithOverriddenMethod extends Template1 {
 
         @Override
-        @EventHandler
+        @ClientDelegate
         protected void method() {
 
         }
@@ -154,7 +154,7 @@ public class PublishedServerEventHandlersTest {
             extends TemplateWithBadParametersMethod {
 
         @Override
-        @EventHandler
+        @ClientDelegate
         protected void method() {
 
         }
@@ -162,7 +162,7 @@ public class PublishedServerEventHandlersTest {
 
     static class ChildTemplateWithOverloadedMethod extends Template1 {
 
-        @EventHandler
+        @ClientDelegate
         protected void method(int i) {
 
         }
@@ -175,7 +175,7 @@ public class PublishedServerEventHandlersTest {
     @Tag("div")
     static class NonTemplateComponentWithEventHandler extends Component {
 
-        @EventHandler
+        @ClientDelegate
         public void publishedMethod1() {
 
         }
@@ -184,12 +184,12 @@ public class PublishedServerEventHandlersTest {
     @Test
     public void eventHandlersUnrelatedToAttach() {
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                PublishedServerEventHandlers.class);
+                ClientDelegateHandlers.class);
         stateNode.getFeature(ComponentMapping.class)
                 .setComponent(new Template1());
 
-        PublishedServerEventHandlers feature = stateNode
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = stateNode
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(1, feature.size());
     }
 
@@ -200,8 +200,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new Template1();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(Template1.class).findFirst().get(),
@@ -231,8 +231,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new TemplateWithGoodParametersMethods();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(10, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
@@ -271,8 +271,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new TemplateWithMethodDeclaringUncheckedException();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(2, feature.size());
         Assert.assertEquals(getDeclaredMethods(
                 TemplateWithMethodDeclaringUncheckedException.class).findFirst()
@@ -287,8 +287,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new ChildTemplateWithMultipleMethods();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(3, feature.size());
 
         HashSet<String> methods = getDeclaredMethods(
@@ -311,8 +311,8 @@ public class PublishedServerEventHandlersTest {
         AngularTemplate template = new ChildTemplateWithOverriddenMethod();
         ui.add(template);
 
-        PublishedServerEventHandlers feature = template.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = template.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         Assert.assertEquals(1, feature.size());
         Assert.assertEquals(
                 getDeclaredMethods(ChildTemplateWithOverriddenMethod.class)
@@ -340,11 +340,11 @@ public class PublishedServerEventHandlersTest {
     public void attach_noFeature() {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
-        StateNode stateNode = new StateNode(PublishedServerEventHandlers.class);
+        StateNode stateNode = new StateNode(ClientDelegateHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0, stateNode
-                .getFeature(PublishedServerEventHandlers.class).size());
+        Assert.assertEquals(0,
+                stateNode.getFeature(ClientDelegateHandlers.class).size());
     }
 
     @Test
@@ -352,11 +352,11 @@ public class PublishedServerEventHandlersTest {
         StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
         StateNode stateNode = new StateNode(ComponentMapping.class,
-                PublishedServerEventHandlers.class);
+                ClientDelegateHandlers.class);
 
         tree.getRootNode().getFeature(ElementChildrenList.class).add(stateNode);
-        Assert.assertEquals(0, stateNode
-                .getFeature(PublishedServerEventHandlers.class).size());
+        Assert.assertEquals(0,
+                stateNode.getFeature(ClientDelegateHandlers.class).size());
     }
 
     @Test
@@ -365,8 +365,8 @@ public class PublishedServerEventHandlersTest {
         NonTemplateComponentWithEventHandler component = new NonTemplateComponentWithEventHandler();
         ui.add(component);
 
-        PublishedServerEventHandlers feature = component.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = component.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         assertListFeature(feature, "publishedMethod1");
     }
 
@@ -376,8 +376,8 @@ public class PublishedServerEventHandlersTest {
         NonTemplateComponentWithoutEventHandler component = new NonTemplateComponentWithoutEventHandler();
         ui.add(component);
 
-        PublishedServerEventHandlers feature = component.getElement().getNode()
-                .getFeature(PublishedServerEventHandlers.class);
+        ClientDelegateHandlers feature = component.getElement().getNode()
+                .getFeature(ClientDelegateHandlers.class);
         assertListFeature(feature);
     }
 

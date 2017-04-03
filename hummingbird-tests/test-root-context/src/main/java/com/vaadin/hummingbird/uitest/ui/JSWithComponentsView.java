@@ -15,7 +15,7 @@
  */
 package com.vaadin.hummingbird.uitest.ui;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.router.View;
 import com.vaadin.hummingbird.template.model.TemplateModel;
@@ -28,12 +28,12 @@ public class JSWithComponentsView extends Div implements View {
             setId("div");
         }
 
-        @EventHandler
+        @ClientDelegate
         public void method1() {
             setText(getText() + "-method1");
         }
 
-        @EventHandler
+        @ClientDelegate
         public void method2(int value) {
             setText(getText() + "-method2[" + value + "]");
         }

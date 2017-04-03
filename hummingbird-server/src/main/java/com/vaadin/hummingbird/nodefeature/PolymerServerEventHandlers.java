@@ -15,6 +15,7 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventData;
+import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.template.PolymerTemplate;
@@ -33,7 +35,7 @@ import com.vaadin.hummingbird.template.PolymerTemplate;
  *
  */
 public class PolymerServerEventHandlers
-        extends AbstractServerEventHandlers<PolymerTemplate<?>> {
+        extends AbstractServerHandlers<PolymerTemplate<?>> {
     private static final String REPEAT_INDEX_VALUE = "event.model.index";
 
     /**
@@ -47,9 +49,8 @@ public class PolymerServerEventHandlers
     }
 
     @Override
-    protected void addEventHandlerMethod(Method method,
-            Collection<Method> methods) {
-        super.addEventHandlerMethod(method, methods);
+    protected void addHandlerMethod(Method method, Collection<Method> methods) {
+        super.addHandlerMethod(method, methods);
 
         addMethodParameters(method);
     }
@@ -61,7 +62,12 @@ public class PolymerServerEventHandlers
                         parameter));
     }
 
-    private static void checkParameterTypeAndAnnotation(Method method,
+    @Override
+    protected Class<? extends Annotation> getHandlerAnnotation() {
+        return EventHandler.class;
+    }
+
+    private void checkParameterTypeAndAnnotation(Method method,
             Parameter parameter) {
         boolean hasEventDataAnnotation = parameter
                 .isAnnotationPresent(EventData.class);
@@ -71,8 +77,8 @@ public class PolymerServerEventHandlers
         if (!Boolean.logicalXor(hasEventDataAnnotation,
                 hasRepeatIndexAnnotation)) {
             throw new IllegalStateException(String.format(
-                    "EventHandler method '%s' should have the parameter with index %s annotated either with @EventData annotation (to get any particular data from the event)" +
-                            " or have 'int' or 'Integer' type and be annotated with @RepeatIndex annotation (to get element index in dom-repeat)",
+                    "EventHandler method '%s' should have the parameter with index %s annotated either with @EventData annotation (to get any particular data from the event)"
+                            + " or have 'int' or 'Integer' type and be annotated with @RepeatIndex annotation (to get element index in dom-repeat)",
                     method.getName(), getParameterIndex(parameter)));
         } else if (hasEventDataAnnotation) {
             ensureSupportedParameterType(method, parameter.getType());

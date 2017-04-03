@@ -22,16 +22,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Publishes the annotated method so it can be invoked from the client side as
- * template event handlers.
+ * Publishes the annotated method so it can be invoked from the client side
+ * using the notation <code>this.$server.method()</code> in template methods.
  *
- * @see EventData
  * @author Vaadin Ltd
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 @Documented
-public @interface EventHandler {
+public @interface ClientDelegate {
 
 }
