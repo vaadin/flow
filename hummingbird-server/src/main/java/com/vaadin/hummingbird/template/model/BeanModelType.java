@@ -17,7 +17,6 @@ package com.vaadin.hummingbird.template.model;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +41,7 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the proxy type used by this bean type
  */
-public class BeanModelType<T> implements ComplexModelType<T> {
+public class BeanModelType<T> implements ModelType {
 
     private static class PropertyMapBuilder {
         private static final Function<Method, Predicate<String>> emptyFilterProvider = method -> name -> true;
@@ -187,19 +186,10 @@ public class BeanModelType<T> implements ComplexModelType<T> {
                 }
             }
         } else if (ListModelType.isList(propertyType)) {
-            ParameterizedType pt = (ParameterizedType) propertyType;
-
-            Type itemType = pt.getActualTypeArguments()[0];
-            if (itemType instanceof ParameterizedType) {
-                return new ListModelType(
-                        (ComplexModelType) getModelType(itemType,
-                                propertyFilter, propertyName, declaringClass));
-            } else {
-                Class<?> beansListItemType = ListModelType.getBeansListItemType(
-                        propertyType, propertyName, declaringClass);
-                return new ListModelType<>(
-                        new BeanModelType<>(beansListItemType, propertyFilter));
-            }
+            Class<?> beansListItemType = ListModelType.getBeansListItemType(
+                    propertyType, propertyName, declaringClass);
+            return new ListModelType<>(
+                    new BeanModelType<>(beansListItemType, propertyFilter));
         }
 
         throw new InvalidTemplateModelException("Type "
@@ -403,7 +393,6 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      *            the proxy type to cast to
      * @return this bean model type
      */
-    @Override
     @SuppressWarnings("unchecked")
     public <C> BeanModelType<C> cast(Class<C> proxyType) {
         if (getProxyType() != proxyType) {

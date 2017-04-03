@@ -15,9 +15,6 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.hummingbird.StateNode;
@@ -54,25 +51,21 @@ public class ComponentMapping extends ServerSideFeature {
      * @param component
      *            the component to assign to this node, not {@code null}
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public void setComponent(Component component) {
         assert component != null : "Component must not be null";
         assert this.component == null
                 || component instanceof Composite : "Only a Composite is allowed to remap a component";
         this.component = component;
 
-        List<Class<? extends NodeFeature>> featureClasses = Collections
-                .singletonList(ClientDelegateHandlers.class);
-        if (component instanceof PolymerTemplate) {
-            featureClasses = Arrays.asList(PolymerServerEventHandlers.class,
-                    ClientDelegateHandlers.class);
+        if (getNode().hasFeature(ClientDelegateHandlers.class)) {
+            getNode().getFeature(ClientDelegateHandlers.class)
+                    .componentSet(component);
         }
-
-        // Update directly to avoid having a listener stored for each
-        // ComponentMapping instance
-        featureClasses.stream().filter(feature -> getNode().hasFeature(feature))
-                .forEach(feature -> ((AbstractServerHandlers) getNode()
-                        .getFeature(feature)).componentSet(component));
+        if (component instanceof PolymerTemplate<?>
+                && getNode().hasFeature(PolymerServerEventHandlers.class)) {
+            getNode().getFeature(PolymerServerEventHandlers.class)
+                    .componentSet((PolymerTemplate<?>) component);
+        }
     }
 
     /**

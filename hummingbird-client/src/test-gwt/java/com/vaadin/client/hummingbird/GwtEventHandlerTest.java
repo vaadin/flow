@@ -105,7 +105,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 "eventHandler");
     }
 
-    public void testAddCleintDelegateHandlerMethod() {
+    public void testAddClientDelegateHandlerMethod() {
         assertAddServerEventHandlerMethod(NodeFeatures.CLIENT_DELEGATE_HANDLERS,
                 this::assertPublishedMethods);
     }

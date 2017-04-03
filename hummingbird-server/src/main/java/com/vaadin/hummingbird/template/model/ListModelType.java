@@ -36,9 +36,9 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the proxy type used by the bean type of this type
  */
-public class ListModelType<T> implements ComplexModelType<T> {
+public class ListModelType<T> implements ModelType {
 
-    private ComplexModelType<T> itemType;
+    private BeanModelType<T> itemType;
 
     /**
      * Creates a new list model type with the given bean model type.
@@ -46,7 +46,7 @@ public class ListModelType<T> implements ComplexModelType<T> {
      * @param itemType
      *            the model type of the list items
      */
-    public ListModelType(ComplexModelType<T> itemType) {
+    public ListModelType(BeanModelType<T> itemType) {
         assert itemType != null;
         this.itemType = itemType;
     }
@@ -56,7 +56,7 @@ public class ListModelType<T> implements ComplexModelType<T> {
      *
      * @return the item type, not <code>null</code>
      */
-    public ComplexModelType<T> getItemType() {
+    public BeanModelType<T> getItemType() {
         return itemType;
     }
 
@@ -81,12 +81,6 @@ public class ListModelType<T> implements ComplexModelType<T> {
         importBeans(node.getFeature(ModelList.class), list, filter);
 
         return node;
-    }
-
-    @Override
-    public <C> ComplexModelType<C> cast(Class<C> proxyType) {
-        // TODO
-        return (ComplexModelType<C>) this;
     }
 
     /**
