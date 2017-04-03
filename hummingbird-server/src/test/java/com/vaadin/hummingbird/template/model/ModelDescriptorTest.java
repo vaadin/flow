@@ -31,6 +31,7 @@ import org.junit.Test;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.BasicTypeModel;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.BeanModel;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.ListBeanModel;
+import com.vaadin.hummingbird.template.model.TemplateModelTest.ListInsideListBeanModel;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.NotSupportedModel;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.SubBeansModel;
 import com.vaadin.hummingbird.template.model.TemplateModelTest.TemplateWithExclude.ModelWithExclude;
@@ -99,6 +100,29 @@ public class ModelDescriptorTest {
     }
 
     @Test
+    public void listInsideList() {
+        ModelDescriptor<?> descriptor = ModelDescriptor
+                .get(ListInsideListBeanModel.class);
+
+        Assert.assertEquals(1, descriptor.getPropertyNames().count());
+
+        ListModelType<?> listPropertyType = (ListModelType<?>) descriptor
+                .getPropertyType("beans");
+
+        Assert.assertTrue(
+                listPropertyType.getItemType() instanceof ListModelType<?>);
+
+        ListModelType<?> type = (ListModelType<?>) listPropertyType
+                .getItemType();
+
+        Assert.assertTrue(type.getItemType() instanceof BeanModelType<?>);
+
+        BeanModelType<?> modelType = (BeanModelType<?>) type.getItemType();
+
+        Assert.assertSame(Bean.class, modelType.getProxyType());
+    }
+
+    @Test
     public void listProperty() {
         ModelDescriptor<?> descriptor = ModelDescriptor
                 .get(ListBeanModel.class);
@@ -108,8 +132,13 @@ public class ModelDescriptorTest {
         ListModelType<?> listPropertyType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
 
-        Assert.assertSame(Bean.class,
-                listPropertyType.getItemType().getProxyType());
+        Assert.assertTrue(
+                listPropertyType.getItemType() instanceof BeanModelType<?>);
+
+        BeanModelType<?> modelType = (BeanModelType<?>) listPropertyType
+                .getItemType();
+
+        Assert.assertSame(Bean.class, modelType.getProxyType());
     }
 
     @Test
@@ -237,7 +266,10 @@ public class ModelDescriptorTest {
 
         ListModelType<?> beansType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
-        BeanModelType<?> beanType = beansType.getItemType();
+
+        Assert.assertTrue(beansType.getItemType() instanceof BeanModelType<?>);
+
+        BeanModelType<?> beanType = (BeanModelType<?>) beansType.getItemType();
 
         Set<String> expectedProperties = new HashSet<>(beanProperties);
         expectedProperties.remove("intValue");
@@ -253,7 +285,8 @@ public class ModelDescriptorTest {
 
         ListModelType<?> beansType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
-        BeanModelType<?> beanType = beansType.getItemType();
+        Assert.assertTrue(beansType.getItemType() instanceof BeanModelType<?>);
+        BeanModelType<?> beanType = (BeanModelType<?>) beansType.getItemType();
 
         Set<String> expectedProperties = Collections.singleton("intValue");
 
