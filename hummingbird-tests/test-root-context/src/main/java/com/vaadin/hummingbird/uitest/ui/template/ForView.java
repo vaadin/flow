@@ -18,7 +18,7 @@ package com.vaadin.hummingbird.uitest.ui.template;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
@@ -53,14 +53,14 @@ public class ForView extends AngularTemplate {
         return (Model) super.getModel();
     }
 
-    @EventHandler
+    @ClientDelegate
     private void add() {
         Item item = new Item();
         item.setText("Item " + itemCount++);
         getModel().getItems().add(item);
     }
 
-    @EventHandler
+    @ClientDelegate
     private void remove() {
         List<Item> items = getModel().getItems();
         if (!items.isEmpty()) {
@@ -68,7 +68,7 @@ public class ForView extends AngularTemplate {
         }
     }
 
-    @EventHandler
+    @ClientDelegate
     private void update() {
         List<Item> items = getModel().getItems();
         if (!items.isEmpty()) {
