@@ -163,6 +163,13 @@ Model can be accessed via `getModel()` method after it's specified as a generic 
 Server side has method, annotated with `@EventHandler` annotation, that is used to react on event form the client side, triggered
 by the `helloButton` button.
 
+====== Call the server side method from the client side
+
+Another way to call a server side method is `@ClientDelegate` annotation which marks a template method as the
+method which should be called from the client side code using notation `this.$server.serverMethodName(args)`.
+It can be used somewhere in your client side Polymer class implementation. You can pass your own arguments in this method.
+Just make sure that their types matches to method declaration on the server side.    
+
 === Usage in code
 
 You can use `HelloWorld` like any other component.
