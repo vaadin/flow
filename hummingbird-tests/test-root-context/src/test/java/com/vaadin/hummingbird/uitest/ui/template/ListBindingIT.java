@@ -15,9 +15,8 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.junit.Assert;
@@ -41,22 +40,38 @@ public class ListBindingIT extends ChromeBrowserTest {
         Assert.assertEquals("foo", msg.get().getText());
 
         getInShadowRoot(template, By.id("update")).get().click();
-        Map<String, Integer> expectedResults = new HashMap<>();
-        expectedResults.put("a", 0);
-        expectedResults.put("b", 1);
-        expectedResults.put("c", 2);
+        List<String> expectedResults = new ArrayList<>();
+        expectedResults.add("a");
+        expectedResults.add("b");
+        expectedResults.add("c");
         checkResult(template, expectedResults);
 
         getInShadowRoot(template, By.id("addElement")).get().click();
-        expectedResults.put("d", 4);
+        expectedResults.add("d1");
+        checkResult(template, expectedResults);
+
+        getInShadowRoot(template, By.id("addElementByIndex")).get().click();
+        expectedResults.add(expectedResults.size() - 1, "d2");
+        checkResult(template, expectedResults);
+
+        getInShadowRoot(template, By.id("addNumerousElements")).get().click();
+        expectedResults.add("e2");
+        expectedResults.add("f2");
+        checkResult(template, expectedResults);
+
+        getInShadowRoot(template, By.id("addNumerousElementsByIndex")).get()
+                .click();
+        expectedResults.add(0, "f1");
+        expectedResults.add(0, "e1");
         checkResult(template, expectedResults);
     }
 
     private void checkResult(WebElement template,
-            Map<String, Integer> expectedResults) {
+            List<String> expectedResults) {
         List<WebElement> msgs = findInShadowRoot(template, By.className("msg"));
 
-        expectedResults.forEach((message, index) -> Assert.assertEquals(message,
-                msgs.get(index).getText()));
+        for (int i = 0; i < expectedResults.size(); i++) {
+            Assert.assertEquals(expectedResults.get(i), msgs.get(i).getText());
+        }
     }
 }

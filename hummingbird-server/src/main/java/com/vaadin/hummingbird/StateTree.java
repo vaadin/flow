@@ -16,11 +16,20 @@
 
 package com.vaadin.hummingbird;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.vaadin.hummingbird.change.ListAddChange;
+import com.vaadin.hummingbird.change.MapPutChange;
+import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.ui.UI;
@@ -97,7 +106,7 @@ public class StateTree implements NodeOwner {
         int id = node.getId();
 
         int nodeId;
-        if (id > 0 && !idToNode.containsKey(Integer.valueOf(id))) {
+        if (id > 0 && !idToNode.containsKey(id)) {
             // Node already had an id, continue using it
 
             // Don't accept an id that we haven't yet handed out
@@ -108,7 +117,7 @@ public class StateTree implements NodeOwner {
             nodeId = nextId++;
         }
 
-        idToNode.put(Integer.valueOf(nodeId), node);
+        idToNode.put(nodeId, node);
         return nodeId;
     }
 
@@ -116,15 +125,12 @@ public class StateTree implements NodeOwner {
     public void unregister(StateNode node) {
         assert node.getOwner() == this;
 
-        Integer id = Integer.valueOf(node.getId());
-
-        StateNode removedNode = idToNode.remove(id);
-
+        StateNode removedNode = idToNode.remove(node.getId());
         if (removedNode != node) {
             // Remove by id didn't remove the expected node
             if (removedNode != null) {
                 // Put the old node back
-                idToNode.put(Integer.valueOf(removedNode.getId()), removedNode);
+                idToNode.put(removedNode.getId(), removedNode);
             }
             throw new IllegalStateException(
                     "Unregistered node was not found based on its id. The tree is most likely corrupted.");
@@ -134,27 +140,92 @@ public class StateTree implements NodeOwner {
     /**
      * Finds a node with the given id.
      *
-     * @see StateNode#getId()
      * @param id
      *            the node id to look for
      * @return the node with the given id; <code>null</code> if the id is not
      *         registered with this tree
+     * @see StateNode#getId()
      */
     public StateNode getNodeById(int id) {
-        return idToNode.get(Integer.valueOf(id));
+        return idToNode.get(id);
     }
 
     /**
-     * Collects all changes made to this tree since the last time
-     * {@link #collectChanges(Consumer)} has been called.
+     * Collects all changes made to this tree since the last time this method
+     * has been called.
      *
-     * @param collector
-     *            a consumer accepting node changes
+     * @return all changes made to this tree since the last method call
      */
-    public void collectChanges(Consumer<NodeChange> collector) {
+    public Collection<NodeChange> collectChanges() {
         // TODO fire preCollect events
+        return sortChanges(collectDirtyNodes().stream()
+                .flatMap(node -> node.collectChanges().stream())
+                .collect(Collectors.toList()));
+    }
 
-        collectDirtyNodes().forEach(n -> n.collectChanges(collector));
+    /**
+     * Forces all dependent changes to come after all their dependencies.
+     *
+     * In current implementation, every time we add element into a model list, two events are propagated:
+     * node attach event and list splice event.
+     * If we won't make sure that latter comes after former, we won't be able to process list splice event normally,
+     * since there will be no data on changes.
+     *
+     * Also puts node attach changes to go first, since we can not operate nodes on the client otherwise.
+     *
+     * @param originalChanges not yet sorted changes
+     * @return sorted changes
+     */
+    private Collection<NodeChange> sortChanges(List<NodeChange> originalChanges) {
+        Set<NodeChange> sortedChanges = new LinkedHashSet<>(originalChanges.size(),
+                1);
+        Set<NodeChange> notSortedChanges = new LinkedHashSet<>(originalChanges);
+
+        Map<NodeChange, Collection<Integer>> nodesToDependencyIds = new HashMap<>(
+                originalChanges.size(), 1);
+        Map<Integer, Collection<NodeChange>> dependencyNodeIdToNodes = new HashMap<>(
+                originalChanges.size(), 1);
+
+        for (NodeChange change : originalChanges) {
+            if (change instanceof NodeAttachChange) {
+                sortedChanges.add(change);
+            } else {
+                notSortedChanges.add(change);
+
+                if (change instanceof ListAddChange) {
+                    ListAddChange<?> listAddChange = (ListAddChange<?>) change;
+                    if (listAddChange.isNodeValues()) {
+                        List<StateNode> stateNodes = (List<StateNode>) listAddChange
+                                .getNewItems();
+                        nodesToDependencyIds.put(change,
+                                stateNodes.stream().map(StateNode::getId)
+                                        .collect(Collectors.toList()));
+                    }
+                } else if (change instanceof MapPutChange) {
+                    dependencyNodeIdToNodes.merge(change.getNode().getId(),
+                            Collections.singletonList(change),
+                            (list1, list2) -> {
+                                List<NodeChange> newList = new ArrayList<>(
+                                        list1);
+                                newList.addAll(list2);
+                                return newList;
+                            });
+                }
+            }
+        }
+
+        notSortedChanges.forEach(change -> {
+            Collection<Integer> dependencyIds = nodesToDependencyIds
+                    .remove(change);
+            if (dependencyIds != null) {
+                dependencyIds.stream().map(dependencyNodeIdToNodes::get)
+                        .filter(Objects::nonNull).flatMap(Collection::stream)
+                        .forEach(sortedChanges::add);
+            }
+
+            sortedChanges.add(change);
+        });
+        return sortedChanges;
     }
 
     @Override

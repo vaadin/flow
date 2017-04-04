@@ -459,7 +459,7 @@ public class TemplateModelTest {
         ArrayList<NodeChange> changes = new ArrayList<>();
         ModelMap modelMap = template.getElement().getNode()
                 .getFeature(ModelMap.class);
-        modelMap.collectChanges(changes::add);
+        changes.addAll(modelMap.collectChanges());
 
         Assert.assertEquals(1, changes.size());
         Assert.assertEquals(template.getElement().getNode(),
@@ -471,7 +471,7 @@ public class TemplateModelTest {
         model.setString("foobar");
 
         Assert.assertEquals("foobar", model.getString());
-        modelMap.collectChanges(changes::add);
+        changes.addAll(modelMap.collectChanges());
 
         Assert.assertEquals(0, changes.size());
     }

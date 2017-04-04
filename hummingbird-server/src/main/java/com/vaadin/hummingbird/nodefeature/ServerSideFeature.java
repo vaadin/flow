@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.nodefeature;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
@@ -39,8 +41,9 @@ public abstract class ServerSideFeature extends NodeFeature {
     }
 
     @Override
-    public void collectChanges(Consumer<NodeChange> collector) {
+    public Collection<NodeChange> collectChanges() {
         // Server side only feature
+        return Collections.emptyList();
     }
 
     @Override

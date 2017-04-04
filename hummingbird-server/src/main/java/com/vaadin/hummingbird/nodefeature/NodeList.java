@@ -278,14 +278,14 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     }
 
     @Override
-    public void collectChanges(Consumer<NodeChange> collector) {
+    public Collection<NodeChange> collectChanges() {
         // This map contains items wrapped by AbstractListChanges as keys and
         // index in the following allChanges list as a value (it allows to get
         // AbstractListChange by the index)
         Map<Object, Integer> indices = new IdentityHashMap<>();
         // This list contains all changes in the tracker. These changes will be
         // modified: each "remove" change following by a corresponding "add"
-        // will be replaced by null and "add" will be adjusted. Indeces in
+        // will be replaced by null and "add" will be adjusted. Indices in
         // changes in between will be adjusted
         List<AbstractListChange<T>> allChanges = new ArrayList<>();
         int index = 0;
@@ -308,8 +308,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             }
             index++;
         }
-        allChanges.stream().filter(this::acceptChange).forEach(collector);
-
+        return allChanges.stream().filter(this::acceptChange)
+                .collect(Collectors.toList());
     }
 
     private boolean acceptChange(AbstractListChange<T> change) {

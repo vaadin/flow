@@ -16,18 +16,6 @@
 
 package com.vaadin.hummingbird;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.change.ListAddChange;
 import com.vaadin.hummingbird.change.ListRemoveChange;
@@ -43,9 +31,20 @@ import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.UI;
+import org.apache.commons.lang3.SerializationUtils;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class StateTreeTest {
-    private StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+    private final StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
 
     @Test
     public void testRootNodeState() {
@@ -217,13 +216,11 @@ public class StateTreeTest {
 
     private List<NodeChange> collectChangesExceptChildrenAddRemove() {
         ArrayList<NodeChange> changes = new ArrayList<>();
-        tree.collectChanges(change -> {
-            if ((change instanceof ListAddChange
-                    || change instanceof ListRemoveChange)
-                    && ((NodeFeatureChange) change)
-                            .getFeature() == ElementChildrenList.class) {
-                return;
-            } else {
+        tree.collectChanges().forEach(change -> {
+            if ((!(change instanceof ListAddChange)
+                    && !(change instanceof ListRemoveChange))
+                    || ((NodeFeatureChange) change)
+                    .getFeature() != ElementChildrenList.class) {
                 changes.add(change);
             }
         });
@@ -233,9 +230,9 @@ public class StateTreeTest {
     @Test
     public void testSerializable() {
         @SuppressWarnings("unchecked")
-        Class<? extends NodeFeature>[] features = new Class[] {
+        Class<? extends NodeFeature>[] features = new Class[]{
                 ElementChildrenList.class, ElementData.class,
-                ElementAttributeMap.class, ElementPropertyMap.class };
+                ElementAttributeMap.class, ElementPropertyMap.class};
         StateTree tree = new StateTree(new UI(), features);
 
         StateNode root = tree.getRootNode();
@@ -245,7 +242,7 @@ public class StateTreeTest {
         child.getFeature(ElementData.class).setTag(Tag.DIV);
 
         byte[] serialized = SerializationUtils.serialize(tree);
-        StateTree d1 = (StateTree) SerializationUtils.deserialize(serialized);
+        StateTree d1 = SerializationUtils.deserialize(serialized);
 
         Assert.assertNotNull(d1);
     }
@@ -310,9 +307,7 @@ public class StateTreeTest {
 
         children.remove(0);
 
-        tree.collectChanges(c -> {
-            // nop
-        });
+        tree.collectChanges();
 
         Assert.assertTrue(TestUtil.isGarbageCollected(childRef));
         Assert.assertTrue(TestUtil.isGarbageCollected(grandChildRef));

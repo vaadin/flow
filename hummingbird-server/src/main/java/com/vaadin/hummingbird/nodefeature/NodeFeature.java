@@ -17,6 +17,7 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.function.Consumer;
 
 import com.vaadin.hummingbird.StateNode;
@@ -54,10 +55,9 @@ public abstract class NodeFeature implements Serializable {
     /**
      * Collects all changes that are recorded for this feature.
      *
-     * @param collector
-     *            a consumer accepting node changes
+     * @return all changes that are recorded for this feature
      */
-    public abstract void collectChanges(Consumer<NodeChange> collector);
+    public abstract Collection<NodeChange> collectChanges();
 
     /**
      * Generates all changes that would be needed to take this node from its

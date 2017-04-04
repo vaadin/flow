@@ -15,6 +15,13 @@
  */
 package com.vaadin.hummingbird.html;
 
+import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.StateNode;
+import com.vaadin.ui.Component;
+import com.vaadin.ui.UI;
+import org.junit.Assert;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -26,21 +33,11 @@ import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import org.junit.Assert;
-import org.junit.Test;
-
-import com.vaadin.annotations.Tag;
-import com.vaadin.hummingbird.StateNode;
-import com.vaadin.hummingbird.change.NodeChange;
-import com.vaadin.ui.Component;
-import com.vaadin.ui.UI;
 
 public class HtmlComponentSmokeTest {
 
@@ -188,8 +185,7 @@ public class HtmlComponentSmokeTest {
 
         try {
             // Purge all pending changes
-            elementNode.collectChanges(c -> {
-            });
+            elementNode.collectChanges();
 
             setter.invoke(instance, testValue);
 
@@ -212,11 +208,7 @@ public class HtmlComponentSmokeTest {
     }
 
     private static boolean hasPendingChanges(StateNode elementNode) {
-        ArrayList<NodeChange> changes = new ArrayList<>();
-
-        elementNode.collectChanges(changes::add);
-
-        return !changes.isEmpty();
+        return !elementNode.collectChanges().isEmpty();
     }
 
     private static Method findGetter(Method setter) {

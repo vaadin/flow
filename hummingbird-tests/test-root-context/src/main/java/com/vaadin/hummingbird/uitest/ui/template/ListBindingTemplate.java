@@ -77,17 +77,17 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     }
 
     @EventHandler
+    private void addNumerousElements() {
+        List<Message> newMessages = Arrays.asList(new Message("e2"),
+                new Message("f2"));
+        getModel().getMessages().addAll(newMessages);
+    }
+
+    @EventHandler
     private void addNumerousElementsByIndex() {
         List<Message> newMessages = Arrays.asList(new Message("e1"),
                 new Message("f1"));
         getModel().getMessages().addAll(0, newMessages);
-    }
-
-    @EventHandler
-    private void addNumerousElementsAtTheEnd() {
-        List<Message> newMessages = Arrays.asList(new Message("e2"),
-                new Message("f2"));
-        getModel().getMessages().addAll(newMessages);
     }
 
     @EventHandler
