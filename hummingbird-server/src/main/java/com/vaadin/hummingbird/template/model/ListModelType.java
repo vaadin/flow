@@ -21,6 +21,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.dom.impl.TemplateElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelList;
@@ -36,9 +37,9 @@ import elemental.json.JsonValue;
  * @param <T>
  *            the proxy type used by the bean type of this type
  */
-public class ListModelType<T> implements ModelType {
+public class ListModelType<T> implements ComplexModelType<T> {
 
-    private BeanModelType<T> itemType;
+    private ComplexModelType<T> itemType;
 
     /**
      * Creates a new list model type with the given bean model type.
@@ -46,7 +47,7 @@ public class ListModelType<T> implements ModelType {
      * @param itemType
      *            the model type of the list items
      */
-    public ListModelType(BeanModelType<T> itemType) {
+    public ListModelType(ComplexModelType<T> itemType) {
         assert itemType != null;
         this.itemType = itemType;
     }
@@ -56,7 +57,7 @@ public class ListModelType<T> implements ModelType {
      *
      * @return the item type, not <code>null</code>
      */
-    public BeanModelType<T> getItemType() {
+    public ComplexModelType<T> getItemType() {
         return itemType;
     }
 
@@ -81,6 +82,17 @@ public class ListModelType<T> implements ModelType {
         importBeans(node.getFeature(ModelList.class), list, filter);
 
         return node;
+    }
+
+    @Override
+    public <C> ComplexModelType<C> cast(Class<C> proxyType) {
+        if (getItemType() instanceof ListModelType<?>
+                && GenericTypeReflector.erase(proxyType).equals(List.class)) {
+            return (ComplexModelType<C>) this;
+        }
+        throw new IllegalArgumentException(
+                "Got " + proxyType + ", expected list type");
+
     }
 
     /**
@@ -120,35 +132,6 @@ public class ListModelType<T> implements ModelType {
         modelList.clear();
 
         modelList.addAll(childNodes);
-    }
-
-    /**
-     * Gets the type of items for the given list type.
-     *
-     * @param type
-     *            the type to check, must be a list of beans
-     * @param propertyName
-     *            the property name
-     * @param declaringClass
-     *            the class where the type is used
-     * @return the item type of the list
-     */
-    public static Class<?> getBeansListItemType(Type type, String propertyName,
-            Class<?> declaringClass) {
-        assert isList(type);
-
-        ParameterizedType pt = (ParameterizedType) type;
-
-        Type itemType = pt.getActualTypeArguments()[0];
-        if (!(itemType instanceof Class<?>)) {
-            throw new InvalidTemplateModelException("Element type "
-                    + itemType.getTypeName()
-                    + " is not a valid Bean type. Used in class "
-                    + declaringClass.getSimpleName() + " with property named "
-                    + propertyName + " with list type " + type.getTypeName());
-        }
-        return (Class<?>) itemType;
-
     }
 
     @Override
