@@ -15,11 +15,6 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
@@ -27,12 +22,24 @@ import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.uitest.ui.template.ListBindingTemplate.ListBindingModel;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Tag("list-binding")
 @HtmlImport("/com/vaadin/hummingbird/uitest/ui/template/ListBinding.html")
 public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
+    static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");
+    static final String INITIAL_STATE = "foo";
 
     public static class Message {
         private String text;
+
+        public Message() {
+        }
 
         public Message(String text) {
             this.text = text;
@@ -54,39 +61,35 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     }
 
     ListBindingTemplate() {
-        getModel().setMessages(Collections.singletonList(new Message("foo")));
+        getModel().setMessages(Collections.singletonList(new Message(INITIAL_STATE)));
     }
 
     @EventHandler
-    private void update() {
-        getModel().setMessages(Arrays.asList(new Message("a"), new Message("b"),
-                new Message("c")));
+    private void reset() {
+        getModel().setMessages(RESET_STATE.stream().map(Message::new).collect(Collectors.toList()));
     }
 
     @EventHandler
     private void addElement() {
-        getModel().getMessages().add(new Message("d1"));
+        getModel().getMessages().add(new Message("4"));
     }
 
     @EventHandler
     private void addElementByIndex() {
-        List<Message> currentMessages = getModel().getMessages();
-        final int insertIndex = currentMessages.isEmpty() ? 0
-                : currentMessages.size() - 1;
-        currentMessages.add(insertIndex, new Message("d2"));
+        getModel().getMessages().add(0, new Message("4"));
     }
 
     @EventHandler
     private void addNumerousElements() {
-        List<Message> newMessages = Arrays.asList(new Message("e2"),
-                new Message("f2"));
+        List<Message> newMessages = Arrays.asList(new Message("4"),
+                new Message("5"));
         getModel().getMessages().addAll(newMessages);
     }
 
     @EventHandler
     private void addNumerousElementsByIndex() {
-        List<Message> newMessages = Arrays.asList(new Message("e1"),
-                new Message("f1"));
+        List<Message> newMessages = Arrays.asList(new Message("4"),
+                new Message("5"));
         getModel().getMessages().addAll(0, newMessages);
     }
 
@@ -96,32 +99,34 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     }
 
     @EventHandler
-    private void removeElementByIndex() {
+    private void removeSecondElementByIndex() {
         List<Message> currentMessages = getModel().getMessages();
-        if (!currentMessages.isEmpty()) {
-            currentMessages.remove(currentMessages.size() - 1);
+        if (currentMessages.size() > 2) {
+            currentMessages.remove(1);
         }
     }
 
     @EventHandler
-    private void removeElementViaIterator() {
+    private void removeFirstElementWithIterator() {
         if (!getModel().getMessages().isEmpty()) {
-            getModel().getMessages().iterator().remove();
+            Iterator<Message> iterator = getModel().getMessages().iterator();
+            iterator.next();
+            iterator.remove();
         }
     }
 
     @EventHandler
-    private void swapFirstAndLast() {
+    private void swapFirstAndSecond() {
         List<Message> messages = getModel().getMessages();
         if (messages.size() > 1) {
             Message first = messages.get(0);
-            messages.set(0, messages.get(messages.size() - 1));
-            messages.set(messages.size() - 1, first);
+            messages.set(0, messages.get(1));
+            messages.set(1, first);
         }
     }
 
     @EventHandler
-    private void sortAlphabetically() {
-        getModel().getMessages().sort(Comparator.comparing(Message::getText));
+    private void sortDescending() {
+        getModel().getMessages().sort(Comparator.comparing(Message::getText).reversed());
     }
 }

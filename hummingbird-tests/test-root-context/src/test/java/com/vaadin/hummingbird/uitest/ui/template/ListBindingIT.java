@@ -15,17 +15,20 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
+import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.By;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Normal tests with @Before are not implemented because each @Test starts new Chrome process.
+ */
 public class ListBindingIT extends ChromeBrowserTest {
 
     @Test
@@ -34,44 +37,59 @@ public class ListBindingIT extends ChromeBrowserTest {
 
         WebElement template = findElement(By.id("template"));
 
-        Optional<WebElement> msg = getInShadowRoot(template,
-                By.className("msg"));
+        checkInitialState(template);
 
-        Assert.assertEquals("foo", msg.get().getText());
+        // Before running those methods list is set to ["1", "2", "3"]
+        // see (ListBindingTemplate.INITIAL_STATE)
 
-        getInShadowRoot(template, By.id("update")).get().click();
-        List<String> expectedResults = new ArrayList<>();
-        expectedResults.add("a");
-        expectedResults.add("b");
-        expectedResults.add("c");
-        checkResult(template, expectedResults);
+        assertMethodWorksCorrectly("addElement",
+                template, "1", "2", "3", "4");
 
-        getInShadowRoot(template, By.id("addElement")).get().click();
-        expectedResults.add("d1");
-        checkResult(template, expectedResults);
+        assertMethodWorksCorrectly("addElementByIndex",
+                template, "4", "1", "2", "3");
 
-        getInShadowRoot(template, By.id("addElementByIndex")).get().click();
-        expectedResults.add(expectedResults.size() - 1, "d2");
-        checkResult(template, expectedResults);
+        assertMethodWorksCorrectly("addNumerousElements",
+                template, "1", "2", "3", "4", "5");
 
-        getInShadowRoot(template, By.id("addNumerousElements")).get().click();
-        expectedResults.add("e2");
-        expectedResults.add("f2");
-        checkResult(template, expectedResults);
+        assertMethodWorksCorrectly("addNumerousElementsByIndex",
+                template, "4", "5", "1", "2", "3");
 
-        getInShadowRoot(template, By.id("addNumerousElementsByIndex")).get()
-                .click();
-        expectedResults.add(0, "f1");
-        expectedResults.add(0, "e1");
-        checkResult(template, expectedResults);
+        assertMethodWorksCorrectly("clearList",
+                template);
+
+        assertMethodWorksCorrectly("removeSecondElementByIndex",
+                template, "1", "3");
+
+        assertMethodWorksCorrectly("removeFirstElementWithIterator",
+                template, "2", "3");
+
+        assertMethodWorksCorrectly("swapFirstAndSecond",
+                template, "2", "1", "3");
+
+        assertMethodWorksCorrectly("sortDescending",
+                template, "3", "2", "1");
     }
 
-    private void checkResult(WebElement template,
-            List<String> expectedResults) {
-        List<WebElement> msgs = findInShadowRoot(template, By.className("msg"));
+    private void checkInitialState(WebElement template) {
+        Assert.assertEquals(Collections.singletonList(ListBindingTemplate.INITIAL_STATE), getMessages(template));
+    }
 
-        for (int i = 0; i < expectedResults.size(); i++) {
-            Assert.assertEquals(expectedResults.get(i), msgs.get(i).getText());
-        }
+    private void assertMethodWorksCorrectly(String handlerName,
+            WebElement template, String... expectedMessages) {
+        resetState(template);
+        getInShadowRoot(template, By.id(handlerName)).get().click();
+
+        Assert.assertEquals(Arrays.asList(expectedMessages), getMessages(template));
+    }
+
+    private void resetState(WebElement template) {
+        getInShadowRoot(template, By.id("reset")).get().click();
+        Assert.assertEquals(ListBindingTemplate.RESET_STATE, getMessages(template));
+    }
+
+    private List<String> getMessages(WebElement template) {
+        return findInShadowRoot(template, By.className("msg")).stream()
+                .map(WebElement::getText)
+                .collect(Collectors.toList());
     }
 }

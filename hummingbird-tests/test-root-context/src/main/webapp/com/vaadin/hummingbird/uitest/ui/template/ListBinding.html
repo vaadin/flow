@@ -5,16 +5,16 @@
     <dom-repeat items="[[messages]]">
       <template><div class='msg'>[[item.text]]</div></template>
     </dom-repeat>
-    <button id="update" on-click="update">Update</button>
+    <button id="reset" on-click="reset">reset</button>
     <button id="addElement" on-click="addElement">addElement</button>
-    <button id="swapFirstAndLast" on-click="swapFirstAndLast">swapFirstAndLast</button>
     <button id="addElementByIndex" on-click="addElementByIndex">addElementByIndex</button>
-        <button id="addNumerousElements" on-click="addNumerousElements">addNumerousElements</button>
-        <button id="addNumerousElementsByIndex" on-click="addNumerousElementsByIndex">addNumerousElementsByIndex</button>
+    <button id="addNumerousElements" on-click="addNumerousElements">addNumerousElements</button>
+    <button id="addNumerousElementsByIndex" on-click="addNumerousElementsByIndex">addNumerousElementsByIndex</button>
     <button id="clearList" on-click="clearList">clearList</button>
-    <button id="removeElementByIndex" on-click="removeElementByIndex">removeElementByIndex</button>
-    <button id="removeElementViaIterator" on-click="removeElementViaIterator">removeElementViaIterator</button>
-    <button id="sortAlphabetically" on-click="sortAlphabetically">sortAlphabetically</button>
+    <button id="removeSecondElementByIndex" on-click="removeSecondElementByIndex">removeSecondElementByIndex</button>
+    <button id="removeFirstElementWithIterator" on-click="removeFirstElementWithIterator">removeFirstElementWithIterator</button>
+    <button id="swapFirstAndSecond" on-click="swapFirstAndSecond">swapFirstAndSecond</button>
+    <button id="sortDescending" on-click="sortDescending">sortDescending</button>
   </template>
   <script>
     class ListBinding extends Polymer.Element {
