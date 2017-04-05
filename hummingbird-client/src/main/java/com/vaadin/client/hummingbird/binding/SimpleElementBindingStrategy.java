@@ -255,19 +255,26 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             String path) {
         Computation computation = Reactive.runWhenDepedenciesChange(
                 () -> stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
-                        .forEachProperty((property, key) -> {
-                            setSubProperties(htmlNode, property, path);
-                            storeNodeId(htmlNode, stateNode.getId(), path);
-                        }));
+                        .forEachProperty((property, key) -> bindSubProperty(
+                                stateNode, htmlNode, path, property)));
         stateNode.addUnregisterListener(event -> computation.stop());
+    }
+
+    private void bindSubProperty(StateNode stateNode, Element htmlNode,
+            String path, MapProperty property) {
+        setSubProperties(htmlNode, property, path);
+        storeNodeId(htmlNode, stateNode.getId(), path);
     }
 
     // Store the StateNode.id into the polymer property under 'nodeId'
     private native void storeNodeId(Node domNode, int id, String path)
     /*-{
-        if(typeof(domNode.get) !== 'undefined' && domNode.get(path) !== undefined 
-            && domNode.get(path)["nodeId"] === undefined) {
-            domNode.get(path)["nodeId"] = id;
+        if(typeof(domNode.get) !== 'undefined') {
+            var polymerProperty = domNode.get(path);
+            if(typeof(polymerProperty) === 'object'
+                && polymerProperty["nodeId"] === undefined){
+                polymerProperty["nodeId"] = id;
+            }
         }
     }-*/;
 

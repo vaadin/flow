@@ -135,7 +135,7 @@ public final class ServerEventObject extends JavaScriptObject {
                 JsonValue expressionValue;
 
                 if (!expression.startsWith("event")) {
-                    expressionValue = getItem(node.getDomNode(), expression);
+                    expressionValue = getPropertyValue(node.getDomNode(), expression);
                 } else {
                     ServerEventDataExpression dataExpression = getOrCreateExpression(
                             expression);
@@ -149,9 +149,9 @@ public final class ServerEventObject extends JavaScriptObject {
         return null;
     }
 
-    private native JsonValue getItem(Node node, String property)
+    private native JsonValue getPropertyValue(Node node, String propertyName)
     /*-{
-        return node.get(property);
+        return node.get(propertyName);
     }-*/;
 
     /**

@@ -253,7 +253,7 @@ public class PublishedServerEventHandlerRpcHandler
         StateNode node = template.getUI().get().getInternals().getStateTree()
                 .getNodeById((int) (argValue).getNumber("nodeId"));
 
-        ModelType propertyType = (template).getModelType(convertedType);
+        ModelType propertyType = template.getModelType(convertedType);
 
         if (propertyType instanceof ListModelType) {
             propertyType = getBeanModelTypeForListModelType(propertyType);
