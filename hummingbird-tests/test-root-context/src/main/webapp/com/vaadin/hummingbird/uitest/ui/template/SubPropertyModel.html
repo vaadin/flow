@@ -5,6 +5,7 @@
     <div id="msg">[[status.message]]</div>
     <button on-click="update" id="button">Update</button>
     <button on-click="sync" id="sync">Update from the client to the server (sync)</button>
+    <input id="input" value="{{status.message::input}}" on-input="valueUpdated">
   </template>
   <script>
     class SubPropertyModel extends Polymer.Element {

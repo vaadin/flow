@@ -56,6 +56,14 @@ public class SubPropertyModelTemplate
         ((HasComponents) getParent().get()).add(div);
     }
 
+    @EventHandler
+    private void valueUpdated() {
+        Div div = new Div();
+        div.setId("value-update");
+        div.setText(getStatus().getMessage());
+        ((HasComponents) getParent().get()).add(div);
+    }
+
     private void setMessage(String message) {
         getStatus().setMessage(message);
     }

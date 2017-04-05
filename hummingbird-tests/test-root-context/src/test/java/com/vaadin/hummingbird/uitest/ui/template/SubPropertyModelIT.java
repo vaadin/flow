@@ -15,6 +15,9 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -41,5 +44,17 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
 
         WebElement syncedReport = findElement(By.id("synced-msg"));
         Assert.assertEquals("Set from the client", syncedReport.getText());
+
+        WebElement input = getInShadowRoot(template, By.id("input")).get();
+        input.clear();
+        input.sendKeys("foo");
+
+        List<WebElement> valueUpdate = findElements(By.id("value-update"));
+        Optional<WebElement> result = valueUpdate.stream()
+                .filter(element -> element.getText().equals("foo")).findAny();
+        Assert.assertTrue(
+                "Unable to find updated input value element. "
+                        + "Looks like input hasn't sent an event for subproperty",
+                result.isPresent());
     }
 }
