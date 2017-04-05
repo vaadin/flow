@@ -221,30 +221,10 @@ public class PublishedServerEventHandlerRpcHandler
             return decodeArray(method, type, index, argValue);
         } else {
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
-            if (instance instanceof PolymerTemplate
-                    && argValue instanceof JsonObject
-                    && ((PolymerTemplate) instance).getModelClasses()
-                            .contains(convertedType)) {
 
-                StateNode node = instance.getUI().get().getInternals()
-                        .getStateTree()
-                        .getNodeById((int) ((JsonObject) argValue)
-                                .getNumber("nodeId"));
-
-                ModelType propertyType = ((PolymerTemplate) instance)
-                        .getModelType(convertedType);
-
-                if (propertyType instanceof ListModelType) {
-                    do {
-                        propertyType = ((ListModelType) propertyType)
-                                .getItemType();
-                    } while (propertyType instanceof ListModelType);
-                    return TemplateModelProxyHandler.createModelProxy(node,
-                            (BeanModelType) propertyType);
-                } else if (propertyType instanceof BeanModelType) {
-                    return TemplateModelProxyHandler.createModelProxy(node,
-                            (BeanModelType) propertyType);
-                }
+            if (isTemplateModelValue(instance, argValue, convertedType)) {
+                return getTemplateItem((PolymerTemplate) instance,
+                        (JsonObject) argValue, convertedType);
             }
 
             if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
@@ -257,6 +237,44 @@ public class PublishedServerEventHandlerRpcHandler
             }
             return JsonCodec.decodeAs(argValue, convertedType);
         }
+    }
+
+    private static boolean isTemplateModelValue(Component instance,
+            JsonValue argValue, Class<?> convertedType) {
+        return instance instanceof PolymerTemplate
+                && argValue instanceof JsonObject
+                && ((PolymerTemplate) instance).getModelClasses()
+                        .contains(convertedType)
+                && ((JsonObject) argValue).hasKey("nodeId");
+    }
+
+    private static Object getTemplateItem(PolymerTemplate template,
+            JsonObject argValue, Class<?> convertedType) {
+        StateNode node = template.getUI().get().getInternals().getStateTree()
+                .getNodeById((int) (argValue).getNumber("nodeId"));
+
+        ModelType propertyType = (template).getModelType(convertedType);
+
+        if (propertyType instanceof ListModelType) {
+            propertyType = getBeanModelTypeForListModelType(propertyType);
+            return TemplateModelProxyHandler.createModelProxy(node,
+                    (BeanModelType) propertyType);
+        } else if (propertyType instanceof BeanModelType) {
+            return TemplateModelProxyHandler.createModelProxy(node,
+                    (BeanModelType) propertyType);
+        }
+        String msg = String.format(
+                "Could not parse %s ModelItem for PolymerTemplate.",
+                convertedType.getSimpleName());
+        throw new IllegalArgumentException(msg);
+    }
+
+    private static ModelType getBeanModelTypeForListModelType(
+            ModelType propertyType) {
+        do {
+            propertyType = ((ListModelType) propertyType).getItemType();
+        } while (propertyType instanceof ListModelType);
+        return propertyType;
     }
 
     private static Object decodeArray(Method method, Class<?> type, int index,

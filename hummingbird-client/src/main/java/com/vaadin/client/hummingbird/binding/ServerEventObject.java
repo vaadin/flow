@@ -32,7 +32,6 @@ import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -135,13 +134,12 @@ public final class ServerEventObject extends JavaScriptObject {
 
                 JsonValue expressionValue;
 
-                if(!expression.startsWith("event")) {
-                    expressionValue = getItem(node.getDomNode(),  expression);
+                if (!expression.startsWith("event")) {
+                    expressionValue = getItem(node.getDomNode(), expression);
                 } else {
                     ServerEventDataExpression dataExpression = getOrCreateExpression(
                             expression);
-                    expressionValue = dataExpression
-                            .evaluate(event, this);
+                    expressionValue = dataExpression.evaluate(event, this);
                 }
                 dataArray.set(i, expressionValue);
             }

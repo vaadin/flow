@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 
@@ -75,10 +76,12 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     public Set<Class> getModelClasses() {
         if (modelClasses == null) {
             modelTypes = new HashMap<>();
-            modelClasses = Collections
-                    .unmodifiableSet(ModelDescriptor.get(getModelType())
-                            .getPropertyNames().map(type -> getJavaClass(type))
-                            .collect(Collectors.toSet()));
+            Stream<String> propertyNames = ModelDescriptor.get(getModelType())
+                    .getPropertyNames();
+            Set<Class> modelClassCollection = propertyNames
+                    .map(type -> getJavaClass(type))
+                    .collect(Collectors.toSet());
+            modelClasses = Collections.unmodifiableSet(modelClassCollection);
         }
         return modelClasses;
     }

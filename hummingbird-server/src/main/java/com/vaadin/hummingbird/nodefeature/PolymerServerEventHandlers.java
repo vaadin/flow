@@ -41,6 +41,8 @@ public class PolymerServerEventHandlers
         extends AbstractServerHandlers<PolymerTemplate<?>> {
     private static final String REPEAT_INDEX_VALUE = "event.model.index";
 
+    private Set<Class> modelClasses = new HashSet<>();
+
     /**
      * Creates a new meta information list for the given state node.
      *
@@ -50,8 +52,6 @@ public class PolymerServerEventHandlers
     public PolymerServerEventHandlers(StateNode node) {
         super(node);
     }
-
-    Set<Class> modelClasses = new HashSet<>();
 
     @Override
     public void componentSet(PolymerTemplate<?> component) {
@@ -106,6 +106,7 @@ public class PolymerServerEventHandlers
         }
     }
 
+    @Override
     protected void ensureSupportedParameterType(Method method, Class<?> type) {
         if (!modelClasses.contains(type)) {
             super.ensureSupportedParameterType(method, type);
