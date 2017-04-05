@@ -28,9 +28,11 @@ import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
+import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -131,11 +133,16 @@ public final class ServerEventObject extends JavaScriptObject {
             for (int i = 0; i < dataExpressions.length(); i++) {
                 String expression = dataExpressions.get(i);
 
-                ServerEventDataExpression dataExpression = getOrCreateExpression(
-                        expression);
-                JsonValue expressionValue = dataExpression.evaluate(event,
-                        this);
+                JsonValue expressionValue;
 
+                if(!expression.startsWith("event")) {
+                    expressionValue = getItem(node.getDomNode(),  expression);
+                } else {
+                    ServerEventDataExpression dataExpression = getOrCreateExpression(
+                            expression);
+                    expressionValue = dataExpression
+                            .evaluate(event, this);
+                }
                 dataArray.set(i, expressionValue);
             }
             return dataArray;
@@ -143,6 +150,11 @@ public final class ServerEventObject extends JavaScriptObject {
 
         return null;
     }
+
+    private native JsonValue getItem(Node node, String property)
+    /*-{
+        return node.get(property);
+    }-*/;
 
     /**
      * Removes a method with the given name.

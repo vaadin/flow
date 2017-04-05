@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
 import com.vaadin.client.WidgetUtil;
@@ -51,7 +53,6 @@ import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -254,10 +255,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             String path) {
         Computation computation = Reactive.runWhenDepedenciesChange(
                 () -> stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
-                        .forEachProperty((property, key) -> setSubProperties(
-                                htmlNode, property, path)));
+                        .forEachProperty((property, key) -> {
+                            setSubProperties(htmlNode, property, path);
+                            storeNodeId(htmlNode, stateNode.getId(), path);
+                        }));
         stateNode.addUnregisterListener(event -> computation.stop());
     }
+
+    // Store the StateNode.id into the polymer property under 'nodeId'
+    private native void storeNodeId(Node domNode, int id, String path)
+    /*-{
+        if(typeof(domNode.get) !== 'undefined' && domNode.get(path) !== undefined 
+            && domNode.get(path)["nodeId"] === undefined) {
+            domNode.get(path)["nodeId"] = id;
+        }
+    }-*/;
 
     private void setSubProperties(Element htmlNode, MapProperty property,
             String path) {
@@ -292,7 +304,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
             }
             assert feature != null : "Don't know how to convert node without map or list features";
-            return feature.convert(this::convertToJson);
+            JsonValue convert = feature.convert(this::convertToJson);
+            if (convert instanceof JsonObject
+                    && !((JsonObject) convert).hasKey("nodeId")) {
+                ((JsonObject) convert).put("nodeId", node.getId());
+            }
+            return convert;
         } else {
             return WidgetUtil.crazyJsoCast(object);
         }

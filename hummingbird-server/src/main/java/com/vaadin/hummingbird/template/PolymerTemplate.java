@@ -15,10 +15,22 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
+import com.vaadin.hummingbird.template.model.ModelType;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
@@ -38,6 +50,9 @@ import com.vaadin.hummingbird.template.model.TemplateModel;
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
 
+    private Set<Class> modelClasses;
+    private Map<Class, ModelType> modelTypes;
+
     /**
      * Creates the component that is responsible for Polymer template
      * functionality.
@@ -50,5 +65,48 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         ModelMap modelMap = getStateNode().getFeature(ModelMap.class);
         ModelDescriptor.get(getModelType()).getPropertyNames()
                 .forEach(propertyName -> modelMap.setValue(propertyName, null));
+    }
+
+    /**
+     * Collects all {@code Class}es used in the TemplateModel.
+     * 
+     * @return Set with classes used in model
+     */
+    public Set<Class> getModelClasses() {
+        if (modelClasses == null) {
+            modelTypes = new HashMap<>();
+            modelClasses = Collections
+                    .unmodifiableSet(ModelDescriptor.get(getModelType())
+                            .getPropertyNames().map(type -> getJavaClass(type))
+                            .collect(Collectors.toSet()));
+        }
+        return modelClasses;
+    }
+
+    private Class getJavaClass(String type) {
+        Type javaType = ModelDescriptor.get(getModelType())
+                .getPropertyType(type).getJavaType();
+        Class aClass = GenericTypeReflector.erase(javaType);
+        if (List.class.isAssignableFrom(aClass)) {
+            do {
+                Type argumentType = ((ParameterizedType) GenericTypeReflector
+                        .capture(javaType)).getActualTypeArguments()[0];
+                aClass = GenericTypeReflector.erase(argumentType);
+            } while (List.class.isAssignableFrom(aClass));
+        }
+        modelTypes.put(aClass,
+                ModelDescriptor.get(getModelType()).getPropertyType(type));
+        return aClass;
+    }
+
+    /**
+     * Get the {@code ModelType} for given class.
+     * 
+     * @param modelClass
+     *            Class to find ModelType for
+     * @return ModelType of modelClass
+     */
+    public ModelType getModelType(Class<?> modelClass) {
+        return modelTypes.get(modelClass);
     }
 }

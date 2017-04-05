@@ -46,5 +46,13 @@ public class ListBindingIT extends ChromeBrowserTest {
         Assert.assertEquals("a", msgs.get(0).getText());
         Assert.assertEquals("b", msgs.get(1).getText());
         Assert.assertEquals("c", msgs.get(2).getText());
+
+        // Click b message
+        msgs.get(1).click();
+
+        // Assert that the message was gotten correctly on the server side
+        Assert.assertEquals("Couldn't validate element click selection.",
+                findElement(By.id("selection")).getText(),
+                "Clicked message: " + msgs.get(1).getText());
     }
 }

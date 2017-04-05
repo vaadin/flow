@@ -141,8 +141,14 @@ public class ListModelType<T> implements ComplexModelType<T> {
 
     @Override
     public Type getJavaType() {
+        Type type = itemType.getJavaType();
+        ModelType itemType = this.itemType;
+        while(!(type instanceof Class<?>)) {
+            itemType = ((ListModelType)itemType).getItemType();
+            type = itemType.getJavaType();
+        }
         return ReflectTools.createParameterizedType(List.class,
-                (Class<?>) itemType.getJavaType());
+                (Class<?>) type);
     }
 
     @Override
