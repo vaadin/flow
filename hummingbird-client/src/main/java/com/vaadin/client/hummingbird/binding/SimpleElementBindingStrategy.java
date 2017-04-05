@@ -49,6 +49,7 @@ import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.events.EventRemover;
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import jsinterop.annotations.JsFunction;
@@ -271,6 +272,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 setValueFunction.call(htmlNode, newPath,
                         convertToJson(subNode));
+                addModelListChangeListener(
+                        subNode.getList(NodeFeatures.TEMPLATE_MODELLIST),
+                        newPath, htmlNode);
             } else {
                 NativeFunction function = NativeFunction.create("path", "value",
                         "this.set(path, {})");
@@ -281,6 +285,27 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             setValueFunction.call(htmlNode, newPath, property.getValue());
         }
     }
+
+    private void addModelListChangeListener(NodeList modelList, String path,
+            Element element) {
+        modelList.addSpliceListener(event -> splice(element, path,
+                event.getIndex(), event.getRemove().length(),
+                convertElementsToAdd(event.getAdd())));
+    }
+
+    private JsonArray convertElementsToAdd(JsArray<?> elementsToAdd) {
+        JsonArray convertedElements = Json.createArray();
+        for (int i = 0; i < elementsToAdd.length(); i++) {
+            convertedElements.set(i, convertToJson(elementsToAdd.get(i)));
+        }
+        return convertedElements;
+    }
+
+    private native void splice(Element element, String path, int startIndex,
+            int deleteCount, JsonArray elementsToAdd)
+    /*-{
+        element.splice.apply(element, [path, startIndex, deleteCount].concat(elementsToAdd));
+    }-*/;
 
     private JsonValue convertToJson(Object object) {
         if (object instanceof StateNode) {
