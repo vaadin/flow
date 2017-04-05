@@ -19,8 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
 import com.vaadin.client.WidgetUtil;
@@ -53,6 +51,7 @@ import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -155,9 +154,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         JsArray<EventRemover> listeners = JsCollections.array();
 
-        listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                property -> updateProperty(property, htmlNode),
-                createComputations(computationsCollection), stateNode));
+        if (!stateNode.hasFeature(NodeFeatures.TEMPLATE_MODELMAP)) {
+            // don't use element properties for template
+            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
+                    property -> updateProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+        }
         listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                 property -> updateStyleProperty(property, htmlNode),
                 createComputations(computationsCollection), stateNode));
@@ -253,11 +255,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
             String path) {
-        Computation computation = Reactive.runWhenDepedenciesChange(
-                () -> stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
-                        .forEachProperty((property, key) -> bindSubProperty(
-                                stateNode, htmlNode, path, property)));
-        stateNode.addUnregisterListener(event -> computation.stop());
+        if (stateNode.hasFeature(NodeFeatures.TEMPLATE_MODELMAP)) {
+            Computation computation = Reactive.runWhenDepedenciesChange(
+                    () -> stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                            .forEachProperty((property, key) -> bindSubProperty(
+                                    stateNode, htmlNode, path, property)));
+            stateNode.addUnregisterListener(event -> computation.stop());
+        }
     }
 
     private void bindSubProperty(StateNode stateNode, Element htmlNode,
@@ -445,8 +449,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         Object currentValue = WidgetUtil.getJsProperty(context.element,
                 propertyName);
 
-        context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
-                .getProperty(propertyName).syncToServer(currentValue);
+        if (context.node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+            context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
+                    .getProperty(propertyName).syncToServer(currentValue);
+        } else if (context.node.hasFeature(NodeFeatures.TEMPLATE_MODELMAP)) {
+            context.node.getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                    .getProperty(propertyName).syncToServer(currentValue);
+        } else {
+            assert false : "Cannot synchronize property without a feature "
+                    + "containing the properties. Node doesn't contain neither "
+                    + context.node.getTree().getFeatureDebugName(
+                            NodeFeatures.ELEMENT_PROPERTIES)
+                    + " feature nor " + context.node.getTree()
+                            .getFeatureDebugName(NodeFeatures.TEMPLATE_MODELMAP)
+                    + " feature";
+        }
     }
 
     private EventRemover bindChildren(BindingContext context) {

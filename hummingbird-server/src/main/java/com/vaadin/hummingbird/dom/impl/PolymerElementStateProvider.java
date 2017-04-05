@@ -16,9 +16,6 @@
 package com.vaadin.hummingbird.dom.impl;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
@@ -29,40 +26,40 @@ import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.nodefeature.ElementClassList;
 import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.ElementListenerMap;
-import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.ElementStylePropertyMap;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.hummingbird.nodefeature.ParentGeneratorHolder;
+import com.vaadin.hummingbird.nodefeature.PolymerEventListenerMap;
+import com.vaadin.hummingbird.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.hummingbird.nodefeature.SynchronizedPropertyEventsList;
 
 /**
- * Implementation which stores data for basic elements, i.e. elements which are
- * not bound to any template and have no special functionality.
- * <p>
- * This should be considered a low level class focusing on performance and
- * leaving most sanity checks to the caller.
- * <p>
- * The data is stored directly in the state node but this should be considered
- * an implementation detail which can change.
- *
+ * Polymer element state provider which stores element data and model data via
+ * shared model map.
+ * 
  * @author Vaadin Ltd
+ *
  */
-public class BasicElementStateProvider extends AbstractElementStateProvider {
+public final class PolymerElementStateProvider
+        extends AbstractElementStateProvider {
 
-    private static final BasicElementStateProvider instance = new BasicElementStateProvider();
+    private static final PolymerElementStateProvider INSTANCE = new PolymerElementStateProvider();
 
     @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] features = new Class[] {
+    private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
             ElementData.class, ElementAttributeMap.class,
-            ElementChildrenList.class, ElementPropertyMap.class,
-            ElementListenerMap.class, ElementClassList.class,
-            ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
+            ElementChildrenList.class, ElementListenerMap.class,
+            ElementClassList.class, ElementStylePropertyMap.class,
+            SynchronizedPropertiesList.class,
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
-            ParentGeneratorHolder.class, ClientDelegateHandlers.class, };
+            ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
+            ClientDelegateHandlers.class, PolymerEventListenerMap.class,
+            ModelMap.class };
 
-    private BasicElementStateProvider() {
-        // Not meant to be sub classed and only once instance should ever exist
+    private PolymerElementStateProvider() {
+        // Singleton
     }
 
     /**
@@ -70,17 +67,8 @@ public class BasicElementStateProvider extends AbstractElementStateProvider {
      *
      * @return the instance to use for all basic elements
      */
-    public static BasicElementStateProvider get() {
-        return instance;
-    }
-
-    /**
-     * Gets all the features used by an element node.
-     *
-     * @return an unmodifiable collection of feature classes
-     */
-    public static Collection<Class<? extends NodeFeature>> getFeatures() {
-        return Collections.unmodifiableCollection(Arrays.asList(features));
+    public static PolymerElementStateProvider get() {
+        return INSTANCE;
     }
 
     @Override
@@ -88,7 +76,7 @@ public class BasicElementStateProvider extends AbstractElementStateProvider {
         assert node != null;
         assert name != null;
 
-        return getPropertyFeature(node).getProperty(name);
+        return getPropertyFeature(node).getValue(name);
     }
 
     @Override
@@ -97,7 +85,8 @@ public class BasicElementStateProvider extends AbstractElementStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyFeature(node).setProperty(name, value, emitChange);
+        getPropertyFeature(node).setValue(name, value, emitChange);
+
     }
 
     @Override
@@ -105,7 +94,7 @@ public class BasicElementStateProvider extends AbstractElementStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyFeature(node).removeProperty(name);
+        getPropertyFeature(node).remove(name);
     }
 
     @Override
@@ -113,29 +102,23 @@ public class BasicElementStateProvider extends AbstractElementStateProvider {
         assert node != null;
         assert name != null;
 
-        return getPropertyFeature(node).hasProperty(name);
+        return getPropertyFeature(node).hasValue(name);
     }
 
     @Override
     public Stream<String> getPropertyNames(StateNode node) {
         assert node != null;
 
-        return getPropertyFeature(node).getPropertyNames();
+        return getPropertyFeature(node).getKeys();
     }
 
     @Override
     protected Class<? extends NodeFeature>[] getProviderFeatures() {
-        return features;
+        return FEATURES;
     }
 
-    /**
-     * Gets the property feature for the given node and asserts it is non-null.
-     *
-     * @param node
-     *            the node
-     * @return the property feature
-     */
-    private static ElementPropertyMap getPropertyFeature(StateNode node) {
-        return node.getFeature(ElementPropertyMap.class);
+    private ModelMap getPropertyFeature(StateNode node) {
+        return node.getFeature(ModelMap.class);
     }
+
 }

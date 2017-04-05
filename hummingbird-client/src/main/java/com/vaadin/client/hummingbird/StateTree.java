@@ -265,6 +265,13 @@ public class StateTree {
                     "templateOverrides");
             nodeFeatureDebugName.set(NodeFeatures.OVERRIDE_DATA,
                     "overrideNodeData");
+            nodeFeatureDebugName.set(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS,
+                    "polymerEventListenerMethods");
+            nodeFeatureDebugName.set(NodeFeatures.POLYMER_EVENT_LISTENERS,
+                    "polymerEvents");
+            nodeFeatureDebugName.set(NodeFeatures.CLIENT_DELEGATE_HANDLERS,
+                    "clientDelegateMethods");
+
         }
         if (nodeFeatureDebugName.has(id)) {
             return nodeFeatureDebugName.get(id);

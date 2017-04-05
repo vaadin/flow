@@ -28,6 +28,7 @@ import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.dom.impl.PolymerElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.ModelType;
@@ -55,6 +56,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * functionality.
      */
     public PolymerTemplate() {
+        super(PolymerElementStateProvider.get());
         // This a workaround to propagate model to a Polymer template.
         // Correct implementation will follow in
         // https://github.com/vaadin/hummingbird/issues/1371

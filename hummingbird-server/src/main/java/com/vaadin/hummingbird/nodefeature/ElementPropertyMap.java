@@ -17,9 +17,6 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.io.Serializable;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.hummingbird.StateNode;
 
@@ -28,11 +25,8 @@ import com.vaadin.hummingbird.StateNode;
  *
  * @author Vaadin Ltd
  */
-public class ElementPropertyMap extends AbstractPropertyMap {
-
-    private static final Set<String> forbiddenProperties = Stream
-            .of("textContent", "classList", "className")
-            .collect(Collectors.toSet());
+public class ElementPropertyMap extends AbstractPropertyMap
+        implements PropertyFeature {
 
     /**
      * Creates a new element property map for the given node.
@@ -47,14 +41,13 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     @Override
     public void setProperty(String name, Serializable value,
             boolean emitChange) {
-        assert !forbiddenProperties.contains(name) : "Forbidden property name: "
-                + name;
+        assert !isForbidden(name) : "Forbidden property name: " + name;
 
         super.setProperty(name, value, emitChange);
     }
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
-        return !forbiddenProperties.contains(key);
+        return !isForbidden(key);
     }
 }

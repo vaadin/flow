@@ -485,6 +485,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         int id = 68;
 
         StateNode overrideNode = createSimpleOverrideNode(id);
+        // init attributes feature
+        overrideNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
 
         Element element = createElement(templateNode, id);
 
@@ -519,6 +521,9 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
 
         StateNode overrideNode = createSimpleOverrideNode(id);
 
+        // init attributes feature
+        overrideNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+
         Element element = createElement(templateNode, id);
 
         NodeMap props = overrideNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
@@ -538,6 +543,8 @@ public class GwtTemplateBinderTest extends ClientEngineTestBase {
         int id = 37;
 
         StateNode overrideNode = createSimpleOverrideNode(id);
+        // init attributes feature
+        overrideNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
 
         Element element = createElement(templateNode, id);
 

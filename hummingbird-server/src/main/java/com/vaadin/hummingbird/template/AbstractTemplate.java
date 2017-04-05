@@ -22,6 +22,8 @@ import java.lang.reflect.TypeVariable;
 
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.dom.impl.AbstractElementStateProvider;
 import com.vaadin.hummingbird.nodefeature.TemplateMap;
 import com.vaadin.hummingbird.router.HasChildView;
 import com.vaadin.hummingbird.router.View;
@@ -42,12 +44,13 @@ public abstract class AbstractTemplate<M extends TemplateModel>
 
     private transient M model;
 
-    protected AbstractTemplate() {
+    protected AbstractTemplate(AbstractElementStateProvider provider) {
+        super(provider);
         this.stateNode = getElement().getNode();
     }
 
     protected AbstractTemplate(StateNode stateNode) {
-        super(null);
+        super((Element) null);
         this.stateNode = stateNode;
     }
 
