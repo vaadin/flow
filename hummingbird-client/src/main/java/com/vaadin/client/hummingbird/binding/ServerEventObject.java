@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.hummingbird.binding;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
@@ -33,6 +31,7 @@ import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * A representation of a server object able to send notifications to the server.

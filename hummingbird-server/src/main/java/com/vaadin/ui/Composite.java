@@ -57,7 +57,7 @@ public abstract class Composite<T extends Component> extends Component {
      * {@link #initContent()}.
      */
     protected Composite() {
-        super(null);
+        super((Element) null);
     }
 
     /**

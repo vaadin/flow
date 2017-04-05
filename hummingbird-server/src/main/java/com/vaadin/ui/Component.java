@@ -27,6 +27,8 @@ import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementUtil;
 import com.vaadin.hummingbird.dom.EventRegistrationHandle;
 import com.vaadin.hummingbird.dom.Prerenderer;
+import com.vaadin.hummingbird.dom.impl.AbstractElementStateProvider;
+import com.vaadin.hummingbird.dom.impl.BasicElementStateProvider;
 import com.vaadin.hummingbird.event.ComponentEventBus;
 import com.vaadin.hummingbird.event.ComponentEventListener;
 
@@ -83,6 +85,18 @@ public abstract class Component implements HasElement, Serializable,
      * instead of creating a new element.
      */
     protected Component() {
+        this(BasicElementStateProvider.get());
+    }
+
+    /**
+     * Creates a component instance with an element created based on the
+     * {@link Tag} annotation of the sub class.
+     * <p>
+     * If this is invoked through {@link #from(Element, Class)} or
+     * {@link Element#as(Class)}, uses the element defined in those methods
+     * instead of creating a new element.
+     */
+    protected Component(AbstractElementStateProvider provider) {
         Optional<String> tagNameAnnotation = AnnotationReader
                 .getAnnotationFor(getClass(), Tag.class).map(Tag::value);
         if (!tagNameAnnotation.isPresent()) {
@@ -101,7 +115,7 @@ public abstract class Component implements HasElement, Serializable,
         if (elementToMapTo.get() != null) {
             mapToElement(tagName);
         } else {
-            Element e = new Element(tagName);
+            Element e = new Element(tagName, provider);
             setElement(this, e);
         }
     }
