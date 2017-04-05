@@ -166,19 +166,23 @@ public class StateTree implements NodeOwner {
     /**
      * Forces all dependent changes to come after all their dependencies.
      *
-     * In current implementation, every time we add element into a model list, two events are propagated:
-     * node attach event and list splice event.
-     * If we won't make sure that latter comes after former, we won't be able to process list splice event normally,
-     * since there will be no data on changes.
+     * In current implementation, every time we add element into a model list,
+     * two events are propagated: node attach event and list splice event. If we
+     * won't make sure that latter comes after former, we won't be able to
+     * process list splice event normally, since there will be no data on
+     * changes.
      *
-     * Also puts node attach changes to go first, since we can not operate nodes on the client otherwise.
+     * Also puts node attach changes to go first, since we can not operate nodes
+     * on the client otherwise.
      *
-     * @param originalChanges not yet sorted changes
+     * @param originalChanges
+     *            not yet sorted changes
      * @return sorted changes
      */
-    private Collection<NodeChange> sortChanges(List<NodeChange> originalChanges) {
-        Set<NodeChange> sortedChanges = new LinkedHashSet<>(originalChanges.size(),
-                1);
+    private Collection<NodeChange> sortChanges(
+            List<NodeChange> originalChanges) {
+        Set<NodeChange> sortedChanges = new LinkedHashSet<>(
+                originalChanges.size(), 1);
         Set<NodeChange> notSortedChanges = new LinkedHashSet<>(originalChanges);
 
         Map<NodeChange, Collection<Integer>> nodesToDependencyIds = new HashMap<>(
@@ -192,15 +196,13 @@ public class StateTree implements NodeOwner {
             } else {
                 notSortedChanges.add(change);
 
-                if (change instanceof ListAddChange) {
-                    ListAddChange<?> listAddChange = (ListAddChange<?>) change;
-                    if (listAddChange.isNodeValues()) {
-                        List<StateNode> stateNodes = (List<StateNode>) listAddChange
-                                .getNewItems();
-                        nodesToDependencyIds.put(change,
-                                stateNodes.stream().map(StateNode::getId)
-                                        .collect(Collectors.toList()));
-                    }
+                if (change instanceof ListAddChange
+                        && ((ListAddChange<?>) change).isNodeValues()) {
+                    List<StateNode> stateNodes = ((ListAddChange<StateNode>) change)
+                            .getNewItems();
+                    nodesToDependencyIds.put(change,
+                            stateNodes.stream().map(StateNode::getId)
+                                    .collect(Collectors.toList()));
                 } else if (change instanceof MapPutChange) {
                     dependencyNodeIdToNodes.merge(change.getNode().getId(),
                             Collections.singletonList(change),

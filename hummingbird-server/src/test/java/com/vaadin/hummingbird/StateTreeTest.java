@@ -16,6 +16,22 @@
 
 package com.vaadin.hummingbird;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.apache.commons.lang3.SerializationUtils;
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.change.ListAddChange;
 import com.vaadin.hummingbird.change.ListRemoveChange;
@@ -28,23 +44,15 @@ import com.vaadin.hummingbird.nodefeature.ElementAttributeMap;
 import com.vaadin.hummingbird.nodefeature.ElementChildrenList;
 import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
+import com.vaadin.hummingbird.nodefeature.ModelList;
+import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.tests.util.TestUtil;
 import com.vaadin.ui.UI;
-import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class StateTreeTest {
-    private final StateTree tree = new StateTree(new UI(), ElementChildrenList.class);
+    private final StateTree tree = new StateTree(new UI(),
+            ElementChildrenList.class);
 
     @Test
     public void testRootNodeState() {
@@ -56,7 +64,7 @@ public class StateTreeTest {
         Assert.assertTrue("Root node should always be attached",
                 rootNode.isAttached());
 
-        Assert.assertEquals("Root node should always have the same id", 1,
+        assertEquals("Root node should always have the same id", 1,
                 rootNode.getId());
 
         Assert.assertSame(tree, rootNode.getOwner());
@@ -103,7 +111,7 @@ public class StateTreeTest {
     public void testNoRootAttachChange() {
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals(Collections.emptyList(), changes);
+        assertEquals(Collections.emptyList(), changes);
     }
 
     @Test
@@ -113,7 +121,7 @@ public class StateTreeTest {
 
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals(1, changes.size());
+        assertEquals(1, changes.size());
         NodeAttachChange nodeChange = (NodeAttachChange) changes.get(0);
         Assert.assertSame(node2, nodeChange.getNode());
     }
@@ -131,7 +139,7 @@ public class StateTreeTest {
                 node2.getOwner());
 
         Set<StateNode> initialDirty = tree.collectDirtyNodes();
-        Assert.assertEquals("Both nodes should initially be empty",
+        assertEquals("Both nodes should initially be empty",
                 new HashSet<>(Arrays.asList(node1, node2)), initialDirty);
 
         Set<StateNode> emptyCollection = tree.collectDirtyNodes();
@@ -141,7 +149,7 @@ public class StateTreeTest {
         node2.markAsDirty();
 
         Set<StateNode> collectAfterOneMarked = tree.collectDirtyNodes();
-        Assert.assertEquals("Marked node should be in collect result",
+        assertEquals("Marked node should be in collect result",
                 Collections.singleton(node2), collectAfterOneMarked);
     }
 
@@ -182,7 +190,7 @@ public class StateTreeTest {
 
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals("Should be one change.", 1, changes.size());
+        assertEquals("Should be one change.", 1, changes.size());
         Assert.assertTrue("Should have a detach change",
                 changes.get(0) instanceof NodeDetachChange);
     }
@@ -202,16 +210,16 @@ public class StateTreeTest {
         StateNodeTest.setParent(node2, node1);
         List<NodeChange> changes = collectChangesExceptChildrenAddRemove();
 
-        Assert.assertEquals("Should be two changes.", 2, changes.size());
+        assertEquals("Should be two changes.", 2, changes.size());
         Assert.assertTrue("First change should re-attach the node.",
                 changes.get(0) instanceof NodeAttachChange);
         Assert.assertTrue("Second change should re-put the value.",
                 changes.get(1) instanceof MapPutChange);
 
         MapPutChange nodeChange = (MapPutChange) changes.get(1);
-        Assert.assertEquals(ElementData.class, nodeChange.getFeature());
-        Assert.assertEquals("tag", nodeChange.getKey());
-        Assert.assertEquals("foo", nodeChange.getValue());
+        assertEquals(ElementData.class, nodeChange.getFeature());
+        assertEquals("tag", nodeChange.getKey());
+        assertEquals("foo", nodeChange.getValue());
     }
 
     private List<NodeChange> collectChangesExceptChildrenAddRemove() {
@@ -220,7 +228,7 @@ public class StateTreeTest {
             if ((!(change instanceof ListAddChange)
                     && !(change instanceof ListRemoveChange))
                     || ((NodeFeatureChange) change)
-                    .getFeature() != ElementChildrenList.class) {
+                            .getFeature() != ElementChildrenList.class) {
                 changes.add(change);
             }
         });
@@ -230,9 +238,9 @@ public class StateTreeTest {
     @Test
     public void testSerializable() {
         @SuppressWarnings("unchecked")
-        Class<? extends NodeFeature>[] features = new Class[]{
+        Class<? extends NodeFeature>[] features = new Class[] {
                 ElementChildrenList.class, ElementData.class,
-                ElementAttributeMap.class, ElementPropertyMap.class};
+                ElementAttributeMap.class, ElementPropertyMap.class };
         StateTree tree = new StateTree(new UI(), features);
 
         StateNode root = tree.getRootNode();
@@ -280,8 +288,8 @@ public class StateTreeTest {
         Assert.assertTrue(child.isAttached());
         Assert.assertTrue(grandChild.isAttached());
 
-        Assert.assertEquals(childId, child.getId());
-        Assert.assertEquals(grandChildId, grandChild.getId());
+        assertEquals(childId, child.getId());
+        assertEquals(grandChildId, grandChild.getId());
 
         Assert.assertSame(child, tree.getNodeById(childId));
         Assert.assertSame(grandChild, tree.getNodeById(grandChildId));
@@ -313,4 +321,50 @@ public class StateTreeTest {
         Assert.assertTrue(TestUtil.isGarbageCollected(grandChildRef));
     }
 
+    @Test
+    public void testChangesSorted() {
+        StateNode node1 = tree.getRootNode();
+        StateNode node2 = new StateNode(ModelList.class);
+        StateNode node3 = new StateNode(ModelMap.class);
+
+        // map put change
+        node3.getFeature(ModelMap.class).setValue("test", "test");
+
+        // attach change and list add change
+        StateNodeTest.setParent(node2, node1);
+        // attach change && list add change, dependent on map put change
+        node2.getFeature(ModelList.class).add(node3);
+
+        List<NodeChange> nodeChanges = new ArrayList<>(tree.collectChanges());
+
+        assertAttachChangesAreFirstOnes(nodeChanges);
+        assertMapPutChangeIsBeforeListAddChange(nodeChanges);
+    }
+
+    private void assertAttachChangesAreFirstOnes(List<NodeChange> nodeChanges) {
+        long attachChangesCount = nodeChanges.stream()
+                .filter(change -> change instanceof NodeAttachChange).count();
+        assertEquals(2, attachChangesCount);
+        assertTrue(nodeChanges.get(0) instanceof NodeAttachChange);
+        assertTrue(nodeChanges.get(1) instanceof NodeAttachChange);
+    }
+
+    private void assertMapPutChangeIsBeforeListAddChange(
+            List<NodeChange> nodeChanges) {
+        Optional<NodeChange> mapPutChange = nodeChanges.stream()
+                .filter(change -> change instanceof MapPutChange).findFirst();
+        assertTrue(mapPutChange.isPresent());
+        int mapPutChangeIndex = nodeChanges.indexOf(mapPutChange.get());
+
+        assertTrue(mapPutChangeIndex < nodeChanges.size() - 1);
+
+        NodeChange nextChange = nodeChanges.get(mapPutChangeIndex + 1);
+        assertTrue(nextChange instanceof ListAddChange);
+        ListAddChange<StateNode> listAddChange = (ListAddChange<StateNode>) nextChange;
+        assertTrue(listAddChange.isNodeValues());
+        assertEquals(1, listAddChange.getNewItems().size());
+        int listChangeDependency = listAddChange.getNewItems().iterator().next().getId();
+
+        assertEquals(listChangeDependency, mapPutChange.get().getNode().getId());
+    }
 }

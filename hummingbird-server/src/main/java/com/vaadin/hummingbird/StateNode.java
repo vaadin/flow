@@ -268,19 +268,19 @@ public class StateNode implements Serializable {
      * @return all changes made to this node since the last method call
      */
     public Collection<NodeChange> collectChanges() {
-        Collection<NodeChange> changes = new ArrayList<>();
+        Collection<NodeChange> newChanges = new ArrayList<>();
 
         boolean isAttached = isAttached();
         if (isAttached != wasAttached) {
             if (isAttached) {
-                changes.add(new NodeAttachChange(this));
+                newChanges.add(new NodeAttachChange(this));
 
                 // Make all changes show up as if the node was recently attached
                 clearChanges();
                 features.values()
                         .forEach(NodeFeature::generateChangesFromEmpty);
             } else {
-                changes.add(new NodeDetachChange(this));
+                newChanges.add(new NodeDetachChange(this));
             }
 
             wasAttached = isAttached;
@@ -291,10 +291,10 @@ public class StateNode implements Serializable {
                     .filter(this::hasChangeTracker)
                     .flatMap(feature -> feature.collectChanges().stream())
                     .collect(Collectors.toList());
-            changes.addAll(featureChanges);
+            newChanges.addAll(featureChanges);
             clearChanges();
         }
-        return changes;
+        return newChanges;
     }
 
     private boolean hasChangeTracker(NodeFeature nodeFeature) {
