@@ -30,7 +30,7 @@ import com.vaadin.hummingbird.nodefeature.ModelList;
  */
 public class TemplateModelListProxy<T> extends AbstractList<T> {
     private StateNode stateNode;
-    private BeanModelType<T> itemType;
+    private ComplexModelType<T> itemType;
 
     /**
      * Creates a new proxy for the given node and item type.
@@ -41,15 +41,25 @@ public class TemplateModelListProxy<T> extends AbstractList<T> {
      *            the type of items in the list
      */
     public TemplateModelListProxy(StateNode stateNode,
-            BeanModelType<T> itemType) {
+            ComplexModelType<T> itemType) {
         this.stateNode = stateNode;
         this.itemType = itemType;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public T get(int index) {
         StateNode modelNode = getModelList().get(index);
-        return TemplateModelProxyHandler.createModelProxy(modelNode, itemType);
+        if (itemType instanceof ListModelType<?>) {
+            ComplexModelType<?> listItemType = ((ListModelType<?>) itemType)
+                    .getItemType();
+            return (T) new TemplateModelListProxy<>(modelNode, listItemType);
+        } else if (itemType instanceof BeanModelType<?>) {
+            return TemplateModelProxyHandler.createModelProxy(modelNode,
+                    (BeanModelType<T>) itemType);
+        }
+        throw new IllegalStateException("Item type has unexpected type "
+                + itemType + ". Don't know how to create a proxy for it");
     }
 
     @Override
