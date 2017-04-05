@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * <p>
  * This is by default a shorthand for {@code @EventData("event.model.item")}
  * that works with {@code List} type model items. For other Model items define
- * the itemName to be the methodName e.g. for {@Code setSubItem(...)} use
+ * the itemName to be the methodName e.g. for {@code setSubItem(...)} use
  * {@code @ModelItem("subItem")}.
  *
  * @author Vaadin Ltd
