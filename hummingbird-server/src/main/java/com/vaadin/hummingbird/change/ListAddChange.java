@@ -85,6 +85,16 @@ public class ListAddChange<T extends Serializable>
     }
 
     /**
+     * Returns whether current list changes contain node values.
+     *
+     * @return {@code true} if list changes contain node values, {@code false}
+     *         otherwise
+     */
+    public boolean isNodeValues() {
+        return nodeValues;
+    }
+
+    /**
      * Gets a copy of the change with the same data except a list of new
      * {@code items}.
      * 

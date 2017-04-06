@@ -16,19 +16,6 @@
 
 package com.vaadin.hummingbird;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.change.NodeDetachChange;
@@ -38,6 +25,17 @@ import com.vaadin.hummingbird.nodefeature.ElementData;
 import com.vaadin.hummingbird.nodefeature.ElementPropertyMap;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.ui.UI;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class StateNodeTest {
 
@@ -112,29 +110,28 @@ public class StateNodeTest {
         StateNode node = createEmptyNode();
 
         List<NodeChange> changes = new ArrayList<>();
-        Consumer<NodeChange> collector = changes::add;
 
-        node.collectChanges(collector);
+        changes.addAll(node.collectChanges());
 
         Assert.assertTrue("Node should have no changes", changes.isEmpty());
 
         // Attach node
         setParent(node, createStateTree().getRootNode());
 
-        node.collectChanges(collector);
+        changes.addAll(node.collectChanges());
 
         Assert.assertEquals("Should have 1 change", 1, changes.size());
         Assert.assertTrue("Should have attach change",
                 changes.get(0) instanceof NodeAttachChange);
         changes.clear();
 
-        node.collectChanges(collector);
+        changes.addAll(node.collectChanges());
         Assert.assertTrue("Node should have no changes", changes.isEmpty());
 
         // Detach node
         setParent(node, null);
 
-        node.collectChanges(collector);
+        changes.addAll(node.collectChanges());
         Assert.assertEquals("Should have 1 change", 1, changes.size());
         Assert.assertTrue("Should have detach change",
                 changes.get(0) instanceof NodeDetachChange);

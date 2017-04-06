@@ -16,11 +16,22 @@
 
 package com.vaadin.hummingbird;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.vaadin.hummingbird.change.ListAddChange;
+import com.vaadin.hummingbird.change.MapPutChange;
+import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
 import com.vaadin.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.ui.UI;
@@ -97,7 +108,7 @@ public class StateTree implements NodeOwner {
         int id = node.getId();
 
         int nodeId;
-        if (id > 0 && !idToNode.containsKey(Integer.valueOf(id))) {
+        if (id > 0 && !idToNode.containsKey(id)) {
             // Node already had an id, continue using it
 
             // Don't accept an id that we haven't yet handed out
@@ -108,7 +119,7 @@ public class StateTree implements NodeOwner {
             nodeId = nextId++;
         }
 
-        idToNode.put(Integer.valueOf(nodeId), node);
+        idToNode.put(nodeId, node);
         return nodeId;
     }
 
@@ -116,15 +127,12 @@ public class StateTree implements NodeOwner {
     public void unregister(StateNode node) {
         assert node.getOwner() == this;
 
-        Integer id = Integer.valueOf(node.getId());
-
-        StateNode removedNode = idToNode.remove(id);
-
+        StateNode removedNode = idToNode.remove(node.getId());
         if (removedNode != node) {
             // Remove by id didn't remove the expected node
             if (removedNode != null) {
                 // Put the old node back
-                idToNode.put(Integer.valueOf(removedNode.getId()), removedNode);
+                idToNode.put(removedNode.getId(), removedNode);
             }
             throw new IllegalStateException(
                     "Unregistered node was not found based on its id. The tree is most likely corrupted.");
@@ -134,27 +142,28 @@ public class StateTree implements NodeOwner {
     /**
      * Finds a node with the given id.
      *
-     * @see StateNode#getId()
      * @param id
      *            the node id to look for
      * @return the node with the given id; <code>null</code> if the id is not
      *         registered with this tree
+     * @see StateNode#getId()
      */
     public StateNode getNodeById(int id) {
-        return idToNode.get(Integer.valueOf(id));
+        return idToNode.get(id);
     }
 
     /**
-     * Collects all changes made to this tree since the last time
-     * {@link #collectChanges(Consumer)} has been called.
+     * Collects all changes made to this tree since the last time this method
+     * has been called.
      *
-     * @param collector
-     *            a consumer accepting node changes
+     * @return all changes made to this tree since the last method call
      */
-    public void collectChanges(Consumer<NodeChange> collector) {
+    public Collection<NodeChange> collectChanges() {
         // TODO fire preCollect events
-
-        collectDirtyNodes().forEach(n -> n.collectChanges(collector));
+        List<NodeChange> unsortedChanged = collectDirtyNodes().stream()
+                .flatMap(node -> node.collectChanges().stream())
+                .collect(Collectors.toList());
+        return new ChangeSorter(unsortedChanged).apply();
     }
 
     @Override
@@ -193,5 +202,110 @@ public class StateTree implements NodeOwner {
      */
     public UI getUI() {
         return ui;
+    }
+
+    private static class ChangeSorter {
+        private final Set<NodeChange> sortedChanges;
+        private final Set<NodeChange> notSortedChanges;
+
+        private final Map<NodeChange, Collection<Integer>> nodesToDependencyNodeIds;
+        private final Map<Integer, Collection<NodeChange>> dependencyNodeIdToNodes;
+
+        private ChangeSorter(List<NodeChange> originalChanges) {
+            sortedChanges = new LinkedHashSet<>(
+                    originalChanges.size(), 1);
+            notSortedChanges = new LinkedHashSet<>(originalChanges);
+
+            nodesToDependencyNodeIds = new HashMap<>(
+                    originalChanges.size(), 1);
+            dependencyNodeIdToNodes = new HashMap<>(
+                    originalChanges.size(), 1);
+
+            for (NodeChange change : originalChanges) {
+                if (isAttachChange(change)) {
+                    sortedChanges.add(change);
+                } else {
+                    notSortedChanges.add(change);
+                    List<Integer> dependencyNodeIds = getDependencyNodeIds(change);
+
+                    if (!dependencyNodeIds.isEmpty()) {
+                        nodesToDependencyNodeIds.put(change, dependencyNodeIds);
+                    } else if (canBeDependency(change)) {
+                        storeDependencyIdInfo(change);
+                    }
+                }
+            }
+        }
+
+        private boolean isAttachChange(NodeChange change) {
+            return change instanceof NodeAttachChange;
+        }
+
+        private List<Integer> getDependencyNodeIds(NodeChange nodeChange) {
+            return Stream.of(nodeChange)
+                    .filter(change -> change instanceof ListAddChange)
+                    .map(change -> (ListAddChange<?>) change)
+                    .filter(ListAddChange::isNodeValues)
+                    .flatMap(change -> ((List<StateNode>) change.getNewItems()).stream())
+                    .map(StateNode::getId)
+                    .collect(Collectors.toList());
+        }
+
+        private boolean canBeDependency(NodeChange change) {
+            return change instanceof MapPutChange;
+        }
+
+        private void storeDependencyIdInfo(NodeChange change) {
+            dependencyNodeIdToNodes.merge(change.getNode().getId(),
+                    Collections.singletonList(change),
+                    mergeChangeLists());
+        }
+
+        private BiFunction<Collection<NodeChange>, Collection<NodeChange>, Collection<NodeChange>> mergeChangeLists() {
+            return (list1, list2) -> {
+                List<NodeChange> newList = new ArrayList<>(list1.size() + list2.size());
+                newList.addAll(list1);
+                newList.addAll(list2);
+                return newList;
+            };
+        }
+
+        /**
+         * Forces all dependent changes to come after all their dependencies.
+         *
+         * In current implementation, every time we add element into a model list,
+         * three events are propagated: node attach event, node put event and list splice event. If we
+         * won't make sure that 'splice' comes after 'put', we won't be able to
+         * process list splice event normally, since there will be no data on
+         * changes.
+         *
+         * Attach events should also be applied first (their order does not matter),
+         * before other types of changes.
+         *
+         * Also puts node attach changes to go first, since we can not operate nodes
+         * on the client otherwise.
+         *
+         * @return sorted changes
+         **/
+        private Collection<NodeChange> apply() {
+            notSortedChanges.forEach(change -> {
+                sortedChanges.addAll(getDependencies(change));
+                sortedChanges.add(change);
+            });
+            return sortedChanges;
+        }
+
+        private List<NodeChange> getDependencies(NodeChange change) {
+            Collection<Integer> dependencyIds = nodesToDependencyNodeIds
+                    .remove(change);
+            if (dependencyIds != null) {
+                return dependencyIds.stream()
+                        .map(dependencyNodeIdToNodes::get)
+                        .filter(Objects::nonNull)
+                        .flatMap(Collection::stream)
+                        .collect(Collectors.toList());
+            }
+            return Collections.emptyList();
+        }
     }
 }

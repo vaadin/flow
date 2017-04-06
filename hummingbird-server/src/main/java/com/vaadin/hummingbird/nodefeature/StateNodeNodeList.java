@@ -53,7 +53,7 @@ public abstract class StateNodeNodeList extends NodeList<StateNode> {
     @Override
     protected void addAll(Collection<? extends StateNode> items) {
         super.addAll(items);
-        items.stream().forEach(this::attachPotentialChild);
+        items.forEach(this::attachPotentialChild);
     }
 
     @Override

@@ -18,6 +18,7 @@ package com.vaadin.hummingbird;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -258,26 +259,26 @@ public class StateNode implements Serializable {
     }
 
     /**
-     * Collects all changes made to this node since the last time
-     * {@link #collectChanges(Consumer)} has been called. If the node is
-     * recently attached, then the reported changes will be relative to a newly
-     * created node.
+     * Collects all changes made to this node since the last time this method
+     * has been called. If the node is recently attached, then the reported
+     * changes will be relative to a newly created node.
      *
-     * @param collector
-     *            a consumer accepting node changes
+     * @return all changes made to this node since the last method call
      */
-    public void collectChanges(Consumer<NodeChange> collector) {
+    public Collection<NodeChange> collectChanges() {
+        Collection<NodeChange> newChanges = new ArrayList<>();
+
         boolean isAttached = isAttached();
         if (isAttached != wasAttached) {
             if (isAttached) {
-                collector.accept(new NodeAttachChange(this));
+                newChanges.add(new NodeAttachChange(this));
 
                 // Make all changes show up as if the node was recently attached
                 clearChanges();
                 features.values()
                         .forEach(NodeFeature::generateChangesFromEmpty);
             } else {
-                collector.accept(new NodeDetachChange(this));
+                newChanges.add(new NodeDetachChange(this));
             }
 
             wasAttached = isAttached;
@@ -285,9 +286,11 @@ public class StateNode implements Serializable {
 
         if (isAttached) {
             features.values().stream().filter(this::hasChangeTracker)
-                    .forEach(feature -> feature.collectChanges(collector));
+                    .flatMap(feature -> feature.collectChanges().stream())
+                    .forEach(newChanges::add);
             clearChanges();
         }
+        return newChanges;
     }
 
     private boolean hasChangeTracker(NodeFeature nodeFeature) {

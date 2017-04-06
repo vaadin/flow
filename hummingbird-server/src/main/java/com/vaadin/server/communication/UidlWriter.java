@@ -16,14 +16,6 @@
 
 package com.vaadin.server.communication;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
-
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateTree;
 import com.vaadin.hummingbird.change.MapPutChange;
@@ -44,11 +36,18 @@ import com.vaadin.ui.DependencyList;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.UIInternals;
 import com.vaadin.ui.UIInternals.JavaScriptInvocation;
-
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * Serializes pending server-side changes to UI state to JSON. This includes
@@ -188,7 +187,8 @@ public class UidlWriter implements Serializable {
                 }
             }
         };
-        stateTree.collectChanges(change -> {
+
+        stateTree.collectChanges().forEach(change -> {
             // Ensure new templates are sent to the client
             runIfNewTemplateChange(change, templateEncoder);
 

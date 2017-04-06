@@ -703,10 +703,8 @@ public class ElementTest {
         parent.setChild(0, child1);
 
         AtomicInteger changesCausedBySetChild = new AtomicInteger(0);
-        parent.getNode().getFeature(ElementChildrenList.class)
-                .collectChanges(change -> {
-                    changesCausedBySetChild.incrementAndGet();
-                });
+        parent.getNode().getFeature(ElementChildrenList.class).collectChanges()
+                .forEach(change -> changesCausedBySetChild.incrementAndGet());
         Assert.assertEquals(0, changesCausedBySetChild.get());
     }
 
@@ -1560,7 +1558,7 @@ public class ElementTest {
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getFeature(SynchronizedPropertiesList.class)
-                .collectChanges(change -> i.addAndGet(
+                .collectChanges().forEach(change -> i.addAndGet(
                         ((ListAddChange<?>) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }
@@ -1610,7 +1608,7 @@ public class ElementTest {
 
         AtomicInteger i = new AtomicInteger(0);
         e.getNode().getFeature(SynchronizedPropertyEventsList.class)
-                .collectChanges(change -> i.addAndGet(
+                .collectChanges().forEach(change -> i.addAndGet(
                         ((ListAddChange<?>) change).getNewItems().size()));
         Assert.assertEquals(1, i.get());
     }

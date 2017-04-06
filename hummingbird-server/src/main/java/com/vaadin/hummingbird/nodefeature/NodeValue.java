@@ -16,6 +16,8 @@
 package com.vaadin.hummingbird.nodefeature;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Consumer;
 
@@ -97,7 +99,7 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
     }
 
     @Override
-    public void collectChanges(Consumer<NodeChange> collector) {
+    public Collection<NodeChange> collectChanges() {
         Serializable originalValue = getNode().getChangeTracker(this,
                 () -> null);
         assert originalValue != null;
@@ -106,8 +108,10 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
         }
 
         if (!Objects.equals(originalValue, this.value)) {
-            collector.accept(new MapPutChange(this, getKey(), value));
+            return Collections
+                    .singletonList(new MapPutChange(this, getKey(), value));
         }
+        return Collections.emptyList();
     }
 
     @Override

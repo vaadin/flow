@@ -57,7 +57,7 @@ public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
     public List<NodeChange> collectChanges(NodeFeature feature) {
         List<NodeChange> changes = new ArrayList<>();
 
-        feature.collectChanges(changes::add);
+        changes.addAll(feature.collectChanges());
         // Explicitly clear since collecting from one feature doesn't
         feature.getNode().clearChanges();
 

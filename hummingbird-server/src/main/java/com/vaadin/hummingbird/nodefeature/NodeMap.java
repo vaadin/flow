@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.nodefeature;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -280,21 +281,23 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     @Override
-    public void collectChanges(Consumer<NodeChange> collector) {
+    public Collection<NodeChange> collectChanges() {
+        Collection<NodeChange> result = new ArrayList<>();
         getChangeTracker().forEach((key, earlierValue) -> {
             boolean containsNow = values != null && values.containsKey(key);
             boolean containedEarlier = earlierValue != REMOVED_MARKER;
             if (containedEarlier && !containsNow) {
-                collector.accept(new MapRemoveChange(this, key));
+                result.add(new MapRemoveChange(this, key));
             } else if (containsNow) {
                 Object currentValue = values.get(key);
                 if (!containedEarlier
                         || !Objects.equals(earlierValue, currentValue)) {
                     // New or changed value
-                    collector.accept(new MapPutChange(this, key, currentValue));
+                    result.add(new MapPutChange(this, key, currentValue));
                 }
             }
         });
+        return result;
     }
 
     @Override

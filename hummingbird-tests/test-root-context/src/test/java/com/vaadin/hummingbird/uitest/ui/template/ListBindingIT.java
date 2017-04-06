@@ -15,36 +15,81 @@
  */
 package com.vaadin.hummingbird.uitest.ui.template;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.By;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.hummingbird.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.By;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Normal tests with @Before are not implemented because each @Test starts new Chrome process.
+ */
 public class ListBindingIT extends ChromeBrowserTest {
 
     @Test
-    public void listDataBindng() {
+    public void listDataBinding() {
         open();
 
-        WebElement webComponent = findElement(By.id("template"));
+        WebElement template = findElement(By.id("template"));
 
-        Optional<WebElement> msg = getInShadowRoot(webComponent,
-                By.className("msg"));
+        checkInitialState(template);
 
-        Assert.assertEquals("foo", msg.get().getText());
+        // Before running those methods list is set to ["1", "2", "3"]
+        // see (ListBindingTemplate.INITIAL_STATE)
 
-        getInShadowRoot(webComponent, By.id("update")).get().click();
+        assertMethodWorksCorrectly("addElement",
+                template, "1", "2", "3", "4");
 
-        List<WebElement> msgs = findInShadowRoot(webComponent,
-                By.className("msg"));
+        assertMethodWorksCorrectly("addElementByIndex",
+                template, "4", "1", "2", "3");
 
-        Assert.assertEquals("a", msgs.get(0).getText());
-        Assert.assertEquals("b", msgs.get(1).getText());
-        Assert.assertEquals("c", msgs.get(2).getText());
+        assertMethodWorksCorrectly("addNumerousElements",
+                template, "1", "2", "3", "4", "5");
+
+        assertMethodWorksCorrectly("addNumerousElementsByIndex",
+                template, "4", "5", "1", "2", "3");
+
+        assertMethodWorksCorrectly("clearList",
+                template);
+
+        assertMethodWorksCorrectly("removeSecondElementByIndex",
+                template, "1", "3");
+
+        assertMethodWorksCorrectly("removeFirstElementWithIterator",
+                template, "2", "3");
+
+        assertMethodWorksCorrectly("swapFirstAndSecond",
+                template, "2", "1", "3");
+
+        assertMethodWorksCorrectly("sortDescending",
+                template, "3", "2", "1");
+    }
+
+    private void checkInitialState(WebElement template) {
+        Assert.assertEquals(Collections.singletonList(ListBindingTemplate.INITIAL_STATE), getMessages(template));
+    }
+
+    private void assertMethodWorksCorrectly(String handlerName,
+            WebElement template, String... expectedMessages) {
+        resetState(template);
+        getInShadowRoot(template, By.id(handlerName)).get().click();
+
+        Assert.assertEquals(Arrays.asList(expectedMessages), getMessages(template));
+    }
+
+    private void resetState(WebElement template) {
+        getInShadowRoot(template, By.id("reset")).get().click();
+        Assert.assertEquals(ListBindingTemplate.RESET_STATE, getMessages(template));
+    }
+
+    private List<String> getMessages(WebElement template) {
+        return findInShadowRoot(template, By.className("msg")).stream()
+                .map(WebElement::getText)
+                .collect(Collectors.toList());
     }
 }
