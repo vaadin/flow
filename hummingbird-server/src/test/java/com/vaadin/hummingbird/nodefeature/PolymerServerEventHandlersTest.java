@@ -152,6 +152,9 @@ public class PolymerServerEventHandlersTest {
     @Test
     public void testCorrectMethodWithDifferentAnnotations()
             throws NoSuchFieldException, IllegalAccessException {
+        // Insert component without using ComponentMapping::setComponent as we
+        // only want to map and test the method
+        // `eventDataAndRepeatIndexOnDifferentParams`
         Field component = ComponentMapping.class.getDeclaredField("component");
         component.setAccessible(true);
         component.set(stateNode.getFeature(ComponentMapping.class),
@@ -163,6 +166,8 @@ public class PolymerServerEventHandlersTest {
     @Test
     public void testEventDataParam()
             throws NoSuchFieldException, IllegalAccessException {
+        // Insert component without using ComponentMapping::setComponent as we
+        // only want to map and test the method `eventDataParam`
         Field component = ComponentMapping.class.getDeclaredField("component");
         component.setAccessible(true);
         component.set(stateNode.getFeature(ComponentMapping.class),

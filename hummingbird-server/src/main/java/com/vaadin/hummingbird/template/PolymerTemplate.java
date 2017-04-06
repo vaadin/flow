@@ -91,8 +91,8 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 argumentType = ((ParameterizedType) GenericTypeReflector
                         .capture(argumentType)).getActualTypeArguments()[0];
                 aClass = GenericTypeReflector.erase(argumentType);
-                subClasses.add(aClass);
             } while (List.class.isAssignableFrom(aClass));
+            subClasses.add(aClass);
         } else {
             subClasses.add(aClass);
         }
