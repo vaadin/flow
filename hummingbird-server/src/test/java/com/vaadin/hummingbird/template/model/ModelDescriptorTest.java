@@ -15,6 +15,8 @@
  */
 package com.vaadin.hummingbird.template.model;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -110,6 +112,20 @@ public class ModelDescriptorTest {
         ListModelType<?> listPropertyType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
 
+        Type javaType = listPropertyType.getJavaType();
+
+        Assert.assertTrue("Expected instanceof ParameterizedType for List",
+                javaType instanceof ParameterizedType);
+
+        javaType = ((ParameterizedType) javaType).getActualTypeArguments()[0];
+
+        Assert.assertTrue(
+                "Expected instanceof ParameterizedType for List in List",
+                javaType instanceof ParameterizedType);
+
+        Assert.assertEquals(Bean.class,
+                ((ParameterizedType) javaType).getActualTypeArguments()[0]);
+
         Assert.assertTrue(
                 listPropertyType.getItemType() instanceof ListModelType<?>);
 
@@ -132,6 +148,23 @@ public class ModelDescriptorTest {
 
         ListModelType<?> listPropertyType = (ListModelType<?>) descriptor
                 .getPropertyType("beans");
+
+        Type javaType = listPropertyType.getJavaType();
+
+        Assert.assertTrue("Expected instanceof ParameterizedType for List",
+                javaType instanceof ParameterizedType);
+        javaType = ((ParameterizedType) javaType).getActualTypeArguments()[0];
+
+        Assert.assertTrue(
+                "Expected instanceof ParameterizedType for List in List",
+                javaType instanceof ParameterizedType);
+        javaType = ((ParameterizedType) javaType).getActualTypeArguments()[0];
+
+        Assert.assertTrue(
+                "Expected instanceof ParameterizedType for List in List in List",
+                javaType instanceof ParameterizedType);
+        Assert.assertEquals(Bean.class,
+                ((ParameterizedType) javaType).getActualTypeArguments()[0]);
 
         Assert.assertTrue(
                 listPropertyType.getItemType() instanceof ListModelType<?>);

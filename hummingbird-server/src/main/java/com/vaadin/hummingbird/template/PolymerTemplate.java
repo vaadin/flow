@@ -18,6 +18,7 @@ package com.vaadin.hummingbird.template;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,26 +73,31 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         Stream<String> propertyNames = ModelDescriptor.get(getModelType())
                 .getPropertyNames();
         Set<Class> modelClassCollection = propertyNames.map(this::getJavaClass)
-                .collect(Collectors.toSet());
+                .flatMap(Set::stream).collect(Collectors.toSet());
         return Collections.unmodifiableSet(modelClassCollection);
     }
 
-    private Class getJavaClass(String type) {
+    private Set<Class> getJavaClass(String type) {
         Type javaType = getModelType(type).getJavaType();
-        Class aClass = getSubType(javaType);
+        Set<Class> aClass = getSubType(javaType);
         return aClass;
     }
 
-    private Class getSubType(Type javaType) {
+    private Set<Class> getSubType(Type javaType) {
+        Set<Class> subClasses = new HashSet<>();
         Class aClass = GenericTypeReflector.erase(javaType);
         if (List.class.isAssignableFrom(aClass)) {
+            Type argumentType = javaType;
             do {
-                Type argumentType = ((ParameterizedType) GenericTypeReflector
-                        .capture(javaType)).getActualTypeArguments()[0];
+                argumentType = ((ParameterizedType) GenericTypeReflector
+                        .capture(argumentType)).getActualTypeArguments()[0];
                 aClass = GenericTypeReflector.erase(argumentType);
+                subClasses.add(aClass);
             } while (List.class.isAssignableFrom(aClass));
+        } else {
+            subClasses.add(aClass);
         }
-        return aClass;
+        return subClasses;
     }
 
     private ModelType getModelType(String type) {
@@ -108,9 +114,15 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     public ModelType getModelType(Class<?> modelClass) {
         return ModelDescriptor.get(getModelType()).getPropertyNames()
                 .map(this::getModelType)
-                .filter(modelType -> GenericTypeReflector
-                        .erase(getSubType(modelType.getJavaType()))
-                        .equals(modelClass))
+                .filter(modelType -> typeClassEqualsClass(modelClass,
+                        modelType))
                 .findFirst().orElse(null);
+    }
+
+    private boolean typeClassEqualsClass(Class<?> modelClass,
+            ModelType modelType) {
+        Set<Class> subType = getSubType(modelType.getJavaType());
+        return subType.stream().anyMatch(
+                type -> GenericTypeReflector.erase(type).equals(modelClass));
     }
 }

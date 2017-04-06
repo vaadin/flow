@@ -29,6 +29,7 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 
 /**
@@ -40,8 +41,6 @@ import com.vaadin.hummingbird.template.PolymerTemplate;
 public class PolymerServerEventHandlers
         extends AbstractServerHandlers<PolymerTemplate<?>> {
     private static final String REPEAT_INDEX_VALUE = "event.model.index";
-
-    private Set<Class> modelClasses = new HashSet<>();
 
     /**
      * Creates a new meta information list for the given state node.
@@ -55,7 +54,6 @@ public class PolymerServerEventHandlers
 
     @Override
     public void componentSet(PolymerTemplate<?> component) {
-        modelClasses.addAll(component.getModelClasses());
         super.componentSet(component);
     }
 
@@ -108,6 +106,8 @@ public class PolymerServerEventHandlers
 
     @Override
     protected void ensureSupportedParameterType(Method method, Class<?> type) {
+        Set<Class> modelClasses = ((PolymerTemplate) Element.get(getNode())
+                .getComponent().get()).getModelClasses();
         if (!modelClasses.contains(type)) {
             super.ensureSupportedParameterType(method, type);
         }
