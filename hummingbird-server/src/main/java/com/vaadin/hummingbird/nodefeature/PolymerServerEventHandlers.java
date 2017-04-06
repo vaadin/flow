@@ -19,7 +19,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -50,11 +49,6 @@ public class PolymerServerEventHandlers
      */
     public PolymerServerEventHandlers(StateNode node) {
         super(node);
-    }
-
-    @Override
-    public void componentSet(PolymerTemplate<?> component) {
-        super.componentSet(component);
     }
 
     @Override

@@ -79,8 +79,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     private Set<Class> getJavaClass(String type) {
         Type javaType = getModelType(type).getJavaType();
-        Set<Class> aClass = getSubType(javaType);
-        return aClass;
+        return getSubType(javaType);
     }
 
     private Set<Class> getSubType(Type javaType) {
