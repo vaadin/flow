@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -212,21 +211,19 @@ public class StateTree implements NodeOwner {
         private final Map<Integer, Collection<NodeChange>> dependencyNodeIdToNodes;
 
         private ChangeSorter(List<NodeChange> originalChanges) {
-            sortedChanges = new LinkedHashSet<>(
-                    originalChanges.size(), 1);
+            sortedChanges = new LinkedHashSet<>(originalChanges.size(), 1);
             notSortedChanges = new LinkedHashSet<>(originalChanges);
 
-            nodesToDependencyNodeIds = new HashMap<>(
-                    originalChanges.size(), 1);
-            dependencyNodeIdToNodes = new HashMap<>(
-                    originalChanges.size(), 1);
+            nodesToDependencyNodeIds = new HashMap<>(originalChanges.size(), 1);
+            dependencyNodeIdToNodes = new HashMap<>(originalChanges.size(), 1);
 
             for (NodeChange change : originalChanges) {
                 if (isAttachChange(change)) {
                     sortedChanges.add(change);
                 } else {
                     notSortedChanges.add(change);
-                    List<Integer> dependencyNodeIds = getDependencyNodeIds(change);
+                    List<Integer> dependencyNodeIds = getDependencyNodeIds(
+                            change);
 
                     if (!dependencyNodeIds.isEmpty()) {
                         nodesToDependencyNodeIds.put(change, dependencyNodeIds);
@@ -246,9 +243,9 @@ public class StateTree implements NodeOwner {
                     .filter(change -> change instanceof ListAddChange)
                     .map(change -> (ListAddChange<?>) change)
                     .filter(ListAddChange::isNodeValues)
-                    .flatMap(change -> ((List<StateNode>) change.getNewItems()).stream())
-                    .map(StateNode::getId)
-                    .collect(Collectors.toList());
+                    .flatMap(change -> ((List<StateNode>) change.getNewItems())
+                            .stream())
+                    .map(StateNode::getId).collect(Collectors.toList());
         }
 
         private boolean canBeDependency(NodeChange change) {
@@ -257,33 +254,32 @@ public class StateTree implements NodeOwner {
 
         private void storeDependencyIdInfo(NodeChange change) {
             dependencyNodeIdToNodes.merge(change.getNode().getId(),
-                    Collections.singletonList(change),
-                    mergeChangeLists());
+                    Collections.singletonList(change), this::mergeLists);
         }
 
-        private BiFunction<Collection<NodeChange>, Collection<NodeChange>, Collection<NodeChange>> mergeChangeLists() {
-            return (list1, list2) -> {
-                List<NodeChange> newList = new ArrayList<>(list1.size() + list2.size());
-                newList.addAll(list1);
-                newList.addAll(list2);
-                return newList;
-            };
+        private List<NodeChange> mergeLists(Collection<NodeChange> collection1,
+                Collection<NodeChange> collection2) {
+            List<NodeChange> newList = new ArrayList<>(
+                    collection1.size() + collection2.size());
+            newList.addAll(collection1);
+            newList.addAll(collection2);
+            return newList;
         }
 
         /**
          * Forces all dependent changes to come after all their dependencies.
          *
-         * In current implementation, every time we add element into a model list,
-         * three events are propagated: node attach event, node put event and list splice event. If we
-         * won't make sure that 'splice' comes after 'put', we won't be able to
-         * process list splice event normally, since there will be no data on
-         * changes.
+         * In current implementation, every time we add element into a model
+         * list, three events are propagated: node attach event, node put event
+         * and list splice event. If we won't make sure that 'splice' comes
+         * after 'put', we won't be able to process list splice event normally,
+         * since there will be no data on changes.
          *
-         * Attach events should also be applied first (their order does not matter),
-         * before other types of changes.
+         * Attach events should also be applied first (their order does not
+         * matter), before other types of changes.
          *
-         * Also puts node attach changes to go first, since we can not operate nodes
-         * on the client otherwise.
+         * Also puts node attach changes to go first, since we can not operate
+         * nodes on the client otherwise.
          *
          * @return sorted changes
          **/
@@ -299,10 +295,8 @@ public class StateTree implements NodeOwner {
             Collection<Integer> dependencyIds = nodesToDependencyNodeIds
                     .remove(change);
             if (dependencyIds != null) {
-                return dependencyIds.stream()
-                        .map(dependencyNodeIdToNodes::get)
-                        .filter(Objects::nonNull)
-                        .flatMap(Collection::stream)
+                return dependencyIds.stream().map(dependencyNodeIdToNodes::get)
+                        .filter(Objects::nonNull).flatMap(Collection::stream)
                         .collect(Collectors.toList());
             }
             return Collections.emptyList();
