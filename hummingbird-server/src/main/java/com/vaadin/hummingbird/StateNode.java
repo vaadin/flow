@@ -21,12 +21,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import com.vaadin.hummingbird.change.NodeAttachChange;
 import com.vaadin.hummingbird.change.NodeChange;
@@ -287,11 +285,9 @@ public class StateNode implements Serializable {
         }
 
         if (isAttached) {
-            List<NodeChange> featureChanges = features.values().stream()
-                    .filter(this::hasChangeTracker)
+            features.values().stream().filter(this::hasChangeTracker)
                     .flatMap(feature -> feature.collectChanges().stream())
-                    .collect(Collectors.toList());
-            newChanges.addAll(featureChanges);
+                    .forEach(newChanges::add);
             clearChanges();
         }
         return newChanges;

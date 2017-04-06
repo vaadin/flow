@@ -16,13 +16,6 @@
 
 package com.vaadin.hummingbird;
 
-import com.vaadin.hummingbird.change.ListAddChange;
-import com.vaadin.hummingbird.change.MapPutChange;
-import com.vaadin.hummingbird.change.NodeAttachChange;
-import com.vaadin.hummingbird.change.NodeChange;
-import com.vaadin.hummingbird.nodefeature.NodeFeature;
-import com.vaadin.ui.UI;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,8 +25,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.vaadin.hummingbird.change.ListAddChange;
+import com.vaadin.hummingbird.change.MapPutChange;
+import com.vaadin.hummingbird.change.NodeAttachChange;
+import com.vaadin.hummingbird.change.NodeChange;
+import com.vaadin.hummingbird.nodefeature.NodeFeature;
+import com.vaadin.ui.UI;
 
 /**
  * The state tree that is synchronized with the client-side.
@@ -221,7 +222,7 @@ public class StateTree implements NodeOwner {
                     originalChanges.size(), 1);
 
             for (NodeChange change : originalChanges) {
-                if (shouldBeAppliedFirst(change)) {
+                if (isAttachChange(change)) {
                     sortedChanges.add(change);
                 } else {
                     notSortedChanges.add(change);
@@ -236,7 +237,7 @@ public class StateTree implements NodeOwner {
             }
         }
 
-        private boolean shouldBeAppliedFirst(NodeChange change) {
+        private boolean isAttachChange(NodeChange change) {
             return change instanceof NodeAttachChange;
         }
 
@@ -257,22 +258,29 @@ public class StateTree implements NodeOwner {
         private void storeDependencyIdInfo(NodeChange change) {
             dependencyNodeIdToNodes.merge(change.getNode().getId(),
                     Collections.singletonList(change),
-                    (list1, list2) -> {
-                        List<NodeChange> newList = new ArrayList<>(
-                                list1);
-                        newList.addAll(list2);
-                        return newList;
-                    });
+                    mergeChangeLists());
+        }
+
+        private BiFunction<Collection<NodeChange>, Collection<NodeChange>, Collection<NodeChange>> mergeChangeLists() {
+            return (list1, list2) -> {
+                List<NodeChange> newList = new ArrayList<>(list1.size() + list2.size());
+                newList.addAll(list1);
+                newList.addAll(list2);
+                return newList;
+            };
         }
 
         /**
          * Forces all dependent changes to come after all their dependencies.
          *
          * In current implementation, every time we add element into a model list,
-         * two events are propagated: node attach event and list splice event. If we
-         * won't make sure that latter comes after former, we won't be able to
+         * three events are propagated: node attach event, node put event and list splice event. If we
+         * won't make sure that 'splice' comes after 'put', we won't be able to
          * process list splice event normally, since there will be no data on
          * changes.
+         *
+         * Attach events should also be applied first (their order does not matter),
+         * before other types of changes.
          *
          * Also puts node attach changes to go first, since we can not operate nodes
          * on the client otherwise.
