@@ -15,14 +15,9 @@
  */
 package com.vaadin.client.hummingbird.binding;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
+import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.hummingbird.ConstantPool;
 import com.vaadin.client.hummingbird.StateNode;
@@ -36,14 +31,12 @@ import com.vaadin.client.hummingbird.dom.DomApi;
 import com.vaadin.client.hummingbird.dom.DomElement.DomTokenList;
 import com.vaadin.client.hummingbird.nodefeature.ListSpliceEvent;
 import com.vaadin.client.hummingbird.nodefeature.MapProperty;
-import com.vaadin.client.hummingbird.nodefeature.NodeFeature;
 import com.vaadin.client.hummingbird.nodefeature.NodeList;
 import com.vaadin.client.hummingbird.nodefeature.NodeMap;
 import com.vaadin.client.hummingbird.reactive.Computation;
 import com.vaadin.client.hummingbird.reactive.Reactive;
 import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
-
 import elemental.client.Browser;
 import elemental.css.CSSStyleDeclaration;
 import elemental.dom.Element;
@@ -51,8 +44,14 @@ import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.events.EventRemover;
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
+
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -263,20 +262,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void bindSubProperty(StateNode stateNode, Element htmlNode,
             String path, MapProperty property) {
         setSubProperties(htmlNode, property, path);
-        storeNodeId(htmlNode, stateNode.getId(), path);
+        PolymerUtils.storeNodeId(htmlNode, stateNode.getId(), path);
     }
-
-    // Store the StateNode.id into the polymer property under 'nodeId'
-    private native void storeNodeId(Node domNode, int id, String path)
-    /*-{
-        if(typeof(domNode.get) !== 'undefined') {
-            var polymerProperty = domNode.get(path);
-            if(typeof(polymerProperty) === 'object'
-                && polymerProperty["nodeId"] === undefined){
-                polymerProperty["nodeId"] = id;
-            }
-        }
-    }-*/;
 
     private void setSubProperties(Element htmlNode, MapProperty property,
             String path) {
@@ -289,7 +276,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 setValueFunction.call(htmlNode, newPath,
-                        convertToJson(subNode));
+                        PolymerUtils.convertToJson(subNode));
+                addModelListChangeListener(htmlNode,
+                        subNode.getList(NodeFeatures.TEMPLATE_MODELLIST),
+                        newPath);
             } else {
                 NativeFunction function = NativeFunction.create("path", "value",
                         "this.set(path, {})");
@@ -301,25 +291,51 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
-    private JsonValue convertToJson(Object object) {
-        if (object instanceof StateNode) {
-            StateNode node = (StateNode) object;
-            NodeFeature feature = null;
-            if (node.hasFeature(NodeFeatures.TEMPLATE_MODELMAP)) {
-                feature = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
-            } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-                feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
-            }
-            assert feature != null : "Don't know how to convert node without map or list features";
-            JsonValue convert = feature.convert(this::convertToJson);
-            if (convert instanceof JsonObject
-                    && !((JsonObject) convert).hasKey("nodeId")) {
-                ((JsonObject) convert).put("nodeId", node.getId());
-            }
-            return convert;
-        } else {
-            return WidgetUtil.crazyJsoCast(object);
+    private void addModelListChangeListener(Element htmlNode,
+            NodeList modelList, String polymerModelPath) {
+        modelList.addSpliceListener(event -> processModelListChange(htmlNode,
+                polymerModelPath, event));
+    }
+
+    private void processModelListChange(Element htmlNode,
+            String polymerModelPath, ListSpliceEvent event) {
+        JsonArray elementsToAdd = convertElementsToAdd(event.getAdd(), htmlNode,
+                polymerModelPath, event.getIndex());
+        PolymerUtils.splice(htmlNode, polymerModelPath, event.getIndex(),
+                event.getRemove().length(), elementsToAdd);
+    }
+
+    private JsonArray convertElementsToAdd(JsArray<?> elementsToAdd,
+            Element htmlNode, String polymerModelPath, int splitIndex) {
+        JsonArray convertedElements = Json.createArray();
+        for (int i = 0; i < elementsToAdd.length(); i++) {
+            Object element = elementsToAdd.get(i);
+            listenToPropertyChangesIfNeeded(htmlNode, polymerModelPath,
+                    splitIndex + i, element);
+            convertedElements.set(i, PolymerUtils.convertToJson(element));
         }
+        return convertedElements;
+    }
+
+    private void listenToPropertyChangesIfNeeded(Element htmlNode,
+            String polymerModelPath, int subNodeIndex, Object element) {
+        if (element instanceof StateNode) {
+            listenToPropertyChanges(htmlNode, polymerModelPath,
+                    (StateNode) element, subNodeIndex);
+        }
+    }
+
+    private void listenToPropertyChanges(Element htmlNode,
+            String polymerModelPath, StateNode stateNode, int propertyIndex) {
+        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                .addPropertyAddListener(event -> {
+                    Computation computation = Reactive.runWhenDepedenciesChange(
+                            () -> PolymerUtils.setListValueByIndex(htmlNode,
+                                    polymerModelPath, propertyIndex,
+                                    PolymerUtils.convertToJson(
+                                            event.getProperty())));
+                    stateNode.addUnregisterListener(e -> computation.stop());
+                });
     }
 
     @SuppressWarnings("unchecked")
