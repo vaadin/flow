@@ -15,10 +15,22 @@
  */
 package com.vaadin.hummingbird.template;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.googlecode.gentyref.GenericTypeReflector;
+
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
+import com.vaadin.hummingbird.template.model.ModelType;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 
 /**
@@ -50,5 +62,66 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         ModelMap modelMap = getStateNode().getFeature(ModelMap.class);
         ModelDescriptor.get(getModelType()).getPropertyNames()
                 .forEach(propertyName -> modelMap.setValue(propertyName, null));
+    }
+
+    /**
+     * Collects all {@code Class}es used in the TemplateModel.
+     * 
+     * @return Set with classes used in model
+     */
+    public Set<Class> getModelClasses() {
+        Stream<String> propertyNames = ModelDescriptor.get(getModelType())
+                .getPropertyNames();
+        Set<Class> modelClassCollection = propertyNames.map(this::getJavaClass)
+                .flatMap(Set::stream).collect(Collectors.toSet());
+        return Collections.unmodifiableSet(modelClassCollection);
+    }
+
+    private Set<Class> getJavaClass(String type) {
+        Type javaType = getModelType(type).getJavaType();
+        return getSubType(javaType);
+    }
+
+    private Set<Class> getSubType(Type javaType) {
+        Set<Class> subClasses = new HashSet<>();
+        Class aClass = GenericTypeReflector.erase(javaType);
+        if (List.class.isAssignableFrom(aClass)) {
+            Type argumentType = javaType;
+            do {
+                argumentType = ((ParameterizedType) GenericTypeReflector
+                        .capture(argumentType)).getActualTypeArguments()[0];
+                aClass = GenericTypeReflector.erase(argumentType);
+            } while (List.class.isAssignableFrom(aClass));
+            subClasses.add(aClass);
+        } else {
+            subClasses.add(aClass);
+        }
+        return subClasses;
+    }
+
+    private ModelType getModelType(String type) {
+        return ModelDescriptor.get(getModelType()).getPropertyType(type);
+    }
+
+    /**
+     * Get the {@code ModelType} for given class.
+     * 
+     * @param modelClass
+     *            Class to find ModelType for
+     * @return ModelType of modelClass
+     */
+    public ModelType getModelType(Class<?> modelClass) {
+        return ModelDescriptor.get(getModelType()).getPropertyNames()
+                .map(this::getModelType)
+                .filter(modelType -> typeClassEqualsClass(modelClass,
+                        modelType))
+                .findFirst().orElse(null);
+    }
+
+    private boolean typeClassEqualsClass(Class<?> modelClass,
+            ModelType modelType) {
+        Set<Class> subType = getSubType(modelType.getJavaType());
+        return subType.stream().anyMatch(
+                type -> GenericTypeReflector.erase(type).equals(modelClass));
     }
 }

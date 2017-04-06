@@ -17,6 +17,7 @@ package com.vaadin.hummingbird.uitest.ui.template;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.html.Div;
 import com.vaadin.hummingbird.template.PolymerTemplate;
@@ -61,6 +62,14 @@ public class SubPropertyModelTemplate
         Div div = new Div();
         div.setId("value-update");
         div.setText(getStatus().getMessage());
+        ((HasComponents) getParent().get()).add(div);
+    }
+
+    @EventHandler
+    private void click(@ModelItem("status") Status statusItem) {
+        Div div = new Div();
+        div.setId("statusClick");
+        div.setText(statusItem.getMessage());
         ((HasComponents) getParent().get()).add(div);
     }
 

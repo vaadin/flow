@@ -3,7 +3,7 @@
 <dom-module id="list-binding">
     <template>
     <dom-repeat items="[[messages]]">
-      <template><div class='msg'>[[item.text]]</div></template>
+      <template><div class='msg' on-click="selectItem">[[item.text]]</div></template>
     </dom-repeat>
     <button id="update" on-click="update">Update</button>
   </template>

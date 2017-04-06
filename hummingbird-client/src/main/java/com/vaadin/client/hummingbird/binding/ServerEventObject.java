@@ -28,6 +28,7 @@ import com.vaadin.client.hummingbird.util.NativeFunction;
 import com.vaadin.hummingbird.shared.NodeFeatures;
 
 import elemental.dom.Element;
+import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -131,11 +132,15 @@ public final class ServerEventObject extends JavaScriptObject {
             for (int i = 0; i < dataExpressions.length(); i++) {
                 String expression = dataExpressions.get(i);
 
-                ServerEventDataExpression dataExpression = getOrCreateExpression(
-                        expression);
-                JsonValue expressionValue = dataExpression.evaluate(event,
-                        this);
+                JsonValue expressionValue;
 
+                if (!expression.startsWith("event")) {
+                    expressionValue = getPolymerProperty(node.getDomNode(), expression);
+                } else {
+                    ServerEventDataExpression dataExpression = getOrCreateExpression(
+                            expression);
+                    expressionValue = dataExpression.evaluate(event, this);
+                }
                 dataArray.set(i, expressionValue);
             }
             return dataArray;
@@ -143,6 +148,11 @@ public final class ServerEventObject extends JavaScriptObject {
 
         return null;
     }
+
+    private native JsonValue getPolymerProperty(Node node, String propertyName)
+    /*-{
+        return node.get(propertyName);
+    }-*/;
 
     /**
      * Removes a method with the given name.

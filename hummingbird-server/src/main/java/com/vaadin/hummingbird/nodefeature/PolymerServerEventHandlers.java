@@ -20,12 +20,15 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 
 /**
@@ -70,7 +73,8 @@ public class PolymerServerEventHandlers
     private void checkParameterTypeAndAnnotation(Method method,
             Parameter parameter) {
         boolean hasEventDataAnnotation = parameter
-                .isAnnotationPresent(EventData.class);
+                .isAnnotationPresent(EventData.class)
+                || parameter.isAnnotationPresent(ModelItem.class);
         boolean hasRepeatIndexAnnotation = parameter
                 .isAnnotationPresent(RepeatIndex.class);
 
@@ -94,6 +98,15 @@ public class PolymerServerEventHandlers
         }
     }
 
+    @Override
+    protected void ensureSupportedParameterType(Method method, Class<?> type) {
+        Set<Class> modelClasses = ((PolymerTemplate) Element.get(getNode())
+                .getComponent().get()).getModelClasses();
+        if (!modelClasses.contains(type)) {
+            super.ensureSupportedParameterType(method, type);
+        }
+    }
+
     private static String getParameterIndex(Parameter parameter) {
         return parameter.getName().replace("arg", "");
     }
@@ -104,11 +117,17 @@ public class PolymerServerEventHandlers
     }
 
     private String[] getParameters(Method method) {
-        return Stream.of(method.getParameters()).flatMap(parameter -> Stream.of(
-                Optional.ofNullable(parameter.getAnnotation(EventData.class))
-                        .map(EventData::value),
-                Optional.ofNullable(parameter.getAnnotation(RepeatIndex.class))
-                        .map(annotation -> REPEAT_INDEX_VALUE)))
+        return Stream.of(method.getParameters()).flatMap(
+                parameter -> Stream.of(
+                        Optional.ofNullable(
+                                parameter.getAnnotation(EventData.class))
+                                .map(EventData::value),
+                        Optional.ofNullable(
+                                parameter.getAnnotation(RepeatIndex.class))
+                                .map(annotation -> REPEAT_INDEX_VALUE),
+                        Optional.ofNullable(
+                                parameter.getAnnotation(ModelItem.class))
+                                .map(ModelItem::value)))
                 .filter(Optional::isPresent).map(Optional::get)
                 .toArray(String[]::new);
     }

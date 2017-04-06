@@ -16,9 +16,7 @@
 
 package com.vaadin.hummingbird.nodefeature;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,12 +32,17 @@ import org.junit.Test;
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.RepeatIndex;
+import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.ConstantPoolKey;
 import com.vaadin.hummingbird.StateNode;
+import com.vaadin.hummingbird.template.PolymerTemplate;
+import com.vaadin.hummingbird.template.model.TemplateModel;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JreJsonArray;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Vaadin Ltd.
@@ -51,7 +54,9 @@ public class PolymerServerEventHandlersTest {
     private Map<String, Method> correctlyAnnotatedHandlers;
     private Map<String, Method> wronglyAnnotatedHandlers;
 
-    private static class CorrectAnnotationUsage {
+    @Tag("polymer")
+    private static class CorrectAnnotationUsage
+            extends PolymerTemplate<TemplateModel> {
         @EventHandler
         public void noParams() {
         }
@@ -101,7 +106,16 @@ public class PolymerServerEventHandlersTest {
 
     @Before
     public void setUp() {
-        stateNode = new StateNode(PolymerEventListenerMap.class);
+
+        stateNode = new StateNode(PolymerEventListenerMap.class,
+                ElementData.class, ElementAttributeMap.class,
+                ElementChildrenList.class, ElementPropertyMap.class,
+                ElementListenerMap.class, ElementClassList.class,
+                ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
+                SynchronizedPropertyEventsList.class, ComponentMapping.class,
+                ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
+                ClientDelegateHandlers.class, ModelMap.class);
+        stateNode.getFeature(ElementData.class).setTag("test");
         handlers = new PolymerServerEventHandlers(stateNode);
         methodCollector = new ArrayList<>();
         correctlyAnnotatedHandlers = getEventHandlerNamesAndMethods(
@@ -136,13 +150,28 @@ public class PolymerServerEventHandlersTest {
     }
 
     @Test
-    public void testCorrectMethodWithDifferentAnnotations() {
+    public void testCorrectMethodWithDifferentAnnotations()
+            throws NoSuchFieldException, IllegalAccessException {
+        // Insert component without using ComponentMapping::setComponent as we
+        // only want to map and test the method
+        // `eventDataAndRepeatIndexOnDifferentParams`
+        Field component = ComponentMapping.class.getDeclaredField("component");
+        component.setAccessible(true);
+        component.set(stateNode.getFeature(ComponentMapping.class),
+                new CorrectAnnotationUsage());
         addAndVerifyMethod(correctlyAnnotatedHandlers
                 .get("eventDataAndRepeatIndexOnDifferentParams"));
     }
 
     @Test
-    public void testEventDataParam() {
+    public void testEventDataParam()
+            throws NoSuchFieldException, IllegalAccessException {
+        // Insert component without using ComponentMapping::setComponent as we
+        // only want to map and test the method `eventDataParam`
+        Field component = ComponentMapping.class.getDeclaredField("component");
+        component.setAccessible(true);
+        component.set(stateNode.getFeature(ComponentMapping.class),
+                new CorrectAnnotationUsage());
         addAndVerifyMethod(correctlyAnnotatedHandlers.get("eventDataParam"));
     }
 

@@ -517,7 +517,7 @@ public class ReflectTools implements Serializable {
      * @return a parameterized type
      */
     public static Type createParameterizedType(Class<?> rawType,
-            Class<?> subType) {
+            Type subType) {
         return new ParameterizedType() {
 
             @Override

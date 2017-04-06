@@ -21,7 +21,10 @@ import java.util.List;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.Tag;
+import com.vaadin.hummingbird.dom.Element;
+import com.vaadin.hummingbird.html.Label;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.hummingbird.template.model.TemplateModel;
 import com.vaadin.hummingbird.uitest.ui.template.ListBindingTemplate.ListBindingModel;
@@ -32,6 +35,8 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
 
     public static class Message {
         private String text;
+
+        public Message(){}
 
         public Message(String text) {
             this.text = text;
@@ -58,6 +63,14 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     private void update() {
         getModel().setMessages(Arrays.asList(new Message("a"), new Message("b"),
                 new Message("c")));
+    }
+
+    @EventHandler
+    private void selectItem(@ModelItem Message message) {
+        Label label = new Label("Clicked message: " + message.getText());
+        label.setId("selection");
+        getElement().getParent().appendChild(
+                label.getElement());
     }
 
 }

@@ -31,6 +31,11 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
+import com.vaadin.hummingbird.template.PolymerTemplate;
+import com.vaadin.hummingbird.template.model.BeanModelType;
+import com.vaadin.hummingbird.template.model.ListModelType;
+import com.vaadin.hummingbird.template.model.ModelType;
+import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
@@ -122,7 +127,7 @@ public class PublishedServerEventHandlerRpcHandler
             JsonArray args) {
         try {
             method.setAccessible(true);
-            method.invoke(instance, decodeArgs(method, args));
+            method.invoke(instance, decodeArgs(instance, method, args));
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
@@ -133,7 +138,7 @@ public class PublishedServerEventHandlerRpcHandler
         }
     }
 
-    private static Object[] decodeArgs(Method method,
+    private static Object[] decodeArgs(Component instance, Method method,
             JsonArray argsFromClient) {
         int methodArgs = method.getParameterCount();
         int clientValuesCount = argsFromClient.length();
@@ -168,7 +173,7 @@ public class PublishedServerEventHandlerRpcHandler
         Class<?>[] methodParameterTypes = method.getParameterTypes();
         for (int i = 0; i < argValues.length(); i++) {
             Class<?> type = methodParameterTypes[i];
-            decoded.add(decodeArg(method, type, i, argValues.get(i)));
+            decoded.add(decodeArg(instance, method, type, i, argValues.get(i)));
         }
         return decoded.toArray(new Object[method.getParameterCount()]);
     }
@@ -198,8 +203,10 @@ public class PublishedServerEventHandlerRpcHandler
         return result;
     }
 
-    private static Object decodeArg(Method method, Class<?> type, int index,
-            JsonValue argValue) {
+    private static Object decodeArg(Component instance, Method method,
+            Class<?> type, int index, JsonValue argValue) {
+        // come up with method to know that it's an id and should be gotten from
+        // the model
         assert argValue != null;
         if (type.isPrimitive() && argValue.getType() == JsonType.NULL) {
             String msg = String.format(
@@ -214,6 +221,12 @@ public class PublishedServerEventHandlerRpcHandler
             return decodeArray(method, type, index, argValue);
         } else {
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
+
+            if (isTemplateModelValue(instance, argValue, convertedType)) {
+                return getTemplateItem((PolymerTemplate) instance,
+                        (JsonObject) argValue, convertedType);
+            }
+
             if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
                 String msg = String.format(
                         "Class '%s' has the method '%s'"
@@ -224,6 +237,44 @@ public class PublishedServerEventHandlerRpcHandler
             }
             return JsonCodec.decodeAs(argValue, convertedType);
         }
+    }
+
+    private static boolean isTemplateModelValue(Component instance,
+            JsonValue argValue, Class<?> convertedType) {
+        return instance instanceof PolymerTemplate
+                && argValue instanceof JsonObject
+                && ((PolymerTemplate) instance).getModelClasses()
+                        .contains(convertedType)
+                && ((JsonObject) argValue).hasKey("nodeId");
+    }
+
+    private static Object getTemplateItem(PolymerTemplate template,
+            JsonObject argValue, Class<?> convertedType) {
+        StateNode node = template.getUI().get().getInternals().getStateTree()
+                .getNodeById((int) (argValue).getNumber("nodeId"));
+
+        ModelType propertyType = template.getModelType(convertedType);
+
+        if (propertyType instanceof ListModelType) {
+            propertyType = getBeanModelTypeForListModelType(propertyType);
+            return TemplateModelProxyHandler.createModelProxy(node,
+                    (BeanModelType) propertyType);
+        } else if (propertyType instanceof BeanModelType) {
+            return TemplateModelProxyHandler.createModelProxy(node,
+                    (BeanModelType) propertyType);
+        }
+        String msg = String.format(
+                "Could not parse %s ModelItem for PolymerTemplate.",
+                convertedType.getSimpleName());
+        throw new IllegalArgumentException(msg);
+    }
+
+    private static ModelType getBeanModelTypeForListModelType(
+            ModelType propertyType) {
+        do {
+            propertyType = ((ListModelType) propertyType).getItemType();
+        } while (propertyType instanceof ListModelType);
+        return propertyType;
     }
 
     private static Object decodeArray(Method method, Class<?> type, int index,
@@ -241,8 +292,8 @@ public class PublishedServerEventHandlerRpcHandler
         JsonArray array = (JsonArray) argValue;
         Object result = Array.newInstance(componentType, array.length());
         for (int i = 0; i < array.length(); i++) {
-            Array.set(result, i,
-                    decodeArg(method, componentType, index, array.get(i)));
+            Array.set(result, i, decodeArg(null, method, componentType, index,
+                    array.get(i)));
         }
         return result;
     }

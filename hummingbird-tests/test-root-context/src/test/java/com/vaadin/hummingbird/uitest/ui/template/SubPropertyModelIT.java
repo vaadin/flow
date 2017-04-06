@@ -56,5 +56,11 @@ public class SubPropertyModelIT extends ChromeBrowserTest {
                 "Unable to find updated input value element. "
                         + "Looks like input hasn't sent an event for subproperty",
                 result.isPresent());
+
+        // click message
+        getInShadowRoot(template, By.id("msg")).get().click();
+
+        Assert.assertEquals(findElement(By.id("statusClick")).getText(),
+                getInShadowRoot(template, By.id("msg")).get().getText());
     }
 }
