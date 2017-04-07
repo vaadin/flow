@@ -271,8 +271,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     /*-{
         if(typeof(domNode.get) !== 'undefined') {
             var polymerProperty = domNode.get(path);
-            if(typeof(polymerProperty) === 'object'
-                && polymerProperty["nodeId"] === undefined){
+            if (typeof(polymerProperty) === 'object'
+                && polymerProperty["nodeId"] === undefined) {
                 polymerProperty["nodeId"] = id;
             }
         }

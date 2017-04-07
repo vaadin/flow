@@ -257,9 +257,9 @@ public class PublishedServerEventHandlerRpcHandler
 
         if (convertedType.isAssignableFrom(List.class)
                 && propertyType instanceof ListModelType) {
-            ComplexModelType<?> listItemType = ((ListModelType<?>) propertyType)
+            ComplexModelType listItemType = ((ListModelType) propertyType)
                     .getItemType();
-            if(listItemType instanceof BeanModelType){
+            if (listItemType instanceof BeanModelType) {
                 return propertyType.modelToApplication(node);
             }
             return listItemType.modelToApplication(node);

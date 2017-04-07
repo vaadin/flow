@@ -79,22 +79,19 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     private Set<Class> getJavaClass(String type) {
         Type javaType = getModelType(type).getJavaType();
-        return getSubType(javaType);
+        return getSubTypes(javaType);
     }
 
-    private Set<Class> getSubType(Type javaType) {
+    private Set<Class> getSubTypes(Type javaType) {
         Set<Class> subClasses = new HashSet<>();
         Class aClass = GenericTypeReflector.erase(javaType);
-        if (List.class.isAssignableFrom(aClass)) {
-            subClasses.add(aClass);
-            Type argumentType = javaType;
-            do {
-                argumentType = ((ParameterizedType) GenericTypeReflector
-                        .capture(argumentType)).getActualTypeArguments()[0];
-                aClass = GenericTypeReflector.erase(argumentType);
-                subClasses.add(aClass);
-            } while (List.class.isAssignableFrom(aClass));
-        } else {
+        subClasses.add(aClass);
+
+        Type argumentType = javaType;
+        while (List.class.isAssignableFrom(aClass)) {
+            argumentType = ((ParameterizedType) GenericTypeReflector
+                    .capture(argumentType)).getActualTypeArguments()[0];
+            aClass = GenericTypeReflector.erase(argumentType);
             subClasses.add(aClass);
         }
         return subClasses;
@@ -121,7 +118,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     private boolean typeClassEqualsClass(Class<?> modelClass,
             ModelType modelType) {
-        Set<Class> subType = getSubType(modelType.getJavaType());
+        Set<Class> subType = getSubTypes(modelType.getJavaType());
         return subType.stream().anyMatch(
                 type -> GenericTypeReflector.erase(type).equals(modelClass));
     }

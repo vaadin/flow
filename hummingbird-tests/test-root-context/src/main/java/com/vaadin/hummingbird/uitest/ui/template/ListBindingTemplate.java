@@ -57,6 +57,8 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
         void setNestedMessages(List<List<Message>> nested);
     }
 
+    private Label multiselectionLabel;
+
     public ListBindingTemplate() {
         getModel().setMessages(Collections.singletonList(new Message("foo")));
         getModel()
@@ -79,22 +81,23 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
         getElement().getParent().appendChild(label.getElement());
     }
 
-    Label multiselectionLabel;
-
     @EventHandler
     private void selectedItems(@ModelItem List<Message> messages) {
-        StringBuilder string = new StringBuilder();
-        string.append(messages.size()).append(" ");
-        messages.forEach(item -> string.append(item.getText()));
         if (multiselectionLabel == null) {
-            multiselectionLabel = new Label(
-                    "Clicked message List: " + string.toString());
+            multiselectionLabel = new Label(buildMessageListString(messages));
             multiselectionLabel.setId("multi-selection");
             getElement().getParent()
                     .appendChild(multiselectionLabel.getElement());
         } else {
-            multiselectionLabel
-                    .setText("Clicked message List: " + string.toString());
+            multiselectionLabel.setText(buildMessageListString(messages));
         }
+    }
+
+    private String buildMessageListString(List<Message> messages) {
+        StringBuilder string = new StringBuilder();
+        string.append("Clicked message List: ");
+        string.append(messages.size()).append(" ");
+        messages.forEach(item -> string.append(item.getText()));
+        return string.toString();
     }
 }

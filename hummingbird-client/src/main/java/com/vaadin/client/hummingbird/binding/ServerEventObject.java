@@ -33,7 +33,6 @@ import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * A representation of a server object able to send notifications to the server.
@@ -59,7 +58,7 @@ public final class ServerEventObject extends JavaScriptObject {
          *            target server event handler object
          * @return Result of evaluated function
          */
-        JsonValue evaluate(Event event, ServerEventObject serverEventObject);
+        JsonObject evaluate(Event event, ServerEventObject serverEventObject);
     }
 
     private static final JsMap<String, ServerEventDataExpression> expressionCache = JsCollections
@@ -133,22 +132,26 @@ public final class ServerEventObject extends JavaScriptObject {
             for (int i = 0; i < dataExpressions.length(); i++) {
                 String expression = dataExpressions.get(i);
 
-                JsonValue expressionValue;
+                JsonObject expressionValue;
 
                 if (!expression.startsWith("event")) {
+                    // if expression doesn't start with 'event' then we have
+                    // gotten the propertyName to get value for.
                     expressionValue = getPolymerProperty(node.getDomNode(),
                             expression);
                 } else {
                     ServerEventDataExpression dataExpression = getOrCreateExpression(
                             expression);
                     expressionValue = dataExpression.evaluate(event, this);
-                    if (expressionValue instanceof JsonArray && expression.equals("event.model.item")) {
-                        JsonObject object = Json.createObject();
-                        object.put("value", expressionValue);
-                        object.put("nodeId", ((JsonObject) expressionValue)
-                                .getNumber("nodeId"));
-                        expressionValue = object;
-                    }
+
+                }
+
+                // Only send nodeId to server for event.model.item
+                if (expression.equals("event.model.item")
+                        && expressionValue.hasKey("nodeId")) {
+                    JsonObject object = Json.createObject();
+                    object.put("nodeId", expressionValue.getNumber("nodeId"));
+                    expressionValue = object;
                 }
                 dataArray.set(i, expressionValue);
             }
@@ -158,13 +161,16 @@ public final class ServerEventObject extends JavaScriptObject {
         return null;
     }
 
-    private native JsonValue getPolymerProperty(Node node, String propertyName)
+    private native JsonObject getPolymerProperty(Node node, String propertyName)
     /*-{
-        var newVar = node.get(propertyName);
-        if(newVar instanceof Array) {
-            newVar = {value: newVar, nodeId: newVar.nodeId};
+        if (typeof(node.get) === 'function'){
+            var polymerProperty = node.get(propertyName);
+            if (typeof(polymerProperty) === 'object'
+                && typeof(polymerProperty["nodeId"]) !==  'undefined') {
+                return { nodeId: polymerProperty["nodeId"] };
+            }
         }
-        return newVar;
+        throw ReferenceError("No polymer property found for: " + propertyName);
     }-*/;
 
     /**
