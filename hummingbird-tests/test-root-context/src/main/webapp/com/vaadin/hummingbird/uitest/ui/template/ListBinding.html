@@ -2,15 +2,31 @@
 
 <dom-module id="list-binding">
     <template>
-    <dom-repeat items="[[messages]]">
-      <template><div class='msg' on-click="selectItem">[[item.text]]</div></template>
-    </dom-repeat>
-    <button id="update" on-click="update">Update</button>
-  </template>
-  <script>
-    class ListBinding extends Polymer.Element {
-      static get is() { return 'list-binding' }
-    }
-    customElements.define(ListBinding.is, ListBinding);
-  </script>
+        <dom-repeat items="[[messages]]">
+            <template>
+                <div class='msg' on-click="selectItem">[[item.text]]</div>
+            </template>
+        </dom-repeat>
+        <button id="update" on-click="update">Update</button>
+
+        <dom-repeat items="[[nestedMessages]]">
+            <template>
+                <div on-click="selectedItems">
+                    <dom-repeat items="[[item]]">
+                        <template>
+                            <div class='submsg'>[[item.text]]</div>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </template>
+        </dom-repeat>
+    </template>
+    <script>
+        class ListBinding extends Polymer.Element {
+            static get is() {
+                return 'list-binding'
+            }
+        }
+        customElements.define(ListBinding.is, ListBinding);
+    </script>
 </dom-module>

@@ -33,9 +33,9 @@ import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.hummingbird.template.model.BeanModelType;
+import com.vaadin.hummingbird.template.model.ComplexModelType;
 import com.vaadin.hummingbird.template.model.ListModelType;
 import com.vaadin.hummingbird.template.model.ModelType;
-import com.vaadin.hummingbird.template.model.TemplateModelProxyHandler;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
@@ -251,17 +251,25 @@ public class PublishedServerEventHandlerRpcHandler
     private static Object getTemplateItem(PolymerTemplate template,
             JsonObject argValue, Class<?> convertedType) {
         StateNode node = template.getUI().get().getInternals().getStateTree()
-                .getNodeById((int) (argValue).getNumber("nodeId"));
+                .getNodeById((int) argValue.getNumber("nodeId"));
 
         ModelType propertyType = template.getModelType(convertedType);
 
-        if (propertyType instanceof ListModelType) {
+        if (convertedType.isAssignableFrom(List.class)
+                && propertyType instanceof ListModelType) {
+            ComplexModelType<?> listItemType = ((ListModelType<?>) propertyType)
+                    .getItemType();
+            if(listItemType instanceof BeanModelType){
+                return propertyType.modelToApplication(node);
+            }
+            return listItemType.modelToApplication(node);
+        } else if (propertyType instanceof ListModelType) {
+            // Get the base propertyType for list as the wanted value is not of
+            // type List
             propertyType = getBeanModelTypeForListModelType(propertyType);
-            return TemplateModelProxyHandler.createModelProxy(node,
-                    (BeanModelType) propertyType);
+            return propertyType.modelToApplication(node);
         } else if (propertyType instanceof BeanModelType) {
-            return TemplateModelProxyHandler.createModelProxy(node,
-                    (BeanModelType) propertyType);
+            return propertyType.modelToApplication(node);
         }
         String msg = String.format(
                 "Could not parse %s ModelItem for PolymerTemplate.",

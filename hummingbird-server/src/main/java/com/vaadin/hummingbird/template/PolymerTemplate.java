@@ -86,13 +86,14 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         Set<Class> subClasses = new HashSet<>();
         Class aClass = GenericTypeReflector.erase(javaType);
         if (List.class.isAssignableFrom(aClass)) {
+            subClasses.add(aClass);
             Type argumentType = javaType;
             do {
                 argumentType = ((ParameterizedType) GenericTypeReflector
                         .capture(argumentType)).getActualTypeArguments()[0];
                 aClass = GenericTypeReflector.erase(argumentType);
+                subClasses.add(aClass);
             } while (List.class.isAssignableFrom(aClass));
-            subClasses.add(aClass);
         } else {
             subClasses.add(aClass);
         }

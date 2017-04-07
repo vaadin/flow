@@ -23,7 +23,6 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.Tag;
-import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.html.Label;
 import com.vaadin.hummingbird.template.PolymerTemplate;
 import com.vaadin.hummingbird.template.model.TemplateModel;
@@ -36,7 +35,8 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     public static class Message {
         private String text;
 
-        public Message(){}
+        public Message() {
+        }
 
         public Message(String text) {
             this.text = text;
@@ -52,11 +52,18 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     }
 
     public interface ListBindingModel extends TemplateModel {
-        public void setMessages(List<Message> messages);
+        void setMessages(List<Message> messages);
+
+        void setNestedMessages(List<List<Message>> nested);
     }
 
     public ListBindingTemplate() {
         getModel().setMessages(Collections.singletonList(new Message("foo")));
+        getModel()
+                .setNestedMessages(Arrays.asList(
+                        Arrays.asList(new Message("a"), new Message("b"),
+                                new Message("c")),
+                        Arrays.asList(new Message("d"))));
     }
 
     @EventHandler
@@ -69,8 +76,25 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     private void selectItem(@ModelItem Message message) {
         Label label = new Label("Clicked message: " + message.getText());
         label.setId("selection");
-        getElement().getParent().appendChild(
-                label.getElement());
+        getElement().getParent().appendChild(label.getElement());
     }
 
+    Label multiselectionLabel;
+
+    @EventHandler
+    private void selectedItems(@ModelItem List<Message> messages) {
+        StringBuilder string = new StringBuilder();
+        string.append(messages.size()).append(" ");
+        messages.forEach(item -> string.append(item.getText()));
+        if (multiselectionLabel == null) {
+            multiselectionLabel = new Label(
+                    "Clicked message List: " + string.toString());
+            multiselectionLabel.setId("multi-selection");
+            getElement().getParent()
+                    .appendChild(multiselectionLabel.getElement());
+        } else {
+            multiselectionLabel
+                    .setText("Clicked message List: " + string.toString());
+        }
+    }
 }

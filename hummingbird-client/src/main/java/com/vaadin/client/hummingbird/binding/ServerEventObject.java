@@ -32,6 +32,7 @@ import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -135,11 +136,19 @@ public final class ServerEventObject extends JavaScriptObject {
                 JsonValue expressionValue;
 
                 if (!expression.startsWith("event")) {
-                    expressionValue = getPolymerProperty(node.getDomNode(), expression);
+                    expressionValue = getPolymerProperty(node.getDomNode(),
+                            expression);
                 } else {
                     ServerEventDataExpression dataExpression = getOrCreateExpression(
                             expression);
                     expressionValue = dataExpression.evaluate(event, this);
+                    if (expressionValue instanceof JsonArray && expression.equals("event.model.item")) {
+                        JsonObject object = Json.createObject();
+                        object.put("value", expressionValue);
+                        object.put("nodeId", ((JsonObject) expressionValue)
+                                .getNumber("nodeId"));
+                        expressionValue = object;
+                    }
                 }
                 dataArray.set(i, expressionValue);
             }
@@ -151,7 +160,11 @@ public final class ServerEventObject extends JavaScriptObject {
 
     private native JsonValue getPolymerProperty(Node node, String propertyName)
     /*-{
-        return node.get(propertyName);
+        var newVar = node.get(propertyName);
+        if(newVar instanceof Array) {
+            newVar = {value: newVar, nodeId: newVar.nodeId};
+        }
+        return newVar;
     }-*/;
 
     /**

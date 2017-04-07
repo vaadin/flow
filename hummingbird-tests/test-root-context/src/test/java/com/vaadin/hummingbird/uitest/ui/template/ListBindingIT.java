@@ -54,5 +54,20 @@ public class ListBindingIT extends ChromeBrowserTest {
         Assert.assertEquals("Couldn't validate element click selection.",
                 findElement(By.id("selection")).getText(),
                 "Clicked message: " + msgs.get(1).getText());
+
+        msgs = findInShadowRoot(webComponent,
+                By.className("submsg"));
+        Assert.assertEquals("Wrong amount of nested messages", 4, msgs.size());
+
+        msgs.get(1).click();
+
+        Assert.assertEquals("Couldn't validate list selection.", findElement(By.id("multi-selection")).getText(),
+                "Clicked message List: 3 abc");
+
+        msgs.get(3).click();
+
+        Assert.assertEquals("Couldn't validate list selection.", findElement(By.id("multi-selection")).getText(),
+                "Clicked message List: 1 d");
+
     }
 }
