@@ -531,7 +531,7 @@ public class BootstrapHandlerTest {
 
         // Ignore polyfill that should be loaded immediately
         jsElements.removeIf(
-                element -> element.attr("src").contains("es6-collections.js"));
+                element -> element.attr("src").contains("es6-shim-min.js"));
 
         assertEquals(jsElements, deferElements);
         assertTrue(deferElements.stream().map(element -> element.attr("src"))

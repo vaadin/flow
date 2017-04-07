@@ -370,13 +370,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "z-index: 10000;" //
                 + "}");
 
-        // Collections polyfill needed for PhantomJS and maybe googlebot
+        // Collections polyfill needed for PhantomJS and browsers without ES6
+        // support
         head.appendChild(
                 createJavaScriptElement(
                         context.getUriResolver()
                                 .resolveVaadinUri("context://"
                                         + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                        + "server/es6-collections.js"),
+                                        + "server/es6-shim-min.js"),
                         false));
 
         head.appendChild(createWebComponentsElement(context));
