@@ -26,7 +26,7 @@ import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
  *
  * @author Vaadin Ltd
  */
-public class ModelMap extends NodeMap {
+public class ModelMap extends NodeMap implements PropertyFeature {
 
     /**
      * Creates an instance of this node feature.
@@ -48,7 +48,24 @@ public class ModelMap extends NodeMap {
      *            value to be associated with the specified key
      */
     public void setValue(String key, Serializable value) {
+        setValue(key, value, true);
+    }
+
+    /**
+     * Sets the {@code value} for the specified {@code key}.
+     *
+     * @param key
+     *            key with which the specified value is to be associated, not
+     *            {@code null}
+     * @param value
+     *            value to be associated with the specified key
+     * @param emitChange
+     *            true to create a change event for the client side
+     */
+    public void setValue(String key, Serializable value, boolean emitChange) {
         assert key != null;
+        assert !isForbidden(key) : "Forbidden property name: " + key;
+
         if (key.contains(".")) {
             throw new IllegalArgumentException(
                     "Model map key may not contain dots");
@@ -62,7 +79,18 @@ public class ModelMap extends NodeMap {
             }
         }
 
-        put(key, value);
+        put(key, value, emitChange);
+    }
+
+    /**
+     * Removes the given key.
+     *
+     * @param key
+     *            the key to remove
+     */
+    @Override
+    public void remove(String key) {
+        super.remove(key);
     }
 
     /**
@@ -258,9 +286,7 @@ public class ModelMap extends NodeMap {
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
-        // Allow everything for now. Should figure out a sensible way of
-        // defining what's allowed separately.
-        return true;
+        return !isForbidden(key);
     }
 
 }

@@ -267,7 +267,7 @@ public class UIInternals implements Serializable {
     private static Class<? extends NodeFeature>[] getRootNodeFeatures() {
         // Start with all element features
         ArrayList<Class<? extends NodeFeature>> features = new ArrayList<>(
-                BasicElementStateProvider.getFeatures());
+                BasicElementStateProvider.get().getFeatures());
 
         // Then add our own custom features
         features.add(PushConfigurationMap.class);

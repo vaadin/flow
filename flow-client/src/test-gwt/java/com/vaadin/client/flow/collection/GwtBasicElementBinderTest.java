@@ -123,6 +123,9 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         synchronizedPropertyEventsList = node
                 .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
 
+        // initialize style feature
+        node.getMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES);
+
         titleProperty = properties.getProperty("title");
         idAttribute = attributes.getProperty("id");
 
@@ -631,19 +634,26 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertEquals("color: red;", element.getAttribute("style"));
     }
 
-    private void setSyncEvents(String... eventTypes) {
-        synchronizedPropertyEventsList.splice(0,
-                synchronizedPropertyEventsList.length());
+    private void setSyncEvents(NodeList syncEventList, String... eventTypes) {
+        syncEventList.splice(0, syncEventList.length());
         for (int i = 0; i < eventTypes.length; i++) {
-            synchronizedPropertyEventsList.add(i, eventTypes[i]);
+            syncEventList.add(i, eventTypes[i]);
+        }
+    }
+
+    private void setSyncEvents(String... eventTypes) {
+        setSyncEvents(synchronizedPropertyEventsList, eventTypes);
+    }
+
+    private void setSyncProperties(NodeList syncProps, String... properties) {
+        syncProps.splice(0, syncProps.length());
+        for (int i = 0; i < properties.length; i++) {
+            syncProps.add(i, properties[i]);
         }
     }
 
     private void setSyncProperties(String... properties) {
-        synchronizedPropertyList.splice(0, synchronizedPropertyList.length());
-        for (int i = 0; i < properties.length; i++) {
-            synchronizedPropertyList.add(i, properties[i]);
-        }
+        setSyncProperties(synchronizedPropertyList, properties);
     }
 
     public void testSynchronizePropertySendsToServer() {
@@ -660,6 +670,33 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertSynchronized("offsetWidth", "tagName");
     }
 
+    public void testPolymerSynchronizePropertySendsToServer() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+
+        node = new StateNode(1, tree);
+
+        // initialize node with appropriate features
+        node.getMap(NodeFeatures.ELEMENT_DATA);
+        node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        NodeList syncEvents = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        NodeList syncProprties = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
+
+        Binder.bind(node, element);
+
+        setSyncEvents(syncEvents, "event1");
+        setSyncProperties(syncProprties, "offsetWidth", "tagName");
+        Reactive.flush();
+
+        assertSynchronized();
+        dispatchEvent("event1");
+        assertSynchronized("offsetWidth", "tagName");
+    }
+
     public void testSynchronizePropertyOnlyOnChange() {
         // Must append for events to work in HTMLUnit
         Browser.getDocument().getBody().appendChild(element);
@@ -667,6 +704,46 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
         setSyncEvents("event");
         setSyncProperties("offsetWidth", "offsetHeight");
+        Reactive.flush();
+
+        dispatchEvent("event");
+        assertSynchronized("offsetWidth", "offsetHeight");
+        tree.clearSynchronizedProperties();
+
+        dispatchEvent("event");
+        assertSynchronized();
+        tree.clearSynchronizedProperties();
+
+        element.getStyle().setWidth("123px");
+        dispatchEvent("event");
+        assertSynchronized("offsetWidth");
+        tree.clearSynchronizedProperties();
+
+        element.getStyle().setHeight("123px");
+        dispatchEvent("event");
+        assertSynchronized("offsetHeight");
+    }
+
+    public void testPolymerSynchronizePropertyOnlyOnChange() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+
+        node = new StateNode(1, tree);
+
+        // initialize node with appropriate features
+        node.getMap(NodeFeatures.ELEMENT_DATA);
+        node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        NodeList syncEvents = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        NodeList syncProprties = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
+
+        Binder.bind(node, element);
+
+        setSyncEvents(syncEvents, "event");
+        setSyncProperties(syncProprties, "offsetWidth", "offsetHeight");
         Reactive.flush();
 
         dispatchEvent("event");
@@ -713,6 +790,45 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
 
     }
 
+    public void testPolymerSynchronizePropertyAddRemoveEvent() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+
+        node = new StateNode(1, tree);
+
+        // initialize node with appropriate features
+        node.getMap(NodeFeatures.ELEMENT_DATA);
+        node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        NodeList syncEvents = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        NodeList syncProprties = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
+
+        Binder.bind(node, element);
+
+        setSyncEvents(syncEvents, "event1", "event2");
+        setSyncProperties(syncProprties, "offsetWidth");
+        Reactive.flush();
+
+        setSyncEvents(syncEvents, "event2");
+        Reactive.flush();
+
+        dispatchEvent("event1");
+        assertSynchronized();
+        tree.clearSynchronizedProperties();
+        dispatchEvent("event2");
+        assertSynchronized("offsetWidth");
+        tree.clearSynchronizedProperties();
+
+        synchronizedPropertyEventsList.splice(0,
+                synchronizedPropertyEventsList.length());
+        dispatchEvent("event2");
+        assertSynchronized();
+
+    }
+
     public void testSynchronizePropertyAddRemoveProperties() {
         // Must append for events to work in HTMLUnit
         Browser.getDocument().getBody().appendChild(element);
@@ -738,6 +854,55 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         tree.clearSynchronizedProperties();
 
         setSyncProperties();
+        Reactive.flush();
+        element.getStyle().setHeight("3px");
+        element.getStyle().setWidth("3px");
+        dispatchEvent("event1");
+        assertSynchronized();
+        tree.clearSynchronizedProperties();
+    }
+
+    public void testPolymerSynchronizePropertyAddRemoveProperties() {
+        // Must append for events to work in HTMLUnit
+        Browser.getDocument().getBody().appendChild(element);
+
+        // make function "set" available for the element
+        WidgetUtil.setJsProperty(element, "set", NativeFunction.create(""));
+
+        node = new StateNode(1, tree);
+
+        // initialize node with appropriate features
+        node.getMap(NodeFeatures.ELEMENT_DATA);
+        node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        NodeList syncEvents = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTY_EVENTS);
+
+        NodeList syncProprties = node
+                .getList(NodeFeatures.SYNCHRONIZED_PROPERTIES);
+
+        Binder.bind(node, element);
+
+        setSyncEvents(syncEvents, "event1");
+        setSyncProperties(syncProprties, "offsetWidth");
+        Reactive.flush();
+
+        element.getStyle().setHeight("1px");
+        element.getStyle().setWidth("1px");
+        dispatchEvent("event1");
+        assertSynchronized("offsetWidth");
+        tree.clearSynchronizedProperties();
+
+        setSyncProperties(syncProprties, "offsetWidth", "offsetHeight");
+        Reactive.flush();
+
+        element.getStyle().setHeight("2px");
+        element.getStyle().setWidth("2px");
+        dispatchEvent("event1");
+        assertSynchronized("offsetWidth", "offsetHeight");
+        tree.clearSynchronizedProperties();
+
+        setSyncProperties(syncProprties);
         Reactive.flush();
         element.getStyle().setHeight("3px");
         element.getStyle().setWidth("3px");
@@ -924,7 +1089,21 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
                 PROPERTY_PREFIX + property + "." + subProperty));
     }
 
+    public void testNoPropertiesFeature_propertiesMapIsNotCreated() {
+        StateNode node = new StateNode(1, tree);
+        // recognize the node as a polymer template
+        node.getMap(NodeFeatures.ELEMENT_DATA);
+        node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
+        Binder.bind(node, element);
+
+        assertFalse(node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES));
+    }
+
     private void setupSetMethod(String prefix) {
+        // make sure that model feature is in the node
+        node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+
         NativeFunction function = NativeFunction
                 .create("this['" + prefix + "'+arguments[0]]=arguments[1]");
         WidgetUtil.setJsProperty(element, "set", function);

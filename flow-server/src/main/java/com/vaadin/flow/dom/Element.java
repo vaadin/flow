@@ -30,11 +30,14 @@ import java.util.stream.Stream;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.dom.impl.AbstractElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
+import com.vaadin.flow.dom.impl.PolymerElementStateProvider;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.OverrideElementData;
+import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
@@ -111,7 +114,20 @@ public class Element implements Serializable {
      *            can contain letters, numbers and dashes ({@literal -})
      */
     public Element(String tag) {
-        this(createStateNode(tag), BasicElementStateProvider.get());
+        this(tag, BasicElementStateProvider.get());
+    }
+
+    /**
+     * Creates an element using the given tag name.
+     *
+     * @param tag
+     *            the tag name of the element. Must be a non-empty string and
+     *            can contain letters, numbers and dashes ({@literal -})
+     * @param provider
+     *            the state provider, not null
+     */
+    public Element(String tag, AbstractElementStateProvider provider) {
+        this(createStateNode(tag, provider), provider);
         assert node != null;
         assert stateProvider != null;
     }
@@ -128,6 +144,8 @@ public class Element implements Serializable {
 
         if (node.hasFeature(TextNodeMap.class)) {
             return get(node, BasicTextElementStateProvider.get());
+        } else if (node.hasFeature(PolymerServerEventHandlers.class)) {
+            return get(node, PolymerElementStateProvider.get());
         } else if (node.hasFeature(ElementData.class)) {
             return get(node, BasicElementStateProvider.get());
         } else if (node.hasFeature(TemplateMap.class)) {
@@ -188,12 +206,13 @@ public class Element implements Serializable {
      * @param tag
      *            the tag name of the element.
      */
-    private static StateNode createStateNode(String tag) {
+    private static StateNode createStateNode(String tag,
+            AbstractElementStateProvider provider) {
         if (!ElementUtil.isValidTagName(tag)) {
             throw new IllegalArgumentException(
                     "Tag " + tag + " is not a valid tag name");
         }
-        return BasicElementStateProvider.createStateNode(tag);
+        return provider.createStateNode(tag);
     }
 
     /**

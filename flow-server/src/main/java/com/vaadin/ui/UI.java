@@ -96,7 +96,7 @@ public class UI extends Component
      * Creates a new empty UI.
      */
     public UI() {
-        super(null);
+        super((Element) null);
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
@@ -683,13 +683,13 @@ public class UI extends Component
      *            query parameters that are used for navigation, not
      *            {@code null}
      */
-    public void navigateTo(String location,
-            QueryParameters queryParameters) {
+    public void navigateTo(String location, QueryParameters queryParameters) {
         if (location == null) {
             throw new IllegalArgumentException("Location may not be null");
         }
         if (queryParameters == null) {
-            throw new IllegalArgumentException("Query parameters may not be null");
+            throw new IllegalArgumentException(
+                    "Query parameters may not be null");
         }
 
         if (!getRouter().isPresent()) {

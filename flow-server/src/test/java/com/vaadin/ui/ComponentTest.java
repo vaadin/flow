@@ -78,7 +78,7 @@ public class ComponentTest {
     public static class TestComponentWhichUsesNullElementConstructor
             extends Component {
         public TestComponentWhichUsesNullElementConstructor() {
-            super(null);
+            super((Element) null);
         }
     }
 
@@ -221,7 +221,7 @@ public class ComponentTest {
     private static class BrokenComponent extends Component {
 
         public BrokenComponent() {
-            super(null);
+            super((Element) null);
         }
 
     }
@@ -359,7 +359,7 @@ public class ComponentTest {
 
     @Test
     public void setElement() {
-        Component c = new Component(null) {
+        Component c = new Component((Element) null) {
 
         };
         Element element = ElementFactory.createDiv();
@@ -370,14 +370,14 @@ public class ComponentTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void setElementNull() {
-        Component c = new Component(null) {
+        Component c = new Component((Element) null) {
         };
         Component.setElement(c, null);
     }
 
     @Test(expected = IllegalStateException.class)
     public void setElementTwice() {
-        Component c = new Component(null) {
+        Component c = new Component((Element) null) {
         };
         Element element = ElementFactory.createDiv();
         Component.setElement(c, element);
@@ -852,7 +852,7 @@ public class ComponentTest {
     public static class SynchronizePropertyUsingElementConstructor
             extends Component {
         public SynchronizePropertyUsingElementConstructor() {
-            super(null);
+            super((Element) null);
         }
 
         @Synchronize("change")
