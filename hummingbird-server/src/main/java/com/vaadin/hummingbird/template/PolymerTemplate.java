@@ -15,7 +15,6 @@
  */
 package com.vaadin.hummingbird.template;
 
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashSet;
@@ -24,11 +23,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.hummingbird.nodefeature.ModelMap;
+import com.vaadin.hummingbird.template.model.ListModelType;
 import com.vaadin.hummingbird.template.model.ModelDescriptor;
 import com.vaadin.hummingbird.template.model.ModelType;
 import com.vaadin.hummingbird.template.model.TemplateModel;
@@ -78,21 +76,30 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     }
 
     private Set<Class> getJavaClass(String type) {
-        Type javaType = getModelType(type).getJavaType();
-        return getSubTypes(javaType);
+        Set<Class> classes = new HashSet<>();
+
+        ModelType modelType = getModelType(type);
+        Type javaType = modelType.getJavaType();
+        if (javaType instanceof Class) {
+            classes.add((Class) javaType);
+        } else {
+            return getSubTypes(modelType);
+        }
+        return classes;
     }
 
-    private Set<Class> getSubTypes(Type javaType) {
+    private Set<Class> getSubTypes(ModelType modelType) {
         Set<Class> subClasses = new HashSet<>();
-        Class aClass = GenericTypeReflector.erase(javaType);
-        subClasses.add(aClass);
 
-        Type argumentType = javaType;
-        while (List.class.isAssignableFrom(aClass)) {
-            argumentType = ((ParameterizedType) GenericTypeReflector
-                    .capture(argumentType)).getActualTypeArguments()[0];
-            aClass = GenericTypeReflector.erase(argumentType);
-            subClasses.add(aClass);
+        if (modelType instanceof ListModelType) {
+            // Add list as we have a ListModelType
+            subClasses.add(List.class);
+            while (modelType instanceof ListModelType) {
+                modelType = ((ListModelType) modelType).getItemType();
+            }
+            if (modelType.getJavaType() instanceof Class) {
+                subClasses.add((Class) modelType.getJavaType());
+            }
         }
         return subClasses;
     }
@@ -104,22 +111,45 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     /**
      * Get the {@code ModelType} for given class.
      * 
-     * @param modelClass
-     *            Class to find ModelType for
-     * @return ModelType of modelClass
+     * @param type
+     *            Type to get the ModelType for
+     * @return ModelType for given Type
      */
-    public ModelType getModelType(Class<?> modelClass) {
-        return ModelDescriptor.get(getModelType()).getPropertyNames()
-                .map(this::getModelType)
-                .filter(modelType -> typeClassEqualsClass(modelClass,
-                        modelType))
-                .findFirst().orElse(null);
+    public ModelType getModelType(Type type) {
+        List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
+                .getPropertyNames().map(this::getModelType)
+                .collect(Collectors.toList());
+
+        for (ModelType mtype : modelTypes) {
+            if (mtype.getJavaType() instanceof Class
+                    && type.equals(mtype.getJavaType())) {
+                return mtype;
+            } else if (mtype instanceof ListModelType) {
+                ModelType modelType = getModelTypeForListModel(type, mtype);
+                if (modelType != null)
+                    return modelType;
+            }
+        }
+        String msg = String.format(
+                "Couldn't find ModelType for requested class %s",
+                type.getTypeName());
+        throw new IllegalArgumentException(msg);
     }
 
-    private boolean typeClassEqualsClass(Class<?> modelClass,
-            ModelType modelType) {
-        Set<Class> subType = getSubTypes(modelType.getJavaType());
-        return subType.stream().anyMatch(
-                type -> GenericTypeReflector.erase(type).equals(modelClass));
+    private ModelType getModelTypeForListModel(Type type, ModelType mtype) {
+        ModelType modelType = mtype;
+        while (modelType instanceof ListModelType) {
+            if (type.equals(modelType.getJavaType())) {
+                return modelType;
+            }
+            modelType = ((ListModelType) modelType).getItemType();
+        }
+        // If type was not a list type then check the bean for List if it
+        // matches the type
+        if (modelType.getJavaType() instanceof Class
+                && type.equals(modelType.getJavaType())) {
+            return modelType;
+        }
+        return null;
     }
 }

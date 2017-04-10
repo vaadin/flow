@@ -18,6 +18,7 @@ package com.vaadin.server.communication.rpc;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,9 +33,6 @@ import com.vaadin.hummingbird.JsonCodec;
 import com.vaadin.hummingbird.StateNode;
 import com.vaadin.hummingbird.nodefeature.ComponentMapping;
 import com.vaadin.hummingbird.template.PolymerTemplate;
-import com.vaadin.hummingbird.template.model.BeanModelType;
-import com.vaadin.hummingbird.template.model.ComplexModelType;
-import com.vaadin.hummingbird.template.model.ListModelType;
 import com.vaadin.hummingbird.template.model.ModelType;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
@@ -224,7 +222,8 @@ public class PublishedServerEventHandlerRpcHandler
 
             if (isTemplateModelValue(instance, argValue, convertedType)) {
                 return getTemplateItem((PolymerTemplate) instance,
-                        (JsonObject) argValue, convertedType);
+                        (JsonObject) argValue,
+                        method.getGenericParameterTypes()[index]);
             }
 
             if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
@@ -249,40 +248,13 @@ public class PublishedServerEventHandlerRpcHandler
     }
 
     private static Object getTemplateItem(PolymerTemplate template,
-            JsonObject argValue, Class<?> convertedType) {
+            JsonObject argValue, Type convertedType) {
         StateNode node = template.getUI().get().getInternals().getStateTree()
                 .getNodeById((int) argValue.getNumber("nodeId"));
 
         ModelType propertyType = template.getModelType(convertedType);
 
-        if (convertedType.isAssignableFrom(List.class)
-                && propertyType instanceof ListModelType) {
-            ComplexModelType listItemType = ((ListModelType) propertyType)
-                    .getItemType();
-            if (listItemType instanceof BeanModelType) {
-                return propertyType.modelToApplication(node);
-            }
-            return listItemType.modelToApplication(node);
-        } else if (propertyType instanceof ListModelType) {
-            // Get the base propertyType for list as the wanted value is not of
-            // type List
-            propertyType = getBeanModelTypeForListModelType(propertyType);
-            return propertyType.modelToApplication(node);
-        } else if (propertyType instanceof BeanModelType) {
-            return propertyType.modelToApplication(node);
-        }
-        String msg = String.format(
-                "Could not parse %s ModelItem for PolymerTemplate.",
-                convertedType.getSimpleName());
-        throw new IllegalArgumentException(msg);
-    }
-
-    private static ModelType getBeanModelTypeForListModelType(
-            ModelType propertyType) {
-        do {
-            propertyType = ((ListModelType) propertyType).getItemType();
-        } while (propertyType instanceof ListModelType);
-        return propertyType;
+        return propertyType.modelToApplication(node);
     }
 
     private static Object decodeArray(Method method, Class<?> type, int index,
