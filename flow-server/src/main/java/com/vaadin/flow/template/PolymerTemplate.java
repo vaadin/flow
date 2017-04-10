@@ -72,8 +72,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
         boolean result = false;
         for (ModelType modelType : modelTypes) {
-            if (modelType.getJavaType() instanceof Class
-                    && type.equals(modelType.getJavaType())) {
+            if (type.equals(modelType.getJavaType())) {
                 result = true;
             } else if (modelType instanceof ListModelType) {
                 result = checkListType(type, modelType);
@@ -91,10 +90,9 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         }
         ModelType model = modelType;
         while (model instanceof ListModelType) {
-            model = ((ListModelType) modelType).getItemType();
+            model = ((ListModelType) model).getItemType();
         }
-        if (model.getJavaType() instanceof Class
-                && type.equals(model.getJavaType())) {
+        if (type.equals(model.getJavaType())) {
             return true;
         }
         return false;
@@ -117,13 +115,13 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 .collect(Collectors.toList());
 
         for (ModelType mtype : modelTypes) {
-            if (mtype.getJavaType() instanceof Class
-                    && type.equals(mtype.getJavaType())) {
+            if (type.equals(mtype.getJavaType())) {
                 return mtype;
             } else if (mtype instanceof ListModelType) {
                 ModelType modelType = getModelTypeForListModel(type, mtype);
-                if (modelType != null)
+                if (modelType != null) {
                     return modelType;
+                }
             }
         }
         String msg = String.format(
@@ -142,8 +140,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         }
         // If type was not a list type then check the bean for List if it
         // matches the type
-        if (modelType.getJavaType() instanceof Class
-                && type.equals(modelType.getJavaType())) {
+        if (type.equals(modelType.getJavaType())) {
             return modelType;
         }
         return null;
