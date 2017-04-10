@@ -160,7 +160,7 @@ public final class ServerEventObject extends JavaScriptObject {
 
     private boolean serverExpectsNodeId(String expression) {
         return !expression.startsWith("event")
-                || expression.equals("event.model.item");
+                || "event.model.item".equals(expression);
     }
 
     private JsonObject getPolymerProperty(Event event, StateNode node,

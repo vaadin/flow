@@ -59,7 +59,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     }
 
     /**
-     * Check if the given Class {@code type} is found in the Model
+     * Check if the given Class {@code type} is found in the Model.
      * 
      * @param type
      *            Class to check support for
@@ -75,27 +75,26 @@ public abstract class PolymerTemplate<M extends TemplateModel>
             if (modelType.getJavaType() instanceof Class
                     && type.equals(modelType.getJavaType())) {
                 result = true;
-                break;
             } else if (modelType instanceof ListModelType) {
                 result = checkListType(type, modelType);
-                if (result) {
-                    break;
-                }
+            }
+            if (result) {
+                break;
             }
         }
         return result;
     }
 
-    private boolean checkListType(Class<?> type,
-            ModelType modelType) {
+    private boolean checkListType(Class<?> type, ModelType modelType) {
         if (type.isAssignableFrom(List.class)) {
             return true;
         }
-        while (modelType instanceof ListModelType) {
-            modelType = ((ListModelType) modelType).getItemType();
+        ModelType model = modelType;
+        while (model instanceof ListModelType) {
+            model = ((ListModelType) modelType).getItemType();
         }
-        if (modelType.getJavaType() instanceof Class
-                && type.equals(modelType.getJavaType())) {
+        if (model.getJavaType() instanceof Class
+                && type.equals(model.getJavaType())) {
             return true;
         }
         return false;
