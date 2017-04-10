@@ -40,6 +40,9 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public final class ServerEventObject extends JavaScriptObject {
+
+    public static final String NODE_ID = "nodeId";
+
     /**
      * Callback interface for an event data expression parsed using new
      * Function() in JavaScript.
@@ -132,33 +135,47 @@ public final class ServerEventObject extends JavaScriptObject {
             for (int i = 0; i < dataExpressions.length(); i++) {
                 String expression = dataExpressions.get(i);
 
-                JsonObject expressionValue;
-
-                if (!expression.startsWith("event")) {
-                    // if expression doesn't start with 'event' then we have
-                    // gotten the propertyName to get value for.
-                    expressionValue = getPolymerProperty(node.getDomNode(),
-                            expression);
-                } else {
-                    ServerEventDataExpression dataExpression = getOrCreateExpression(
-                            expression);
-                    expressionValue = dataExpression.evaluate(event, this);
-
-                }
-
-                // Only send nodeId to server for event.model.item
-                if (expression.equals("event.model.item")
-                        && expressionValue.hasKey("nodeId")) {
-                    JsonObject object = Json.createObject();
-                    object.put("nodeId", expressionValue.getNumber("nodeId"));
-                    expressionValue = object;
-                }
-                dataArray.set(i, expressionValue);
+                dataArray.set(i, getExpressionValue(event, node, expression));
             }
             return dataArray;
         }
 
         return null;
+    }
+
+    private JsonObject getExpressionValue(Event event, StateNode node,
+            String expression) {
+        JsonObject expressionValue;
+
+        if (serverExpectsNodeId(expression)) {
+            return getPolymerProperty(event, node, expression);
+        }
+
+        ServerEventDataExpression dataExpression = getOrCreateExpression(
+                expression);
+        expressionValue = dataExpression.evaluate(event, this);
+
+        return expressionValue;
+    }
+
+    private boolean serverExpectsNodeId(String expression) {
+        return !expression.startsWith("event")
+                || expression.equals("event.model.item");
+    }
+
+    private JsonObject getPolymerProperty(Event event, StateNode node,
+            String expression) {
+
+        try {
+            return getPolymerProperty(node.getDomNode(), expression);
+        } catch (Exception referenceError) {
+            ServerEventDataExpression dataExpression = getOrCreateExpression(
+                    expression);
+            JsonObject expressionValue = dataExpression.evaluate(event, this);
+            JsonObject object = Json.createObject();
+            object.put(NODE_ID, expressionValue.getNumber(NODE_ID));
+            return object;
+        }
     }
 
     private native JsonObject getPolymerProperty(Node node, String propertyName)
