@@ -36,10 +36,18 @@ public class ApplicationConstants implements Serializable {
      * An internal protocol used for referencing the application context path.
      */
     public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
+
+    /**
+     * An internal protocol used for referencing the build path of web
+     * components.
+     */
+    public static final String WEB_COMPONENT_PROTOCOL_PREFIX = "webcomponent://";
+
     /**
      * An internal protocol used for identifying a font icon resource.
      */
     public static final String FONTICON_PROTOCOL_PREFIX = "fonticon://";
+
     /**
      * The identifier used for the CSRF token.
      */
@@ -169,5 +177,25 @@ public class ApplicationConstants implements Serializable {
      * Attribute name for marking elements which are pre-rendered.
      */
     public static final String PRE_RENDER_ATTRIBUTE = "pre-render";
+
+    /**
+     * Configuration name for loading the ES5 adapter.
+     */
+    public static final String LOAD_ES5_ADAPTER = "loadEs5Adapter";
+
+    /**
+     * Configuration name for forcing the ShadyDOM polyfill.
+     */
+    public static final String FORCE_SHADY_DOM = "forceShadyDom";
+
+    /**
+     * Configuration name for the build path of ES6 webcomponents.
+     */
+    public static final String ES6_BUILD_BASE = "es6BuildBase";
+
+    /**
+     * Configuration name for the build path of ES5 webcomponents.
+     */
+    public static final String ES5_BUILD_BASE = "es5BuildBase";
 
 }

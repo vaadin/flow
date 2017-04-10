@@ -56,6 +56,17 @@ public @interface HtmlImport {
      * You can prefix the URL with {@literal context://} to make it relative to
      * the context path or use an absolute URL to refer to files outside the
      * service (servlet) path.
+     * <p>
+     * When using compiled web components, you can prefix the URL with
+     * {@literal webcomponent://} to serve different compiled sources to
+     * different browsers, based on their ES6 support. For example, when using
+     * {@literal webcomponent://MyComponent.html}, the final URL will be:
+     * <ul>
+     * <li>{@literal (contextRoot)build/es6/MyComponent.html} for ES6 capable
+     * browsers;</li>
+     * <li>{@literal (contextRoot)build/es5/MyComponent.html} for other
+     * browsers.</li>
+     * </ul>
      *
      * @return a html file URL
      */

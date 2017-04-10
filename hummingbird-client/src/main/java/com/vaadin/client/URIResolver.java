@@ -45,6 +45,14 @@ public class URIResolver extends VaadinUriResolver {
         return root;
     }
 
+    @Override
+    protected String getWebComponentBuildUrl() {
+        String root = registry.getApplicationConfiguration()
+                .getWebComponentsBaseUrl();
+        assert root.endsWith("/");
+        return root;
+    }
+
     /**
      * Returns the current document location as relative to the base uri of the
      * document.

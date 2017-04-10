@@ -37,11 +37,14 @@ public abstract class VaadinUriResolver {
      * <ul>
      * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
      * resolves to the application context root</li>
+     * <li><code>{@value ApplicationConstants#WEB_COMPONENT_PROTOCOL_PREFIX}</code>
+     * - resolves to the build path where web components were compiled. Browsers
+     * supporting ES6 can receive different, more optimized files than browsers
+     * that only support ES5.</li>
      * </ul>
      * Any other URI protocols, such as <code>http://</code> or
      * <code>https://</code> are passed through this method unmodified.
      *
-     * @since 7.4
      * @param vaadinUri
      *            the uri to resolve
      * @return the resolved uri
@@ -56,6 +59,12 @@ public abstract class VaadinUriResolver {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
             vaadinUri = getContextRootUrl() + relativeUrl;
+        } else if (vaadinUri.startsWith(
+                ApplicationConstants.WEB_COMPONENT_PROTOCOL_PREFIX)) {
+            String relativeUrl = vaadinUri.substring(
+                    ApplicationConstants.WEB_COMPONENT_PROTOCOL_PREFIX
+                            .length());
+            vaadinUri = getWebComponentBuildUrl() + relativeUrl;
         }
 
         return vaadinUri;
@@ -67,5 +76,14 @@ public abstract class VaadinUriResolver {
      * @return the context root URL
      */
     protected abstract String getContextRootUrl();
+
+    /**
+     * Gets the URL pointing to the base build path where web components were
+     * compiled. It is expected that different browsers receive different files
+     * depending on their capabilities.
+     * 
+     * @return the base build URL
+     */
+    protected abstract String getWebComponentBuildUrl();
 
 }

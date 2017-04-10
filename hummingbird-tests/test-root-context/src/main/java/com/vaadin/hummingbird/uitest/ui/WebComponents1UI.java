@@ -16,6 +16,7 @@
 package com.vaadin.hummingbird.uitest.ui;
 
 import com.vaadin.annotations.WebComponents;
+import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.hummingbird.dom.Element;
 import com.vaadin.hummingbird.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
@@ -25,7 +26,7 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  *
  */
-@WebComponents(1)
+@WebComponents(PolyfillVersion.V1)
 public class WebComponents1UI extends UI {
 
     @Override

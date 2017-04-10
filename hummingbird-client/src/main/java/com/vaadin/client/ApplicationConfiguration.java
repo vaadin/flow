@@ -29,6 +29,7 @@ public class ApplicationConfiguration {
 
     private String applicationId;
     private String contextRootUrl;
+    private String webComponentsBaseUrl;
     private String serviceUrl;
     private int uiId;
     private ErrorMessage communicationError;
@@ -305,6 +306,25 @@ public class ApplicationConfiguration {
      */
     public void setWidgetsetVersionSent() {
         widgetsetVersionSent = true;
+    }
+
+    /**
+     * Gets the base URL of the compiled web components on the server.
+     * 
+     * @return the base URL on the server.
+     */
+    public String getWebComponentsBaseUrl() {
+        return webComponentsBaseUrl;
+    }
+
+    /**
+     * Sets the base URL of the compiled web components on the server.
+     * 
+     * @param webComponentsBaseUrl
+     *            the base URL.
+     */
+    public void setWebComponentsBaseUrl(String webComponentsBaseUrl) {
+        this.webComponentsBaseUrl = webComponentsBaseUrl;
     }
 
 }

@@ -23,7 +23,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -34,6 +36,7 @@ import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.annotations.WebComponents;
+import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.external.jsoup.nodes.DataNode;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;
@@ -275,6 +278,24 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return root;
         }
 
+        @Override
+        protected String getWebComponentBuildUrl() {
+            String root;
+            if (context.getSession().getBrowser().isEs6Supported()) {
+                root = getContextRootUrl() + context.getSession()
+                        .getConfiguration().getApplicationOrSystemProperty(
+                                ApplicationConstants.ES6_BUILD_BASE,
+                                "build/es6/");
+            } else {
+                root = getContextRootUrl() + context.getSession()
+                        .getConfiguration().getApplicationOrSystemProperty(
+                                ApplicationConstants.ES5_BUILD_BASE,
+                                "build/es5/");
+            }
+            assert root.endsWith("/");
+            return root;
+        }
+
     }
 
     @Override
@@ -371,15 +392,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "}");
 
         // Collections polyfill needed for PhantomJS and maybe googlebot
-        head.appendChild(
-                createJavaScriptElement(
-                        context.getUriResolver()
-                                .resolveVaadinUri("context://"
-                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                        + "server/es6-collections.js"),
-                        false));
+        head.appendChild(createJavaScriptElement(
+                context.getUriResolver()
+                        .resolveVaadinUri("context://"
+                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                + "server/es6-collections.js"),
+                mapOf("defer", false)));
 
-        head.appendChild(createWebComponentsElement(context));
+        appendWebComponentsElements(head, context);
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -393,45 +413,94 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
-    private static Element createWebComponentsElement(
+    private static void appendWebComponentsElements(Element head,
             BootstrapContext context) {
         Optional<WebComponents> webComponents = AnnotationReader
                 .getAnnotationFor(context.getUI().getClass(),
                         WebComponents.class);
-        boolean isVersion1 = webComponents.isPresent()
-                && webComponents.get().value() == 1;
+
+        boolean isVersion1;
+        boolean forceShadyDom = false;
+        boolean loadEs5Adapter = false;
+
         if (!webComponents.isPresent()) {
-            String version = context.getSession().getConfiguration()
-                    .getApplicationOrSystemProperty(Constants.WEB_COMPONENTS,
-                            "");
+            DeploymentConfiguration config = context.getSession()
+                    .getConfiguration();
+            String version = config.getApplicationOrSystemProperty(
+                    Constants.WEB_COMPONENTS, "");
             isVersion1 = String.valueOf(1).equals(version);
+
+            forceShadyDom = Boolean
+                    .parseBoolean(config.getApplicationOrSystemProperty(
+                            ApplicationConstants.FORCE_SHADY_DOM, ""));
+
+            loadEs5Adapter = Boolean
+                    .parseBoolean(config.getApplicationOrSystemProperty(
+                            ApplicationConstants.LOAD_ES5_ADAPTER, ""));
+        } else {
+            WebComponents annotation = webComponents.get();
+            isVersion1 = annotation.value() == PolyfillVersion.V1;
+            forceShadyDom = annotation.forceShadyDom();
+            loadEs5Adapter = annotation.loadEs5Adapter();
         }
-        if (isVersion1) {
-            return createJavaScriptElement(
+
+        if (loadEs5Adapter) {
+            head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/v1/webcomponents-lite.min.js"),
-                    false);
+                                    + "server/custom-elements-es5-adapter.js"),
+                    mapOf("defer", false)));
         }
-        return createJavaScriptElement(context.getUriResolver()
-                .resolveVaadinUri("context://"
-                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                        + "server/webcomponents-lite.min.js"));
+
+        if (isVersion1) {
+            head.appendChild(createJavaScriptElement(
+                    context.getUriResolver()
+                            .resolveVaadinUri("context://"
+                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                    + "server/v1/webcomponents-lite.js"),
+                    mapOf("defer", false, "shadydom", forceShadyDom)));
+        } else {
+            head.appendChild(createJavaScriptElement(
+                    context.getUriResolver()
+                            .resolveVaadinUri("context://"
+                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                    + "server/webcomponents-lite-min.js"),
+                    mapOf("defer", true)));
+        }
     }
 
     private static Element createJavaScriptElement(String sourceUrl,
-            boolean defer) {
-        Element jsElement = new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript").attr("defer", defer);
+            Map<String, Object> attributes) {
+        Element jsElement = new Element(Tag.valueOf("script"), "");
+        if (attributes != null) {
+            attributes.forEach((k, v) -> {
+                if (v instanceof Boolean) {
+                    jsElement.attr(k, (Boolean) v);
+                } else {
+                    jsElement.attr(k, String.valueOf(v));
+                }
+            });
+        }
+        jsElement.attr("type", "text/javascript");
         if (sourceUrl != null) {
-            jsElement = jsElement.attr("src", sourceUrl);
+            jsElement.attr("src", sourceUrl);
         }
         return jsElement;
     }
 
     private static Element createJavaScriptElement(String sourceUrl) {
-        return createJavaScriptElement(sourceUrl, true);
+        return createJavaScriptElement(sourceUrl, mapOf("defer", true));
+    }
+
+    private static Map<String, Object> mapOf(Object... keysAndValues) {
+        assert keysAndValues.length
+                % 2 == 0 : "There should be one value for each key";
+        Map<String, Object> map = new LinkedHashMap<>(keysAndValues.length / 2);
+        for (int i = 0; i < keysAndValues.length; i += 2) {
+            map.put(String.valueOf(keysAndValues[i]), keysAndValues[i + 1]);
+        }
+        return map;
     }
 
     private static void includeDependencies(Element head,
@@ -592,6 +661,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .isProductionMode();
 
         JsonObject appConfig = Json.createObject();
+        appConfig.put(ApplicationConstants.ES5_BUILD_BASE,
+                session.getConfiguration().getApplicationOrSystemProperty(
+                        ApplicationConstants.ES5_BUILD_BASE, "build/es5/"));
+
+        appConfig.put(ApplicationConstants.ES6_BUILD_BASE,
+                session.getConfiguration().getApplicationOrSystemProperty(
+                        ApplicationConstants.ES6_BUILD_BASE, "build/es6/"));
+
         appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
                 context.getUI().getUIId());
 
