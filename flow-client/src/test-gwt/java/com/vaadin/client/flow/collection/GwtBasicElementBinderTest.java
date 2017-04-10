@@ -28,7 +28,6 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.client.flow.template.TemplateRegistry;
 import com.vaadin.client.flow.template.TestElementTemplateNode;
-import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.client.Browser;
@@ -42,9 +41,6 @@ import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 public class GwtBasicElementBinderTest extends ClientEngineTestBase {
-
-    private static final String PROPERTY_PREFIX = "_";
-
     private static class CollectingStateTree extends StateTree {
         JsArray<StateNode> collectedNodes = JsCollections.array();
         JsArray<JsonObject> collectedEventData = JsCollections.array();
@@ -806,142 +802,4 @@ public class GwtBasicElementBinderTest extends ClientEngineTestBase {
         assertEquals(1, element.getChildElementCount());
         assertEquals("CHILD", element.getFirstElementChild().getTagName());
     }
-
-    public void testPropertyAdded() {
-        setupSetMethod(PROPERTY_PREFIX);
-
-        Binder.bind(node, element);
-        String propertyName = "black";
-        String propertyValue = "coffee";
-
-        setModelProperty(node, propertyName, propertyValue);
-
-        assertEquals(propertyValue, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + propertyName));
-    }
-
-    public void testPropertyUpdated() {
-        setupSetMethod(PROPERTY_PREFIX);
-
-        Binder.bind(node, element);
-        String propertyName = "black";
-        String propertyValue = "coffee";
-        setModelProperty(node, propertyName, propertyValue);
-        String newValue = "tea";
-
-        setModelProperty(node, propertyName, newValue);
-
-        assertEquals(newValue, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + propertyName));
-    }
-
-    public void testUnregister() {
-        setupSetMethod(PROPERTY_PREFIX);
-
-        Binder.bind(node, element);
-        String propertyName = "black";
-        String propertyValue = "coffee";
-        setModelProperty(node, propertyName, propertyValue);
-        String notUpdatedValue = "bubblegum";
-
-        node.unregister();
-        setModelProperty(node, propertyName, notUpdatedValue);
-
-        assertEquals(propertyValue, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + propertyName));
-    }
-
-    public void testSetSubProperty() {
-        setupSetMethod(PROPERTY_PREFIX);
-
-        String property = "model";
-
-        StateTree stateTree = new StateTree(new Registry());
-        StateNode modelNode = new StateNode(34, stateTree);
-        setModelProperty(node, property, modelNode, false);
-
-        String subProperty = "subProp";
-        String value = "foo";
-        setModelProperty(modelNode, subProperty, value, false);
-
-        Binder.bind(node, element);
-
-        Reactive.flush();
-
-        assertEquals(value, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + property + "." + subProperty));
-    }
-
-    public void testUpdateSubProperty() {
-        setupSetMethod(PROPERTY_PREFIX);
-
-        Binder.bind(node, element);
-
-        String property = "model";
-
-        StateTree stateTree = new StateTree(new Registry());
-        StateNode modelNode = new StateNode(34, stateTree);
-        setModelProperty(node, property, modelNode, false);
-
-        String subProperty = "subProp";
-        String value = "foo";
-        setModelProperty(modelNode, subProperty, value, true);
-
-        // the property is set to an empty object '{}' at this point, reset it
-        // it null to make sure it is not updated
-        WidgetUtil.setJsProperty(element, PROPERTY_PREFIX + property, null);
-
-        String newValue = "bar";
-        setModelProperty(modelNode, subProperty, newValue, true);
-
-        assertEquals(newValue, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + property + "." + subProperty));
-        // Now check that the value for the property has not been updated
-        assertEquals(null,
-                WidgetUtil.getJsProperty(element, PROPERTY_PREFIX + property));
-    }
-
-    public void testSubPropertyUnregister() {
-        setupSetMethod(PROPERTY_PREFIX);
-
-        Binder.bind(node, element);
-
-        String property = "model";
-
-        StateTree stateTree = new StateTree(new Registry());
-        StateNode modelNode = new StateNode(34, stateTree);
-        setModelProperty(node, property, modelNode, false);
-
-        String subProperty = "subProp";
-        String value = "foo";
-        setModelProperty(modelNode, subProperty, value, true);
-        node.unregister();
-        modelNode.unregister();
-
-        setModelProperty(modelNode, subProperty, "bar", true);
-
-        assertEquals(value, WidgetUtil.getJsProperty(element,
-                PROPERTY_PREFIX + property + "." + subProperty));
-    }
-
-    private void setupSetMethod(String prefix) {
-        NativeFunction function = NativeFunction
-                .create("this['" + prefix + "'+arguments[0]]=arguments[1]");
-        WidgetUtil.setJsProperty(element, "set", function);
-    }
-
-    private static void setModelProperty(StateNode stateNode, String name,
-            Object value, boolean flush) {
-        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(name)
-                .setValue(value);
-        if (flush) {
-            Reactive.flush();
-        }
-    }
-
-    private static void setModelProperty(StateNode stateNode, String name,
-            Object value) {
-        setModelProperty(stateNode, name, value, true);
-    }
-
 }

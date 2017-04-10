@@ -1,0 +1,292 @@
+package com.vaadin.client.flow.collection;
+
+import java.util.Arrays;
+import java.util.List;
+
+import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.Registry;
+import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.flow.StateNode;
+import com.vaadin.client.flow.StateTree;
+import com.vaadin.client.flow.binding.Binder;
+import com.vaadin.client.flow.nodefeature.NodeList;
+import com.vaadin.client.flow.reactive.Reactive;
+import com.vaadin.client.flow.util.NativeFunction;
+import com.vaadin.flow.shared.NodeFeatures;
+
+import elemental.client.Browser;
+import elemental.dom.Element;
+import elemental.json.JsonArray;
+
+/**
+ * @author Vaadin Ltd.
+ */
+public class GwtPolymerModelTest extends ClientEngineTestBase {
+    private static final String PROPERTY_PREFIX = "_";
+    private static final String MODEL_PROPERTY_NAME = "model";
+    private static final String LIST_PROPERTY_NAME = "listProperty";
+
+    private StateNode node;
+    private StateNode modelNode;
+    private int nextId;
+    private Element element;
+
+    @Override
+    protected void gwtSetUp() throws Exception {
+        super.gwtSetUp();
+        Reactive.reset();
+
+        node = createAndAttachStateNode();
+        modelNode = createAndAttachModelNode(MODEL_PROPERTY_NAME);
+        nextId = node.getId() + 1;
+        element = createHtmlElement();
+    }
+
+    private StateNode createAndAttachStateNode() {
+        StateNode newNode = new StateNode(0, new StateTree(new Registry()));
+        newNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        newNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+        newNode.getMap(NodeFeatures.ELEMENT_DATA);
+        return newNode;
+    }
+
+    private StateNode createAndAttachModelNode(String modelPropertyName) {
+        StateNode modelNode = new StateNode(nextId,
+                new StateTree(new Registry()));
+        nextId++;
+        setModelProperty(node, modelPropertyName, modelNode, false);
+        return modelNode;
+    }
+
+    private Element createHtmlElement() {
+        Element element = Browser.getDocument().createElement("div");
+        setupSetMethod(element, PROPERTY_PREFIX);
+        setupMockSpliceMethod(element);
+        return element;
+    }
+
+    private void setupSetMethod(Element element, String prefix) {
+        NativeFunction function = NativeFunction
+                .create("this['" + prefix + "'+arguments[0]]=arguments[1]");
+        WidgetUtil.setJsProperty(element, "set", function);
+    }
+
+    /**
+     * Sets up mock splice method, that is called when model list is modified.
+     * For each call, method stores call arguments in the element property named
+     * argumentsArray.
+     * 
+     * @param element
+     *            html element to set the method to
+     */
+    private void setupMockSpliceMethod(Element element) {
+        NativeFunction function = NativeFunction.create("path", "start",
+                "deleteCount", "items",
+                "this.argumentsArray ? this.argumentsArray.push(arguments) : this.argumentsArray = [arguments]");
+        WidgetUtil.setJsProperty(element, "splice", function);
+    }
+
+    private static void setModelProperty(StateNode stateNode, String name,
+            Object value, boolean flush) {
+        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(name)
+                .setValue(value);
+        if (flush) {
+            Reactive.flush();
+        }
+    }
+
+    private static void setModelProperty(StateNode stateNode, String name,
+            Object value) {
+        setModelProperty(stateNode, name, value, true);
+    }
+
+    public void testPropertyAdded() {
+        Binder.bind(node, element);
+        String propertyName = "black";
+        String propertyValue = "coffee";
+
+        setModelProperty(node, propertyName, propertyValue);
+
+        assertEquals(propertyValue, WidgetUtil.getJsProperty(element,
+                PROPERTY_PREFIX + propertyName));
+    }
+
+    public void testPropertyUpdated() {
+        Binder.bind(node, element);
+        String propertyName = "black";
+        String propertyValue = "coffee";
+        setModelProperty(node, propertyName, propertyValue);
+        String newValue = "tea";
+
+        setModelProperty(node, propertyName, newValue);
+
+        assertEquals(newValue, WidgetUtil.getJsProperty(element,
+                PROPERTY_PREFIX + propertyName));
+    }
+
+    public void testUnregister() {
+        Binder.bind(node, element);
+        String propertyName = "black";
+        String propertyValue = "coffee";
+        setModelProperty(node, propertyName, propertyValue);
+        String notUpdatedValue = "bubblegum";
+
+        node.unregister();
+        setModelProperty(node, propertyName, notUpdatedValue);
+
+        assertEquals(propertyValue, WidgetUtil.getJsProperty(element,
+                PROPERTY_PREFIX + propertyName));
+    }
+
+    public void testSetSubProperty() {
+        String subProperty = "subProp";
+        String value = "foo";
+        setModelProperty(modelNode, subProperty, value, false);
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        assertEquals(value, WidgetUtil.getJsProperty(element,
+                PROPERTY_PREFIX + MODEL_PROPERTY_NAME + "." + subProperty));
+    }
+
+    public void testUpdateSubProperty() {
+        Binder.bind(node, element);
+
+        String subProperty = "subProp";
+        String value = "foo";
+        setModelProperty(modelNode, subProperty, value, true);
+
+        // the property is set to an empty object '{}' at this point, reset it
+        // it null to make sure it is not updated
+        WidgetUtil.setJsProperty(element, PROPERTY_PREFIX + MODEL_PROPERTY_NAME,
+                null);
+
+        String newValue = "bar";
+        setModelProperty(modelNode, subProperty, newValue, true);
+
+        assertEquals(newValue, WidgetUtil.getJsProperty(element,
+                PROPERTY_PREFIX + MODEL_PROPERTY_NAME + "." + subProperty));
+        // Now check that the value for the property has not been updated
+        assertEquals(null, WidgetUtil.getJsProperty(element,
+                PROPERTY_PREFIX + MODEL_PROPERTY_NAME));
+    }
+
+    public void testSubPropertyUnregister() {
+        Binder.bind(node, element);
+
+        String subProperty = "subProp";
+        String value = "foo";
+        setModelProperty(modelNode, subProperty, value, true);
+        node.unregister();
+        modelNode.unregister();
+
+        setModelProperty(modelNode, subProperty, "bar", true);
+
+        assertEquals(value, WidgetUtil.getJsProperty(element,
+                PROPERTY_PREFIX + MODEL_PROPERTY_NAME + "." + subProperty));
+    }
+
+    public void testAddList() {
+        List<String> serverList = Arrays.asList("one", "two");
+        createAndAttachNodeWithList(modelNode, serverList);
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        assertListsEqual(serverList, getClientList());
+    }
+
+    public void testSetNewListForTheSameProperty() {
+        createAndAttachNodeWithList(modelNode, Arrays.asList("one", "two"));
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        List<String> newServerList = Arrays.asList("1", "2", "3");
+        createAndAttachNodeWithList(modelNode, newServerList);
+
+        Reactive.flush();
+
+        assertListsEqual(newServerList, getClientList());
+    }
+
+    public void testListUpdatesAreIgnoredAfterUnregister() {
+        List<String> serverList = Arrays.asList("one", "two");
+        StateNode nodeWithList = createAndAttachNodeWithList(modelNode,
+                serverList);
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+        node.unregister();
+        modelNode.unregister();
+
+        fillNodeWithListItems(nodeWithList, Arrays.asList("1", "2", "3"));
+        Reactive.flush();
+
+        assertListsEqual(serverList, getClientList());
+    }
+
+    public void testUpdateList() {
+        StateNode nodeWithList = createAndAttachNodeWithList(modelNode,
+                Arrays.asList("one", "two"));
+
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        List<String> newList = Arrays.asList("1", "2", "3");
+        fillNodeWithListItems(nodeWithList, newList);
+
+        JsonArray argumentsArray = WidgetUtil.crazyJsCast(
+                WidgetUtil.getJsProperty(element, "argumentsArray"));
+
+        // Since `fillNodeWithListItems` makes separate `add` call for every element in newList, we will be having
+        // the same number of `splice` calls.
+        assertEquals(newList.size(), argumentsArray.length());
+        for (int i = 0; i < newList.size(); i++) {
+            JsonArray arguments = argumentsArray.getArray(i);
+
+            assertEquals(4, arguments.length());
+            String path = arguments.getString(0);
+            int start = (int) arguments.getNumber(1);
+            int deleteCount = (int) arguments.getNumber(2);
+            String items = arguments.getString(3);
+
+            assertEquals(MODEL_PROPERTY_NAME + "." + LIST_PROPERTY_NAME, path);
+            assertEquals(i, start);
+            assertEquals(0, deleteCount);
+            assertEquals(newList.get(i), items);
+        }
+    }
+
+    private StateNode createAndAttachNodeWithList(StateNode modelNode,
+            List<String> listItems) {
+        StateNode nodeWithList = new StateNode(nextId, modelNode.getTree());
+        nextId++;
+        fillNodeWithListItems(nodeWithList, listItems);
+        setModelProperty(modelNode, LIST_PROPERTY_NAME, nodeWithList, false);
+        return nodeWithList;
+    }
+
+    private void fillNodeWithListItems(StateNode node, List<?> listItems) {
+        NodeList nodeList = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
+        for (int i = 0; i < listItems.size(); i++) {
+            nodeList.add(i, listItems.get(i));
+        }
+    }
+
+    private void assertListsEqual(List<String> serverList,
+            JsonArray clientList) {
+        assertEquals(serverList.size(), clientList.length());
+        for (int i = 0; i < serverList.size(); i++) {
+            assertEquals(serverList.get(i), clientList.getString(i));
+        }
+    }
+
+    private JsonArray getClientList() {
+        return WidgetUtil
+                .crazyJsCast(WidgetUtil.getJsProperty(element, PROPERTY_PREFIX
+                        + MODEL_PROPERTY_NAME + "." + LIST_PROPERTY_NAME));
+    }
+}
