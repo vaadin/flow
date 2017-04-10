@@ -20,7 +20,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.annotations.EventData;
@@ -30,6 +29,7 @@ import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.ui.Component;
 
 /**
  * Methods which are published as event-handlers on the client side.
@@ -100,9 +100,11 @@ public class PolymerServerEventHandlers
 
     @Override
     protected void ensureSupportedParameterType(Method method, Class<?> type) {
-        Set<Class> modelClasses = ((PolymerTemplate) Element.get(getNode())
-                .getComponent().get()).getModelClasses();
-        if (!modelClasses.contains(type)) {
+        Optional<Component> polymerTemplate = Element.get(getNode())
+                .getComponent();
+        if (!polymerTemplate.isPresent()
+                && !((PolymerTemplate) polymerTemplate.get())
+                        .isSupportedClass(type)) {
             super.ensureSupportedParameterType(method, type);
         }
     }

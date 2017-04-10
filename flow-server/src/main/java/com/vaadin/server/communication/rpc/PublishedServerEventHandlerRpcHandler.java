@@ -245,8 +245,7 @@ public class PublishedServerEventHandlerRpcHandler
             JsonValue argValue, Class<?> convertedType) {
         return instance instanceof PolymerTemplate
                 && argValue instanceof JsonObject
-                && ((PolymerTemplate) instance).getModelClasses()
-                        .contains(convertedType)
+                && ((PolymerTemplate) instance).isSupportedClass(convertedType)
                 && ((JsonObject) argValue).hasKey("nodeId");
     }
 

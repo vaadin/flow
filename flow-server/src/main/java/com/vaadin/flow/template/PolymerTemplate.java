@@ -16,12 +16,8 @@
 package com.vaadin.flow.template;
 
 import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
@@ -63,45 +59,46 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     }
 
     /**
-     * Collects all {@code Class}es used in the TemplateModel.
+     * Check if the given Class {@code type} is found in the Model
      * 
-     * @return Set with classes used in model
+     * @param type
+     *            Class to check support for
+     * @return True if supported by this PolymerTemplate
      */
-    public Set<Class> getModelClasses() {
-        Stream<String> propertyNames = ModelDescriptor.get(getModelType())
-                .getPropertyNames();
-        Set<Class> modelClassCollection = propertyNames.map(this::getJavaClass)
-                .flatMap(Set::stream).collect(Collectors.toSet());
-        return Collections.unmodifiableSet(modelClassCollection);
-    }
+    public boolean isSupportedClass(Class<?> type) {
+        List<ModelType> modelTypes = ModelDescriptor.get(getModelType())
+                .getPropertyNames().map(this::getModelType)
+                .collect(Collectors.toList());
 
-    private Set<Class> getJavaClass(String type) {
-        Set<Class> classes = new HashSet<>();
-
-        ModelType modelType = getModelType(type);
-        Type javaType = modelType.getJavaType();
-        if (javaType instanceof Class) {
-            classes.add((Class) javaType);
-        } else {
-            return getSubTypes(modelType);
-        }
-        return classes;
-    }
-
-    private Set<Class> getSubTypes(ModelType modelType) {
-        Set<Class> subClasses = new HashSet<>();
-
-        if (modelType instanceof ListModelType) {
-            // Add list as we have a ListModelType
-            subClasses.add(List.class);
-            while (modelType instanceof ListModelType) {
-                modelType = ((ListModelType) modelType).getItemType();
-            }
-            if (modelType.getJavaType() instanceof Class) {
-                subClasses.add((Class) modelType.getJavaType());
+        boolean result = false;
+        for (ModelType modelType : modelTypes) {
+            if (modelType.getJavaType() instanceof Class
+                    && type.equals(modelType.getJavaType())) {
+                result = true;
+                break;
+            } else if (modelType instanceof ListModelType) {
+                result = checkListType(type, modelType);
+                if (result) {
+                    break;
+                }
             }
         }
-        return subClasses;
+        return result;
+    }
+
+    private boolean checkListType(Class<?> type,
+            ModelType modelType) {
+        if (type.isAssignableFrom(List.class)) {
+            return true;
+        }
+        while (modelType instanceof ListModelType) {
+            modelType = ((ListModelType) modelType).getItemType();
+        }
+        if (modelType.getJavaType() instanceof Class
+                && type.equals(modelType.getJavaType())) {
+            return true;
+        }
+        return false;
     }
 
     private ModelType getModelType(String type) {
