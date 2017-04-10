@@ -15,6 +15,10 @@
  */
 package com.vaadin.client.flow.binding;
 
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
 import com.vaadin.client.PolymerUtils;
@@ -49,10 +53,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import jsinterop.annotations.JsFunction;
-
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -300,43 +300,39 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void processModelListChange(Element htmlNode,
             String polymerModelPath, ListSpliceEvent event) {
-        JsonArray elementsToAdd = convertElementsToAdd(event.getAdd(), htmlNode,
+        JsonArray itemsToAdd = convertItemsToAdd(event.getAdd(), htmlNode,
                 polymerModelPath, event.getIndex());
         PolymerUtils.splice(htmlNode, polymerModelPath, event.getIndex(),
-                event.getRemove().length(), elementsToAdd);
+                event.getRemove().length(), itemsToAdd);
     }
 
-    private JsonArray convertElementsToAdd(JsArray<?> elementsToAdd,
-            Element htmlNode, String polymerModelPath, int splitIndex) {
-        JsonArray convertedElements = Json.createArray();
-        for (int i = 0; i < elementsToAdd.length(); i++) {
-            Object element = elementsToAdd.get(i);
-            listenToPropertyChangesIfNeeded(htmlNode, polymerModelPath,
-                    splitIndex + i, element);
-            convertedElements.set(i, PolymerUtils.convertToJson(element));
+    private JsonArray convertItemsToAdd(JsArray<?> itemsToAdd, Element htmlNode,
+            String polymerModelPath, int splitIndex) {
+        JsonArray convertedItems = Json.createArray();
+        for (int i = 0; i < itemsToAdd.length(); i++) {
+            Object item = itemsToAdd.get(i);
+            listenToSubPropertiesChanges(htmlNode, polymerModelPath,
+                    splitIndex + i, item);
+            convertedItems.set(i, PolymerUtils.convertToJson(item));
         }
-        return convertedElements;
+        return convertedItems;
     }
 
-    private void listenToPropertyChangesIfNeeded(Element htmlNode,
-            String polymerModelPath, int subNodeIndex, Object element) {
-        if (element instanceof StateNode) {
-            listenToPropertyChanges(htmlNode, polymerModelPath,
-                    (StateNode) element, subNodeIndex);
+    private void listenToSubPropertiesChanges(Element htmlNode,
+            String polymerModelPath, int subNodeIndex, Object item) {
+        if (item instanceof StateNode) {
+            ((StateNode) item).getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                    .addPropertyAddListener(event -> {
+                        Computation computation = Reactive
+                                .runWhenDepedenciesChange(() -> PolymerUtils
+                                        .setListValueByIndex(htmlNode,
+                                                polymerModelPath, subNodeIndex,
+                                                PolymerUtils.convertToJson(
+                                                        event.getProperty())));
+                        ((StateNode) item)
+                                .addUnregisterListener(e -> computation.stop());
+                    });
         }
-    }
-
-    private void listenToPropertyChanges(Element htmlNode,
-            String polymerModelPath, StateNode stateNode, int propertyIndex) {
-        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
-                .addPropertyAddListener(event -> {
-                    Computation computation = Reactive.runWhenDepedenciesChange(
-                            () -> PolymerUtils.setListValueByIndex(htmlNode,
-                                    polymerModelPath, propertyIndex,
-                                    PolymerUtils.convertToJson(
-                                            event.getProperty())));
-                    stateNode.addUnregisterListener(e -> computation.stop());
-                });
     }
 
     @SuppressWarnings("unchecked")

@@ -20,6 +20,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.NodeFeatures;
+
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.json.Json;
@@ -63,7 +64,7 @@ public final class PolymerUtils {
      * Calls Polymer {@code splice} method on specified {@code htmlNode}.
      *
      * Splice call is made via {@code apply} method in order to force the method
-     * to treat {@code elementsToAdd} as numerous parameters, not a single one.
+     * to treat {@code itemsToAdd} as numerous parameters, not a single one.
      *
      * @param htmlNode
      *            node to call splice method on
@@ -73,7 +74,7 @@ public final class PolymerUtils {
      *            start index of a list for splice operation
      * @param deleteCount
      *            number of elements to delete from the list after startIndex
-     * @param elementsToAdd
+     * @param itemsToAdd
      *            elements to add after startIndex
      *
      * @see <a href=
@@ -81,9 +82,9 @@ public final class PolymerUtils {
      *      docs</a> for more info.
      */
     public static native void splice(Element htmlNode, String path,
-            int startIndex, int deleteCount, JsonArray elementsToAdd)
+            int startIndex, int deleteCount, JsonArray itemsToAdd)
     /*-{
-        htmlNode.splice.apply(htmlNode, [path, startIndex, deleteCount].concat(elementsToAdd));
+        htmlNode.splice.apply(htmlNode, [path, startIndex, deleteCount].concat(itemsToAdd));
     }-*/;
 
     /**
