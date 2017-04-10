@@ -28,7 +28,8 @@ import com.vaadin.flow.StateNode;
  *
  * @author Vaadin Ltd
  */
-public class ElementPropertyMap extends AbstractPropertyMap {
+public class ElementPropertyMap extends AbstractPropertyMap
+        implements PropertyFeature {
 
     private static final Set<String> forbiddenProperties = Stream
             .of("textContent", "classList", "className")
@@ -47,14 +48,13 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     @Override
     public void setProperty(String name, Serializable value,
             boolean emitChange) {
-        assert !forbiddenProperties.contains(name) : "Forbidden property name: "
-                + name;
+        assert !isForbidden(name) : "Forbidden property name: " + name;
 
         super.setProperty(name, value, emitChange);
     }
 
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
-        return !forbiddenProperties.contains(key);
+        return !isForbidden(key);
     }
 }

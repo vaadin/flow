@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
-
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.dom.impl.PolymerElementStateProvider;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.model.ModelDescriptor;
 import com.vaadin.flow.template.model.ModelType;
@@ -55,6 +55,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      * functionality.
      */
     public PolymerTemplate() {
+        super(PolymerElementStateProvider.get());
         // This a workaround to propagate model to a Polymer template.
         // Correct implementation will follow in
         // https://github.com/vaadin/flow/issues/1371

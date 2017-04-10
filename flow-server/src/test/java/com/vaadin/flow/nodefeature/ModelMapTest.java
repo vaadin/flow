@@ -174,4 +174,12 @@ public class ModelMapTest {
         rootMap.setValue("value", Double.NEGATIVE_INFINITY);
     }
 
+    @Test
+    public void mayUpdateFromClient_onlyForbiddenPropertiesAreNotAllowed() {
+        Assert.assertEquals(0,
+                PropertyFeature.FORBIDDEN_PROPERTIES.stream().filter(
+                        property -> rootMap.mayUpdateFromClient(property, null))
+                        .count());
+        Assert.assertTrue(rootMap.mayUpdateFromClient("foo", null));
+    }
 }

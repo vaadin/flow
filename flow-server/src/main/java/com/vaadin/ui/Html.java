@@ -65,7 +65,7 @@ public class Html extends Component {
      *             if reading the stream fails
      */
     public Html(InputStream stream) {
-        super(null);
+        super((Element) null);
         if (stream == null) {
             throw new IllegalArgumentException("HTML stream cannot be null");
         }
@@ -91,7 +91,7 @@ public class Html extends Component {
      *            the HTML to wrap
      */
     public Html(String outerHtml) {
-        super(null);
+        super((Element) null);
         if (outerHtml == null || outerHtml.isEmpty()) {
             throw new IllegalArgumentException("HTML cannot be null or empty");
         }
