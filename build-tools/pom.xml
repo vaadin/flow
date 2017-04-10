@@ -4,15 +4,15 @@
     <modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.vaadin</groupId>
-		<artifactId>hummingbird-project</artifactId>
+		<artifactId>flow-project</artifactId>
 		<version>0.0.19-SNAPSHOT</version>
 	</parent>
-    <artifactId>hummingbird-buildtools</artifactId>
+    <artifactId>flow-buildtools</artifactId>
     <name>vaadin-buildhelpers</name>
     <packaging>jar</packaging>
 
     <url>https://vaadin.com/</url>
-    <description>Hummingbird build helpers</description>
+    <description>Flow build helpers</description>
 
     <build>
         <resources>

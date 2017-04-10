@@ -1,5 +1,5 @@
 #!/bin/bash
-FILES=hummingbird-tests/*/error-screenshots/*
+FILES=flow-tests/*/error-screenshots/*
 for file in $FILES
 do
   echo $file
