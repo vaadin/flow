@@ -1,30 +1,30 @@
-Hummingbird
+Flow
 ======
-*[Hummingbird](https://vaadin.com) is a Java framework for building modern web sites that look great, perform well and make you and your users happy.*
+*[Flow](https://vaadin.com) is a Java framework for building modern web sites that look great, perform well and make you and your users happy.*
 
-For instructions about _using_ Hummingbird to develop applications, please refer to
+For instructions about _using_ Flow to develop applications, please refer to
 https://vaadin.com/
 
 To contribute, first refer to https://vaadin.com/wiki/-/wiki/Main/Contributing+Code
-for general instructions and requirements for contributing code to Hummingbird.
+for general instructions and requirements for contributing code to Flow.
 
-Instructions on how to set up a working environment for developing the Hummingbird project follow below.
+Instructions on how to set up a working environment for developing the Flow project follow below.
 
 Quick Setup
 ======
-1. <code>git clone https://github.com/vaadin/hummingbird.git</code>
+1. <code>git clone https://github.com/vaadin/flow.git</code>
 1. make sure you have a TestBench license (get it otherwise on https://vaadin.com/pro/licenses)
 1. <code>mvn install</code>
 
 For more details, see below
 
-Setting up Eclipse to Develop Hummingbird
+Setting up Eclipse to Develop Flow
 =========
 
 Import the Project into the Workspace
 ------------
 1. Do *File* -> *Import* -> *General* -> *Existing Maven Project*
-1. Select the *hummingbird* folder (where you cloned the project)
+1. Select the *flow* folder (where you cloned the project)
 1. Ensure all projects are checked
 1. Click “finish” to complete the import
 1. Disable HTML and XML validation in the workspace to avoid validating Bower dependencies
@@ -37,7 +37,7 @@ Note that the first compilation takes a while to finish as Maven downloads depen
 
 Compiling the Client Engine
 --------
-Compile the client engine by executing the eclipse build configuration *Compile ClientEngine* in *hummingbird-client/eclipse*
+Compile the client engine by executing the eclipse build configuration *Compile ClientEngine* in *flow-client/eclipse*
 
 Set up extra workspace preferences
 --------
@@ -71,11 +71,11 @@ The distribution package is built and installed into the local Maven repository 
 Running SuperDevMode
 =====
 
-To start superDevMode do to the hummingbird-client package and run the maven command:
+To start superDevMode do to the flow-client package and run the maven command:
 
 1. mvn -Psdm clean install gwt:compile gwt:run-codeserver
 
-In eclipse run .launch files from hummingbird-client/eclipse in the order:
+In eclipse run .launch files from flow-client/eclipse in the order:
 
 1. Compile ClientEngine.launch
 2. Super Dev Mode.launch

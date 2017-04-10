@@ -4,20 +4,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.vaadin</groupId>
-    <artifactId>hummingbird-project</artifactId>
-    <name>Hummingbird</name>
+    <artifactId>flow-project</artifactId>
+    <name>Flow</name>
     <packaging>pom</packaging>
     <version>0.0.24-SNAPSHOT</version>
 
     <modules>
-        <module>hummingbird</module>
-        <module>hummingbird-server</module>
-        <module>hummingbird-push</module>
-        <module>hummingbird-client</module>
-        <module>hummingbird-html-components</module>
-        <module>hummingbird-documentation</module>
-        <module>hummingbird-test-util</module>
-        <module>hummingbird-tests</module>
+        <module>flow</module>
+        <module>flow-server</module>
+        <module>flow-push</module>
+        <module>flow-client</module>
+        <module>flow-html-components</module>
+        <module>flow-documentation</module>
+        <module>flow-test-util</module>
+        <module>flow-tests</module>
     </modules>
 
     <organization>
@@ -34,9 +34,9 @@
     </licenses>
     <inceptionYear>2000</inceptionYear>
     <scm>
-        <connection>scm:https:https://github.com/vaadin/hummingbird.git</connection>
-        <developerConnection>scm:git:git@github.com:vaadin/hummingbird.git</developerConnection>
-        <url>https://github.com/vaadin/hummingbird</url>
+        <connection>scm:https:https://github.com/vaadin/flow.git</connection>
+        <developerConnection>scm:git:git@github.com:vaadin/flow.git</developerConnection>
+        <url>https://github.com/vaadin/flow</url>
     </scm>
 
     <properties>
@@ -61,11 +61,11 @@
 
     <repositories>
         <repository>
-            <id>hummingbird</id>
+            <id>flow</id>
             <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird/</url>
         </repository>
         <repository>
-            <id>hummingbird-snapshots</id>
+            <id>flow-snapshots</id>
             <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
@@ -79,11 +79,11 @@
 
     <pluginRepositories>
         <pluginRepository>
-            <id>hummingbird</id>
+            <id>flow</id>
             <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird/</url>
         </pluginRepository>
         <pluginRepository>
-            <id>hummingbird-snapshots</id>
+            <id>flow-snapshots</id>
             <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
@@ -205,7 +205,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>${project.groupId}</groupId>
-                        <artifactId>hummingbird-buildtools</artifactId>
+                        <artifactId>flow-buildtools</artifactId>
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
