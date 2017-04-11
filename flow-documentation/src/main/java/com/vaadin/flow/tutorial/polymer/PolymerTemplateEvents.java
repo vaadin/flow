@@ -15,14 +15,17 @@
  */
 package com.vaadin.flow.tutorial.polymer;
 
+import java.util.List;
 import java.util.Locale;
 
 import com.vaadin.annotations.EventData;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("tutorial-template-event-handlers.asciidoc")
 public class PolymerTemplateEvents {
@@ -45,9 +48,45 @@ public class PolymerTemplateEvents {
                 @EventData("event.srcElement.tagName") String tag,
                 @EventData("event.offsetX") int offsetX,
                 @EventData("event.offsetY") int offsetY) {
+            //@formatter:off
             System.out.println("Event alt pressed: " + altPressed);
             System.out.println("Event tag: " + tag.toLowerCase(Locale.ENGLISH));
             System.out.println("Click position on element: [" + offsetX + ", "+ offsetY +"]");
+            //@formatter:on
+        }
+    }
+
+    public static class Message {
+        private String text;
+
+        public Message() {
+        }
+
+        public Message(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+    }
+
+    public interface MessagesModel extends TemplateModel {
+        public void setMessages(List<Message> messages);
+    }
+
+    @Tag("model-item-handler")
+    @HtmlImport("/com/example/ModelItemHandler.html")
+    public class ModelItemHandlerPolymerTemplate
+            extends PolymerTemplate<MessagesModel> {
+
+        @EventHandler
+        private void handleClick(@ModelItem Message message) {
+            System.out.println("Received a message: " + message.getText());
         }
     }
 }

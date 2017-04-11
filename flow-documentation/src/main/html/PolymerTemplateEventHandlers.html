@@ -33,3 +33,18 @@ tutorial::tutorial-template-event-handlers.asciidoc
 <template>
     <button on-click="handleClick">Click me</button>
 </template>
+
+
+<dom-module id="model-item-handler">
+    <template>
+    <dom-repeat items="[[messages]]">
+      <template><div class='msg' on-click="handleClick">[[item.text]]</div></template>
+    </dom-repeat>
+  </template>
+  <script>
+    class ModelItemHandler extends Polymer.Element {
+      static get is() { return 'model-item-handler' }
+    }
+    customElements.define(ModelItemHandler.is, ModelItemHandler);
+  </script>
+</dom-module>
