@@ -102,9 +102,9 @@ public class PolymerServerEventHandlers
     protected void ensureSupportedParameterType(Method method, Class<?> type) {
         Optional<Component> polymerTemplate = Element.get(getNode())
                 .getComponent();
-        if (polymerTemplate.isPresent()
-                && !((PolymerTemplate<?>) polymerTemplate.get())
-                        .isSupportedClass(type)) {
+        assert polymerTemplate.isPresent();
+        if (!((PolymerTemplate<?>) polymerTemplate.get())
+                .isSupportedClass(type)) {
             super.ensureSupportedParameterType(method, type);
         }
     }
