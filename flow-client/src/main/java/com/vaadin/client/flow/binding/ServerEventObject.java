@@ -15,7 +15,7 @@
  */
 package com.vaadin.client.flow.binding;
 
-import jsinterop.annotations.JsFunction;
+import java.util.Optional;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
@@ -32,7 +32,8 @@ import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
-import elemental.json.JsonValue;
+import elemental.json.JsonObject;
+import jsinterop.annotations.JsFunction;
 
 /**
  * A representation of a server object able to send notifications to the server.
@@ -40,6 +41,8 @@ import elemental.json.JsonValue;
  * @author Vaadin Ltd
  */
 public final class ServerEventObject extends JavaScriptObject {
+    private static final String NODE_ID = "nodeId";
+
     /**
      * Callback interface for an event data expression parsed using new
      * Function() in JavaScript.
@@ -58,7 +61,7 @@ public final class ServerEventObject extends JavaScriptObject {
          *            target server event handler object
          * @return Result of evaluated function
          */
-        JsonValue evaluate(Event event, ServerEventObject serverEventObject);
+        JsonObject evaluate(Event event, ServerEventObject serverEventObject);
     }
 
     private static final JsMap<String, ServerEventDataExpression> expressionCache = JsCollections
@@ -68,7 +71,6 @@ public final class ServerEventObject extends JavaScriptObject {
      * JSO constructor.
      */
     protected ServerEventObject() {
-
     }
 
     /**
@@ -105,7 +107,7 @@ public final class ServerEventObject extends JavaScriptObject {
      * Collect extra data for element event if any has been sent from the
      * server. Note! Data is sent in the array in the same order as defined on
      * the server side.
-     * 
+     *
      * @param event
      *            The fired Event
      * @param methodName
@@ -132,16 +134,7 @@ public final class ServerEventObject extends JavaScriptObject {
             for (int i = 0; i < dataExpressions.length(); i++) {
                 String expression = dataExpressions.get(i);
 
-                JsonValue expressionValue;
-
-                if (!expression.startsWith("event")) {
-                    expressionValue = getPolymerProperty(node.getDomNode(), expression);
-                } else {
-                    ServerEventDataExpression dataExpression = getOrCreateExpression(
-                            expression);
-                    expressionValue = dataExpression.evaluate(event, this);
-                }
-                dataArray.set(i, expressionValue);
+                dataArray.set(i, getExpressionValue(event, node, expression));
             }
             return dataArray;
         }
@@ -149,9 +142,55 @@ public final class ServerEventObject extends JavaScriptObject {
         return null;
     }
 
-    private native JsonValue getPolymerProperty(Node node, String propertyName)
+    private JsonObject getExpressionValue(Event event, StateNode node,
+            String expression) {
+        JsonObject expressionValue;
+
+        if (serverExpectsNodeId(expression)) {
+            return getPolymerPropertyObject(event, node, expression);
+        }
+
+        ServerEventDataExpression dataExpression = getOrCreateExpression(
+                expression);
+        expressionValue = dataExpression.evaluate(event, this);
+
+        return expressionValue;
+    }
+
+    private boolean serverExpectsNodeId(String expression) {
+        return !expression.startsWith("event")
+                || "event.model.item".equals(expression);
+    }
+
+    private JsonObject getPolymerPropertyObject(Event event, StateNode node,
+            String expression) {
+        return Optional
+                .ofNullable(
+                        getPolymerPropertyObject(node.getDomNode(), expression))
+                .orElse(createPolymerPropertyObject(event, expression));
+    }
+
+    private JsonObject createPolymerPropertyObject(Event event,
+            String expression) {
+        ServerEventDataExpression dataExpression = getOrCreateExpression(
+                expression);
+        JsonObject expressionValue = dataExpression.evaluate(event, this);
+        JsonObject object = Json.createObject();
+        object.put(NODE_ID, expressionValue.getNumber(NODE_ID));
+        return object;
+    }
+
+    private native JsonObject getPolymerPropertyObject(Node node,
+            String propertyName)
     /*-{
-        return node.get(propertyName);
+        if (typeof(node.get) === 'function') {
+            var polymerProperty = node.get(propertyName);
+            if (typeof(polymerProperty) === 'object'
+                && typeof(polymerProperty["nodeId"]) !==  'undefined') {
+                return { nodeId: polymerProperty["nodeId"] };
+            }
+        }
+        return null;
     }-*/;
 
     /**
