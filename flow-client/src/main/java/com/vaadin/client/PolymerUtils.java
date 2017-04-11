@@ -90,16 +90,19 @@ public final class PolymerUtils {
     /**
      * Store the StateNode.id into the polymer property under 'nodeId'
      *
-     * @param domNode polymer dom node
-     * @param id id of a state node
-     * @param path polymer model path to property
+     * @param domNode
+     *            polymer dom node
+     * @param id
+     *            id of a state node
+     * @param path
+     *            polymer model path to property
      */
     public static native void storeNodeId(Node domNode, int id, String path)
     /*-{
-        if(typeof(domNode.get) !== 'undefined') {
+        if (typeof(domNode.get) !== 'undefined') {
             var polymerProperty = domNode.get(path);
-            if(typeof(polymerProperty) === 'object'
-                && polymerProperty["nodeId"] === undefined){
+            if (typeof(polymerProperty) === 'object'
+                && polymerProperty["nodeId"] === undefined) {
                 polymerProperty["nodeId"] = id;
             }
         }
@@ -108,7 +111,8 @@ public final class PolymerUtils {
     /**
      * Makes an attempt to convert an object into json.
      *
-     * @param object the object to convert to json
+     * @param object
+     *            the object to convert to json
      * @return json from object, {@code null} for null
      */
     public static JsonValue convertToJson(Object object) {

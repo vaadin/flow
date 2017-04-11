@@ -18,6 +18,7 @@ package com.vaadin.server.communication.rpc;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,10 +33,7 @@ import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.BeanModelType;
-import com.vaadin.flow.template.model.ListModelType;
 import com.vaadin.flow.template.model.ModelType;
-import com.vaadin.flow.template.model.TemplateModelProxyHandler;
 import com.vaadin.shared.JsonConstants;
 import com.vaadin.ui.Component;
 import com.vaadin.util.ReflectTools;
@@ -223,8 +221,9 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
 
             if (isTemplateModelValue(instance, argValue, convertedType)) {
-                return getTemplateItem((PolymerTemplate) instance,
-                        (JsonObject) argValue, convertedType);
+                return getTemplateItem((PolymerTemplate<?>) instance,
+                        (JsonObject) argValue,
+                        method.getGenericParameterTypes()[index]);
             }
 
             if (!JsonCodec.canEncodeWithoutTypeInfo(convertedType)) {
@@ -243,38 +242,19 @@ public class PublishedServerEventHandlerRpcHandler
             JsonValue argValue, Class<?> convertedType) {
         return instance instanceof PolymerTemplate
                 && argValue instanceof JsonObject
-                && ((PolymerTemplate) instance).getModelClasses()
-                        .contains(convertedType)
+                && ((PolymerTemplate<?>) instance)
+                        .isSupportedClass(convertedType)
                 && ((JsonObject) argValue).hasKey("nodeId");
     }
 
-    private static Object getTemplateItem(PolymerTemplate template,
-            JsonObject argValue, Class<?> convertedType) {
+    private static Object getTemplateItem(PolymerTemplate<?> template,
+            JsonObject argValue, Type convertedType) {
         StateNode node = template.getUI().get().getInternals().getStateTree()
-                .getNodeById((int) (argValue).getNumber("nodeId"));
+                .getNodeById((int) argValue.getNumber("nodeId"));
 
         ModelType propertyType = template.getModelType(convertedType);
 
-        if (propertyType instanceof ListModelType) {
-            propertyType = getBeanModelTypeForListModelType(propertyType);
-            return TemplateModelProxyHandler.createModelProxy(node,
-                    (BeanModelType) propertyType);
-        } else if (propertyType instanceof BeanModelType) {
-            return TemplateModelProxyHandler.createModelProxy(node,
-                    (BeanModelType) propertyType);
-        }
-        String msg = String.format(
-                "Could not parse %s ModelItem for PolymerTemplate.",
-                convertedType.getSimpleName());
-        throw new IllegalArgumentException(msg);
-    }
-
-    private static ModelType getBeanModelTypeForListModelType(
-            ModelType propertyType) {
-        do {
-            propertyType = ((ListModelType) propertyType).getItemType();
-        } while (propertyType instanceof ListModelType);
-        return propertyType;
+        return propertyType.modelToApplication(node);
     }
 
     private static Object decodeArray(Method method, Class<?> type, int index,

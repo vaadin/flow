@@ -15,19 +15,21 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.annotations.EventHandler;
-import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.Tag;
-import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.flow.uitest.ui.template.ListBindingTemplate.ListBindingModel;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.ModelItem;
+import com.vaadin.annotations.Tag;
+import com.vaadin.flow.html.Label;
+import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.uitest.ui.template.ListBindingTemplate.ListBindingModel;
 
 @Tag("list-binding")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/ListBinding.html")
@@ -58,15 +60,52 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
         void setMessages(List<Message> messages);
 
         List<Message> getMessages();
+
+        void setNestedMessages(List<List<Message>> nested);
     }
 
-    ListBindingTemplate() {
-        getModel().setMessages(Collections.singletonList(new Message(INITIAL_STATE)));
+    private Label multiselectionLabel;
+
+    public ListBindingTemplate() {
+        getModel().setMessages(
+                Collections.singletonList(new Message(INITIAL_STATE)));
+        getModel().setNestedMessages(Arrays.asList(
+                Arrays.asList(new Message("a"), new Message("b"),
+                        new Message("c")),
+                Collections.singletonList(new Message("d"))));
     }
 
     @EventHandler
     private void reset() {
-        getModel().setMessages(RESET_STATE.stream().map(Message::new).collect(Collectors.toList()));
+        getModel().setMessages(RESET_STATE.stream().map(Message::new)
+                .collect(Collectors.toList()));
+    }
+
+    @EventHandler
+    private void selectItem(@ModelItem Message message) {
+        Label label = new Label("Clicked message: " + message.getText());
+        label.setId("selection");
+        getElement().getParent().appendChild(label.getElement());
+    }
+
+    @EventHandler
+    private void selectedItems(@ModelItem List<Message> messages) {
+        if (multiselectionLabel == null) {
+            multiselectionLabel = new Label(buildMessageListString(messages));
+            multiselectionLabel.setId("multi-selection");
+            getElement().getParent()
+                    .appendChild(multiselectionLabel.getElement());
+        } else {
+            multiselectionLabel.setText(buildMessageListString(messages));
+        }
+    }
+
+    private String buildMessageListString(List<Message> messages) {
+        StringBuilder string = new StringBuilder();
+        string.append("Clicked message List: ");
+        string.append(messages.size()).append(" ");
+        messages.forEach(item -> string.append(item.getText()));
+        return string.toString();
     }
 
     @EventHandler
@@ -127,11 +166,13 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
 
     @EventHandler
     private void sortDescending() {
-        getModel().getMessages().sort(Comparator.comparing(Message::getText).reversed());
+        getModel().getMessages()
+                .sort(Comparator.comparing(Message::getText).reversed());
     }
 
     @EventHandler
     private void setInitialStateToEachMessage() {
-        getModel().getMessages().forEach(message -> message.setText(INITIAL_STATE));
+        getModel().getMessages()
+                .forEach(message -> message.setText(INITIAL_STATE));
     }
 }
