@@ -221,7 +221,7 @@ public class PublishedServerEventHandlerRpcHandler
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
 
             if (isTemplateModelValue(instance, argValue, convertedType)) {
-                return getTemplateItem((PolymerTemplate) instance,
+                return getTemplateItem((PolymerTemplate<?>) instance,
                         (JsonObject) argValue,
                         method.getGenericParameterTypes()[index]);
             }
@@ -242,11 +242,12 @@ public class PublishedServerEventHandlerRpcHandler
             JsonValue argValue, Class<?> convertedType) {
         return instance instanceof PolymerTemplate
                 && argValue instanceof JsonObject
-                && ((PolymerTemplate) instance).isSupportedClass(convertedType)
+                && ((PolymerTemplate<?>) instance)
+                        .isSupportedClass(convertedType)
                 && ((JsonObject) argValue).hasKey("nodeId");
     }
 
-    private static Object getTemplateItem(PolymerTemplate template,
+    private static Object getTemplateItem(PolymerTemplate<?> template,
             JsonObject argValue, Type convertedType) {
         StateNode node = template.getUI().get().getInternals().getStateTree()
                 .getNodeById((int) argValue.getNumber("nodeId"));

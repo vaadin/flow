@@ -60,7 +60,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     /**
      * Check if the given Class {@code type} is found in the Model.
-     * 
+     *
      * @param type
      *            Class to check support for
      * @return True if supported by this PolymerTemplate
@@ -90,12 +90,9 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         }
         ModelType model = modelType;
         while (model instanceof ListModelType) {
-            model = ((ListModelType) model).getItemType();
+            model = ((ListModelType<?>) model).getItemType();
         }
-        if (type.equals(model.getJavaType())) {
-            return true;
-        }
-        return false;
+        return type.equals(model.getJavaType());
     }
 
     private ModelType getModelType(String type) {
@@ -104,7 +101,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     /**
      * Get the {@code ModelType} for given class.
-     * 
+     *
      * @param type
      *            Type to get the ModelType for
      * @return ModelType for given Type
@@ -136,7 +133,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
             if (type.equals(modelType.getJavaType())) {
                 return modelType;
             }
-            modelType = ((ListModelType) modelType).getItemType();
+            modelType = ((ListModelType<?>) modelType).getItemType();
         }
         // If type was not a list type then check the bean for List if it
         // matches the type

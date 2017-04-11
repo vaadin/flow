@@ -15,7 +15,7 @@
  */
 package com.vaadin.client.flow.binding;
 
-import jsinterop.annotations.JsFunction;
+import java.util.Optional;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
@@ -33,6 +33,7 @@ import elemental.events.Event;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import jsinterop.annotations.JsFunction;
 
 /**
  * A representation of a server object able to send notifications to the server.
@@ -40,8 +41,7 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public final class ServerEventObject extends JavaScriptObject {
-
-    public static final String NODE_ID = "nodeId";
+    private static final String NODE_ID = "nodeId";
 
     /**
      * Callback interface for an event data expression parsed using new
@@ -71,7 +71,6 @@ public final class ServerEventObject extends JavaScriptObject {
      * JSO constructor.
      */
     protected ServerEventObject() {
-
     }
 
     /**
@@ -108,7 +107,7 @@ public final class ServerEventObject extends JavaScriptObject {
      * Collect extra data for element event if any has been sent from the
      * server. Note! Data is sent in the array in the same order as defined on
      * the server side.
-     * 
+     *
      * @param event
      *            The fired Event
      * @param methodName
@@ -165,17 +164,18 @@ public final class ServerEventObject extends JavaScriptObject {
 
     private JsonObject getPolymerProperty(Event event, StateNode node,
             String expression) {
+        return Optional
+                .ofNullable(getPolymerProperty(node.getDomNode(), expression))
+                .orElse(createPolymerProperty(event, expression));
+    }
 
-        try {
-            return getPolymerProperty(node.getDomNode(), expression);
-        } catch (Exception referenceError) {
-            ServerEventDataExpression dataExpression = getOrCreateExpression(
-                    expression);
-            JsonObject expressionValue = dataExpression.evaluate(event, this);
-            JsonObject object = Json.createObject();
-            object.put(NODE_ID, expressionValue.getNumber(NODE_ID));
-            return object;
-        }
+    private JsonObject createPolymerProperty(Event event, String expression) {
+        ServerEventDataExpression dataExpression = getOrCreateExpression(
+                expression);
+        JsonObject expressionValue = dataExpression.evaluate(event, this);
+        JsonObject object = Json.createObject();
+        object.put(NODE_ID, expressionValue.getNumber(NODE_ID));
+        return object;
     }
 
     private native JsonObject getPolymerProperty(Node node, String propertyName)
@@ -187,7 +187,7 @@ public final class ServerEventObject extends JavaScriptObject {
                 return { nodeId: polymerProperty["nodeId"] };
             }
         }
-        throw ReferenceError("No polymer property found for: " + propertyName);
+        return null;
     }-*/;
 
     /**
