@@ -13,12 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.hummingbird.uitest.ui;
+package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.annotations.WebComponents;
 import com.vaadin.annotations.WebComponents.PolyfillVersion;
-import com.vaadin.hummingbird.dom.Element;
-import com.vaadin.hummingbird.dom.ElementFactory;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 

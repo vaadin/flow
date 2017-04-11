@@ -54,17 +54,19 @@ public abstract class VaadinUriResolver {
             return null;
         }
 
-        if (vaadinUri
-                .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
-            String relativeUrl = vaadinUri.substring(
-                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
-            vaadinUri = getContextRootUrl() + relativeUrl;
-        } else if (vaadinUri.startsWith(
+        if (vaadinUri.startsWith(
                 ApplicationConstants.WEB_COMPONENT_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.WEB_COMPONENT_PROTOCOL_PREFIX
                             .length());
             vaadinUri = getWebComponentBuildUrl() + relativeUrl;
+        }
+
+        if (vaadinUri
+                .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
+            String relativeUrl = vaadinUri.substring(
+                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
+            vaadinUri = getContextRootUrl() + relativeUrl;
         }
 
         return vaadinUri;

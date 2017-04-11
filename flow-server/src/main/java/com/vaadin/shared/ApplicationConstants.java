@@ -189,13 +189,27 @@ public class ApplicationConstants implements Serializable {
     public static final String FORCE_SHADY_DOM = "forceShadyDom";
 
     /**
-     * Configuration name for the build path of ES6 webcomponents.
+     * Configuration name for the build URL of ES6 web components.
      */
-    public static final String ES6_BUILD_BASE = "es6BuildBase";
+    public static final String ES6_BUILD_URL = "es6BuildUrl";
 
     /**
-     * Configuration name for the build path of ES5 webcomponents.
+     * Default value of the configuration of the build URL of ES6 web
+     * components.
      */
-    public static final String ES5_BUILD_BASE = "es5BuildBase";
+    public static final String ES6_BUILD_URL_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
+            + "build/es6/";
+
+    /**
+     * Configuration name for the build URL of ES5 web components.
+     */
+    public static final String ES5_BUILD_URL = "es5BuildUrl";
+
+    /**
+     * Default value of the configuration of the build URL of ES5 web
+     * components.
+     */
+    public static final String ES5_BUILD_URL_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
+            + "build/es5/";
 
 }

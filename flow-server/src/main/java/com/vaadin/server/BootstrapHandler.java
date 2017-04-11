@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -265,9 +266,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static class BootstrapUriResolver extends VaadinUriResolver {
         private final BootstrapContext context;
+        private final String es6BuildUrl;
+        private final String es5BuildUrl;
 
         protected BootstrapUriResolver(BootstrapContext bootstrapContext) {
             context = bootstrapContext;
+
+            Map<String, String> map = getWebComponentBuildUrls(context);
+            es6BuildUrl = map.get(ApplicationConstants.ES6_BUILD_URL);
+            es5BuildUrl = map.get(ApplicationConstants.ES5_BUILD_URL);
         }
 
         @Override
@@ -282,20 +289,40 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         protected String getWebComponentBuildUrl() {
             String root;
             if (context.getSession().getBrowser().isEs6Supported()) {
-                root = getContextRootUrl() + context.getSession()
-                        .getConfiguration().getApplicationOrSystemProperty(
-                                ApplicationConstants.ES6_BUILD_BASE,
-                                "build/es6/");
+                root = es6BuildUrl;
             } else {
-                root = getContextRootUrl() + context.getSession()
-                        .getConfiguration().getApplicationOrSystemProperty(
-                                ApplicationConstants.ES5_BUILD_BASE,
-                                "build/es5/");
+                root = es5BuildUrl;
             }
             assert root.endsWith("/");
             return root;
         }
 
+    }
+
+    private static Map<String, String> getWebComponentBuildUrls(
+            BootstrapContext context) {
+        Map<String, String> map = new HashMap<>(2);
+
+        Optional<WebComponents> webComponents = AnnotationReader
+                .getAnnotationFor(context.getUI().getClass(),
+                        WebComponents.class);
+        if (webComponents.isPresent()) {
+            map.put(ApplicationConstants.ES6_BUILD_URL,
+                    webComponents.get().es6BuildUrl());
+            map.put(ApplicationConstants.ES5_BUILD_URL,
+                    webComponents.get().es5BuildUrl());
+        } else {
+            map.put(ApplicationConstants.ES6_BUILD_URL, context.getSession()
+                    .getConfiguration().getApplicationOrSystemProperty(
+                            ApplicationConstants.ES6_BUILD_URL,
+                            ApplicationConstants.ES6_BUILD_URL_DEFAULT_VALUE));
+            map.put(ApplicationConstants.ES5_BUILD_URL, context.getSession()
+                    .getConfiguration().getApplicationOrSystemProperty(
+                            ApplicationConstants.ES5_BUILD_URL,
+                            ApplicationConstants.ES5_BUILD_URL_DEFAULT_VALUE));
+        }
+
+        return map;
     }
 
     @Override
@@ -661,13 +688,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .isProductionMode();
 
         JsonObject appConfig = Json.createObject();
-        appConfig.put(ApplicationConstants.ES5_BUILD_BASE,
-                session.getConfiguration().getApplicationOrSystemProperty(
-                        ApplicationConstants.ES5_BUILD_BASE, "build/es5/"));
 
-        appConfig.put(ApplicationConstants.ES6_BUILD_BASE,
-                session.getConfiguration().getApplicationOrSystemProperty(
-                        ApplicationConstants.ES6_BUILD_BASE, "build/es6/"));
+        Map<String, String> buildUrls = getWebComponentBuildUrls(context);
+        buildUrls.forEach((k, v) -> appConfig.put(k, v));
 
         appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
                 context.getUI().getUIId());
