@@ -147,7 +147,7 @@ public final class ServerEventObject extends JavaScriptObject {
         JsonObject expressionValue;
 
         if (serverExpectsNodeId(expression)) {
-            return getPolymerProperty(event, node, expression);
+            return getPolymerPropertyObject(event, node, expression);
         }
 
         ServerEventDataExpression dataExpression = getOrCreateExpression(
@@ -162,14 +162,16 @@ public final class ServerEventObject extends JavaScriptObject {
                 || "event.model.item".equals(expression);
     }
 
-    private JsonObject getPolymerProperty(Event event, StateNode node,
+    private JsonObject getPolymerPropertyObject(Event event, StateNode node,
             String expression) {
         return Optional
-                .ofNullable(getPolymerProperty(node.getDomNode(), expression))
-                .orElse(createPolymerProperty(event, expression));
+                .ofNullable(
+                        getPolymerPropertyObject(node.getDomNode(), expression))
+                .orElse(createPolymerPropertyObject(event, expression));
     }
 
-    private JsonObject createPolymerProperty(Event event, String expression) {
+    private JsonObject createPolymerPropertyObject(Event event,
+            String expression) {
         ServerEventDataExpression dataExpression = getOrCreateExpression(
                 expression);
         JsonObject expressionValue = dataExpression.evaluate(event, this);
@@ -178,9 +180,10 @@ public final class ServerEventObject extends JavaScriptObject {
         return object;
     }
 
-    private native JsonObject getPolymerProperty(Node node, String propertyName)
+    private native JsonObject getPolymerPropertyObject(Node node,
+            String propertyName)
     /*-{
-        if (typeof(node.get) === 'function'){
+        if (typeof(node.get) === 'function') {
             var polymerProperty = node.get(propertyName);
             if (typeof(polymerProperty) === 'object'
                 && typeof(polymerProperty["nodeId"]) !==  'undefined') {
