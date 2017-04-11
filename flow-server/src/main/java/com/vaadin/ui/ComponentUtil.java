@@ -254,7 +254,7 @@ public class ComponentUtil {
      *            <code>false</code> to only map the component to the element
      * @return a new component instance of the given type
      */
-    public static <T> T componentFromElement(Element element,
+    public static <T extends Component> T componentFromElement(Element element,
             Class<T> componentType, boolean mapComponent) {
         if (element == null) {
             throw new IllegalArgumentException("Element to use cannot be null");

@@ -1499,7 +1499,7 @@ public class Element implements Serializable {
      *            the component type
      * @return the component instance connected to the given element
      */
-    public <T> T as(Class<T> componentType) {
+    public <T extends Component> T as(Class<T> componentType) {
         return ComponentUtil.componentFromElement(this, componentType, false);
     }
 
