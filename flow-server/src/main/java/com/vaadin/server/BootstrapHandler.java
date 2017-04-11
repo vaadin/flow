@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -272,9 +271,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         protected BootstrapUriResolver(BootstrapContext bootstrapContext) {
             context = bootstrapContext;
 
-            Map<String, String> map = getWebComponentBuildUrls(context);
-            es6BuildUrl = map.get(ApplicationConstants.ES6_BUILD_URL);
-            es5BuildUrl = map.get(ApplicationConstants.ES5_BUILD_URL);
+            es6BuildUrl = context.getSession().getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+                            ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE);
+            es5BuildUrl = context.getSession().getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+                            ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE);
         }
 
         @Override
@@ -297,32 +299,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return root;
         }
 
-    }
-
-    private static Map<String, String> getWebComponentBuildUrls(
-            BootstrapContext context) {
-        Map<String, String> map = new HashMap<>(2);
-
-        Optional<WebComponents> webComponents = AnnotationReader
-                .getAnnotationFor(context.getUI().getClass(),
-                        WebComponents.class);
-        if (webComponents.isPresent()) {
-            map.put(ApplicationConstants.ES6_BUILD_URL,
-                    webComponents.get().es6BuildUrl());
-            map.put(ApplicationConstants.ES5_BUILD_URL,
-                    webComponents.get().es5BuildUrl());
-        } else {
-            map.put(ApplicationConstants.ES6_BUILD_URL, context.getSession()
-                    .getConfiguration().getApplicationOrSystemProperty(
-                            ApplicationConstants.ES6_BUILD_URL,
-                            ApplicationConstants.ES6_BUILD_URL_DEFAULT_VALUE));
-            map.put(ApplicationConstants.ES5_BUILD_URL, context.getSession()
-                    .getConfiguration().getApplicationOrSystemProperty(
-                            ApplicationConstants.ES5_BUILD_URL,
-                            ApplicationConstants.ES5_BUILD_URL_DEFAULT_VALUE));
-        }
-
-        return map;
     }
 
     @Override
@@ -459,11 +435,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             forceShadyDom = Boolean
                     .parseBoolean(config.getApplicationOrSystemProperty(
-                            ApplicationConstants.FORCE_SHADY_DOM, ""));
+                            Constants.FORCE_SHADY_DOM, ""));
 
             loadEs5Adapter = Boolean
                     .parseBoolean(config.getApplicationOrSystemProperty(
-                            ApplicationConstants.LOAD_ES5_ADAPTER, ""));
+                            Constants.LOAD_ES5_ADAPTER, ""));
         } else {
             WebComponents annotation = webComponents.get();
             isVersion1 = annotation.value() == PolyfillVersion.V1;
@@ -689,8 +665,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         JsonObject appConfig = Json.createObject();
 
-        Map<String, String> buildUrls = getWebComponentBuildUrls(context);
-        buildUrls.forEach((k, v) -> appConfig.put(k, v));
+        appConfig.put(Constants.FRONTEND_URL_ES6, context.getSession()
+                .getConfiguration()
+                .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+                        ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE));
+        appConfig.put(Constants.FRONTEND_URL_ES5, context.getSession()
+                .getConfiguration()
+                .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+                        ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE));
 
         appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
                 context.getUI().getUIId());

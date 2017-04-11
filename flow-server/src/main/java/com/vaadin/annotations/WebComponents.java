@@ -23,7 +23,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.vaadin.server.VaadinServlet;
-import com.vaadin.shared.ApplicationConstants;
 import com.vaadin.ui.UI;
 
 /**
@@ -83,24 +82,4 @@ public @interface WebComponents {
      *         ShadyDOM, <code>false</code> otherwise
      */
     boolean forceShadyDom() default false;
-
-    /**
-     * Gets the base URL of ES6 components. This property is read when the
-     * protocol {@literal webcomponent://} is used at {@link HtmlImport}.
-     * <p>
-     * The default value is {@literal context://build/es6/}
-     * 
-     * @return The URL where ES6 components can be found.
-     */
-    String es6BuildUrl() default ApplicationConstants.ES6_BUILD_URL_DEFAULT_VALUE;
-
-    /**
-     * Gets the base URL of ES5 components. This property is read when the
-     * protocol {@literal webcomponent://} is used at {@link HtmlImport}.
-     * <p>
-     * The default value is {@literal context://build/es5/}
-     * 
-     * @return The URL where ES5 components can be found.
-     */
-    String es5BuildUrl() default ApplicationConstants.ES5_BUILD_URL_DEFAULT_VALUE;
 }

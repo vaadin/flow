@@ -37,8 +37,8 @@ public abstract class VaadinUriResolver {
      * <ul>
      * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
      * resolves to the application context root</li>
-     * <li><code>{@value ApplicationConstants#WEB_COMPONENT_PROTOCOL_PREFIX}</code>
-     * - resolves to the build path where web components were compiled. Browsers
+     * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code> -
+     * resolves to the build path where web components were compiled. Browsers
      * supporting ES6 can receive different, more optimized files than browsers
      * that only support ES5.</li>
      * </ul>
@@ -54,11 +54,10 @@ public abstract class VaadinUriResolver {
             return null;
         }
 
-        if (vaadinUri.startsWith(
-                ApplicationConstants.WEB_COMPONENT_PROTOCOL_PREFIX)) {
+        if (vaadinUri
+                .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
-                    ApplicationConstants.WEB_COMPONENT_PROTOCOL_PREFIX
-                            .length());
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
             vaadinUri = getWebComponentBuildUrl() + relativeUrl;
         }
 

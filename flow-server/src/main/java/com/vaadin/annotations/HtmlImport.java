@@ -58,14 +58,14 @@ public @interface HtmlImport {
      * service (servlet) path.
      * <p>
      * When using compiled web components, you can prefix the URL with
-     * {@literal webcomponent://} to serve different compiled sources to
-     * different browsers, based on their ES6 support. For example, when using
-     * {@literal webcomponent://MyComponent.html}, the evaluated URL will be:
+     * {@literal frontend://} to serve different files to different browsers,
+     * based on their ES6 support. For example, when using
+     * {@literal frontend://MyComponent.html}, the evaluated URL will be:
      * <ul>
-     * <li>{@literal context://build/es6/MyComponent.html} for ES6 capable
-     * browsers;</li>
-     * <li>{@literal context://build/es5/MyComponent.html} for other
-     * browsers.</li>
+     * <li>{@literal context://VAADIN/static/frontend/es6/MyComponent.html} for
+     * ES6 capable browsers;</li>
+     * <li>{@literal context://VAADIN/static/frontend/es5/MyComponent.html} for
+     * other browsers.</li>
      * </ul>
      *
      * @return a html file URL

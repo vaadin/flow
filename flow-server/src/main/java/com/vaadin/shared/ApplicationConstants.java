@@ -38,10 +38,10 @@ public class ApplicationConstants implements Serializable {
     public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
 
     /**
-     * An internal protocol used for referencing the build path of web
-     * components.
+     * An internal protocol used for referencing different files based on the
+     * browser capability of interpreting ECMAScript 6.
      */
-    public static final String WEB_COMPONENT_PROTOCOL_PREFIX = "webcomponent://";
+    public static final String FRONTEND_PROTOCOL_PREFIX = "frontend://";
 
     /**
      * An internal protocol used for identifying a font icon resource.
@@ -179,37 +179,17 @@ public class ApplicationConstants implements Serializable {
     public static final String PRE_RENDER_ATTRIBUTE = "pre-render";
 
     /**
-     * Configuration name for loading the ES5 adapter.
-     */
-    public static final String LOAD_ES5_ADAPTER = "loadEs5Adapter";
-
-    /**
-     * Configuration name for forcing the ShadyDOM polyfill.
-     */
-    public static final String FORCE_SHADY_DOM = "forceShadyDom";
-
-    /**
-     * Configuration name for the build URL of ES6 web components.
-     */
-    public static final String ES6_BUILD_URL = "es6BuildUrl";
-
-    /**
      * Default value of the configuration of the build URL of ES6 web
      * components.
      */
-    public static final String ES6_BUILD_URL_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
-            + "build/es6/";
-
-    /**
-     * Configuration name for the build URL of ES5 web components.
-     */
-    public static final String ES5_BUILD_URL = "es5BuildUrl";
+    public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
+            + VAADIN_STATIC_FILES_PATH + "frontend/es6";
 
     /**
      * Default value of the configuration of the build URL of ES5 web
      * components.
      */
-    public static final String ES5_BUILD_URL_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
-            + "build/es5/";
+    public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
+            + VAADIN_STATIC_FILES_PATH + "frontend/es5";
 
 }
