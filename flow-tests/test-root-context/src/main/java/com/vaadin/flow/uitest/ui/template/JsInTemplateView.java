@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui.template;
 import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.annotations.Id;
 import com.vaadin.flow.html.Button;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
 public class JsInTemplateView extends AngularTemplate {

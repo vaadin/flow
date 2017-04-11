@@ -17,6 +17,7 @@ package com.vaadin.flow.template.model;
 
 import java.lang.reflect.Method;
 
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.ui.AngularTemplate;
 

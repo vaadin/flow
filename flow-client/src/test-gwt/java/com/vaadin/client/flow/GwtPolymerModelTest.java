@@ -1,13 +1,10 @@
-package com.vaadin.client.flow.collection;
+package com.vaadin.client.flow;
 
 import java.util.Arrays;
 import java.util.List;
 
-import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
-import com.vaadin.client.flow.StateNode;
-import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.reactive.Reactive;
@@ -21,7 +18,7 @@ import elemental.json.JsonArray;
 /**
  * @author Vaadin Ltd.
  */
-public class GwtPolymerModelTest extends ClientEngineTestBase {
+public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
     private static final String PROPERTY_PREFIX = "_";
     private static final String MODEL_PROPERTY_NAME = "model";
     private static final String LIST_PROPERTY_NAME = "listProperty";
@@ -34,12 +31,12 @@ public class GwtPolymerModelTest extends ClientEngineTestBase {
     @Override
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
-        Reactive.reset();
 
-        node = createAndAttachStateNode();
+        node = createNode();
         modelNode = createAndAttachModelNode(MODEL_PROPERTY_NAME);
         nextId = node.getId() + 1;
         element = createHtmlElement();
+        initPolymer(element);
     }
 
     public void testPropertyAdded() {
@@ -183,7 +180,8 @@ public class GwtPolymerModelTest extends ClientEngineTestBase {
         JsonArray argumentsArray = WidgetUtil.crazyJsCast(
                 WidgetUtil.getJsProperty(element, "argumentsArray"));
 
-        // Since `fillNodeWithListItems` makes separate `add` call for every element in newList, we will be having
+        // Since `fillNodeWithListItems` makes separate `add` call for every
+        // element in newList, we will be having
         // the same number of `splice` calls.
         assertEquals(newList.size(), argumentsArray.length());
         for (int i = 0; i < newList.size(); i++) {
@@ -202,15 +200,17 @@ public class GwtPolymerModelTest extends ClientEngineTestBase {
         }
     }
 
-    ////////////////////////
+    @Override
+    protected StateNode createNode() {
+        StateNode newNode = super.createNode();
 
-    private StateNode createAndAttachStateNode() {
-        StateNode newNode = new StateNode(0, new StateTree(new Registry()));
         newNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
         newNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
         newNode.getMap(NodeFeatures.ELEMENT_DATA);
         return newNode;
     }
+
+    ////////////////////////
 
     private StateNode createAndAttachModelNode(String modelPropertyName) {
         StateNode modelNode = new StateNode(nextId,
@@ -249,8 +249,8 @@ public class GwtPolymerModelTest extends ClientEngineTestBase {
     }
 
     private static void setModelProperty(StateNode stateNode, String name,
-                                         Object value, boolean flush) {
-        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(name)
+            Object value, boolean flush) {
+        stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES).getProperty(name)
                 .setValue(value);
         if (flush) {
             Reactive.flush();
@@ -258,10 +258,9 @@ public class GwtPolymerModelTest extends ClientEngineTestBase {
     }
 
     private static void setModelProperty(StateNode stateNode, String name,
-                                         Object value) {
+            Object value) {
         setModelProperty(stateNode, name, value, true);
     }
-
 
     private StateNode createAndAttachNodeWithList(StateNode modelNode,
             List<String> listItems) {
@@ -292,4 +291,11 @@ public class GwtPolymerModelTest extends ClientEngineTestBase {
                 .crazyJsCast(WidgetUtil.getJsProperty(element, PROPERTY_PREFIX
                         + MODEL_PROPERTY_NAME + "." + LIST_PROPERTY_NAME));
     }
+
+    private native void initPolymer(Element element)
+    /*-{
+        Polymer = function() {};
+        Polymer.Element = {};
+        element.__proto__ = Polymer.Element;
+    }-*/;
 }

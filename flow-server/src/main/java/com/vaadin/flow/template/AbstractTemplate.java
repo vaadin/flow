@@ -25,9 +25,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.model.ModelDescriptor;
-import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.flow.template.model.TemplateModelProxyHandler;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.Component;
 
 /**
@@ -36,11 +34,9 @@ import com.vaadin.ui.Component;
  * @param <M>
  *            a model class that will be used for template data propagation
  */
-public abstract class AbstractTemplate<M extends TemplateModel>
-        extends Component implements HasChildView {
+public abstract class AbstractTemplate<M> extends Component
+        implements HasChildView {
     private final StateNode stateNode;
-
-    private transient M model;
 
     protected AbstractTemplate() {
         this.stateNode = getElement().getNode();
@@ -61,31 +57,7 @@ public abstract class AbstractTemplate<M extends TemplateModel>
      * @return the model of this template
      * @see TemplateModel
      */
-    protected M getModel() {
-        if (model == null) {
-            model = createTemplateModelInstance();
-        }
-        return model;
-    }
-
-    private M createTemplateModelInstance() {
-        ModelDescriptor<? extends M> descriptor = ModelDescriptor
-                .get(getModelType());
-        updateModelDescriptor(descriptor);
-        return TemplateModelProxyHandler.createModelProxy(stateNode,
-                descriptor);
-    }
-
-    /**
-     * Method that allows to update model descriptor, if needed.
-     * 
-     * @param currentDescriptor
-     *            current descriptor for a model
-     */
-    protected void updateModelDescriptor(
-            ModelDescriptor<? extends M> currentDescriptor) {
-        // No need to update descriptor by default
-    }
+    protected abstract M getModel();
 
     @Override
     public void setChildView(View childView) {

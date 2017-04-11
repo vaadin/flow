@@ -20,6 +20,7 @@ import com.vaadin.flow.change.NodeChange;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.InlineTemplate;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 import com.vaadin.util.ReflectTools;
 
@@ -79,6 +80,21 @@ public class TemplateModelTest {
         void setfoo(int i);
 
         int isbar();
+    }
+
+    public static class BeanImpl extends Bean {
+
+        private final AtomicInteger stringAccessCount;
+
+        public BeanImpl(AtomicInteger stringAccessCount) {
+            this.stringAccessCount = stringAccessCount;
+        }
+
+        @Override
+        public String getString() {
+            stringAccessCount.incrementAndGet();
+            return super.getString();
+        }
     }
 
     public interface BeanModel extends TemplateModel {
@@ -301,6 +317,20 @@ public class TemplateModelTest {
     public static class TemplateWithExcludeAndIncludeSubclass
             extends TemplateWithExcludeAndInclude {
         // Should work exactly the same way as the parent class
+    }
+
+    public static class SubSubBeanIfaceImpl implements SubSubBeanIface {
+        private int value;
+
+        @Override
+        public void setValue(int value) {
+            this.value = value;
+        }
+
+        @Override
+        public int getValue() {
+            return value;
+        }
     }
 
     public static class TemplateWithExcludeAndIncludeSubclassOverrides
@@ -602,13 +632,7 @@ public class TemplateModelTest {
         BeanModel model = template.getModel();
 
         AtomicInteger beanTriggered = new AtomicInteger();
-        Bean bean = new Bean() {
-            @Override
-            public String getString() {
-                beanTriggered.incrementAndGet();
-                return super.getString();
-            }
-        };
+        Bean bean = new BeanImpl(beanTriggered);
         bean.setString("foobar");
 
         StateNode stateNode = (StateNode) template.getElement().getNode()
@@ -852,20 +876,7 @@ public class TemplateModelTest {
         SubBeansTemplate template = new SubBeansTemplate();
         SubBeansModel model = template.getModel();
         SubBeanIface proxy = model.getProxy("bean", SubBeanIface.class);
-        SubSubBeanIface subBean = new SubSubBeanIface() {
-
-            private int value;
-
-            @Override
-            public void setValue(int value) {
-                this.value = value;
-            }
-
-            @Override
-            public int getValue() {
-                return value;
-            }
-        };
+        SubSubBeanIface subBean = new SubSubBeanIfaceImpl();
         subBean.setValue(4);
         proxy.setBean(subBean);
 

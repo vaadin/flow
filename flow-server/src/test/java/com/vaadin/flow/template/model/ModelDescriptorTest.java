@@ -30,6 +30,8 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.template.angular.model.BeanModelType;
+import com.vaadin.flow.template.angular.model.ModelDescriptor;
 import com.vaadin.flow.template.model.TemplateModelTest.BasicTypeModel;
 import com.vaadin.flow.template.model.TemplateModelTest.BeanModel;
 import com.vaadin.flow.template.model.TemplateModelTest.ListBeanModel;

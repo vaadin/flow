@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.template.angular.model.BeanModelType;
 
 public class BeanModelTypeTest {
     // Partial overlap with Bean

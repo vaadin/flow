@@ -155,9 +155,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         JsArray<EventRemover> listeners = JsCollections.array();
 
-        listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                property -> updateProperty(property, htmlNode),
-                createComputations(computationsCollection), stateNode));
+        if (isPolymerElement(htmlNode)) {
+            bindModelProperties(stateNode, htmlNode);
+            bindPolymerPropertyChangeListener(stateNode, htmlNode);
+        } else {
+            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
+                    property -> updateProperty(property, htmlNode),
+                    createComputations(computationsCollection), stateNode));
+        }
         listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                 property -> updateStyleProperty(property, htmlNode),
                 createComputations(computationsCollection), stateNode));
@@ -182,10 +187,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(bindPolymerEventHandlerNames(context));
 
         listeners.push(bindClientDelegateMethods(context));
-
-        bindPolymerPropertyChangeListener(stateNode, htmlNode);
-
-        bindModelProperties(stateNode, htmlNode);
     }
 
     private native void bindPolymerPropertyChangeListener(StateNode node,
@@ -223,7 +224,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         StateNode model = node;
         MapProperty mapProperty = null;
         for (String prop : properties) {
-            NodeMap map = model.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            NodeMap map = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
             if (!map.hasPropertyValue(prop)) {
                 Console.debug("Ignoring property change for property '"
                         + property + "' which isn't defined from the server");
@@ -254,7 +255,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
             String path) {
         Computation computation = Reactive.runWhenDepedenciesChange(
-                () -> stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                () -> stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                         .forEachProperty((property, key) -> bindSubProperty(
                                 stateNode, htmlNode, path, property)));
         stateNode.addUnregisterListener(event -> computation.stop());
@@ -321,7 +322,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void listenToSubPropertiesChanges(Element htmlNode,
             String polymerModelPath, int subNodeIndex, Object item) {
         if (item instanceof StateNode) {
-            ((StateNode) item).getMap(NodeFeatures.TEMPLATE_MODELMAP)
+            ((StateNode) item).getMap(NodeFeatures.ELEMENT_PROPERTIES)
                     .addPropertyAddListener(event -> {
                         Computation computation = Reactive
                                 .runWhenDepedenciesChange(() -> PolymerUtils
@@ -680,4 +681,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         return expression;
     }
+
+    private native boolean isPolymerElement(Element htmlNode)
+    /*-{
+        return (typeof Polymer === 'function') && htmlNode instanceof Polymer.Element;
+    }-*/;
 }

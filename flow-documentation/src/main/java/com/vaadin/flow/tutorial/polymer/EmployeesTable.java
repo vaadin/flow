@@ -8,7 +8,7 @@ import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.tutorial.polymer.EmployeesTable.EmployeesModel;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 
 @CodeFor("tutorial-template-list-bindings.asciidoc")
 public class EmployeesTable extends PolymerTemplate<EmployeesModel> {

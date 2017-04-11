@@ -97,8 +97,8 @@ public abstract class AbstractPropertyMap extends NodeMap {
      * @return the property value; <code>null</code> if there is no property or
      *         if the value is explicitly set to null
      */
-    public Object getProperty(String name) {
-        return get(name);
+    public Serializable getProperty(String name) {
+        return (Serializable) get(name);
     }
 
     /**
@@ -132,6 +132,9 @@ public abstract class AbstractPropertyMap extends NodeMap {
             return true;
         }
         if (value instanceof JsonValue) {
+            return true;
+        }
+        if (value instanceof StateNode) {
             return true;
         }
 

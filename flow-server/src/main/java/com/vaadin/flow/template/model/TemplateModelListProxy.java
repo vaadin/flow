@@ -19,6 +19,8 @@ import java.util.AbstractList;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
+import com.vaadin.flow.template.angular.model.BeanModelType;
+import com.vaadin.flow.template.angular.model.TemplateModelProxyHandler;
 
 /**
  * A list implementation which uses a {@link ModelList} in a {@link StateNode}

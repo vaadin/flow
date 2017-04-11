@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.tutorial.template;
 
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.template.model.TemplateModel;
 
 @Deprecated
 @CodeFor("deprecated/tutorial-template-class-name-binding.asciidoc")

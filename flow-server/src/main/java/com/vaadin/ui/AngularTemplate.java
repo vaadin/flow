@@ -35,10 +35,11 @@ import com.vaadin.flow.template.AbstractTemplate;
 import com.vaadin.flow.template.angular.RelativeFileResolver;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.template.angular.TemplateParseException;
+import com.vaadin.flow.template.angular.model.ModelDescriptor;
+import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModelProxyHandler;
 import com.vaadin.flow.template.angular.parser.TemplateParser;
 import com.vaadin.flow.template.angular.parser.TemplateResolver;
-import com.vaadin.flow.template.model.ModelDescriptor;
-import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.template.model.TemplateModelTypeParser;
 import com.vaadin.util.ReflectTools;
 
@@ -66,6 +67,9 @@ import com.vaadin.util.ReflectTools;
  * @author Vaadin Ltd
  */
 public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
+
+    private transient TemplateModel model;
+
     /**
      * Creates a new template.
      */
@@ -236,6 +240,21 @@ public abstract class AngularTemplate extends AbstractTemplate<TemplateModel> {
     }
 
     @Override
+    protected TemplateModel getModel() {
+        if (model == null) {
+            model = createTemplateModelInstance();
+        }
+        return model;
+    }
+
+    private TemplateModel createTemplateModelInstance() {
+        ModelDescriptor<? extends TemplateModel> descriptor = ModelDescriptor
+                .get(getModelType());
+        updateModelDescriptor(descriptor);
+        return TemplateModelProxyHandler.createModelProxy(getStateNode(),
+                descriptor);
+    }
+
     protected void updateModelDescriptor(
             ModelDescriptor<? extends TemplateModel> currentDescriptor) {
         ModelDescriptor<?> oldDescriptor = getStateNode()

@@ -25,8 +25,8 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.template.angular.JsExpressionBindingProvider;
+import com.vaadin.flow.template.angular.model.BeanModelType;
 import com.vaadin.flow.template.model.BasicModelType;
-import com.vaadin.flow.template.model.BeanModelType;
 import com.vaadin.flow.template.model.ModelType;
 import com.vaadin.flow.template.model.TestModelDescriptor;
 
