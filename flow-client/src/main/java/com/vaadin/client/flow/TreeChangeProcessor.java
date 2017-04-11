@@ -15,6 +15,9 @@
  */
 package com.vaadin.client.flow;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.nodefeature.MapProperty;
@@ -32,7 +35,7 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  */
-public class TreeChangeProcessor {
+public final class TreeChangeProcessor {
     private TreeChangeProcessor() {
         // Only static helpers here
     }
@@ -50,31 +53,30 @@ public class TreeChangeProcessor {
                 .isUpdateInProgress() : "Previous tree change processing has not completed";
         try {
             tree.setUpdateInProgress(true);
-            int length = changes.length();
-
-            // Attach all nodes before doing anything else
-            for (int i = 0; i < length; i++) {
-                JsonObject change = changes.getObject(i);
-                if (isAttach(change)) {
-                    int nodeId = (int) change
-                            .getNumber(JsonConstants.CHANGE_NODE);
-
-                    StateNode node = new StateNode(nodeId, tree);
-                    tree.registerNode(node);
-                }
-            }
-
             // Then process all non-attach changes
-            for (int i = 0; i < length; i++) {
-                JsonObject change = changes.getObject(i);
-                if (!isAttach(change)) {
-                    processChange(tree, change);
-                }
-            }
+            attachNodesAndGetOtherChanges(tree, changes)
+                    .forEach(change -> processChange(tree, change));
         } finally {
             tree.setUpdateInProgress(false);
         }
 
+    }
+
+    private static List<JsonObject> attachNodesAndGetOtherChanges(
+            StateTree tree, JsonArray changes) {
+        List<JsonObject> nonAttachChanges = new ArrayList<>(changes.length());
+
+        for (int i = 0; i < changes.length(); i++) {
+            JsonObject change = changes.getObject(i);
+            if (isAttach(change)) {
+                int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
+                StateNode node = new StateNode(nodeId, tree);
+                tree.registerNode(node);
+            } else {
+                nonAttachChanges.add(change);
+            }
+        }
+        return nonAttachChanges;
     }
 
     private static boolean isAttach(JsonObject change) {
