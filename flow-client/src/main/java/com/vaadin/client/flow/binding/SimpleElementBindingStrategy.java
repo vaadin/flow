@@ -19,8 +19,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import jsinterop.annotations.JsFunction;
-
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
 import com.vaadin.client.WidgetUtil;
@@ -53,6 +51,7 @@ import elemental.events.EventRemover;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -192,17 +191,34 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Element element)
     /*-{
       var originalFunction = element._propertiesChanged;
-      if (!originalFunction) {
+      var flushPropertiesFunction = element._flushProperties;
+      if (!originalFunction || !flushPropertiesFunction) {
         // Ignore since this isn't a polymer element
         return;
       }
       var self = this;
+      var isFlush = false;
       element._propertiesChanged = function(currentProps, changedProps, oldProps) {
         originalFunction.apply(this, arguments);
-        $entry(function() {
-          self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
-        })();
-      }
+        if ( !isFlush ){
+            // don't send default values to the server (they are set during 
+            // flush properties method call). We always set model default 
+            // values from the server side explicitly. So server always overrides 
+            // polymer default values.
+            $entry(function() {
+              self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+            })();
+         }
+      };
+      element._flushProperties = function(){
+          isFlush = true;
+          try {
+              flushPropertiesFunction.apply(this);
+          }
+          finally {
+              isFlush = false;
+          }
+      };
     }-*/;
 
     private void handlePropertiesChanged(
