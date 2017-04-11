@@ -42,64 +42,6 @@ public class GwtPolymerModelTest extends ClientEngineTestBase {
         element = createHtmlElement();
     }
 
-    private StateNode createAndAttachStateNode() {
-        StateNode newNode = new StateNode(0, new StateTree(new Registry()));
-        newNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
-        newNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
-        newNode.getMap(NodeFeatures.ELEMENT_DATA);
-        return newNode;
-    }
-
-    private StateNode createAndAttachModelNode(String modelPropertyName) {
-        StateNode modelNode = new StateNode(nextId,
-                new StateTree(new Registry()));
-        nextId++;
-        setModelProperty(node, modelPropertyName, modelNode, false);
-        return modelNode;
-    }
-
-    private Element createHtmlElement() {
-        Element element = Browser.getDocument().createElement("div");
-        setupSetMethod(element, PROPERTY_PREFIX);
-        setupMockSpliceMethod(element);
-        return element;
-    }
-
-    private void setupSetMethod(Element element, String prefix) {
-        NativeFunction function = NativeFunction
-                .create("this['" + prefix + "'+arguments[0]]=arguments[1]");
-        WidgetUtil.setJsProperty(element, "set", function);
-    }
-
-    /**
-     * Sets up mock splice method, that is called when model list is modified.
-     * For each call, method stores call arguments in the element property named
-     * argumentsArray.
-     * 
-     * @param element
-     *            html element to set the method to
-     */
-    private void setupMockSpliceMethod(Element element) {
-        NativeFunction function = NativeFunction.create("path", "start",
-                "deleteCount", "items",
-                "this.argumentsArray ? this.argumentsArray.push(arguments) : this.argumentsArray = [arguments]");
-        WidgetUtil.setJsProperty(element, "splice", function);
-    }
-
-    private static void setModelProperty(StateNode stateNode, String name,
-            Object value, boolean flush) {
-        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(name)
-                .setValue(value);
-        if (flush) {
-            Reactive.flush();
-        }
-    }
-
-    private static void setModelProperty(StateNode stateNode, String name,
-            Object value) {
-        setModelProperty(stateNode, name, value, true);
-    }
-
     public void testPropertyAdded() {
         Binder.bind(node, element);
         String propertyName = "black";
@@ -259,6 +201,67 @@ public class GwtPolymerModelTest extends ClientEngineTestBase {
             assertEquals(newList.get(i), items);
         }
     }
+
+    ////////////////////////
+
+    private StateNode createAndAttachStateNode() {
+        StateNode newNode = new StateNode(0, new StateTree(new Registry()));
+        newNode.getMap(NodeFeatures.ELEMENT_PROPERTIES);
+        newNode.getMap(NodeFeatures.ELEMENT_ATTRIBUTES);
+        newNode.getMap(NodeFeatures.ELEMENT_DATA);
+        return newNode;
+    }
+
+    private StateNode createAndAttachModelNode(String modelPropertyName) {
+        StateNode modelNode = new StateNode(nextId,
+                new StateTree(new Registry()));
+        nextId++;
+        setModelProperty(node, modelPropertyName, modelNode, false);
+        return modelNode;
+    }
+
+    private Element createHtmlElement() {
+        Element element = Browser.getDocument().createElement("div");
+        setupSetMethod(element, PROPERTY_PREFIX);
+        setupMockSpliceMethod(element);
+        return element;
+    }
+
+    private void setupSetMethod(Element element, String prefix) {
+        NativeFunction function = NativeFunction
+                .create("this['" + prefix + "'+arguments[0]]=arguments[1]");
+        WidgetUtil.setJsProperty(element, "set", function);
+    }
+
+    /**
+     * Sets up mock splice method, that is called when model list is modified.
+     * For each call, method stores call arguments in the element property named
+     * argumentsArray.
+     *
+     * @param element
+     *            html element to set the method to
+     */
+    private void setupMockSpliceMethod(Element element) {
+        NativeFunction function = NativeFunction.create("path", "start",
+                "deleteCount", "items",
+                "this.argumentsArray ? this.argumentsArray.push(arguments) : this.argumentsArray = [arguments]");
+        WidgetUtil.setJsProperty(element, "splice", function);
+    }
+
+    private static void setModelProperty(StateNode stateNode, String name,
+                                         Object value, boolean flush) {
+        stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP).getProperty(name)
+                .setValue(value);
+        if (flush) {
+            Reactive.flush();
+        }
+    }
+
+    private static void setModelProperty(StateNode stateNode, String name,
+                                         Object value) {
+        setModelProperty(stateNode, name, value, true);
+    }
+
 
     private StateNode createAndAttachNodeWithList(StateNode modelNode,
             List<String> listItems) {
