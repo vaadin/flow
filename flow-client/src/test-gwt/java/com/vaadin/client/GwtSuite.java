@@ -11,6 +11,7 @@ import com.vaadin.client.flow.collection.GwtJsArrayTest;
 import com.vaadin.client.flow.collection.GwtJsMapTest;
 import com.vaadin.client.flow.collection.GwtJsSetTest;
 import com.vaadin.client.flow.collection.GwtJsWeakMapTest;
+import com.vaadin.client.flow.collection.GwtPolymerModelTest;
 import com.vaadin.client.flow.dom.GwtDomApiTest;
 import com.vaadin.client.flow.dom.GwtPolymerApiImplTest;
 import com.vaadin.client.flow.template.GwtTemplateBinderTest;
@@ -32,6 +33,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtJsWeakMapTest.class);
         suite.addTestSuite(GwtJsSetTest.class);
         suite.addTestSuite(GwtBasicElementBinderTest.class);
+        suite.addTestSuite(GwtPolymerModelTest.class);
         suite.addTestSuite(GwtEventHandlerTest.class);
         suite.addTestSuite(GwtTreeChangeProcessorTest.class);
         suite.addTestSuite(GwtNativeFunctionTest.class);
