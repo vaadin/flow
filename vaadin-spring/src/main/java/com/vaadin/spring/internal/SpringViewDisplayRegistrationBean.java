@@ -67,4 +67,22 @@ public class SpringViewDisplayRegistrationBean implements Serializable {
         this.beanName = beanName;
     }
 
+    /**
+     * Returns the view display bean class (if set).
+     *
+     * @return view display bean class or null if using bean name
+     */
+    public Class<?> getBeanClass() {
+        return beanClass;
+    }
+
+    /**
+     * Returns the view display bean name (if set).
+     *
+     * @return view display bean name or null if using bean class
+     */
+    public String getBeanName() {
+        return beanName;
+    }
+
 }
