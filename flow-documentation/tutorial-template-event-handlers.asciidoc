@@ -107,3 +107,70 @@ used like normal variables.
 The server will throw an exception if the `EventData` can not be converted to given format.
 for instance you could get the exception `java.lang.ClassCastException: Cannot cast elemental.json.impl.JreJsonNumber to elemental.json.JsonObject`
 Also the client might throw exceptions if the value given for `EventData` can not be executed or converted to Json.
+
+There is a shorthand for getting model specific item as an object in your event handler. To be able to use it you 
+should define your model (see <<tutorial-template-model-bean#,Using Beans with a PolymerTemplate Model>>) in the template class.
+
+[source,java]
+----
+@Tag("model-item-handler")
+@HtmlImport("/com/example/ModelItemHandler.html")
+public class ModelItemHandlerPolymerTemplate
+            extends PolymerTemplate<MessagesModel> {
+
+    public static class Message {
+        private String text;
+
+        public Message() {
+        }
+
+        public Message(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+    }
+
+    public interface MessagesModel extends TemplateModel {
+        public void setMessages(List<Message> messages);
+    }
+
+    @EventHandler
+    private void handleClick(@ModelItem Message message) {
+        System.out.println("Received a message: " + message.getText());
+    }
+}
+----
+
+Now you can use the template repeater (dom-repeat) (see <<tutorial-template-list-bindings#,Using List of Items in a PolymerTemplate with template repeater>>) and
+handle click events on the server side with `Message` as the parameter type.
+
+
+[source,html]
+----
+<dom-module id="model-item-handler">
+    <template>
+    <dom-repeat items="[[messages]]">
+      <template><div class='msg' on-click="handleClick">[[item.text]]</div></template>
+    </dom-repeat>
+  </template>
+  <script>
+    class ModelItemHandler extends Polymer.Element {
+      static get is() { return 'model-item-handler' }
+    }
+    customElements.define(ModelItemHandler.is, ModelItemHandler);
+  </script>
+</dom-module>
+----
+
+The method `handleClick` will be called in the server side with the data identified by `event.model.item` once the item is clicked.
+
+[NOTE]
+You can use the annotation `@ModelItem` with any value provided as a data path. 
+By default the data path is `event.model.item`. But your data type should be declared somehow via the model definition (it should be referenced from the model). 

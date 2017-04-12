@@ -2,15 +2,46 @@
 
 <dom-module id="list-binding">
     <template>
-    <dom-repeat items="[[messages]]">
-      <template><div class='msg' on-click="selectItem">[[item.text]]</div></template>
-    </dom-repeat>
-    <button id="update" on-click="update">Update</button>
-  </template>
-  <script>
-    class ListBinding extends Polymer.Element {
-      static get is() { return 'list-binding' }
-    }
-    customElements.define(ListBinding.is, ListBinding);
-  </script>
+        <dom-repeat items="[[messages]]">
+            <template>
+                <div class='msg' on-click="selectItem">[[item.text]]</div>
+            </template>
+        </dom-repeat>
+        <button id="reset" on-click="reset">reset</button>
+        <button id="addElement" on-click="addElement">addElement</button>
+        <button id="addElementByIndex" on-click="addElementByIndex">addElementByIndex</button>
+        <button id="addNumerousElements" on-click="addNumerousElements">addNumerousElements</button>
+        <button id="addNumerousElementsByIndex" on-click="addNumerousElementsByIndex">addNumerousElementsByIndex
+        </button>
+        <button id="clearList" on-click="clearList">clearList</button>
+        <button id="removeSecondElementByIndex" on-click="removeSecondElementByIndex">removeSecondElementByIndex
+        </button>
+        <button id="removeFirstElementWithIterator" on-click="removeFirstElementWithIterator">
+            removeFirstElementWithIterator
+        </button>
+        <button id="swapFirstAndSecond" on-click="swapFirstAndSecond">swapFirstAndSecond</button>
+        <button id="sortDescending" on-click="sortDescending">sortDescending</button>
+        <button id="setInitialStateToEachMessage" on-click="setInitialStateToEachMessage">setInitialStateToEachMessage
+        </button>
+
+        <dom-repeat items="[[nestedMessages]]">
+            <template>
+                <div on-click="selectedItems">
+                    <dom-repeat items="[[item]]">
+                        <template>
+                            <div class='submsg'>[[item.text]]</div>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </template>
+        </dom-repeat>
+    </template>
+    <script>
+        class ListBinding extends Polymer.Element {
+            static get is() {
+                return 'list-binding'
+            }
+        }
+        customElements.define(ListBinding.is, ListBinding);
+    </script>
 </dom-module>
