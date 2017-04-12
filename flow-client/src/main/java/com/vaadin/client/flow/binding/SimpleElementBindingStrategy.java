@@ -193,17 +193,33 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             Element element)
     /*-{
       var originalFunction = element._propertiesChanged;
-      if (!originalFunction) {
+      var readyFunction = element.ready;
+      if (!originalFunction || !readyFunction) {
         // Ignore since this isn't a polymer element
         return;
       }
       var self = this;
+      var isReady = false;
       element._propertiesChanged = function(currentProps, changedProps, oldProps) {
         originalFunction.apply(this, arguments);
-        $entry(function() {
-          self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
-        })();
-      }
+        if ( isReady ){
+            // don't send default values to the server (they are set during 
+            // the first 'ready' method call). We always set model default 
+            // values from the server side explicitly. So server always overrides 
+            // polymer default values.
+            $entry(function() {
+              self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+            })();
+         }
+      };
+      element.ready = function(){
+          try {
+              readyFunction.apply(this);
+          }
+          finally {
+              isReady = true;
+          }
+      };
     }-*/;
 
     private void handlePropertiesChanged(

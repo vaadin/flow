@@ -4,7 +4,7 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Exclude;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.template.model.TemplateModel;
 
 @CodeFor("tutorial-template-model-bean.asciidoc")
 public class PolymerTemplateModelWithBean {
