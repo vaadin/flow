@@ -22,7 +22,7 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.template.model.TemplateModel;
 
 @CodeFor("tutorial-template-bindings.asciidoc")
 public class PolymerTemplateModelBindings {

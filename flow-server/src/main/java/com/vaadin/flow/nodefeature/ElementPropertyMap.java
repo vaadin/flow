@@ -166,7 +166,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
         int dotLocation = modelPath.indexOf('.');
         if (dotLocation == -1) {
-            if (leafType == ModelMap.class) {
+            if (leafType == ElementPropertyMap.class) {
                 return (T) getOrCreateModelMap(modelPath);
             } else {
                 return (T) getOrCreateModelList(modelPath);

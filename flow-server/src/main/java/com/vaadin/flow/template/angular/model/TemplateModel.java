@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import com.vaadin.flow.template.model.PropertyFilter;
-import com.vaadin.flow.template.model.TemplateModelListProxy;
 
 /**
  * Interface for a template model. Extending this interface and adding getters

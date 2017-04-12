@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.util.ReflectTools;
 
@@ -267,8 +266,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return null;
         }
 
-        StateNode node = TemplateElementStateProvider
-                .createSubModelNode(ElementPropertyMap.class);
+        StateNode node = new StateNode(ElementPropertyMap.class);
 
         importProperties(ElementPropertyMap.getModel(node), applicationValue,
                 filter);
