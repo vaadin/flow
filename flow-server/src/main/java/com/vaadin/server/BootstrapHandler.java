@@ -76,6 +76,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "window.__gwtStatsEvent = function(event) {"
             + "flow.gwtStatsEvents.push(event); " + "return true;};};";
     private static final String CONTENT_ATTRIBUTE = "content";
+    private static final String DEFER_ATTRIBUTE = "defer";
     private static final String META_TAG = "meta";
     /**
      * Location of client nocache file, relative to the context root.
@@ -400,7 +401,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .resolveVaadinUri("context://"
                                 + ApplicationConstants.VAADIN_STATIC_FILES_PATH
                                 + "server/es6-collections.js"),
-                mapOf("defer", false)));
+                mapOf(DEFER_ATTRIBUTE, false)));
 
         appendWebComponentsElements(head, context);
 
@@ -423,8 +424,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         WebComponents.class);
 
         boolean isVersion1;
-        boolean forceShadyDom = false;
-        boolean loadEs5Adapter = false;
+        boolean forceShadyDom;
+        boolean loadEs5Adapter;
 
         if (!webComponents.isPresent()) {
             DeploymentConfiguration config = context.getSession()
@@ -453,7 +454,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
                                     + "server/custom-elements-es5-adapter.js"),
-                    mapOf("defer", false)));
+                    mapOf(DEFER_ATTRIBUTE, false)));
         }
 
         if (isVersion1) {
@@ -462,14 +463,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
                                     + "server/v1/webcomponents-lite.js"),
-                    mapOf("defer", false, "shadydom", forceShadyDom)));
+                    mapOf(DEFER_ATTRIBUTE, false, "shadydom", forceShadyDom)));
         } else {
             head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
                                     + "server/webcomponents-lite.min.js"),
-                    mapOf("defer", true)));
+                    mapOf(DEFER_ATTRIBUTE, true)));
         }
     }
 
@@ -493,7 +494,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     private static Element createJavaScriptElement(String sourceUrl) {
-        return createJavaScriptElement(sourceUrl, mapOf("defer", true));
+        return createJavaScriptElement(sourceUrl, mapOf(DEFER_ATTRIBUTE, true));
     }
 
     private static Map<String, Object> mapOf(Object... keysAndValues) {
