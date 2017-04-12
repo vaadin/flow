@@ -134,10 +134,10 @@ public class Bootstrapper implements EntryPoint {
                 .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
 
         if (BrowserInfo.get().isEs6Supported()) {
-            conf.setWebComponentsBaseUrl(jsoConfiguration
+            conf.setFrontendRootUrl(jsoConfiguration
                     .getConfigString(Constants.FRONTEND_URL_ES6));
         } else {
-            conf.setWebComponentsBaseUrl(jsoConfiguration
+            conf.setFrontendRootUrl(jsoConfiguration
                     .getConfigString(Constants.FRONTEND_URL_ES5));
         }
 

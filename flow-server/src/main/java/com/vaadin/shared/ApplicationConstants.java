@@ -183,13 +183,13 @@ public class ApplicationConstants implements Serializable {
      * components.
      */
     public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
-            + VAADIN_STATIC_FILES_PATH + "frontend/es6";
+            + VAADIN_STATIC_FILES_PATH + "frontend/es6/";
 
     /**
      * Default value of the configuration of the build URL of ES5 web
      * components.
      */
     public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
-            + VAADIN_STATIC_FILES_PATH + "frontend/es5";
+            + VAADIN_STATIC_FILES_PATH + "frontend/es5/";
 
 }

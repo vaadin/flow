@@ -45,8 +45,6 @@ public @interface WebComponents {
     /**
      * Enumeration of all versions of the webcomponents.js polyfill supported by
      * the framework.
-     * 
-     * @author Vaadin Ltd
      */
     enum PolyfillVersion {
         V0, V1;

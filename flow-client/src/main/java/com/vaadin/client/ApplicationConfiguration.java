@@ -29,7 +29,7 @@ public class ApplicationConfiguration {
 
     private String applicationId;
     private String contextRootUrl;
-    private String webComponentsBaseUrl;
+    private String frontendRootUrl;
     private String serviceUrl;
     private int uiId;
     private ErrorMessage communicationError;
@@ -309,22 +309,24 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets the base URL of the compiled web components on the server.
+     * Gets the base URL of the frontend components on the server.
      * 
-     * @return the base URL on the server.
+     * @return the base URL on the server for the {@literal frontend://}
+     *         protocol.
      */
-    public String getWebComponentsBaseUrl() {
-        return webComponentsBaseUrl;
+    public String getFrontendRootUrl() {
+        return frontendRootUrl;
     }
 
     /**
-     * Sets the base URL of the compiled web components on the server.
+     * Sets the base URL of the frontend components on the server.
      * 
-     * @param webComponentsBaseUrl
-     *            the base URL.
+     * @param frontendRootUrl
+     *            the base URL on the server for the {@literal frontend://}
+     *            protocol.
      */
-    public void setWebComponentsBaseUrl(String webComponentsBaseUrl) {
-        this.webComponentsBaseUrl = webComponentsBaseUrl;
+    public void setFrontendRootUrl(String frontendRootUrl) {
+        this.frontendRootUrl = frontendRootUrl;
     }
 
 }

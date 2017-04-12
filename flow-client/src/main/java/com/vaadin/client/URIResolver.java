@@ -46,9 +46,9 @@ public class URIResolver extends VaadinUriResolver {
     }
 
     @Override
-    protected String getWebComponentBuildUrl() {
+    protected String getFrontendRootUrl() {
         String root = registry.getApplicationConfiguration()
-                .getWebComponentsBaseUrl();
+                .getFrontendRootUrl();
         assert root.endsWith("/");
         return root;
     }

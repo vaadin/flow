@@ -288,7 +288,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         @Override
-        protected String getWebComponentBuildUrl() {
+        protected String getFrontendRootUrl() {
             String root;
             if (context.getSession().getBrowser().isEs6Supported()) {
                 root = es6BuildUrl;

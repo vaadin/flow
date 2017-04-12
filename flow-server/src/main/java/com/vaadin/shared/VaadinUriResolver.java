@@ -58,7 +58,7 @@ public abstract class VaadinUriResolver {
                 .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
-            vaadinUri = getWebComponentBuildUrl() + relativeUrl;
+            vaadinUri = getFrontendRootUrl() + relativeUrl;
         }
 
         if (vaadinUri
@@ -79,12 +79,12 @@ public abstract class VaadinUriResolver {
     protected abstract String getContextRootUrl();
 
     /**
-     * Gets the URL pointing to the base build path where web components were
-     * compiled. It is expected that different browsers receive different files
-     * depending on their capabilities.
+     * Gets the URL pointing to the root build path where the frontend files
+     * were compiled. It is expected that different browsers receive different
+     * files depending on their capabilities.
      * 
      * @return the base build URL
      */
-    protected abstract String getWebComponentBuildUrl();
+    protected abstract String getFrontendRootUrl();
 
 }
