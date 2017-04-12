@@ -13,11 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import java.lang.reflect.Method;
 
-import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.ui.AngularTemplate;
 

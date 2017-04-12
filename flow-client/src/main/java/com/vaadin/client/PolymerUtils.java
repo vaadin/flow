@@ -119,8 +119,8 @@ public final class PolymerUtils {
         if (object instanceof StateNode) {
             StateNode node = (StateNode) object;
             NodeFeature feature = null;
-            if (node.hasFeature(NodeFeatures.TEMPLATE_MODELMAP)) {
-                feature = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+                feature = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
             } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
             }

@@ -53,6 +53,16 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         super.setProperty(name, value, emitChange);
     }
 
+    /**
+     * Sets a property to the given value.
+     *
+     * @param name
+     *            the property name
+     * @param value
+     *            the value, must be a string, a boolean, a double or
+     *            <code>null</code>
+     * @see #setProperty(String, Serializable, boolean)
+     */
     public void setProperty(String name, Serializable value) {
         setProperty(name, value, true);
     }
@@ -166,7 +176,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
         int dotLocation = modelPath.indexOf('.');
         if (dotLocation == -1) {
-            if (leafType == ModelMap.class) {
+            if (leafType == ElementPropertyMap.class) {
                 return (T) getOrCreateModelMap(modelPath);
             } else {
                 return (T) getOrCreateModelList(modelPath);

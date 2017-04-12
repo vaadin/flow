@@ -26,7 +26,6 @@ import com.vaadin.annotations.Include;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
-import com.vaadin.flow.template.model.ListModelType;
 import com.vaadin.flow.template.model.ModelType;
 
 /**

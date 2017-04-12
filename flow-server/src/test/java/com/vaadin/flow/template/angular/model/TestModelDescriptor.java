@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import java.util.Map;
 
 import com.vaadin.flow.template.angular.model.ModelDescriptor;
 import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.template.model.ModelType;
 
 public class TestModelDescriptor extends ModelDescriptor<TemplateModel> {
     public TestModelDescriptor(Map<String, ModelType> properties) {

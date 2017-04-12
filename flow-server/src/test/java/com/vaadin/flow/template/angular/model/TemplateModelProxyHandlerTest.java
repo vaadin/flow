@@ -1,10 +1,11 @@
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.template.model.TemplateModelTest.EmptyModel;
-import com.vaadin.flow.template.model.TemplateModelTest.EmptyModelTemplate;
+import com.vaadin.flow.template.angular.model.TemplateModelTest.EmptyModel;
+import com.vaadin.flow.template.angular.model.TemplateModelTest.EmptyModelTemplate;
+import com.vaadin.flow.template.model.PropertyFilter;
 import com.vaadin.ui.UI;
 
 public class TemplateModelProxyHandlerTest {

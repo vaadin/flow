@@ -13,12 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import java.util.AbstractList;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ModelList;
+import com.vaadin.flow.template.model.ComplexModelType;
+import com.vaadin.flow.template.model.PropertyFilter;
 
 /**
  * A list implementation which uses a {@link ModelList} in a {@link StateNode}
