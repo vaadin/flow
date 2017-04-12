@@ -468,7 +468,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     context.getUriResolver()
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/webcomponents-lite-min.js"),
+                                    + "server/webcomponents-lite.min.js"),
                     mapOf("defer", true)));
         }
     }

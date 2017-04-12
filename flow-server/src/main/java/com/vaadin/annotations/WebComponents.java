@@ -63,7 +63,7 @@ public @interface WebComponents {
      * Gets whether the application should load the ES5 adapter polyfill. This
      * polyfill is only needed when serving ES5 files on ES6 browsers.
      * <p>
-     * By default it returns <code>false</code>.
+     * The default is <code>false</code>.
      * 
      * @return <code>true</code> if the es5 adapter should be loaded,
      *         <code>false</code> otherwise
