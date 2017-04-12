@@ -4,24 +4,25 @@
     <template>
         <dom-repeat items="[[nestedMessages]]">
             <template>
-                <div on-click="selectedItems">
+                <div>
                     <dom-repeat items="[[item]]">
                         <template>
-                            <div class='submsg' on-click="test">[[item.text]]</div>
+                            <div class='submsg' on-click="removeItem">[[item.text]]</div>
                         </template>
                     </dom-repeat>
                 </div>
             </template>
         </dom-repeat>
+        <template is="dom-if" if="[[removedMessage]]">
+            <div id="removedMessage">Removed message: [[removedMessage.text]]</div>
+        </template>
+        <button id="reset" on-click="reset">reset</button>
+        <button id="updateAllElements" on-click="updateAllElements">updateAllElements</button>
     </template>
     <script>
         class ListInsideListBinding extends Polymer.Element {
             static get is() {
                 return 'list-inside-list-binding'
-            }
-
-            test(e) {
-                console.log(e.model.item);
             }
         }
         customElements.define(ListInsideListBinding.is, ListInsideListBinding);

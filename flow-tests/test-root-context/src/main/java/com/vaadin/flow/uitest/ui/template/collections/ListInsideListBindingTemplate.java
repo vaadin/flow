@@ -18,12 +18,13 @@ package com.vaadin.flow.uitest.ui.template.collections;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.ModelItem;
+import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Label;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 
@@ -31,6 +32,8 @@ import com.vaadin.flow.template.model.TemplateModel;
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/collections/ListInsideListBinding.html")
 public class ListInsideListBindingTemplate extends
         PolymerTemplate<ListInsideListBindingTemplate.ListInsideListBindingModel> {
+    static final String UPDATED_TEXT = "test";
+
     public static class Message {
         private String text;
 
@@ -51,46 +54,44 @@ public class ListInsideListBindingTemplate extends
     }
 
     public interface ListInsideListBindingModel extends TemplateModel {
+        void setRemovedMessage(Message removedMessage);
+
         void setNestedMessages(List<List<Message>> nested);
 
         List<List<Message>> getNestedMessages();
     }
 
-    private final Label multiSelectionLabel;
-
     public ListInsideListBindingTemplate() {
-        multiSelectionLabel = initLabel();
+        setInitialState();
+    }
 
+    private void setInitialState() {
         getModel().setNestedMessages(Arrays.asList(
                 Arrays.asList(new Message("a"), new Message("b"),
                         new Message("c")),
                 Collections.singletonList(new Message("d"))));
     }
 
-    private Label initLabel() {
-        Label multiSelectionLabel;
-        multiSelectionLabel = new Label();
-        multiSelectionLabel.setId("multi-selection");
-        getElement().getParent()
-                .appendChild(multiSelectionLabel.getElement());
-        return multiSelectionLabel;
+    @EventHandler
+    private void removeItem(@ModelItem Message clickedMessage,
+            @RepeatIndex int itemIndex) {
+        getModel().getNestedMessages().forEach(list -> {
+            if (list.size() > itemIndex && Objects.equals(
+                    list.get(itemIndex).getText(), clickedMessage.getText())) {
+                Message removedMessage = list.remove(itemIndex);
+                getModel().setRemovedMessage(removedMessage);
+            }
+        });
     }
 
     @EventHandler
-    private void selectedItems(@ModelItem List<Message> messages) {
-        multiSelectionLabel.setText(buildMessageListString(messages));
-    }
-
-    private String buildMessageListString(List<Message> messages) {
-        StringBuilder string = new StringBuilder();
-        string.append("Clicked message List: ");
-        string.append(messages.size()).append(" ");
-        messages.forEach(item -> string.append(item.getText()));
-        return string.toString();
+    private void reset() {
+        setInitialState();
     }
 
     @EventHandler
-    private void test(@ModelItem Message clickedMessage) {
-        System.out.println(clickedMessage.getText());
+    private void updateAllElements() {
+        getModel().getNestedMessages().forEach(
+                list -> list.forEach(message -> message.setText(UPDATED_TEXT)));
     }
 }

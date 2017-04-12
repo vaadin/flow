@@ -86,7 +86,7 @@ public class ListBindingIT extends ChromeBrowserTest {
 
         // Assert that the message was gotten correctly on the server side
         Assert.assertEquals("Couldn't validate element click selection.",
-                findElement(By.id("selection")).getText(),
+                getInShadowRoot(template, By.id("selection")).get().getText(),
                 "Clicked message: " + msgs.get(1).getText());
     }
 

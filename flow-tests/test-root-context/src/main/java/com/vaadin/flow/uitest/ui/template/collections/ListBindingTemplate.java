@@ -26,7 +26,6 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Label;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.template.collections.ListBindingTemplate.ListBindingModel;
@@ -57,6 +56,8 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     }
 
     public interface ListBindingModel extends TemplateModel {
+        void setSelectedMessage(Message selectedMessage);
+
         void setMessages(List<Message> messages);
 
         List<Message> getMessages();
@@ -75,9 +76,7 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
 
     @EventHandler
     private void selectItem(@ModelItem Message message) {
-        Label label = new Label("Clicked message: " + message.getText());
-        label.setId("selection");
-        getElement().getParent().appendChild(label.getElement());
+        getModel().setSelectedMessage(message);
     }
 
     @EventHandler

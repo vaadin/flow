@@ -32,27 +32,42 @@ public class ListInsideListBindingIT extends ChromeBrowserTest {
 
     @Test
     public void listDataBinding() {
+        int initialSize = 4;
         open();
 
         WebElement template = findElement(By.id("template"));
 
-        checkListInsideList(template);
+        checkMessagesRemoval(template, initialSize);
+        getInShadowRoot(template, By.id("reset")).get().click();
+        checkAllElementsUpdated(template, initialSize);
     }
 
-    private void checkListInsideList(WebElement template) {
-        List<WebElement> msgs = findInShadowRoot(template, By.className("submsg"));
-        Assert.assertEquals("Wrong amount of nested messages", 4, msgs.size());
+    private void checkMessagesRemoval(WebElement template, int initialSize) {
+        for (int i = 0; i < initialSize; i++) {
+            List<WebElement> currentMessages = findInShadowRoot(template,
+                    By.className("submsg"));
+            Assert.assertEquals("Wrong amount of nested messages",
+                    initialSize - i, currentMessages.size());
 
-        msgs.get(1).click();
+            WebElement messageToRemove = currentMessages.iterator().next();
+            String messageToRemoveText = messageToRemove.getText();
+            messageToRemove.click();
 
-        Assert.assertEquals("Couldn't validate list selection.",
-                findElement(By.id("multi-selection")).getText(),
-                "Clicked message List: 3 abc");
+            String removedMessageLabelText = getInShadowRoot(template,
+                    By.id("removedMessage")).get().getText();
+            Assert.assertEquals("Expected removed message text to appear",
+                    "Removed message: " + messageToRemoveText,
+                    removedMessageLabelText);
+        }
+    }
 
-        msgs.get(3).click();
-
-        Assert.assertEquals("Couldn't validate list selection.",
-                findElement(By.id("multi-selection")).getText(),
-                "Clicked message List: 1 d");
+    private void checkAllElementsUpdated(WebElement template, int initialSize) {
+        getInShadowRoot(template, By.id("updateAllElements")).get().click();
+        List<WebElement> msgs = findInShadowRoot(template,
+                By.className("submsg"));
+        Assert.assertEquals("Wrong amount of nested messages", initialSize,
+                msgs.size());
+        msgs.forEach(msg -> Assert.assertEquals("Message was not updated",
+                ListInsideListBindingTemplate.UPDATED_TEXT, msg.getText()));
     }
 }

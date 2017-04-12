@@ -23,6 +23,9 @@
         <button id="sortDescending" on-click="sortDescending">sortDescending</button>
         <button id="setInitialStateToEachMessage" on-click="setInitialStateToEachMessage">setInitialStateToEachMessage
         </button>
+        <template is="dom-if" if="[[selectedMessage]]">
+            <div id="selection">Clicked message: [[selectedMessage.text]]</div>
+        </template>
     </template>
     <script>
         class ListBinding extends Polymer.Element {
