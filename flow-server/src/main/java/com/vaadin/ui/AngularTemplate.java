@@ -38,9 +38,9 @@ import com.vaadin.flow.template.angular.TemplateParseException;
 import com.vaadin.flow.template.angular.model.ModelDescriptor;
 import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.template.angular.model.TemplateModelProxyHandler;
+import com.vaadin.flow.template.angular.model.TemplateModelTypeParser;
 import com.vaadin.flow.template.angular.parser.TemplateParser;
 import com.vaadin.flow.template.angular.parser.TemplateResolver;
-import com.vaadin.flow.template.model.TemplateModelTypeParser;
 import com.vaadin.util.ReflectTools;
 
 /**

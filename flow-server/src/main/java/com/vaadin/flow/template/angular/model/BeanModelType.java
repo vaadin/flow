@@ -32,7 +32,6 @@ import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.model.BasicModelType;
 import com.vaadin.flow.template.model.ComplexModelType;
 import com.vaadin.flow.template.model.InvalidTemplateModelException;
-import com.vaadin.flow.template.model.ListModelType;
 import com.vaadin.flow.template.model.ModelType;
 import com.vaadin.flow.template.model.PropertyFilter;
 import com.vaadin.flow.template.model.TemplateModelUtil;

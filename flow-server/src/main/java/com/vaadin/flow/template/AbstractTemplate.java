@@ -25,7 +25,6 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.TemplateMap;
 import com.vaadin.flow.router.HasChildView;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.Component;
 
 /**
@@ -48,14 +47,13 @@ public abstract class AbstractTemplate<M> extends Component
     }
 
     /**
-     * Returns the {@link TemplateModel model} of this template.
+     * Returns the model of this template.
      * <p>
      * The type of the model will be the type that this method returns in the
      * instance it is invoked on - meaning that you should override this method
-     * and return your own model type that extends {@link TemplateModel}.
+     * and return your own model type.
      *
      * @return the model of this template
-     * @see TemplateModel
      */
     protected abstract M getModel();
 

@@ -18,9 +18,9 @@ package com.vaadin.flow.nodefeature;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
-
-import elemental.json.JsonValue;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Abstract class to be used as a parent for node maps which supports setting
@@ -122,23 +122,9 @@ public abstract class AbstractPropertyMap extends NodeMap {
         if (value == null) {
             return true;
         }
-        if (value instanceof String) {
-            return true;
-        }
-        if (value instanceof Boolean) {
-            return true;
-        }
-        if (value instanceof Double) {
-            return true;
-        }
-        if (value instanceof JsonValue) {
-            return true;
-        }
-        if (value instanceof StateNode) {
-            return true;
-        }
-
-        return false;
+        Class<?> type = ReflectTools.convertPrimitiveType(value.getClass());
+        return JsonCodec.canEncodeWithoutTypeInfo(type)
+                || StateNode.class.isAssignableFrom(type);
     }
 
 }

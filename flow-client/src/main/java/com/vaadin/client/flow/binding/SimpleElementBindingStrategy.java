@@ -155,14 +155,9 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         JsArray<EventRemover> listeners = JsCollections.array();
 
-        if (isPolymerElement(htmlNode)) {
-            bindModelProperties(stateNode, htmlNode);
-            bindPolymerPropertyChangeListener(stateNode, htmlNode);
-        } else {
-            listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
-                    property -> updateProperty(property, htmlNode),
-                    createComputations(computationsCollection), stateNode));
-        }
+        listeners.push(bindMap(NodeFeatures.ELEMENT_PROPERTIES,
+                property -> updateProperty(property, htmlNode),
+                createComputations(computationsCollection), stateNode));
         listeners.push(bindMap(NodeFeatures.ELEMENT_STYLE_PROPERTIES,
                 property -> updateStyleProperty(property, htmlNode),
                 createComputations(computationsCollection), stateNode));
@@ -187,23 +182,42 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(bindPolymerEventHandlerNames(context));
 
         listeners.push(bindClientDelegateMethods(context));
+
+        bindModelProperties(stateNode, htmlNode);
+        bindPolymerPropertyChangeListener(stateNode, htmlNode);
     }
 
     private native void bindPolymerPropertyChangeListener(StateNode node,
             Element element)
     /*-{
       var originalFunction = element._propertiesChanged;
-      if (!originalFunction) {
+      var readyFunction = element.ready;
+      if (!originalFunction || !readyFunction) {
         // Ignore since this isn't a polymer element
         return;
       }
       var self = this;
+      var isReady = false;
       element._propertiesChanged = function(currentProps, changedProps, oldProps) {
         originalFunction.apply(this, arguments);
-        $entry(function() {
-          self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
-        })();
-      }
+        if ( isReady ){
+            // don't send default values to the server (they are set during 
+            // the first 'ready' method call). We always set model default 
+            // values from the server side explicitly. So server always overrides 
+            // polymer default values.
+            $entry(function() {
+              self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+            })();
+         }
+      };
+      element.ready = function(){
+          try {
+              readyFunction.apply(this);
+          }
+          finally {
+              isReady = true;
+          }
+      };
     }-*/;
 
     private void handlePropertiesChanged(
@@ -269,27 +283,29 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void setSubProperties(Element htmlNode, MapProperty property,
             String path) {
-        String newPath = path.isEmpty() ? property.getName()
-                : path + "." + property.getName();
-        NativeFunction setValueFunction = NativeFunction.create("path", "value",
-                "this.set(path, value)");
-        if (property.getValue() instanceof StateNode) {
-            StateNode subNode = (StateNode) property.getValue();
+        if (PolymerUtils.isPolymerElement(htmlNode)) {
+            String newPath = path.isEmpty() ? property.getName()
+                    : path + "." + property.getName();
+            NativeFunction setValueFunction = NativeFunction.create("path",
+                    "value", "this.set(path, value)");
+            if (property.getValue() instanceof StateNode) {
+                StateNode subNode = (StateNode) property.getValue();
 
-            if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-                setValueFunction.call(htmlNode, newPath,
-                        PolymerUtils.convertToJson(subNode));
-                addModelListChangeListener(htmlNode,
-                        subNode.getList(NodeFeatures.TEMPLATE_MODELLIST),
-                        newPath);
+                if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+                    setValueFunction.call(htmlNode, newPath,
+                            PolymerUtils.convertToJson(subNode));
+                    addModelListChangeListener(htmlNode,
+                            subNode.getList(NodeFeatures.TEMPLATE_MODELLIST),
+                            newPath);
+                } else {
+                    NativeFunction function = NativeFunction.create("path",
+                            "value", "this.set(path, {})");
+                    function.call(htmlNode, newPath);
+                    bindModelProperties(subNode, htmlNode, newPath);
+                }
             } else {
-                NativeFunction function = NativeFunction.create("path", "value",
-                        "this.set(path, {})");
-                function.call(htmlNode, newPath);
-                bindModelProperties(subNode, htmlNode, newPath);
+                setValueFunction.call(htmlNode, newPath, property.getValue());
             }
-        } else {
-            setValueFunction.call(htmlNode, newPath, property.getValue());
         }
     }
 
@@ -301,10 +317,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void processModelListChange(Element htmlNode,
             String polymerModelPath, ListSpliceEvent event) {
-        JsonArray itemsToAdd = convertItemsToAdd(event.getAdd(), htmlNode,
-                polymerModelPath, event.getIndex());
-        PolymerUtils.splice(htmlNode, polymerModelPath, event.getIndex(),
-                event.getRemove().length(), itemsToAdd);
+        if (PolymerUtils.isPolymerElement(htmlNode)) {
+            JsonArray itemsToAdd = convertItemsToAdd(event.getAdd(), htmlNode,
+                    polymerModelPath, event.getIndex());
+            PolymerUtils.splice(htmlNode, polymerModelPath, event.getIndex(),
+                    event.getRemove().length(), itemsToAdd);
+        }
     }
 
     private JsonArray convertItemsToAdd(JsArray<?> itemsToAdd, Element htmlNode,
@@ -372,6 +390,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private void updateProperty(MapProperty mapProperty, Element element) {
+        if (PolymerUtils.isPolymerElement(element)) {
+            // another way of property binding is used for polymer elements.
+            return;
+        }
         String name = mapProperty.getName();
         if (mapProperty.hasValue()) {
             Object treeValue = mapProperty.getValue();
@@ -682,8 +704,4 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return expression;
     }
 
-    private native boolean isPolymerElement(Element htmlNode)
-    /*-{
-        return (typeof Polymer === 'function') && htmlNode instanceof Polymer.Element;
-    }-*/;
 }
