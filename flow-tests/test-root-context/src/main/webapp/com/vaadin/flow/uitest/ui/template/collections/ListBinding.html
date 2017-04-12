@@ -23,18 +23,6 @@
         <button id="sortDescending" on-click="sortDescending">sortDescending</button>
         <button id="setInitialStateToEachMessage" on-click="setInitialStateToEachMessage">setInitialStateToEachMessage
         </button>
-
-        <dom-repeat items="[[nestedMessages]]">
-            <template>
-                <div on-click="selectedItems">
-                    <dom-repeat items="[[item]]">
-                        <template>
-                            <div class='submsg'>[[item.text]]</div>
-                        </template>
-                    </dom-repeat>
-                </div>
-            </template>
-        </dom-repeat>
     </template>
     <script>
         class ListBinding extends Polymer.Element {
