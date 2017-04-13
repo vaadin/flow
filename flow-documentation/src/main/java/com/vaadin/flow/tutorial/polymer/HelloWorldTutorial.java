@@ -20,10 +20,10 @@ import java.util.Optional;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 @CodeFor("tutorial-template-basic.asciidoc")
 public class HelloWorldTutorial {
@@ -64,10 +64,12 @@ public class HelloWorldTutorial {
         @EventHandler
         private void sayHello() {
             // Called from the template click handler
+            // @formatter:off
             getModel().setGreeting(Optional.ofNullable(getModel().getUserInput())
                     .filter(userInput -> !userInput.isEmpty())
                     .map(greeting -> String.format("Hello %s!", greeting))
                     .orElse(EMPTY_NAME_GREETING));
+            // @formatter:on
         }
     }
 

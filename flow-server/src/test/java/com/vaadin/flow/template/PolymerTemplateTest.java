@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.TemplateModel;
 
 /**
@@ -74,11 +74,12 @@ public class PolymerTemplateTest {
         expectedState.put("message", null);
         expectedState.put("title", null);
 
-        assertTrue(stateNode.hasFeature(ModelMap.class));
-        ModelMap modelMap = stateNode.getFeature(ModelMap.class);
-        modelMap.getKeys().forEach(key -> {
+        assertTrue(stateNode.hasFeature(ElementPropertyMap.class));
+        ElementPropertyMap modelMap = stateNode
+                .getFeature(ElementPropertyMap.class);
+        modelMap.getPropertyNames().forEach(key -> {
             assertTrue(expectedState.containsKey(key));
-            assertEquals(expectedState.get(key), modelMap.getValue(key));
+            assertEquals(expectedState.get(key), modelMap.getProperty(key));
         });
     }
 
@@ -98,10 +99,11 @@ public class PolymerTemplateTest {
         expectedState.put("message", message);
         expectedState.put("title", null);
 
-        ModelMap modelMap = stateNode.getFeature(ModelMap.class);
-        modelMap.getKeys().forEach(key -> {
+        ElementPropertyMap modelMap = stateNode
+                .getFeature(ElementPropertyMap.class);
+        modelMap.getPropertyNames().forEach(key -> {
             assertTrue(expectedState.containsKey(key));
-            assertEquals(expectedState.get(key), modelMap.getValue(key));
+            assertEquals(expectedState.get(key), modelMap.getProperty(key));
         });
     }
 

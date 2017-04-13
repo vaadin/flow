@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -27,7 +27,14 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
+import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.template.model.BasicModelType;
+import com.vaadin.flow.template.model.ComplexModelType;
+import com.vaadin.flow.template.model.InvalidTemplateModelException;
+import com.vaadin.flow.template.model.ModelType;
+import com.vaadin.flow.template.model.PropertyFilter;
+import com.vaadin.flow.template.model.TemplateModelUtil;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
@@ -80,6 +87,40 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
         private Map<String, ModelType> getProperties() {
             return properties;
+        }
+    }
+
+    /**
+     * Nashorn proxy object that uses a {@link BeanModelType} to delegate
+     * JavaScript properties accesses to a {@link ModelMap}. Nashorn exposes
+     * instances of this type as opaque JavaScript objects, while internally
+     * delegating to the handler methods in this class.
+     */
+    @SuppressWarnings("restriction")
+    private static final class StateNodeWrapper
+            extends jdk.nashorn.api.scripting.AbstractJSObject {
+
+        private ModelMap model;
+        private BeanModelType<?> type;
+
+        public StateNodeWrapper(ModelMap model, BeanModelType<?> type) {
+            assert type != null;
+            assert model != null;
+            this.model = model;
+            this.type = type;
+        }
+
+        @Override
+        public boolean hasMember(String name) {
+            return type.hasProperty(name);
+        }
+
+        @Override
+        public Object getMember(String name) {
+            assert hasMember(name);
+
+            return type.getPropertyType(name)
+                    .modelToNashorn(model.getValue(name));
         }
     }
 
@@ -241,13 +282,18 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
     @Override
     public T modelToApplication(Serializable modelValue) {
-        return com.vaadin.flow.template.model.TemplateModelProxyHandler
+        return TemplateModelProxyHandler
                 .createModelProxy((StateNode) modelValue, this);
     }
 
     @Override
     public Object modelToNashorn(Serializable modelValue) {
-        throw new UnsupportedOperationException("Obsolete functionality");
+        if (modelValue == null) {
+            return null;
+        } else {
+            ModelMap modelMap = ModelMap.get((StateNode) modelValue);
+            return new StateNodeWrapper(modelMap, this);
+        }
     }
 
     /**
@@ -266,10 +312,10 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return null;
         }
 
-        StateNode node = new StateNode(ElementPropertyMap.class);
+        StateNode node = TemplateElementStateProvider
+                .createSubModelNode(ModelMap.class);
 
-        importProperties(ElementPropertyMap.getModel(node), applicationValue,
-                filter);
+        importProperties(ModelMap.get(node), applicationValue, filter);
 
         return node;
     }
@@ -285,7 +331,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
      * @param propertyFilter
      *            defines which properties from this model type to import
      */
-    public void importProperties(ElementPropertyMap model, Object bean,
+    public void importProperties(ModelMap model, Object bean,
             PropertyFilter propertyFilter) {
         Class<? extends Object> beanClass = bean.getClass();
 
@@ -325,7 +371,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         // Populate the model with the extracted values
         values.forEach((name, value) -> {
             ModelType type = getPropertyType(name);
-            model.setProperty(name, type.applicationToModel(value,
+            model.setValue(name, type.applicationToModel(value,
                     new PropertyFilter(propertyFilter, name)));
         });
     }

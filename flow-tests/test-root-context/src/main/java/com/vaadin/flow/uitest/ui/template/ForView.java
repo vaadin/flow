@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.annotations.ClientDelegate;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
 public class ForView extends AngularTemplate {

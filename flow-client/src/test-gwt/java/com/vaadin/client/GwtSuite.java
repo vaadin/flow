@@ -2,16 +2,16 @@ package com.vaadin.client;
 
 import com.google.gwt.junit.tools.GWTTestSuite;
 import com.vaadin.client.communication.GwtDefaultReconnectDialogTest;
+import com.vaadin.client.flow.GwtBasicElementBinderTest;
 import com.vaadin.client.flow.GwtEventHandlerTest;
+import com.vaadin.client.flow.GwtPolymerModelTest;
 import com.vaadin.client.flow.GwtRouterLinkHandlerTest;
 import com.vaadin.client.flow.GwtStateTreeTest;
 import com.vaadin.client.flow.GwtTreeChangeProcessorTest;
-import com.vaadin.client.flow.collection.GwtBasicElementBinderTest;
 import com.vaadin.client.flow.collection.GwtJsArrayTest;
 import com.vaadin.client.flow.collection.GwtJsMapTest;
 import com.vaadin.client.flow.collection.GwtJsSetTest;
 import com.vaadin.client.flow.collection.GwtJsWeakMapTest;
-import com.vaadin.client.flow.collection.GwtPolymerModelTest;
 import com.vaadin.client.flow.dom.GwtDomApiTest;
 import com.vaadin.client.flow.dom.GwtPolymerApiImplTest;
 import com.vaadin.client.flow.template.GwtTemplateBinderTest;

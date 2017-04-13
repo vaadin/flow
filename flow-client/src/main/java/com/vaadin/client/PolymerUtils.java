@@ -119,8 +119,8 @@ public final class PolymerUtils {
         if (object instanceof StateNode) {
             StateNode node = (StateNode) object;
             NodeFeature feature = null;
-            if (node.hasFeature(NodeFeatures.TEMPLATE_MODELMAP)) {
-                feature = node.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
+                feature = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);
             } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
                 feature = node.getList(NodeFeatures.TEMPLATE_MODELLIST);
             }
@@ -142,4 +142,16 @@ public final class PolymerUtils {
             return WidgetUtil.crazyJsoCast(object);
         }
     }
+
+    /**
+     * Checks whether the {@code htmlNode} is a polymer 2 element.
+     * 
+     * @param htmlNode
+     *            HTML element to check
+     * @return {@code true} if the {@code htmlNode} is a polymer element
+     */
+    public static native boolean isPolymerElement(Element htmlNode)
+    /*-{
+        return (typeof Polymer === 'function') && Polymer.Element && htmlNode instanceof Polymer.Element;
+    }-*/;
 }
