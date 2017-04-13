@@ -406,7 +406,6 @@ public class BrowserInfo {
      *         otherwise.
      */
     public boolean isEs6Supported() {
-        // TODO migrate this to feature detection instead of browser detection
         return browserDetails.isEs6Supported();
     }
 

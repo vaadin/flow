@@ -23,11 +23,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -396,12 +395,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 + "}");
 
         // Collections polyfill needed for PhantomJS and maybe googlebot
-        head.appendChild(createJavaScriptElement(
-                context.getUriResolver()
-                        .resolveVaadinUri("context://"
-                                + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                + "server/es6-collections.js"),
-                mapOf(DEFER_ATTRIBUTE, false)));
+        head.appendChild(
+                createJavaScriptElement(
+                        context.getUriResolver()
+                                .resolveVaadinUri("context://"
+                                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                        + "server/es6-collections.js"),
+                        false));
 
         appendWebComponentsElements(head, context);
 
@@ -427,26 +427,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         boolean forceShadyDom;
         boolean loadEs5Adapter;
 
-        if (!webComponents.isPresent()) {
-            DeploymentConfiguration config = context.getSession()
-                    .getConfiguration();
-            String version = config.getApplicationOrSystemProperty(
-                    Constants.WEB_COMPONENTS, "");
-            isVersion1 = String.valueOf(1).equals(version);
+        DeploymentConfiguration config = context.getSession()
+                .getConfiguration();
 
-            forceShadyDom = Boolean
-                    .parseBoolean(config.getApplicationOrSystemProperty(
-                            Constants.FORCE_SHADY_DOM, ""));
+        isVersion1 = getUserDefinedProperty(config, Constants.WEB_COMPONENTS,
+                version -> String.valueOf(1).equals(version),
+                webComponents.isPresent()
+                        ? webComponents.get().value() == PolyfillVersion.V1
+                        : false);
+        forceShadyDom = getUserDefinedProperty(config,
+                Constants.FORCE_SHADY_DOM, Boolean::parseBoolean,
+                webComponents.isPresent() ? webComponents.get().forceShadyDom()
+                        : false);
 
-            loadEs5Adapter = Boolean
-                    .parseBoolean(config.getApplicationOrSystemProperty(
-                            Constants.LOAD_ES5_ADAPTER, ""));
-        } else {
-            WebComponents annotation = webComponents.get();
-            isVersion1 = annotation.value() == PolyfillVersion.V1;
-            forceShadyDom = annotation.forceShadyDom();
-            loadEs5Adapter = annotation.loadEs5Adapter();
-        }
+        loadEs5Adapter = getUserDefinedProperty(config,
+                Constants.LOAD_ES5_ADAPTER, Boolean::parseBoolean,
+                webComponents.isPresent() ? webComponents.get().loadEs5Adapter()
+                        : false);
 
         if (loadEs5Adapter) {
             head.appendChild(createJavaScriptElement(
@@ -454,7 +451,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
                                     + "server/custom-elements-es5-adapter.js"),
-                    mapOf(DEFER_ATTRIBUTE, false)));
+                    false));
         }
 
         if (isVersion1) {
@@ -463,48 +460,45 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
                                     + "server/v1/webcomponents-lite.js"),
-                    mapOf(DEFER_ATTRIBUTE, false, "shadydom", forceShadyDom)));
+                    false).attr("shadydom", forceShadyDom));
         } else {
-            head.appendChild(createJavaScriptElement(
-                    context.getUriResolver()
-                            .resolveVaadinUri("context://"
-                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/webcomponents-lite.min.js"),
-                    mapOf(DEFER_ATTRIBUTE, true)));
+            head.appendChild(createJavaScriptElement(context.getUriResolver()
+                    .resolveVaadinUri("context://"
+                            + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                            + "server/webcomponents-lite.min.js")));
         }
     }
 
     private static Element createJavaScriptElement(String sourceUrl,
-            Map<String, Object> attributes) {
-        Element jsElement = new Element(Tag.valueOf("script"), "");
-        if (attributes != null) {
-            attributes.forEach((k, v) -> {
-                if (v instanceof Boolean) {
-                    jsElement.attr(k, (Boolean) v);
-                } else {
-                    jsElement.attr(k, String.valueOf(v));
-                }
-            });
-        }
-        jsElement.attr("type", "text/javascript");
+            boolean defer) {
+        Element jsElement = new Element(Tag.valueOf("script"), "")
+                .attr("type", "text/javascript").attr(DEFER_ATTRIBUTE, defer);
         if (sourceUrl != null) {
-            jsElement.attr("src", sourceUrl);
+            jsElement = jsElement.attr("src", sourceUrl);
         }
         return jsElement;
     }
 
     private static Element createJavaScriptElement(String sourceUrl) {
-        return createJavaScriptElement(sourceUrl, mapOf(DEFER_ATTRIBUTE, true));
+        return createJavaScriptElement(sourceUrl, true);
     }
 
-    private static Map<String, Object> mapOf(Object... keysAndValues) {
-        assert keysAndValues.length
-                % 2 == 0 : "There should be one value for each key";
-        Map<String, Object> map = new LinkedHashMap<>(keysAndValues.length / 2);
-        for (int i = 0; i < keysAndValues.length; i += 2) {
-            map.put(String.valueOf(keysAndValues[i]), keysAndValues[i + 1]);
+    private static <T> T getUserDefinedProperty(DeploymentConfiguration config,
+            String propertyName, Function<String, T> converter,
+            T defaultValue) {
+
+        // application or system properties have priority over the values
+        // defined by annotations
+        String value = config.getApplicationOrSystemProperty(propertyName,
+                null);
+
+        // null means that the property wasn't set
+        if (value == null) {
+            return defaultValue;
         }
-        return map;
+
+        // converts the String to the desired type
+        return converter.apply(value);
     }
 
     private static void includeDependencies(Element head,

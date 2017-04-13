@@ -581,25 +581,35 @@ public class BrowserDetails implements Serializable {
     }
 
     /**
-     * Checks if the browser supports ECMAScript 6, based on the user agent.
+     * Checks if the browser supports ECMAScript 6, based on the user agent. The
+     * main features required to consider the browser ES6 compatible are ES6
+     * Classes, let/const support and arrow functions.
      * 
      * @return <code>true</code> if the browser supports ES6, <code>false</code>
      *         otherwise.
      */
     public boolean isEs6Supported() {
-        if (isTooOldToFunctionProperly()) {
-            return false;
+        // Safari 10+
+        if (isSafari() && getBrowserMajorVersion() >= 10) {
+            return true;
+        }
+        // Firefox 45+
+        if (isFirefox() && getBrowserMajorVersion() >= 45) {
+            return true;
+        }
+        // Opera 36+
+        if (isOpera() && getBrowserMajorVersion() >= 36) {
+            return true;
+        }
+        // Chrome 49+
+        if (isChrome() && getBrowserMajorVersion() >= 49) {
+            return true;
+        }
+        // All Edges
+        if (isEdge()) {
+            return true;
         }
 
-        // assumes evergreen browsers support ES6
-        if (isChrome() || isFirefox() || isOpera() || isEdge()) {
-            return true;
-        }
-        // Safari > 9
-        if (isSafari() && getBrowserMajorVersion() > 9) {
-            return true;
-        }
-        // IE11 and Safari 9
         return false;
     }
 
