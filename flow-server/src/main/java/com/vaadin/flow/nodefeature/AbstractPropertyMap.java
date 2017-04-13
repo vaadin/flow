@@ -18,9 +18,9 @@ package com.vaadin.flow.nodefeature;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.JsonCodec;
 import com.vaadin.flow.StateNode;
-
-import elemental.json.JsonValue;
+import com.vaadin.util.ReflectTools;
 
 /**
  * Abstract class to be used as a parent for node maps which supports setting
@@ -97,8 +97,8 @@ public abstract class AbstractPropertyMap extends NodeMap {
      * @return the property value; <code>null</code> if there is no property or
      *         if the value is explicitly set to null
      */
-    public Object getProperty(String name) {
-        return get(name);
+    public Serializable getProperty(String name) {
+        return (Serializable) get(name);
     }
 
     /**
@@ -122,20 +122,9 @@ public abstract class AbstractPropertyMap extends NodeMap {
         if (value == null) {
             return true;
         }
-        if (value instanceof String) {
-            return true;
-        }
-        if (value instanceof Boolean) {
-            return true;
-        }
-        if (value instanceof Double) {
-            return true;
-        }
-        if (value instanceof JsonValue) {
-            return true;
-        }
-
-        return false;
+        Class<?> type = ReflectTools.convertPrimitiveType(value.getClass());
+        return JsonCodec.canEncodeWithoutTypeInfo(type)
+                || StateNode.class.isAssignableFrom(type);
     }
 
 }

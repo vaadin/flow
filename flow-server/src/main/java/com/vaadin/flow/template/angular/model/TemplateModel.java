@@ -13,15 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.function.Predicate;
 
 import com.vaadin.flow.template.model.PropertyFilter;
-import com.vaadin.flow.template.model.TemplateModelListProxy;
-import com.vaadin.flow.template.model.TemplateModelUtil;
 
 /**
  * Interface for a template model. Extending this interface and adding getters

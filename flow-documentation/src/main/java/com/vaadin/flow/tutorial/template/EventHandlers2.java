@@ -19,7 +19,7 @@ import com.vaadin.annotations.Id;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.flow.html.Button;
 import com.vaadin.flow.html.Input;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
 @Deprecated

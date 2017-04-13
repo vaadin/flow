@@ -39,9 +39,11 @@ public class OneWayPolymerBindingTemplate
 
     public interface MessageModel extends TemplateModel {
         void setMessage(String message);
+
         void setTitle(String title);
 
         String getMessage();
+
         String getTitle();
     }
 

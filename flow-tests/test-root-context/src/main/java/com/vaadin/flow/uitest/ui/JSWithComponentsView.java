@@ -18,7 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.annotations.ClientDelegate;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 
 public class JSWithComponentsView extends Div implements View {
 

@@ -1,4 +1,4 @@
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,12 +15,15 @@ import org.junit.Test;
 
 import com.vaadin.annotations.Exclude;
 import com.vaadin.annotations.Include;
-import com.vaadin.annotations.Tag;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.NodeChange;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
-import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.template.angular.InlineTemplate;
+import com.vaadin.flow.template.model.Bean;
+import com.vaadin.flow.template.model.BeanContainingBeans;
+import com.vaadin.flow.template.model.InvalidTemplateModelException;
+import com.vaadin.ui.AngularTemplate;
 import com.vaadin.util.ReflectTools;
 
 public class TemplateModelTest {
@@ -192,6 +195,133 @@ public class TemplateModelTest {
         SubBean getBeanClass();
     }
 
+    public static class EmptyDivTemplate extends InlineTemplate {
+        public EmptyDivTemplate() {
+            super("<div></div>");
+        }
+
+    }
+
+    public static class SubBeansTemplate extends EmptyDivTemplate {
+
+        @Override
+        protected SubBeansModel getModel() {
+            return (SubBeansModel) super.getModel();
+        }
+    }
+
+    public static class NoModelTemplate extends EmptyDivTemplate {
+
+        @Override
+        public TemplateModel getModel() {
+            return super.getModel();
+        }
+    }
+
+    public static class EmptyModelTemplate extends NoModelTemplate {
+        @Override
+        public EmptyModel getModel() {
+            return (EmptyModel) super.getModel();
+        }
+    }
+
+    public static class BasicTypeModelTemplate extends NoModelTemplate {
+        @Override
+        public BasicTypeModel getModel() {
+            return (BasicTypeModel) super.getModel();
+        };
+    }
+
+    public static class NotSupportedModelTemplate extends NoModelTemplate {
+        @Override
+        public NotSupportedModel getModel() {
+            return (NotSupportedModel) super.getModel();
+        }
+    }
+
+    public static class BeanModelTemplate extends NoModelTemplate {
+        @Override
+        public BeanModel getModel() {
+            return (BeanModel) super.getModel();
+        }
+    }
+
+    public static class ListBeanModelTemplate extends NoModelTemplate {
+        @Override
+        public ListBeanModel getModel() {
+            return (ListBeanModel) super.getModel();
+        }
+    }
+
+    public static interface ModelWithList extends TemplateModel {
+        List<Bean> getBeans();
+
+        void setBeans(List<Bean> beans);
+
+        List<String> getItems();
+
+        void setItems(List<String> items);
+    }
+
+    public static class TemplateWithList extends NoModelTemplate {
+
+        @Override
+        public ModelWithList getModel() {
+            return (ModelWithList) super.getModel();
+        }
+    }
+
+    public static class TemplateWithInclude extends EmptyDivTemplate {
+        public interface ModelWithInclude extends TemplateModel {
+            public Bean getBean();
+
+            @Include({ "doubleValue", "booleanObject" })
+            public void setBean(Bean bean);
+        }
+
+        @Override
+        protected ModelWithInclude getModel() {
+            return (ModelWithInclude) super.getModel();
+        }
+    }
+
+    public static class TemplateWithExclude extends EmptyDivTemplate {
+
+        public interface ModelWithExclude extends TemplateModel {
+            public Bean getBean();
+
+            @Exclude({ "doubleValue", "booleanObject" })
+            public void setBean(Bean bean);
+        }
+
+        @Override
+        protected ModelWithExclude getModel() {
+            return (ModelWithExclude) super.getModel();
+        }
+    }
+
+    public static class TemplateWithExcludeAndInclude extends EmptyDivTemplate {
+
+        public interface ModelWithExcludeAndInclude extends TemplateModel {
+            public Bean getBean();
+
+            @Include({ "doubleValue", "booleanObject" })
+            @Exclude("doubleValue")
+            public void setBean(Bean bean);
+        }
+
+        @Override
+        protected ModelWithExcludeAndInclude getModel() {
+            return (ModelWithExcludeAndInclude) super.getModel();
+        }
+
+    }
+
+    public static class TemplateWithExcludeAndIncludeSubclass
+            extends TemplateWithExcludeAndInclude {
+        // Should work exactly the same way as the parent class
+    }
+
     public static class SubSubBeanIfaceImpl implements SubSubBeanIface {
         private int value;
 
@@ -206,59 +336,11 @@ public class TemplateModelTest {
         }
     }
 
-    @Tag("div")
-    public static class EmptyDivTemplate<M extends TemplateModel>
-            extends PolymerTemplate<M> {
-        public EmptyDivTemplate() {
-        }
+    public static class TemplateWithExcludeAndIncludeSubclassOverrides
+            extends TemplateWithExcludeAndInclude {
 
-    }
-
-    public static class TemplateWithExclude
-            extends EmptyDivTemplate<TemplateWithExclude.ModelWithExclude> {
-
-        public interface ModelWithExclude extends TemplateModel {
-            public Bean getBean();
-
-            @Exclude({ "doubleValue", "booleanObject" })
-            public void setBean(Bean bean);
-        }
-
-        @Override
-        public ModelWithExclude getModel() {
-            return super.getModel();
-        }
-
-    }
-
-    public static class TemplateWithExcludeAndInclude<M extends TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude>
-            extends EmptyDivTemplate<M> {
-
-        public interface ModelWithExcludeAndInclude extends TemplateModel {
-            public Bean getBean();
-
-            @Include({ "doubleValue", "booleanObject" })
-            @Exclude("doubleValue")
-            public void setBean(Bean bean);
-        }
-
-        @Override
-        protected M getModel() {
-            return super.getModel();
-        }
-
-    }
-
-    public static class TemplateWithExcludeAndIncludeImpl extends
-            TemplateWithExcludeAndInclude<TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude> {
-
-    }
-
-    public static class TemplateWithExcludeAndIncludeSubclassOverrides extends
-            TemplateWithExcludeAndInclude<TemplateWithExcludeAndIncludeSubclassOverrides.ModelWithExcludeAndIncludeSubclass> {
-
-        public interface ModelWithExcludeAndIncludeSubclass extends
-                com.vaadin.flow.template.model.TemplateModelTest.TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude {
+        public interface ModelWithExcludeAndIncludeSubclass
+                extends ModelWithExcludeAndInclude {
 
             /*
              * Super class has annotations for this method to only include
@@ -270,13 +352,20 @@ public class TemplateModelTest {
             public void setBean(Bean bean);
         }
 
+        @Override
+        protected ModelWithExcludeAndIncludeSubclass getModel() {
+            return (ModelWithExcludeAndIncludeSubclass) super.getModel();
+        }
+
+        @Override
+        protected Class<? extends TemplateModel> getModelType() {
+            return ModelWithExcludeAndIncludeSubclass.class;
+        }
     }
 
-    public static class TemplateWithExcludeForSubBean extends
-            EmptyDivTemplate<TemplateWithExcludeForSubBean.ModelWithExcludeForSubBean> {
+    public static class TemplateWithExcludeForSubBean extends EmptyDivTemplate {
 
-        public interface ModelWithExcludeForSubBean
-                extends com.vaadin.flow.template.model.TemplateModel {
+        public interface ModelWithExcludeForSubBean extends TemplateModel {
             public BeanContainingBeans getBeanContainingBeans();
 
             @Exclude({ "bean1.booleanObject", "bean2" })
@@ -286,45 +375,12 @@ public class TemplateModelTest {
 
         @Override
         protected ModelWithExcludeForSubBean getModel() {
-            return super.getModel();
+            return (ModelWithExcludeForSubBean) super.getModel();
         }
 
     }
 
-    public static class TemplateWithExcludeOnList extends
-            EmptyDivTemplate<TemplateWithExcludeOnList.ModelWithExcludeOnList> {
-
-        public interface ModelWithExcludeOnList extends TemplateModel {
-            @Exclude("intValue")
-            public void setBeans(List<Bean> beans);
-
-            public List<Bean> getBeans();
-        }
-
-        @Override
-        protected ModelWithExcludeOnList getModel() {
-            return super.getModel();
-        }
-    }
-
-    public static class TemplateWithInclude
-            extends EmptyDivTemplate<TemplateWithInclude.ModelWithInclude> {
-        public interface ModelWithInclude extends TemplateModel {
-            public Bean getBean();
-
-            @Include({ "doubleValue", "booleanObject" })
-            public void setBean(Bean bean);
-        }
-
-        @Override
-        public ModelWithInclude getModel() {
-            return super.getModel();
-        }
-
-    }
-
-    public static class TemplateWithIncludeForSubBean extends
-            EmptyDivTemplate<TemplateWithIncludeForSubBean.ModelWithIncludeForSubBean> {
+    public static class TemplateWithIncludeForSubBean extends EmptyDivTemplate {
 
         public interface ModelWithIncludeForSubBean extends TemplateModel {
             public BeanContainingBeans getBeanContainingBeans();
@@ -336,12 +392,12 @@ public class TemplateModelTest {
 
         @Override
         protected ModelWithIncludeForSubBean getModel() {
-            return super.getModel();
+            return (ModelWithIncludeForSubBean) super.getModel();
         }
+
     }
 
-    public static class TemplateWithIncludeOnList extends
-            EmptyDivTemplate<TemplateWithIncludeOnList.ModelWithIncludeOnList> {
+    public static class TemplateWithIncludeOnList extends EmptyDivTemplate {
 
         public interface ModelWithIncludeOnList extends TemplateModel {
             @Include("intValue")
@@ -352,70 +408,13 @@ public class TemplateModelTest {
 
         @Override
         protected ModelWithIncludeOnList getModel() {
-            return super.getModel();
+            return (ModelWithIncludeOnList) super.getModel();
         }
-    }
-
-    public static class NoModelTemplate<M extends TemplateModel>
-            extends EmptyDivTemplate<M> {
 
     }
 
-    public static class EmptyModelTemplate extends NoModelTemplate<EmptyModel> {
-
-        @Override
-        public EmptyModel getModel() {
-            return super.getModel();
-        }
-    }
-
-    public static class BasicTypeModelTemplate
-            extends NoModelTemplate<BasicTypeModel> {
-        @Override
-        public BasicTypeModel getModel() {
-            return super.getModel();
-        };
-    }
-
-    public static class BeanModelTemplate extends NoModelTemplate<BeanModel> {
-        @Override
-        public BeanModel getModel() {
-            return super.getModel();
-        }
-    }
-
-    public static class NotSupportedModelTemplate
-            extends NoModelTemplate<NotSupportedModel> {
-        @Override
-        public NotSupportedModel getModel() {
-            return super.getModel();
-        }
-    }
-
-    public static class SubBeansTemplate
-            extends EmptyDivTemplate<SubBeansModel> {
-
-        @Override
-        protected SubBeansModel getModel() {
-            return super.getModel();
-        }
-    }
-
-    public static class ListBeanModelTemplate
-            extends NoModelTemplate<ListBeanModel> {
-        @Override
-        public ListBeanModel getModel() {
-            return super.getModel();
-        }
-    }
-
-    public static class TemplateWithExcludeAndIncludeSubclass extends
-            TemplateWithExcludeAndInclude<TemplateWithExcludeAndInclude.ModelWithExcludeAndInclude> {
-        // Should work exactly the same way as the parent class
-    }
-
-    public static class TemplateWithIncludeOnListSubBean extends
-            EmptyDivTemplate<TemplateWithIncludeOnListSubBean.ModelWithIncludeOnListSubBean> {
+    public static class TemplateWithIncludeOnListSubBean
+            extends EmptyDivTemplate {
 
         public interface ModelWithIncludeOnListSubBean extends TemplateModel {
             @Include({ "bean1.intValue", "bean2.booleanValue" })
@@ -424,9 +423,50 @@ public class TemplateModelTest {
 
         @Override
         protected ModelWithIncludeOnListSubBean getModel() {
-            return super.getModel();
+            return (ModelWithIncludeOnListSubBean) super.getModel();
         }
 
+    }
+
+    public static class TemplateWithExcludeOnList extends EmptyDivTemplate {
+
+        public interface ModelWithExcludeOnList extends TemplateModel {
+            @Exclude("intValue")
+            public void setBeans(List<Bean> beans);
+
+            public List<Bean> getBeans();
+        }
+
+        @Override
+        protected ModelWithExcludeOnList getModel() {
+            return (ModelWithExcludeOnList) super.getModel();
+        }
+
+    }
+
+    @Test
+    public void testTemplateModelTypeReading() {
+        Class<? extends TemplateModel> templateModelType = TemplateModelTypeParser
+                .getType(NoModelTemplate.class);
+
+        Assert.assertEquals(TemplateModel.class, templateModelType);
+
+        templateModelType = TemplateModelTypeParser
+                .getType(EmptyModelTemplate.class);
+
+        Assert.assertEquals(EmptyModel.class, templateModelType);
+    }
+
+    @Test
+    public void testTemplateModelTypeCache() {
+        TemplateModelTypeParser.cache.clear();
+
+        Class<? extends TemplateModel> first = TemplateModelTypeParser
+                .getType(EmptyModelTemplate.class);
+        Class<? extends TemplateModel> second = TemplateModelTypeParser
+                .getType(EmptyModelTemplate.class);
+
+        Assert.assertSame(first, second);
     }
 
     @Test
@@ -455,8 +495,8 @@ public class TemplateModelTest {
         Assert.assertEquals("foobar", model.getString());
 
         ArrayList<NodeChange> changes = new ArrayList<>();
-        ElementPropertyMap modelMap = template.getElement().getNode()
-                .getFeature(ElementPropertyMap.class);
+        ModelMap modelMap = template.getElement().getNode()
+                .getFeature(ModelMap.class);
         modelMap.collectChanges(changes::add);
 
         Assert.assertEquals(1, changes.size());
@@ -501,8 +541,8 @@ public class TemplateModelTest {
 
         Assert.assertEquals(null, model.getBoolean());
 
-        template.getElement().getNode().getFeature(ElementPropertyMap.class)
-                .setProperty("boolean", "True");
+        template.getElement().getNode().getFeature(ModelMap.class)
+                .setValue("boolean", "True");
 
         model.getBoolean();
     }
@@ -514,8 +554,8 @@ public class TemplateModelTest {
 
         Assert.assertEquals(Boolean.FALSE, model.isBooleanPrimitive());
 
-        template.getElement().getNode().getFeature(ElementPropertyMap.class)
-                .setProperty("booleanPrimitive", "TRUE");
+        template.getElement().getNode().getFeature(ModelMap.class)
+                .setValue("booleanPrimitive", "TRUE");
 
         model.getBooleanPrimitive();
     }
@@ -604,7 +644,7 @@ public class TemplateModelTest {
         bean.setString("foobar");
 
         StateNode stateNode = (StateNode) template.getElement().getNode()
-                .getFeature(ElementPropertyMap.class).getProperty("bean");
+                .getFeature(ModelMap.class).getValue("bean");
 
         Assert.assertNull(stateNode);
         Assert.assertEquals(0, beanTriggered.get());
@@ -612,16 +652,16 @@ public class TemplateModelTest {
         model.setBean(bean);
 
         stateNode = (StateNode) template.getElement().getNode()
-                .getFeature(ElementPropertyMap.class).getProperty("bean");
+                .getFeature(ModelMap.class).getValue("bean");
 
         // enough to verify that TemplateModelBeanUtil.importBeanIntoModel is
         // triggered, since TemplatemodelBeanUtilTests covers the bean import
         Assert.assertNotNull(stateNode);
         Assert.assertEquals(1, beanTriggered.get());
 
-        ElementPropertyMap modelMap = ElementPropertyMap.getModel(stateNode);
+        ModelMap modelMap = ModelMap.get(stateNode);
         Assert.assertNotNull(modelMap);
-        Assert.assertEquals("foobar", modelMap.getProperty("string"));
+        Assert.assertEquals("foobar", modelMap.getValue("string"));
     }
 
     @Test(expected = InvalidTemplateModelException.class)
@@ -854,31 +894,29 @@ public class TemplateModelTest {
         Assert.assertEquals(4, subProxy.getValue());
     }
 
-    private void setModelPropertyAndVerifyGetter(PolymerTemplate<?> template,
+    private void setModelPropertyAndVerifyGetter(AngularTemplate template,
             Supplier<Object> getter, String beanPath, String property,
             Serializable expected) {
-        ElementPropertyMap feature = getModelMap(template, beanPath);
-        feature.setProperty(property, expected);
+        ModelMap feature = getModelMap(template, beanPath);
+        feature.setValue(property, expected);
         Assert.assertEquals(expected, getter.get());
     }
 
-    private void verifyModel(PolymerTemplate<?> template, String beanPath,
+    private void verifyModel(AngularTemplate template, String beanPath,
             String property, Serializable expected) {
-        ElementPropertyMap feature = getModelMap(template, beanPath);
+        ModelMap feature = getModelMap(template, beanPath);
         Assert.assertNotNull(feature);
-        Assert.assertEquals(expected, feature.getProperty(property));
+        Assert.assertEquals(expected, feature.getValue(property));
     }
 
-    private ElementPropertyMap getModelMap(PolymerTemplate<?> template,
-            String beanPath) {
+    private ModelMap getModelMap(AngularTemplate template, String beanPath) {
         StateNode node = template.getElement().getNode();
-        return ElementPropertyMap.getModel(node).resolveModelMap(beanPath);
+        return ModelMap.get(node).resolveModelMap(beanPath);
     }
 
-    private ModelList getModelList(PolymerTemplate<?> template,
-            String beanPath) {
+    private ModelList getModelList(AngularTemplate template, String beanPath) {
         StateNode node = template.getElement().getNode();
-        return ElementPropertyMap.getModel(node).resolveModelList(beanPath);
+        return ModelMap.get(node).resolveModelList(beanPath);
     }
 
     @Test
@@ -909,7 +947,7 @@ public class TemplateModelTest {
         TemplateWithInclude template = new TemplateWithInclude();
         template.getModel().setBean(new Bean(123));
 
-        ElementPropertyMap modelMap = getModelMap(template, "bean");
+        ModelMap modelMap = getModelMap(template, "bean");
         Set<String> mapKeys = getKeys(modelMap);
         Assert.assertTrue("Model should contain included 'doubleValue'",
                 mapKeys.remove("doubleValue"));
@@ -924,7 +962,7 @@ public class TemplateModelTest {
         TemplateWithExclude template = new TemplateWithExclude();
         template.getModel().setBean(new Bean(123));
 
-        ElementPropertyMap modelMap = getModelMap(template, "bean");
+        ModelMap modelMap = getModelMap(template, "bean");
         Set<String> mapKeys = getKeys(modelMap);
         HashSet<String> excluded = new HashSet<>();
         excluded.add("doubleValue");
@@ -952,29 +990,29 @@ public class TemplateModelTest {
 
     @Test
     public void setBeanIncludeAndExcludeProperties() {
-        TemplateWithExcludeAndIncludeImpl template = new TemplateWithExcludeAndIncludeImpl();
+        TemplateWithExcludeAndInclude template = new TemplateWithExcludeAndInclude();
         template.getModel().setBean(new Bean(123));
-        ElementPropertyMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasProperty("booleanObject"));
-        Assert.assertEquals(1, modelMap.getPropertyNames().count());
+        ModelMap modelMap = getModelMap(template, "bean");
+        Assert.assertTrue(modelMap.hasValue("booleanObject"));
+        Assert.assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
     public void includeExcludeWhenUsingSubclass() {
         TemplateWithExcludeAndIncludeSubclass template = new TemplateWithExcludeAndIncludeSubclass();
         template.getModel().setBean(new Bean(123));
-        ElementPropertyMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasProperty("booleanObject"));
-        Assert.assertEquals(1, modelMap.getPropertyNames().count());
+        ModelMap modelMap = getModelMap(template, "bean");
+        Assert.assertTrue(modelMap.hasValue("booleanObject"));
+        Assert.assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
     public void includeExcludeOverrideInSubclass() {
         TemplateWithExcludeAndIncludeSubclassOverrides template = new TemplateWithExcludeAndIncludeSubclassOverrides();
         template.getModel().setBean(new Bean(123));
-        ElementPropertyMap modelMap = getModelMap(template, "bean");
-        Assert.assertTrue(modelMap.hasProperty("doubleValue"));
-        Assert.assertEquals(1, modelMap.getPropertyNames().count());
+        ModelMap modelMap = getModelMap(template, "bean");
+        Assert.assertTrue(modelMap.hasValue("doubleValue"));
+        Assert.assertEquals(1, modelMap.getKeys().count());
     }
 
     @Test
@@ -989,10 +1027,10 @@ public class TemplateModelTest {
         Assert.assertNotNull(
                 template.getModel().getBeanContainingBeans().getBean1());
         Assert.assertTrue(getModelMap(template, "beanContainingBeans.bean1")
-                .hasProperty("booleanValue"));
+                .hasValue("booleanValue"));
         // bean1.booleanObject is excluded
         Assert.assertFalse(getModelMap(template, "beanContainingBeans.bean1")
-                .hasProperty("booleanObject"));
+                .hasValue("booleanObject"));
     }
 
     @Test(expected = InvalidTemplateModelException.class)
@@ -1017,8 +1055,7 @@ public class TemplateModelTest {
         Assert.assertNotNull(
                 template.getModel().getBeanContainingBeans().getBean1());
 
-        ElementPropertyMap bean1Map = getModelMap(template,
-                "beanContainingBeans.bean1");
+        ModelMap bean1Map = getModelMap(template, "beanContainingBeans.bean1");
         Set<String> bean1Keys = getKeys(bean1Map);
         Assert.assertTrue(bean1Keys.contains("booleanObject"));
         Assert.assertEquals(1, bean1Keys.size());
@@ -1043,9 +1080,8 @@ public class TemplateModelTest {
         template.getModel().setBeans(beans);
 
         ModelList modelList = getModelList(template, "beans");
-        ElementPropertyMap bean1 = ElementPropertyMap
-                .getModel(modelList.get(0));
-        Set<String> propertiesInMap = bean1.getPropertyNames()
+        ModelMap bean1 = ModelMap.get(modelList.get(0));
+        Set<String> propertiesInMap = bean1.getKeys()
                 .collect(Collectors.toSet());
         Assert.assertTrue("Bean in model should have an 'intValue' property",
                 propertiesInMap.remove("intValue"));
@@ -1063,10 +1099,8 @@ public class TemplateModelTest {
         template.getModel().setBeans(beans);
 
         ModelList modelList = getModelList(template, "beans");
-        ElementPropertyMap bean1 = ElementPropertyMap
-                .getModel(modelList.get(0));
-        ElementPropertyMap bean2 = ElementPropertyMap
-                .getModel(modelList.get(1));
+        ModelMap bean1 = ModelMap.get(modelList.get(0));
+        ModelMap bean2 = ModelMap.get(modelList.get(1));
 
         Set<String> bean1InMap = getKeys(bean1);
         Set<String> bean2InMap = getKeys(bean2);
@@ -1094,17 +1128,15 @@ public class TemplateModelTest {
         ModelList modelList = getModelList(template, "beanContainingBeans");
         Assert.assertEquals(2, modelList.size());
 
-        ElementPropertyMap container1Map = ElementPropertyMap
-                .getModel(modelList.get(0));
-        ElementPropertyMap container2Map = ElementPropertyMap
-                .getModel(modelList.get(1));
+        ModelMap container1Map = ModelMap.get(modelList.get(0));
+        ModelMap container2Map = ModelMap.get(modelList.get(1));
         HashSet<String> bean1bean2 = new HashSet<>();
         bean1bean2.add("bean1");
         bean1bean2.add("bean2");
         Assert.assertEquals(bean1bean2,
-                container1Map.getPropertyNames().collect(Collectors.toSet()));
+                container1Map.getKeys().collect(Collectors.toSet()));
         Assert.assertEquals(bean1bean2,
-                container2Map.getPropertyNames().collect(Collectors.toSet()));
+                container2Map.getKeys().collect(Collectors.toSet()));
 
         Set<String> container1Bean1Properties = getKeys(
                 container1Map.resolveModelMap("bean1"));
@@ -1127,8 +1159,8 @@ public class TemplateModelTest {
         Assert.assertEquals(0, container2Bean2Properties.size());
     }
 
-    private static Set<String> getKeys(ElementPropertyMap map) {
-        return map.getPropertyNames().collect(Collectors.toSet());
+    private static Set<String> getKeys(ModelMap map) {
+        return map.getKeys().collect(Collectors.toSet());
     }
 
 }

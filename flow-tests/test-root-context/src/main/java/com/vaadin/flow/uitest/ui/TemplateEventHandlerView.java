@@ -23,7 +23,7 @@ import com.vaadin.flow.html.Div;
 import com.vaadin.flow.html.HtmlContainer;
 import com.vaadin.flow.html.Label;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 
 import elemental.json.JsonValue;
 

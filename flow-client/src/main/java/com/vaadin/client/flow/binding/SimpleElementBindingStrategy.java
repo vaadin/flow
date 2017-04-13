@@ -183,9 +183,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         listeners.push(bindClientDelegateMethods(context));
 
-        bindPolymerPropertyChangeListener(stateNode, htmlNode);
-
         bindModelProperties(stateNode, htmlNode);
+        bindPolymerPropertyChangeListener(stateNode, htmlNode);
     }
 
     private native void bindPolymerPropertyChangeListener(StateNode node,
@@ -239,7 +238,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         StateNode model = node;
         MapProperty mapProperty = null;
         for (String prop : properties) {
-            NodeMap map = model.getMap(NodeFeatures.TEMPLATE_MODELMAP);
+            NodeMap map = model.getMap(NodeFeatures.ELEMENT_PROPERTIES);
             if (!map.hasPropertyValue(prop)) {
                 Console.debug("Ignoring property change for property '"
                         + property + "' which isn't defined from the server");
@@ -270,7 +269,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void bindModelProperties(StateNode stateNode, Element htmlNode,
             String path) {
         Computation computation = Reactive.runWhenDepedenciesChange(
-                () -> stateNode.getMap(NodeFeatures.TEMPLATE_MODELMAP)
+                () -> stateNode.getMap(NodeFeatures.ELEMENT_PROPERTIES)
                         .forEachProperty((property, key) -> bindSubProperty(
                                 stateNode, htmlNode, path, property)));
         stateNode.addUnregisterListener(event -> computation.stop());
@@ -284,27 +283,29 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void setSubProperties(Element htmlNode, MapProperty property,
             String path) {
-        String newPath = path.isEmpty() ? property.getName()
-                : path + "." + property.getName();
-        NativeFunction setValueFunction = NativeFunction.create("path", "value",
-                "this.set(path, value)");
-        if (property.getValue() instanceof StateNode) {
-            StateNode subNode = (StateNode) property.getValue();
+        if (PolymerUtils.isPolymerElement(htmlNode)) {
+            String newPath = path.isEmpty() ? property.getName()
+                    : path + "." + property.getName();
+            NativeFunction setValueFunction = NativeFunction.create("path",
+                    "value", "this.set(path, value)");
+            if (property.getValue() instanceof StateNode) {
+                StateNode subNode = (StateNode) property.getValue();
 
-            if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-                setValueFunction.call(htmlNode, newPath,
-                        PolymerUtils.convertToJson(subNode));
-                addModelListChangeListener(htmlNode,
-                        subNode.getList(NodeFeatures.TEMPLATE_MODELLIST),
-                        newPath);
+                if (subNode.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
+                    setValueFunction.call(htmlNode, newPath,
+                            PolymerUtils.convertToJson(subNode));
+                    addModelListChangeListener(htmlNode,
+                            subNode.getList(NodeFeatures.TEMPLATE_MODELLIST),
+                            newPath);
+                } else {
+                    NativeFunction function = NativeFunction.create("path",
+                            "value", "this.set(path, {})");
+                    function.call(htmlNode, newPath);
+                    bindModelProperties(subNode, htmlNode, newPath);
+                }
             } else {
-                NativeFunction function = NativeFunction.create("path", "value",
-                        "this.set(path, {})");
-                function.call(htmlNode, newPath);
-                bindModelProperties(subNode, htmlNode, newPath);
+                setValueFunction.call(htmlNode, newPath, property.getValue());
             }
-        } else {
-            setValueFunction.call(htmlNode, newPath, property.getValue());
         }
     }
 
@@ -316,10 +317,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private void processModelListChange(Element htmlNode,
             String polymerModelPath, ListSpliceEvent event) {
-        JsonArray itemsToAdd = convertItemsToAdd(event.getAdd(), htmlNode,
-                polymerModelPath, event.getIndex());
-        PolymerUtils.splice(htmlNode, polymerModelPath, event.getIndex(),
-                event.getRemove().length(), itemsToAdd);
+        if (PolymerUtils.isPolymerElement(htmlNode)) {
+            JsonArray itemsToAdd = convertItemsToAdd(event.getAdd(), htmlNode,
+                    polymerModelPath, event.getIndex());
+            PolymerUtils.splice(htmlNode, polymerModelPath, event.getIndex(),
+                    event.getRemove().length(), itemsToAdd);
+        }
     }
 
     private JsonArray convertItemsToAdd(JsArray<?> itemsToAdd, Element htmlNode,
@@ -337,7 +340,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void listenToSubPropertiesChanges(Element htmlNode,
             String polymerModelPath, int subNodeIndex, Object item) {
         if (item instanceof StateNode) {
-            ((StateNode) item).getMap(NodeFeatures.TEMPLATE_MODELMAP)
+            ((StateNode) item).getMap(NodeFeatures.ELEMENT_PROPERTIES)
                     .addPropertyAddListener(event -> {
                         Computation computation = Reactive
                                 .runWhenDepedenciesChange(() -> PolymerUtils
@@ -387,6 +390,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private void updateProperty(MapProperty mapProperty, Element element) {
+        if (PolymerUtils.isPolymerElement(element)) {
+            // another way of property binding is used for polymer elements.
+            return;
+        }
         String name = mapProperty.getName();
         if (mapProperty.hasValue()) {
             Object treeValue = mapProperty.getValue();
@@ -696,4 +703,5 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         return expression;
     }
+
 }

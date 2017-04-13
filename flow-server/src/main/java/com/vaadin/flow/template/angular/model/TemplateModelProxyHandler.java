@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -23,8 +23,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.template.angular.model.TemplateModel;
+import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.template.model.InvalidTemplateModelException;
+import com.vaadin.flow.template.model.ModelType;
+import com.vaadin.flow.template.model.PropertyFilter;
 import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.util.ReflectTools;
 
@@ -156,8 +158,7 @@ public class TemplateModelProxyHandler implements Serializable {
         }
 
         ModelType propertyType = modelType.getPropertyType(propertyName);
-        ElementPropertyMap modelMap = ElementPropertyMap
-                .getModel(getStateNodeForProxy(target));
+        ModelMap modelMap = ModelMap.get(getStateNodeForProxy(target));
 
         if (ReflectTools.isGetter(method)) {
             return handleGetter(modelMap, propertyName, propertyType);
@@ -242,8 +243,7 @@ public class TemplateModelProxyHandler implements Serializable {
                 .getLoaded();
 
         return (node, modelType) -> {
-            Object instance = ReflectTools.createProxyInstance(proxyType,
-                    modelType.getProxyType());
+            Object instance = ReflectTools.createProxyInstance(proxyType, modelType.getProxyType());
             ModelProxy modelProxy = (ModelProxy) instance;
             modelProxy.$stateNode(node);
             modelProxy.$modelType(modelType);
@@ -269,8 +269,8 @@ public class TemplateModelProxyHandler implements Serializable {
 
     private static String getUnsupportedMethodMessage(Method unsupportedMethod,
             Object[] args) {
-        return "AngularTemplate Model does not support: "
-                + unsupportedMethod.getName() + " with return type: "
+        return "AngularTemplate Model does not support: " + unsupportedMethod.getName()
+                + " with return type: "
                 + unsupportedMethod.getReturnType().getName()
                 + (args == null ? " and no parameters"
                         : " with parameters: " + Stream.of(args)
@@ -278,19 +278,19 @@ public class TemplateModelProxyHandler implements Serializable {
                                 .collect(Collectors.joining(", ")));
     }
 
-    private static Object handleGetter(ElementPropertyMap modelMap,
-            String propertyName, ModelType propertyType) {
-        Serializable modelValue = modelMap.getProperty(propertyName);
+    private static Object handleGetter(ModelMap modelMap, String propertyName,
+            ModelType propertyType) {
+        Serializable modelValue = modelMap.getValue(propertyName);
 
         return propertyType.modelToApplication(modelValue);
     }
 
-    private static void handleSetter(ElementPropertyMap modelMap,
-            String propertyName, ModelType propertyType, Object value) {
+    private static void handleSetter(ModelMap modelMap, String propertyName,
+            ModelType propertyType, Object value) {
         Serializable modelValue = propertyType.applicationToModel(value,
                 PropertyFilter.ACCEPT_ALL);
 
-        modelMap.setProperty(propertyName, modelValue);
+        modelMap.setValue(propertyName, modelValue);
     }
 
     /**
