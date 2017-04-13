@@ -15,7 +15,6 @@
  */
 package com.vaadin.client.flow.binding;
 
-import java.util.Optional;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.WidgetUtil;
@@ -42,6 +41,7 @@ import jsinterop.annotations.JsFunction;
  */
 public final class ServerEventObject extends JavaScriptObject {
     private static final String NODE_ID = "nodeId";
+    private static final String EVENT_PREFIX = "event";
 
     /**
      * Callback interface for an event data expression parsed using new
@@ -158,16 +158,17 @@ public final class ServerEventObject extends JavaScriptObject {
     }
 
     private boolean serverExpectsNodeId(String expression) {
-        return !expression.startsWith("event")
+        return !expression.startsWith(EVENT_PREFIX)
                 || "event.model.item".equals(expression);
     }
 
     private JsonObject getPolymerPropertyObject(Event event, StateNode node,
             String expression) {
-        return Optional
-                .ofNullable(
-                        getPolymerPropertyObject(node.getDomNode(), expression))
-                .orElse(createPolymerPropertyObject(event, expression));
+        if (expression.startsWith(EVENT_PREFIX)) {
+            return createPolymerPropertyObject(event, expression);
+        } else {
+            return getPolymerPropertyObject(node.getDomNode(), expression);
+        }
     }
 
     private JsonObject createPolymerPropertyObject(Event event,
@@ -237,7 +238,7 @@ public final class ServerEventObject extends JavaScriptObject {
                 .get(expressionString);
 
         if (expression == null) {
-            expression = NativeFunction.create("event", "element",
+            expression = NativeFunction.create(EVENT_PREFIX, "element",
                     "return (" + expressionString + ")");
             expressionCache.set(expressionString, expression);
         }

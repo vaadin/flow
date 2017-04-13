@@ -34,6 +34,7 @@ import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
+import elemental.dom.Node;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -231,6 +232,130 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
                 throw "This and target element didn't match";
             };
             event.result = arguments[1];
+        }
+    }-*/;
+
+    public void testEventHandlerModelItem() {
+        String methodName = "eventHandlerModelItem";
+        String methodId = "handlerModelId";
+        String eventData = "event.model.item";
+
+        node.getList(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS).add(0,
+                methodName);
+        node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+                .getProperty(methodName).setValue(methodId);
+
+        JsonObject json = Json.createObject();
+        JsonArray array = Json.createArray();
+        array.set(0, eventData);
+        json.put(methodId, array);
+
+        node.getTree().getRegistry().getConstantPool().importFromJson(json);
+        Binder.bind(node, element);
+        Reactive.flush();
+
+        NativeFunction mockedFunction = new NativeFunction("this." + methodName
+                + "({button: 0, model:{item: {nodeId: 2, value: 'test value'}}})");
+        mockedFunction.apply(element, JsCollections.array());
+
+        assertEquals("The amount of server methods was not as expected", 1,
+                serverMethods.size());
+        assertEquals("Expected method did not match", methodName,
+                serverMethods.keySet().iterator().next());
+        assertEquals("Wrong amount of method arguments", 1,
+                serverMethods.get(methodName).length());
+
+        assertTrue("Received value was not a JsonObject",
+                serverMethods.get(methodName).get(0) instanceof JsonObject);
+
+        JsonObject expectedResult = Json.createObject();
+        expectedResult.put("nodeId", 2);
+
+        assertEquals("Gotten argument wasn't as expected",
+                expectedResult.toJson(),
+                ((JsonObject) serverMethods.get(methodName).get(0)).toJson());
+        assertEquals("Method node did not match the expected node.", node,
+                serverRpcNodes.get(methodName));
+    }
+
+    public void testEventHandlerModelItemSingleItem() {
+        String methodName = "eventHandlerSingleModelItem";
+        String methodId = "handlerSingleModelId";
+        String eventData = "item";
+
+        node.getList(NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS).add(0,
+                methodName);
+        node.getMap(NodeFeatures.POLYMER_EVENT_LISTENERS)
+                .getProperty(methodName).setValue(methodId);
+
+        JsonObject json = Json.createObject();
+        JsonArray array = Json.createArray();
+        array.set(0, eventData);
+        json.put(methodId, array);
+
+        node.getTree().getRegistry().getConstantPool().importFromJson(json);
+        node.setDomNode(element);
+        Binder.bind(node, element);
+        // Add the node property for getPolymerPropertyObject functionality
+        setNodeProperty(node.getDomNode(), eventData, "nodeId", "1");
+        Reactive.flush();
+
+        NativeFunction mockedFunction = new NativeFunction(
+                "this." + methodName + "({button: 0})");
+        mockedFunction.apply(element, JsCollections.array());
+
+        assertEquals("The amount of server methods was not as expected", 1,
+                serverMethods.size());
+        assertEquals("Expected method did not match", methodName,
+                serverMethods.keySet().iterator().next());
+        assertEquals("Wrong amount of method arguments", 1,
+                serverMethods.get(methodName).length());
+
+        assertTrue("Received value was not a JsonObject",
+                serverMethods.get(methodName).get(0) instanceof JsonObject);
+
+        JsonObject expectedResult = Json.createObject();
+        expectedResult.put("nodeId", 1);
+
+        assertEquals("Gotten argument wasn't as expected",
+                expectedResult.toJson(),
+                ((JsonObject) serverMethods.get(methodName).get(0)).toJson());
+        assertEquals("Method node did not match the expected node.", node,
+                serverRpcNodes.get(methodName));
+    }
+
+    /**
+     * Add get functionality to element if not defined. Add the key value pair
+     * to property object or create object if not available.
+     * 
+     * @param node
+     *            Target node
+     * @param property
+     *            Property name of object
+     * @param key
+     *            Key to add to property object
+     * @param value
+     *            value to add
+     */
+    private native void setNodeProperty(Node node, String property, String key,
+            String value)
+    /*-{
+        if(typeof(node.get) !== 'function') {
+            node.get = function(propertyName) {
+                return this[propertyName];
+            }
+        }
+        var propertyValue = node.get(property);
+        if(typeof(property) !== 'object') {
+            node[property] = {};
+            // If a number add as a number not as a string.
+            if(parseInt(value) !== NaN){
+                node[property][key] = parseInt(value);
+            } else {
+                node[property][key] = value;
+            }
+        } else {
+            propertyValue.key = value;
         }
     }-*/;
 

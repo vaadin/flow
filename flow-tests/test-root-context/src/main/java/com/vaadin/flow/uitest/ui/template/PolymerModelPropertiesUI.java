@@ -40,7 +40,7 @@ public class PolymerModelPropertiesUI extends UI {
         }
     }
 
-    public static interface Message extends TemplateModel {
+    public interface Message extends TemplateModel {
         void setText(String text);
 
         String getText();
