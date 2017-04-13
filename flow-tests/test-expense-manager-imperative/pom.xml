@@ -25,7 +25,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-polymer-components</artifactId>
-            <version>0.0.2.SNAPSHOT</version>
+            <version>0.0.2-SNAPSHOT</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.vaadin</groupId>
@@ -66,7 +66,7 @@
     <repositories>
         <repository>
             <id>flow-internal-snapshots</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/</url>
+            <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -74,7 +74,7 @@
 
         <repository>
             <id>flow-internal-release</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/flow</url>
+            <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird</url>
         </repository>
 
         <repository>
