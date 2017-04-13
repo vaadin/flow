@@ -8,7 +8,7 @@ import com.vaadin.flow.components.vaadin.charts.VaadinChart.DataSeries;
 import com.vaadin.flow.demo.expensemanager.domain.ExpenseService;
 import com.vaadin.flow.demo.expensemanager.domain.ExpenseService.Filters;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
 import elemental.json.JsonArray;
