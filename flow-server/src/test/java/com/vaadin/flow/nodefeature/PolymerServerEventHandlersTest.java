@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.nodefeature;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -41,8 +44,6 @@ import com.vaadin.flow.template.model.TemplateModel;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JreJsonArray;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Vaadin Ltd.

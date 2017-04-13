@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
 public class TemplateModelDefaultValuesView extends AngularTemplate {

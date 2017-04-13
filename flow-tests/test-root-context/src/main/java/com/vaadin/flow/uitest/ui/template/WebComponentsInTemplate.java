@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.template;
 
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.Uses;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.uitest.ui.webcomponent.PaperSlider;
 import com.vaadin.flow.uitest.ui.webcomponent.ProgressBubble;
 import com.vaadin.ui.AngularTemplate;

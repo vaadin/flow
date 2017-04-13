@@ -19,6 +19,8 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.template.angular.model.ModelDescriptor;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 
 import elemental.json.JsonValue;
 

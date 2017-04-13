@@ -23,7 +23,7 @@ import com.vaadin.flow.html.Button;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.router.View;
-import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
 /**

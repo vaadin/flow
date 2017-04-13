@@ -41,7 +41,6 @@ import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
@@ -75,8 +74,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
             ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
-            ClientDelegateHandlers.class, PolymerEventListenerMap.class,
-            ModelMap.class };
+            ClientDelegateHandlers.class, PolymerEventListenerMap.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist

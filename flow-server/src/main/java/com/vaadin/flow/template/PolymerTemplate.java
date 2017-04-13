@@ -21,11 +21,12 @@ import java.util.stream.Collectors;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.template.model.ListModelType;
 import com.vaadin.flow.template.model.ModelDescriptor;
 import com.vaadin.flow.template.model.ModelType;
 import com.vaadin.flow.template.model.TemplateModel;
+import com.vaadin.flow.template.model.TemplateModelProxyHandler;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
@@ -44,6 +45,8 @@ import com.vaadin.flow.template.model.TemplateModel;
 public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
 
+    private transient M model;
+
     /**
      * Creates the component that is responsible for Polymer template
      * functionality.
@@ -53,9 +56,10 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         // Correct implementation will follow in
         // https://github.com/vaadin/flow/issues/1371
 
-        ModelMap modelMap = getStateNode().getFeature(ModelMap.class);
-        ModelDescriptor.get(getModelType()).getPropertyNames()
-                .forEach(propertyName -> modelMap.setValue(propertyName, null));
+        ElementPropertyMap modelMap = getStateNode()
+                .getFeature(ElementPropertyMap.class);
+        ModelDescriptor.get(getModelType()).getPropertyNames().forEach(
+                propertyName -> modelMap.setProperty(propertyName, null));
     }
 
     /**
@@ -125,6 +129,21 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                 "Couldn't find ModelType for requested class %s",
                 type.getTypeName());
         throw new IllegalArgumentException(msg);
+    }
+
+    @Override
+    protected M getModel() {
+        if (model == null) {
+            model = createTemplateModelInstance();
+        }
+        return model;
+    }
+
+    private M createTemplateModelInstance() {
+        ModelDescriptor<? extends M> descriptor = ModelDescriptor
+                .get(getModelType());
+        return TemplateModelProxyHandler.createModelProxy(getStateNode(),
+                descriptor);
     }
 
     private ModelType getModelTypeForListModel(Type type, ModelType mtype) {

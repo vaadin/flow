@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.template.model;
+package com.vaadin.flow.template.angular.model;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -24,8 +24,9 @@ import java.util.function.Predicate;
 import com.vaadin.annotations.Exclude;
 import com.vaadin.annotations.Include;
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.ModelList;
+import com.vaadin.flow.nodefeature.ModelMap;
+import com.vaadin.flow.template.model.ModelType;
 
 /**
  * Utility class for mapping Bean values to {@link TemplateModel} values.
@@ -53,7 +54,7 @@ public class TemplateModelUtil {
      * @return the value returned by the callback
      */
     public static <R> R resolveBeanAndRun(TemplateModel model, String modelPath,
-            BiFunction<BeanModelType<?>, ElementPropertyMap, R> callback) {
+            BiFunction<BeanModelType<?>, ModelMap, R> callback) {
         assert model != null;
         assert modelPath != null;
         assert callback != null;
@@ -65,10 +66,9 @@ public class TemplateModelUtil {
         if (beanType instanceof BeanModelType<?>) {
             StateNode stateNode = TemplateModelProxyHandler
                     .getStateNodeForProxy(model);
-            ElementPropertyMap modelMap = ElementPropertyMap
-                    .getModel(stateNode);
+            ModelMap modelMap = ModelMap.get(stateNode);
 
-            ElementPropertyMap beanMap = modelMap.resolveModelMap(modelPath);
+            ModelMap beanMap = modelMap.resolveModelMap(modelPath);
 
             return callback.apply((BeanModelType<?>) beanType, beanMap);
         } else {
@@ -104,8 +104,7 @@ public class TemplateModelUtil {
         if (listType instanceof ListModelType<?>) {
             StateNode stateNode = TemplateModelProxyHandler
                     .getStateNodeForProxy(model);
-            ElementPropertyMap modelMap = ElementPropertyMap
-                    .getModel(stateNode);
+            ModelMap modelMap = ModelMap.get(stateNode);
 
             ModelList modelList = modelMap.resolveModelList(modelPath);
 

@@ -3,8 +3,8 @@ package com.vaadin.flow.tutorial.template;
 import java.util.List;
 
 import com.vaadin.annotations.Include;
+import com.vaadin.flow.template.angular.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
-import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.ui.AngularTemplate;
 
 @Deprecated

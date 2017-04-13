@@ -53,8 +53,153 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         super.setProperty(name, value, emitChange);
     }
 
+    /**
+     * Sets a property to the given value.
+     *
+     * @param name
+     *            the property name
+     * @param value
+     *            the value, must be a string, a boolean, a double or
+     *            <code>null</code>
+     * @see #setProperty(String, Serializable, boolean)
+     */
+    public void setProperty(String name, Serializable value) {
+        setProperty(name, value, true);
+    }
+
     @Override
     protected boolean mayUpdateFromClient(String key, Serializable value) {
         return !forbiddenProperties.contains(key);
+    }
+
+    /**
+     * Gets a model map using the given key.
+     * <p>
+     * If the key is not mapped to a value, creates a model map for the key.
+     *
+     * @param key
+     *            the key to use for the lookup
+     * @return a model map attached to the given key, possibly created in this
+     *         method
+     */
+    private ElementPropertyMap getOrCreateModelMap(String key) {
+        Serializable value = getProperty(key);
+        if (value == null) {
+            value = new StateNode(ElementPropertyMap.class);
+            setProperty(key, value);
+        }
+
+        assert value instanceof StateNode;
+        assert ((StateNode) value).hasFeature(ElementPropertyMap.class);
+        return ((StateNode) value).getFeature(ElementPropertyMap.class);
+    }
+
+    /**
+     * Gets a model list using the given key.
+     * <p>
+     * If the key is not mapped to a value, creates a model list for the key.
+     *
+     * @param key
+     *            the key to use for the lookup
+     * @return a model list attached to the given key, possibly created in this
+     *         method
+     */
+    private ModelList getOrCreateModelList(String key) {
+        Serializable value = getProperty(key);
+        if (value == null) {
+            value = new StateNode(ModelList.class);
+            setProperty(key, value);
+        }
+
+        assert value instanceof StateNode;
+        assert ((StateNode) value).hasFeature(ModelList.class);
+        return ((StateNode) value).getFeature(ModelList.class);
+    }
+
+    /**
+     * Resolves the {@link ElementPropertyMap} that the model path refers to.
+     * <p>
+     * If the model path contains separate dot separated parts, any non-existing
+     * part will be created during resolving.
+     *
+     * @param modelPath
+     *            the path to resolve, either a single property name or a dot
+     *            separated path
+     * @return the resolved model map
+     */
+    public ElementPropertyMap resolveModelMap(String modelPath) {
+        if ("".equals(modelPath)) {
+            return this;
+        }
+        return resolve(modelPath, ElementPropertyMap.class);
+    }
+
+    /**
+     * Resolves the {@link ModelList} that the model path refers to.
+     * <p>
+     * If the model path contains separate dot separated parts, any non-existing
+     * part will be created during resolving.
+     *
+     * @param modelPath
+     *            the path to resolve, either a single property name or a dot
+     *            separated path
+     * @return the resolved model list
+     */
+    public ModelList resolveModelList(String modelPath) {
+        return resolve(modelPath, ModelList.class);
+    }
+
+    /**
+     * Resolves the {@link ModelList} or {@link ElementPropertyMap} that the
+     * model path refers to.
+     * <p>
+     * If the model path contains separate dot separated parts, any non-existing
+     * part will be created during resolving.
+     *
+     * @param modelPath
+     *            the path to resolve, either a single property name or a dot
+     *            separated path
+     * @param leafType
+     *            the type of feature to resolve, {@link ModelList} or
+     *            {@link ElementPropertyMap}
+     * @return the resolved model list or map
+     */
+    @SuppressWarnings("unchecked")
+    private <T extends NodeFeature> T resolve(String modelPath,
+            Class<T> leafType) {
+        assert modelPath != null;
+        assert !"".equals(modelPath);
+        assert !modelPath.startsWith(".");
+        assert !modelPath.endsWith(".");
+        assert leafType == ElementPropertyMap.class
+                || leafType == ModelList.class;
+
+        int dotLocation = modelPath.indexOf('.');
+        if (dotLocation == -1) {
+            if (leafType == ElementPropertyMap.class) {
+                return (T) getOrCreateModelMap(modelPath);
+            } else {
+                return (T) getOrCreateModelList(modelPath);
+            }
+        } else {
+            String firstKey = modelPath.substring(0, dotLocation);
+            String remainingPath = modelPath.substring(dotLocation + 1);
+            ElementPropertyMap subMap = getOrCreateModelMap(firstKey);
+            return subMap.resolve(remainingPath, leafType);
+        }
+    }
+
+    /**
+     * Gets the model map for the given node.
+     * <p>
+     * Throws an exception if the node does not have a model map.
+     *
+     * @param node
+     *            the node which has a model map
+     * @return the model map for the node
+     */
+    public static ElementPropertyMap getModel(StateNode node) {
+        assert node != null;
+        return node.getFeature(ElementPropertyMap.class);
     }
 }
