@@ -164,10 +164,11 @@ public final class ServerEventObject extends JavaScriptObject {
 
     private JsonObject getPolymerPropertyObject(Event event, StateNode node,
             String expression) {
-        return Optional
-                .ofNullable(
-                        getPolymerPropertyObject(node.getDomNode(), expression))
-                .orElse(createPolymerPropertyObject(event, expression));
+        if(expression.startsWith("event")) {
+            return createPolymerPropertyObject(event, expression);
+        } else {
+            return getPolymerPropertyObject(node.getDomNode(), expression);
+        }
     }
 
     private JsonObject createPolymerPropertyObject(Event event,
