@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
@@ -214,7 +215,7 @@ public interface ElementStateProvider extends Serializable {
      * @return the property value, or <code>null</code> if the property has not
      *         been set
      */
-    Object getProperty(StateNode node, String name);
+    Serializable getProperty(StateNode node, String name);
 
     /**
      * Sets the given property to the given value.
@@ -361,5 +362,19 @@ public interface ElementStateProvider extends Serializable {
         assert node != null;
         return node.getFeature(ComponentMapping.class).getComponent();
     }
+
+    /**
+     * Adds a property change listener.
+     * 
+     * @param node
+     *            the node containing the property
+     * @param name
+     *            the property name to add the listener for
+     * @param listener
+     *            listener to get notifications about property value changes
+     * @return an event registration handle for removing the listener
+     */
+    EventRegistrationHandle addPropertyChangeListener(StateNode node,
+            String name, PropertyChangeListener listener);
 
 }

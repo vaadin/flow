@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
@@ -292,7 +293,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Object getProperty(StateNode node, String name) {
+    public Serializable getProperty(StateNode node, String name) {
         assert node != null;
         assert name != null;
 
@@ -375,6 +376,13 @@ public class BasicElementStateProvider implements ElementStateProvider {
         assert attribute != null;
         assert resource != null;
         getAttributeFeature(node).setResource(attribute, resource);
+    }
+
+    @Override
+    public EventRegistrationHandle addPropertyChangeListener(StateNode node,
+            String name, PropertyChangeListener listener) {
+        return getPropertyFeature(node).addPropertyChangeListener(name,
+                listener);
     }
 
 }
