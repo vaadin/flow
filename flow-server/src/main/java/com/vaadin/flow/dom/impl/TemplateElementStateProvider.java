@@ -29,6 +29,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
@@ -315,9 +316,10 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Object getProperty(StateNode node, String name) {
+    public Serializable getProperty(StateNode node, String name) {
         if (templateNode.getPropertyBinding(name).isPresent()) {
-            return templateNode.getPropertyBinding(name).get().getValue(node);
+            return (Serializable) templateNode.getPropertyBinding(name).get()
+                    .getValue(node);
         } else {
             return getOverrideNode(node)
                     .map(overrideNode -> BasicElementStateProvider.get()
@@ -491,6 +493,12 @@ public class TemplateElementStateProvider implements ElementStateProvider {
                 || modelFeature == ModelList.class;
 
         return new StateNode(TemplateOverridesMap.class, modelFeature);
+    }
+
+    @Override
+    public EventRegistrationHandle addPropertyChangeListener(StateNode node,
+            String name, PropertyChangeListener listener) {
+        throw new UnsupportedOperationException();
     }
 
     /**
