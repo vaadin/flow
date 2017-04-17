@@ -17,11 +17,19 @@
 package com.vaadin.flow.nodefeature;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.EventRegistrationHandle;
+import com.vaadin.flow.event.PropertyChangeEvent;
+import com.vaadin.flow.event.PropertyChangeListener;
 
 /**
  * Map for element property values.
@@ -33,6 +41,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     private static final Set<String> forbiddenProperties = Stream
             .of("textContent", "classList", "className")
             .collect(Collectors.toSet());
+
+    private final Map<String, List<PropertyChangeListener>> listeners = new HashMap<>();
 
     /**
      * Creates a new element property map for the given node.
@@ -65,6 +75,36 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      */
     public void setProperty(String name, Serializable value) {
         setProperty(name, value, true);
+    }
+
+    /**
+     * Adds a property change listener.
+     * 
+     * @param name
+     *            the property name to add the listener for
+     * @param listener
+     *            listener to get notifications about property value changes
+     * @return an event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addPropertyChangeListener(String name,
+            PropertyChangeListener listener) {
+        assert hasElement();
+
+        List<PropertyChangeListener> propertyListeners = listeners
+                .computeIfAbsent(name, key -> new ArrayList<>());
+        propertyListeners.add(listener);
+        return () -> propertyListeners.remove(listener);
+    }
+
+    @Override
+    protected void put(String key, Serializable value, boolean emitChange) {
+        Serializable oldValue = get(key);
+        super.put(key, value, emitChange);
+
+        if (hasElement()) {
+            fireEvent(new PropertyChangeEvent(Element.get(getNode()), key,
+                    oldValue, !emitChange));
+        }
     }
 
     @Override
@@ -201,5 +241,18 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     public static ElementPropertyMap getModel(StateNode node) {
         assert node != null;
         return node.getFeature(ElementPropertyMap.class);
+    }
+
+    private void fireEvent(PropertyChangeEvent event) {
+        List<PropertyChangeListener> propertyListeners = listeners
+                .get(event.getPropertyName());
+        if (propertyListeners != null && !propertyListeners.isEmpty()) {
+            new ArrayList<>(propertyListeners)
+                    .forEach(listener -> listener.propertyChange(event));
+        }
+    }
+
+    private boolean hasElement() {
+        return getNode().hasFeature(ElementData.class);
     }
 }

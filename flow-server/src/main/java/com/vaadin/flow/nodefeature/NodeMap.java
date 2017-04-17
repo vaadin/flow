@@ -94,7 +94,7 @@ public abstract class NodeMap extends NodeFeature {
             setUnChanged(key);
         }
         ensureValues();
-        Object oldValue = values.put(key, value);
+        Serializable oldValue = values.put(key, value);
 
         detatchPotentialChild(oldValue);
 
@@ -109,7 +109,7 @@ public abstract class NodeMap extends NodeFeature {
      * @return the value corresponding to the key; <code>null</code> if there is
      *         no value stored, or if <code>null</code> is stored as a value
      */
-    protected Object get(String key) {
+    protected Serializable get(String key) {
         setAccessed(key);
         if (values == null) {
             return null;
@@ -356,4 +356,5 @@ public abstract class NodeMap extends NodeFeature {
     protected boolean mayUpdateFromClient(String key, Serializable value) {
         return false;
     }
+
 }
