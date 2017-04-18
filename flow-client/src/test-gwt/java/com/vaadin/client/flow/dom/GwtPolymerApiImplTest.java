@@ -1,9 +1,9 @@
 package com.vaadin.client.flow.dom;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.dom.PolymerDomApiImpl.Polymer;
+import com.vaadin.client.flow.util.NativeFunction;
 
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
@@ -14,16 +14,13 @@ public class GwtPolymerApiImplTest extends ClientEngineTestBase {
     private static native void setPolymer(Polymer polymer);
 
     static void setPolymerFull() {
-        Polymer polymer = WidgetUtil
-                .crazyJsCast(JavaScriptObject.createObject());
-
-        setPolymer(polymer);
+        setPolymerMicro();
     }
 
     static void setPolymerMicro() {
-        Polymer polymer = WidgetUtil
-                .crazyJsCast(JavaScriptObject.createObject());
-        setPolymer(polymer);
+        NativeFunction function = NativeFunction
+                .create("return { 'version': '1.9.1' };");
+        setPolymer(WidgetUtil.crazyJsCast(function.call(null)));
     }
 
     static void clearPolymer() {
@@ -41,6 +38,16 @@ public class GwtPolymerApiImplTest extends ClientEngineTestBase {
         setPolymerMicro();
 
         verifyPolymerMicro(true);
+    }
+
+    public void testPolymer2() {
+        initTest();
+
+        NativeFunction function = NativeFunction
+                .create("return { 'version': '2.0.0' };");
+        setPolymer(WidgetUtil.crazyJsCast(function.call(null)));
+
+        verifyPolymerMicro(false);
     }
 
     private static void verifyPolymerMicro(boolean loaded) {
