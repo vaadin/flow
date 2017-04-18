@@ -27,6 +27,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.server.StreamResource;
 
 /**
@@ -111,7 +112,7 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public Object getProperty(StateNode node, String name) {
+    public Serializable getProperty(StateNode node, String name) {
         return null;
     }
 
@@ -162,4 +163,9 @@ public abstract class AbstractTextElementStateProvider
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public EventRegistrationHandle addPropertyChangeListener(StateNode node,
+            String name, PropertyChangeListener listener) {
+        throw new UnsupportedOperationException();
+    }
 }

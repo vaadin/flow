@@ -33,6 +33,7 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
+import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ElementData;
 import com.vaadin.flow.nodefeature.OverrideElementData;
 import com.vaadin.flow.nodefeature.TemplateMap;
@@ -883,6 +884,25 @@ public class Element implements Serializable {
         return this;
     }
 
+    /**
+     * Adds a property change listener.
+     * <p>
+     * Use either two way Polymer binding or synchronize property explicitly to
+     * be able to get property change events from the client.
+     * 
+     * @see #synchronizeProperty(String, String)
+     * @param name
+     *            the property name to add the listener for
+     * @param listener
+     *            listener to get notifications about property value changes
+     * @return an event registration handle for removing the listener
+     */
+    public EventRegistrationHandle addPropertyChangeListener(String name,
+            PropertyChangeListener listener) {
+        return stateProvider.addPropertyChangeListener(getNode(), name,
+                listener);
+    }
+
     private Element setRawProperty(String name, Serializable value) {
         verifySetPropertyName(name);
 
@@ -1057,7 +1077,7 @@ public class Element implements Serializable {
      *            the property name, not null
      * @return the raw property value, or <code>null</code>
      */
-    public Object getPropertyRaw(String name) {
+    public Serializable getPropertyRaw(String name) {
         return stateProvider.getProperty(getNode(), name);
     }
 
