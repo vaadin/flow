@@ -146,18 +146,18 @@ events `save` and `reset` as follows:
 ----
 @Tag("two-way-template")
 @HtmlImport("/com/example/PolymerTwoWayBinding.html")
-public class PolymerTwoWayBindingTemplate extends PolymerTemplate<TwoWayBindingModel> {
+public class PolymerTwoWayBindingTemplate
+        extends PolymerTemplate<TwoWayBindingModel> {
 
     public PolymerTwoWayBindingTemplate() {
         reset();
-    }
-
-    @EventHandler
-    private void save() {
-        Element label = ElementFactory.createLabel("Name: " + getModel().getName() +
-            ", isAccepted: " + getModel().getAccepted() + ", Size: " + getModel().getSize());
-        label.getStyle().set("display", "block");
-        getElement().appendChild(label);
+        getElement().addPropertyChangeListener("name", event -> System.out
+                .println("Name is set to: " + getModel().getName()));
+        getElement().addPropertyChangeListener("accepted",
+                event -> System.out.println("isAccepted is set to: "
+                        + getModel().getAccepted()));
+        getElement().addPropertyChangeListener("size", event -> System.out
+                .println("Size is set to: " + getModel().getSize()));
     }
 
     @EventHandler
@@ -168,6 +168,11 @@ public class PolymerTwoWayBindingTemplate extends PolymerTemplate<TwoWayBindingM
     }
 }
 ----
+
+We use here the `Element::addPropertyChangeListener` method to get immediate
+update for the property values. Another way would be to define an `@EventHandler`
+method on the server side which is just called once when a button is pressed
+similar to the `reset()` method.
 
 On the client we will use different methods to bind  binding the model data:
 
@@ -254,7 +259,7 @@ Native elements need to specify a custom change event name in the annotation usi
             </tr>
         </table>
         <div>
-            <button on-click="save">Save values</button> <button on-click="reset">Reset values</button>
+            <button on-click="reset">Reset values</button>
         </div>
         <slot></slot>
     </template>
