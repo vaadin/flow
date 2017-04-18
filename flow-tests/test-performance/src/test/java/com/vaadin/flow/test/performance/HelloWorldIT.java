@@ -94,7 +94,7 @@ public class HelloWorldIT extends AbstractTestBenchTest {
 
         LocalTime start = LocalTime.now();
         open();
-        AtomicReference<WebElement> buttonHolder = new AtomicReference<>(null);
+        AtomicReference<String> buttonHolder = new AtomicReference<>(null);
         waitUntil(new ExpectedCondition<Boolean>() {
             @Override
             public Boolean apply(WebDriver arg0) {
@@ -104,12 +104,12 @@ public class HelloWorldIT extends AbstractTestBenchTest {
                 if (buttons.isEmpty()) {
                     return false;
                 }
-                buttonHolder.set(buttons.get(0));
+                buttonHolder.set(buttons.get(0).getText());
                 return true;
             }
         });
         LocalTime end = LocalTime.now();
-        Assert.assertEquals("Hello", buttonHolder.get().getText());
+        Assert.assertEquals("Hello", buttonHolder.get());
         long ms = ChronoUnit.MILLIS.between(start, end);
 
         printTeamcityStats(testName, ms);
