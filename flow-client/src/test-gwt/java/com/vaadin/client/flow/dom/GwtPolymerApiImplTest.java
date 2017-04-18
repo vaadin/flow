@@ -18,8 +18,12 @@ public class GwtPolymerApiImplTest extends ClientEngineTestBase {
     }
 
     static void setPolymerMicro() {
+        setPolymerVersion("1.9.1");
+    }
+
+    static void setPolymerVersion(String version) {
         NativeFunction function = NativeFunction
-                .create("return { 'version': '1.9.1' };");
+                .create("return { 'version': '" + version + "' };");
         setPolymer(WidgetUtil.crazyJsCast(function.call(null)));
     }
 
@@ -35,7 +39,7 @@ public class GwtPolymerApiImplTest extends ClientEngineTestBase {
     public void testPolymerMicroLoaded() {
         initTest();
 
-        setPolymerMicro();
+        setPolymerVersion("1.9.1");
 
         verifyPolymerMicro(true);
     }
@@ -43,9 +47,7 @@ public class GwtPolymerApiImplTest extends ClientEngineTestBase {
     public void testPolymer2() {
         initTest();
 
-        NativeFunction function = NativeFunction
-                .create("return { 'version': '2.0.0' };");
-        setPolymer(WidgetUtil.crazyJsCast(function.call(null)));
+        setPolymerVersion("2.0.0");
 
         verifyPolymerMicro(false);
     }

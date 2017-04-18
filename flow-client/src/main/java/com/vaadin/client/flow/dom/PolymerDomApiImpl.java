@@ -15,8 +15,6 @@
  */
 package com.vaadin.client.flow.dom;
 
-import com.vaadin.client.Console;
-
 import elemental.dom.Node;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
@@ -46,9 +44,6 @@ public class PolymerDomApiImpl implements DomApiImpl {
      */
     public static boolean isPolymerMicroLoaded() {
         // Don't use the impl with Polymer 2
-        if (getPolymer() != null) {
-            Console.log("xxxxxxxx " + getPolymer().getVersion());
-        }
         return getPolymer() != null
                 && getPolymer().getVersion().startsWith("1.");
     }
