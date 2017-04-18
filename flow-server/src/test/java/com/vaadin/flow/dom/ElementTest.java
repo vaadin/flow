@@ -102,6 +102,7 @@ public class ElementTest {
         ignore.add("addEventListener");
         ignore.add("addAttachListener");
         ignore.add("addDetachListener");
+        ignore.add("addPropertyChangeListener");
 
         // Returns index of child element
         ignore.add("indexOfChild");
