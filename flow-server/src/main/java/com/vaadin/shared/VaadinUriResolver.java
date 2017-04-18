@@ -54,20 +54,29 @@ public abstract class VaadinUriResolver {
             return null;
         }
 
+        String processedUri = processFrontendProtocol(vaadinUri);
+        processedUri = processContextProtocol(processedUri);
+
+        return processedUri;
+    }
+
+    private String processFrontendProtocol(String vaadinUri) {
         if (vaadinUri
                 .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
-            vaadinUri = getFrontendRootUrl() + relativeUrl;
+            return getFrontendRootUrl() + relativeUrl;
         }
+        return vaadinUri;
+    }
 
+    private String processContextProtocol(String vaadinUri) {
         if (vaadinUri
                 .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
-            vaadinUri = getContextRootUrl() + relativeUrl;
+            return getContextRootUrl() + relativeUrl;
         }
-
         return vaadinUri;
     }
 
