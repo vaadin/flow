@@ -34,27 +34,38 @@ public class TestTutorialCodeCoverage {
     private static final Path location = new File(".").toPath();
     private static final Path javaLocation = location.resolve("src/main/java");
     private static final Path htmlLocation = location.resolve("src/main/html");
+    private static final Path cssLocation = location.resolve("src/main/css");
 
     private static final String LINE_SEPARATOR = System
             .getProperty("line.separator");
 
     private static final String JAVA_BLOCK_IDENTIFIER = "[source,java]";
     private static final String HTML_BLOCK_IDENTIFIER = "[source,html]";
+    private static final String CSS_BLOCK_IDENTIFIER = "[source,css]";
+
+    private static final String JAVA = "java";
+    private static final String HTML = "html";
+    private static final String CSS = "css";
 
     private static final StringBuilder exceptions = new StringBuilder();
     private static int exceptionAmount = 0;
 
+    private Map<String, Set<String>> codeFileMap;
+    private Map<String, Set<String>> htmlFileMap;
+    private Map<String, Set<String>> cssFileMap;
+
     @Test
     public void verifyTutorialCode() throws IOException {
-        Map<String, Set<String>> codeFileMap = verifyJavaCode();
-        Map<String, Set<String>> htmlFileMap = verifyHtml();
+        codeFileMap = verifyJavaCode();
+        htmlFileMap = verifyHtml();
+        cssFileMap = verifyCss();
 
         // Verify that there's at least one java and html file for each tutorial
         Files.walk(location)
                 .filter(path -> path.toFile().getName()
                         .matches("tutorial-.*\\.asciidoc"))
                 .forEach(tutorialPath -> {
-                    verifyRequiredFiles(codeFileMap, htmlFileMap, tutorialPath);
+                    verifyRequiredFiles(tutorialPath);
                 });
 
         if (exceptionAmount > 0) {
@@ -65,22 +76,29 @@ public class TestTutorialCodeCoverage {
         }
     }
 
-    private void verifyRequiredFiles(Map<String, Set<String>> codeFileMap,
-            Map<String, Set<String>> htmlFileMap, Path tutorialPath) {
+    private void verifyRequiredFiles(Path tutorialPath) {
         String tutorialName = location.relativize(tutorialPath).toString();
         // Only require java file for tutorial that contains
         // [source,java] block
-        if (!codeFileMap.containsKey(tutorialName)
-                && tutorialContainsBlock(tutorialPath, JAVA_BLOCK_IDENTIFIER)) {
-            addException(
-                    "Should be at least one java file for " + tutorialName);
-        }
+        checkTutorial(tutorialName, tutorialPath, codeFileMap,
+                JAVA_BLOCK_IDENTIFIER, JAVA);
         // Only require html file for tutorial that contains
         // [source,html] block
-        if (!htmlFileMap.containsKey(tutorialName)
-                && tutorialContainsBlock(tutorialPath, HTML_BLOCK_IDENTIFIER)) {
-            addException(
-                    "Should be at least one html file for " + tutorialName);
+        checkTutorial(tutorialName, tutorialPath, htmlFileMap,
+                HTML_BLOCK_IDENTIFIER, HTML);
+        // Only require css file for tutorial that contains
+        // [source,css] block
+        checkTutorial(tutorialName, tutorialPath, cssFileMap,
+                CSS_BLOCK_IDENTIFIER, CSS);
+    }
+
+    private void checkTutorial(String tutorialName, Path tutorialPath,
+            Map<String, Set<String>> map, String blockIdentifier,
+            String fileType) {
+        if (!map.containsKey(tutorialName)
+                && tutorialContainsBlock(tutorialPath, blockIdentifier)) {
+            addException("Should be at least one " + fileType + " file for "
+                    + tutorialName);
         }
     }
 
@@ -99,11 +117,12 @@ public class TestTutorialCodeCoverage {
 
         // Populate map based on @CodeFor annotations
         Files.walk(javaLocation)
-                .filter(path -> path.toFile().getName().endsWith(".java"))
+                .filter(path -> path.toFile().getName().endsWith("." + JAVA))
                 .forEach(path -> extractCodeFiles(path, codeFileMap));
 
         // Verify that tutorial code is actually found in the java files
-        codeFileMap.forEach(TestTutorialCodeCoverage::verifyTutorialCode);
+        codeFileMap.forEach((tutorial, lines) -> verifyTutorialCode(tutorial,
+                lines, JAVA_BLOCK_IDENTIFIER, JAVA));
         return codeFileMap;
     }
 
@@ -111,23 +130,29 @@ public class TestTutorialCodeCoverage {
         Map<String, Set<String>> htmlFileMap = new HashMap<>();
 
         Files.walk(htmlLocation)
-                .filter(path -> path.toFile().getName().endsWith(".html"))
+                .filter(path -> path.toFile().getName().endsWith("." + HTML))
                 .forEach(path -> extractHtmlFiles(path, htmlFileMap));
 
-        htmlFileMap.forEach(TestTutorialCodeCoverage::verifyTutorialHtml);
+        htmlFileMap.forEach((tutorial, lines) -> verifyTutorialCode(tutorial,
+                lines, HTML_BLOCK_IDENTIFIER, HTML));
         return htmlFileMap;
     }
 
-    private static void verifyTutorialCode(String tutorialName,
-            Set<String> codeLines) {
-        verifyBlockContents(tutorialName, codeLines, JAVA_BLOCK_IDENTIFIER,
-                "java");
+    private Map<String, Set<String>> verifyCss() throws IOException {
+        Map<String, Set<String>> cssFileMap = new HashMap<>();
+
+        Files.walk(cssLocation)
+                .filter(path -> path.toFile().getName().endsWith("." + CSS))
+                .forEach(path -> extractHtmlFiles(path, cssFileMap));
+
+        cssFileMap.forEach((tutorial, lines) -> verifyTutorialCode(tutorial,
+                lines, CSS_BLOCK_IDENTIFIER, CSS));
+        return cssFileMap;
     }
 
-    private static void verifyTutorialHtml(String tutorialName,
-            Set<String> htmlLines) {
-        verifyBlockContents(tutorialName, htmlLines, HTML_BLOCK_IDENTIFIER,
-                "html");
+    private static void verifyTutorialCode(String tutorialName,
+            Set<String> codeLines, String blockIdentifier, String fileType) {
+        verifyBlockContents(tutorialName, codeLines, blockIdentifier, fileType);
     }
 
     private static void verifyBlockContents(String tutorialName,
