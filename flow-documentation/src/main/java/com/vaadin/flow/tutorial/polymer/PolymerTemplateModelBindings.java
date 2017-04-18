@@ -18,8 +18,6 @@ package com.vaadin.flow.tutorial.polymer;
 import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
@@ -58,16 +56,6 @@ public class PolymerTemplateModelBindings {
             getElement().addPropertyChangeListener("size", event -> System.out
                     .println("Size is set to: " + getModel().getSize()));
           //@formatter:on
-        }
-
-        @EventHandler
-        private void save() {
-            Element label = ElementFactory
-                    .createLabel("Name: " + getModel().getName()
-                            + ", isAccepted: " + getModel().getAccepted()
-                            + ", Size: " + getModel().getSize());
-            label.getStyle().set("display", "block");
-            getElement().appendChild(label);
         }
 
         @EventHandler

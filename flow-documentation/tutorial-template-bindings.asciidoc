@@ -148,14 +148,14 @@ events `save` and `reset` as follows:
 @HtmlImport("/com/example/PolymerTwoWayBinding.html")
 public class PolymerTwoWayBindingTemplate
         extends PolymerTemplate<TwoWayBindingModel> {
- 
+
     public PolymerTwoWayBindingTemplate() {
         reset();
         getElement().addPropertyChangeListener("name", event -> System.out
                 .println("Name is set to: " + getModel().getName()));
         getElement().addPropertyChangeListener("accepted",
                 event -> System.out.println("isAccepted is set to: "
-                    + getModel().getAccepted()));
+                        + getModel().getAccepted()));
         getElement().addPropertyChangeListener("size", event -> System.out
                 .println("Size is set to: " + getModel().getSize()));
     }
