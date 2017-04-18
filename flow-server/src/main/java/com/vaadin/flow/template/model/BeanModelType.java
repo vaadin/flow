@@ -173,7 +173,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
             return new ListModelType<>((ComplexModelType<?>) getModelType(
                     itemType, propertyFilter, propertyName, declaringClass));
         } else {
-            if (!(itemType instanceof Class<?>)) {
+            if (!(itemType instanceof Class<?>) || !isBean(itemType)) {
                 throw new InvalidTemplateModelException("Element type "
                         + itemType.getTypeName()
                         + " is not a valid Bean type. Used in class "
