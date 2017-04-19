@@ -4,67 +4,24 @@ package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.PhantomJSTest;
+import com.vaadin.testbench.By;
 
 public class RouterSessionExpirationIT extends PhantomJSTest {
 
     @Override
     protected String getTestPath() {
-        return "/router-session/";
+        return "/router-link/";
     }
 
     @Test
     public void navigationAfterSessionExpired() {
         open();
 
-        navigateToAnotherView();
-        String sessionId = getSessionId();
-        navigateToFirstView();
-        Assert.assertEquals(sessionId, getSessionId());
-        navigateToSesssionExpireView();
-        Assert.assertEquals("No session", getSessionId());
-        navigateToFirstView();
-        Assert.assertNotEquals(sessionId, getSessionId());
+        WebElement link = findElement(By.className("root-link"));
+        Assert.assertEquals("", link.getAttribute("href"));
     }
 
-    @Test
-    public void navigationAfterInternalError() {
-        open();
-
-        navigateToAnotherView();
-        String sessionId = getSessionId();
-        navigateToInternalErrorView();
-        navigateToFirstView();
-        Assert.assertEquals(sessionId, getSessionId());
-    }
-
-    private String getSessionId() {
-        return findElement(By.id("sessionId")).getText();
-    }
-
-    private void navigateToFirstView() {
-        navigateTo("NormalView");
-    }
-
-    private void navigateToAnotherView() {
-        navigateTo("AnotherNormalView");
-    }
-
-    private void navigateToSesssionExpireView() {
-        navigateTo("ViewWhichInvalidatesSession");
-    }
-
-    private void navigateToInternalErrorView() {
-        findElement(By.linkText("ViewWhichCausesInternalException")).click();
-        // Won't actually reach the view..
-    }
-
-    private void navigateTo(String linkText) {
-        findElement(By.linkText(linkText)).click();
-        Assert.assertNotNull(
-                findElement(By.xpath("//strong[text()='" + linkText + "']")));
-
-    }
 }

@@ -98,6 +98,9 @@ public class RouterLinkTest {
         String url = RouterLink.buildUrl(router, TestView.class);
 
         Assert.assertEquals("", url);
+
+        RouterLink link = new RouterLink(router, "Home", TestView.class);
+        Assert.assertEquals("", link.getHref());
     }
 
     @Test(expected = IllegalArgumentException.class)
