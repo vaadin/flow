@@ -75,13 +75,18 @@ public class ListInsideListBindingTemplate extends
     @EventHandler
     private void removeItem(@ModelItem Message clickedMessage,
             @RepeatIndex int itemIndex) {
-        getModel().getNestedMessages().forEach(list -> {
-            if (list.size() > itemIndex && Objects.equals(
-                    list.get(itemIndex).getText(), clickedMessage.getText())) {
-                Message removedMessage = list.remove(itemIndex);
-                getModel().setRemovedMessage(removedMessage);
-            }
-        });
+        getModel().getNestedMessages()
+                .forEach(list -> removeMessageIfContainedInList(clickedMessage,
+                        itemIndex, list));
+    }
+
+    private void removeMessageIfContainedInList(Message clickedMessage,
+            int itemIndex, List<Message> list) {
+        if (list.size() > itemIndex && Objects.equals(
+                list.get(itemIndex).getText(), clickedMessage.getText())) {
+            Message removedMessage = list.remove(itemIndex);
+            getModel().setRemovedMessage(removedMessage);
+        }
     }
 
     @EventHandler
