@@ -19,7 +19,7 @@ import com.vaadin.annotations.WebComponents;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
-@WebComponents(1)
+@WebComponents(WebComponents.PolyfillVersion.V1)
 public class RouterLinksUI extends UI {
 
     @Override
