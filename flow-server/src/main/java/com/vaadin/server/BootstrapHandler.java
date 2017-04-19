@@ -487,8 +487,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             String propertyName, Function<String, T> converter,
             T defaultValue) {
 
-        // application or system properties have priority over the values
-        // defined by annotations
+        // application or system properties have priority
         String value = config.getApplicationOrSystemProperty(propertyName,
                 null);
 
