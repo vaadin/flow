@@ -62,11 +62,11 @@
     <repositories>
         <repository>
             <id>flow</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird/</url>
+            <url>https://repo.vaadin.com/nexus/content/repositories/flow/</url>
         </repository>
         <repository>
             <id>flow-snapshots</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
+            <url>https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
@@ -80,11 +80,11 @@
     <pluginRepositories>
         <pluginRepository>
             <id>flow</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird/</url>
+            <url>https://repo.vaadin.com/nexus/content/repositories/flow/</url>
         </pluginRepository>
         <pluginRepository>
             <id>flow-snapshots</id>
-            <url>https://repo.vaadin.com/nexus/content/repositories/hummingbird-snapshots/</url>
+            <url>https://repo.vaadin.com/nexus/content/repositories/flow-snapshots/</url>
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>

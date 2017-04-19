@@ -13,27 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.uitest.ui.template.collections;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+import com.vaadin.annotations.WebComponents;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.ui.UI;
 
-import com.vaadin.flow.testutil.PhantomJSTest;
-
-public class RouterLinkRootViewIT extends PhantomJSTest {
+/**
+ * @author Vaadin Ltd
+ *
+ */
+@WebComponents(1)
+public class ListInsideListBindingUI extends UI {
 
     @Override
-    protected String getTestPath() {
-        return "/router-link/";
-    }
-
-    @Test
-    public void navigationAfterSessionExpired() {
-        open();
-
-        WebElement link = findElement(By.className("root-link"));
-        Assert.assertEquals("", link.getAttribute("href"));
+    protected void init(VaadinRequest request) {
+        ListInsideListBindingTemplate template = new ListInsideListBindingTemplate();
+        template.setId("template");
+        add(template);
     }
 }
