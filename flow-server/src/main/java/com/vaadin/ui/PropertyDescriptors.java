@@ -181,7 +181,27 @@ public final class PropertyDescriptors {
      */
     public static PropertyDescriptor<String, String> attributeWithDefault(
             String name, String defaultValue) {
-        return attribute(name, defaultValue, nullToDefault());
+        return attributeWithDefault(name, defaultValue, true);
+    }
+
+    /**
+     * Creates a descriptor for an attribute of the component's root element
+     * with a non-null default value.
+     *
+     * @param name
+     *            the name of the element attribute, not <code>null</code>
+     * @param defaultValue
+     *            the default value of the property, not <code>null</code>
+     * @param removeDefault
+     *            if {@code true} then attribute with default value will be
+     *            removed, otherwise attribute with the default value will be
+     *            kept as is
+     *
+     * @return a property descriptor, not <code>null</code>
+     */
+    public static PropertyDescriptor<String, String> attributeWithDefault(
+            String name, String defaultValue, boolean removeDefault) {
+        return attribute(name, defaultValue, removeDefault, nullToDefault());
     }
 
     /**
@@ -199,7 +219,29 @@ public final class PropertyDescriptors {
      */
     public static PropertyDescriptor<String, Optional<String>> optionalAttributeWithDefault(
             String name, String defaultValue) {
-        return attribute(name, defaultValue, defaultToEmpty());
+        return optionalAttributeWithDefault(name, defaultValue, true);
+    }
+
+    /**
+     * Creates a descriptor for an optional attribute of the component's root
+     * element with a non-null default value. The getter will return an empty
+     * optional if the the element doesn't have the attribute, or if its value
+     * is the default value.
+     *
+     * @param name
+     *            the name of the element attribute, not <code>null</code>
+     * @param defaultValue
+     *            the default value of the property, not <code>null</code>
+     * @param removeDefault
+     *            if {@code true} then attribute with default value will be
+     *            removed, otherwise attribute with the default value will be
+     *            kept as is
+     *
+     * @return a property descriptor, not <code>null</code>
+     */
+    public static PropertyDescriptor<String, Optional<String>> optionalAttributeWithDefault(
+            String name, String defaultValue, boolean removeDefault) {
+        return attribute(name, defaultValue, removeDefault, defaultToEmpty());
     }
 
     /**
@@ -210,16 +252,22 @@ public final class PropertyDescriptors {
      *            the name of the element attribute, not <code>null</code>
      * @param defaultValue
      *            the default value of the property, not <code>null</code>
+     * @param removeDefault
+     *            if {@code true} then attribute with default value will be
+     *            removed, otherwise attribute with the default value will be
+     *            kept as is
      * @param returnWrapper
      *            a callback that returns the actual value given the attribute
      *            value and the default value
      * @return a property descriptor, not <code>null</code>
      */
     private static <T> PropertyDescriptor<String, T> attribute(String name,
-            String defaultValue, BiFunction<String, String, T> returnWrapper) {
+            String defaultValue, boolean removeDefault,
+            BiFunction<String, String, T> returnWrapper) {
         return new PropertyDescriptorImpl<>(name, defaultValue,
                 (element, value) -> element.setAttribute(name, value),
-                element -> element.removeAttribute(name),
+                removeDefault ? element -> element.removeAttribute(name)
+                        : element -> element.setAttribute(name, defaultValue),
                 element -> element.getAttribute(name), returnWrapper);
     }
 
