@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.template;
+package com.vaadin.flow.uitest.ui.template.collections;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,10 +41,10 @@ public class ListBindingIT extends ChromeBrowserTest {
 
         checkInitialState(template);
 
+        checkModelItemWorks(template);
+
         // Before running those methods list is set to ["1", "2", "3"]
         // see (ListBindingTemplate.INITIAL_STATE)
-
-        checkListInsideList(template);
 
         assertMethodWorksCorrectly("addElement", template, "1", "2", "3", "4");
 
@@ -76,8 +76,9 @@ public class ListBindingIT extends ChromeBrowserTest {
                 ListBindingTemplate.INITIAL_STATE);
     }
 
-    private void checkListInsideList(WebElement template) {
+    private void checkModelItemWorks(WebElement template) {
         resetState(template);
+
         List<WebElement> msgs = findInShadowRoot(template, By.className("msg"));
 
         // Click b message
@@ -85,23 +86,8 @@ public class ListBindingIT extends ChromeBrowserTest {
 
         // Assert that the message was gotten correctly on the server side
         Assert.assertEquals("Couldn't validate element click selection.",
-                findElement(By.id("selection")).getText(),
+                getInShadowRoot(template, By.id("selection")).get().getText(),
                 "Clicked message: " + msgs.get(1).getText());
-
-        msgs = findInShadowRoot(template, By.className("submsg"));
-        Assert.assertEquals("Wrong amount of nested messages", 4, msgs.size());
-
-        msgs.get(1).click();
-
-        Assert.assertEquals("Couldn't validate list selection.",
-                findElement(By.id("multi-selection")).getText(),
-                "Clicked message List: 3 abc");
-
-        msgs.get(3).click();
-
-        Assert.assertEquals("Couldn't validate list selection.",
-                findElement(By.id("multi-selection")).getText(),
-                "Clicked message List: 1 d");
     }
 
     private void checkInitialState(WebElement template) {

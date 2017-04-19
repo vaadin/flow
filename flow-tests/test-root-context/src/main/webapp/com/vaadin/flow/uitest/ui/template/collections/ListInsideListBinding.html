@@ -1,0 +1,30 @@
+<link rel="import" href="/v2/bower_components/polymer/polymer.html">
+
+<dom-module id="list-inside-list-binding">
+    <template>
+        <dom-repeat items="[[nestedMessages]]">
+            <template>
+                <div>
+                    <dom-repeat items="[[item]]">
+                        <template>
+                            <div class='submsg' on-click="removeItem">[[item.text]]</div>
+                        </template>
+                    </dom-repeat>
+                </div>
+            </template>
+        </dom-repeat>
+        <template is="dom-if" if="[[removedMessage]]">
+            <div id="removedMessage">Removed message: [[removedMessage.text]]</div>
+        </template>
+        <button id="reset" on-click="reset">reset</button>
+        <button id="updateAllElements" on-click="updateAllElements">updateAllElements</button>
+    </template>
+    <script>
+        class ListInsideListBinding extends Polymer.Element {
+            static get is() {
+                return 'list-inside-list-binding'
+            }
+        }
+        customElements.define(ListInsideListBinding.is, ListInsideListBinding);
+    </script>
+</dom-module>
