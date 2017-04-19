@@ -1,0 +1,102 @@
+/*
+ * Copyright 2000-2017 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.uitest.ui.template.collections;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import com.vaadin.annotations.EventHandler;
+import com.vaadin.annotations.HtmlImport;
+import com.vaadin.annotations.ModelItem;
+import com.vaadin.annotations.RepeatIndex;
+import com.vaadin.annotations.Tag;
+import com.vaadin.flow.template.PolymerTemplate;
+import com.vaadin.flow.template.model.TemplateModel;
+
+@Tag("list-inside-list-binding")
+@HtmlImport("/com/vaadin/flow/uitest/ui/template/collections/ListInsideListBinding.html")
+public class ListInsideListBindingTemplate extends
+        PolymerTemplate<ListInsideListBindingTemplate.ListInsideListBindingModel> {
+    static final String UPDATED_TEXT = "test";
+
+    public static class Message {
+        private String text;
+
+        public Message() {
+        }
+
+        public Message(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+    }
+
+    public interface ListInsideListBindingModel extends TemplateModel {
+        void setRemovedMessage(Message removedMessage);
+
+        void setNestedMessages(List<List<Message>> nested);
+
+        List<List<Message>> getNestedMessages();
+    }
+
+    public ListInsideListBindingTemplate() {
+        setInitialState();
+    }
+
+    private void setInitialState() {
+        getModel().setNestedMessages(Arrays.asList(
+                Arrays.asList(new Message("a"), new Message("b"),
+                        new Message("c")),
+                Collections.singletonList(new Message("d"))));
+    }
+
+    @EventHandler
+    private void removeItem(@ModelItem Message clickedMessage,
+            @RepeatIndex int itemIndex) {
+        getModel().getNestedMessages()
+                .forEach(list -> removeMessageIfContainedInList(clickedMessage,
+                        itemIndex, list));
+    }
+
+    private void removeMessageIfContainedInList(Message clickedMessage,
+            int itemIndex, List<Message> list) {
+        if (list.size() > itemIndex && Objects.equals(
+                list.get(itemIndex).getText(), clickedMessage.getText())) {
+            Message removedMessage = list.remove(itemIndex);
+            getModel().setRemovedMessage(removedMessage);
+        }
+    }
+
+    @EventHandler
+    private void reset() {
+        setInitialState();
+    }
+
+    @EventHandler
+    private void updateAllElements() {
+        getModel().getNestedMessages().forEach(
+                list -> list.forEach(message -> message.setText(UPDATED_TEXT)));
+    }
+}
