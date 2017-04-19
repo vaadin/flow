@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.template;
+package com.vaadin.flow.uitest.ui.template.collections;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,13 +26,12 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.ModelItem;
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.html.Label;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.flow.uitest.ui.template.ListBindingTemplate.ListBindingModel;
+import com.vaadin.flow.uitest.ui.template.collections.ListBindingTemplate.ListBindingModel;
 
 @Tag("list-binding")
-@HtmlImport("/com/vaadin/flow/uitest/ui/template/ListBinding.html")
+@HtmlImport("/com/vaadin/flow/uitest/ui/template/collections/ListBinding.html")
 public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");
     static final String INITIAL_STATE = "foo";
@@ -57,22 +56,16 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
     }
 
     public interface ListBindingModel extends TemplateModel {
+        void setSelectedMessage(Message selectedMessage);
+
         void setMessages(List<Message> messages);
 
         List<Message> getMessages();
-
-        void setNestedMessages(List<List<Message>> nested);
     }
-
-    private Label multiselectionLabel;
 
     public ListBindingTemplate() {
         getModel().setMessages(
                 Collections.singletonList(new Message(INITIAL_STATE)));
-        getModel().setNestedMessages(Arrays.asList(
-                Arrays.asList(new Message("a"), new Message("b"),
-                        new Message("c")),
-                Collections.singletonList(new Message("d"))));
     }
 
     @EventHandler
@@ -83,29 +76,7 @@ public class ListBindingTemplate extends PolymerTemplate<ListBindingModel> {
 
     @EventHandler
     private void selectItem(@ModelItem Message message) {
-        Label label = new Label("Clicked message: " + message.getText());
-        label.setId("selection");
-        getElement().getParent().appendChild(label.getElement());
-    }
-
-    @EventHandler
-    private void selectedItems(@ModelItem List<Message> messages) {
-        if (multiselectionLabel == null) {
-            multiselectionLabel = new Label(buildMessageListString(messages));
-            multiselectionLabel.setId("multi-selection");
-            getElement().getParent()
-                    .appendChild(multiselectionLabel.getElement());
-        } else {
-            multiselectionLabel.setText(buildMessageListString(messages));
-        }
-    }
-
-    private String buildMessageListString(List<Message> messages) {
-        StringBuilder string = new StringBuilder();
-        string.append("Clicked message List: ");
-        string.append(messages.size()).append(" ");
-        messages.forEach(item -> string.append(item.getText()));
-        return string.toString();
+        getModel().setSelectedMessage(message);
     }
 
     @EventHandler
