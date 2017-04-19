@@ -26,13 +26,12 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.UI;
 
 /**
- * Allows to specify polyfill (webcomponentsjs) version to use. Version 0 is
- * used by default.
+ * Allows to specify polyfill (webcomponentsjs) version to use, and other
+ * configurations related to web components in general.
+ * {@link PolyfillVersion#V0} is used by default.
  * <p>
  * Add the annotation to your {@link UI} or {@link VaadinServlet} class and
- * specify version number using {@link #value()}.
- *
- * @since
+ * specify the polyfill version using {@link #value()}.
  *
  * @author Vaadin Ltd
  *
@@ -44,13 +43,41 @@ import com.vaadin.ui.UI;
 public @interface WebComponents {
 
     /**
+     * Enumeration of all versions of the webcomponents.js polyfill supported by
+     * the framework.
+     */
+    enum PolyfillVersion {
+        V0, V1;
+    }
+
+    /**
      * Gets polyfill version to use.
      * <p>
-     * Version 0 is used by default.
-     * <p>
-     * Currently supported versions are {@code 0} and {@code 1}.
+     * {@link PolyfillVersion#V0} is used by default.
      * 
      * @return which polyfill version to use
      */
-    int value() default 0;
+    PolyfillVersion value() default PolyfillVersion.V0;
+
+    /**
+     * Gets whether the application should load the ES5 adapter polyfill. This
+     * polyfill is only needed when serving ES5 files on ES6 browsers.
+     * <p>
+     * The default is <code>false</code>.
+     * 
+     * @return <code>true</code> if the es5 adapter should be loaded,
+     *         <code>false</code> otherwise
+     */
+    boolean loadEs5Adapter() default false;
+
+    /**
+     * Gets whether the application should force the usage of the ShadyDOM
+     * polyfill by webcomponents.js.
+     * <p>
+     * The default is <code>false</code>.
+     * 
+     * @return <code>true</code> if the webcomponents polyfill should use
+     *         ShadyDOM, <code>false</code> otherwise
+     */
+    boolean forceShadyDom() default false;
 }

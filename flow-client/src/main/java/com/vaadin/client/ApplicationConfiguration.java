@@ -29,6 +29,7 @@ public class ApplicationConfiguration {
 
     private String applicationId;
     private String contextRootUrl;
+    private String frontendRootUrl;
     private String serviceUrl;
     private int uiId;
     private ErrorMessage communicationError;
@@ -305,6 +306,27 @@ public class ApplicationConfiguration {
      */
     public void setWidgetsetVersionSent() {
         widgetsetVersionSent = true;
+    }
+
+    /**
+     * Gets the base URL of the frontend components on the server.
+     * 
+     * @return the base URL on the server for the {@literal frontend://}
+     *         protocol.
+     */
+    public String getFrontendRootUrl() {
+        return frontendRootUrl;
+    }
+
+    /**
+     * Sets the base URL of the frontend components on the server.
+     * 
+     * @param frontendRootUrl
+     *            the base URL on the server for the {@literal frontend://}
+     *            protocol.
+     */
+    public void setFrontendRootUrl(String frontendRootUrl) {
+        this.frontendRootUrl = frontendRootUrl;
     }
 
 }

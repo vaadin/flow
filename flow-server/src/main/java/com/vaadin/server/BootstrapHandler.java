@@ -26,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -34,6 +35,7 @@ import com.vaadin.annotations.AnnotationReader;
 import com.vaadin.annotations.Viewport;
 import com.vaadin.annotations.ViewportGeneratorClass;
 import com.vaadin.annotations.WebComponents;
+import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.external.jsoup.nodes.DataNode;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.DocumentType;
@@ -73,6 +75,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             + "window.__gwtStatsEvent = function(event) {"
             + "flow.gwtStatsEvents.push(event); " + "return true;};};";
     private static final String CONTENT_ATTRIBUTE = "content";
+    private static final String DEFER_ATTRIBUTE = "defer";
     private static final String META_TAG = "meta";
     /**
      * Location of client nocache file, relative to the context root.
@@ -262,15 +265,36 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static class BootstrapUriResolver extends VaadinUriResolver {
         private final BootstrapContext context;
+        private final String es6BuildUrl;
+        private final String es5BuildUrl;
 
         protected BootstrapUriResolver(BootstrapContext bootstrapContext) {
             context = bootstrapContext;
+
+            es6BuildUrl = context.getSession().getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+                            ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE);
+            es5BuildUrl = context.getSession().getConfiguration()
+                    .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+                            ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE);
         }
 
         @Override
         protected String getContextRootUrl() {
             String root = context.getApplicationParameters()
                     .getString(ApplicationConstants.CONTEXT_ROOT_URL);
+            assert root.endsWith("/");
+            return root;
+        }
+
+        @Override
+        protected String getFrontendRootUrl() {
+            String root;
+            if (context.getSession().getBrowser().isEs6Supported()) {
+                root = es6BuildUrl;
+            } else {
+                root = es5BuildUrl;
+            }
             assert root.endsWith("/");
             return root;
         }
@@ -379,7 +403,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                         + "server/es6-collections.js"),
                         false));
 
-        head.appendChild(createWebComponentsElement(context));
+        appendWebComponentsElements(head, context);
 
         if (context.getPushMode().isEnabled()) {
             head.appendChild(getPushScript(context));
@@ -393,37 +417,62 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     }
 
-    private static Element createWebComponentsElement(
+    private static void appendWebComponentsElements(Element head,
             BootstrapContext context) {
         Optional<WebComponents> webComponents = AnnotationReader
                 .getAnnotationFor(context.getUI().getClass(),
                         WebComponents.class);
-        boolean isVersion1 = webComponents.isPresent()
-                && webComponents.get().value() == 1;
-        if (!webComponents.isPresent()) {
-            String version = context.getSession().getConfiguration()
-                    .getApplicationOrSystemProperty(Constants.WEB_COMPONENTS,
-                            "");
-            isVersion1 = String.valueOf(1).equals(version);
-        }
-        if (isVersion1) {
-            return createJavaScriptElement(
+
+        boolean isVersion1;
+        boolean forceShadyDom;
+        boolean loadEs5Adapter;
+
+        DeploymentConfiguration config = context.getSession()
+                .getConfiguration();
+
+        isVersion1 = getUserDefinedProperty(config, Constants.WEB_COMPONENTS,
+                version -> String.valueOf(1).equals(version),
+                webComponents.isPresent()
+                        ? webComponents.get().value() == PolyfillVersion.V1
+                        : false);
+        forceShadyDom = getUserDefinedProperty(config,
+                Constants.FORCE_SHADY_DOM, Boolean::parseBoolean,
+                webComponents.isPresent() ? webComponents.get().forceShadyDom()
+                        : false);
+
+        loadEs5Adapter = getUserDefinedProperty(config,
+                Constants.LOAD_ES5_ADAPTER, Boolean::parseBoolean,
+                webComponents.isPresent() ? webComponents.get().loadEs5Adapter()
+                        : false);
+
+        if (loadEs5Adapter) {
+            head.appendChild(createJavaScriptElement(
                     context.getUriResolver()
                             .resolveVaadinUri("context://"
                                     + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                                    + "server/v1/webcomponents-lite.min.js"),
-                    false);
+                                    + "server/custom-elements-es5-adapter.js"),
+                    false));
         }
-        return createJavaScriptElement(context.getUriResolver()
-                .resolveVaadinUri("context://"
-                        + ApplicationConstants.VAADIN_STATIC_FILES_PATH
-                        + "server/webcomponents-lite.min.js"));
+
+        if (isVersion1) {
+            head.appendChild(createJavaScriptElement(
+                    context.getUriResolver()
+                            .resolveVaadinUri("context://"
+                                    + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                                    + "server/v1/webcomponents-lite.js"),
+                    false).attr("shadydom", forceShadyDom));
+        } else {
+            head.appendChild(createJavaScriptElement(context.getUriResolver()
+                    .resolveVaadinUri("context://"
+                            + ApplicationConstants.VAADIN_STATIC_FILES_PATH
+                            + "server/webcomponents-lite.min.js")));
+        }
     }
 
     private static Element createJavaScriptElement(String sourceUrl,
             boolean defer) {
         Element jsElement = new Element(Tag.valueOf("script"), "")
-                .attr("type", "text/javascript").attr("defer", defer);
+                .attr("type", "text/javascript").attr(DEFER_ATTRIBUTE, defer);
         if (sourceUrl != null) {
             jsElement = jsElement.attr("src", sourceUrl);
         }
@@ -432,6 +481,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     private static Element createJavaScriptElement(String sourceUrl) {
         return createJavaScriptElement(sourceUrl, true);
+    }
+
+    private static <T> T getUserDefinedProperty(DeploymentConfiguration config,
+            String propertyName, Function<String, T> converter,
+            T defaultValue) {
+
+        // application or system properties have priority
+        String value = config.getApplicationOrSystemProperty(propertyName,
+                null);
+
+        // null means that the property wasn't set
+        if (value == null) {
+            return defaultValue;
+        }
+
+        // converts the String to the desired type
+        return converter.apply(value);
     }
 
     private static void includeDependencies(Element head,
@@ -592,6 +658,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .isProductionMode();
 
         JsonObject appConfig = Json.createObject();
+
+        appConfig.put(Constants.FRONTEND_URL_ES6, context.getSession()
+                .getConfiguration()
+                .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES6,
+                        ApplicationConstants.FRONTEND_URL_ES6_DEFAULT_VALUE));
+        appConfig.put(Constants.FRONTEND_URL_ES5, context.getSession()
+                .getConfiguration()
+                .getApplicationOrSystemProperty(Constants.FRONTEND_URL_ES5,
+                        ApplicationConstants.FRONTEND_URL_ES5_DEFAULT_VALUE));
+
         appConfig.put(ApplicationConstants.UI_ID_PARAMETER,
                 context.getUI().getUIId());
 

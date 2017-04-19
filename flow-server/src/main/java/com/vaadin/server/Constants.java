@@ -121,4 +121,24 @@ public interface Constants {
 
     String WEB_COMPONENTS = "webComponents";
 
+    /**
+     * Configuration name for loading the ES5 adapter.
+     */
+    String LOAD_ES5_ADAPTER = "load.es5.adapter";
+
+    /**
+     * Configuration name for forcing the ShadyDOM polyfill.
+     */
+    String FORCE_SHADY_DOM = "force.shady.dom";
+
+    /**
+     * Configuration name for the build URL of ES6 web components.
+     */
+    String FRONTEND_URL_ES6 = "frontend.url.es6";
+
+    /**
+     * Configuration name for the build URL of ES5 web components.
+     */
+    String FRONTEND_URL_ES5 = "frontend.url.es5";
+
 }
