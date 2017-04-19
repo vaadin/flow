@@ -580,6 +580,39 @@ public class BrowserDetails implements Serializable {
         return false;
     }
 
+    /**
+     * Checks if the browser supports ECMAScript 6, based on the user agent. The
+     * main features required to consider the browser ES6 compatible are ES6
+     * Classes, let/const support and arrow functions.
+     * 
+     * @return <code>true</code> if the browser supports ES6, <code>false</code>
+     *         otherwise.
+     */
+    public boolean isEs6Supported() {
+        // Safari 10+
+        if (isSafari() && getBrowserMajorVersion() >= 10) {
+            return true;
+        }
+        // Firefox 45+
+        if (isFirefox() && getBrowserMajorVersion() >= 45) {
+            return true;
+        }
+        // Opera 36+
+        if (isOpera() && getBrowserMajorVersion() >= 36) {
+            return true;
+        }
+        // Chrome 49+
+        if (isChrome() && getBrowserMajorVersion() >= 49) {
+            return true;
+        }
+        // All Edges
+        if (isEdge()) {
+            return true;
+        }
+
+        return false;
+    }
+
     private static void log(String error, Exception e) {
         // "Logs" to stdout so the problem can be found but does not prevent
         // using the app. As this class is shared, we do not use

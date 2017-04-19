@@ -29,6 +29,6 @@ public class WebComponents1IT extends ChromeBrowserTest {
         open();
 
         WebComponentsIT.assertScriptLoadedWithoutErrors(driver,
-                "/server/v1/webcomponents-lite.min.js");
+                "/server/v1/webcomponents-lite.js");
     }
 }

@@ -37,11 +37,14 @@ public abstract class VaadinUriResolver {
      * <ul>
      * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
      * resolves to the application context root</li>
+     * <li><code>{@value ApplicationConstants#FRONTEND_PROTOCOL_PREFIX}</code> -
+     * resolves to the build path where web components were compiled. Browsers
+     * supporting ES6 can receive different, more optimized files than browsers
+     * that only support ES5.</li>
      * </ul>
      * Any other URI protocols, such as <code>http://</code> or
      * <code>https://</code> are passed through this method unmodified.
      *
-     * @since 7.4
      * @param vaadinUri
      *            the uri to resolve
      * @return the resolved uri
@@ -51,13 +54,29 @@ public abstract class VaadinUriResolver {
             return null;
         }
 
+        String processedUri = processFrontendProtocol(vaadinUri);
+        processedUri = processContextProtocol(processedUri);
+
+        return processedUri;
+    }
+
+    private String processFrontendProtocol(String vaadinUri) {
+        if (vaadinUri
+                .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX)) {
+            String relativeUrl = vaadinUri.substring(
+                    ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length());
+            return getFrontendRootUrl() + relativeUrl;
+        }
+        return vaadinUri;
+    }
+
+    private String processContextProtocol(String vaadinUri) {
         if (vaadinUri
                 .startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
             String relativeUrl = vaadinUri.substring(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
-            vaadinUri = getContextRootUrl() + relativeUrl;
+            return getContextRootUrl() + relativeUrl;
         }
-
         return vaadinUri;
     }
 
@@ -67,5 +86,14 @@ public abstract class VaadinUriResolver {
      * @return the context root URL
      */
     protected abstract String getContextRootUrl();
+
+    /**
+     * Gets the URL pointing to the root build path where the frontend files
+     * were compiled. It is expected that different browsers receive different
+     * files depending on their capabilities.
+     * 
+     * @return the base build URL
+     */
+    protected abstract String getFrontendRootUrl();
 
 }

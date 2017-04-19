@@ -20,11 +20,13 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
+import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Profiler;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.server.Constants;
 import com.vaadin.shared.ApplicationConstants;
 
 import elemental.client.Browser;
@@ -130,6 +132,15 @@ public class Bootstrapper implements EntryPoint {
 
         conf.setContextRootUrl(WidgetUtil.getAbsoluteUrl(jsoConfiguration
                 .getConfigString(ApplicationConstants.CONTEXT_ROOT_URL)));
+
+        if (BrowserInfo.get().isEs6Supported()) {
+            conf.setFrontendRootUrl(jsoConfiguration
+                    .getConfigString(Constants.FRONTEND_URL_ES6));
+        } else {
+            conf.setFrontendRootUrl(jsoConfiguration
+                    .getConfigString(Constants.FRONTEND_URL_ES5));
+        }
+
         conf.setUIId(jsoConfiguration
                 .getConfigInteger(ApplicationConstants.UI_ID_PARAMETER)
                 .intValue());

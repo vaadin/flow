@@ -20,6 +20,7 @@ import com.vaadin.annotations.EventHandler;
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.Tag;
 import com.vaadin.annotations.WebComponents;
+import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
@@ -28,7 +29,7 @@ import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.ComponentEvent;
 import com.vaadin.ui.UI;
 
-@WebComponents(1)
+@WebComponents(PolyfillVersion.V1)
 public class PolymerModelPropertiesUI extends UI {
 
     @DomEvent("text-changed")
