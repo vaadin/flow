@@ -6,18 +6,15 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.AbstractTestBenchTest;
 
@@ -94,22 +91,11 @@ public class HelloWorldIT extends AbstractTestBenchTest {
 
         LocalTime start = LocalTime.now();
         open();
-        AtomicReference<String> buttonHolder = new AtomicReference<>(null);
-        waitUntil(new ExpectedCondition<Boolean>() {
-            @Override
-            public Boolean apply(WebDriver arg0) {
-
-                List<WebElement> buttons = driver
-                        .findElements(By.tagName("button"));
-                if (buttons.isEmpty()) {
-                    return false;
-                }
-                buttonHolder.set(buttons.get(0).getText());
-                return true;
-            }
-        });
+        waitUntil(ExpectedConditions
+                .visibilityOfElementLocated(By.tagName("button")));
+        WebElement button = findElement(By.tagName("button"));
         LocalTime end = LocalTime.now();
-        Assert.assertEquals("Hello", buttonHolder.get());
+        Assert.assertEquals("Hello", button.getText());
         long ms = ChronoUnit.MILLIS.between(start, end);
 
         printTeamcityStats(testName, ms);
