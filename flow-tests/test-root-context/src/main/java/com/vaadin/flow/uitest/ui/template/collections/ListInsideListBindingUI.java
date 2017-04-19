@@ -16,6 +16,7 @@
 package com.vaadin.flow.uitest.ui.template.collections;
 
 import com.vaadin.annotations.WebComponents;
+import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
@@ -23,7 +24,7 @@ import com.vaadin.ui.UI;
  * @author Vaadin Ltd
  *
  */
-@WebComponents(1)
+@WebComponents(PolyfillVersion.V1)
 public class ListInsideListBindingUI extends UI {
 
     @Override

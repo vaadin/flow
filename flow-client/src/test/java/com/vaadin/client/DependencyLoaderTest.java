@@ -155,4 +155,55 @@ public class DependencyLoaderTest {
                 resourceLoader.loadingStyles.toArray());
     }
 
+    @Test
+    public void loadFrontendDependency() {
+        String TEST_URL = "frontend://my-component.html";
+
+        ApplicationConfiguration config = new ApplicationConfiguration();
+
+        registry.set(ApplicationConfiguration.class, config);
+        config.setFrontendRootUrl("http://someplace.com/es6/");
+
+        DependencyLoader loader = new DependencyLoader(registry);
+
+        JsonObject styleDep = Json.createObject();
+        styleDep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_HTML_IMPORT);
+        styleDep.put(DependencyList.KEY_URL, TEST_URL);
+
+        JsonArray deps = Json.createArray();
+        deps.set(0, styleDep);
+        loader.loadDependencies(deps);
+
+        Assert.assertArrayEquals(
+                new String[] { "http://someplace.com/es6/my-component.html" },
+                ((MockResourceLoader) registry.getResourceLoader()).loadingHtml
+                        .toArray());
+    }
+
+    @Test
+    public void loadFrontendDependencyWithContext() {
+        String TEST_URL = "frontend://my-component.html";
+
+        ApplicationConfiguration config = new ApplicationConfiguration();
+
+        registry.set(ApplicationConfiguration.class, config);
+        config.setFrontendRootUrl("context://es6/");
+        config.setContextRootUrl("http://someplace.com/");
+
+        DependencyLoader loader = new DependencyLoader(registry);
+
+        JsonObject styleDep = Json.createObject();
+        styleDep.put(DependencyList.KEY_TYPE, DependencyList.TYPE_HTML_IMPORT);
+        styleDep.put(DependencyList.KEY_URL, TEST_URL);
+
+        JsonArray deps = Json.createArray();
+        deps.set(0, styleDep);
+        loader.loadDependencies(deps);
+
+        Assert.assertArrayEquals(
+                new String[] { "http://someplace.com/es6/my-component.html" },
+                ((MockResourceLoader) registry.getResourceLoader()).loadingHtml
+                        .toArray());
+    }
+
 }

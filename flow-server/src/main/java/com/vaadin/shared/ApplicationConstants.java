@@ -36,10 +36,18 @@ public class ApplicationConstants implements Serializable {
      * An internal protocol used for referencing the application context path.
      */
     public static final String CONTEXT_PROTOCOL_PREFIX = "context://";
+
+    /**
+     * An internal protocol used for referencing different files based on the
+     * browser capability of interpreting ECMAScript 6.
+     */
+    public static final String FRONTEND_PROTOCOL_PREFIX = "frontend://";
+
     /**
      * An internal protocol used for identifying a font icon resource.
      */
     public static final String FONTICON_PROTOCOL_PREFIX = "fonticon://";
+
     /**
      * The identifier used for the CSRF token.
      */
@@ -169,5 +177,19 @@ public class ApplicationConstants implements Serializable {
      * Attribute name for marking elements which are pre-rendered.
      */
     public static final String PRE_RENDER_ATTRIBUTE = "pre-render";
+
+    /**
+     * Default value of the configuration of the build URL of ES6 web
+     * components.
+     */
+    public static final String FRONTEND_URL_ES6_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
+            + VAADIN_STATIC_FILES_PATH + "frontend/es6/";
+
+    /**
+     * Default value of the configuration of the build URL of ES5 web
+     * components.
+     */
+    public static final String FRONTEND_URL_ES5_DEFAULT_VALUE = CONTEXT_PROTOCOL_PREFIX
+            + VAADIN_STATIC_FILES_PATH + "frontend/es5/";
 
 }
