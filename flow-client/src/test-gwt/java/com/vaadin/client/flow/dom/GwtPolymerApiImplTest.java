@@ -1,9 +1,9 @@
 package com.vaadin.client.flow.dom;
 
-import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.dom.PolymerDomApiImpl.Polymer;
+import com.vaadin.client.flow.util.NativeFunction;
 
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
@@ -14,16 +14,17 @@ public class GwtPolymerApiImplTest extends ClientEngineTestBase {
     private static native void setPolymer(Polymer polymer);
 
     static void setPolymerFull() {
-        Polymer polymer = WidgetUtil
-                .crazyJsCast(JavaScriptObject.createObject());
-
-        setPolymer(polymer);
+        setPolymerMicro();
     }
 
     static void setPolymerMicro() {
-        Polymer polymer = WidgetUtil
-                .crazyJsCast(JavaScriptObject.createObject());
-        setPolymer(polymer);
+        setPolymerVersion("1.9.1");
+    }
+
+    static void setPolymerVersion(String version) {
+        NativeFunction function = NativeFunction
+                .create("return { 'version': '" + version + "' };");
+        setPolymer(WidgetUtil.crazyJsCast(function.call(null)));
     }
 
     static void clearPolymer() {
@@ -38,9 +39,17 @@ public class GwtPolymerApiImplTest extends ClientEngineTestBase {
     public void testPolymerMicroLoaded() {
         initTest();
 
-        setPolymerMicro();
+        setPolymerVersion("1.9.1");
 
         verifyPolymerMicro(true);
+    }
+
+    public void testPolymer2() {
+        initTest();
+
+        setPolymerVersion("2.0.0");
+
+        verifyPolymerMicro(false);
     }
 
     private static void verifyPolymerMicro(boolean loaded) {
