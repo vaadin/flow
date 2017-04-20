@@ -1,0 +1,27 @@
+ifdef::env-github[:outfilesuffix: .asciidoc]
+= Shadow root in server-side Element
+
+Elements contain support for adding a shadow root for Element types that support it.
+This enables for the creation of serverside webcomponents.
+<<not-applicable-elements,Elements without shadow root support>>
+
+A shadow root can be created simply with the command:
+
+[source,java]
+----
+ShadowRoot shadowRoot = element.attachShadow();
+----
+
+Now the `element` will contain a shadow root that can be manipulated almost as a
+normal `Element`. One difference is that `ShadowRoot` doesn't support `attachShadow()`.
+
+[NOTE]
+When adding a shadow root, any element added to the `ShadowRoot` parent will not be visible if the `ShadowRoot`
+doesn't contain a `<slot></slot>` element. See <<tutorial-template-components-in-slot.asciidoc#,Components in slot>>
+for more information.
+
+
+[[not-applicable-elements]]
+=== Missing shadow root support
+* The browser already hosts its own internal shadow DOM for the element (<textarea>, <input>).
+* It doesn't make sense for the element to host a shadow DOM (<img>).
