@@ -120,7 +120,7 @@ https://www.polymer-project.org/2.0/docs/tools/polymer-json[here].
 
 [NOTE]
 Change the `minify` property to `false` if you want to skip minification of your
-files
+files.
 
 ==== index.html
 
@@ -131,7 +131,7 @@ the dependency tree and properly optimize the code.
 
 In this file you only add your own dependencies, using HTML imports:
 
-[source,html]
+[source,xml]
 ----
 <!-- Assuming your files are located at src/main/frontend/components -->
 <link rel="import" href="components/my-component1.html">
@@ -140,7 +140,7 @@ In this file you only add your own dependencies, using HTML imports:
 
 [WARNING]
 When creating a new component, don't forget to declare its dependencies at the
-`bower.json` file and the component location at the `index.html`
+`bower.json` file and the component location at the `index.html`.
 
 In summary, the distribution of files inside `src/main/frontend` should be:
 
@@ -332,7 +332,7 @@ declaring the path of your `HTMLImport`. For example:
 ----
 @Tag("my-component")
 @HtmlImport("frontend://components/my-component.html")
-public class MyComponent extends PolymerTemplate<MyModel> {
+public class WebComponentFrontend extends PolymerTemplate<MyModel> {
 ----
 
 In runtime, the Flow application will determine with the browser support ES6 or
