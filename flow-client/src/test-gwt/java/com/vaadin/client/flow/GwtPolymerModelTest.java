@@ -294,8 +294,9 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
 
     private native void initPolymer(Element element)
     /*-{
-        Polymer = function() {};
-        Polymer.Element = {};
-        element.__proto__ = Polymer.Element;
+        $wnd.Polymer = function() {};
+        $wnd.Polymer.Element = {};
+        $wnd.Polymer.version="2.0.0";
+        element.__proto__ = $wnd.Polymer.Element;
     }-*/;
 }
