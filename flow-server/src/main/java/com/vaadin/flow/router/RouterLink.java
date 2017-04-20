@@ -48,7 +48,7 @@ public class RouterLink extends Component
         implements HasText, HasComponents, HasStyle {
 
     private static final PropertyDescriptor<String, String> HREF = PropertyDescriptors
-            .attributeWithDefault("href", "");
+            .attributeWithDefault("href", "", false);
 
     /**
      * Creates a new empty router link.
