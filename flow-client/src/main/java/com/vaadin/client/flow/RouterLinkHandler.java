@@ -174,7 +174,7 @@ public class RouterLinkHandler {
     private static AnchorElement getAnchorElement(Event clickEvent) {
         assert "click".equals(clickEvent.getType());
 
-        Element target = (Element) clickEvent.getTarget();
+        Element target = getTargetElement(clickEvent);
         EventTarget eventListenerElement = clickEvent.getCurrentTarget();
         // Target can become null if another click handler detaches the element
         while (target != null && target != eventListenerElement) {
@@ -186,6 +186,14 @@ public class RouterLinkHandler {
 
         return null;
     }
+
+    private static native Element getTargetElement(Event clickEvent)
+    /*-{
+        if(clickEvent.composed) {
+            return clickEvent.composedPath()[0];
+        }
+        return clickEvent.target;
+    }-*/;
 
     /**
      * Checks if the given element is an anchor element {@code <a>}.
