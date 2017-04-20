@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.template.model;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.util.ReflectionCache;
 import com.vaadin.util.ReflectTools;
 
 import elemental.json.Json;
@@ -86,6 +88,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     private final Map<String, ModelType> properties;
     private final Class<T> proxyType;
 
+    private transient ReflectionCache<Object, Map<String, Method>> beanPropertyCache;
+
     /**
      * Creates a new bean model type from the given class and properties.
      *
@@ -103,6 +107,8 @@ public class BeanModelType<T> implements ComplexModelType<T> {
 
         this.proxyType = proxyType;
         this.properties = new HashMap<>(properties);
+
+        initBeanPropertyCache();
     }
 
     /**
@@ -298,29 +304,20 @@ public class BeanModelType<T> implements ComplexModelType<T> {
          * Can't use Collectors.toMap() since it disallows null values.
          */
         Map<String, Object> values = new HashMap<>();
-        properties.keySet().stream().filter(propertyFilter)
-                .map(name -> ReflectTools.getGetter(beanClass, name))
-                .filter(Optional::isPresent).map(Optional::get)
-                .forEach(getter -> {
-                    String propertyName = ReflectTools.getPropertyName(getter);
 
-                    Type beanPropertyType = ReflectTools
-                            .getPropertyType(getter);
-                    ModelType modelPropertyType = getPropertyType(propertyName);
-                    if (!modelPropertyType.accepts(beanPropertyType)) {
-                        throw new IllegalArgumentException(
-                                propertyName + " is not of the expected type");
-                    }
+        beanPropertyCache.get(beanClass).forEach((propertyName, getter) -> {
+            if (!propertyFilter.test(propertyName)) {
+                return;
+            }
 
-                    try {
-                        Object value = getter.invoke(bean);
-                        values.put(propertyName, value);
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException(
-                                "Cannot access bean property " + propertyName,
-                                e);
-                    }
-                });
+            try {
+                Object value = getter.invoke(bean);
+                values.put(propertyName, value);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Cannot access bean property " + propertyName, e);
+            }
+        });
 
         // Populate the model with the extracted values
         values.forEach((name, value) -> {
@@ -405,6 +402,36 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         properties.forEach((name, type) -> json.put(name, type.toJson()));
 
         return json;
+    }
+
+    private void initBeanPropertyCache() {
+        beanPropertyCache = new ReflectionCache<>(this::findBeanGetters);
+    }
+
+    private Map<String, Method> findBeanGetters(Class<?> beanType) {
+        HashMap<String, Method> getters = new HashMap<>();
+        ReflectTools.getGetterMethods(beanType).forEach(getter -> {
+            String propertyName = ReflectTools.getPropertyName(getter);
+            if (!properties.containsKey(propertyName)) {
+                return;
+            }
+
+            Type propertyType = getter.getGenericReturnType();
+            if (!getPropertyType(propertyName).accepts(propertyType)) {
+                throw new IllegalArgumentException(
+                        propertyName + " is not of the expected type");
+            }
+
+            getters.put(propertyName, getter);
+        });
+
+        return getters;
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+            throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        initBeanPropertyCache();
     }
 
 }
