@@ -152,6 +152,6 @@ public final class PolymerUtils {
      */
     public static native boolean isPolymerElement(Element htmlNode)
     /*-{
-        return (typeof Polymer === 'function') && Polymer.Element && htmlNode instanceof Polymer.Element;
+        return (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
     }-*/;
 }
