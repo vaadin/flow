@@ -13,13 +13,28 @@ ShadowRoot shadowRoot = element.attachShadow();
 ----
 
 Now the `element` will contain a shadow root that can be manipulated almost as a
-normal `Element`. One difference is that `ShadowRoot` doesn't support `attachShadow()`.
+normal `Element`. One difference is that `ShadowRoot` doesn't itself support `attachShadow()`.
 
 [NOTE]
 When adding a shadow root, any element added to the `ShadowRoot` parent will not be visible if the `ShadowRoot`
 doesn't contain a `<slot></slot>` element. See <<tutorial-template-components-in-slot.asciidoc#,Components in slot>>
 for more information.
 
+All new elements should be added to the `ShadowRoot` element so that they will be
+encapsulated in the shadow tree of the hosting element.
+
+[source,java]
+----
+@Tag("my-label")
+public class MyLabel extends Component {
+
+    public Component() {
+        ShadowRoot shadowRoot = getElement().attachShadow();
+        Label textLabel = new Label("In the shadow");
+        shadowRoot.appendElement(textLabel.getElement());
+    }
+}
+----
 
 [[not-applicable-elements]]
 === Missing shadow root support
