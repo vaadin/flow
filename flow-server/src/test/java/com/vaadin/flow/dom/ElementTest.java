@@ -28,7 +28,6 @@ import com.vaadin.flow.StateNode;
 import com.vaadin.flow.change.ListAddChange;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
-import com.vaadin.flow.nodefeature.ElementChildrenList;
 import com.vaadin.flow.nodefeature.ElementListenerMap;
 import com.vaadin.flow.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
@@ -45,7 +44,7 @@ import elemental.json.Json;
 import elemental.json.JsonValue;
 import elemental.json.impl.JreJsonObject;
 
-public class ElementTest {
+public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void createElementWithTag() {
@@ -111,26 +110,11 @@ public class ElementTest {
         // Possibly returns a remover or a wrapped return value in the future
         ignore.add("callFunction");
 
-        for (Method m : Element.class.getDeclaredMethods()) {
-            if (!Modifier.isPublic(m.getModifiers())) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (m.getName().startsWith("get") || m.getName().startsWith("has")
-                    || m.getName().startsWith("is")
-                    || ignore.contains(m.getName())) {
-                // Ignore
-            } else {
-                // Setters and such
-                Class<?> returnType = m.getReturnType();
-                Assert.assertEquals(
-                        "Method " + m.getName() + " has invalid return type",
-                        Element.class, returnType);
-            }
-        }
+        // ignore shadow root methods
+        ignore.add("attachShadow");
+        ignore.add("getShadowRoot");
 
+        assertMethodsReturnType(Element.class, ignore);
     }
 
     @Test
@@ -313,260 +297,6 @@ public class ElementTest {
     }
 
     @Test
-    public void appendChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child = new Element("child");
-        parent.appendChild(child);
-
-        assertChildren(parent, child);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void appendNullChild() {
-        Element parent = ElementFactory.createDiv();
-        parent.appendChild((Element[]) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void insertWithNullParameter() {
-        Element parent = ElementFactory.createDiv();
-        parent.insertChild(0, (Element[]) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void insertNullChild() {
-        Element parent = ElementFactory.createDiv();
-        parent.insertChild(0, new Element[] { null });
-    }
-
-    @Test
-    public void appendChildren() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        parent.appendChild(child1, child2);
-
-        assertChildren(parent, child1, child2);
-    }
-
-    private void assertChildren(Element parent, Element... children) {
-
-        Assert.assertEquals(children.length, parent.getChildCount());
-        for (int i = 0; i < children.length; i++) {
-            Assert.assertEquals(parent, children[i].getParent());
-            Assert.assertEquals(children[i], parent.getChild(i));
-        }
-    }
-
-    @Test
-    public void insertChildFirst() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        parent.appendChild(child1);
-        parent.insertChild(0, child2);
-
-        assertChildren(parent, child2, child1);
-    }
-
-    @Test
-    public void insertChildMiddle() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2);
-        parent.insertChild(1, child3);
-
-        assertChildren(parent, child1, child3, child2);
-    }
-
-    @Test
-    public void insertChildAsLast() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2);
-        parent.insertChild(2, child3);
-
-        assertChildren(parent, child1, child2, child3);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void insertChildAfterLast() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2);
-        parent.insertChild(3, child3);
-    }
-
-    @Test
-    public void removeChildFirst() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
-        parent.removeChild(child1);
-
-        assertChildren(parent, child2, child3);
-    }
-
-    @Test
-    public void removeChildFirstIndex() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
-        parent.removeChild(0);
-
-        assertChildren(parent, child2, child3);
-    }
-
-    @Test
-    public void removeChildrenFirst() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
-        parent.removeChild(child1, child2);
-
-        assertChildren(parent, child3);
-    }
-
-    @Test
-    public void removeChildMiddle() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
-        parent.removeChild(child2);
-
-        assertChildren(parent, child1, child3);
-    }
-
-    @Test
-    public void removeChildMiddleIndex() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
-        parent.removeChild(1);
-
-        assertChildren(parent, child1, child3);
-    }
-
-    @Test
-    public void removeChildrenMiddle() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        Element child4 = new Element("child4");
-        parent.appendChild(child1, child2, child3, child4);
-        parent.removeChild(child2, child3);
-
-        assertChildren(parent, child1, child4);
-    }
-
-    @Test
-    public void removeChildLast() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
-        parent.removeChild(child3);
-
-        assertChildren(parent, child1, child2);
-    }
-
-    @Test
-    public void removeChildLastIndex() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
-        parent.removeChild(2);
-
-        assertChildren(parent, child1, child2);
-    }
-
-    @Test
-    public void removeChildrenLast() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        Element child4 = new Element("child4");
-        parent.appendChild(child1, child2, child3, child4);
-        parent.removeChild(child3, child4);
-
-        assertChildren(parent, child1, child2);
-    }
-
-    @Test
-    public void removeAllChildren() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        Element child4 = new Element("child4");
-        parent.appendChild(child1, child2, child3, child4);
-        parent.removeAllChildren();
-
-        assertChildren(parent);
-    }
-
-    @Test
-    public void removeAllChildrenEmpty() {
-        Element parent = ElementFactory.createDiv();
-        parent.removeAllChildren();
-
-        assertChildren(parent);
-    }
-
-    @Test
-    public void testGetChildren() {
-        Element element = ElementFactory.createDiv();
-
-        Element child1 = ElementFactory.createDiv();
-        Element child2 = ElementFactory.createDiv();
-        Element child3 = ElementFactory.createDiv();
-
-        element.appendChild(child1, child2, child3);
-
-        List<Element> children = element.getChildren()
-                .collect(Collectors.toList());
-        Assert.assertEquals(Arrays.asList(child1, child2, child3), children);
-    }
-
-    @Test
-    public void testGetChildren_empty() {
-        Element element = ElementFactory.createDiv();
-
-        Assert.assertEquals(0, element.getChildren().count());
-    }
-
-    @Test
-    public void removeFromParent() {
-        Element parent = ElementFactory.createDiv();
-        Element otherElement = new Element("other");
-        parent.appendChild(otherElement);
-        Assert.assertEquals(parent, otherElement.getParent());
-        otherElement.removeFromParent();
-        Assert.assertNull(otherElement.getParent());
-    }
-
-    @Test
     public void removeDetachedFromParent() {
         Element otherElement = new Element("other");
         Assert.assertNull(otherElement.getParent());
@@ -574,49 +304,11 @@ public class ElementTest {
         Assert.assertNull(otherElement.getParent());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void removeNonChild() {
-        Element parent = ElementFactory.createDiv();
-        Element otherElement = new Element("other");
-        parent.removeChild(otherElement);
-    }
-
-    @Test
-    public void getChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        Element child3 = new Element("child3");
-        Element child4 = new Element("child4");
-        parent.appendChild(child1, child2, child3, child4);
-        Assert.assertEquals(child1, parent.getChild(0));
-        Assert.assertEquals(child2, parent.getChild(1));
-        Assert.assertEquals(child3, parent.getChild(2));
-        Assert.assertEquals(child4, parent.getChild(3));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getNegativeChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        parent.appendChild(child1, child2);
-        parent.getChild(-1);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void getAfterLastChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        parent.appendChild(child1, child2);
-        parent.getChild(2);
-    }
-
     @Test
     public void getDetachedParent() {
         Element otherElement = new Element("other");
         Assert.assertNull(otherElement.getParent());
+        Assert.assertNull(otherElement.getParentNode());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -630,101 +322,6 @@ public class ElementTest {
         Element e = ElementFactory.createDiv();
         e.addEventListener(null, ignore -> {
         });
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void replaceNullChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        parent.appendChild(child1);
-        parent.setChild(0, null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void removeNullChild() {
-        Element parent = ElementFactory.createDiv();
-        parent.removeChild((Element[]) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void replaceBeforeFirstChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        parent.appendChild(child1);
-        parent.setChild(-1, child2);
-    }
-
-    @Test
-    public void setForEmptyParent() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        parent.setChild(0, child1);
-        assertChildren(parent, child1);
-    }
-
-    @Test
-    public void replaceAfterLastChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        parent.appendChild(child1);
-        parent.setChild(1, child2);
-        assertChildren(parent, child1, child2);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void replaceAfterAfterLastChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        parent.appendChild(child1);
-        parent.setChild(2, child2);
-    }
-
-    @Test
-    public void replaceFirstChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        Element child2 = new Element("child2");
-        parent.appendChild(child1);
-        parent.setChild(0, child2);
-        Assert.assertNull(child1.getParent());
-        Assert.assertEquals(parent, child2.getParent());
-    }
-
-    @Test
-    public void replaceChildWithItself() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        parent.appendChild(child1);
-
-        parent.getNode().clearChanges();
-
-        parent.setChild(0, child1);
-
-        AtomicInteger changesCausedBySetChild = new AtomicInteger(0);
-        parent.getNode().getFeature(ElementChildrenList.class)
-                .collectChanges(change -> {
-                    changesCausedBySetChild.incrementAndGet();
-                });
-        Assert.assertEquals(0, changesCausedBySetChild.get());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void removeChildBeforeFirst() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        parent.appendChild(child1);
-        parent.removeChild(-1);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void removeChildAfterLast() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = new Element("child1");
-        parent.appendChild(child1);
-        parent.removeChild(1);
     }
 
     @Test
@@ -1041,7 +638,7 @@ public class ElementTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void setOuterHtmlProeprty_throws() {
+    public void setOuterHtmlProperty_throws() {
         Element element = new Element("element");
         element.setProperty("outerHTML", "<br>");
     }
@@ -1669,85 +1266,11 @@ public class ElementTest {
         child.appendChild(parent);
     }
 
-    @Test
-    public void appendAttachedChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child = ElementFactory.createDiv();
-        parent.appendChild(child);
-
-        Element target = ElementFactory.createDiv();
-
-        target.appendChild(child);
-
-        Assert.assertEquals(child.getParent(), target);
-
-        checkIsNotChild(parent, child);
-    }
-
-    @Test
-    public void insertAttachedChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child = ElementFactory.createDiv();
-        parent.appendChild(child);
-
-        Element target = ElementFactory.createDiv();
-        target.appendChild(ElementFactory.createAnchor());
-
-        target.insertChild(0, child);
-
-        Assert.assertEquals(child.getParent(), target);
-
-        checkIsNotChild(parent, child);
-    }
-
-    @Test
-    public void setAttachedChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child = ElementFactory.createDiv();
-        parent.appendChild(child);
-
-        Element target = ElementFactory.createDiv();
-        target.appendChild(ElementFactory.createAnchor());
-
-        target.setChild(0, child);
-
-        Assert.assertEquals(child.getParent(), target);
-
-        checkIsNotChild(parent, child);
-    }
-
-    private void checkIsNotChild(Element parent, Element child) {
+    @Override
+    protected void checkIsNotChild(Node<?> parent, Element child) {
         Assert.assertNotEquals(child.getParent(), parent);
 
-        Assert.assertFalse(
-                parent.getChildren().anyMatch(el -> el.equals(child)));
-    }
-
-    public void indexOfChild_firstChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child = ElementFactory.createDiv();
-        parent.appendChild(child);
-
-        Assert.assertEquals(0, parent.indexOfChild(child));
-    }
-
-    @Test
-    public void indexOfChild_childInTheMiddle() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = ElementFactory.createDiv();
-        Element child2 = ElementFactory.createAnchor();
-        Element child3 = ElementFactory.createButton();
-        parent.appendChild(child1, child2, child3);
-
-        Assert.assertEquals(1, parent.indexOfChild(child2));
-    }
-
-    @Test
-    public void indexOfChild_notAChild() {
-        Element parent = ElementFactory.createDiv();
-        Element child = ElementFactory.createDiv();
-
-        Assert.assertEquals(-1, parent.indexOfChild(child));
+        super.checkIsNotChild(parent, child);
     }
 
     @Test
@@ -2402,6 +1925,7 @@ public class ElementTest {
                 () -> new ByteArrayInputStream(new byte[0]));
     }
 
+    @SuppressWarnings("serial")
     private UI createUI() {
         VaadinSession session = new VaadinSession(
                 EasyMock.createMock(VaadinService.class)) {
@@ -2417,52 +1941,6 @@ public class ElementTest {
             }
         };
         return ui;
-    }
-
-    @Test
-    public void appendFirstChildToOwnParent() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = ElementFactory.createDiv();
-        Element child2 = ElementFactory.createDiv();
-        parent.appendChild(child1, child2);
-
-        parent.appendChild(child1);
-        assertChildren(parent, child2, child1);
-    }
-
-    @Test
-    public void appendLastChildToOwnParent() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = ElementFactory.createDiv();
-        Element child2 = ElementFactory.createDiv();
-        parent.appendChild(child1, child2);
-
-        parent.appendChild(child2);
-        assertChildren(parent, child1, child2);
-    }
-
-    @Test
-    public void appendManyChildrenToOwnParent() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = ElementFactory.createDiv();
-        Element child2 = ElementFactory.createDiv();
-        parent.appendChild(child1, child2);
-
-        parent.appendChild(child2, child1);
-        // Order should be changed
-        assertChildren(parent, child2, child1);
-    }
-
-    @Test
-    public void appendExistingAndNewChildren() {
-        Element parent = ElementFactory.createDiv();
-        Element child1 = ElementFactory.createDiv();
-        Element child2 = ElementFactory.createDiv();
-        parent.appendChild(child1);
-
-        parent.appendChild(child2, child1);
-
-        assertChildren(parent, child2, child1);
     }
 
     @Test
@@ -2598,6 +2076,37 @@ public class ElementTest {
         ui.getElement().appendChild(element);
 
         assertPendingJs(ui, "$0.property.other.method()", element);
+    }
+
+    @Test
+    public void attachShadowRoot_childrenRemovedAndShadowRootCreated() {
+        Element element = ElementFactory.createDiv();
+        element.appendChild(ElementFactory.createButton(),
+                ElementFactory.createEmphasis());
+
+        ShadowRoot shadow = element.attachShadow();
+        Assert.assertNotNull(shadow);
+        Assert.assertEquals(element, shadow.getHost());
+        Assert.assertEquals(shadow, element.getShadowRoot().get());
+        Assert.assertEquals(0, element.getChildCount());
+        Assert.assertEquals(0, element.getChildren().count());
+    }
+
+    @Test
+    public void getShadowRoot_shadowRootIsEmpty() {
+        Element element = ElementFactory.createDiv();
+        Assert.assertTrue(!element.getShadowRoot().isPresent());
+    }
+
+    @Override
+    protected Node<?> createParentNode() {
+        return ElementFactory.createDiv();
+    }
+
+    @Override
+    protected void assertChild(Node<?> parent, int index, Element child) {
+        Assert.assertEquals(parent, child.getParent());
+        Assert.assertEquals(child, parent.getChild(index));
     }
 
     private void assertPendingJs(UI ui, String js, Serializable... arguments) {
