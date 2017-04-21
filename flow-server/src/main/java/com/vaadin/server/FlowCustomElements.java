@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.util.CustomElementNameValidator;
 
 /**
@@ -42,7 +43,7 @@ public class FlowCustomElements implements ServletContainerInitializer {
     }
 
     private void processComponentClass(Class<?> clazz) {
-        if (clazz.isAnnotationPresent(Tag.class)) {
+        if (clazz.isAnnotationPresent(Tag.class) && PolymerTemplate.class.isAssignableFrom(clazz)) {
             String tagName = clazz.getAnnotation(Tag.class).value();
             if (customElements.containsKey(tagName)) {
                 Class<?> componentClass = customElements.get(tagName);

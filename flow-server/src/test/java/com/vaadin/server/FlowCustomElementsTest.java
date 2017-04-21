@@ -23,6 +23,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.annotations.Tag;
+import com.vaadin.flow.template.PolymerTemplate;
 
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.
@@ -74,8 +75,19 @@ public class FlowCustomElementsTest {
                 null);
     }
 
+    @Test
+    public void testNonPolymerTemplateElementsAreNotAccepted()
+            throws ServletException {
+        FlowCustomElements flowCustomElements = new FlowCustomElements();
+        flowCustomElements.onStartup(Stream.of(NonPolymerElement.class)
+                .collect(Collectors.toSet()), null);
+
+        Assert.assertFalse(
+                FlowCustomElements.customElements.containsKey("non-polymer"));
+    }
+
     @Tag("custom-element")
-    public class ValidCustomElement {
+    public class ValidCustomElement extends PolymerTemplate {
     }
 
     @Tag("custom-element")
@@ -83,10 +95,14 @@ public class FlowCustomElementsTest {
     }
 
     @Tag("-invalid")
-    public class InvalidCustomElement {
+    public class InvalidCustomElement extends PolymerTemplate {
     }
 
     @Tag("custom-element")
-    public class InvalidExtendingElement {
+    public class InvalidExtendingElement extends PolymerTemplate {
+    }
+
+    @Tag("non-polymer")
+    public class NonPolymerElement {
     }
 }
