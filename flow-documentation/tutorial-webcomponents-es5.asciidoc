@@ -37,7 +37,7 @@ In your `src/main/frontend` directory, you have to create 4 files:
 ==== package.json
 
 This file defines the core versions of bower, gulp and polymer-build packages,
-and which commands should be sued to those packages. Once created, you don't have
+and what to run when the packages have been installed. Once created, you don't have
 to change this file anymore.
 
 [source,json]
@@ -156,7 +156,7 @@ In summary, the distribution of files inside `src/main/frontend` should be:
 Once properly structured, the project can be compiled using regular Maven
 commands, such as `mvn package`.
 
-To do so, you need to at specific configuration at your `pom.xml` file. This
+To do so, you need to add specific configuration to your `pom.xml` file. This
 configuration is a one-time setup. You can copy-paste the example below it
 directly to your `pom.xml`.
 
@@ -335,7 +335,7 @@ declaring the path of your `HTMLImport`. For example:
 public class WebComponentFrontend extends PolymerTemplate<MyModel> {
 ----
 
-In runtime, the Flow application will determine with the browser support ES6 or
+In runtime, the Flow application will determine whether the browser supports ES6 or
 not. When the browser supports ES6, the linked file will be served from
 `(context)/VAADIN/static/frontend/es6/components/my-component.html`. When it
 doesn`t, the served file will be
