@@ -15,7 +15,7 @@
   -->
 <link rel="import" href="/v2/bower_components/polymer/polymer.html">
 
-<dom-module id="my-template">
+<dom-module id="my-one-way-template">
     <template>
         <div id="messageDiv">[[message]]</div>
         <div id="titleDiv">[[title]]</div>
@@ -30,7 +30,7 @@
     </template>
     <script>
         class MyTemplate extends Polymer.Element {
-            static get is() { return 'my-template' }
+            static get is() { return 'my-one-way-template' }
         }
         customElements.define(MyTemplate.is, MyTemplate);
     </script>
