@@ -15,27 +15,6 @@
         "data": {
             "element.selection.selected()": []
         }
-    }, {
-        "type": "event",
-        "node": 105,
-        "event": "selected-items-changed",
-        "data": {
-            "element.selection.selected()": []
-        }
-    }, {
-        "type": "event",
-        "node": 105,
-        "event": "selected-items-changed",
-        "data": {
-            "element.selection.selected()": []
-        }
-    }, {
-        "type": "event",
-        "node": 105,
-        "event": "selected-items-changed",
-        "data": {
-            "element.selection.selected()": []
-        }
     }],
     "syncId": ${syncId},
     "clientId": ${clientId}

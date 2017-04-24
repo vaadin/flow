@@ -2,7 +2,7 @@
   "csrfToken": "${securityKey}",
     "rpc": [{
         "type": "event",
-        "node": 7,
+        "node": 9,
         "event": "items-requested",
         "data": {
             "element.itemsParams.count": 50,
