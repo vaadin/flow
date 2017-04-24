@@ -39,6 +39,11 @@ public class ShadowRoot extends Node<ShadowRoot> {
         }
     }
 
+    @Override
+    public Node<?> getParentNode() {
+        return null;
+    }
+
     public Element getHost() {
         Node<?> parent = getStateProvider().getParent(getNode());
         assert parent instanceof Element;
