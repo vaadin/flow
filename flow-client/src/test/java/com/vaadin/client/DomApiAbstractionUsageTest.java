@@ -141,7 +141,7 @@ public class DomApiAbstractionUsageTest {
             return;
         }
 
-        if (Element.class == targetClass
+        if ((Element.class == targetClass || Node.class == targetClass)
                 && ignoredElementMethods.contains(targetMethod)) {
             return;
         }
