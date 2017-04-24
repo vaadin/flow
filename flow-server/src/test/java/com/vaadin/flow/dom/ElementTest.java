@@ -2098,6 +2098,27 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertTrue(!element.getShadowRoot().isPresent());
     }
 
+    @Test
+    public void getParentNode_parentNodeIsTheSameAsParent() {
+        Element element = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+
+        element.appendChild(child);
+
+        Assert.assertEquals(child.getParent(), child.getParentNode());
+    }
+
+    @Test
+    public void getParentNode_elementInShadowRoot_parentIsNull() {
+        ShadowRoot element = ElementFactory.createDiv().attachShadow();
+        Element child = ElementFactory.createDiv();
+
+        element.appendChild(child);
+
+        Assert.assertNull(child.getParent());
+        Assert.assertEquals(element, child.getParentNode());
+    }
+
     @Override
     protected Node<?> createParentNode() {
         return ElementFactory.createDiv();

@@ -277,6 +277,12 @@ public class ShadowRootTest extends AbstractNodeTest {
         Assert.assertEquals(1, detached.get());
     }
 
+    @Test
+    public void getParentNode_parentNodeIsNull() {
+        ShadowRoot root = createParentNode();
+        Assert.assertNull(root.getParentNode());
+    }
+
     @Override
     protected ShadowRoot createParentNode() {
         return ElementFactory.createDiv().attachShadow();

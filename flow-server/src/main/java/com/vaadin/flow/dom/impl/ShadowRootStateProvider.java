@@ -32,6 +32,14 @@ import com.vaadin.flow.nodefeature.ShadowRootHost;
 import com.vaadin.server.StreamResource;
 
 /**
+ * Implementation which handles shadow root nodes.
+ * <p>
+ * Only the methods implemented in the {@link AbstractNodeStateProvider} are
+ * supported (related to the composition).
+ * <p>
+ * The data is stored directly in the state node but this should be considered
+ * an implementation detail which can change.
+ * 
  * @author Vaadin Ltd
  *
  */

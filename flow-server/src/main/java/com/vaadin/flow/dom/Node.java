@@ -84,12 +84,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Gets the number of child elements.
-     * <p>
-     * If the property "innerHTML" has been set explicitly then its value (the
-     * new element structure) won't be populated on the server side and this
-     * method will return <code>0</code>.
-     *
-     * @see #setProperty(String, String)
+     * 
      * @return the number of child elements
      */
     public int getChildCount() {
@@ -98,12 +93,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Returns the child element at the given position.
-     * <p>
-     * If property "innerHTML" has been set explicitly then its value (the new
-     * element structure) won't be populated on the server side and this method
-     * will not work.
-     *
-     * @see #setProperty(String, String)
+     * 
      * @param index
      *            the index of the child element to return
      * @return the child element
@@ -120,12 +110,6 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     /**
      * Gets all the children of this element.
-     * <p>
-     * If property "innerHTML" has been set explicitly then its value (the new
-     * element structure) won't be populated on the server side and this method
-     * returns an empty stream.
-     * 
-     * @see #setProperty(String, String)
      *
      * @return a stream of children
      */
