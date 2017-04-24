@@ -41,6 +41,7 @@ import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
+import com.vaadin.server.CustomElementRegistryInitializer;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
@@ -102,6 +103,8 @@ public class Element implements Serializable {
 
         this.stateProvider = stateProvider;
         this.node = node;
+
+        CustomElementRegistryInitializer.wrapElementIfNeeded(this);
     }
 
     /**

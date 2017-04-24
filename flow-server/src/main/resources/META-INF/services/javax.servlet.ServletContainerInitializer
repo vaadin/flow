@@ -1,1 +1,1 @@
-com.vaadin.server.FlowCustomElements
+com.vaadin.server.CustomElementRegistryInitializer

@@ -2,7 +2,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.annotations.Title;
 import com.vaadin.flow.html.Div;
-import com.vaadin.server.FlowCustomElements;
+import com.vaadin.server.CustomElementRegistryInitializer;
 
 @Title("Registered custom elements view")
 public class CustomElementMappingView extends AbstractDivView {
@@ -10,7 +10,7 @@ public class CustomElementMappingView extends AbstractDivView {
     @Override
     protected void onShow() {
         removeAll();
-        FlowCustomElements.customElements.keySet().forEach(key -> addKey(key));
+        CustomElementRegistryInitializer.customElements.keySet().forEach(key -> addKey(key));
 
     }
 
