@@ -126,7 +126,8 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the parent element or null if the element has no parent
      */
-    Node<?> getParent(StateNode node);
+    @SuppressWarnings("rawtypes")
+    Node getParent(StateNode node);
 
     /**
      * Gets the number of child elements.

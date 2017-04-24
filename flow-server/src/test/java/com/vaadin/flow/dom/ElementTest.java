@@ -2079,17 +2079,20 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Test
-    public void attachShadowRoot_childrenRemovedAndShadowRootCreated() {
+    public void attachShadowRoot_shadowRootCreatedAndChildrenArePreserved() {
         Element element = ElementFactory.createDiv();
-        element.appendChild(ElementFactory.createButton(),
-                ElementFactory.createEmphasis());
+        Element button = ElementFactory.createButton();
+        Element emphasis = ElementFactory.createEmphasis();
+        element.appendChild(button, emphasis);
 
         ShadowRoot shadow = element.attachShadow();
         Assert.assertNotNull(shadow);
         Assert.assertEquals(element, shadow.getHost());
         Assert.assertEquals(shadow, element.getShadowRoot().get());
-        Assert.assertEquals(0, element.getChildCount());
-        Assert.assertEquals(0, element.getChildren().count());
+        Assert.assertEquals(2, element.getChildCount());
+        Assert.assertEquals(2, element.getChildren().count());
+        Assert.assertEquals(button, element.getChild(0));
+        Assert.assertEquals(emphasis, element.getChild(1));
     }
 
     @Test
@@ -2120,7 +2123,7 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Override
-    protected Node<?> createParentNode() {
+    protected Element createParentNode() {
         return ElementFactory.createDiv();
     }
 

@@ -23,6 +23,10 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 
 /**
+ * A class representing a node in the DOM.
+ * <p>
+ * Contains methods for updating and querying hierarchical structure.
+ * 
  * @author Vaadin Ltd
  *
  * @param <N>
@@ -296,7 +300,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * 
      * @return the parent node or null if this element does not have a parent
      */
-    public Node<?> getParentNode() {
+    @SuppressWarnings("rawtypes")
+    public Node getParentNode() {
         return getStateProvider().getParent(getNode());
     }
 

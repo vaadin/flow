@@ -20,15 +20,28 @@ import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
 
 /**
+ * A class representing a shadow dom root of an element.
+ * <p>
+ * The root can be created by {@link Element#attachShadow()}.
+ * 
+ * @see Element#attachShadow()
+ * 
  * @author Vaadin Ltd
  *
  */
 public class ShadowRoot extends Node<ShadowRoot> {
 
-    public ShadowRoot(StateNode node) {
+    private ShadowRoot(StateNode node) {
         super(node, ShadowRootStateProvider.get());
     }
 
+    /**
+     * Gets the shadow root instance mapped to the given state node.
+     *
+     * @param node
+     *            the state node, not <code>null</code>
+     * @return the shadow root for the node, not <code>null</code>
+     */
     public static ShadowRoot get(StateNode node) {
         assert node != null;
         if (node.hasFeature(ShadowRootHost.class)) {
@@ -39,8 +52,9 @@ public class ShadowRoot extends Node<ShadowRoot> {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Node<?> getParentNode() {
+    public Node getParentNode() {
         return null;
     }
 

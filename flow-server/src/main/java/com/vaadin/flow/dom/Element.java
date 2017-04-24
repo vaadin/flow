@@ -149,15 +149,6 @@ public class Element extends Node<Element> {
         return new Element(node, stateProvider);
     }
 
-    @Override
-    public Element insertChild(int index, Element... children) {
-        if (getShadowRoot().isPresent()) {
-            throw new IllegalStateException(
-                    "Shadow root is attached to the element. Cannot add a child");
-        }
-        return super.insertChild(index, children);
-    }
-
     /**
      * Gets the number of child elements.
      * <p>
@@ -1354,7 +1345,6 @@ public class Element extends Node<Element> {
             throw new IllegalStateException(
                     "The element already has shadow root");
         }
-        removeAllChildren();
         return ShadowRoot.get(getStateProvider().attachShadow(getNode()));
     }
 

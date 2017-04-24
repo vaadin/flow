@@ -48,7 +48,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     private static final ShadowRootStateProvider INSTANCE = new ShadowRootStateProvider();
 
     @SuppressWarnings("unchecked")
-    private static Class<? extends NodeFeature>[] FEATURES = new Class[] {
+    private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
             ElementChildrenList.class, ShadowRootHost.class };
 
     /**
@@ -60,6 +60,13 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
         return INSTANCE;
     }
 
+    /**
+     * Create a new shadow root node for the given element {@code node}.
+     * 
+     * @param node
+     *            the node to create the shadow root for
+     * @return the shadow root node
+     */
     public StateNode createShadowRootNode(StateNode node) {
         StateNode shadowRoot = new StateNode(getProviderFeatures());
         node.getFeature(ShadowRootData.class).setShadowRoot(shadowRoot);

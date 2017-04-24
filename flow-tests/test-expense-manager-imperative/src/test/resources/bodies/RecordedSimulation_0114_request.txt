@@ -1,20 +1,23 @@
 {
   "csrfToken": "${securityKey}",
     "rpc": [{
-        "type": "pSync",
-        "node": 6,
-        "property": "focused",
-        "value": true
-    }, {
-        "type": "pSync",
-        "node": 6,
+        "type": "mSync",
+        "node": 8,
+        "feature": 1,
         "property": "active",
         "value": false
     }, {
-        "type": "pSync",
-        "node": 6,
+        "type": "mSync",
+        "node": 8,
+        "feature": 1,
         "property": "disabled",
         "value": false
+    }, {
+        "type": "mSync",
+        "node": 8,
+        "feature": 1,
+        "property": "focused",
+        "value": true
     }],
     "syncId": ${syncId},
     "clientId": ${clientId}

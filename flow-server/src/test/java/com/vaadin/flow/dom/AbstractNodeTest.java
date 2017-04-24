@@ -581,5 +581,6 @@ public abstract class AbstractNodeTest {
         }
     }
 
-    protected abstract Node<?> createParentNode();
+    @SuppressWarnings("rawtypes")
+    protected abstract Node createParentNode();
 }
