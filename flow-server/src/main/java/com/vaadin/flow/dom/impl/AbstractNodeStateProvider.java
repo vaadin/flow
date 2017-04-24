@@ -54,8 +54,9 @@ public abstract class AbstractNodeStateProvider
      */
     protected abstract Class<? extends NodeFeature>[] getProviderFeatures();
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Node<?> getParent(StateNode node) {
+    public Node getParent(StateNode node) {
         StateNode parentNode = node.getParent();
         if (parentNode == null) {
             return null;

@@ -2120,7 +2120,7 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Override
-    protected Node<?> createParentNode() {
+    protected Element createParentNode() {
         return ElementFactory.createDiv();
     }
 

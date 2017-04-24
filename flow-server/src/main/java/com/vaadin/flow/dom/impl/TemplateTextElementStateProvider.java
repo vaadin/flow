@@ -68,8 +68,9 @@ public class TemplateTextElementStateProvider
                 "Cannot modify text node defined in a template");
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Node<?> getParent(StateNode node) {
+    public Node getParent(StateNode node) {
         return TemplateElementStateProvider.getParent(node, templateNode);
     }
 

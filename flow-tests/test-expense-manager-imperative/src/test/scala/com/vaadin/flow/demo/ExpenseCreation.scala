@@ -69,7 +69,7 @@ class ExpenseCreation extends Simulation {
   // load
 
   val openNewExpense =
-    exec(http("pSync properties")
+    exec(http("mSync properties")
       .post(uidlUrl)
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0114_request.txt"))
@@ -88,7 +88,7 @@ class ExpenseCreation extends Simulation {
   // Open new Expense
 
   val cancelNewExpense =
-    exec(http("pSync properties")
+    exec(http("mSync properties")
       .post(uidlUrl)
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0116_request.txt"))
@@ -99,14 +99,29 @@ class ExpenseCreation extends Simulation {
     .exec(http("Click cancel in expense window")
       .post(uidlUrl)
       .headers(uidlHeaders)
+      .body(ElFileBody("RecordedSimulation_0117_request.txt"))
+        .check(regex(""""node":105,"type":"attach"""))
+    )
+    .exec(incrementIds)
+
+    .pause(419 milliseconds)
+
+  val loadListContent =
+    exec(http("Load items to grid")
+      .post(uidlUrl)
+      .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0118_request.txt"))
     )
     .exec(incrementIds)
     .pause(933 milliseconds)
   // cancel
 
-  val scn = scenario("RecordedSimulation").exec(
-    initialRequest).exitHereIfFailed.exec(loadPage).exitHereIfFailed.exec(openNewExpense).exitHereIfFailed.exec(cancelNewExpense)
+  val scn = scenario("RecordedSimulation")
+    .exec(initialRequest).exitHereIfFailed
+    .exec(loadPage).exitHereIfFailed
+    .exec(openNewExpense).exitHereIfFailed
+    .exec(cancelNewExpense).exitHereIfFailed
+    .exec(loadListContent)
 
   setUp(scn.inject(rampUsers(1000) over (120 seconds))).protocols(httpProtocol)
 

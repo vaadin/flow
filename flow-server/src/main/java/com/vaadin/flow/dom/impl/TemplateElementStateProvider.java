@@ -209,7 +209,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Node<?> getParent(StateNode node) {
+    public Node getParent(StateNode node) {
         // Implementation shared with template text provider
         return getParent(node, templateNode);
     }
@@ -224,7 +224,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
      * @return the element, not <code>null</code>
      */
     @SuppressWarnings("rawtypes")
-    public static Node<?> getParent(StateNode node, TemplateNode templateNode) {
+    public static Node getParent(StateNode node, TemplateNode templateNode) {
         assert node != null;
         assert templateNode != null;
 
