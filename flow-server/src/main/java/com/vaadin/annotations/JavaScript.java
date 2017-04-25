@@ -31,9 +31,10 @@ import com.vaadin.ui.UI;
  * For adding multiple JavaScript files for a single component, you can use this
  * annotation multiple times.
  * <p>
- * It is guaranteed that the JavaScript files are loaded on the client side
- * before the component is used for the first time in a {@link UI}. Each
- * dependency is sent only once.
+ * It is guaranteed that all blocking JavaScript files are loaded on the client
+ * side before the component is used for the first time in a {@link UI}.
+ * Non-blocking style sheet files can be loaded later, for more details refer to
+ * {@link #blocking()}. The dependencies are sent only once.
  * <p>
  * NOTE: while this annotation is not inherited using the
  * {@link Inherited @Inherited} annotation, the annotations of the possible
@@ -60,4 +61,16 @@ public @interface JavaScript {
      * @return a JavaScript file URL
      */
     String value();
+
+    /**
+     * Indicates whether resource should be loaded before component is used for
+     * the first time or not.
+     * <p>
+     * Component can be used only if all corresponding blocking resources are
+     * loaded.
+     *
+     * @return {@code false} if the resource can be loaded before component
+     *         usage, {@code true} otherwise
+     */
+    boolean blocking() default true;
 }

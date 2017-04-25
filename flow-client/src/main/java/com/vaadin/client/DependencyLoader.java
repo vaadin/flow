@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
@@ -32,12 +34,41 @@ import elemental.json.JsonObject;
  * @author Vaadin Ltd
  */
 public class DependencyLoader {
+    private static final JsArray<Command> callbacks = JsCollections.array();
 
-    private static JsArray<Command> callbacks = JsCollections.array();
+    // Listener that loads the next when one is completed
+    private static final ResourceLoadListener BLOCKING_RESOURCE_LOAD_LISTENER = new ResourceLoadListener() {
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+            // Call start for next before calling end for current
+            endBlockingDependencyLoading();
+        }
 
-    private static int dependenciesLoading;
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            Console.error(event.getResourceUrl() + " could not be loaded.");
+            // The show must go on
+            onLoad(event);
+        }
+    };
 
-    private Registry registry;
+    private static final ResourceLoadListener RESOURCE_LOAD_LISTENER = new ResourceLoadListener() {
+        @Override
+        public void onLoad(ResourceLoadEvent event) {
+        }
+
+        @Override
+        public void onError(ResourceLoadEvent event) {
+            Console.error(event.getResourceUrl() + " could not be loaded.");
+            // The show must go on
+            onLoad(event);
+        }
+    };
+
+    private static int blockingDependenciesLoading;
+
+    private final URIResolver uriResolver;
+    private final ResourceLoader resourceLoader;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -45,73 +76,55 @@ public class DependencyLoader {
      * @param registry
      *            the global registry
      */
-    public DependencyLoader(Registry registry) {
-        this.registry = registry;
+    DependencyLoader(Registry registry) {
+        uriResolver = registry.getURIResolver();
+        resourceLoader = registry.getResourceLoader();
     }
 
     /**
      * Loads the given dependency using the given loader and ensures any
-     * callbacks registered using {@link #runWhenDependenciesLoaded(Command)}
-     * are run when all dependencies have been loaded.
+     * callbacks registered using
+     * {@link #runWhenBlockingDependenciesLoaded(Command)} are run when all
+     * blocking dependencies have been loaded.
      *
      * @param dependencyUrl
      *            a dependency URL to load, will be translated using
-     *            {@link #translateVaadinUri(String)} before it is loaded, not
-     *            {@code null}
+     *            {@link URIResolver#resolveVaadinUri(String)} before it is
+     *            loaded, not {@code null}
+     * @param blocking
+     *            indicates whether the resource is blocking or not
      * @param loader
      *            function which takes care of loading the dependency URL
      */
-    public void loadDependency(final String dependencyUrl,
+    private void loadDependency(final String dependencyUrl, boolean blocking,
             final BiConsumer<String, ResourceLoadListener> loader) {
         assert dependencyUrl != null;
         assert loader != null;
 
-        // Listener that loads the next when one is completed
-        ResourceLoadListener resourceLoadListener = new ResourceLoadListener() {
-            @Override
-            public void onLoad(ResourceLoadEvent event) {
-                // Call start for next before calling end for current
-                endDependencyLoading();
-            }
-
-            @Override
-            public void onError(ResourceLoadEvent event) {
-                Console.error(event.getResourceUrl() + " could not be loaded.");
-                // The show must go on
-                onLoad(event);
-            }
-        };
-
         // Start chain by loading first
-        String url = translateVaadinUri(dependencyUrl);
-        startDependencyLoading();
-        loader.accept(url, resourceLoadListener);
+        String url = uriResolver.resolveVaadinUri(dependencyUrl);
+        if (blocking) {
+            startBlockingDependencyLoading();
+            loader.accept(url, BLOCKING_RESOURCE_LOAD_LISTENER);
+        } else {
+            loader.accept(url, RESOURCE_LOAD_LISTENER);
+        }
     }
 
     /**
-     * Run the URI through all protocol translators.
-     *
-     * @param uri
-     *            the URI to translate
-     * @return the translated URI
-     */
-    private String translateVaadinUri(String uri) {
-        return registry.getURIResolver().resolveVaadinUri(uri);
-    }
-
-    /**
-     * Adds a command to be run when all dependencies have finished loading.
+     * Adds a command to be run when all blocking dependencies have finished
+     * loading.
      * <p>
-     * If no dependencies are currently being loaded, runs the command
+     * If no blocking dependencies are currently being loaded, runs the command
      * immediately.
      *
-     * @see #startDependencyLoading()
-     * @see #endDependencyLoading()
+     * @see #startBlockingDependencyLoading()
+     * @see #endBlockingDependencyLoading()
      * @param command
-     *            the command to run when dependencies have been loaded
+     *            the command to run when blocking dependencies have been loaded
      */
-    public static void runWhenDependenciesLoaded(Command command) {
-        if (dependenciesLoading == 0) {
+    public static void runWhenBlockingDependenciesLoaded(Command command) {
+        if (blockingDependenciesLoading == 0) {
             command.execute();
         } else {
             callbacks.push(command);
@@ -121,22 +134,22 @@ public class DependencyLoader {
     /**
      * Marks that loading of a dependency has started.
      *
-     * @see #runWhenDependenciesLoaded(Command)
-     * @see #endDependencyLoading()
+     * @see #runWhenBlockingDependenciesLoaded(Command)
+     * @see #endBlockingDependencyLoading()
      */
-    public static void startDependencyLoading() {
-        dependenciesLoading++;
+    private static void startBlockingDependencyLoading() {
+        blockingDependenciesLoading++;
     }
 
     /**
      * Marks that loading of a dependency has ended.
      * <p>
      * If all pending dependencies have been loaded, calls any callback
-     * registered using {@link #runWhenDependenciesLoaded(Command)}.
+     * registered using {@link #runWhenBlockingDependenciesLoaded(Command)}.
      */
-    public static void endDependencyLoading() {
-        dependenciesLoading--;
-        if (dependenciesLoading == 0 && callbacks.length() != 0) {
+    private static void endBlockingDependencyLoading() {
+        blockingDependenciesLoading--;
+        if (blockingDependenciesLoading == 0 && callbacks.length() != 0) {
             for (int i = 0; i < callbacks.length(); i++) {
                 Command cmd = callbacks.get(i);
                 cmd.execute();
@@ -154,25 +167,44 @@ public class DependencyLoader {
     public void loadDependencies(JsonArray deps) {
         assert deps != null;
 
-        ResourceLoader resourceLoader = registry.getResourceLoader();
+        Map<String, BiConsumer<String, ResourceLoadListener>> nonBlockingDependencies = new HashMap<>();
 
         for (int i = 0; i < deps.length(); i++) {
-            JsonObject dependencyJson = (JsonObject) deps.get(i);
-            String type = dependencyJson.getString(DependencyList.KEY_TYPE);
+            JsonObject dependencyJson = deps.getObject(i);
             String url = dependencyJson.getString(DependencyList.KEY_URL);
-            switch (type) {
-            case DependencyList.TYPE_STYLESHEET:
-                loadDependency(url, resourceLoader::loadStylesheet);
-                break;
-            case DependencyList.TYPE_HTML_IMPORT:
-                loadDependency(url, resourceLoader::loadHtml);
-                break;
-            case DependencyList.TYPE_JAVASCRIPT:
-                loadDependency(url, resourceLoader::loadScript);
-                break;
-            default:
-                Console.error("Unknown dependency type " + type);
+            boolean blocking = dependencyJson
+                    .getBoolean(DependencyList.KEY_BLOCKING);
+            BiConsumer<String, ResourceLoadListener> loader = getResourceLoader(
+                    dependencyJson.getString(DependencyList.KEY_TYPE),
+                    blocking);
+
+            if (loader != null) {
+                if (blocking) {
+                    loadDependency(url, true, loader);
+                } else {
+                    nonBlockingDependencies.put(url, loader);
+                }
             }
+        }
+
+        runWhenBlockingDependenciesLoaded(() -> nonBlockingDependencies
+                .forEach((url, loader) -> loadDependency(url, false, loader)));
+    }
+
+    private BiConsumer<String, ResourceLoadListener> getResourceLoader(
+            String resourceType, boolean blocking) {
+        switch (resourceType) {
+        case DependencyList.TYPE_STYLESHEET:
+            return resourceLoader::loadStylesheet;
+        case DependencyList.TYPE_HTML_IMPORT:
+            return resourceLoader::loadHtml;
+        case DependencyList.TYPE_JAVASCRIPT:
+            return (scriptUrl, resourceLoadListener) -> resourceLoader
+                    .loadScript(scriptUrl, resourceLoadListener, false,
+                            !blocking);
+        default:
+            Console.error("Unknown dependency type " + resourceType);
+            return null;
         }
     }
 }

@@ -192,7 +192,7 @@ public class ResourceLoader {
      */
     public void loadScript(final String scriptUrl,
             final ResourceLoadListener resourceLoadListener) {
-        loadScript(scriptUrl, resourceLoadListener, false);
+        loadScript(scriptUrl, resourceLoadListener, false, false);
     }
 
     /**
@@ -208,10 +208,12 @@ public class ResourceLoader {
      *            listener to notify when script is loaded
      * @param async
      *            What mode the script.async attribute should be set to
+     * @param defer
+     *            What mode the script.defer attribute should be set to
      * @since 7.2.4
      */
     public void loadScript(final String scriptUrl,
-            final ResourceLoadListener resourceLoadListener, boolean async) {
+            final ResourceLoadListener resourceLoadListener, boolean async, boolean defer) {
         final String url = WidgetUtil.getAbsoluteUrl(scriptUrl);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {
@@ -227,6 +229,7 @@ public class ResourceLoader {
             scriptTag.setSrc(url);
             scriptTag.setType("text/javascript");
             scriptTag.setAsync(async);
+            scriptTag.setDefer(defer);
 
             addOnloadHandler(scriptTag, new ResourceLoadListener() {
                 @Override
@@ -466,7 +469,7 @@ public class ResourceLoader {
             if ($doc.styleSheets[i].href === url) {
                 var sheet = $doc.styleSheets[i];
                 try {
-                    var rules = sheet.cssRules
+                    var rules = sheet.cssRules;
                     if (rules === undefined) {
                         rules = sheet.rules;
                     }

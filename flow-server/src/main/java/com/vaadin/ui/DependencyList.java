@@ -37,6 +37,7 @@ public class DependencyList implements Serializable {
 
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
+    public static final String KEY_BLOCKING = "blocking";
     public static final String TYPE_STYLESHEET = "css";
     public static final String TYPE_JAVASCRIPT = "js";
     public static final String TYPE_HTML_IMPORT = "html";
@@ -76,6 +77,7 @@ public class DependencyList implements Serializable {
         JsonObject jsonObject = Json.createObject();
         jsonObject.put(KEY_URL, dependency.getUrl());
         jsonObject.put(KEY_TYPE, getType(dependency));
+        jsonObject.put(KEY_BLOCKING, dependency.isBlocking());
 
         pendingSendToClient.set(pendingSendToClient.length(), jsonObject);
         urlCache.add(dependency.getUrl());

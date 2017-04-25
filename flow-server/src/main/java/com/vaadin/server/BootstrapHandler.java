@@ -329,8 +329,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         Element html = document.appendElement("html");
         Element head = html.appendElement("head");
 
-        JsonObject initialUidl = getInitialUidl(context.getUI());
-        setupDocumentHead(head, initialUidl, context);
+        setupDocumentHead(head, context);
         setupDocumentBody(document, context);
 
         document.outputSettings().prettyPrint(false);
@@ -346,7 +345,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         writer.close();
     }
 
-    private static void setupDocumentHead(Element head, JsonObject initialUIDL,
+    private static void setupDocumentHead(Element head,
             BootstrapContext context) {
         head.appendElement(META_TAG).attr("http-equiv", "Content-Type")
                 .attr(CONTENT_ATTRIBUTE, "text/html; charset=utf-8");
@@ -367,7 +366,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement("title").appendText(title.get());
         }
 
-        includeDependencies(head, initialUIDL, context.getUriResolver());
+        JsonObject initialUIDL = getInitialUidl(context.getUI());
+        includeDependenciesInPreRender(head, initialUIDL,
+                context.getUriResolver());
 
         Element styles = head.appendElement("style").attr("type", "text/css");
         styles.appendText("html, body {height:100%;margin:0;}");
@@ -433,17 +434,16 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         isVersion1 = getUserDefinedProperty(config, Constants.WEB_COMPONENTS,
                 version -> String.valueOf(1).equals(version),
                 webComponents.isPresent()
-                        ? webComponents.get().value() == PolyfillVersion.V1
-                        : false);
+                        && webComponents.get().value() == PolyfillVersion.V1);
         forceShadyDom = getUserDefinedProperty(config,
                 Constants.FORCE_SHADY_DOM, Boolean::parseBoolean,
-                webComponents.isPresent() ? webComponents.get().forceShadyDom()
-                        : false);
+                webComponents.isPresent()
+                        && webComponents.get().forceShadyDom());
 
         loadEs5Adapter = getUserDefinedProperty(config,
                 Constants.LOAD_ES5_ADAPTER, Boolean::parseBoolean,
-                webComponents.isPresent() ? webComponents.get().loadEs5Adapter()
-                        : false);
+                webComponents.isPresent()
+                        && webComponents.get().loadEs5Adapter());
 
         if (loadEs5Adapter) {
             head.appendChild(createJavaScriptElement(
@@ -500,7 +500,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return converter.apply(value);
     }
 
-    private static void includeDependencies(Element head,
+    private static void includeDependenciesInPreRender(Element head,
             JsonObject initialUIDL, VaadinUriResolver resolver) {
         // Extract style sheets and load them eagerly
         JsonArray dependencies = initialUIDL
@@ -510,24 +510,30 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return;
         }
 
-        JsonArray uidlDependencies = Json.createArray();
+        JsonArray loadedAtClientDependencies = Json.createArray();
         int uidlDependenciesIndex = 0;
         for (int i = 0; i < dependencies.length(); i++) {
             JsonObject dependency = dependencies.getObject(i);
+            boolean isBlocking = dependency
+                    .getBoolean(DependencyList.KEY_BLOCKING);
             String dependencyKey = dependency
                     .getString(DependencyList.KEY_TYPE);
-            if (DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
+            if (isBlocking
+                    && DependencyList.TYPE_STYLESHEET.equals(dependencyKey)) {
                 addStyleSheet(head, resolver, dependency);
-            } else if (DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
+            } else if (isBlocking
+                    && DependencyList.TYPE_JAVASCRIPT.equals(dependencyKey)) {
                 addJavaScript(head, resolver, dependency);
             } else {
-                uidlDependencies.set(uidlDependenciesIndex, dependency);
+                loadedAtClientDependencies.set(uidlDependenciesIndex,
+                        dependency);
                 uidlDependenciesIndex += 1;
             }
         }
 
         // Remove from initial UIDL
-        initialUIDL.put(DependencyList.DEPENDENCY_KEY, uidlDependencies);
+        initialUIDL.put(DependencyList.DEPENDENCY_KEY,
+                loadedAtClientDependencies);
     }
 
     private static void addStyleSheet(Element head, VaadinUriResolver resolver,
