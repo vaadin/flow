@@ -17,6 +17,7 @@ package com.vaadin.flow.tutorial;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
@@ -29,8 +30,9 @@ public class Importing {
 
     //@formatter:off - custom line wrapping
     @Tag("div")
-    @JavaScript("/js/script.js")
+    @StyleSheet("/css/cssimport.css")
     @HtmlImport("/html/htmlimport.html")
+    @JavaScript("/js/script.js")
     static class HtmlComponent extends Component implements HasText {
         // implementation omitted
     }
@@ -43,6 +45,7 @@ public class Importing {
             //@formatter:off - custom line wrapping
 
             // Loaded regardless of how your application is deployed
+            getPage().addStyleSheet("/css/cssimport.css");
             getPage().addHtmlImport("/html/htmlimport.html");
             getPage().addJavaScript("/js/script.js");
 
