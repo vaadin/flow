@@ -91,8 +91,8 @@ public class CustomElementRegistry {
     /**
      * Create a new component instance for given element without component.
      * <p>
-     * Creation and linking requires that we have a custom element registered
-     * for the given element tag.
+     * Creation and linking requires that a custom element has been registered
+     * for the given element tag name.
      *
      * @param element
      *            element to check and wrap

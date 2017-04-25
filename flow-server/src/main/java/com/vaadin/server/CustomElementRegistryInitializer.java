@@ -29,7 +29,7 @@ import com.vaadin.ui.Component;
 import com.vaadin.util.CustomElementNameValidator;
 
 /**
- * Flow servlet initializer for collecting all applicable custom element tag
+ * Servlet initializer for collecting all applicable custom element tag
  * names on startup.
  */
 @HandlesTypes(Tag.class)
@@ -41,12 +41,13 @@ public class CustomElementRegistryInitializer
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
-        CustomElementRegistry elementRegistry = CustomElementRegistry.getInstance();
+        CustomElementRegistry elementRegistry = CustomElementRegistry
+                .getInstance();
 
         customElements = new HashMap<>();
         set.forEach(this::processComponentClass);
 
-        if(!elementRegistry.initialized) {
+        if (!elementRegistry.initialized) {
             elementRegistry.setCustomElements(customElements);
         }
     }
@@ -79,18 +80,16 @@ public class CustomElementRegistryInitializer
     }
 
     /**
-     * If we have a conflict with multiple classes with the same tag name we
-     * should register the superclass of the two.
+     * If there is a a conflict with multiple classes having the same tag name
+     * the superclass of the two should be registered.
      *
      * @param tagName
      *            tag name of new and existing class
      * @param newClass
-     *            new class that we try to register
-     * @throws ClassCastException
-     *             thrown if neither class is a super class of the other
+     *            new class to register
      */
     private void updateRegisteredClassIfNecessary(String tagName,
-            Class<?> newClass) throws ClassCastException {
+            Class<?> newClass) {
 
         Class<? extends Component> componentClass = customElements.get(tagName);
 
