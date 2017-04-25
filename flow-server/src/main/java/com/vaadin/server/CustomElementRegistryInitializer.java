@@ -43,7 +43,7 @@ public class CustomElementRegistryInitializer
             throws ServletException {
         CustomElementRegistry elementRegistry = CustomElementRegistry.getInstance();
 
-        if(!elementRegistry.initialized) {
+        if(elementRegistry.initialized) {
             return;
         }
 
