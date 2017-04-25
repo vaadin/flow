@@ -52,7 +52,7 @@ public class CustomElementRegistryInitializerTest {
                 .isRegisteredCustomElement("custom-element"));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expected = InvalidCustomElementNameException.class)
     public void testInvalidCustomElementNameThrowsException()
             throws ServletException {
         // Invalid name should throw an exception due to not being supported

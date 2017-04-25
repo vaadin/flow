@@ -66,7 +66,7 @@ public class CustomElementRegistryInitializer
                     String msg = String.format(
                             "Tag name '%s' for '%s' is not a valid custom element name.",
                             tagName, clazz.getSimpleName());
-                    throw new RuntimeException(msg);
+                    throw new InvalidCustomElementNameException(msg);
                 }
             }
         }
