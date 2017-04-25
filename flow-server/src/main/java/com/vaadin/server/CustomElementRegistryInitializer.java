@@ -43,14 +43,12 @@ public class CustomElementRegistryInitializer
             throws ServletException {
         CustomElementRegistry elementRegistry = CustomElementRegistry.getInstance();
 
-        if(elementRegistry.initialized) {
-            return;
-        }
-
         customElements = new HashMap<>();
         set.forEach(this::processComponentClass);
 
-        elementRegistry.setCustomElements(customElements);
+        if(!elementRegistry.initialized) {
+            elementRegistry.setCustomElements(customElements);
+        }
     }
 
     private void processComponentClass(Class<?> clazz) {
