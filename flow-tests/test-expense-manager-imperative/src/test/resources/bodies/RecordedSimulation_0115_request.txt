@@ -2,7 +2,7 @@
   "csrfToken": "${securityKey}",
     "rpc": [{
         "type": "event",
-        "node": 6,
+        "node": 8,
         "event": "click"
     }],
     "syncId": ${syncId},
