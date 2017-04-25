@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.vaadin.annotations.Tag;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.ui.Component;
 import com.vaadin.util.CustomElementNameValidator;
@@ -43,10 +41,16 @@ public class CustomElementRegistryInitializer
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
+        CustomElementRegistry elementRegistry = CustomElementRegistry.getInstance();
+
+        if(!elementRegistry.initialized) {
+            return;
+        }
+
         customElements = new HashMap<>();
         set.forEach(this::processComponentClass);
 
-        CustomElementRegistry.getInstance().setCustomElements(customElements);
+        elementRegistry.setCustomElements(customElements);
     }
 
     private void processComponentClass(Class<?> clazz) {
