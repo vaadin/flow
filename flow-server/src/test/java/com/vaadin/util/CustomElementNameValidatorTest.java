@@ -35,7 +35,7 @@ public class CustomElementNameValidatorTest {
         invalidNames.forEach(name -> Assert.assertFalse(
                 String.format("Name %s is valid even though it should not be",
                         name),
-                CustomElementNameValidator.isValidCustomElementName(name)));
+                CustomElementNameValidator.validate(name).isValid()));
 
     }
 

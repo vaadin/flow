@@ -1,0 +1,97 @@
+package com.vaadin.server;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
+import com.vaadin.ui.Component;
+
+/**
+ * Registry holder for custom elements found on servlet initalization.
+ */
+public class CustomElementRegistry {
+
+    private Map<String, Class<? extends Component>> customElements = new HashMap<>();
+
+    private static CustomElementRegistry instance;
+    protected boolean initialized = false;
+
+    private CustomElementRegistry() {
+    }
+
+    /**
+     * Get instance of CustomElementRegistry.
+     * 
+     * @return singleton instance of the registry
+     */
+    public static CustomElementRegistry getInstance() {
+        if (instance == null) {
+            instance = new CustomElementRegistry();
+        }
+        return instance;
+    }
+
+    /**
+     * Set registered custom elements.
+     * <p>
+     * Note! Custom elements can only be set once!
+     * 
+     * @param customElements
+     *            map of registered custom elements
+     */
+    public void setCustomElements(
+            Map<String, Class<? extends Component>> customElements) {
+        if (initialized) {
+            throw new IllegalArgumentException(
+                    "Custom element map has already been initialized");
+        }
+        this.customElements = Collections.unmodifiableMap(customElements);
+        initialized = true;
+    }
+
+    /**
+     * Check if a custom element for given tag is registered.
+     *
+     * @param tag
+     *            tag to check
+     * @return true if custom element class is found
+     */
+    public boolean isRegisteredCustomElement(String tag) {
+        return customElements.containsKey(tag);
+    }
+
+    /**
+     * Get the registered custom element for given tag.
+     *
+     * @param tag
+     *            tag to get custom element class for
+     * @return custom element class for tag
+     */
+    public Class<? extends Component> getRegisteredCustomElement(String tag) {
+        return customElements.get(tag);
+    }
+
+    /**
+     * Create a new component instance for given element without component.
+     * <p>
+     * Creation and linking requires that we have a custom element registered
+     * for the given element tag.
+     *
+     * @param element
+     *            element to check and wrap
+     */
+    public void wrapElementIfNeeded(Element element) {
+        // cancel wrap if AbstractTextElement as it doesn't support getTag()
+        if (element
+                .getStateProvider() instanceof AbstractTextElementStateProvider) {
+            return;
+        }
+
+        if (customElements.containsKey(element.getTag())
+                && !element.getComponent().isPresent()) {
+            Component.from(element, customElements.get(element.getTag()));
+        }
+    }
+}

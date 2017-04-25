@@ -41,7 +41,8 @@ import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
-import com.vaadin.server.CustomElementRegistryInitializer;
+import com.vaadin.server.Command;
+import com.vaadin.server.CustomElementRegistry;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
@@ -82,6 +83,8 @@ public class Element implements Serializable {
     private final ElementStateProvider stateProvider;
     private final StateNode node;
 
+    private EventRegistrationHandle customElementCreationHandle;
+
     /**
      * Private constructor for initializing with an existing node and state
      * provider.
@@ -104,7 +107,14 @@ public class Element implements Serializable {
         this.stateProvider = stateProvider;
         this.node = node;
 
-        CustomElementRegistryInitializer.wrapElementIfNeeded(this);
+        customElementCreationHandle = node.addAttachListener(new Command() {
+            @Override
+            public void execute() {
+                CustomElementRegistry.getInstance()
+                        .wrapElementIfNeeded(Element.this);
+                customElementCreationHandle.remove();
+            }
+        });
     }
 
     /**

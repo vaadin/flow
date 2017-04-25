@@ -38,15 +38,15 @@ import com.vaadin.util.CustomElementNameValidator;
 public class CustomElementRegistryInitializer
         implements ServletContainerInitializer {
 
-    public static final Map<String, Class<? extends Component>> customElements = new HashMap<>();
+    private Map<String, Class<? extends Component>> customElements;
 
     @Override
     public void onStartup(Set<Class<?>> set, ServletContext servletContext)
             throws ServletException {
-        if(!customElements.isEmpty()) {
-            customElements.clear();
-        }
-        set.forEach(clazz -> processComponentClass(clazz));
+        customElements = new HashMap<>();
+        set.forEach(this::processComponentClass);
+
+        CustomElementRegistry.getInstance().setCustomElements(customElements);
     }
 
     private void processComponentClass(Class<?> clazz) {
@@ -54,9 +54,18 @@ public class CustomElementRegistryInitializer
             String tagName = clazz.getAnnotation(Tag.class).value();
             if (customElements.containsKey(tagName)) {
                 updateRegisteredClassIfNecessary(tagName, clazz);
-            } else if (CustomElementNameValidator
-                    .isValidCustomElementName(tagName)) {
-                customElements.put(tagName, (Class<? extends Component>) clazz);
+            } else {
+                CustomElementNameValidator.Result result = CustomElementNameValidator
+                        .validate(tagName);
+                if (result.isValid()) {
+                    customElements.put(tagName,
+                            (Class<? extends Component>) clazz);
+                } else {
+                    String msg = String.format(
+                            "Tag name '%s' for '%s' is not a valid custom element name.",
+                            tagName, clazz.getSimpleName());
+                    throw new RuntimeException(msg);
+                }
             }
         }
     }
@@ -88,32 +97,13 @@ public class CustomElementRegistryInitializer
             // Replace existing sub class with super class
             customElements.put(tagName, (Class<? extends Component>) newClass);
         } else if (!componentClass.isAssignableFrom(newClass)) {
+            String msg = String.format(
+                    "Incompatible tag '%s' annotation for components '%s' and '%s'",
+                    tagName, componentClass.getSimpleName(),
+                    newClass.getSimpleName());
             // Throw exception if neither class is a super class of the
             // other.
-            throw new ClassCastException(
-                    "Incompatible components for tag name: " + tagName);
-        }
-    }
-
-    /**
-     * Create a new component instance for given element without component.
-     * <p>
-     * Creation and linking requires that we have a custom element registered
-     * for the given element tag.
-     * 
-     * @param element
-     *            element to check and wrap
-     */
-    public static void wrapElementIfNeeded(Element element) {
-        // cancel wrap if AbstractTextElement as it doesn't support getTag()
-        if (element
-                .getStateProvider() instanceof AbstractTextElementStateProvider) {
-            return;
-        }
-
-        if (customElements.containsKey(element.getTag())
-                && !element.getComponent().isPresent()) {
-            Component.from(element, customElements.get(element.getTag()));
+            throw new ClassCastException(msg);
         }
     }
 }

@@ -39,17 +39,6 @@ public final class CustomElementNameValidator {
     }
 
     /**
-     * Check if the given name is a valid Custom Element name.
-     * 
-     * @param name
-     *            Name to check
-     * @return true if valid name
-     */
-    public static boolean isValidCustomElementName(String name) {
-        return validate(name).isValid();
-    }
-
-    /**
      * Validate that given name is a valid Custom Element name.
      * 
      * @param name
@@ -117,12 +106,6 @@ public final class CustomElementNameValidator {
         private String warning = "";
 
         /**
-         * Constructor for empty valid result.
-         */
-        public Result() {
-        }
-
-        /**
          * Constructor with error and warning resolution.
          * 
          * @param error
@@ -130,9 +113,12 @@ public final class CustomElementNameValidator {
          * @param warning
          *            Warning message
          */
-        public Result(String error, String warning) {
-            setError(error);
-            setWarning(warning);
+        protected Result(String error, String warning) {
+            assert error != null;
+            assert warning != null;
+
+            this.error = error;
+            this.warning = warning;
         }
 
         /**
@@ -145,34 +131,12 @@ public final class CustomElementNameValidator {
         }
 
         /**
-         * Set the result error message.
-         *
-         * @param error
-         *            error message
-         */
-        public void setError(String error) {
-            assert error != null;
-            this.error = error;
-        }
-
-        /**
          * Get the result warning.
          * 
          * @return warning message
          */
         public String getWarning() {
             return warning;
-        }
-
-        /**
-         * Set the result warning message.
-         * 
-         * @param warning
-         *            warning message
-         */
-        public void setWarning(String warning) {
-            assert warning != null;
-            this.warning = warning;
         }
 
         /**
