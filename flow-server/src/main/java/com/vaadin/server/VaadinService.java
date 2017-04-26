@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -124,6 +125,8 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<RequestHandler> requestHandlers;
 
+    private Iterable<BootstrapListener> bootstrapListeners;
+
     private boolean atmosphereAvailable = checkAtmosphereSupport();
 
     /**
@@ -195,6 +198,14 @@ public abstract class VaadinService implements Serializable {
         Collections.reverse(handlers);
 
         requestHandlers = Collections.unmodifiableCollection(handlers);
+
+        List<BootstrapListener> bootstrapListenersList = new LinkedList<>();
+        Iterator<BootstrapListener> bootstrapIterator = getBootstrapListeners();
+
+        bootstrapIterator.forEachRemaining(bootstrapListenersList::add);
+
+        bootstrapListeners = Collections
+                .unmodifiableCollection(bootstrapListenersList);
 
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
@@ -278,6 +289,21 @@ public abstract class VaadinService implements Serializable {
     protected Iterator<VaadinServiceInitListener> getServiceInitListeners() {
         ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader
                 .load(VaadinServiceInitListener.class, getClassLoader());
+        return loader.iterator();
+    }
+
+    /**
+     * Gets all available bootstrap listeners. A custom Vaadin service
+     * implementation can override this method to discover bootstrap listeners
+     * in some other way in addition to the default implementation that uses
+     * {@link ServiceLoader}. This could for example be used to allow defining
+     * an bootstrap listener as an OSGi service or as a Spring bean.
+     *
+     * @return an iterator of available service bootstrap listeners
+     */
+    protected Iterator<BootstrapListener> getBootstrapListeners() {
+        ServiceLoader<BootstrapListener> loader = ServiceLoader
+                .load(BootstrapListener.class, getClassLoader());
         return loader.iterator();
     }
 
@@ -431,6 +457,22 @@ public abstract class VaadinService implements Serializable {
             SessionDestroyListener listener) {
         sessionDestroyListeners.add(listener);
         return () -> sessionDestroyListeners.remove(listener);
+    }
+
+    /**
+     * Fires the
+     * {@link BootstrapListener#modifyBootstrapPage(BootstrapPageResponse)}
+     * event to all registered {@link BootstrapListener}. This is called
+     * internally when the bootstrap page is created, so listeners can intercept
+     * the creation and change the result HTML.
+     * 
+     * @param response
+     *            The object containing all relevant info needed by listeners to
+     *            change the bootstrap page.
+     */
+    public void modifyBootstrapPage(BootstrapPageResponse response) {
+        bootstrapListeners
+                .forEach(listener -> listener.modifyBootstrapPage(response));
     }
 
     /**

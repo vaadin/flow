@@ -5,7 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -170,14 +172,16 @@ public class BootstrapHandlerTest {
     private MockDeploymentConfiguration deploymentConfiguration;
 
     @Before
-    public void setup() {
+    public void setup() throws ServiceException {
         BootstrapHandler.clientEngineFile = "foobar";
         testUI = new TestUI();
         prerenderTestUI = new UI();
 
         deploymentConfiguration = new MockDeploymentConfiguration();
-        service = new VaadinServletService(new VaadinServlet(),
-                deploymentConfiguration);
+
+        service = Mockito.spy(new MockVaadinServletService(new VaadinServlet(),
+                deploymentConfiguration));
+
         session = new MockVaadinSession(service);
         session.lock();
         session.setConfiguration(deploymentConfiguration);
@@ -192,6 +196,12 @@ public class BootstrapHandlerTest {
 
     private void initUI(UI ui, VaadinRequest request) {
         this.request = request;
+        try {
+            service.init();
+        } catch (ServiceException e) {
+            throw new RuntimeException("Error initializing the VaadinService",
+                    e);
+        }
         ui.doInit(request, 0);
         context = new BootstrapContext(request, null, session, ui);
     }
@@ -564,6 +574,35 @@ public class BootstrapHandlerTest {
         assertEquals("body", body.tagName());
         assertEquals("html", body.parent().tagName());
         assertEquals(2, body.parent().childNodeSize());
+    }
+
+    @Test
+    public void testBootstrapListener() throws ServiceException {
+        List<BootstrapListener> listeners = new ArrayList<>(3);
+        listeners.add(evt -> {
+            evt.getDocument().head().getElementsByTag("script").remove();
+        });
+        listeners.add(evt -> {
+            evt.getDocument().head().appendElement("script").attr("src",
+                    "testing.1");
+        });
+        listeners.add(evt -> {
+            evt.getDocument().head().appendElement("script").attr("src",
+                    "testing.2");
+        });
+
+        Mockito.when(service.getBootstrapListeners())
+                .thenReturn(listeners.iterator());
+
+        initUI(testUI);
+
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, testUI));
+
+        Elements scripts = page.head().getElementsByTag("script");
+        assertEquals(2, scripts.size());
+        assertEquals("testing.1", scripts.get(0).attr("src"));
+        assertEquals("testing.2", scripts.get(1).attr("src"));
     }
 
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {
