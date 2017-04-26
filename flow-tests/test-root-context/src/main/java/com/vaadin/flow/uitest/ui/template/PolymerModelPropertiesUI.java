@@ -23,7 +23,6 @@ import com.vaadin.annotations.WebComponents;
 import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.AttachEvent;
 import com.vaadin.ui.ComponentEvent;
@@ -39,12 +38,6 @@ public class PolymerModelPropertiesUI extends UI {
                 boolean fromClient) {
             super(source, fromClient);
         }
-    }
-
-    public interface Message extends TemplateModel {
-        void setText(String text);
-
-        String getText();
     }
 
     @Tag("model-properties")

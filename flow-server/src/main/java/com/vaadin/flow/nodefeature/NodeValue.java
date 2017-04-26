@@ -69,8 +69,6 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
      *            the value to set
      */
     protected void setValue(T value) {
-        assert !(value instanceof StateNode) : "StateNode values not yet supported";
-
         if (!Objects.equals(value, this.value)) {
             markAsDirty();
 
@@ -117,7 +115,9 @@ public abstract class NodeValue<T extends Serializable> extends NodeFeature {
 
     @Override
     public void forEachChild(Consumer<StateNode> action) {
-        // NOP since we don't yet have a reason to support child values
+        if (getValue() instanceof StateNode) {
+            action.accept((StateNode) getValue());
+        }
     }
 
 }

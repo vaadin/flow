@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -59,14 +58,10 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  */
-public class Element implements Serializable {
+public class Element extends Node<Element> {
     private static final String EVENT_TYPE_MUST_NOT_BE_NULL = "Event type must not be null";
 
-    static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
-
     static final String ATTRIBUTE_NAME_CANNOT_BE_NULL = "The attribute name cannot be null";
-
-    static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
 
     // Can't set $name as a property, use $replacement instead.
     private static final Map<String, String> illegalPropertyReplacements = new HashMap<>();
@@ -80,9 +75,6 @@ public class Element implements Serializable {
                 "getParent().setProperty('innertHTML',value)");
     }
 
-    private final ElementStateProvider stateProvider;
-    private final StateNode node;
-
     private EventRegistrationHandle customElementCreationHandle;
 
     /**
@@ -94,18 +86,8 @@ public class Element implements Serializable {
      * @param stateProvider
      *            the state provider, not null
      */
-    private Element(StateNode node, ElementStateProvider stateProvider) {
-        assert node != null;
-        assert stateProvider != null;
-
-        if (!stateProvider.supports(node)) {
-            throw new IllegalArgumentException(
-                    stateProvider.getClass().getSimpleName()
-                            + " does not support the given state node");
-        }
-
-        this.stateProvider = stateProvider;
-        this.node = node;
+    protected Element(StateNode node, ElementStateProvider stateProvider) {
+        super(node, stateProvider);
 
         customElementCreationHandle = node.addAttachListener(new Command() {
             @Override
@@ -125,9 +107,9 @@ public class Element implements Serializable {
      *            can contain letters, numbers and dashes ({@literal -})
      */
     public Element(String tag) {
-        this(createStateNode(tag), BasicElementStateProvider.get());
-        assert node != null;
-        assert stateProvider != null;
+        super(createStateNode(tag), BasicElementStateProvider.get());
+        assert getNode() != null;
+        assert getStateProvider() != null;
     }
 
     /**
@@ -181,6 +163,54 @@ public class Element implements Serializable {
     }
 
     /**
+     * Gets the number of child elements.
+     * <p>
+     * If the property "innerHTML" has been set explicitly then its value (the
+     * new element structure) won't be populated on the server side and this
+     * method will return <code>0</code>.
+     *
+     * @see #setProperty(String, String)
+     * @return the number of child elements
+     */
+    @Override
+    public int getChildCount() {
+        return super.getChildCount();
+    }
+
+    /**
+     * Returns the child element at the given position.
+     * <p>
+     * If property "innerHTML" has been set explicitly then its value (the new
+     * element structure) won't be populated on the server side and this method
+     * will not work.
+     *
+     * @see #setProperty(String, String)
+     * @param index
+     *            the index of the child element to return
+     * @return the child element
+     */
+    @Override
+    public Element getChild(int index) {
+        return super.getChild(index);
+    }
+
+    /**
+     * Gets all the children of this element.
+     * <p>
+     * If property "innerHTML" has been set explicitly then its value (the new
+     * element structure) won't be populated on the server side and this method
+     * returns an empty stream.
+     * 
+     * @see #setProperty(String, String)
+     *
+     * @return a stream of children
+     */
+    @Override
+    public Stream<Element> getChildren() {
+        return super.getChildren();
+    }
+
+    /**
      * Creates a text node with the given text.
      *
      * @param text
@@ -211,34 +241,12 @@ public class Element implements Serializable {
     }
 
     /**
-     * Gets the node this element is connected to.
-     * <p>
-     * This method is meant for internal use only.
-     *
-     * @return the node for this element
-     */
-    public StateNode getNode() {
-        return node;
-    }
-
-    /**
-     * Gets the state provider for this element.
-     * <p>
-     * This method is meant for internal use only.
-     *
-     * @return the state provider for this element
-     */
-    public ElementStateProvider getStateProvider() {
-        return stateProvider;
-    }
-
-    /**
      * Gets the tag name for the element.
      *
      * @return the tag name
      */
     public String getTag() {
-        return stateProvider.getTag(getNode());
+        return getStateProvider().getTag(getNode());
     }
 
     /**
@@ -276,7 +284,8 @@ public class Element implements Serializable {
         if (customAttribute.isPresent()) {
             customAttribute.get().setAttribute(this, value);
         } else {
-            stateProvider.setAttribute(getNode(), lowerCaseAttribute, value);
+            getStateProvider().setAttribute(getNode(), lowerCaseAttribute,
+                    value);
         }
         return this;
     }
@@ -335,7 +344,7 @@ public class Element implements Serializable {
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
         if (!customAttribute.isPresent()) {
-            stateProvider.setAttribute(node, attribute, resource);
+            getStateProvider().setAttribute(getNode(), attribute, resource);
         } else {
             throw new IllegalArgumentException("Can't set " + attribute
                     + " to StreamResource value. This attribute has special semantic");
@@ -377,7 +386,7 @@ public class Element implements Serializable {
 
         return CustomAttribute.get(lowerCaseAttribute)
                 .map(attr -> attr.getAttribute(this))
-                .orElseGet(() -> stateProvider.getAttribute(getNode(),
+                .orElseGet(() -> getStateProvider().getAttribute(getNode(),
                         lowerCaseAttribute));
     }
 
@@ -406,7 +415,8 @@ public class Element implements Serializable {
         if (customAttribute.isPresent()) {
             return customAttribute.get().hasAttribute(this);
         } else {
-            return stateProvider.hasAttribute(getNode(), lowerCaseAttribute);
+            return getStateProvider().hasAttribute(getNode(),
+                    lowerCaseAttribute);
         }
 
     }
@@ -424,12 +434,12 @@ public class Element implements Serializable {
      * @return a stream of defined attribute names
      */
     public Stream<String> getAttributeNames() {
-        assert stateProvider.getAttributeNames(getNode())
+        assert getStateProvider().getAttributeNames(getNode())
                 .map(CustomAttribute::get).filter(Optional::isPresent)
                 .filter(attr -> attr.get().hasAttribute(this))
                 .count() == 0 : "Overlap between stored attributes and existing custom attributes";
 
-        Stream<String> regularNames = stateProvider
+        Stream<String> regularNames = getStateProvider()
                 .getAttributeNames(getNode());
 
         Stream<String> customNames = CustomAttribute.getNames().stream().filter(
@@ -464,7 +474,7 @@ public class Element implements Serializable {
         if (customAttribute.isPresent()) {
             customAttribute.get().removeAttribute(this);
         } else {
-            stateProvider.removeAttribute(getNode(), lowerCaseAttribute);
+            getStateProvider().removeAttribute(getNode(), lowerCaseAttribute);
         }
         return this;
     }
@@ -530,8 +540,8 @@ public class Element implements Serializable {
                     "The event data expressions array must not be null");
         }
 
-        return stateProvider.addEventListener(getNode(), eventType, listener,
-                eventDataExpressions);
+        return getStateProvider().addEventListener(getNode(), eventType,
+                listener, eventDataExpressions);
     }
 
     /**
@@ -542,7 +552,7 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element removeFromParent() {
-        Element parent = getParent();
+        Node<?> parent = getParentNode();
         if (parent != null) {
             parent.removeChild(this);
         }
@@ -551,239 +561,21 @@ public class Element implements Serializable {
 
     /**
      * Gets the parent element.
+     * <p>
+     * The method may return {@code null} if the parent is not an element but a
+     * {@link Node}.
+     * 
+     * @see #getParentNode()
      *
      * @return the parent element or null if this element does not have a parent
+     *         or the parent is not an element
      */
     public Element getParent() {
-        return stateProvider.getParent(getNode());
-    }
-
-    /**
-     * Gets the number of child elements.
-     * <p>
-     * If the property "innerHTML" has been set explicitly then its value (the
-     * new element structure) won't be populated on the server side and this
-     * method will return <code>0</code>.
-     *
-     * @see #setProperty(String, String)
-     * @return the number of child elements
-     */
-    public int getChildCount() {
-        return stateProvider.getChildCount(getNode());
-    }
-
-    /**
-     * Returns the child element at the given position.
-     * <p>
-     * If property "innerHTML" has been set explicitly then its value (the new
-     * element structure) won't be populated on the server side and this method
-     * will not work.
-     *
-     * @see #setProperty(String, String)
-     * @param index
-     *            the index of the child element to return
-     * @return the child element
-     */
-    public Element getChild(int index) {
-        if (index < 0 || index >= getChildCount()) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "get",
-                    index, getChildCount()));
+        Node<?> parent = getParentNode();
+        if (parent instanceof Element) {
+            return (Element) parent;
         }
-
-        return stateProvider.getChild(getNode(), index);
-    }
-
-    /**
-     * Gets all the children of this element.
-     * <p>
-     * If property "innerHTML" has been set explicitly then its value (the new
-     * element structure) won't be populated on the server side and this method
-     * returns an empty stream.
-     * 
-     * @see #setProperty(String, String)
-     *
-     * @return a stream of children
-     */
-    public Stream<Element> getChildren() {
-        return IntStream.range(0, getChildCount()).mapToObj(this::getChild);
-    }
-
-    /**
-     * Adds the given children as the last children of this element.
-     *
-     * @param children
-     *            the element(s) to add
-     * @return this element
-     */
-    public Element appendChild(Element... children) {
-        if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
-        }
-
-        insertChild(getChildCount(), children);
-
-        return this;
-    }
-
-    /**
-     * Inserts the given child element(s) at the given position.
-     *
-     * @param index
-     *            the position at which to insert the new child
-     * @param children
-     *            the child element(s) to insert
-     * @return this element
-     */
-    public Element insertChild(int index, Element... children) {
-        if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
-        }
-        if (index > getChildCount()) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "insert",
-                    index, getChildCount()));
-        }
-
-        for (int i = 0, insertIndex = index; i < children.length; i++, insertIndex++) {
-            Element child = children[i];
-            if (child == null) {
-                throw new IllegalArgumentException(
-                        "Element to insert must not be null");
-            }
-            if (equals(child.getParent())) {
-                int childIndex = indexOfChild(child);
-                if (childIndex == insertIndex) {
-                    // No-op of inserting to the current position
-                    continue;
-                } else if (childIndex < insertIndex) {
-                    // Adjust target index if the new child is already our
-                    // child,
-                    // and we will be removing it from before the target index
-                    insertIndex--;
-                }
-            }
-            child.removeFromParent();
-            stateProvider.insertChild(node, insertIndex, child);
-            assert Objects.equals(this, child
-                    .getParent()) : "Child should have this element as parent after being inserted";
-        }
-
-        return this;
-    }
-
-    /**
-     * Replaces the child at the given position with the given child element.
-     *
-     * @param index
-     *            the position of the child element to replace
-     * @param child
-     *            the child element to insert
-     * @return this element
-     */
-    public Element setChild(int index, Element child) {
-        if (child == null) {
-            throw new IllegalArgumentException("The child cannot be null");
-        }
-        int childCount = getChildCount();
-        if (index < 0) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set",
-                    index, getChildCount()));
-        } else if (index < childCount) {
-            if (getChild(index).equals(child)) {
-                // Already there
-                return this;
-            }
-            removeChild(index);
-            insertChild(index, child);
-        } else if (index == childCount) {
-            insertChild(index, child);
-        } else {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "set",
-                    index, getChildCount()));
-        }
-        return this;
-    }
-
-    /**
-     * Removes the given child element(s).
-     *
-     * @param children
-     *            the child element(s) to remove
-     * @return this element
-     */
-    public Element removeChild(Element... children) {
-        if (children == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
-        }
-
-        for (int i = 0; i < children.length; i++) {
-            if (!Objects.equals(children[i].getParent(), this)) {
-                throw new IllegalArgumentException(
-                        "The given element is not a child of this element");
-            }
-            stateProvider.removeChild(getNode(), children[i]);
-        }
-        return this;
-    }
-
-    /**
-     * Removes the child at the given index.
-     *
-     * @param index
-     *            the index of the child to remove
-     * @return this element
-     */
-    public Element removeChild(int index) {
-        if (index < 0 || index >= getChildCount()) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "remove",
-                    index, getChildCount()));
-
-        }
-
-        stateProvider.removeChild(getNode(), index);
-        return this;
-    }
-
-    /**
-     * Removes all child elements.
-     *
-     * @return this element
-     */
-    public Element removeAllChildren() {
-        stateProvider.removeAllChildren(getNode());
-
-        return this;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getNode(), stateProvider);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        Element other = (Element) obj;
-
-        // Constructors guarantee that neither getNode() nor stateProvider is
-        // null
-        return other.getNode().equals(getNode())
-                && other.stateProvider.equals(stateProvider);
+        return null;
     }
 
     /**
@@ -912,7 +704,7 @@ public class Element implements Serializable {
      */
     public EventRegistrationHandle addPropertyChangeListener(String name,
             PropertyChangeListener listener) {
-        return stateProvider.addPropertyChangeListener(getNode(), name,
+        return getStateProvider().addPropertyChangeListener(getNode(), name,
                 listener);
     }
 
@@ -922,7 +714,7 @@ public class Element implements Serializable {
         if ("innerHTML".equals(name)) {
             removeAllChildren();
         }
-        stateProvider.setProperty(getNode(), name, value, true);
+        getStateProvider().setProperty(getNode(), name, value, true);
 
         return this;
     }
@@ -1091,7 +883,7 @@ public class Element implements Serializable {
      * @return the raw property value, or <code>null</code>
      */
     public Serializable getPropertyRaw(String name) {
-        return stateProvider.getProperty(getNode(), name);
+        return getStateProvider().getProperty(getNode(), name);
     }
 
     /**
@@ -1107,7 +899,7 @@ public class Element implements Serializable {
      * @return this element
      */
     public Element removeProperty(String name) {
-        stateProvider.removeProperty(getNode(), name);
+        getStateProvider().removeProperty(getNode(), name);
         return this;
     }
 
@@ -1125,7 +917,7 @@ public class Element implements Serializable {
      *         <code>false</code>
      */
     public boolean hasProperty(String name) {
-        return stateProvider.hasProperty(getNode(), name);
+        return getStateProvider().hasProperty(getNode(), name);
     }
 
     /**
@@ -1139,7 +931,7 @@ public class Element implements Serializable {
      * @return a stream of defined property names
      */
     public Stream<String> getPropertyNames() {
-        return stateProvider.getPropertyNames(getNode());
+        return getStateProvider().getPropertyNames(getNode());
     }
 
     /**
@@ -1149,7 +941,7 @@ public class Element implements Serializable {
      *         <code>false</code>
      */
     public boolean isTextNode() {
-        return stateProvider.isTextNode(getNode());
+        return getStateProvider().isTextNode(getNode());
     }
 
     /**
@@ -1167,7 +959,7 @@ public class Element implements Serializable {
         }
 
         if (isTextNode()) {
-            stateProvider.setTextContent(getNode(), textContent);
+            getStateProvider().setTextContent(getNode(), textContent);
         } else {
             boolean hasText = !textContent.isEmpty();
             if (getChildCount() == 1 && getChild(0).isTextNode() && hasText) {
@@ -1222,7 +1014,7 @@ public class Element implements Serializable {
      */
     private String getTextContent(Predicate<? super Element> childFilter) {
         if (isTextNode()) {
-            return stateProvider.getTextContent(getNode());
+            return getStateProvider().getTextContent(getNode());
         } else {
             StringBuilder builder = new StringBuilder();
             appendTextContent(builder, childFilter);
@@ -1252,7 +1044,7 @@ public class Element implements Serializable {
      * @return a list of class names
      */
     public ClassList getClassList() {
-        return stateProvider.getClassList(getNode());
+        return getStateProvider().getClassList(getNode());
     }
 
     /**
@@ -1261,7 +1053,7 @@ public class Element implements Serializable {
      * @return the style object for the element
      */
     public Style getStyle() {
-        return stateProvider.getStyle(getNode());
+        return getStateProvider().getStyle(getNode());
     }
 
     /**
@@ -1306,7 +1098,7 @@ public class Element implements Serializable {
      */
     public Element addSynchronizedProperty(String property) {
         verifySetPropertyName(property);
-        stateProvider.getSynchronizedProperties(getNode()).add(property);
+        getStateProvider().getSynchronizedProperties(getNode()).add(property);
         return this;
     }
 
@@ -1326,7 +1118,8 @@ public class Element implements Serializable {
      */
     public Element addSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
-        stateProvider.getSynchronizedPropertyEvents(getNode()).add(eventType);
+        getStateProvider().getSynchronizedPropertyEvents(getNode())
+                .add(eventType);
         return this;
     }
 
@@ -1342,7 +1135,8 @@ public class Element implements Serializable {
      */
     public Element removeSynchronizedProperty(String property) {
         verifySetPropertyName(property);
-        stateProvider.getSynchronizedProperties(getNode()).remove(property);
+        getStateProvider().getSynchronizedProperties(getNode())
+                .remove(property);
         return this;
     }
 
@@ -1359,7 +1153,7 @@ public class Element implements Serializable {
      */
     public Element removeSynchronizedPropertyEvent(String eventType) {
         verifyEventType(eventType);
-        stateProvider.getSynchronizedPropertyEvents(getNode())
+        getStateProvider().getSynchronizedPropertyEvents(getNode())
                 .remove(eventType);
         return this;
     }
@@ -1374,7 +1168,7 @@ public class Element implements Serializable {
      * @return the property names which are synchronized
      */
     public Stream<String> getSynchronizedProperties() {
-        return stateProvider.getSynchronizedProperties(getNode()).stream();
+        return getStateProvider().getSynchronizedProperties(getNode()).stream();
     }
 
     /**
@@ -1387,32 +1181,8 @@ public class Element implements Serializable {
      *         property values to the server
      */
     public Stream<String> getSynchronizedPropertyEvents() {
-        return stateProvider.getSynchronizedPropertyEvents(getNode()).stream();
-    }
-
-    /**
-     * Returns the index of the specified {@code child} in the children list, or
-     * -1 if this list does not contain the {@code child}.
-     *
-     * @param child
-     *            the child element
-     * @return index of the {@code child} or -1 if it's not a child
-     */
-    public int indexOfChild(Element child) {
-        if (child == null) {
-            throw new IllegalArgumentException(
-                    "Child parameter cannot be null");
-        }
-        if (!equals(child.getParent())) {
-            return -1;
-        }
-        for (int i = 0; i < getChildCount(); i++) {
-            Element element = getChild(i);
-            if (element.equals(child)) {
-                return i;
-            }
-        }
-        return -1;
+        return getStateProvider().getSynchronizedPropertyEvents(getNode())
+                .stream();
     }
 
     /**
@@ -1422,7 +1192,7 @@ public class Element implements Serializable {
      *         been mapped to this element
      */
     public Optional<Component> getComponent() {
-        return stateProvider.getComponent(getNode());
+        return getStateProvider().getComponent(getNode());
     }
 
     private String validateAttribute(String attribute, Object value) {
@@ -1577,4 +1347,37 @@ public class Element implements Serializable {
         });
 
     }
+
+    /**
+     * Attaches shadow root node.
+     * 
+     * @return the attached shadow root
+     */
+    public ShadowRoot attachShadow() {
+        if (getShadowRoot().isPresent()) {
+            throw new IllegalStateException(
+                    "The element already has shadow root");
+        }
+        return ShadowRoot.get(getStateProvider().attachShadow(getNode()));
+    }
+
+    /**
+     * Gets the shadow root of the element, if any.
+     *
+     * @return an optional shadow root node, or an empty optional if no shadow
+     *         root has been attached
+     */
+    public Optional<ShadowRoot> getShadowRoot() {
+        StateNode shadowRoot = getStateProvider().getShadowRoot(getNode());
+        if (shadowRoot == null) {
+            return Optional.empty();
+        }
+        return Optional.of(ShadowRoot.get(shadowRoot));
+    }
+
+    @Override
+    protected Element getSelf() {
+        return this;
+    }
+
 }
