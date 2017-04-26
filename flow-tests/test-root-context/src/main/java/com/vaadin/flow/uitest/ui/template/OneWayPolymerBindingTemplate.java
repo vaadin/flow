@@ -25,7 +25,7 @@ import com.vaadin.flow.template.model.TemplateModel;
 /**
  * @author Vaadin Ltd.
  */
-@Tag("my-template")
+@Tag("my-one-way-template")
 @HtmlImport("/com/vaadin/flow/uitest/ui/template/OneWayPolymerBinding.html")
 public class OneWayPolymerBindingTemplate
         extends PolymerTemplate<OneWayPolymerBindingTemplate.MessageModel> {
