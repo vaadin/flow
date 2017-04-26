@@ -9,6 +9,7 @@ A shadow root can be created simply with the command:
 
 [source,java]
 ----
+Element element = new Element("custom-element");
 ShadowRoot shadowRoot = element.attachShadow();
 ----
 
@@ -28,10 +29,10 @@ encapsulated in the shadow tree of the hosting element.
 @Tag("my-label")
 public class MyLabel extends Component {
 
-    public Component() {
+    public MyLabel() {
         ShadowRoot shadowRoot = getElement().attachShadow();
         Label textLabel = new Label("In the shadow");
-        shadowRoot.appendElement(textLabel.getElement());
+        shadowRoot.appendChild(textLabel.getElement());
     }
 }
 ----
