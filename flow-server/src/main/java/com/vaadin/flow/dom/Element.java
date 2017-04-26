@@ -40,8 +40,6 @@ import com.vaadin.flow.nodefeature.TextNodeMap;
 import com.vaadin.flow.template.angular.AbstractElementTemplateNode;
 import com.vaadin.flow.template.angular.TemplateNode;
 import com.vaadin.flow.util.JavaScriptSemantics;
-import com.vaadin.server.Command;
-import com.vaadin.server.CustomElementRegistry;
 import com.vaadin.server.StreamResource;
 import com.vaadin.ui.Component;
 import com.vaadin.ui.ComponentUtil;
@@ -75,8 +73,6 @@ public class Element extends Node<Element> {
                 "getParent().setProperty('innertHTML',value)");
     }
 
-    private EventRegistrationHandle customElementCreationHandle;
-
     /**
      * Private constructor for initializing with an existing node and state
      * provider.
@@ -88,15 +84,6 @@ public class Element extends Node<Element> {
      */
     protected Element(StateNode node, ElementStateProvider stateProvider) {
         super(node, stateProvider);
-
-        customElementCreationHandle = node.addAttachListener(new Command() {
-            @Override
-            public void execute() {
-                CustomElementRegistry.getInstance()
-                        .wrapElementIfNeeded(Element.this);
-                customElementCreationHandle.remove();
-            }
-        });
     }
 
     /**

@@ -21,6 +21,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.server.Command;
+import com.vaadin.server.CustomElementRegistry;
 
 /**
  * A class representing a node in the DOM.
@@ -40,6 +42,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     private final ElementStateProvider stateProvider;
     private final StateNode node;
+
+    private EventRegistrationHandle customElementCreationHandle;
 
     /**
      * Private constructor for initializing with an existing node and state
@@ -62,6 +66,15 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
         this.stateProvider = stateProvider;
         this.node = node;
+
+        customElementCreationHandle = node.addAttachListener(new Command() {
+            @Override
+            public void execute() {
+                CustomElementRegistry.getInstance()
+                        .wrapElementIfNeeded(Node.this);
+                customElementCreationHandle.remove();
+            }
+        });
     }
 
     /**

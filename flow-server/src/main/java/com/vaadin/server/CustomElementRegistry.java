@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.impl.AbstractTextElementStateProvider;
 import com.vaadin.ui.Component;
 
@@ -96,15 +97,17 @@ public class CustomElementRegistry {
      * Creation and linking requires that a custom element has been registered
      * for the given element tag name.
      *
-     * @param element
+     * @param node
      *            element to check and wrap
      */
-    public void wrapElementIfNeeded(Element element) {
+    public void wrapElementIfNeeded(Node node) {
         // cancel wrap if AbstractTextElement as it doesn't support getTag()
-        if (element
+        if (node instanceof Element && node
                 .getStateProvider() instanceof AbstractTextElementStateProvider) {
             return;
         }
+
+        Element element = (Element) node;
 
         if (customElements.containsKey(element.getTag())
                 && !element.getComponent().isPresent()) {

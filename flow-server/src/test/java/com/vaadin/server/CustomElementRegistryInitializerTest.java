@@ -42,7 +42,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Test
-    public void testRegistrationOfACustomElementWithValidNameIsCollectedToTheRegistry() throws ServletException {
+    public void registeringACustomElementWithValidNameIsCollectedToTheRegistry() throws ServletException {
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class).collect(Collectors.toSet()),
@@ -53,7 +53,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Test(expected = InvalidCustomElementNameException.class)
-    public void testInvalidCustomElementNameThrowsException()
+    public void registeringCustomElementWithInvalidNameThrowsException()
             throws ServletException {
         // Invalid name should throw an exception due to not being supported
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
@@ -63,7 +63,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Test
-    public void testMultipleCustomElementsWithSameValidTagNameRegisterCorrectSuperClass()
+    public void multipleCustomElementsWithSameValidTagNameRegisterCorrectSuperClass()
             throws ServletException {
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
@@ -88,7 +88,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Test
-    public void testNonPolymerTemplateElementsAreNotRegistered()
+    public void nonPolymerTemplateElementsAreNotRegistered()
             throws ServletException {
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
@@ -100,7 +100,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Test
-    public void testCreationOfRegisteredCustomElementWiresComponentForElement()
+    public void creatingElementWithRegisteredCustomTagNameWiresComponentForElement()
             throws ServletException {
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(Stream
@@ -119,7 +119,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Test
-    public void testCreationOfRegisteredCustomElementGetsSuperClass()
+    public void creatingElementWithRegisteredCustomTagNameGetsSuperClassComponent()
             throws ServletException {
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
@@ -139,7 +139,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Test
-    public void testCreationOfMultipleRegisteredCustomElementsGetCorrectComponentWired()
+    public void creatingElementsWhenMultipleRegisteredCustomTagNamesInRegistryGetCorrectComponentWired()
             throws ServletException {
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
