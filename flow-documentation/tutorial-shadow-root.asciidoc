@@ -13,8 +13,8 @@ Element element = new Element("custom-element");
 ShadowRoot shadowRoot = element.attachShadow();
 ----
 
-Now the `element` will contain a shadow root that can be manipulated almost as a
-normal `Element`. One difference is that `ShadowRoot` doesn't itself support `attachShadow()`.
+A `ShadowRoot` is not an actual element and only supports child element handling
+and getting the host element which contains the shadow root.
 
 [NOTE]
 When adding a shadow root, any element added to the `ShadowRoot` parent will not be visible if the `ShadowRoot`
