@@ -15,23 +15,13 @@
   -->
 <link rel="import" href="/v2/bower_components/polymer/polymer.html">
 
-<dom-module id="my-one-way-template">
+<dom-module id="upgrade-element">
     <template>
-        <div id="messageDiv">[[message]]</div>
-        <div id="titleDiv">[[title]]</div>
-        <button on-click="changeModelValue" id="changeModelValue">Change model value</button>
-
-        <template is="dom-if" if="[[!title]]">
-            <div id="titleDivConditional"></div>
-        </template>
-        <template is="dom-if" if="[[!nonExistingProperty]]">
-            <div id="nonExistingProperty"></div>
-        </template>
+        <input id="input" value="{{text::input}}" on-change="valueUpdated">
     </template>
     <script>
         class MyTemplate extends Polymer.Element {
-            static get is() { return 'my-one-way-template' }
+            static get is() { return 'upgrade-element' }
         }
-        customElements.define(MyTemplate.is, MyTemplate);
     </script>
 </dom-module>

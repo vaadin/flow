@@ -101,7 +101,7 @@ public abstract class Component implements HasElement, Serializable,
         if (elementToMapTo.get() != null) {
             mapToElement(tagName);
         } else {
-            Element e = new Element(tagName);
+            Element e = new Element(tagName, false);
             setElement(this, e);
         }
     }

@@ -16,7 +16,7 @@
 package com.vaadin.flow.dom.impl;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.TextNodeMap;
@@ -81,8 +81,9 @@ public class BasicTextElementStateProvider
         node.getFeature(TextNodeMap.class).setText(textContent);
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Element getParent(StateNode node) {
+    public Node getParent(StateNode node) {
         return BasicElementStateProvider.get().getParent(node);
     }
 
