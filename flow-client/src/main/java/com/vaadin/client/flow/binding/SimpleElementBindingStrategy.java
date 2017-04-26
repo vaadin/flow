@@ -192,34 +192,52 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private native void bindPolymerPropertyChangeListener(StateNode node,
             Element element)
     /*-{
-      var originalFunction = element._propertiesChanged;
-      var readyFunction = element.ready;
-      if (!originalFunction || !readyFunction) {
-        // Ignore since this isn't a polymer element
-        return;
+      var handlePropertiesFunction = function(strategy,ready){
+          var originalFunction = element._propertiesChanged;
+          var readyFunction = element.ready;
+          if (!originalFunction || !readyFunction) {
+            // Ignore since this isn't a polymer element
+            return;
+          }
+          var isReady = ready;
+          element._propertiesChanged = function(currentProps, changedProps, oldProps) {
+            originalFunction.apply(this, arguments);
+            if ( isReady ){
+                // don't send default values to the server (they are set during 
+                // the first 'ready' method call). We always set model default 
+                // values from the server side explicitly. So server always overrides 
+                // polymer default values.
+                $entry(function() {
+                  strategy.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
+                })();
+             }
+          };
+          if ( !isReady ){
+              element.ready = function(){
+                  try {
+                      readyFunction.apply(this);
+                  }
+                  finally {
+                      isReady = true;
+                  }
+              };
+          }
       }
-      var self = this;
-      var isReady = false;
-      element._propertiesChanged = function(currentProps, changedProps, oldProps) {
-        originalFunction.apply(this, arguments);
-        if ( isReady ){
-            // don't send default values to the server (they are set during 
-            // the first 'ready' method call). We always set model default 
-            // values from the server side explicitly. So server always overrides 
-            // polymer default values.
-            $entry(function() {
-              self.@SimpleElementBindingStrategy::handlePropertiesChanged(*)(changedProps, node);
-            })();
-         }
-      };
-      element.ready = function(){
+      if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ){
+          handlePropertiesFunction(this, false);
+      }
+      else if ($wnd.customElements && element.localName.includes('-')){
+          var self = this;
+          var callback = function (){
+              handlePropertiesFunction(self, true);
+          };
           try {
-              readyFunction.apply(this);
+              $wnd.customElements.whenDefined(element.localName).then( callback );
           }
-          finally {
-              isReady = true;
-          }
-      };
+          catch (e){
+              // ignore the exception: the element cannot be a custom element
+          }    
+      }
     }-*/;
 
     private void handlePropertiesChanged(
