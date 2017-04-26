@@ -18,7 +18,7 @@ package com.vaadin.flow.dom.impl;
 import java.util.Optional;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.template.angular.TextTemplateNode;
 import com.vaadin.ui.Component;
@@ -68,8 +68,9 @@ public class TemplateTextElementStateProvider
                 "Cannot modify text node defined in a template");
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Element getParent(StateNode node) {
+    public Node getParent(StateNode node) {
         return TemplateElementStateProvider.getParent(node, templateNode);
     }
 
