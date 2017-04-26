@@ -44,8 +44,6 @@ public class BootstrapPageResponse extends BootstrapResponse {
      *            the Vaadin response that contains the bootstrap page.
      * @param document
      *            the DOM document making up the HTML page.
-     * @param headers
-     *            a map into which header data can be added.
      * @param ui
      *            the UI for the bootstrap.
      */

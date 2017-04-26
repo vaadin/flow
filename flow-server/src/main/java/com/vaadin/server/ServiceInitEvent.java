@@ -34,6 +34,7 @@ import java.util.Objects;
 public class ServiceInitEvent extends EventObject {
 
     private List<RequestHandler> addedRequestHandlers = new ArrayList<>();
+    private List<BootstrapListener> addedBootstrapListeners = new ArrayList<>();
 
     /**
      * Creates a new service init event for a given {@link VaadinService} and
@@ -62,6 +63,20 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
+     * Adds a new bootstrap listener that will be used by this service. The
+     * ordering of multiple added bootstrap listeners is not guaranteed.
+     *
+     * @param bootstrapListener
+     *            the bootstrap listener to add, not <code>null</code>
+     */
+    public void addBootstrapListener(BootstrapListener bootstrapListener) {
+        Objects.requireNonNull(bootstrapListener,
+                "Bootstrap listener cannot be null");
+
+        addedBootstrapListeners.add(bootstrapListener);
+    }
+
+    /**
      * Gets an unmodifiable list of all custom request handlers that have been
      * added for the service.
      *
@@ -69,6 +84,16 @@ public class ServiceInitEvent extends EventObject {
      */
     public List<RequestHandler> getAddedRequestHandlers() {
         return Collections.unmodifiableList(addedRequestHandlers);
+    }
+
+    /**
+     * Gets an unmodifiable list of all bootstrap listeners that have been added
+     * for the service.
+     *
+     * @return the current list of added bootstrap listeners
+     */
+    public List<BootstrapListener> getAddedBootstrapListeners() {
+        return Collections.unmodifiableList(addedBootstrapListeners);
     }
 
     @Override

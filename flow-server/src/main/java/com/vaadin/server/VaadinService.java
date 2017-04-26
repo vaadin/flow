@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -199,10 +198,8 @@ public abstract class VaadinService implements Serializable {
 
         requestHandlers = Collections.unmodifiableCollection(handlers);
 
-        List<BootstrapListener> bootstrapListenersList = new LinkedList<>();
-        Iterator<BootstrapListener> bootstrapIterator = getBootstrapListeners();
-
-        bootstrapIterator.forEachRemaining(bootstrapListenersList::add);
+        List<BootstrapListener> bootstrapListenersList = createBootstrapListeners(
+                new ArrayList<>(event.getAddedBootstrapListeners()));
 
         bootstrapListeners = Collections
                 .unmodifiableCollection(bootstrapListenersList);
@@ -298,13 +295,25 @@ public abstract class VaadinService implements Serializable {
      * in some other way in addition to the default implementation that uses
      * {@link ServiceLoader}. This could for example be used to allow defining
      * an bootstrap listener as an OSGi service or as a Spring bean.
+     * <p>
+     * The default implementation just returns the same listeners received as
+     * parameter.
+     * <p>
+     * The order of the listeners inside the list defines the order of the
+     * execution of those listeners at the
+     * {@link #modifyBootstrapPage(BootstrapPageResponse)} method.
      *
-     * @return an iterator of available service bootstrap listeners
+     * @param defaultListeners
+     *            A list with the listeners loaded by the ServiceLoader
+     *            mechanism. This list is safe to be changed and returned if
+     *            needed.
+     *
+     * @return the list of all available service bootstrap listeners.
      */
-    protected Iterator<BootstrapListener> getBootstrapListeners() {
-        ServiceLoader<BootstrapListener> loader = ServiceLoader
-                .load(BootstrapListener.class, getClassLoader());
-        return loader.iterator();
+    protected List<BootstrapListener> createBootstrapListeners(
+            List<BootstrapListener> defaultListeners) {
+        assert defaultListeners != null;
+        return defaultListeners;
     }
 
     /**
