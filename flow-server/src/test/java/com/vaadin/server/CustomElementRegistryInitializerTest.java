@@ -27,7 +27,6 @@ import com.vaadin.annotations.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
-import com.vaadin.ui.UI;
 
 /**
  * Test that correct @Tag custom elements get loaded by the initializer loader.
@@ -37,12 +36,11 @@ public class CustomElementRegistryInitializerTest {
     @Before
     public void setup() {
         CustomElementRegistry.getInstance().initialized = false;
-        UI ui = new UI();
-        UI.setCurrent(ui);
     }
 
     @Test
-    public void registeringACustomElementWithValidNameIsCollectedToTheRegistry() throws ServletException {
+    public void registeringACustomElementWithValidNameIsCollectedToTheRegistry()
+            throws ServletException {
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class).collect(Collectors.toSet()),
@@ -109,13 +107,12 @@ public class CustomElementRegistryInitializerTest {
 
         Element polymerElement = new Element("custom-polymer-element");
 
-        UI.getCurrent().getElement().appendChild(polymerElement);
-
         Assert.assertTrue("Element didn't have a Component",
                 polymerElement.getComponent().isPresent());
 
-        Assert.assertTrue("Element got unexpected Component", polymerElement
-                .getComponent().get().getClass().equals(CustomPolymerElement.class));
+        Assert.assertTrue("Element got unexpected Component",
+                polymerElement.getComponent().get().getClass()
+                        .equals(CustomPolymerElement.class));
     }
 
     @Test
@@ -129,13 +126,12 @@ public class CustomElementRegistryInitializerTest {
 
         Element element = new Element("custom-element");
 
-        UI.getCurrent().getElement().appendChild(element);
-
         Assert.assertTrue("Element didn't have a Component",
                 element.getComponent().isPresent());
 
         Assert.assertTrue("Element got unexpected Component",
-                element.getComponent().get().getClass().equals(ValidCustomElement.class));
+                element.getComponent().get().getClass()
+                        .equals(ValidCustomElement.class));
     }
 
     @Test
@@ -149,25 +145,21 @@ public class CustomElementRegistryInitializerTest {
 
         Element customElement = new Element("custom-element");
 
-        UI.getCurrent().getElement().appendChild(customElement);
-
         Assert.assertTrue("CustomElement didn't have a Component",
                 customElement.getComponent().isPresent());
 
         Assert.assertTrue("CustomElement got unexpected Component",
-                customElement.getComponent()
-                        .get().getClass().equals(ValidCustomElement.class));
+                customElement.getComponent().get().getClass()
+                        .equals(ValidCustomElement.class));
 
         Element polymerElement = new Element("custom-polymer-element");
-
-        UI.getCurrent().getElement().appendChild(polymerElement);
 
         Assert.assertTrue("PolymerElement didn't have a Component",
                 polymerElement.getComponent().isPresent());
 
         Assert.assertTrue("PolymerElement got unexpected Component",
-                polymerElement.getComponent()
-                        .get().getClass().equals(CustomPolymerElement.class));
+                polymerElement.getComponent().get().getClass()
+                        .equals(CustomPolymerElement.class));
     }
 
     @Tag("custom-element")
