@@ -126,7 +126,8 @@ public interface ElementStateProvider extends Serializable {
      *            the node containing the data
      * @return the parent element or null if the element has no parent
      */
-    Element getParent(StateNode node);
+    @SuppressWarnings("rawtypes")
+    Node getParent(StateNode node);
 
     /**
      * Gets the number of child elements.
@@ -376,5 +377,23 @@ public interface ElementStateProvider extends Serializable {
      */
     EventRegistrationHandle addPropertyChangeListener(StateNode node,
             String name, PropertyChangeListener listener);
+
+    /**
+     * Gets shadow root for the {@code node} if it has been attached.
+     * 
+     * @param node
+     *            the node having a shadow root, not {@code null}
+     * @return the shadow root of the {@code node}, may be null
+     */
+    StateNode getShadowRoot(StateNode node);
+
+    /**
+     * Attaches the shadow root for the {@code node}.
+     * 
+     * @param node
+     *            the node to attach the shadow root
+     * @return the shadow root of the {@code node}
+     */
+    StateNode attachShadow(StateNode node);
 
 }
