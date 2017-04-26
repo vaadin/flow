@@ -360,7 +360,7 @@ prefix. For example:
 mvn jetty:run -Dvaadin.frontend.url.es6=http://mydomain.com/es6/ -Dvaadin.frontend.url.es5=http://mydomain.com/es5/
 ----
 
-You can also set those properties as Servlet init params. You can use the traditional `web.xml` file or the Servlet 3.0 `@WebServlet` annotation.
+You can also set those properties as Servlet init params. You can use the traditional `web.xml` file or the Servlet 3.0 `@WebServlet` annotation:
 
 [source,es6]
 ----
@@ -372,7 +372,7 @@ public class MyServlet extends VaadinServlet {
 }
 ----
 
-Or:
+Or when using the `web.xml` file:
 
 [source,xml]
 ----
