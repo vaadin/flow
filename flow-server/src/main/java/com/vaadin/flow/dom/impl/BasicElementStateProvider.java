@@ -27,10 +27,9 @@ import java.util.stream.Stream;
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.EventRegistrationHandle;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
@@ -46,6 +45,7 @@ import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ParentGeneratorHolder;
 import com.vaadin.flow.nodefeature.PolymerEventListenerMap;
 import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
+import com.vaadin.flow.nodefeature.ShadowRootData;
 import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.template.angular.AbstractControlTemplateNode;
@@ -63,7 +63,7 @@ import com.vaadin.server.StreamResource;
  *
  * @author Vaadin Ltd
  */
-public class BasicElementStateProvider implements ElementStateProvider {
+public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     private static BasicElementStateProvider instance = new BasicElementStateProvider();
 
@@ -75,7 +75,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
             ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
             SynchronizedPropertyEventsList.class, ComponentMapping.class,
             ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
-            ClientDelegateHandlers.class, PolymerEventListenerMap.class };
+            ClientDelegateHandlers.class, PolymerEventListenerMap.class,
+            ShadowRootData.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -108,16 +109,10 @@ public class BasicElementStateProvider implements ElementStateProvider {
 
     @Override
     public boolean supports(StateNode node) {
-        for (Class<? extends NodeFeature> nsClass : features) {
-            if (!node.hasFeature(nsClass)) {
-                return false;
-            }
-        }
-        if (node.getFeature(ElementData.class).getTag() == null) {
+        if (!super.supports(node)) {
             return false;
         }
-
-        return true;
+        return node.getFeature(ElementData.class).getTag() != null;
     }
 
     @Override
@@ -147,18 +142,6 @@ public class BasicElementStateProvider implements ElementStateProvider {
      */
     private static ElementAttributeMap getAttributeFeature(StateNode node) {
         return node.getFeature(ElementAttributeMap.class);
-    }
-
-    /**
-     * Gets the children data feature for the given node and asserts it is
-     * non-null.
-     *
-     * @param node
-     *            the node
-     * @return the children feature
-     */
-    private static ElementChildrenList getChildrenFeature(StateNode node) {
-        return node.getFeature(ElementChildrenList.class);
     }
 
     /**
@@ -210,8 +193,9 @@ public class BasicElementStateProvider implements ElementStateProvider {
         return getAttributeFeature(node).attributes();
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Element getParent(StateNode node) {
+    public Node getParent(StateNode node) {
         StateNode parentNode = node.getParent();
         if (parentNode == null) {
             return null;
@@ -225,52 +209,7 @@ public class BasicElementStateProvider implements ElementStateProvider {
             return parentGenerator.get().getParentElement(node);
         }
 
-        return Element.get(parentNode);
-    }
-
-    @Override
-    public int getChildCount(StateNode node) {
-        return getChildrenFeature(node).size();
-    }
-
-    @Override
-    public Element getChild(StateNode node, int index) {
-        assert index >= 0;
-        assert index < getChildCount(node);
-
-        return Element.get(getChildrenFeature(node).get(index));
-    }
-
-    @Override
-    public void insertChild(StateNode node, int index, Element child) {
-        assert index >= 0;
-        assert index <= getChildCount(node); // == if adding as last
-
-        getChildrenFeature(node).add(index, child.getNode());
-    }
-
-    @Override
-    public void removeChild(StateNode node, int index) {
-        assert index >= 0;
-        assert index < getChildCount(node);
-
-        getChildrenFeature(node).remove(index);
-    }
-
-    @Override
-    public void removeAllChildren(StateNode node) {
-        getChildrenFeature(node).clear();
-    }
-
-    @Override
-    public void removeChild(StateNode node, Element child) {
-        ElementChildrenList childrenFeature = getChildrenFeature(node);
-        int pos = childrenFeature.indexOf(child.getNode());
-        if (pos == -1) {
-            throw new IllegalArgumentException("Not in the list");
-        }
-        childrenFeature.remove(pos);
-
+        return super.getParent(node);
     }
 
     @Override
@@ -289,7 +228,8 @@ public class BasicElementStateProvider implements ElementStateProvider {
      * @return an unmodifiable collection of feature classes
      */
     public static Collection<Class<? extends NodeFeature>> getFeatures() {
-        return Collections.unmodifiableCollection(Arrays.asList(features));
+        return Collections.unmodifiableCollection(Arrays
+                .asList(BasicElementStateProvider.get().getProviderFeatures()));
     }
 
     @Override
@@ -385,4 +325,19 @@ public class BasicElementStateProvider implements ElementStateProvider {
                 listener);
     }
 
+    @Override
+    protected Class<? extends NodeFeature>[] getProviderFeatures() {
+        return features;
+    }
+
+    @Override
+    public StateNode getShadowRoot(StateNode node) {
+        return node.getFeature(ShadowRootData.class).getShadowRoot();
+    }
+
+    @Override
+    public StateNode attachShadow(StateNode node) {
+        assert getShadowRoot(node) == null;
+        return ShadowRootStateProvider.get().createShadowRootNode(node);
+    }
 }

@@ -16,32 +16,61 @@
 package com.vaadin.flow.dom.impl;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.event.PropertyChangeListener;
+import com.vaadin.flow.nodefeature.ElementChildrenList;
+import com.vaadin.flow.nodefeature.NodeFeature;
+import com.vaadin.flow.nodefeature.ShadowRootData;
+import com.vaadin.flow.nodefeature.ShadowRootHost;
 import com.vaadin.server.StreamResource;
 
 /**
- * Abstract element state provider for text nodes. Operations that are not
- * applicable for text nodes throw {@link UnsupportedOperationException}.
- *
+ * Implementation which handles shadow root nodes.
+ * <p>
+ * Only the methods implemented in the {@link AbstractNodeStateProvider} are
+ * supported (related to the composition).
+ * <p>
+ * The data is stored directly in the state node but this should be considered
+ * an implementation detail which can change.
+ * 
  * @author Vaadin Ltd
+ *
  */
-public abstract class AbstractTextElementStateProvider
-        implements ElementStateProvider {
+public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
-    @Override
-    public boolean isTextNode(StateNode node) {
-        return true;
+    private static final ShadowRootStateProvider INSTANCE = new ShadowRootStateProvider();
+
+    @SuppressWarnings("unchecked")
+    private static final Class<? extends NodeFeature>[] FEATURES = new Class[] {
+            ElementChildrenList.class, ShadowRootHost.class };
+
+    /**
+     * Gets the one and only instance.
+     *
+     * @return the instance to use for shadow root nodes
+     */
+    public static ShadowRootStateProvider get() {
+        return INSTANCE;
+    }
+
+    /**
+     * Create a new shadow root node for the given element {@code node}.
+     * 
+     * @param node
+     *            the node to create the shadow root for
+     * @return the shadow root node
+     */
+    public StateNode createShadowRootNode(StateNode node) {
+        StateNode shadowRoot = new StateNode(getProviderFeatures());
+        node.getFeature(ShadowRootData.class).setShadowRoot(shadowRoot);
+        return shadowRoot;
     }
 
     @Override
@@ -55,13 +84,19 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
+    public void setAttribute(StateNode node, String attribute,
+            StreamResource resource) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public String getAttribute(StateNode node, String attribute) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean hasAttribute(StateNode node, String attribute) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -71,36 +106,6 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public Stream<String> getAttributeNames(StateNode node) {
-        return Stream.empty();
-    }
-
-    @Override
-    public int getChildCount(StateNode node) {
-        return 0;
-    }
-
-    @Override
-    public Element getChild(StateNode node, int index) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void insertChild(StateNode node, int index, Element child) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removeChild(StateNode node, int index) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removeChild(StateNode node, Element child) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void removeAllChildren(StateNode node) {
         throw new UnsupportedOperationException();
     }
 
@@ -113,7 +118,7 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public Serializable getProperty(StateNode node, String name) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -129,22 +134,37 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public boolean hasProperty(StateNode node, String name) {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Stream<String> getPropertyNames(StateNode node) {
-        return Stream.empty();
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isTextNode(StateNode node) {
+        return false;
+    }
+
+    @Override
+    public String getTextContent(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setTextContent(StateNode node, String textContent) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ClassList getClassList(StateNode node) {
-        return new ImmutableClassList(Collections.emptyList());
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Style getStyle(StateNode node) {
-        return new ImmutableEmptyStyle();
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -158,12 +178,6 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
-    public void setAttribute(StateNode node, String attribute,
-            StreamResource resource) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public EventRegistrationHandle addPropertyChangeListener(StateNode node,
             String name, PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
@@ -171,11 +185,17 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public StateNode getShadowRoot(StateNode node) {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public StateNode attachShadow(StateNode node) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    protected Class<? extends NodeFeature>[] getProviderFeatures() {
+        return FEATURES;
+    }
+
 }

@@ -102,7 +102,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
      */
     private static class BindingContext {
 
-        private final Element element;
+        private final Node htmlNode;
         private final StateNode node;
         private final BinderContext binderContext;
 
@@ -114,10 +114,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         private final JsSet<EventRemover> synchronizedPropertyEventListeners = JsCollections
                 .set();
 
-        private BindingContext(StateNode node, Element element,
+        private BindingContext(StateNode node, Node htmlNode,
                 BinderContext binderContext) {
             this.node = node;
-            this.element = element;
+            this.htmlNode = htmlNode;
             this.binderContext = binderContext;
         }
     }
@@ -182,6 +182,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         listeners.push(bindPolymerEventHandlerNames(context));
 
         listeners.push(bindClientDelegateMethods(context));
+
+        listeners.push(bindShadowRoot(context));
 
         bindModelProperties(stateNode, htmlNode);
         bindPolymerPropertyChangeListener(stateNode, htmlNode);
@@ -278,6 +280,32 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
 
         mapProperty.syncToServer(valueProvider.get());
+    }
+
+    private EventRemover bindShadowRoot(BindingContext context) {
+        assert context.htmlNode instanceof Element : "Cannot bind shadow root to a Node";
+        NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+
+        attachShadow(context);
+
+        return map.addPropertyAddListener(event -> Reactive
+                .addFlushListener(() -> attachShadow(context)));
+    }
+
+    private void attachShadow(BindingContext context) {
+        NodeMap map = context.node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+        StateNode shadowRootNode = (StateNode) map
+                .getProperty(NodeFeatures.SHADOW_ROOT).getValue();
+        if (shadowRootNode != null) {
+            NativeFunction function = NativeFunction.create("element",
+                    "if ( element.shadowRoot ) { return element.shadowRoot; } "
+                            + "else { return element.attachShadow({'mode' : 'open'});}");
+            Node shadowRoot = (Node) function.call(null, context.htmlNode);
+
+            BindingContext newContext = new BindingContext(shadowRootNode,
+                    shadowRoot, context.binderContext);
+            bindChildren(newContext);
+        }
     }
 
     private void bindModelProperties(StateNode stateNode, Element htmlNode) {
@@ -469,7 +497,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         for (int i = 0; i < propertyEvents.length(); i++) {
             String eventType = propertyEvents.get(i).toString();
-            EventRemover remover = context.element.addEventListener(eventType,
+            EventRemover remover = context.htmlNode.addEventListener(eventType,
                     event -> handlePropertySyncDomEvent(context), false);
             context.synchronizedPropertyEventListeners.add(remover);
         }
@@ -496,7 +524,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
      */
     private void syncPropertyIfNeeded(String propertyName,
             BindingContext context) {
-        Object currentValue = WidgetUtil.getJsProperty(context.element,
+        Object currentValue = WidgetUtil.getJsProperty(context.htmlNode,
                 propertyName);
 
         context.node.getMap(NodeFeatures.ELEMENT_PROPERTIES)
@@ -511,7 +539,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             Node child = context.binderContext.createAndBind(childNode);
 
-            DomApi.wrap(context.element).appendChild(child);
+            DomApi.wrap(context.htmlNode).appendChild(child);
         }
 
         return children.addSpliceListener(e -> {
@@ -534,15 +562,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             assert child != null : "Can't find element to remove";
 
             assert DomApi.wrap(child)
-                    .getParentNode() == context.element : "Invalid element parent";
+                    .getParentNode() == context.htmlNode : "Invalid element parent";
 
-            DomApi.wrap(context.element).removeChild(child);
+            DomApi.wrap(context.htmlNode).removeChild(child);
         }
 
         JsArray<?> add = event.getAdd();
         if (add.length() != 0) {
             int insertIndex = event.getIndex();
-            JsArray<Node> childNodes = DomApi.wrap(context.element)
+            JsArray<Node> childNodes = DomApi.wrap(context.htmlNode)
                     .getChildNodes();
 
             Node beforeRef;
@@ -559,7 +587,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 Node childNode = context.binderContext
                         .createAndBind((StateNode) newChildObject);
 
-                DomApi.wrap(context.element).insertBefore(childNode, beforeRef);
+                DomApi.wrap(context.htmlNode).insertBefore(childNode,
+                        beforeRef);
 
                 beforeRef = DomApi.wrap(childNode).getNextSibling();
             }
@@ -627,8 +656,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     private void addEventHandler(String eventType, BindingContext context) {
         assert !context.listenerRemovers.has(eventType);
 
-        EventRemover remover = context.element.addEventListener(eventType,
-                event -> handleDomEvent(event, context.element, context.node),
+        EventRemover remover = context.htmlNode.addEventListener(eventType,
+                event -> handleDomEvent(event, context.htmlNode, context.node),
                 false);
 
         context.listenerRemovers.set(eventType, remover);
@@ -638,7 +667,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return node.getMap(NodeFeatures.ELEMENT_LISTENERS);
     }
 
-    private void handleDomEvent(Event event, Element element, StateNode node) {
+    private void handleDomEvent(Event event, Node element, StateNode node) {
+        assert element instanceof Element : "Cannot handle DOM event for a Node";
         String type = event.getType();
 
         NodeMap listenerMap = getDomEventListenerMap(node);
@@ -666,7 +696,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 EventDataExpression expression = getOrCreateExpression(
                         expressionString);
 
-                JsonValue expressionValue = expression.evaluate(event, element);
+                JsonValue expressionValue = expression.evaluate(event,
+                        (Element) element);
 
                 eventData.put(expressionString, expressionValue);
             }
@@ -700,13 +731,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     private EventRemover bindPolymerEventHandlerNames(BindingContext context) {
         return ServerEventHandlerBinder.bindServerEventHandlerNames(
-                () -> WidgetUtil.crazyJsoCast(context.element), context.node,
+                () -> WidgetUtil.crazyJsoCast(context.htmlNode), context.node,
                 NodeFeatures.POLYMER_SERVER_EVENT_HANDLERS);
     }
 
     private EventRemover bindClientDelegateMethods(BindingContext context) {
-        return ServerEventHandlerBinder
-                .bindServerEventHandlerNames(context.element, context.node);
+        assert context.htmlNode instanceof Element : "Cannot bind client delegate methods to a Node";
+        return ServerEventHandlerBinder.bindServerEventHandlerNames(
+                (Element) context.htmlNode, context.node);
     }
 
     private static EventDataExpression getOrCreateExpression(
