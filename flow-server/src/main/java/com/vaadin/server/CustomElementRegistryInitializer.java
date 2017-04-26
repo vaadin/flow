@@ -47,7 +47,7 @@ public class CustomElementRegistryInitializer
         customElements = new HashMap<>();
         set.forEach(this::processComponentClass);
 
-        if (!elementRegistry.initialized) {
+        if (!elementRegistry.isInitialized()) {
             elementRegistry.setCustomElements(customElements);
         }
     }

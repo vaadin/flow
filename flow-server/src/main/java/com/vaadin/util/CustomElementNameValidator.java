@@ -15,6 +15,7 @@
  */
 package com.vaadin.util;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -53,7 +54,7 @@ public final class CustomElementNameValidator {
         String result = "";
         if (name == null || name.isEmpty()) {
             result = "Missing element name.";
-        } else if (!name.equals(name.toLowerCase())) {
+        } else if (!name.equals(name.toLowerCase(Locale.ENGLISH))) {
             result = "Custom element names must not contain uppercase ASCII characters.";
         } else if (!name.contains("-")) {
             result = "Custom element names must contain a hyphen. Example: unicorn-cake";

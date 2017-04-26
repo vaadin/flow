@@ -42,7 +42,7 @@ public class CustomElementRegistryInitializerTest {
     }
 
     @Test
-    public void testValidCustomElementIsRegistered() throws ServletException {
+    public void testRegistrationOfACustomElementWithValidNameIsCollectedToTheRegistry() throws ServletException {
         CustomElementRegistryInitializer customElementRegistryInitializer = new CustomElementRegistryInitializer();
         customElementRegistryInitializer.onStartup(
                 Stream.of(ValidCustomElement.class).collect(Collectors.toSet()),
@@ -115,7 +115,7 @@ public class CustomElementRegistryInitializerTest {
                 polymerElement.getComponent().isPresent());
 
         Assert.assertTrue("Element got unexpected Component", polymerElement
-                .getComponent().get() instanceof CustomPolymerElement);
+                .getComponent().get().getClass().equals(CustomPolymerElement.class));
     }
 
     @Test
@@ -135,7 +135,7 @@ public class CustomElementRegistryInitializerTest {
                 element.getComponent().isPresent());
 
         Assert.assertTrue("Element got unexpected Component",
-                element.getComponent().get() instanceof ValidCustomElement);
+                element.getComponent().get().getClass().equals(ValidCustomElement.class));
     }
 
     @Test
@@ -156,7 +156,7 @@ public class CustomElementRegistryInitializerTest {
 
         Assert.assertTrue("CustomElement got unexpected Component",
                 customElement.getComponent()
-                        .get() instanceof ValidCustomElement);
+                        .get().getClass().equals(ValidCustomElement.class));
 
         Element polymerElement = new Element("custom-polymer-element");
 
@@ -167,7 +167,7 @@ public class CustomElementRegistryInitializerTest {
 
         Assert.assertTrue("PolymerElement got unexpected Component",
                 polymerElement.getComponent()
-                        .get() instanceof CustomPolymerElement);
+                        .get().getClass().equals(CustomPolymerElement.class));
     }
 
     @Tag("custom-element")

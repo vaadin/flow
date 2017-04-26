@@ -15,7 +15,6 @@
  */
 package com.vaadin.server;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,9 +27,10 @@ import com.vaadin.ui.Component;
  */
 public class CustomElementRegistry {
 
-    private Map<String, Class<? extends Component>> customElements = new HashMap<>();
+    private final Map<String, Class<? extends Component>> customElements = new HashMap<>();
 
-    private static CustomElementRegistry instance;
+    private static final CustomElementRegistry INSTANCE = new CustomElementRegistry();
+
     protected boolean initialized = false;
 
     private CustomElementRegistry() {
@@ -42,10 +42,11 @@ public class CustomElementRegistry {
      * @return singleton instance of the registry
      */
     public static CustomElementRegistry getInstance() {
-        if (instance == null) {
-            instance = new CustomElementRegistry();
-        }
-        return instance;
+        return INSTANCE;
+    }
+
+    protected boolean isInitialized() {
+        return initialized;
     }
 
     /**
@@ -62,7 +63,8 @@ public class CustomElementRegistry {
             throw new IllegalArgumentException(
                     "Custom element map has already been initialized");
         }
-        this.customElements = Collections.unmodifiableMap(customElements);
+        this.customElements.clear();
+        this.customElements.putAll(customElements);
         initialized = true;
     }
 
