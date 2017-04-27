@@ -37,4 +37,29 @@ public class BasicElementStateProviderTest {
         Assert.assertTrue(provider.supports(rootNode));
 
     }
+
+    @Test
+    public void getParent_parentNodeIsNull_parentIsNull() {
+        Element div = ElementFactory.createDiv();
+        Assert.assertNull(
+                BasicElementStateProvider.get().getParent(div.getNode()));
+    }
+
+    @Test
+    public void getParent_parentNodeIsNotNull_parentIsNotNull() {
+        Element parent = ElementFactory.createDiv();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+        Assert.assertEquals(parent,
+                BasicElementStateProvider.get().getParent(child.getNode()));
+    }
+
+    @Test
+    public void getParent_parentNodeIsShadowRootNode_parentIsShadowRoot() {
+        ShadowRoot parent = ElementFactory.createDiv().attachShadow();
+        Element child = ElementFactory.createDiv();
+        parent.appendChild(child);
+        Assert.assertEquals(parent,
+                BasicElementStateProvider.get().getParent(child.getNode()));
+    }
 }

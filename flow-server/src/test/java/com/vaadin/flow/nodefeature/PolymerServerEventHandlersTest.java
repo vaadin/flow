@@ -115,7 +115,8 @@ public class PolymerServerEventHandlersTest {
                 ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
                 SynchronizedPropertyEventsList.class, ComponentMapping.class,
                 ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
-                ClientDelegateHandlers.class, ModelMap.class);
+                ClientDelegateHandlers.class, ModelMap.class,
+                ShadowRootData.class);
         stateNode.getFeature(ElementData.class).setTag("test");
         handlers = new PolymerServerEventHandlers(stateNode);
         methodCollector = new ArrayList<>();

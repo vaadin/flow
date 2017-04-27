@@ -168,4 +168,14 @@ public abstract class AbstractTextElementStateProvider
             String name, PropertyChangeListener listener) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public StateNode getShadowRoot(StateNode node) {
+        return null;
+    }
+
+    @Override
+    public StateNode attachShadow(StateNode node) {
+        throw new UnsupportedOperationException();
+    }
 }

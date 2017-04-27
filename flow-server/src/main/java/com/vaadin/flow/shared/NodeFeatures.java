@@ -34,6 +34,8 @@ import com.vaadin.flow.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
 import com.vaadin.flow.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.nodefeature.ShadowRootData;
+import com.vaadin.flow.nodefeature.ShadowRootHost;
 import com.vaadin.flow.nodefeature.SynchronizedPropertiesList;
 import com.vaadin.flow.nodefeature.SynchronizedPropertyEventsList;
 import com.vaadin.flow.nodefeature.TemplateMap;
@@ -156,6 +158,16 @@ public class NodeFeatures {
     public static final int CLIENT_DELEGATE_HANDLERS = 24;
 
     /**
+     * Id for {@link ShadowRootData}.
+     */
+    public static final int SHADOW_ROOT_DATA = 25;
+
+    /**
+     * Id for {@link ShadowRootHost}.
+     */
+    public static final int SHADOW_ROOT_HOST = 26;
+
+    /**
      * Key for {@link ElementData#getTag()}.
      */
     public static final String TAG = "tag";
@@ -164,6 +176,11 @@ public class NodeFeatures {
      * Key for {@link TextNodeMap#getText()}.
      */
     public static final String TEXT = "text";
+
+    /**
+     * Key for {@link ShadowRootData}.
+     */
+    public static final String SHADOW_ROOT = "shadowRoot";
 
     /**
      * Key for {@link TemplateMap#getRootTemplate()}.

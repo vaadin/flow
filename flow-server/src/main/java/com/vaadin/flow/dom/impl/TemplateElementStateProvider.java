@@ -28,6 +28,7 @@ import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.EventRegistrationHandle;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.event.PropertyChangeListener;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
@@ -208,7 +209,7 @@ public class TemplateElementStateProvider implements ElementStateProvider {
     }
 
     @Override
-    public Element getParent(StateNode node) {
+    public Node getParent(StateNode node) {
         // Implementation shared with template text provider
         return getParent(node, templateNode);
     }
@@ -222,12 +223,13 @@ public class TemplateElementStateProvider implements ElementStateProvider {
      *            the template node, not <code>null</code>
      * @return the element, not <code>null</code>
      */
-    public static Element getParent(StateNode node, TemplateNode templateNode) {
+    @SuppressWarnings("rawtypes")
+    public static Node getParent(StateNode node, TemplateNode templateNode) {
         assert node != null;
         assert templateNode != null;
 
         return templateNode.getParent()
-                .map(parent -> parent.getParentElement(node)).orElseGet(
+                .map(parent -> (Node) parent.getParentElement(node)).orElseGet(
                         () -> BasicElementStateProvider.get().getParent(node));
     }
 
@@ -553,5 +555,15 @@ public class TemplateElementStateProvider implements ElementStateProvider {
             return binding.get() instanceof StaticBindingValueProvider;
         }
         return false;
+    }
+
+    @Override
+    public StateNode getShadowRoot(StateNode node) {
+        return null;
+    }
+
+    @Override
+    public StateNode attachShadow(StateNode node) {
+        throw new UnsupportedOperationException();
     }
 }
