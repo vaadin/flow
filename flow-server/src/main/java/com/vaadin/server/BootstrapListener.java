@@ -24,6 +24,11 @@ import java.util.EventListener;
  * generated and sent to the client. The bootstrap HTML is first constructed as
  * an in-memory DOM representation which registered listeners can modify before
  * the final HTML is generated.
+ * <p>
+ * BootstrapListeners are registered using the {@link ServiceInitEvent} during
+ * the initialization of the application.
+ * 
+ * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
  * @author Vaadin Ltd
  */

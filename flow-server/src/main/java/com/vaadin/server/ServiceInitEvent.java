@@ -27,8 +27,10 @@ import java.util.Objects;
  * <p>
  * This event can also be used to add {@link RequestHandler}s that will be used
  * by the {@code VaadinService} for handling all requests.
+ * <p>
+ * {@link BootstrapListener}s can also be registered, that are used to modify
+ * the initial HTML of the application.
  *
- * @since
  * @author Vaadin Ltd
  */
 public class ServiceInitEvent extends EventObject {
