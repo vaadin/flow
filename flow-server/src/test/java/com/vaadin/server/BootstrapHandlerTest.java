@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,7 +172,7 @@ public class BootstrapHandlerTest {
     private MockDeploymentConfiguration deploymentConfiguration;
 
     @Before
-    public void setup() throws ServiceException {
+    public void setup() {
         BootstrapHandler.clientEngineFile = "foobar";
         testUI = new TestUI();
         prerenderTestUI = new UI();
@@ -578,7 +577,7 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void testBootstrapListener() throws ServiceException {
+    public void testBootstrapListener() {
         List<BootstrapListener> listeners = new ArrayList<>(3);
         listeners.add(evt -> {
             evt.getDocument().head().getElementsByTag("script").remove();
@@ -592,7 +591,7 @@ public class BootstrapHandlerTest {
                     "testing.2");
         });
 
-        Mockito.when(service.createBootstrapListeners(Collections.emptyList()))
+        Mockito.when(service.processBootstrapListeners(Mockito.anyList()))
                 .thenReturn(listeners);
 
         initUI(testUI);
@@ -604,6 +603,9 @@ public class BootstrapHandlerTest {
         assertEquals(2, scripts.size());
         assertEquals("testing.1", scripts.get(0).attr("src"));
         assertEquals("testing.2", scripts.get(1).attr("src"));
+
+        Mockito.verify(service, Mockito.times(2))
+                .processBootstrapListeners(Mockito.anyList());
     }
 
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {

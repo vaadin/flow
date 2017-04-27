@@ -20,10 +20,10 @@ import java.io.Serializable;
 import java.util.EventListener;
 
 /**
- * Event listener notified when the bootstrap HTML is about to be generated and
- * send to the client. The bootstrap HTML is first constructed as an in-memory
- * DOM representation which registered listeners can modify before the final
- * HTML is generated.
+ * This event listener is notified when the bootstrap HTML is about to be
+ * generated and sent to the client. The bootstrap HTML is first constructed as
+ * an in-memory DOM representation which registered listeners can modify before
+ * the final HTML is generated.
  *
  * @author Vaadin Ltd
  */

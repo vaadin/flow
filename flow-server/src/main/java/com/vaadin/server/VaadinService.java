@@ -198,11 +198,12 @@ public abstract class VaadinService implements Serializable {
 
         requestHandlers = Collections.unmodifiableCollection(handlers);
 
-        List<BootstrapListener> bootstrapListenersList = createBootstrapListeners(
+        List<BootstrapListener> bootstrapListenersList = processBootstrapListeners(
                 new ArrayList<>(event.getAddedBootstrapListeners()));
 
-        bootstrapListeners = Collections
-                .unmodifiableCollection(bootstrapListenersList);
+        // the assigned list is a new instance to ensure it is iterable
+        // without chances of raising ConcurrentModificationExceptions
+        bootstrapListeners = new ArrayList<>(bootstrapListenersList);
 
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
@@ -290,7 +291,7 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Gets all available bootstrap listeners. A custom Vaadin service
+     * Processes the available bootstrap listeners. A custom Vaadin service
      * implementation can override this method to discover bootstrap listeners
      * in some other way in addition to the default implementation that uses
      * {@link ServiceLoader}. This could for example be used to allow defining
@@ -310,7 +311,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return the list of all available service bootstrap listeners.
      */
-    protected List<BootstrapListener> createBootstrapListeners(
+    protected List<BootstrapListener> processBootstrapListeners(
             List<BootstrapListener> defaultListeners) {
         assert defaultListeners != null;
         return defaultListeners;

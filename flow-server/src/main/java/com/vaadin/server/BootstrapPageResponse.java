@@ -20,9 +20,9 @@ import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.ui.UI;
 
 /**
- * A representation of a bootstrap page being generated. The bootstrap page
- * contains of the full DOM of the HTML document as well as the HTTP headers
- * that will be included in the corresponding HTTP response.
+ * This represents the state of a bootstrap page being generated. The bootstrap
+ * page contains of the full DOM of the HTML document as well as the HTTP
+ * headers that will be included in the corresponding HTTP response.
  *
  * @author Vaadin Ltd
  */
@@ -32,7 +32,7 @@ public class BootstrapPageResponse extends BootstrapResponse {
     private final Document document;
 
     /**
-     * Crate a new bootstrap page response.
+     * Create a new bootstrap page response.
      *
      * @param request
      *            the Vaadin request for which the bootstrap page should be
