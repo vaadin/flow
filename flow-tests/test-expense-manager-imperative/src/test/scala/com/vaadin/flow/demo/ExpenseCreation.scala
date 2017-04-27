@@ -33,6 +33,11 @@ class ExpenseCreation extends Simulation {
     regex(""""Vaadin-Security-Key":\s"([^"]*)""")
       .saveAs("securityKey")
 
+  //  Runtime component node ids collected from responses
+  val storeGridNodeId = regex(""""node":\s?(\d+),[\s]*"type":\s?"put",[\s]*"key":\s?"tag",[\s]*"feat":\s?0,[\s]*"value":\s?"vaadin-grid"""").saveAs("gridNode")
+  val addButton = regex(""""node":\s?(\d+),[\s]*"type":\s?"put",[\s]*"key":\s?"id",[\s]*"feat":\s?3,[\s]*"value":\s?"add-button"""").saveAs("addButton")
+  val cancelButton = regex(""""node":(\d+),[\s]*"type":"splice",[\s]*"feat":11,[\s]*"index":0,[\s]*"add":\["cancel-button"\]""").saveAs("cancelButton")
+
   val incrementIds = exec((session) => {
     session.setAll(
       "syncId" -> (session.get("syncId").as[Int] + 1),
@@ -45,14 +50,15 @@ class ExpenseCreation extends Simulation {
       .check(bodyString.saveAs("RESPONSE_DATA"))
       .check(storeUiId)
       .check(storeSecurityKey)
+      .check(storeGridNodeId)
+      .check(addButton)
     )
     .doIf(session => !session.contains("uiId")) {
       exec(session => {
         println("init failed with response:")
         println(session("RESPONSE_DATA").as[String])
         session
-      }
-      )
+      })
     }
     .exec(session => session.set("clientId", 0))
     .exec(session => session.set("syncId", 0))
@@ -63,6 +69,7 @@ class ExpenseCreation extends Simulation {
       .post(uidlUrl)
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0112_request.txt"))
+      .check(regex(""""id":0,"""))
     )
     .exec(incrementIds)
     .pause(4)
@@ -80,6 +87,7 @@ class ExpenseCreation extends Simulation {
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0115_request.txt"))
       .check(regex("""add":\["cancel"""))
+      .check(cancelButton)
     )
     .exec(incrementIds)
     .pause(7)
@@ -100,7 +108,8 @@ class ExpenseCreation extends Simulation {
       .post(uidlUrl)
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0117_request.txt"))
-        .check(regex(""""node":105,"type":"attach"""))
+      .check(storeGridNodeId)
+//        .check(regex(""""node":105,"type":"attach"""))
     )
     .exec(incrementIds)
 
@@ -111,6 +120,7 @@ class ExpenseCreation extends Simulation {
       .post(uidlUrl)
       .headers(uidlHeaders)
       .body(ElFileBody("RecordedSimulation_0118_request.txt"))
+        .check(regex(""""id":0,"""))
     )
     .exec(incrementIds)
     .pause(933 milliseconds)
@@ -123,7 +133,7 @@ class ExpenseCreation extends Simulation {
     .exec(cancelNewExpense).exitHereIfFailed
     .exec(loadListContent)
 
-  setUp(scn.inject(rampUsers(1000) over (120 seconds))).protocols(httpProtocol)
+  setUp(scn.inject(rampUsers(2000) over (120 seconds))).protocols(httpProtocol)
 
   /* To get response data for exec post add to Exec after body add:
 

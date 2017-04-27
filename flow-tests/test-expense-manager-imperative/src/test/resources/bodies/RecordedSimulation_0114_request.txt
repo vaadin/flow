@@ -2,19 +2,19 @@
   "csrfToken": "${securityKey}",
     "rpc": [{
         "type": "mSync",
-        "node": 8,
+        "node": ${addButton},
         "feature": 1,
         "property": "active",
         "value": false
     }, {
         "type": "mSync",
-        "node": 8,
+        "node": ${addButton},
         "feature": 1,
         "property": "disabled",
         "value": false
     }, {
         "type": "mSync",
-        "node": 8,
+        "node": ${addButton},
         "feature": 1,
         "property": "focused",
         "value": true
