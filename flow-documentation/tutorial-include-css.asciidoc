@@ -8,7 +8,7 @@ are two ways to do this.
 ----
 @StyleSheet("styles.css") // Relative to Servlet URL
 @StyleSheet("http://www.example.com/example.css") // Loaded from external location
-public class MainLayout extends AngularTemplate {
+public class MainLayout extends Component {
   // implementation omitted
 }
 ----
