@@ -2,11 +2,18 @@
   "csrfToken": "${securityKey}",
     "rpc": [{
         "type": "event",
-        "node": 9,
+        "node": ${gridNode},
         "event": "items-requested",
         "data": {
             "element.itemsParams.count": 50,
             "element.itemsParams.index": 0
+        }
+    }, {
+        "type": "event",
+        "node": ${gridNode},
+        "event": "selected-items-changed",
+        "data": {
+            "element.selection.selected()": []
         }
     }],
     "syncId": ${syncId},
