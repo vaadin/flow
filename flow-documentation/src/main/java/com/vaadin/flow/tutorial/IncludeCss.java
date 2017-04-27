@@ -18,7 +18,7 @@ package com.vaadin.flow.tutorial;
 import com.vaadin.annotations.StyleSheet;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
-import com.vaadin.ui.AngularTemplate;
+import com.vaadin.ui.Component;
 import com.vaadin.ui.UI;
 
 @CodeFor("tutorial-include-css.asciidoc")
@@ -27,7 +27,7 @@ public class IncludeCss {
     //@formatter:off - custom line wrapping
     @StyleSheet("styles.css") // Relative to Servlet URL
     @StyleSheet("http://www.example.com/example.css") // Loaded from external location
-    public class MainLayout extends AngularTemplate {
+    public class MainLayout extends Component {
         // implementation omitted
     }
     //@formatter:on
