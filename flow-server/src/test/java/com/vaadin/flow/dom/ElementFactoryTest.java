@@ -58,7 +58,7 @@ public class ElementFactoryTest {
                 ElementFactory.createAnchor(href));
         assertElement("<a href='" + href + "'>textContent</a>",
                 ElementFactory.createAnchor(href, textContent));
-        assertElement("<a href='" + href + "' routerlink=''>textContent</a>",
+        assertElement("<a href='" + href + "' router-link=''>textContent</a>",
                 ElementFactory.createRouterLink(href, textContent));
     }
 
