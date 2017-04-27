@@ -40,7 +40,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-webcomponent-basic#,Basic Integration of a Polymer Web Component>>
 ** <<tutorial-webcomponent-attributes-and-properties#,Using Attributes and Properties with a Polymer Web Component>>
 ** <<tutorial-webcomponent-events#,Using Events with a Polymer Web Component>>
-** <<tutorial-webcomponent-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
+** <<tutorial-webcomponents-es5#,Serving ES5 Web Components to older browsers with Polymer 2>>
 * Routing and Views
 ** <<tutorial-routing#,Defining View Routes and Navigating>>
 ** <<tutorial-routing-view-hierarchy#,View Hierarchy and Nested Views>>
