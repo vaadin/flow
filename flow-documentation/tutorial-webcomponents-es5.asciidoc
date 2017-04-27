@@ -332,7 +332,7 @@ declaring the path of your `HTMLImport`. For example:
 ----
 @Tag("my-component")
 @HtmlImport("frontend://components/my-component.html")
-public class WebComponentFrontend extends PolymerTemplate<MyModel> {
+public class MyComponent extends PolymerTemplate<MyModel> {
 ----
 
 In runtime, the Flow application will determine whether the browser supports ES6 or
@@ -362,12 +362,12 @@ mvn jetty:run -Dvaadin.frontend.url.es6=http://mydomain.com/es6/ -Dvaadin.fronte
 
 You can also set those properties as Servlet init params. You can use the traditional `web.xml` file or the Servlet 3.0 `@WebServlet` annotation:
 
-[source,es6]
+[source,java]
 ----
 @WebServlet(urlPatterns = "/*", name = "myservlet", asyncSupported = true, initParams = {
-    @WebInitParam(name = "frontend.url.es6", value = "http://mydomain.com/es6/"),
-    @WebInitParam(name = "frontend.url.es5", value = "http://mydomain.com/es5/") })
-@VaadinServletConfiguration(ui = MyUI.class)
+        @WebInitParam(name = "frontend.url.es6", value = "http://mydomain.com/es6/"),
+        @WebInitParam(name = "frontend.url.es5", value = "http://mydomain.com/es5/") })
+@VaadinServletConfiguration(ui = MyUI.class, productionMode = false)
 public class MyServlet extends VaadinServlet {
 }
 ----
@@ -394,12 +394,12 @@ Or when using the `web.xml` file:
       <param-name>UI</param-name>
       <param-value>com.ex.myprj.MyUI</param-value>
     </init-param>
-    
+
     <init-param>
       <param-name>frontend.url.es6</param-name>
       <param-value>http://mydomain.com/es6/</param-value>
     </init-param>
-    
+
     <init-param>
       <param-name>frontend.url.es5</param-name>
       <param-value>http://mydomain.com/es5/</param-value>
