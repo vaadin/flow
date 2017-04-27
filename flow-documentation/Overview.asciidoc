@@ -27,6 +27,7 @@ These tutorials show how the different features are used.
 ** <<tutorial-event-listener#,Listening to User Events>>
 ** <<tutorial-user-input#,Retrieving User Input>>
 ** <<tutorial-dynamic-styling#,Dynamic styling>>
+** <<tutorial-shadow-root#,Shadow root in server-side Element>>
 * Component API
 ** <<tutorial-component-basic#,Creating A Simple Component Using the Element API>>
 ** <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
