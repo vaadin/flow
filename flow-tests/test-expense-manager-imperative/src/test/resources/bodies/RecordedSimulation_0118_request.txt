@@ -2,7 +2,7 @@
   "csrfToken": "${securityKey}",
     "rpc": [{
         "type": "event",
-        "node": 105,
+        "node": ${gridNode},
         "event": "items-requested",
         "data": {
             "element.itemsParams.count": 50,
@@ -10,7 +10,7 @@
         }
     }, {
         "type": "event",
-        "node": 105,
+        "node": ${gridNode},
         "event": "selected-items-changed",
         "data": {
             "element.selection.selected()": []
