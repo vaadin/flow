@@ -1,0 +1,127 @@
+= Hummingbird
+
+== Product overview
+
+Hummingbird is a Java framework for building interactive web sites.
+The heart of Hummingbird will consist of three ways of interacting with the DOM in the user's web browser:
+
+ 1. HTML-based templates that are bound to server-side Model data.
+ 1. A server-side representation of the client-side DOM tree.
+ 1. A type-safe Java RPC API for interacting with JavaScript in the browser.
+
+These mechanisms are intended to be encapsulated into reusable components with a high-level Java API.
+
+The current version only implements the DOM tree and beginnings of the RPC mechanism.
+Further functionality will be implemented in future versions.
+
+== Server-side DOM tree
+
+Hummingbird allows Java code to control the DOM in the user's browser through a server-side representation of the same DOM tree.
+All changes are automatically synchronized to the real DOM tree in the browser.
+
+The DOM tree is built up from `Element` instances, each one representing a DOM element in the browser.
+The root of the server-side DOM tree is the `Element` of the `UI` instance, accessible using `UI.getElement()`.
+This element represents the `<body>` tag.
+You can create your own elements with any tag name (i.e. not restricted to the built-in HTML tag names) from Java using the `Element(String)` constructor, e.g. `Element e = new Element("div");`.
+
+Elements on the server are implemented as flyweight instances.
+This means that you can usually not use `==` and `!=` checking element identity.
+Instead, `Element.equals(Object)` should be used to check whether two instances refer to the same DOM element in the browser.
+
+=== Element hierarchy
+
+A web application is structured as a tree of elements with the root being the element of the `UI` instance. An element can be added as a child of another element using methods such as `Element.appendChild(Element)` for adding an element to the end of a parent's child list or `Element.insertChild(int, Element)` for adding to any position in the child list.
+
+The element hierarchy can be navigated upwards using `Element.getParent()` and downwards using `Element.getChildCount()` and `Element.getChild(int)`.
+
+=== Properties and attributes
+
+The two main ways of configuring elements in the browser are through attributes and properties.
+Attributes are the `name="value"` pairs inside HTML tags, whereas a property is what you use through expressions like `myElement.value` in JavaScript.
+The value of an attribute is a string, although some attribute values are interpreted as e.g. booleans (true regardless of the value as long as the attribute is present) or integers.
+A property value can be of any JavaScript type.
+
+In general, attributes from the HTML are used for initializing properties with the same names when an element is created.
+After creation, dynamic updates to the element's configuration is done by updating the properties.
+In some cases, later updates to the attribute value will also cause the property to be updated.
+There are also some attributes that are always kept in sync with the corresponding property so that changing one always causes the other to be updated.
+Yet in some cases there is no property corresponding to a specific attribute, or vice versa.
+
+In Hummingbird, attributes to be sent to the browser are configured using `Element.setAttribute(String, String)`.
+Values that have been set on the server can be read using `Element.getAttribute(String)`, `Element.hasAttribute(String)` and `Element.getAttributeNames()`.
+Attribute values updated in the browser are not sent back to the server.
+
+`Element` also defines methods for setting and getting properties as several different types: `String`, `boolean`, `double`, `int` and `JsonValue`.
+Getting a property as a different value than what was used for setting the same value causes the value to be converted according to general JavaScript type coercion rules.
+In the same was as with attributes, properties set on the server are automatically synchronized to the corresponding element in the browser, but changes to property values in the browser are not automatically synchronized to the server-side representation.
+
+==== Text content
+
+DOM nodes in the browser has a special property named `textContent`.
+Reading the value of this property gives a string containing all the text inside that nodes and all its descendants.
+Setting the property replaces all the contents of that node with the provided text.
+
+The same functionality can be accessed from the server using `Element.getTextContent()` and `Element.setTextContent(String)`.
+
+==== CSS classes
+
+In the browser, the CSS classes of an element are available as a space-separated string in the `class` attribute and the `className` property and as a list of tokens in the `classList` property.
+
+With Hummingbird, the `class` attribute works in the same way as in the browser, but you cannot directly use the `className` and `classList` parameters.
+You can instead use `Element.getClassList()` for retrieving a `Set<String>` that can be used for querying, adding and removing classes.
+
+==== Inline styles
+
+In the browser, the inline styles of an element are available as a string containing CSS statements in the `style` attribute and as properties in a special JavaScript object in the `style` property.
+
+With hummingbird, neither the attribute nor the property can be accessed directly.
+You should instead use `Element.getStyle()` to get a `Style` instance that can be used for querying and modifying inline styles of an element.
+
+=== Events
+You can use the `Element.addEventListener` method for adding a server-side listener that gets invoked asynchronously when a DOM event is fired for the corresponding event in the browser.
+You must always define the name of the event, e.g. `"click"`, `"change"` or `"keyup"` when adding a listener.
+
+You can also configure data related to the element or event to be sent back to the server together with the message.
+To do this, you can define one or several JavaScript expressions when adding the event handler.
+Each expression is evaluated whenever a corresponding event is fired.
+The result of the evaluation is available to listener implementations on the server through `DomEvent.getEventData()`.
+This method returns a `JsonObject` where the provided expressions are used as keys and the values contain the results of evaluating the expressions.
+The expressions are evaluated in a context where the `event` variable refers to the fired DOM event and `element` refers to the element to which the event handler has been added.
+
+As an example, you could add an event handler to an `<input>` element in this way: `myInputElement.addEventListener("change", myListener, "element.value")`.
+When an event is fired on the server, you can get the value of the input field using `String value = event.getEventData().getString("element.value")`.
+
+==== Synchronizing property changes to the server
+
+In addition to fetching data from the client using JavaScript expressions and `DomEvent.getEventData()`, it is also possible to configure properties of an `Element` to be automatically updated when an event is fired for that element.
+This requires setting the names of the properties to synchronize using `Element.setSynchronizedProperties(String...)` and defining which events of the element should trigger a synchronization using `Element.setSynchronizedPropertiesEvents(String...)`.
+
+When using this functionality, you typically still want to also add an event handler so that you get notified when the values might have been changed.
+
+=== Text nodes
+
+To create a text node, you can use the static `Element.createText(String)` method.
+It creates an element instance that represents a text node in the browser.
+You can add the node as a child to any element, but API in `Element` that is related to e.g. properties, attributes and children cannot be used.
+You can use `Element.setTextContent(String)` to change the text in the node after it has been created.
+
+== Executing JavaScript
+
+There are cases where it's not enough to manipulate the client-side DOM tree only using child elements, attributes and properties.
+These can be handled with the help of a server-side Java API for invoking arbitrary JavaScript in the browser: `UI.getPage().executeJavaScript(String, Object...)`. The JavaScript will be executed in the browser after the DOM tree in the browser has been updated based on changes from the server.
+
+Along with the JavaScript expression to execute, parameters of various types can also be passed.
+The provided parameter values will be available to the script as variables named `$0`, `$1` and so on. Supported parameter types are `String`, `Boolean`, `Integer`, `Double`, `JsonValue` and `Element`. An element instance will be passed as `null` if the element is not attached to the DOM on the server when the changes are sent to the browser.
+
+As a practical example, this snippet will show the dimensions of the given element in the browser console: `myUi.getPage().executeJavaScript("console.log($1, $0.offsetWidth, $0.offsetHeight)", element, "Element dimensions:")`.
+
+== Style and script dependencies
+
+External JavaScript or CSS dependencies can be added to the page using `Page.addJavaScript(String)` and `Page.addStyleSheet(String)` respecitvely.
+The URL can be a regular absolute URL or use one of the special protocols `app://` and `vaadin://`.
+The `app://` protocol resolves URLs relative to the root of the servlet mapping for the used `VaadinServlet` instance.
+The `vaadin://` protocol resolves URLs relative to the location of the `VAADIN` folder which is intended for static resources.
+
+Relative URLs might technically work, but their use is not recommended since they may point to unexpected locations depending on how the application is deployed and what URL is used to open the application.
+
+Added dependencies are loaded before applying DOM updates defined using `Element` and before running JavaScript defined using `Page.executeJavaScript`.
