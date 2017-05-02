@@ -212,6 +212,29 @@ public class StateTree {
     }
 
     /**
+     * Sends a data for attach existing element server side callback.
+     * 
+     * @param parent
+     *            parent of the node to attach
+     * @param requestedId
+     *            originally requested id of a server side node
+     * @param assignedId
+     *            identifier which should be used on the server side for the
+     *            element (instead of requestedId)
+     * @param tagName
+     *            the requested tagName
+     * @param index
+     *            the index of the element on the server side
+     */
+    public void sendExistingElementAttachToServer(StateNode parent,
+            int requestedId, int assignedId, String tagName, int index) {
+        assert assertValidNode(parent);
+
+        registry.getServerConnector().sendExistingElementAttachToServer(parent,
+                requestedId, assignedId, tagName, index);
+    }
+
+    /**
      * Gets the {@link Registry} that this state tree belongs to.
      *
      * @return the registry of this tree, not <code>null</code>
