@@ -33,12 +33,6 @@ public class ExistingElementMap {
     private final JsMap<Integer, Element> idToElement = JsCollections.map();
 
     /**
-     * Creates a new instance.
-     */
-    public ExistingElementMap() {
-    }
-
-    /**
      * Gets the element stored via the {@link #add(int, Element)} method by the
      * given {@code id}.
      * 
