@@ -18,11 +18,13 @@ package com.vaadin.client.flow;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
+import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.util.ClientJsonCodec;
 import com.vaadin.client.flow.util.NativeFunction;
 import com.vaadin.ui.Page;
 
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
@@ -68,19 +70,22 @@ public class ExecuteJavaScriptProcessor {
         String[] parameterNamesAndCode = new String[parameterCount + 1];
         JsArray<Object> parameters = JsCollections.array();
 
+        JsMap<Object, StateNode> map = JsCollections.map();
         for (int i = 0; i < parameterCount; i++) {
             JsonValue parameterJson = invocation.get(i);
             Object parameter = ClientJsonCodec.decodeWithTypeInfo(tree,
                     parameterJson);
             parameters.push(parameter);
             parameterNamesAndCode[i] = "$" + i;
+            map.set(parameter,
+                    ClientJsonCodec.decodeStateNode(tree, parameterJson));
         }
 
         // Set the script source as the last parameter
         String expression = invocation.getString(invocation.length() - 1);
         parameterNamesAndCode[parameterNamesAndCode.length - 1] = expression;
 
-        invoke(parameterNamesAndCode, parameters);
+        invoke(parameterNamesAndCode, parameters, map);
     }
 
     /**
@@ -95,12 +100,29 @@ public class ExecuteJavaScriptProcessor {
      */
     @SuppressWarnings("static-method")
     protected void invoke(String[] parameterNamesAndCode,
-            JsArray<Object> parameters) {
+            JsArray<Object> parameters,
+            JsMap<Object, StateNode> nodeParameters) {
         assert parameterNamesAndCode.length == parameters.length() + 1;
 
         NativeFunction function = new NativeFunction(parameterNamesAndCode);
 
-        function.apply(null, parameters);
+        function.apply(getContextExecutionObject(nodeParameters), parameters);
     }
 
+    private native static JsonObject getContextExecutionObject(
+            JsMap<Object, StateNode> nodeParameters)
+    /*-{
+          var object = {};
+          object.getNode = function (element){
+              var node = nodeParameters.get(element);
+              if ( node == null ){
+                  throw new ReferenceError("There is no a StateNode for the given argument.");
+              }
+              return node;
+          };
+          object.attachExistingElement = function(parent, previousSibling, tagName, id){
+              @com.vaadin.client.ElementUtils::attachExistingElement(*)(object.getNode(parent), previousSibling, tagName, id);
+          };
+          return object;
+    }-*/;
 }
