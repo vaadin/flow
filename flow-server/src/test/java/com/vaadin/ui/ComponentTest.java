@@ -115,6 +115,8 @@ public class ComponentTest {
     private Component parentDivComponent;
     private Component child1SpanComponent;
     private Component child2InputComponent;
+    private Component shadowRootParent;
+    private Component shadowChild;
 
     public interface TracksAttachDetach {
         default void track() {
@@ -251,6 +253,13 @@ public class ComponentTest {
         parentDivComponent.getElement().appendChild(
                 child1SpanComponent.getElement(),
                 child2InputComponent.getElement());
+
+        shadowRootParent = new TestComponent(ElementFactory.createDiv());
+        shadowRootParent.getElement().attachShadow();
+        shadowChild = new TestComponent(ElementFactory.createSpan());
+        shadowRootParent.getElement().getShadowRoot().get()
+                .appendChild(shadowChild.getElement());
+
     }
 
     @Test
@@ -267,6 +276,11 @@ public class ComponentTest {
                 child1SpanComponent.getParent().get());
         Assert.assertEquals(parentDivComponent,
                 child2InputComponent.getParent().get());
+    }
+
+    @Test
+    public void getParentForAttachedComponentInShadowRoot() {
+        Assert.assertEquals(shadowRootParent, shadowChild.getParent().get());
     }
 
     @Test

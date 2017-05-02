@@ -27,6 +27,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Prerenderer;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.event.ComponentEventBus;
 import com.vaadin.flow.event.ComponentEventListener;
 
@@ -271,7 +272,13 @@ public abstract class Component implements HasElement, Serializable,
 
         // Find the parent component based on the first parent element which is
         // mapped to a component
-        return ComponentUtil.findParentComponent(getElement().getParent());
+        Element parentElement = getElement().getParent();
+        if (parentElement == null
+                && getElement().getParentNode() instanceof ShadowRoot) {
+            parentElement = ((ShadowRoot) getElement().getParentNode())
+                    .getHost();
+        }
+        return ComponentUtil.findParentComponent(parentElement);
     }
 
     private boolean isInsideComposite(Optional<Component> mappedComponent) {
