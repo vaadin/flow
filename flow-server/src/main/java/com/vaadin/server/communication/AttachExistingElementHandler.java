@@ -69,7 +69,7 @@ public class AttachExistingElementHandler extends AbstractRpcInvocationHandler {
             callback.onError(feature.getParent(requestedNode), tag,
                     feature.getPrevisouSibling(requestedNode));
 
-            feature.unregister(node);
+            feature.unregister(requestedNode);
         } else {
             Element element = Element.get(tree.getNodeById(assignedId));
 
@@ -78,7 +78,7 @@ public class AttachExistingElementHandler extends AbstractRpcInvocationHandler {
 
             if (assignedId != requestedId) {
                 attachElement(feature, element, index,
-                        tree.getNodeById(assignedId));
+                        tree.getNodeById(requestedId));
             }
         }
     }

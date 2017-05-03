@@ -140,8 +140,9 @@ public abstract class AbstractNodeStateProvider
             node.getFeature(AttachExistingElementFeature.class).register(
                     getNode(node), previousSibling, proposedNode, callback);
             ui.getPage().executeJavaScript(
-                    "this.attachExistingElement($0, $1, $2, $3);", this,
-                    previousSibling, tagName, proposedNode.getId());
+                    "this.attachExistingElement($0, $1, $2, $3);",
+                    getNode(node), previousSibling, tagName,
+                    proposedNode.getId());
         });
     }
 
