@@ -17,6 +17,10 @@ package com.vaadin.server.communication;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -113,28 +117,28 @@ public class UidlWriterTest {
     @JavaScript("interface-js")
     @StyleSheet("interface-css")
     @HtmlImport("interface-html")
-    public static interface ComponentInterface {
+    public interface ComponentInterface {
 
     }
 
     @JavaScript("anotherinterface-js")
     @StyleSheet("anotherinterface-css")
     @HtmlImport("anotherinterface-html")
-    public static interface AnotherComponentInterface {
+    public interface AnotherComponentInterface {
 
     }
 
     @JavaScript("childinterface1-js")
     @StyleSheet("childinterface1-css")
     @HtmlImport("childinterface1-html")
-    public static interface ChildComponentInterface1 {
+    public interface ChildComponentInterface1 {
 
     }
 
     @JavaScript("childinterface2-js")
     @StyleSheet("childinterface2-css")
     @HtmlImport("childinterface2-html")
-    public static interface ChildComponentInterface2
+    public interface ChildComponentInterface2
             extends ChildComponentInterface1 {
 
     }
@@ -166,47 +170,42 @@ public class UidlWriterTest {
         ui.add(new ActualComponent());
 
         JsonObject response = uidlWriter.createUidl(ui, false);
-        JsonArray dependencies = response
-                .getArray(DependencyList.DEPENDENCY_KEY);
-        Assert.assertEquals(14, dependencies.length());
+        Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
+        Assert.assertEquals(14, dependenciesMap.size());
 
-        int idx = 0;
         // UI parent first, then UI, then super component's dependencies, then
         // the interfaces and then the component
-        assertDependency("UI-parent-", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("UI-", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("UI-parent-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
+        assertDependency("UI-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
 
-        assertDependency("super-", dependencies.get(idx++),
-                DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("anotherinterface-", dependencies.get(idx++),
-                DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("interface-", dependencies.get(idx++),
-                DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("", dependencies.get(idx++),
-                DependencyList.TYPE_HTML_IMPORT);
+        assertDependency("super-", DependencyList.TYPE_HTML_IMPORT,
+                dependenciesMap);
+        assertDependency("anotherinterface-", DependencyList.TYPE_HTML_IMPORT,
+                dependenciesMap);
+        assertDependency("interface-", DependencyList.TYPE_HTML_IMPORT,
+                dependenciesMap);
+        assertDependency("", DependencyList.TYPE_HTML_IMPORT, dependenciesMap);
 
-        assertDependency("super-", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("anotherinterface-", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("interface-", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("", dependencies.get(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
+        assertDependency("super-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
+        assertDependency("anotherinterface-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
+        assertDependency("interface-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
+        assertDependency("", DependencyList.TYPE_JAVASCRIPT, dependenciesMap);
 
-        assertDependency("super-", dependencies.get(idx++),
-                DependencyList.TYPE_STYLESHEET);
+        assertDependency("super-", DependencyList.TYPE_STYLESHEET,
+                dependenciesMap);
 
-        assertDependency("anotherinterface-", dependencies.get(idx++),
-                DependencyList.TYPE_STYLESHEET);
+        assertDependency("anotherinterface-", DependencyList.TYPE_STYLESHEET,
+                dependenciesMap);
 
-        assertDependency("interface-", dependencies.get(idx++),
-                DependencyList.TYPE_STYLESHEET);
+        assertDependency("interface-", DependencyList.TYPE_STYLESHEET,
+                dependenciesMap);
 
-        assertDependency("", dependencies.get(idx++),
-                DependencyList.TYPE_STYLESHEET);
+        assertDependency("", DependencyList.TYPE_STYLESHEET, dependenciesMap);
     }
 
     @Test
@@ -221,39 +220,52 @@ public class UidlWriterTest {
                 new ChildComponent());
 
         JsonObject response = uidlWriter.createUidl(ui, false);
-        JsonArray dependencies = response
-                .getArray(DependencyList.DEPENDENCY_KEY);
+        Map<String, JsonObject> dependenciesMap = getDependenciesMap(response);
 
-        int idx = 0;
-        Assert.assertEquals(12, dependencies.length());
-        assertDependency("childinterface1-", dependencies.getObject(idx++),
-                DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("childinterface2-", dependencies.getObject(idx++),
-                DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("child1-", dependencies.getObject(idx++),
-                DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("child2-", dependencies.getObject(idx++),
-                DependencyList.TYPE_HTML_IMPORT);
-        assertDependency("childinterface1-", dependencies.getObject(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("childinterface2-", dependencies.getObject(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("child1-", dependencies.getObject(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("child2-", dependencies.getObject(idx++),
-                DependencyList.TYPE_JAVASCRIPT);
-        assertDependency("childinterface1-", dependencies.getObject(idx++),
-                DependencyList.TYPE_STYLESHEET);
-        assertDependency("childinterface2-", dependencies.getObject(idx++),
-                DependencyList.TYPE_STYLESHEET);
-        assertDependency("child1-", dependencies.getObject(idx++),
-                DependencyList.TYPE_STYLESHEET);
-        assertDependency("child2-", dependencies.getObject(idx++),
-                DependencyList.TYPE_STYLESHEET);
+        Assert.assertEquals(12, dependenciesMap.size());
+        assertDependency("childinterface1-", DependencyList.TYPE_HTML_IMPORT,
+                dependenciesMap);
+        assertDependency("childinterface2-", DependencyList.TYPE_HTML_IMPORT,
+                dependenciesMap);
+        assertDependency("child1-", DependencyList.TYPE_HTML_IMPORT,
+                dependenciesMap);
+        assertDependency("child2-", DependencyList.TYPE_HTML_IMPORT,
+                dependenciesMap);
+        assertDependency("childinterface1-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
+        assertDependency("childinterface2-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
+        assertDependency("child1-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
+        assertDependency("child2-", DependencyList.TYPE_JAVASCRIPT,
+                dependenciesMap);
+        assertDependency("childinterface1-", DependencyList.TYPE_STYLESHEET,
+                dependenciesMap);
+        assertDependency("childinterface2-", DependencyList.TYPE_STYLESHEET,
+                dependenciesMap);
+        assertDependency("child1-", DependencyList.TYPE_STYLESHEET,
+                dependenciesMap);
+        assertDependency("child2-", DependencyList.TYPE_STYLESHEET,
+                dependenciesMap);
     }
 
-    private void assertDependency(String level, JsonObject jsonValue,
-            String type) {
+    private Map<String, JsonObject> getDependenciesMap(JsonObject response) {
+        JsonArray dependencies = response
+                .getArray(DependencyList.DEPENDENCY_KEY);
+        return IntStream.range(0, dependencies.length())
+                .mapToObj(dependencies::getObject)
+                .collect(Collectors.toMap(
+                        jsonObject -> jsonObject.getString(DependencyList.KEY_URL),
+                        Function.identity()));
+    }
+
+    private void assertDependency(String level, String type,
+            Map<String, JsonObject> dependenciesMap) {
+        String url = level + type;
+        JsonObject jsonValue = dependenciesMap.get(url);
+        Assert.assertNotNull(
+                "Expected dependencies map to have dependency with key=" + url,
+                jsonValue);
         Assert.assertEquals(level + type,
                 jsonValue.get(DependencyList.KEY_URL).asString());
         Assert.assertEquals(type,

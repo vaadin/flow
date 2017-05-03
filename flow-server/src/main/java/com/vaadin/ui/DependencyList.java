@@ -16,7 +16,10 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,12 +47,13 @@ public class DependencyList implements Serializable {
     public static final String TYPE_JAVASCRIPT = "js";
     public static final String TYPE_HTML_IMPORT = "html";
     public static final String DEPENDENCY_KEY = "deps";
+
     /**
      * Contains all added URLs to be able to do fast enough duplication
      * detection.
      */
-    private Set<String> urlCache = new HashSet<>();
-    private JsonArray pendingSendToClient = Json.createArray();
+    private final Set<String> urlCache = new HashSet<>();
+    private Map<String, Dependency> urlToLoadedDependency = new HashMap<>();
 
     /**
      * Creates a new instance.
@@ -71,30 +75,40 @@ public class DependencyList implements Serializable {
      * the context path or use an absolute URL to refer to files outside the
      * service (servlet) path.
      *
-     * @param dependency
+     * @param newDependency
      *            the dependency to include on the page
      */
-    public void add(Dependency dependency) {
-        if (containsUrl(dependency.getUrl())) {
-            // We don't load different types of resources from the same URL
+    public void add(Dependency newDependency) {
+        String dependencyUrl = newDependency.getUrl();
+
+        if (urlCache.contains(dependencyUrl)) {
             getLogger().log(Level.WARNING,
                     () -> String.format(
                             "Dependency with url %s was imported numerous times, it's advised to remove excessive imports",
-                            dependency.getUrl()));
-            return;
+                            dependencyUrl));
+            Optional.ofNullable(urlToLoadedDependency.get(dependencyUrl))
+                    .ifPresent(currentDependency -> {
+                        if (currentDependency.isBlocking() != newDependency
+                                .isBlocking()) {
+                            getLogger().log(Level.SEVERE,
+                                    () -> String.format(
+                                            "Dependency with url %s was imported with 'blocking=true' and 'blocking=false' properties."
+                                                    + "Setting 'blocking' to 'true', which may impact performance.",
+                                            dependencyUrl));
+                            if (!currentDependency.isBlocking()) {
+                                urlToLoadedDependency.put(
+                                        currentDependency.getUrl(),
+                                        new Dependency(
+                                                currentDependency.getType(),
+                                                currentDependency.getUrl(),
+                                                true));
+                            }
+                        }
+                    });
+        } else {
+            urlCache.add(dependencyUrl);
+            urlToLoadedDependency.put(dependencyUrl, newDependency);
         }
-
-        JsonObject jsonObject = Json.createObject();
-        jsonObject.put(KEY_URL, dependency.getUrl());
-        jsonObject.put(KEY_TYPE, getType(dependency));
-        jsonObject.put(KEY_BLOCKING, dependency.isBlocking());
-
-        pendingSendToClient.set(pendingSendToClient.length(), jsonObject);
-        urlCache.add(dependency.getUrl());
-    }
-
-    private boolean containsUrl(String url) {
-        return urlCache.contains(url);
     }
 
     /**
@@ -103,14 +117,28 @@ public class DependencyList implements Serializable {
      * @return a list containing the dependencies which should be sent
      */
     public JsonArray getPendingSendToClient() {
-        return pendingSendToClient;
+        JsonArray jsonArray = Json.createArray();
+        int i = 0;
+        for (Dependency dependency : urlToLoadedDependency.values()) {
+            jsonArray.set(i, convertDependency(dependency));
+            i++;
+        }
+        return jsonArray;
+    }
+
+    private JsonObject convertDependency(Dependency dependency) {
+        JsonObject jsonObject = Json.createObject();
+        jsonObject.put(KEY_URL, dependency.getUrl());
+        jsonObject.put(KEY_TYPE, getType(dependency));
+        jsonObject.put(KEY_BLOCKING, dependency.isBlocking());
+        return jsonObject;
     }
 
     /**
      * Clears the list of dependencies which should be sent to the client.
      */
     public void clearPendingSendToClient() {
-        pendingSendToClient = Json.createArray();
+        urlToLoadedDependency = new HashMap<>();
     }
 
     /**
