@@ -23,13 +23,9 @@ public class DependenciesLoadingAnnotationsUI extends UI {
 
     @Override
     protected void init(VaadinRequest request) {
-        createTestDiv(this);
-    }
-
-    static void createTestDiv(UI target) {
         Div div = new Div();
         div.setId(PRELOADED_DIV_ID);
         div.setText("Preloaded div");
-        target.add(div);
+        add(div);
     }
 }

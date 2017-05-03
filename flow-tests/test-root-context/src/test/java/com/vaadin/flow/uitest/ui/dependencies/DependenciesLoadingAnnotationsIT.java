@@ -32,20 +32,21 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
     private static final String NON_BLOCKING_PREFIX = "non-blocking.";
 
     @Test
-    public void dependenciesLoadedAsExpected() {
-        open();
-        runOnOpenPage(this);
+    public void dependenciesLoadedAsExpectedWithAnnotationApi() {
+        openAndVerifyPage();
     }
 
-    static void runOnOpenPage(PhantomJSTest target) {
-        WebElement preloadedDiv = target.findElement(By.id(PRELOADED_DIV_ID));
+    private void openAndVerifyPage() {
+        open();
+
+        WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
         Assert.assertEquals(
                 "Non-blocking css should be loaded last: color should be blue",
                 "rgba(0, 0, 255, 1)", preloadedDiv.getCssValue("color"));
 
-        List<String> testMessages = target
-                .findElements(By.className("dependenciesTest")).stream()
-                .map(WebElement::getText).collect(Collectors.toList());
+        List<String> testMessages = findElements(
+                By.className("dependenciesTest")).stream()
+                        .map(WebElement::getText).collect(Collectors.toList());
 
         Assert.assertEquals(
                 "Four dependencies are supposed to create tags, each one at load",
