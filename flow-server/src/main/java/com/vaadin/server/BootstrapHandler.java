@@ -333,6 +333,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         setupDocumentBody(document, context);
 
         document.outputSettings().prettyPrint(false);
+
+        BootstrapPageResponse response = new BootstrapPageResponse(
+                context.getRequest(), context.getSession(),
+                context.getResponse(), document, context.getUI());
+        context.getSession().getService().modifyBootstrapPage(response);
+
         return document;
     }
 

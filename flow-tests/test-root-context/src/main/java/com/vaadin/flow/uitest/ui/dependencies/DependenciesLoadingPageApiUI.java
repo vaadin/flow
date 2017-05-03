@@ -19,8 +19,8 @@ public class DependenciesLoadingPageApiUI extends UI {
         page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/non-blocking.css", false);
         page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/non-blocking.html", false);
         page.addJavaScript("/com/vaadin/flow/uitest/ui/dependencies/blocking.js");
-        page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/blocking.css", true);
-        page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/blocking.html", true);
+        page.addStyleSheet("/com/vaadin/flow/uitest/ui/dependencies/blocking.css");
+        page.addHtmlImport("/com/vaadin/flow/uitest/ui/dependencies/blocking.html");
 
         createTestDiv(this);
     }

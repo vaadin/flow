@@ -28,7 +28,7 @@ public class Dependency implements Serializable {
      * The type of a dependency.
      */
     public enum Type {
-        STYLESHEET, JAVASCRIPT, HTML_IMPORT;
+        STYLESHEET, JAVASCRIPT, HTML_IMPORT
     }
 
     private final Type type;
@@ -40,7 +40,8 @@ public class Dependency implements Serializable {
      * URL.
      * <p>
      * The URL is passed through the translation mechanism before loading, so
-     * custom protocols such as "vaadin://" can be used.
+     * custom protocols, specified at
+     * {@link com.vaadin.shared.VaadinUriResolver} can be used.
      *
      * @param type
      *            the type of the dependency, not {@code null}

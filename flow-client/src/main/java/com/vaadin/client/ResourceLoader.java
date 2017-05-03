@@ -183,7 +183,10 @@ public class ResourceLoader {
      * this method when the script is currently loading or already loaded
      * doesn't cause the script to be loaded again, but the listener will still
      * be notified when appropriate.
-     *
+     * <p>
+     * Loads all dependencies with {@code async = false} and
+     * {@code defer = false} attribute values, see
+     * {@link #loadScript(String, ResourceLoadListener, boolean, boolean)}.
      *
      * @param scriptUrl
      *            the url of the script to load
@@ -213,7 +216,8 @@ public class ResourceLoader {
      * @since 7.2.4
      */
     public void loadScript(final String scriptUrl,
-            final ResourceLoadListener resourceLoadListener, boolean async, boolean defer) {
+            final ResourceLoadListener resourceLoadListener, boolean async,
+            boolean defer) {
         final String url = WidgetUtil.getAbsoluteUrl(scriptUrl);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {

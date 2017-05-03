@@ -36,6 +36,10 @@ import com.vaadin.ui.UI;
  * Non-blocking style sheet files can be loaded later, for more details refer to
  * {@link #blocking()}. The dependencies are sent only once.
  * <p>
+ * By default, the resource is loaded in blocking mode, that assumes that an
+ * application cannot work without having the it loaded first.
+ * To change this behaviour, please specify {@link #blocking()} property.
+ * <p>
  * NOTE: while this annotation is not inherited using the
  * {@link Inherited @Inherited} annotation, the annotations of the possible
  * parent components or implemented interfaces are read when sending the
