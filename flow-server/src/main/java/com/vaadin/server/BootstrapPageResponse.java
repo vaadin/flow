@@ -16,8 +16,6 @@
 
 package com.vaadin.server;
 
-import java.io.Serializable;
-
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.ui.UI;
 
@@ -28,7 +26,7 @@ import com.vaadin.ui.UI;
  *
  * @author Vaadin Ltd
  */
-public class BootstrapPageResponse implements Serializable {
+public class BootstrapPageResponse {
 
     private final VaadinRequest request;
     private final VaadinResponse response;
