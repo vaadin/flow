@@ -1,5 +1,5 @@
 ifdef::env-github[:outfilesuffix: .asciidoc]
-= Including Style Sheets
+= Importing HTML and JavaScript 
 
 There are two ways to import HTML and JavaScript with a component.
 
