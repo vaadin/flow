@@ -133,6 +133,35 @@ public class ServerConnector {
         sendMessage(message);
     }
 
+    /**
+     * Sends a data for attach existing element server side callback.
+     * 
+     * @param parent
+     *            parent of the node to attach
+     * @param requestedId
+     *            originally requested id of a server side node
+     * @param assignedId
+     *            identifier which should be used on the server side for the
+     *            element (instead of requestedId)
+     * @param tagName
+     *            the requested tagName
+     * @param index
+     *            the index of the element on the server side
+     */
+    public void sendExistingElementAttachToServer(StateNode parent,
+            int requestedId, int assignedId, String tagName, int index) {
+        JsonObject message = Json.createObject();
+        message.put(JsonConstants.RPC_TYPE,
+                JsonConstants.RPC_ATTACH_EXISTING_ELEMENT);
+        message.put(JsonConstants.RPC_NODE, parent.getId());
+        message.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
+        message.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, assignedId);
+        message.put(JsonConstants.RPC_ATTACH_TAG_NAME, tagName);
+        message.put(JsonConstants.RPC_ATTACH_INDEX, index);
+
+        sendMessage(message);
+    }
+
     private void sendMessage(JsonObject message) {
         ServerRpcQueue rpcQueue = registry.getServerRpcQueue();
         rpcQueue.add(message);
