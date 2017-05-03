@@ -52,9 +52,10 @@ public class DependencyLoader {
         }
     };
 
-    private static final ResourceLoadListener RESOURCE_LOAD_LISTENER = new ResourceLoadListener() {
+    private static final ResourceLoadListener NON_BLOCKING_RESOURCE_LOAD_LISTENER = new ResourceLoadListener() {
         @Override
         public void onLoad(ResourceLoadEvent event) {
+            // Do nothing on success, simply continue loading
         }
 
         @Override
@@ -107,7 +108,7 @@ public class DependencyLoader {
             startBlockingDependencyLoading();
             loader.accept(url, BLOCKING_RESOURCE_LOAD_LISTENER);
         } else {
-            loader.accept(url, RESOURCE_LOAD_LISTENER);
+            loader.accept(url, NON_BLOCKING_RESOURCE_LOAD_LISTENER);
         }
     }
 
