@@ -272,13 +272,7 @@ public abstract class Component implements HasElement, Serializable,
 
         // Find the parent component based on the first parent element which is
         // mapped to a component
-        Element parentElement = getElement().getParent();
-        if (parentElement == null
-                && getElement().getParentNode() instanceof ShadowRoot) {
-            parentElement = ((ShadowRoot) getElement().getParentNode())
-                    .getHost();
-        }
-        return ComponentUtil.findParentComponent(parentElement);
+        return ComponentUtil.findParentComponent(getElement().getParent());
     }
 
     private boolean isInsideComposite(Optional<Component> mappedComponent) {
@@ -371,7 +365,14 @@ public abstract class Component implements HasElement, Serializable,
      *         is not attached to a UI
      */
     public Optional<UI> getUI() {
-        return getParent().flatMap(Component::getUI);
+        if (getParent().isPresent()) {
+            return getParent().flatMap(Component::getUI);
+        } else if (getElement().getParentNode() instanceof ShadowRoot) {
+            Optional<Component> parent = ComponentUtil.findParentComponent(
+                    ((ShadowRoot) getElement().getParentNode()).getHost());
+            return parent.flatMap(Component::getUI);
+        }
+        return Optional.empty();
     }
 
     /**
