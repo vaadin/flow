@@ -68,8 +68,7 @@ public class DependencyLoader {
 
     private static int blockingDependenciesLoading;
 
-    private final URIResolver uriResolver;
-    private final ResourceLoader resourceLoader;
+    private final Registry registry;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -78,8 +77,7 @@ public class DependencyLoader {
      *            the global registry
      */
     DependencyLoader(Registry registry) {
-        uriResolver = registry.getURIResolver();
-        resourceLoader = registry.getResourceLoader();
+        this.registry = registry;
     }
 
     /**
@@ -103,7 +101,7 @@ public class DependencyLoader {
         assert loader != null;
 
         // Start chain by loading first
-        String url = uriResolver.resolveVaadinUri(dependencyUrl);
+        String url = registry.getURIResolver().resolveVaadinUri(dependencyUrl);
         if (blocking) {
             startBlockingDependencyLoading();
             loader.accept(url, BLOCKING_RESOURCE_LOAD_LISTENER);
@@ -178,13 +176,10 @@ public class DependencyLoader {
             BiConsumer<String, ResourceLoadListener> loader = getResourceLoader(
                     dependencyJson.getString(DependencyList.KEY_TYPE),
                     blocking);
-
-            if (loader != null) {
-                if (blocking) {
-                    loadDependency(url, true, loader);
-                } else {
-                    nonBlockingDependencies.put(url, loader);
-                }
+            if (blocking) {
+                loadDependency(url, true, loader);
+            } else {
+                nonBlockingDependencies.put(url, loader);
             }
         }
 
@@ -194,6 +189,7 @@ public class DependencyLoader {
 
     private BiConsumer<String, ResourceLoadListener> getResourceLoader(
             String resourceType, boolean blocking) {
+        ResourceLoader resourceLoader = registry.getResourceLoader();
         switch (resourceType) {
         case DependencyList.TYPE_STYLESHEET:
             return resourceLoader::loadStylesheet;
@@ -204,8 +200,8 @@ public class DependencyLoader {
                     .loadScript(scriptUrl, resourceLoadListener, false,
                             !blocking);
         default:
-            Console.error("Unknown dependency type " + resourceType);
-            return null;
+            throw new IllegalArgumentException(
+                    "Unknown dependency type " + resourceType);
         }
     }
 }

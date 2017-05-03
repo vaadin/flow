@@ -33,7 +33,7 @@ import com.vaadin.ui.UI;
  * <p>
  * It is guaranteed that all blocking JavaScript files are loaded on the client
  * side before the component is used for the first time in a {@link UI}.
- * Non-blocking style sheet files can be loaded later, for more details refer to
+ * Non-blocking javascript files can be loaded later, for more details refer to
  * {@link #blocking()}. The dependencies are sent only once.
  * <p>
  * By default, the resource is loaded in blocking mode, that assumes that an
