@@ -313,11 +313,11 @@ public class MessageHandler {
 
         if (!isInitialUidlHandled()) {
             DependencyLoader
-                    .runWhenDependenciesLoaded(PreRenderer::transitionToLive);
+                    .runWhenBlockingDependenciesLoaded(PreRenderer::transitionToLive);
         }
         DependencyLoader
-                .runWhenDependenciesLoaded(DomApi::updateApiImplementation);
-        DependencyLoader.runWhenDependenciesLoaded(
+                .runWhenBlockingDependenciesLoaded(DomApi::updateApiImplementation);
+        DependencyLoader.runWhenBlockingDependenciesLoaded(
                 () -> processMessage(valueMap, lock, start));
     }
 

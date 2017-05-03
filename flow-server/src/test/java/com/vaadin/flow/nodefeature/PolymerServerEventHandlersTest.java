@@ -38,6 +38,7 @@ import com.vaadin.annotations.RepeatIndex;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.ConstantPoolKey;
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.template.PolymerTemplate;
 import com.vaadin.flow.template.model.TemplateModel;
 
@@ -105,18 +106,13 @@ public class PolymerServerEventHandlersTest {
                         Collectors.toMap(Method::getName, Function.identity()));
     }
 
+    @SuppressWarnings("unchecked")
     @Before
     public void setUp() {
 
-        stateNode = new StateNode(PolymerEventListenerMap.class,
-                ElementData.class, ElementAttributeMap.class,
-                ElementChildrenList.class, ElementPropertyMap.class,
-                ElementListenerMap.class, ElementClassList.class,
-                ElementStylePropertyMap.class, SynchronizedPropertiesList.class,
-                SynchronizedPropertyEventsList.class, ComponentMapping.class,
-                ParentGeneratorHolder.class, PolymerServerEventHandlers.class,
-                ClientDelegateHandlers.class, ModelMap.class,
-                ShadowRootData.class);
+        Collection<Class<? extends NodeFeature>> features = BasicElementStateProvider
+                .getFeatures();
+        stateNode = new StateNode(features.toArray(new Class[features.size()]));
         stateNode.getFeature(ElementData.class).setTag("test");
         handlers = new PolymerServerEventHandlers(stateNode);
         methodCollector = new ArrayList<>();
