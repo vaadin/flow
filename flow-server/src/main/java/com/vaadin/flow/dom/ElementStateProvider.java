@@ -396,4 +396,26 @@ public interface ElementStateProvider extends Serializable {
      */
     StateNode attachShadow(StateNode node);
 
+    /**
+     * Attaches a child element with the given {@code tagName} which is the next
+     * sibling for the {@code previousSibling}.
+     * <p>
+     * The {@code previousSibling} parameter value can be {@code null} which
+     * means that the very first child with the given {@code tagName} will be
+     * used to attach (if any).
+     * 
+     * @param node
+     *            the parent node
+     * @param tagName
+     *            the tag name of the element to attach, not {@code null}
+     * @param previousSibling
+     *            previous sibling, may be {@code null}
+     * @param callback
+     *            the callback which will be invoked with a server side element
+     *            instance or an error will be reported, not {@code null}
+     * @return this element
+     */
+    void attachExistingElement(StateNode node, String tagName,
+            Element previousSibling, ChildElementConsumer callback);
+
 }

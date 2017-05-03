@@ -60,7 +60,7 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.ELEMENT_TYPE: {
+            case JsonCodec.NODE_TYPE: {
                 int nodeId = (int) array.getNumber(1);
                 return tree.getNode(nodeId);
             }
@@ -90,7 +90,7 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.ELEMENT_TYPE: {
+            case JsonCodec.NODE_TYPE: {
                 int nodeId = (int) array.getNumber(1);
                 return tree.getNode(nodeId).getDomNode();
             }

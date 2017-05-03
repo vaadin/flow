@@ -18,10 +18,12 @@ package com.vaadin.flow.dom.impl;
 import java.io.Serializable;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.ShadowRoot;
+import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ElementChildrenList;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.ShadowRootHost;
@@ -114,6 +116,46 @@ public abstract class AbstractNodeStateProvider
 
     }
 
+    @Override
+    public void attachExistingElement(StateNode node, String tagName,
+            Element previousSibling, ChildElementConsumer callback) {
+        if (tagName == null) {
+            throw new IllegalArgumentException(
+                    "Tag name parameter cannot be null");
+        }
+        if (callback == null) {
+            throw new IllegalArgumentException(
+                    "Callback parameter cannot be null");
+        }
+        /*
+         * create a node that should represent the client-side element. This
+         * node won't be available anywhere and will be removed if there is no
+         * appropriate element on the client-side. This node will be used after
+         * client-side roundtrip for the appropriate element.
+         */
+        StateNode proposedNode = BasicElementStateProvider
+                .createStateNode(tagName);
+
+        node.runWhenAttached(ui -> {
+            node.getFeature(AttachExistingElementFeature.class).register(
+                    getNode(node), previousSibling, proposedNode, callback);
+            ui.getPage().executeJavaScript(
+                    "this.attachExistingElement($0, $1, $2, $3);", this,
+                    previousSibling, tagName, proposedNode.getId());
+        });
+    }
+
+    /**
+     * Gets the flyweight instance for the {@code node} supported by the
+     * provider.
+     * 
+     * @see #supports(StateNode)
+     * @param node
+     *            the node to wrap into flyweight
+     * @return the flyweight instance for the {@code node}
+     */
+    protected abstract Node getNode(StateNode node);
+
     /**
      * Gets the children data feature for the given node and asserts it is
      * non-null.
@@ -125,4 +167,5 @@ public abstract class AbstractNodeStateProvider
     private static ElementChildrenList getChildrenFeature(StateNode node) {
         return node.getFeature(ElementChildrenList.class);
     }
+
 }

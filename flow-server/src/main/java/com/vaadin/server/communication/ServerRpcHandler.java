@@ -427,6 +427,7 @@ public class ServerRpcHandler implements Serializable {
             list.add(new NavigationRpcHandler());
             list.add(new MapSyncRpcHandler());
             list.add(new PublishedServerEventHandlerRpcHandler());
+            list.add(new AttachExistingElementHandler());
             return list;
         }
     }
