@@ -97,6 +97,8 @@ public class NodeFeatureTest {
                 NodeFeatures.CLIENT_DELEGATE_HANDLERS);
         expectedIds.put(ShadowRootData.class, NodeFeatures.SHADOW_ROOT_DATA);
         expectedIds.put(ShadowRootHost.class, NodeFeatures.SHADOW_ROOT_HOST);
+        expectedIds.put(AttachExistingElementFeature.class,
+                NodeFeatures.ATTACH_EXISTING_ELEMENT);
         return expectedIds;
     }
 
