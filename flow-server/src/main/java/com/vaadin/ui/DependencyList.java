@@ -53,7 +53,7 @@ public class DependencyList implements Serializable {
      * detection.
      */
     private final Set<String> urlCache = new HashSet<>();
-    private Map<String, Dependency> urlToLoadedDependency = new HashMap<>();
+    private final Map<String, Dependency> urlToLoadedDependency = new HashMap<>();
 
     /**
      * Creates a new instance.
@@ -90,10 +90,10 @@ public class DependencyList implements Serializable {
                     .ifPresent(currentDependency -> {
                         if (currentDependency.isBlocking() != newDependency
                                 .isBlocking()) {
-                            getLogger().log(Level.SEVERE,
+                            getLogger().log(Level.WARNING,
                                     () -> String.format(
-                                            "Dependency with url %s was imported with 'blocking=true' and 'blocking=false' properties."
-                                                    + "Setting 'blocking' to 'true', which may impact performance.",
+                                            "Dependency with url %s was imported with 'blocking=true' and 'blocking=false' properties. "
+                                                    + "The 'blocking' property was set to 'true' to avoid conflicts. This may impact performance.",
                                             dependencyUrl));
                             if (!currentDependency.isBlocking()) {
                                 urlToLoadedDependency.put(
@@ -138,7 +138,7 @@ public class DependencyList implements Serializable {
      * Clears the list of dependencies which should be sent to the client.
      */
     public void clearPendingSendToClient() {
-        urlToLoadedDependency = new HashMap<>();
+        urlToLoadedDependency.clear();
     }
 
     /**
