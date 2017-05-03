@@ -27,6 +27,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.EventRegistrationHandle;
 import com.vaadin.flow.dom.Prerenderer;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.event.ComponentEventBus;
 import com.vaadin.flow.event.ComponentEventListener;
 
@@ -364,7 +365,14 @@ public abstract class Component implements HasElement, Serializable,
      *         is not attached to a UI
      */
     public Optional<UI> getUI() {
-        return getParent().flatMap(Component::getUI);
+        if (getParent().isPresent()) {
+            return getParent().flatMap(Component::getUI);
+        } else if (getElement().getParentNode() instanceof ShadowRoot) {
+            Optional<Component> parent = ComponentUtil.findParentComponent(
+                    ((ShadowRoot) getElement().getParentNode()).getHost());
+            return parent.flatMap(Component::getUI);
+        }
+        return Optional.empty();
     }
 
     /**

@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
+import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.flow.util.JsonUtils;
 
 import elemental.json.Json;
@@ -45,7 +46,8 @@ public class ExecuteJavaScriptProcessorTest {
 
         @Override
         protected void invoke(String[] parameterNamesAndCode,
-                JsArray<Object> parameters) {
+                JsArray<Object> parameters,
+                JsMap<Object, StateNode> nodeParameters) {
             parameterNamesAndCodeList.add(parameterNamesAndCode);
             parametersList.add(parameters);
         }

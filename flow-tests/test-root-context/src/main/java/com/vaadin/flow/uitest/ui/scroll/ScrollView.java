@@ -60,7 +60,7 @@ public class ScrollView extends AbstractDivView {
     private Anchor createLink(String href) {
         Anchor a1 = new Anchor(
                 "com.vaadin.flow.uitest.ui.scroll." + href, href);
-        a1.getElement().setAttribute("routerLink", true);
+        a1.getElement().setAttribute("router-link", true);
         a1.getStyle().set("display", "block");
         return a1;
     }

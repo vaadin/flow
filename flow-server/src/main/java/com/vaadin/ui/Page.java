@@ -90,12 +90,60 @@ public class Page implements Serializable {
      * <p>
      * For component related style sheet dependencies, you should use the
      * {@link StyleSheet @StyleSheet} annotation.
+     * <p>
+     * Is is guaranteed that style sheet will be loaded before the first page load.
+     * For more options, refer to {@link #addStyleSheet(String, boolean)}
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
      */
     public void addStyleSheet(String url) {
-        addDependency(new Dependency(Type.STYLESHEET, url));
+        addStyleSheet(url, true);
+    }
+
+    /**
+     * Adds the given style sheet to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * Relative URLs are interpreted as relative to the service (servlet) path.
+     * You can prefix the URL with {@literal context://} to make it relative to
+     * the context path or use an absolute URL to refer to files outside the
+     * service (servlet) path.
+     * <p>
+     * For component related style sheet dependencies, you should use the
+     * {@link StyleSheet @StyleSheet} annotation.
+     *
+     * @param url
+     *            the URL to load the style sheet from, not <code>null</code>
+     * @param blocking
+     *            {@code true} forces the style sheet to be loaded before the
+     *            initial page load, {@code false} allows the style sheet to be
+     *            loaded independent of initial page load
+     */
+    public void addStyleSheet(String url, boolean blocking) {
+        addDependency(new Dependency(Type.STYLESHEET, url, blocking));
+    }
+
+    /**
+     * Adds the given JavaScript to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * Relative URLs are interpreted as relative to the service (servlet) path.
+     * You can prefix the URL with {@literal context://} to make it relative to
+     * the context path or use an absolute URL to refer to files outside the
+     * service (servlet) path.
+     * <p>
+     * For component related JavaScript dependencies, you should use the
+     * {@link JavaScript @JavaScript} annotation.
+     * <p>
+     * Is is guaranteed that script will be loaded before the first page load.
+     * For more options, refer to {@link #addJavaScript(String, boolean)}
+     *
+     * @param url
+     *            the URL to load the JavaScript from, not <code>null</code>
+     */
+    public void addJavaScript(String url) {
+        addJavaScript(url, true);
     }
 
     /**
@@ -112,9 +160,31 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the JavaScript from, not <code>null</code>
+     * @param blocking
+     *            {@code true} forces the script to be loaded before the initial page load,
+     *            {@code false} allows the script to be loaded independent of initial page load
      */
-    public void addJavaScript(String url) {
-        addDependency(new Dependency(Type.JAVASCRIPT, url));
+    public void addJavaScript(String url, boolean blocking) {
+        addDependency(new Dependency(Type.JAVASCRIPT, url, blocking));
+    }
+
+    /**
+     * Adds the given HTML import to the page and ensures that it is loaded
+     * successfully.
+     * <p>
+     * Relative URLs are interpreted as relative to the service (servlet) path.
+     * You can prefix the URL with {@literal context://} to make it relative to
+     * the context path or use an absolute URL to refer to files outside the
+     * service (servlet) path.
+     * <p>
+     * Is is guaranteed that html import will be loaded before the first page load.
+     * For more options, refer to {@link #addHtmlImport(String, boolean)}
+     *
+     * @param url
+     *            the URL to load the HTML import from, not <code>null</code>
+     */
+    public void addHtmlImport(String url) {
+        addHtmlImport(url, true);
     }
 
     /**
@@ -128,9 +198,12 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the HTML import from, not <code>null</code>
+     * @param blocking
+     *            {@code true} forces the html import to be loaded before the initial page load,
+     *            {@code false} allows the html import to be loaded independent of initial page load
      */
-    public void addHtmlImport(String url) {
-        addDependency(new Dependency(Type.HTML_IMPORT, url));
+    public void addHtmlImport(String url, boolean blocking) {
+        addDependency(new Dependency(Type.HTML_IMPORT, url, blocking));
     }
 
     /**
@@ -147,10 +220,7 @@ public class Page implements Serializable {
      */
     private void addDependency(Dependency dependency) {
         assert dependency != null;
-
-        DependencyList dependencyList = ui.getInternals().getDependencyList();
-
-        dependencyList.add(dependency);
+        ui.getInternals().getDependencyList().add(dependency);
     }
 
     /**

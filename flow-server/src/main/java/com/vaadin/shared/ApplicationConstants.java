@@ -171,7 +171,7 @@ public class ApplicationConstants implements Serializable {
     /**
      * Attribute name for marking internal router link anchors.
      */
-    public static final String ROUTER_LINK_ATTRIBUTE = "routerlink";
+    public static final String ROUTER_LINK_ATTRIBUTE = "router-link";
 
     /**
      * Attribute name for marking elements which are pre-rendered.

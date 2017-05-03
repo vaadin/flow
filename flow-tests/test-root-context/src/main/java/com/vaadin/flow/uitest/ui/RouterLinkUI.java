@@ -14,30 +14,26 @@ public class RouterLinkUI extends UI {
         Element bodyElement = getElement();
         bodyElement.getStyle().set("margin", "1em");
 
-        Element location = ElementFactory.createDiv("no location")
-                .setAttribute("id", "location");
+        Element location = ElementFactory.createDiv("no location").setAttribute("id", "location");
 
-        Element queryParams = ElementFactory.createDiv("no queryParams")
-                .setAttribute("id", "queryParams");
+        Element queryParams = ElementFactory.createDiv("no queryParams").setAttribute("id", "queryParams");
 
         bodyElement.appendChild(location, new Element("p"));
         bodyElement.appendChild(queryParams, new Element("p"));
 
         addLinks();
 
-        getPage().getHistory().setHistoryStateChangeHandler(
-                e -> {
-                    location.setText(e.getLocation().getPath());
-                    queryParams.setText(e.getLocation().getQueryParameters().getQueryString());
-                }
-        );
+        getPage().getHistory().setHistoryStateChangeHandler(e -> {
+            location.setText(e.getLocation().getPath());
+            queryParams.setText(e.getLocation().getQueryParameters().getQueryString());
+        });
 
         addImageLink();
     }
 
     private void addImageLink() {
         Anchor anchor = new Anchor("image/link", null);
-        anchor.getElement().setAttribute("routerlink", true);
+        anchor.getElement().setAttribute("router-link", true);
         anchor.getStyle().set("display", "block");
 
         Image image = new Image("", "IMAGE");
@@ -51,22 +47,16 @@ public class RouterLinkUI extends UI {
     protected void addLinks() {
         getElement().appendChild(
                 // inside servlet mapping
-                ElementFactory.createDiv("inside this servlet"),
-                ElementFactory.createRouterLink("", "empty"), new Element("p"),
-                createRouterLink("foo"), new Element("p"),
-                createRouterLink("foo/bar"), new Element("p"),
-                createRouterLink("./foobar"), new Element("p"),
-                createRouterLink("./foobar?what=not"), new Element("p"),
-                createRouterLink("./foobar?what=not#fragment"),
-                new Element("p"), createRouterLink("/run/baz"),
-                new Element("p"),
+                ElementFactory.createDiv("inside this servlet"), ElementFactory.createRouterLink("", "empty"),
+                new Element("p"), createRouterLink("foo"), new Element("p"), createRouterLink("foo/bar"),
+                new Element("p"), createRouterLink("./foobar"), new Element("p"), createRouterLink("./foobar?what=not"),
+                new Element("p"), createRouterLink("./foobar?what=not#fragment"), new Element("p"),
+                createRouterLink("/run/baz"), new Element("p"),
                 // outside
-                ElementFactory.createDiv("outside this servlet"),
-                createRouterLink("/run"), new Element("p"),
+                ElementFactory.createDiv("outside this servlet"), createRouterLink("/run"), new Element("p"),
                 createRouterLink("/foo/bar"), new Element("p"),
                 // external
-                ElementFactory.createDiv("external"),
-                createRouterLink("http://google.com"));
+                ElementFactory.createDiv("external"), createRouterLink("http://google.com"));
     }
 
     private Element createRouterLink(String target) {
