@@ -4,9 +4,9 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 
 There are multiple ways you can create a component. This tutorial uses the `PolymerTemplate` API with no additional elements or components. For other component tutorials, see:
 
-* <<../tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
-* <<../tutorial-component-composite#,Creating a Component Using Existing Components>>
-* <<../tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
+* <<tutorial-component-many-elements#,Creating a Component Based on Many Elements>>
+* <<tutorial-component-composite#,Creating a Component Using Existing Components>>
+* <<tutorial-component-container#,Creating a Component Which Can Contain Other Components>>
 
 For tutorials about how to use different template features, see:
 
