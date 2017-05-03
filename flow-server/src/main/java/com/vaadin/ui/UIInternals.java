@@ -656,12 +656,12 @@ public class UIInternals implements Serializable {
         Page page = ui.getPage();
         DependencyInfo dependencies = ComponentUtil
                 .getDependencies(componentClass);
-        dependencies.getHtmlImports()
-                .forEach(html -> page.addHtmlImport(html.value()));
+        dependencies.getHtmlImports().forEach(
+                html -> page.addHtmlImport(html.value(), html.blocking()));
         dependencies.getJavaScripts()
-                .forEach(js -> page.addJavaScript(js.value()));
-        dependencies.getStyleSheets()
-                .forEach(styleSheet -> page.addStyleSheet(styleSheet.value()));
+                .forEach(js -> page.addJavaScript(js.value(), js.blocking()));
+        dependencies.getStyleSheets().forEach(styleSheet -> page
+                .addStyleSheet(styleSheet.value(), styleSheet.blocking()));
 
     }
 
