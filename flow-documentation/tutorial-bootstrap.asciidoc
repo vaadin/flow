@@ -17,7 +17,7 @@ Here is the code for the `BoostrapListener` implementation which modifies the he
 
 [source,java]
 ----
-public class CustomBootstrapListener implements BoostrapListener {
+public class CustomBootstrapListener implements BootstrapListener {
 
     public void modifyBootstrapPage(BootstrapPageResponse response) {
         Document document = response.getDocument();
@@ -25,12 +25,15 @@ public class CustomBootstrapListener implements BoostrapListener {
         Element head = document.head();
 
         head.appendChild(createMeta(document, "og:title", "The Rock"));
-        head.appendChild(createMeta(document, "og:type", "video.movie"));
-        head.appendChild(createMeta(document, "og:url", "http://www.imdb.com/title/tt0117500/"));
-        head.appendChild(createMeta(document, "og:image", "http://ia.media-imdb.com/images/rock.jpg"));
+            head.appendChild(createMeta(document, "og:type", "video.movie"));
+            head.appendChild(createMeta(document, "og:url",
+                    "http://www.imdb.com/title/tt0117500/"));
+            head.appendChild(createMeta(document, "og:image",
+                    "http://ia.media-imdb.com/images/rock.jpg"));
     }
 
-    private Element createMeta(Document document, String property, String content) {
+    private Element createMeta(Document document, String property, 
+            String content) {
         Element meta = document.createElement("meta");
         meta.attr("property", property);
         meta.attr("content", content);
@@ -43,7 +46,8 @@ Now this listener should be added to a `ServiceInitEvent` which is sent when a V
 
 [source,java]
 ----
-public class ApplicationServiceInitListener implements VaadinServiceInitListener {
+public class ApplicationServiceInitListener 
+        implements VaadinServiceInitListener {
 
     @Override
     public void serviceInit(ServiceInitEvent event) {
@@ -57,3 +61,6 @@ This listener should be registered as a provider via Java SPI loading facility. 
 `META-INF/services` resource directory and a provider configuration file with the name `com.vaadin.server.VaadinServiceInitListener`.
 This is the text file and its content should be one line which is the fully qualified binary name of the `ApplicationServiceInitListener` class.
 It allows to discover the  `ApplicationServiceInitListener` class, instantiate it and register as a service init listener for the application.
+
+[TIP]
+See https://docs.oracle.com/javase/tutorial/ext/basics/spi.html#register-service-providers and https://docs.oracle.com/javase/7/docs/api/java/util/ServiceLoader.html for details about Java SPI loading. 

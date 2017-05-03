@@ -124,6 +124,8 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<RequestHandler> requestHandlers;
 
+    private Iterable<BootstrapListener> bootstrapListeners;
+
     private boolean atmosphereAvailable = checkAtmosphereSupport();
 
     /**
@@ -195,6 +197,13 @@ public abstract class VaadinService implements Serializable {
         Collections.reverse(handlers);
 
         requestHandlers = Collections.unmodifiableCollection(handlers);
+
+        List<BootstrapListener> bootstrapListenersList = processBootstrapListeners(
+                new ArrayList<>(event.getAddedBootstrapListeners()));
+
+        // the assigned list is a new instance to ensure it is iterable
+        // without chances of raising ConcurrentModificationExceptions
+        bootstrapListeners = new ArrayList<>(bootstrapListenersList);
 
         DeploymentConfiguration deploymentConf = getDeploymentConfiguration();
 
@@ -279,6 +288,33 @@ public abstract class VaadinService implements Serializable {
         ServiceLoader<VaadinServiceInitListener> loader = ServiceLoader
                 .load(VaadinServiceInitListener.class, getClassLoader());
         return loader.iterator();
+    }
+
+    /**
+     * Processes the available bootstrap listeners. A custom Vaadin service
+     * implementation can override this method to discover bootstrap listeners
+     * in some other way in addition to the default implementation that uses
+     * {@link ServiceLoader}. This could for example be used to allow defining
+     * an bootstrap listener as an OSGi service or as a Spring bean.
+     * <p>
+     * The default implementation just returns the same listeners received as
+     * parameter.
+     * <p>
+     * The order of the listeners inside the list defines the order of the
+     * execution of those listeners at the
+     * {@link #modifyBootstrapPage(BootstrapPageResponse)} method.
+     *
+     * @param defaultListeners
+     *            A list with the listeners loaded by the ServiceLoader
+     *            mechanism. This list is safe to be changed and returned if
+     *            needed.
+     *
+     * @return the list of all available service bootstrap listeners.
+     */
+    protected List<BootstrapListener> processBootstrapListeners(
+            List<BootstrapListener> defaultListeners) {
+        assert defaultListeners != null;
+        return defaultListeners;
     }
 
     /**
@@ -431,6 +467,22 @@ public abstract class VaadinService implements Serializable {
             SessionDestroyListener listener) {
         sessionDestroyListeners.add(listener);
         return () -> sessionDestroyListeners.remove(listener);
+    }
+
+    /**
+     * Fires the
+     * {@link BootstrapListener#modifyBootstrapPage(BootstrapPageResponse)}
+     * event to all registered {@link BootstrapListener}. This is called
+     * internally when the bootstrap page is created, so listeners can intercept
+     * the creation and change the result HTML.
+     * 
+     * @param response
+     *            The object containing all relevant info needed by listeners to
+     *            change the bootstrap page.
+     */
+    public void modifyBootstrapPage(BootstrapPageResponse response) {
+        bootstrapListeners
+                .forEach(listener -> listener.modifyBootstrapPage(response));
     }
 
     /**

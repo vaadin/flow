@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.shared;
 
+import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
 import com.vaadin.flow.nodefeature.ElementAttributeMap;
@@ -166,6 +167,11 @@ public class NodeFeatures {
      * Id for {@link ShadowRootHost}.
      */
     public static final int SHADOW_ROOT_HOST = 26;
+
+    /**
+     * Id for {@link AttachExistingElementFeature}.
+     */
+    public static final int ATTACH_EXISTING_ELEMENT = 27;
 
     /**
      * Key for {@link ElementData#getTag()}.

@@ -18,13 +18,16 @@ package com.vaadin.flow.tutorial;
 import com.vaadin.external.jsoup.nodes.Document;
 import com.vaadin.external.jsoup.nodes.Element;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
+import com.vaadin.server.BootstrapListener;
+import com.vaadin.server.BootstrapPageResponse;
 import com.vaadin.server.ServiceInitEvent;
 import com.vaadin.server.VaadinServiceInitListener;
 
 @CodeFor("tutorial-bootstrap.asciidoc")
 public class BootstrapPage {
 
-    public class ApplicationServiceInitListener implements VaadinServiceInitListener {
+    public class ApplicationServiceInitListener
+            implements VaadinServiceInitListener {
 
         @Override
         public void serviceInit(ServiceInitEvent event) {
@@ -33,20 +36,26 @@ public class BootstrapPage {
 
     }
 
-    public class CustomBootstrapListener implements BoostrapListener {
+    public class CustomBootstrapListener implements BootstrapListener {
 
+        @Override
         public void modifyBootstrapPage(BootstrapPageResponse response) {
             Document document = response.getDocument();
 
             Element head = document.head();
 
+            // @formetter:off
             head.appendChild(createMeta(document, "og:title", "The Rock"));
             head.appendChild(createMeta(document, "og:type", "video.movie"));
-            head.appendChild(createMeta(document, "og:url", "http://www.imdb.com/title/tt0117500/"));
-            head.appendChild(createMeta(document, "og:image", "http://ia.media-imdb.com/images/rock.jpg"));
+            head.appendChild(createMeta(document, "og:url",
+                    "http://www.imdb.com/title/tt0117500/"));
+            head.appendChild(createMeta(document, "og:image",
+                    "http://ia.media-imdb.com/images/rock.jpg"));
+            // @formetter:on
         }
 
-        private Element createMeta(Document document, String property, String content) {
+        private Element createMeta(Document document, String property,
+                String content) {
             Element meta = document.createElement("meta");
             meta.attr("property", property);
             meta.attr("content", content);
