@@ -73,6 +73,7 @@ public class DefaultRegistry extends Registry {
                 new ExecuteJavaScriptProcessor(this));
         set(TemplateRegistry.class, new TemplateRegistry());
         set(ConstantPool.class, new ConstantPool());
+        set(ExistingElementMap.class, new ExistingElementMap());
 
         // Classes with dependencies, in correct order
         set(Heartbeat.class, new Heartbeat(this));
