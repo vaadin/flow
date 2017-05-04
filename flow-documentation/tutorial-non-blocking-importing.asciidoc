@@ -4,22 +4,22 @@ ifdef::env-github[:outfilesuffix: .asciidoc]
 Sections <<tutorial-include-css#,Including Style Sheets>> and <<tutorial-importing#,Importing html/javascript>>
 are describing ways to include style sheets and import HTML/JavaScript.
 
-Every annotation `@StyleSheet`, `@JavaScript` and `@HtmlImport` has `blocking` 
+Every annotation `@StyleSheet`, `@JavaScript` and `@HtmlImport` has a `blocking` 
 parameter which is `true` by default. It means that the client-side structure corresponding
 to the annotated component class won't be created and process until the dependency
-(HTML/JavaScropt import or Style Sheet) is not loaded.
+(HTML/JavaScript import or Style Sheet) is not loaded.
 
 If you want to speed up the page load and it is possible to load dependencies after 
 the processing of the DOM structure then you can specify the `blocking` parameter value as `blocking=false`.
 
-All the blocking dependencies are loaded and injected into the DOM before any non-blocking dependencies
+All the blocking dependencies are loaded and injected into the DOM before any non-blocking dependencies,
 to make sure that client side structure is correctly processed with the required blocking dependencies.
 
 Let's assume you have some additional functionality for your component which is optional
 and is not required for your application. For instance it can be a JavaScript which 
 adds some animation to the component: `/js/animation.js`. This animation may be applied
 at any time later on for the component so that we can postpone its loading. Then 
-the component can be declared as
+the component can be declared as:
 
 [source,java]
 ----
@@ -36,8 +36,10 @@ structure is created for the `MainLayout` component regardless of availability o
 `/js/animation.js` script.
 
 The same can be done programmatically via the overloaded methods of the `Page` class: 
-`addStyleSheet(String url, boolean blocking)`, `addHtmlImport(String url, boolean blocking)` and
-`addJavaScript(String url, boolean blocking)`.
+
+ * `addStyleSheet(String url, boolean blocking)` 
+ * `addHtmlImport(String url, boolean blocking)`
+ * `addJavaScript(String url, boolean blocking)`
 
 [source,java]
 ----
