@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.nodefeature;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -43,7 +46,26 @@ public class AttachExistingElementFeatureTest {
 
         Assert.assertEquals(callback, feature.getCallback(child));
         Assert.assertEquals(parent, feature.getParent(child));
-        Assert.assertEquals(element, feature.getPrevisouSibling(child));
+        Assert.assertEquals(element, feature.getPreviousSibling(child));
+    }
+
+    @Test
+    public void forEachChild_register_registeredStatNodeIsAChild() {
+        StateNode node = new StateNode();
+        AttachExistingElementFeature feature = new AttachExistingElementFeature(
+                node);
+
+        Element element = Mockito.mock(Element.class);
+        StateNode child = Mockito.mock(StateNode.class);
+        ChildElementConsumer callback = Mockito
+                .mock(ChildElementConsumer.class);
+        Node<?> parent = Mockito.mock(Node.class);
+        feature.register(parent, element, child, callback);
+
+        List<StateNode> children = new ArrayList<>(1);
+        feature.forEachChild(children::add);
+        Assert.assertEquals(1, children.size());
+        Assert.assertEquals(child, children.get(0));
     }
 
     @Test
@@ -63,6 +85,6 @@ public class AttachExistingElementFeatureTest {
 
         Assert.assertNull(feature.getCallback(child));
         Assert.assertNull(feature.getParent(child));
-        Assert.assertNull(feature.getPrevisouSibling(child));
+        Assert.assertNull(feature.getPreviousSibling(child));
     }
 }

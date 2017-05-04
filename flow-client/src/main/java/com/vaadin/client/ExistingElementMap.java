@@ -31,6 +31,8 @@ import elemental.dom.Element;
 public class ExistingElementMap {
 
     private final JsMap<Element, Integer> elementToId = JsCollections.map();
+    // JsArray is used as a Map<Integer,Element> here. So this is a map between
+    // an id and an Element.
     private final JsArray<Element> idToElement = JsCollections.array();
 
     /**
