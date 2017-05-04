@@ -17,11 +17,14 @@ package com.vaadin.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -1027,19 +1030,19 @@ public class ComponentTest {
         UsesComponentWithDependencies s = new UsesComponentWithDependencies();
         UI ui = new UI();
         ui.getInternals().addComponentDependencies(s.getClass());
-        JsonArray pending = ui.getInternals().getDependencyList()
-                .getPendingSendToClient();
-        Assert.assertEquals(4, pending.length());
 
-        int idx = 0;
+        Map<String, JsonObject> pendingDependencies = getDependenciesMap(
+                ui.getInternals().getDependencyList().getPendingSendToClient());
+        Assert.assertEquals(4, pendingDependencies.size());
+
         assertDependency(DependencyList.TYPE_HTML_IMPORT, "html.html",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_JAVASCRIPT, "uses.js",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_JAVASCRIPT, "js.js",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_STYLESHEET, "css.css",
-                pending.getObject(idx++));
+                pendingDependencies);
     }
 
     @Test
@@ -1047,21 +1050,20 @@ public class ComponentTest {
         UIInternals internals = new UI().getInternals();
         internals.addComponentDependencies(
                 UsesUsesComponentWithDependencies.class);
-        JsonArray pending = internals.getDependencyList()
-                .getPendingSendToClient();
-        Assert.assertEquals(5, pending.length());
+        Map<String, JsonObject> pendingDependencies = getDependenciesMap(
+                internals.getDependencyList().getPendingSendToClient());
+        Assert.assertEquals(5, pendingDependencies.size());
 
-        int idx = 0;
         assertDependency(DependencyList.TYPE_HTML_IMPORT, "usesuses.html",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_HTML_IMPORT, "html.html",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_JAVASCRIPT, "uses.js",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_JAVASCRIPT, "js.js",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_STYLESHEET, "css.css",
-                pending.getObject(idx++));
+                pendingDependencies);
     }
 
     @Test
@@ -1070,30 +1072,43 @@ public class ComponentTest {
         DependencyList dependencyList = internals.getDependencyList();
 
         internals.addComponentDependencies(CircularDependencies1.class);
-        JsonArray pending = dependencyList.getPendingSendToClient();
-        Assert.assertEquals(2, pending.length());
+        Map<String, JsonObject> pendingDependencies = getDependenciesMap(
+                dependencyList.getPendingSendToClient());
+        Assert.assertEquals(2, pendingDependencies.size());
 
-        int idx = 0;
         assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep1.js",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep2.js",
-                pending.getObject(idx++));
+                pendingDependencies);
 
         internals = new UI().getInternals();
         dependencyList = internals.getDependencyList();
         internals.addComponentDependencies(CircularDependencies2.class);
-        pending = dependencyList.getPendingSendToClient();
-        idx = 0;
-        Assert.assertEquals(2, pending.length());
+        pendingDependencies = getDependenciesMap(
+                dependencyList.getPendingSendToClient());
+        Assert.assertEquals(2, pendingDependencies.size());
         assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep2.js",
-                pending.getObject(idx++));
+                pendingDependencies);
         assertDependency(DependencyList.TYPE_JAVASCRIPT, "dep1.js",
-                pending.getObject(idx++));
+                pendingDependencies);
 
     }
 
-    private void assertDependency(String type, String url, JsonObject object) {
+    private void assertDependency(String type, String url,
+            Map<String, JsonObject> pendingDependencies) {
+        JsonObject object = pendingDependencies.get(url);
+        Assert.assertNotNull(
+                "Could not locate a dependency object for url=" + url, object);
         Assert.assertEquals(type, object.getString(DependencyList.KEY_TYPE));
         Assert.assertEquals(url, object.getString(DependencyList.KEY_URL));
+    }
+
+    private Map<String, JsonObject> getDependenciesMap(JsonArray dependencies) {
+        return IntStream.range(0, dependencies.length())
+                .mapToObj(dependencies::getObject)
+                .collect(Collectors.toMap(
+                        jsonObject -> jsonObject
+                                .getString(DependencyList.KEY_URL),
+                        Function.identity()));
     }
 }

@@ -39,6 +39,8 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
     private void openAndVerifyPage() {
         open();
 
+        waitUntil(input -> input.findElements(By.className("dependenciesTest")).size() == 4);
+
         WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
         Assert.assertEquals(
                 "Non-blocking css should be loaded last: color should be blue",
