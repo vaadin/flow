@@ -92,7 +92,7 @@ public class ClientJsonCodecTest {
         node.setDomNode(element);
 
         JsonArray json = JsonUtils.createArray(
-                Json.create(JsonCodec.ELEMENT_TYPE), Json.create(node.getId()));
+                Json.create(JsonCodec.NODE_TYPE), Json.create(node.getId()));
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
 
