@@ -153,6 +153,27 @@ public class DependencyListTest {
     }
 
     @Test
+    public void addSameDependencyInDifferentModes() {
+        String url = "foo/bar.js";
+        Type type = Type.JAVASCRIPT;
+
+        deps.add(new Dependency(type, url, true));
+        deps.add(new Dependency(type, url, false));
+
+        assertEquals(1, deps.getPendingSendToClient().length());
+
+        JsonObject dependency = deps.getPendingSendToClient().getObject(0);
+        assertEquals("Dependency should be added with url specified", url,
+                dependency.getString(DependencyList.KEY_URL));
+        assertEquals("Dependency should be added with its key",
+                DependencyList.TYPE_JAVASCRIPT,
+                dependency.getString(DependencyList.KEY_TYPE));
+        assertTrue(
+                "Dependency in different modes should be added as blocking one",
+                dependency.getBoolean(DependencyList.KEY_BLOCKING));
+    }
+
+    @Test
     public void addDependencyPerformance() {
         long start = System.currentTimeMillis();
         for (int i = 0; i < 10000; i++) {

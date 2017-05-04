@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import com.vaadin.annotations.HtmlImport;
-import com.vaadin.annotations.JavaScript;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.html.Button;
 import com.vaadin.flow.html.Div;
@@ -61,7 +60,7 @@ public class DependencyView extends AbstractDivView {
 
         Button jsOrder = new Button("Test JS order", e -> {
             getPage().addJavaScript("/test-files/js/set-global-var.js");
-            getPage().addJavaScript("/test-files/js/read-global-var.js");
+            getPage().addJavaScript("/test-files/js/read-global-var.js", false);
         });
         jsOrder.setId("loadJs");
 

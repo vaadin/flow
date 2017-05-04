@@ -510,15 +510,7 @@ public class BootstrapHandlerTest {
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
-        Optional<String> dataOptional = page.head().getElementsByTag("script")
-                .stream().filter(scriptTag -> !scriptTag.hasAttr("src"))
-                .map(Element::data).filter(data -> data.contains("var uidl ="))
-                .findAny();
-
-        assertTrue("Expected to find uidl tag in the page",
-                dataOptional.isPresent());
-
-        String uidlData = dataOptional.get();
+        String uidlData = extractUidlData(page);
         assertFalse(uidlData.contains("blocking.css"));
         assertFalse(uidlData.contains("./blocking-relative.css"));
         assertFalse(uidlData.contains("blocking.js"));
@@ -576,17 +568,12 @@ public class BootstrapHandlerTest {
     @Test
     public void testBootstrapListener() {
         List<BootstrapListener> listeners = new ArrayList<>(3);
-        listeners.add(evt -> {
-            evt.getDocument().head().getElementsByTag("script").remove();
-        });
-        listeners.add(evt -> {
-            evt.getDocument().head().appendElement("script").attr("src",
-                    "testing.1");
-        });
-        listeners.add(evt -> {
-            evt.getDocument().head().appendElement("script").attr("src",
-                    "testing.2");
-        });
+        listeners.add(evt -> evt.getDocument().head().getElementsByTag("script")
+                .remove());
+        listeners.add(evt -> evt.getDocument().head().appendElement("script")
+                .attr("src", "testing.1"));
+        listeners.add(evt -> evt.getDocument().head().appendElement("script")
+                .attr("src", "testing.2"));
 
         Mockito.when(service.processBootstrapListeners(Mockito.anyList()))
                 .thenReturn(listeners);
@@ -603,6 +590,34 @@ public class BootstrapHandlerTest {
 
         Mockito.verify(service, Mockito.times(2))
                 .processBootstrapListeners(Mockito.anyList());
+    }
+
+    @JavaScript(value = "new.js", blocking = false)
+    @JavaScript(value = "new.js")
+    private static class UiWithSameDependencyInDifferentModes extends UI {
+        private UiWithSameDependencyInDifferentModes(VaadinSession session) {
+            getInternals().setSession(session);
+        }
+    }
+
+    @Test
+    public void testUiWithSameDependencyInDifferentModes() {
+        String newDependencyUrl = "new.js";
+        UiWithSameDependencyInDifferentModes ui = new UiWithSameDependencyInDifferentModes(
+                session);
+        initUI(ui);
+        Document page = BootstrapHandler.getBootstrapPage(
+                new BootstrapContext(request, null, session, ui));
+
+        Elements jsElements = page.getElementsByAttributeValue("src",
+                newDependencyUrl);
+        assertEquals(
+                "Should be only one new dependency in the dependencies list", 1,
+                jsElements.size());
+
+        String uidlData = extractUidlData(page);
+        assertFalse("New dependency should not be loaded via uidl",
+                uidlData.contains(newDependencyUrl));
     }
 
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {
@@ -668,5 +683,16 @@ public class BootstrapHandlerTest {
                     "Expected not to have element with url %s for attribute %s",
                     url, attribute), elements.isEmpty());
         });
+    }
+
+    private String extractUidlData(Document page) {
+        Optional<String> dataOptional = page.head().getElementsByTag("script")
+                .stream().filter(scriptTag -> !scriptTag.hasAttr("src"))
+                .map(Element::data).filter(data -> data.contains("var uidl ="))
+                .findAny();
+
+        assertTrue("Expected to find uidl tag in the page",
+                dataOptional.isPresent());
+        return dataOptional.get();
     }
 }
