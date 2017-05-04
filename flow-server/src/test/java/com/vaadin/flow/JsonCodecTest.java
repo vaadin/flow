@@ -115,7 +115,7 @@ public class JsonCodecTest {
         JsonValue json = JsonCodec.encodeWithTypeInfo(element);
 
         assertJsonEquals(
-                JsonUtils.createArray(Json.create(JsonCodec.ELEMENT_TYPE),
+                JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
                         Json.create(element.getNode().getId())),
                 json);
     }
