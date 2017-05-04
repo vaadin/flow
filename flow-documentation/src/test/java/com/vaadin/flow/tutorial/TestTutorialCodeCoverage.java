@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,9 +33,12 @@ import com.vaadin.flow.tutorial.annotations.CodeFor;
 
 public class TestTutorialCodeCoverage {
     private static final Path location = new File(".").toPath();
-    private static final Path javaLocation = location.resolve("src/main/java");
-    private static final Path htmlLocation = location.resolve("src/main/html");
-    private static final Path cssLocation = location.resolve("src/main/css");
+    private static final Path javaLocation = location
+            .resolve(Paths.get("src", "main", "java"));
+    private static final Path htmlLocation = location
+            .resolve(Paths.get("src", "main", "html"));
+    private static final Path cssLocation = location
+            .resolve(Paths.get("src", "main", "css"));
 
     private static final String LINE_SEPARATOR = System
             .getProperty("line.separator");
@@ -214,7 +218,7 @@ public class TestTutorialCodeCoverage {
     private static void extractCodeFiles(Path javaFile,
             Map<String, Set<String>> allowedLines) {
         String className = javaLocation.relativize(javaFile).toString()
-                .replace('/', '.').replaceAll("\\.java$", "");
+                .replace(File.separatorChar, '.').replaceAll("\\.java$", "");
 
         try {
             Class<?> clazz = Class.forName(className);
@@ -231,9 +235,12 @@ public class TestTutorialCodeCoverage {
 
             String tutorialName = codeFor.value();
 
-            Files.lines(javaFile)
-                    .forEach(line -> allowedLines
-                            .computeIfAbsent(tutorialName, n -> new HashSet<>())
+            Files.lines(javaFile).forEach(
+                    line -> allowedLines
+                            .computeIfAbsent(
+                                    tutorialName.replace('/',
+                                            File.separatorChar),
+                                    n -> new HashSet<>())
                             .add(trimWhitespace(line)));
         } catch (ClassNotFoundException | IOException e) {
             throw new RuntimeException(e);
@@ -247,9 +254,13 @@ public class TestTutorialCodeCoverage {
             String idLine = lines.remove(0);
             if (idLine.startsWith("tutorial::")) {
                 String tutorialName = idLine.substring(10);
-                lines.forEach(line -> allowedLines
-                        .computeIfAbsent(tutorialName, n -> new HashSet<>())
-                        .add(trimWhitespace(line)));
+                lines.forEach(
+                        line -> allowedLines
+                                .computeIfAbsent(
+                                        tutorialName.replace('/',
+                                                File.separatorChar),
+                                        n -> new HashSet<>())
+                                .add(trimWhitespace(line)));
             } else {
                 addException("Html file with faulty tutorial header: "
                         + htmlFile.toFile().getName());

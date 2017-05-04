@@ -109,7 +109,7 @@ public class AttachExistingElementView extends AbstractDivView {
     private void handleHeader(Element header) {
         H1 lbl = Component.from(header, H1.class);
         lbl.setText("Client side header");
-        lbl.setId("div");
+        lbl.setId("header");
     }
 
     private void handleLabelInShadow(Element label) {
