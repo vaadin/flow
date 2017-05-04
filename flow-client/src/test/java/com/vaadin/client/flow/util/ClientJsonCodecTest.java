@@ -118,7 +118,7 @@ public class ClientJsonCodecTest {
         JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
                 Json.create(node.getId()));
 
-        Object decoded = ClientJsonCodec.decodeStateNode(tree, json);
+        StateNode decoded = ClientJsonCodec.decodeStateNode(tree, json);
 
         Assert.assertSame(node, decoded);
     }

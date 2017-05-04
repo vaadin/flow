@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow;
 
+import java.util.Locale;
+
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
@@ -599,5 +601,38 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
 
         assertEquals(1, element.getChildElementCount());
         assertEquals("CHILD", element.getFirstElementChild().getTagName());
+    }
+
+    public void testAttachExistingElement() {
+        Binder.bind(node, element);
+
+        StateNode childNode = createChildNode("child");
+
+        String tag = (String) childNode.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeFeatures.TAG).getValue();
+
+        ExistingElementMap existingElementMap = node.getTree().getRegistry()
+                .getExistingElementMap();
+
+        // create and add an existing element
+        Element span = Browser.getDocument().createElement(tag);
+        element.appendChild(span);
+
+        existingElementMap.add(childNode.getId(), span);
+
+        children.add(0, childNode);
+
+        Reactive.flush();
+
+        // nothing has changed: no new child
+        assertEquals(element.getChildElementCount(), 1);
+
+        Element childElement = element.getFirstElementChild();
+
+        assertEquals(tag,
+                childElement.getTagName().toLowerCase(Locale.ENGLISH));
+        assertSame(span, childElement);
+        assertEquals("child", childElement.getId());
+        assertNull(existingElementMap.getElement(childNode.getId()));
     }
 }

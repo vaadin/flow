@@ -43,7 +43,7 @@ public class AttachExistingElementFeatureTest {
 
         Assert.assertEquals(callback, feature.getCallback(child));
         Assert.assertEquals(parent, feature.getParent(child));
-        Assert.assertEquals(element, feature.getPrevisouSibling(child));
+        Assert.assertEquals(element, feature.getPreviousSibling(child));
     }
 
     @Test
@@ -63,6 +63,6 @@ public class AttachExistingElementFeatureTest {
 
         Assert.assertNull(feature.getCallback(child));
         Assert.assertNull(feature.getParent(child));
-        Assert.assertNull(feature.getPrevisouSibling(child));
+        Assert.assertNull(feature.getPreviousSibling(child));
     }
 }
