@@ -18,6 +18,8 @@ package com.vaadin.ui;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.vaadin.ui.Dependency.Type;
 
@@ -37,6 +39,7 @@ public class DependencyList implements Serializable {
 
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
+    public static final String KEY_BLOCKING = "blocking";
     public static final String TYPE_STYLESHEET = "css";
     public static final String TYPE_JAVASCRIPT = "js";
     public static final String TYPE_HTML_IMPORT = "html";
@@ -52,6 +55,10 @@ public class DependencyList implements Serializable {
      * Creates a new instance.
      */
     protected DependencyList() {
+    }
+
+    private Logger getLogger() {
+        return Logger.getLogger(DependencyList.class.getName());
     }
 
     /**
@@ -70,12 +77,17 @@ public class DependencyList implements Serializable {
     public void add(Dependency dependency) {
         if (containsUrl(dependency.getUrl())) {
             // We don't load different types of resources from the same URL
+            getLogger().log(Level.WARNING,
+                    () -> String.format(
+                            "Dependency with url %s was imported numerous times, it's advised to remove excessive imports",
+                            dependency.getUrl()));
             return;
         }
 
         JsonObject jsonObject = Json.createObject();
         jsonObject.put(KEY_URL, dependency.getUrl());
         jsonObject.put(KEY_TYPE, getType(dependency));
+        jsonObject.put(KEY_BLOCKING, dependency.isBlocking());
 
         pendingSendToClient.set(pendingSendToClient.length(), jsonObject);
         urlCache.add(dependency.getUrl());
