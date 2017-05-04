@@ -208,11 +208,11 @@ public class RouterLinkHandler {
     }
 
     /**
-     * Checks if the given element is an anchor element {@code <a routerlink>}.
+     * Checks if the given element is a router link {@code <a router-link>}.
      *
      * @param target
      *            the element to check
-     * @return <code>true</code> if the element is a routerlink
+     * @return <code>true</code> if the element is a router link
      *         <code>false</code> otherwise
      */
     private static boolean isRouterLinkAnchorElement(AnchorElement anchor) {
