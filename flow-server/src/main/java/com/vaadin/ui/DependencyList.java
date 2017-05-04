@@ -75,11 +75,11 @@ public class DependencyList implements Serializable {
      * the context path or use an absolute URL to refer to files outside the
      * service (servlet) path.
      *
-     * @param newDependency
+     * @param dependency
      *            the dependency to include on the page
      */
-    public void add(Dependency newDependency) {
-        String dependencyUrl = newDependency.getUrl();
+    public void add(Dependency dependency) {
+        String dependencyUrl = dependency.getUrl();
 
         if (urlCache.contains(dependencyUrl)) {
             getLogger().log(Level.WARNING,
@@ -87,27 +87,27 @@ public class DependencyList implements Serializable {
                             "Dependency with url %s was imported numerous times, it's advised to remove excessive imports",
                             dependencyUrl));
             Optional.ofNullable(urlToLoadedDependency.get(dependencyUrl))
-                    .ifPresent(currentDependency -> {
-                        if (currentDependency.isBlocking() != newDependency
-                                .isBlocking()) {
-                            getLogger().log(Level.WARNING,
-                                    () -> String.format(
-                                            "Dependency with url %s was imported with 'blocking=true' and 'blocking=false' properties. "
-                                                    + "The 'blocking' property was set to 'true' to avoid conflicts. This may impact performance.",
-                                            dependencyUrl));
-                            if (!currentDependency.isBlocking()) {
-                                urlToLoadedDependency.put(
-                                        currentDependency.getUrl(),
-                                        new Dependency(
-                                                currentDependency.getType(),
-                                                currentDependency.getUrl(),
-                                                true));
-                            }
-                        }
-                    });
+                    .ifPresent(currentDependency -> checkDuplicateDependency(
+                            dependency, currentDependency));
         } else {
             urlCache.add(dependencyUrl);
-            urlToLoadedDependency.put(dependencyUrl, newDependency);
+            urlToLoadedDependency.put(dependencyUrl, dependency);
+        }
+    }
+
+    private void checkDuplicateDependency(Dependency newDependency,
+            Dependency currentDependency) {
+        if (newDependency.isBlocking() != currentDependency.isBlocking()) {
+            getLogger().log(Level.WARNING,
+                    () -> String.format(
+                            "Dependency with url %s was imported with 'blocking=true' and 'blocking=false' properties. "
+                                    + "The 'blocking' property was set to 'true' to avoid conflicts. This may impact performance.",
+                            newDependency.getUrl()));
+            if (!currentDependency.isBlocking()) {
+                urlToLoadedDependency.put(currentDependency.getUrl(),
+                        new Dependency(currentDependency.getType(),
+                                currentDependency.getUrl(), true));
+            }
         }
     }
 
