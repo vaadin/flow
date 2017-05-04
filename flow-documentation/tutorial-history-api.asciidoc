@@ -43,7 +43,7 @@ notified when:
 * the user navigates back or forward using the browser buttons
 * the navigation was done programmatically from server-side java code or
 client-side JavaScript
-* the user clicks a link marked with the _routerlink_ attribute
+* the user clicks a link marked with the _router-link_ attribute
 
 [source,java]
 ----
