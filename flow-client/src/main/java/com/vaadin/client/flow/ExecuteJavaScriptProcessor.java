@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow;
 
+import java.util.Optional;
+
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
@@ -77,10 +79,10 @@ public class ExecuteJavaScriptProcessor {
                     parameterJson);
             parameters.push(parameter);
             parameterNamesAndCode[i] = "$" + i;
-            StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
-                    parameterJson);
-            if (stateNode != null) {
-                map.set(parameter, stateNode);
+            Optional<StateNode> stateNode = ClientJsonCodec
+                    .decodeStateNode(tree, parameterJson);
+            if (stateNode.isPresent()) {
+                map.set(parameter, stateNode.get());
             }
         }
 

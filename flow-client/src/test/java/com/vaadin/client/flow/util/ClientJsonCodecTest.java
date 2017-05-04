@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow.util;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import org.junit.Assert;
@@ -118,9 +119,10 @@ public class ClientJsonCodecTest {
         JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
                 Json.create(node.getId()));
 
-        Object decoded = ClientJsonCodec.decodeStateNode(tree, json);
+        Optional<StateNode> decoded = ClientJsonCodec.decodeStateNode(tree,
+                json);
 
-        Assert.assertSame(node, decoded);
+        Assert.assertSame(node, decoded.get());
     }
 
     @Test
@@ -128,13 +130,14 @@ public class ClientJsonCodecTest {
         JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
                 .createArray(Json.create("string"), Json.create(true)));
 
-        Assert.assertNull(ClientJsonCodec.decodeStateNode(null, json));
+        Assert.assertFalse(
+                ClientJsonCodec.decodeStateNode(null, json).isPresent());
     }
 
     @Test
     public void decodeStateNode_primitive() {
-        Assert.assertNull(
-                ClientJsonCodec.decodeStateNode(null, Json.create("string")));
+        Assert.assertFalse(ClientJsonCodec
+                .decodeStateNode(null, Json.create("string")).isPresent());
     }
 
     private static void encodePrimitiveValues(

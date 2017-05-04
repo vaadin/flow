@@ -15,6 +15,8 @@
  */
 package com.vaadin.client.flow.util;
 
+import java.util.Optional;
+
 import com.google.gwt.core.client.GWT;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.StateNode;
@@ -53,25 +55,27 @@ public class ClientJsonCodec {
      *            the state tree to use for resolving nodes and elements
      * @param json
      *            the JSON value to decode
-     * @return the decoded value
+     * @return an optional decoded state node, or an empty optional if there is
+     *         no state node
      */
-    public static StateNode decodeStateNode(StateTree tree, JsonValue json) {
+    public static Optional<StateNode> decodeStateNode(StateTree tree,
+            JsonValue json) {
         if (json.getType() == JsonType.ARRAY) {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
             case JsonCodec.NODE_TYPE: {
                 int nodeId = (int) array.getNumber(1);
-                return tree.getNode(nodeId);
+                return Optional.of(tree.getNode(nodeId));
             }
             case JsonCodec.ARRAY_TYPE:
-                return null;
+                return Optional.empty();
             default:
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
             }
         } else {
-            return null;
+            return Optional.empty();
         }
     }
 
