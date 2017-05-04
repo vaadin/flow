@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server.communication;
+package com.vaadin.server.communication.rpc;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
@@ -21,7 +21,6 @@ import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeature;
-import com.vaadin.server.communication.rpc.AbstractRpcInvocationHandler;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
@@ -38,7 +37,8 @@ import elemental.json.JsonObject;
  *
  */
 
-public class AttachExistingElementHandler extends AbstractRpcInvocationHandler {
+public class AttachExistingElementRpcHandler
+        extends AbstractRpcInvocationHandler {
 
     @Override
     public String getRpcType() {
@@ -81,24 +81,21 @@ public class AttachExistingElementHandler extends AbstractRpcInvocationHandler {
             Element element = Element.get(tree.getNodeById(assignedId));
 
             attachElement(feature, element, index,
-                    tree.getNodeById(assignedId));
-
-            if (assignedId != requestedId) {
-                attachElement(feature, element, index,
-                        tree.getNodeById(requestedId));
-            }
+                    tree.getNodeById(requestedId), requestedId == assignedId);
         }
     }
 
     private void attachElement(AttachExistingElementFeature feature,
-            Element element, int index, StateNode node) {
+            Element element, int index, StateNode node, boolean insertChild) {
         ChildElementConsumer callback = feature.getCallback(node);
 
         if (callback != null) {
             Node<?> parent = feature.getParent(node);
             feature.unregister(node);
 
-            parent.insertChild(index, element);
+            if (insertChild) {
+                parent.insertChild(index, element);
+            }
             callback.accept(element);
         }
     }
