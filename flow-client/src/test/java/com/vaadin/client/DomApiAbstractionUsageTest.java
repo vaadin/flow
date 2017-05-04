@@ -1,8 +1,10 @@
 package com.vaadin.client;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -167,9 +169,16 @@ public class DomApiAbstractionUsageTest {
 
         assert "file".equals(sampleClassLocation.getProtocol());
 
-        String sampleClassAbsolutePath = sampleClassLocation.getFile();
+        String sampleClassAbsolutePath;
+        try {
+            sampleClassAbsolutePath = Paths.get(sampleClassLocation.toURI())
+                    .toFile().getPath();
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
 
-        assert sampleClassAbsolutePath.endsWith(sampleClassName);
+        assert sampleClassAbsolutePath
+                .endsWith(sampleClassName.replace('/', File.separatorChar));
 
         return sampleClassAbsolutePath.substring(0,
                 sampleClassAbsolutePath.length() - sampleClassName.length());

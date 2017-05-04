@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow;
 
+import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.binding.Binder;
@@ -574,6 +575,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         Registry registry = new Registry() {
             {
                 set(TemplateRegistry.class, templates);
+                set(ExistingElementMap.class, new ExistingElementMap());
             }
         };
 

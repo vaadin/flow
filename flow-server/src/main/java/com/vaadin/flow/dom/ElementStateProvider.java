@@ -413,7 +413,6 @@ public interface ElementStateProvider extends Serializable {
      * @param callback
      *            the callback which will be invoked with a server side element
      *            instance or an error will be reported, not {@code null}
-     * @return this element
      */
     void attachExistingElement(StateNode node, String tagName,
             Element previousSibling, ChildElementConsumer callback);
