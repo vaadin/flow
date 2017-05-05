@@ -15,7 +15,7 @@
  */
 package com.vaadin.client;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -166,7 +166,7 @@ public class DependencyLoader {
     public void loadDependencies(JsonArray deps) {
         assert deps != null;
 
-        Map<String, BiConsumer<String, ResourceLoadListener>> nonBlockingDependencies = new HashMap<>();
+        Map<String, BiConsumer<String, ResourceLoadListener>> nonBlockingDependencies = new LinkedHashMap<>();
 
         for (int i = 0; i < deps.length(); i++) {
             JsonObject dependencyJson = deps.getObject(i);
