@@ -1,7 +1,7 @@
-function blockingJs() {
+function attachTestDiv(textContent) {
     const div = document.createElement("div");
     div.className = "dependenciesTest";
-    div.textContent = "blocking.js";
+    div.textContent = textContent;
     document.body.appendChild(div);
 }
-blockingJs();
+attachTestDiv("blocking.js");

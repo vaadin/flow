@@ -1,5 +1,6 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
+import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsUI.DOM_CHANGE_TEXT;
 import static com.vaadin.flow.uitest.ui.dependencies.DependenciesLoadingAnnotationsUI.PRELOADED_DIV_ID;
 
 import java.util.List;
@@ -22,24 +23,21 @@ import com.vaadin.flow.testutil.PhantomJSTest;
  * but using {@link com.vaadin.ui.Page} api to add dependencies.
  *
  * @author Vaadin Ltd.
+ * @see DependenciesLoadingBaseUI
  * @see DependenciesLoadingAnnotationsUI
  * @see DependenciesLoadingPageApiUI
  * @see DependenciesLoadingPageApiIT
  */
-@SuppressWarnings("Duplicates")
 public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
     private static final String BLOCKING_PREFIX = "blocking.";
     private static final String NON_BLOCKING_PREFIX = "non-blocking.";
 
     @Test
     public void dependenciesLoadedAsExpectedWithAnnotationApi() {
-        openAndVerifyPage();
-    }
-
-    private void openAndVerifyPage() {
         open();
 
-        waitUntil(input -> input.findElements(By.className("dependenciesTest")).size() == 4);
+        waitUntil(input -> input.findElements(By.className("dependenciesTest"))
+                .size() == 5);
 
         WebElement preloadedDiv = findElement(By.id(PRELOADED_DIV_ID));
         Assert.assertEquals(
@@ -51,18 +49,23 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                         .map(WebElement::getText).collect(Collectors.toList());
 
         Assert.assertEquals(
-                "Four dependencies are supposed to create tags, each one at load",
-                4, testMessages.size());
+                "Four dependencies are supposed to create tags, each one at load + dom change between the dependencies",
+                5, testMessages.size());
 
         Assert.assertTrue("Blocking dependencies should be loaded first",
                 testMessages.get(0).startsWith(BLOCKING_PREFIX));
         Assert.assertTrue("Blocking dependencies should be loaded first",
                 testMessages.get(1).startsWith(BLOCKING_PREFIX));
+
         Assert.assertTrue(
-                "Non-blocking dependencies should be loaded after blocking",
-                testMessages.get(2).startsWith(NON_BLOCKING_PREFIX));
+                "Expected dom change to happen after blocking dependencies loaded and before non-blocking dependencies have loaded",
+                testMessages.get(2).equals(DOM_CHANGE_TEXT));
+
         Assert.assertTrue(
                 "Non-blocking dependencies should be loaded after blocking",
                 testMessages.get(3).startsWith(NON_BLOCKING_PREFIX));
+        Assert.assertTrue(
+                "Non-blocking dependencies should be loaded after blocking",
+                testMessages.get(4).startsWith(NON_BLOCKING_PREFIX));
     }
 }
