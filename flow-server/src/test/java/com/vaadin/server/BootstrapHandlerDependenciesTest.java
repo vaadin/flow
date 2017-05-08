@@ -107,6 +107,39 @@ public class BootstrapHandlerDependenciesTest {
         }
     }
 
+    @JavaScript(value = "1.js", blocking = false)
+    @JavaScript(value = "2.js", blocking = false)
+    @JavaScript(value = "1.js", blocking = false)
+    private static class UIAnnotated_DuplicateDependencies_NonBlocking
+            extends UI {
+    }
+
+    private static class UIWithMethods_DuplicateDependencies_NonBlocking
+            extends UI {
+        @Override
+        protected void init(VaadinRequest request) {
+            getPage().addJavaScript("1.js", false);
+            getPage().addJavaScript("2.js", false);
+            getPage().addJavaScript("1.js", false);
+        }
+    }
+
+    @JavaScript(value = "1.js")
+    @JavaScript(value = "2.js")
+    @JavaScript(value = "1.js")
+    private static class UIAnnotated_DuplicateDependencies_Blocking extends UI {
+    }
+
+    private static class UIWithMethods_DuplicateDependencies_Blocking
+            extends UI {
+        @Override
+        protected void init(VaadinRequest request) {
+            getPage().addJavaScript("1.js");
+            getPage().addJavaScript("2.js");
+            getPage().addJavaScript("1.js");
+        }
+    }
+
     private VaadinSession session;
     private VaadinServletService service;
 
@@ -235,6 +268,32 @@ public class BootstrapHandlerDependenciesTest {
         testUis(uiPageTestingMethod,
                 new UIAnnotated_ImportOrderTest_NonBlocking(),
                 new UIWithMethods_ImportOrderTest_NonBlocking());
+    }
+
+    @Test
+    public void duplicateDependenciesAreDiscarded_Blocking() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            Element head = page.head();
+
+            List<String> jsImportUrls = head.getElementsByTag("script").stream()
+                    .map(element -> element.attr("src"))
+                    .collect(Collectors.toList());
+            assertUrlOrder(jsImportUrls, "1.js", "2.js");
+        };
+        testUis(uiPageTestingMethod,
+                new UIAnnotated_DuplicateDependencies_Blocking(),
+                new UIWithMethods_DuplicateDependencies_Blocking());
+    }
+
+    @Test
+    public void duplicateDependenciesAreDiscarded_NonBlocking() {
+        Consumer<Document> uiPageTestingMethod = page -> {
+            String uidlData = extractUidlData(page);
+            assertDependenciesOrderInUidl(uidlData, "1.js", "2.js");
+        };
+        testUis(uiPageTestingMethod,
+                new UIAnnotated_DuplicateDependencies_NonBlocking(),
+                new UIWithMethods_DuplicateDependencies_NonBlocking());
     }
 
     private void testUis(Consumer<Document> uiPageTestingMethod,
