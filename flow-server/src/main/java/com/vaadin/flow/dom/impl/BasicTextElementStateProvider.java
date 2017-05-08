@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.dom.impl;
 
+import java.util.Arrays;
+
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.nodefeature.ComponentMapping;
@@ -45,7 +47,7 @@ public class BasicTextElementStateProvider
     public static StateNode createStateNode(String text) {
         assert text != null;
 
-        StateNode node = new StateNode(TextNodeMap.class,
+        StateNode node = new StateNode(Arrays.asList(TextNodeMap.class),
                 ComponentMapping.class, ParentGeneratorHolder.class);
         node.getFeature(TextNodeMap.class).setText(text);
 

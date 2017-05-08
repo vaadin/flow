@@ -18,12 +18,17 @@ package com.vaadin.flow;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.change.NodeAttachChange;
 import com.vaadin.flow.change.NodeChange;
@@ -44,6 +49,8 @@ import com.vaadin.ui.UI;
  */
 public class StateNode implements Serializable {
     private final Map<Class<? extends NodeFeature>, NodeFeature> features = new HashMap<>();
+
+    private final Set<Class<? extends NodeFeature>> reportedFeatures = new HashSet<>();
 
     private Map<Class<? extends NodeFeature>, Serializable> changes;
 
@@ -68,11 +75,26 @@ public class StateNode implements Serializable {
      */
     @SafeVarargs
     public StateNode(Class<? extends NodeFeature>... featureTypes) {
-        for (Class<? extends NodeFeature> featureType : featureTypes) {
-            NodeFeature feature = NodeFeatureRegistry.create(featureType, this);
-            features.put(featureType, feature);
-        }
+        this(Collections.emptyList(), featureTypes);
+    }
 
+    /**
+     * Creates a state node with the given feature types and required features
+     * that are always sent to the client side.
+     *
+     * @param requiredFeatures
+     *            the list of the features that are required on the client side
+     *            (populated even if they are empty)
+     * @param featureTypes
+     *            a collection of feature classes that the node should support
+     */
+    @SafeVarargs
+    public StateNode(List<Class<? extends NodeFeature>> requiredFeatures,
+            Class<? extends NodeFeature>... featureTypes) {
+        reportedFeatures.addAll(requiredFeatures);
+        requiredFeatures.stream().forEach(this::addFeature);
+        Stream.concat(requiredFeatures.stream(), Stream.of(featureTypes))
+                .forEach(this::addFeature);
     }
 
     /**
@@ -175,7 +197,7 @@ public class StateNode implements Serializable {
     }
 
     private void forEachChild(Consumer<StateNode> action) {
-        features.values().forEach(n -> n.forEachChild(action));
+        getFeatures().values().forEach(n -> n.forEachChild(action));
     }
 
     /**
@@ -202,7 +224,7 @@ public class StateNode implements Serializable {
     public <T extends NodeFeature> T getFeature(Class<T> featureType) {
         assert featureType != null;
 
-        NodeFeature feature = features.get(featureType);
+        NodeFeature feature = getFeatures().get(featureType);
         if (feature == null) {
             throw new IllegalStateException(
                     "Node does not have the feature " + featureType);
@@ -222,7 +244,7 @@ public class StateNode implements Serializable {
     public boolean hasFeature(Class<? extends NodeFeature> featureType) {
         assert featureType != null;
 
-        return features.containsKey(featureType);
+        return getFeatures().containsKey(featureType);
     }
 
     /**
@@ -274,7 +296,7 @@ public class StateNode implements Serializable {
 
                 // Make all changes show up as if the node was recently attached
                 clearChanges();
-                features.values()
+                getFeatures().values()
                         .forEach(NodeFeature::generateChangesFromEmpty);
             } else {
                 collector.accept(new NodeDetachChange(this));
@@ -284,7 +306,7 @@ public class StateNode implements Serializable {
         }
 
         if (isAttached) {
-            features.values().stream().filter(this::hasChangeTracker)
+            getFeatures().values().stream().filter(this::hasChangeTracker)
                     .forEach(feature -> feature.collectChanges(collector));
             clearChanges();
         }
@@ -460,7 +482,7 @@ public class StateNode implements Serializable {
             copy.forEach(Command::execute);
         }
 
-        features.values().forEach(f -> f.onAttach(initialAttach));
+        getFeatures().values().forEach(f -> f.onAttach(initialAttach));
     }
 
     private void fireDetachListeners() {
@@ -470,7 +492,7 @@ public class StateNode implements Serializable {
             copy.forEach(Command::execute);
         }
 
-        features.values().forEach(NodeFeature::onDetach);
+        getFeatures().values().forEach(NodeFeature::onDetach);
     }
 
     /**
@@ -519,6 +541,18 @@ public class StateNode implements Serializable {
     }
 
     /**
+     * Returns whether the {@code featureType} should be reported to the client
+     * even if it doesn't contain any data.
+     * 
+     * @param featureType
+     *            feature type which needs to be populated on the client
+     * @return whether the feature required by the client side
+     */
+    public boolean isReportedFeature(Class<? extends NodeFeature> featureType) {
+        return reportedFeatures.contains(featureType);
+    }
+
+    /**
      * Internal helper for getting the UI instance for a node attached to a
      * StateTree. Assumes the node is attached.
      *
@@ -528,5 +562,16 @@ public class StateNode implements Serializable {
         assert isAttached();
         assert getOwner() instanceof StateTree : "Attach should only be called when the node has been attached to the tree, not to a null owner";
         return ((StateTree) getOwner()).getUI();
+    }
+
+    private void addFeature(Class<? extends NodeFeature> featureType) {
+        if (!features.containsKey(featureType)) {
+            NodeFeature feature = NodeFeatureRegistry.create(featureType, this);
+            features.put(featureType, feature);
+        }
+    }
+
+    private Map<Class<? extends NodeFeature>, NodeFeature> getFeatures() {
+        return features;
     }
 }

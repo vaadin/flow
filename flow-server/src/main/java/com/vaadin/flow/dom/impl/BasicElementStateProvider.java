@@ -100,7 +100,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
      */
     public static StateNode createStateNode(String tag) {
         assert ElementUtil.isValidTagName(tag) : "Invalid tag name " + tag;
-        StateNode node = new StateNode(features);
+        StateNode node = new StateNode(Arrays.asList(ElementData.class),
+                features);
 
         node.getFeature(ElementData.class).setTag(tag);
 

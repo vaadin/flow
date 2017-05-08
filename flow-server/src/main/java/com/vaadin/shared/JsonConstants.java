@@ -42,6 +42,12 @@ public class JsonConstants implements Serializable {
     public static final String CHANGE_TYPE = "type";
 
     /**
+     * Change type for empty change (populate the feature on the client side
+     * only).
+     */
+    public static final String CHANGE_TYPE_NOOP = "empty";
+
+    /**
      * Change type for attaching nodes.
      */
     public static final String CHANGE_TYPE_ATTACH = "attach";
@@ -70,6 +76,11 @@ public class JsonConstants implements Serializable {
      * Key holding the feature of a change.
      */
     public static final String CHANGE_FEATURE = "feat";
+
+    /**
+     * Key holding the feature type.
+     */
+    public static final String CHANGE_FEATURE_TYPE = "featType";
 
     /**
      * Key holding the map key of the change.

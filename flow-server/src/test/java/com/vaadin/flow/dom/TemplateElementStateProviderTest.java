@@ -38,6 +38,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.TemplateElementStateProvider;
 import com.vaadin.flow.nodefeature.ClientDelegateHandlers;
 import com.vaadin.flow.nodefeature.ComponentMapping;
+import com.vaadin.flow.nodefeature.ModelList;
 import com.vaadin.flow.nodefeature.ModelMap;
 import com.vaadin.flow.nodefeature.NodeFeature;
 import com.vaadin.flow.nodefeature.NodeFeatureRegistry;
@@ -1040,6 +1041,14 @@ public class TemplateElementStateProviderTest {
         Assert.assertEquals("blue", element.getStyle().get("background"));
         Assert.assertArrayEquals(new Object[] { "style" },
                 element.getAttributeNames().toArray());
+    }
+
+    @Test
+    public void createSubModelNode_createdNodeHasRequiedFeature() {
+        StateNode node = TemplateElementStateProvider
+                .createSubModelNode(ModelList.class);
+
+        Assert.assertTrue(node.isReportedFeature(ModelList.class));
     }
 
 }

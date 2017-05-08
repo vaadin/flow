@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.StateNode;
+import com.vaadin.flow.change.EmptyChange;
 import com.vaadin.flow.change.MapPutChange;
 import com.vaadin.flow.change.MapRemoveChange;
 import com.vaadin.flow.change.NodeChange;
@@ -42,6 +43,8 @@ public abstract class NodeMap extends NodeFeature {
 
     private HashMap<String, Serializable> values;
 
+    private boolean isPopulated;
+
     /**
      * Creates a new map feature for the given node.
      *
@@ -50,6 +53,7 @@ public abstract class NodeMap extends NodeFeature {
      */
     public NodeMap(StateNode node) {
         super(node);
+        isPopulated = !node.isReportedFeature(getClass());
     }
 
     /**
@@ -281,25 +285,39 @@ public abstract class NodeMap extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
+        boolean hasChanges[] = new boolean[1];
         getChangeTracker().forEach((key, earlierValue) -> {
             boolean containsNow = values != null && values.containsKey(key);
             boolean containedEarlier = earlierValue != REMOVED_MARKER;
             if (containedEarlier && !containsNow) {
                 collector.accept(new MapRemoveChange(this, key));
+                hasChanges[0] = true;
             } else if (containsNow) {
                 Object currentValue = values.get(key);
                 if (!containedEarlier
                         || !Objects.equals(earlierValue, currentValue)) {
                     // New or changed value
                     collector.accept(new MapPutChange(this, key, currentValue));
+                    hasChanges[0] = true;
                 }
             }
         });
+        if (!isPopulated) {
+            if (!hasChanges[0]) {
+                collector.accept(new EmptyChange(this));
+            }
+            isPopulated = true;
+        }
     }
 
     @Override
     public void generateChangesFromEmpty() {
         if (values == null) {
+            if (!isPopulated) {
+                // populate change tracker so that an empty change can be
+                // reported
+                getChangeTracker();
+            }
             return;
         }
         assert !values.isEmpty();

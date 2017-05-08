@@ -99,6 +99,9 @@ public class TreeChangeProcessor {
         assert node != null;
 
         switch (type) {
+        case JsonConstants.CHANGE_TYPE_NOOP:
+            populateFeature(change, node);
+            break;
         case JsonConstants.CHANGE_TYPE_SPLICE:
             processSpliceChange(change, node);
             break;
@@ -118,6 +121,18 @@ public class TreeChangeProcessor {
 
     private static void processDetachChange(StateNode node) {
         node.getTree().unregisterNode(node);
+    }
+
+    private static void populateFeature(JsonObject change, StateNode node) {
+        assert change.hasKey(
+                JsonConstants.CHANGE_FEATURE_TYPE) : "Change doesn't contain feature type. Dont know how to populate feature";
+        int featureId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
+        if (change.getBoolean(JsonConstants.CHANGE_FEATURE_TYPE)) {
+            // list feature
+            node.getList(featureId);
+        } else {
+            node.getMap(featureId);
+        }
     }
 
     private static void processPutChange(JsonObject change, StateNode node) {

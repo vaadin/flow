@@ -72,6 +72,27 @@ public class ElementPropertyMapTest {
         Assert.assertTrue(second.get());
     }
 
+    @Test
+    public void resolveModelList_modelListStateNodeHasReportedFeature() {
+        StateNode node = BasicElementStateProvider.createStateNode("div");
+        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+        map.resolveModelList("foo");
+
+        StateNode stateNode = (StateNode) map.get("foo");
+        Assert.assertTrue(stateNode.isReportedFeature(ModelList.class));
+    }
+
+    @Test
+    public void resolveModelMap_modelMapStateNodeHasReportedFeature() {
+        StateNode node = BasicElementStateProvider.createStateNode("div");
+        ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
+        map.resolveModelMap("foo");
+
+        StateNode stateNode = (StateNode) map.get("foo");
+        Assert.assertTrue(
+                stateNode.isReportedFeature(ElementPropertyMap.class));
+    }
+
     private void listenerIsNotified(boolean clientEvent) {
         StateNode node = BasicElementStateProvider.createStateNode("div");
         ElementPropertyMap map = node.getFeature(ElementPropertyMap.class);
