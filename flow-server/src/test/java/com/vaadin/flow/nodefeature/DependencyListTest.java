@@ -16,7 +16,13 @@
 package com.vaadin.flow.nodefeature;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +34,7 @@ import com.vaadin.ui.Dependency.Type;
 import com.vaadin.ui.DependencyList;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 public class DependencyListTest {
@@ -184,5 +191,56 @@ public class DependencyListTest {
 
         assertTrue("Adding 10K dependencies should take about 50ms. Took "
                 + time + "ms", time < 500);
+    }
+
+    @Test
+    public void ensureDependenciesSentToClientHaveTheSameOrderAsAdded() {
+        Dependency html_dep_blocking = new Dependency(Type.HTML_IMPORT,
+                "blocking.html", true);
+        Dependency js_dep_blocking = new Dependency(Type.JAVASCRIPT,
+                "blocking.js", true);
+        Dependency css_dep_blocking = new Dependency(Type.STYLESHEET,
+                "blocking.css", true);
+        Dependency html_dep_non_blocking = new Dependency(Type.HTML_IMPORT,
+                "non_blocking.html", false);
+        Dependency js_dep_non_blocking = new Dependency(Type.JAVASCRIPT,
+                "non_blocking.js", false);
+        Dependency css_dep_non_blocking = new Dependency(Type.STYLESHEET,
+                "non_blocking.css", false);
+        assertTrue("Expected the dependency to be blocking",
+                html_dep_blocking.isBlocking());
+        assertTrue("Expected the dependency to be blocking",
+                js_dep_blocking.isBlocking());
+        assertTrue("Expected the dependency to be blocking",
+                css_dep_blocking.isBlocking());
+        assertFalse("Expected the dependency to be non-blocking",
+                html_dep_non_blocking.isBlocking());
+        assertFalse("Expected the dependency to be non-blocking",
+                js_dep_non_blocking.isBlocking());
+        assertFalse("Expected the dependency to be non-blocking",
+                css_dep_non_blocking.isBlocking());
+
+        List<Dependency> dependencies = new ArrayList<>(
+                Arrays.asList(html_dep_blocking, js_dep_blocking,
+                        css_dep_blocking, html_dep_non_blocking,
+                        js_dep_non_blocking, css_dep_non_blocking));
+        assertEquals("Expected to have 6 dependencies", 6, dependencies.size());
+
+        Collections.shuffle(dependencies);
+        dependencies.forEach(deps::add);
+        JsonArray pendingSendToClient = deps.getPendingSendToClient();
+
+        for (int i = 0; i < pendingSendToClient.length(); i++) {
+            JsonObject actualDependency = pendingSendToClient.getObject(i);
+            Dependency expectedDependency = dependencies.get(i);
+            assertEquals(
+                    "Expected to have the same dependency on the same position for list, but urls do not match",
+                    expectedDependency.getUrl(),
+                    actualDependency.getString(DependencyList.KEY_URL));
+            assertEquals(
+                    "Expected to have the same dependency on the same position for list, but blocking parameter values do not match",
+                    expectedDependency.isBlocking(),
+                    actualDependency.getBoolean(DependencyList.KEY_BLOCKING));
+        }
     }
 }
