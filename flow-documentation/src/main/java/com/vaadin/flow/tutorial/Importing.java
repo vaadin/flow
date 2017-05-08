@@ -17,6 +17,7 @@ package com.vaadin.flow.tutorial;
 
 import com.vaadin.annotations.HtmlImport;
 import com.vaadin.annotations.JavaScript;
+import com.vaadin.annotations.StyleSheet;
 import com.vaadin.annotations.Tag;
 import com.vaadin.flow.tutorial.annotations.CodeFor;
 import com.vaadin.server.VaadinRequest;
@@ -48,5 +49,14 @@ public class Importing {
 
             //@formatter:on
         }
+    }
+
+    @JavaScript("1.js")
+    @StyleSheet("1.css")
+    @HtmlImport("1.html")
+    @JavaScript("2.js")
+    @StyleSheet("2.css")
+    @HtmlImport("2.html")
+    static class OrderedDependencies extends UI {
     }
 }

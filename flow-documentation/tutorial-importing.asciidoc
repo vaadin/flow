@@ -18,19 +18,6 @@ static class HtmlComponent extends Component implements HasText {
 Both annotations are repeatable and you can add multiple annotations for both
 to the component.
 
-[NOTE]
-====
-The execution order for the imports is not guaranteed and if for example the
-JavaScript should be run after the HTML then you should import an html that has
-the correct load order, eg.
-[source, html]
-----
-<link rel="import" href="htmlimport4.html">
-<script src="htmlimport4-js.js"></script>
-----
-[source, html]
-====
-
 Another way of adding imports are the `addHtmlImport(String url)` and
 `addJavaScript(String url)` methods from the `Page` class.
 The functionality is the same as for the annotations.
@@ -46,6 +33,36 @@ public class MyCustomUI extends UI {
   }
 }
 ----
+
+[NOTE]
+====
+For every class that imports dependencies, import order is guaranteed for dependencies of the same type only.
+No guarantees are given regarding numerous classes' dependencies' import order, same as no guarantees are given on import order of
+dependencies of not the same type.
+
+Example:
+[source, java]
+----
+@JavaScript("1.js")
+@StyleSheet("1.css")
+@HtmlImport("1.html")
+@JavaScript("2.js")
+@StyleSheet("2.css")
+@HtmlImport("2.html")
+static class OrderedDependencies extends UI {
+}
+----
+In this case, `1.js` will be imported before `2.js`, `1.css` before `2.css`, `1.html` before `2.html`, but no other guarantees can be made.
+
+If you want to enforce an order between dependencies of a different type, you can add html import with imports in it.
+For example, if `htmlimport4.html` should be run before `htmlimport4-js.js` then you should import an html that has the
+correct load order:
+[source, html]
+----
+<link rel="import" href="htmlimport4.html">
+<script src="htmlimport4-js.js"></script>
+----
+====
 
 You can place your static resources in any folder inside your WAR file except
 for `/VAADIN` which is reserved for framework internal use.

@@ -593,8 +593,8 @@ public class BrowserDetails implements Serializable {
         if (isSafari() && getBrowserMajorVersion() >= 10) {
             return true;
         }
-        // Firefox 45+
-        if (isFirefox() && getBrowserMajorVersion() >= 45) {
+        // Firefox 51+
+        if (isFirefox() && getBrowserMajorVersion() >= 51) {
             return true;
         }
         // Opera 36+
@@ -605,8 +605,10 @@ public class BrowserDetails implements Serializable {
         if (isChrome() && getBrowserMajorVersion() >= 49) {
             return true;
         }
-        // All Edges
-        if (isEdge()) {
+        // Edge 15.15063+
+        if (isEdge() && (getBrowserMajorVersion() > 15
+                || (getBrowserMajorVersion() == 15
+                        && getBrowserMinorVersion() >= 15063))) {
             return true;
         }
 
