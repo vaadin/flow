@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -483,60 +482,6 @@ public class BootstrapHandlerTest {
         assertEquals("noscript", body.children().get(0).tagName());
     }
 
-    @Test
-    public void checkPrerenderedDependencies() throws Exception {
-        initUI(testUI, createVaadinRequest(null));
-
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
-        Element head = page.head();
-
-        assertCssElementPrerendered(head, "blocking.css");
-        assertCssElementPrerendered(head, "./blocking-relative.css");
-        assertJavaScriptElementPrerendered(head, "blocking.js");
-
-        // For some reason, we don't prerender html now at all
-        assertElementNotPrerendered(head, "blocking.html");
-
-        assertElementNotPrerendered(head, "lazy.js");
-        assertElementNotPrerendered(head, "lazy.css");
-        assertElementNotPrerendered(head, "lazy.html");
-    }
-
-    @Test
-    public void checkUidlDependencies() {
-        initUI(testUI, createVaadinRequest(null));
-
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
-
-        String uidlData = extractUidlData(page);
-        assertFalse(uidlData.contains("blocking.css"));
-        assertFalse(uidlData.contains("./blocking-relative.css"));
-        assertFalse(uidlData.contains("blocking.js"));
-
-        assertTrue(uidlData.contains("blocking.html"));
-        assertTrue(uidlData.contains("lazy.js"));
-        assertTrue(uidlData.contains("lazy.css"));
-        assertTrue(uidlData.contains("lazy.html"));
-    }
-
-    @Test
-    public void everyNonBlockingJavaScriptIsIncludedWithDeferAttribute() {
-        initUI(testUI, createVaadinRequest(null));
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, testUI));
-
-        Elements jsElements = page.getElementsByTag("script");
-        Elements deferElements = page.getElementsByAttribute("defer");
-
-        // Ignore polyfill that should be loaded immediately
-        jsElements.removeIf(
-                element -> element.attr("src").contains("es6-collections.js"));
-
-        assertEquals(jsElements, deferElements);
-    }
-
     @Test // #1134
     public void testBodyAfterHeadPrerender() throws Exception {
         initUI(testUI, createVaadinRequest(null));
@@ -592,34 +537,6 @@ public class BootstrapHandlerTest {
                 .processBootstrapListeners(Mockito.anyList());
     }
 
-    @JavaScript(value = "new.js", blocking = false)
-    @JavaScript(value = "new.js")
-    private static class UiWithSameDependencyInDifferentModes extends UI {
-        private UiWithSameDependencyInDifferentModes(VaadinSession session) {
-            getInternals().setSession(session);
-        }
-    }
-
-    @Test
-    public void testUiWithSameDependencyInDifferentModes() {
-        String newDependencyUrl = "new.js";
-        UiWithSameDependencyInDifferentModes ui = new UiWithSameDependencyInDifferentModes(
-                session);
-        initUI(ui);
-        Document page = BootstrapHandler.getBootstrapPage(
-                new BootstrapContext(request, null, session, ui));
-
-        Elements jsElements = page.getElementsByAttributeValue("src",
-                newDependencyUrl);
-        assertEquals(
-                "Should be only one new dependency in the dependencies list", 1,
-                jsElements.size());
-
-        String uidlData = extractUidlData(page);
-        assertFalse("New dependency should not be loaded via uidl",
-                uidlData.contains(newDependencyUrl));
-    }
-
     private VaadinRequest createVaadinRequest(PreRenderMode mode) {
         HttpServletRequest request;
         if (mode == PreRenderMode.PRE_ONLY) {
@@ -655,44 +572,5 @@ public class BootstrapHandlerTest {
         meter.setAttribute("value", "500");
         meter.getClassList().add("foo");
         return meter;
-    }
-
-    private void assertCssElementPrerendered(Element head, String url) {
-        Elements cssLinks = head.getElementsByAttributeValue("href", url);
-        assertEquals(1, cssLinks.size());
-        Element linkElement = cssLinks.get(0);
-        assertEquals("link", linkElement.tagName());
-        assertEquals("text/css", linkElement.attr("type"));
-        assertEquals(url, linkElement.attr("href"));
-    }
-
-    private void assertJavaScriptElementPrerendered(Element head, String url) {
-        Elements jsLinks = head.getElementsByAttributeValue("src", url);
-        assertEquals(1, jsLinks.size());
-        Element linkElement = jsLinks.get(0);
-        assertEquals("script", linkElement.tagName());
-        assertEquals("text/javascript", linkElement.attr("type"));
-        assertEquals(url, linkElement.attr("src"));
-    }
-
-    private void assertElementNotPrerendered(Element head, String url) {
-        Stream.of("href", "src").forEach(attribute -> {
-            Elements elements = head.getElementsByAttributeValue(attribute,
-                    url);
-            assertTrue(String.format(
-                    "Expected not to have element with url %s for attribute %s",
-                    url, attribute), elements.isEmpty());
-        });
-    }
-
-    private String extractUidlData(Document page) {
-        Optional<String> dataOptional = page.head().getElementsByTag("script")
-                .stream().filter(scriptTag -> !scriptTag.hasAttr("src"))
-                .map(Element::data).filter(data -> data.contains("var uidl ="))
-                .findAny();
-
-        assertTrue("Expected to find uidl tag in the page",
-                dataOptional.isPresent());
-        return dataOptional.get();
     }
 }
