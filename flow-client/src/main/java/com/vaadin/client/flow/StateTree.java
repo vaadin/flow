@@ -249,7 +249,6 @@ public class StateTree {
      * @param id
      *            id of requested element
      */
-
     public void sendExistingElementWithIdAttachToServer(StateNode parent,
             int requestedId, int assignedId, String tagName, String id) {
         assert assertValidNode(parent);

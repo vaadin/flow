@@ -13,14 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.server.communication;
+package com.vaadin.server.communication.rpc;
 
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
-import com.vaadin.server.communication.rpc.AbstractRpcInvocationHandler;
 import com.vaadin.shared.JsonConstants;
 
 import elemental.json.JsonObject;
@@ -37,7 +35,7 @@ import elemental.json.JsonObject;
  *
  * @author Vaadin Ltd
  */
-public class AttachExistingElementByIdHandler
+public class AttachExistingElementByIdRpcHandler
         extends AbstractRpcInvocationHandler {
 
     @Override
@@ -63,38 +61,33 @@ public class AttachExistingElementByIdHandler
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
 
+        Element parent = feature.getParent(requestedNode);
         if (assignedId == -1) {
-            feature.unregister(requestedNode);
-
             String tag = invocationJson
                     .getString(JsonConstants.RPC_ATTACH_TAG_NAME);
             String id = invocationJson.getString(JsonConstants.RPC_ATTACH_ID);
+
+            feature.unregister(requestedNode);
 
             throw new IllegalStateException(String.format(
                     "The element with the tag name '%s' and id '%s' was "
                             + "not found in the parent with id='%d'",
                     tag, id,
-                    feature.getParent(requestedNode).getNode().getId()));
+                    parent.getNode().getId()));
 
         } else {
             StateNode elementNode = tree.getNodeById(assignedId);
 
-            Element element = Element.get(elementNode);
 
-            attachElement(feature, element, elementNode);
+            if (requestedId == assignedId) {
+            feature.unregister(elementNode);
+                Element element = Element.get(elementNode);
 
-            if (assignedId != requestedId) {
-                attachElement(feature, element, tree.getNodeById(requestedId));
+                parent.getShadowRoot().get().insertVirtualChild(element);
+            } else {
+                feature.unregister(tree.getNodeById(requestedId));
             }
         }
-    }
-
-    private void attachElement(AttachExistingElementFeatureById feature,
-            Element element, StateNode node) {
-        Node<?> parent = feature.getParent(node);
-        feature.unregister(node);
-
-        ((Element) parent).getShadowRoot().get().addVirtualChild(element);
     }
 
 }

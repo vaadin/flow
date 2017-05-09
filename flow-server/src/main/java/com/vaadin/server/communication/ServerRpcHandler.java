@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 import com.vaadin.server.Constants;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.server.VaadinService;
+import com.vaadin.server.communication.rpc.AttachExistingElementByIdRpcHandler;
 import com.vaadin.server.communication.rpc.AttachExistingElementRpcHandler;
 import com.vaadin.server.communication.rpc.EventRpcHandler;
 import com.vaadin.server.communication.rpc.MapSyncRpcHandler;
@@ -429,7 +430,7 @@ public class ServerRpcHandler implements Serializable {
             list.add(new MapSyncRpcHandler());
             list.add(new PublishedServerEventHandlerRpcHandler());
             list.add(new AttachExistingElementRpcHandler());
-            list.add(new AttachExistingElementByIdHandler());
+            list.add(new AttachExistingElementByIdRpcHandler());
             return list;
         }
     }

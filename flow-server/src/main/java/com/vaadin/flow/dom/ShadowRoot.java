@@ -69,11 +69,13 @@ public class ShadowRoot extends Node<ShadowRoot> {
         return this;
     }
 
-    public void addVirtualChild(Element childElement) {
+    public ShadowRoot insertVirtualChild(Element childElement) {
         childElement.removeFromParent();
 
         ((ShadowRootStateProvider) getStateProvider())
                 .insertVirtualChild(getNode(), getChildCount(), childElement);
         ensureChildHasParent(childElement, true);
+
+        return this;
     }
 }

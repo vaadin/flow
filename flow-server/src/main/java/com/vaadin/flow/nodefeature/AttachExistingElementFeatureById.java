@@ -36,7 +36,7 @@ import com.vaadin.flow.dom.Node;
  */
 public class AttachExistingElementFeatureById extends ServerSideFeature {
 
-    private Map<StateNode, Node<?>> parentNodes = new HashMap<>();
+    private Map<StateNode, Element> parentNodes = new HashMap<>();
 
     /**
      * Creates a new instance for the given node.
@@ -60,7 +60,7 @@ public class AttachExistingElementFeatureById extends ServerSideFeature {
      *            the state node that is going to be associated with the
      *            existing element
      */
-    public void register(Node<?> parent, String id,
+    public void register(Element parent, String id,
             StateNode child) {
         parentNodes.put(child, parent);
         child.setParent(getNode());
@@ -73,7 +73,7 @@ public class AttachExistingElementFeatureById extends ServerSideFeature {
      *            the registered state node
      * @return the registered parent for the {@code node}
      */
-    public Node getParent(StateNode node) {
+    public Element getParent(StateNode node) {
         return parentNodes.get(node);
     }
 

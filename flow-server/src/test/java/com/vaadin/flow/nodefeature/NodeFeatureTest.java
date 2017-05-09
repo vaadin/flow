@@ -99,6 +99,11 @@ public class NodeFeatureTest {
         expectedIds.put(ShadowRootHost.class, NodeFeatures.SHADOW_ROOT_HOST);
         expectedIds.put(AttachExistingElementFeature.class,
                 NodeFeatures.ATTACH_EXISTING_ELEMENT);
+        expectedIds.put(AttachExistingElementFeatureById.class,
+                NodeFeatures.ATTACH_EXISTING_ELEMENT_BY_ID);
+        expectedIds.put(VirtualChildrenList.class,
+                NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+
         return expectedIds;
     }
 
