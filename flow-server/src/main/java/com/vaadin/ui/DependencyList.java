@@ -16,8 +16,8 @@
 package com.vaadin.ui;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -53,7 +53,7 @@ public class DependencyList implements Serializable {
      * detection.
      */
     private final Set<String> urlCache = new HashSet<>();
-    private final Map<String, Dependency> urlToLoadedDependency = new HashMap<>();
+    private final Map<String, Dependency> urlToLoadedDependency = new LinkedHashMap<>();
 
     /**
      * Creates a new instance.
