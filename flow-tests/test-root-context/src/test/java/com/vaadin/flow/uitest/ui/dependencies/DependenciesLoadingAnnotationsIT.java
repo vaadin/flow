@@ -49,7 +49,7 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                         .map(WebElement::getText).collect(Collectors.toList());
 
         Assert.assertEquals(
-                "Four dependencies are supposed to create tags, each one at load + dom change between the dependencies",
+                "5 elements are expected to be added: 2 for blocking dependencies, 1 for UI 'onAttach' method, 2 for non-blocking dependencies",
                 5, testMessages.size());
 
         Assert.assertTrue("Blocking dependencies should be loaded first",
