@@ -77,8 +77,11 @@ public class ExecuteJavaScriptProcessor {
                     parameterJson);
             parameters.push(parameter);
             parameterNamesAndCode[i] = "$" + i;
-            map.set(parameter,
-                    ClientJsonCodec.decodeStateNode(tree, parameterJson));
+            StateNode stateNode = ClientJsonCodec.decodeStateNode(tree,
+                    parameterJson);
+            if (stateNode != null) {
+                map.set(parameter, stateNode);
+            }
         }
 
         // Set the script source as the last parameter

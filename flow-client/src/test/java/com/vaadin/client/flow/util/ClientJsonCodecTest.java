@@ -67,8 +67,8 @@ public class ClientJsonCodecTest {
 
     @Test
     public void decodeWithTypeInfo_array() {
-        JsonValue json = JsonCodec.encodeWithTypeInfo(
-                JsonUtils.createArray(Json.create("string"), Json.create(true)));
+        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
+                .createArray(Json.create("string"), Json.create(true)));
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, json);
 
@@ -91,8 +91,8 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(
-                Json.create(JsonCodec.NODE_TYPE), Json.create(node.getId()));
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+                Json.create(node.getId()));
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
 
@@ -102,6 +102,39 @@ public class ClientJsonCodecTest {
     @Test
     public void encodeWithoutTypeInfo() {
         encodePrimitiveValues(ClientJsonCodec::encodeWithoutTypeInfo);
+    }
+
+    @Test
+    public void decodeStateNode_node() {
+        StateTree tree = new StateTree(null);
+        StateNode node = new StateNode(43, tree);
+        tree.registerNode(node);
+
+        JsElement element = new JsElement() {
+
+        };
+        node.setDomNode(element);
+
+        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+                Json.create(node.getId()));
+
+        StateNode decoded = ClientJsonCodec.decodeStateNode(tree, json);
+
+        Assert.assertSame(node, decoded);
+    }
+
+    @Test
+    public void decodeStateNode_array() {
+        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
+                .createArray(Json.create("string"), Json.create(true)));
+
+        Assert.assertNull(ClientJsonCodec.decodeStateNode(null, json));
+    }
+
+    @Test
+    public void decodeStateNode_primitive() {
+        Assert.assertNull(
+                ClientJsonCodec.decodeStateNode(null, Json.create("string")));
     }
 
     private static void encodePrimitiveValues(

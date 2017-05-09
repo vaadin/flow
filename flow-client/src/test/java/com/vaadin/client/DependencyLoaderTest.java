@@ -67,7 +67,8 @@ public class DependencyLoaderTest {
         public void loadStylesheet(String stylesheetUrl,
                 ResourceLoadListener resourceLoadListener) {
             loadingStyles.add(stylesheetUrl);
-            resourceLoadListener.onLoad(new ResourceLoadEvent(this, stylesheetUrl));
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
         }
     }
 
@@ -177,39 +178,87 @@ public class DependencyLoaderTest {
 
     @Test
     public void allBlockingDependenciesAreLoadedFirst() {
-        String BLOCKING_JS_URL = "https://foo.bar/blocking_script.js";
-        String BLOCKING_HTML_URL = "https://foo.bar/blocking_page.html";
-        String BLOCKING_CSS_URL = "https://foo.bar/blocking_style.css";
+        String blockingJsUrl = "https://foo.bar/blocking_script.js";
+        String blockingHtmlUrl = "https://foo.bar/blocking_page.html";
+        String blockingCssUrl = "https://foo.bar/blocking_style.css";
 
-        String REGULAR_JS_URL = "https://foo.bar/script.js";
-        String REGULAR_HTML_URL = "https://foo.bar/page.html";
-        String REGULAR_CSS_URL = "https://foo.bar/style.css";
+        String regularJsUrl = "https://foo.bar/script.js";
+        String regularHtmlUrl = "https://foo.bar/page.html";
+        String regularCssUrl = "https://foo.bar/style.css";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(REGULAR_JS_URL, DependencyList.TYPE_JAVASCRIPT,
+                createDependency(regularJsUrl, DependencyList.TYPE_JAVASCRIPT,
                         false),
-                createDependency(REGULAR_HTML_URL,
+                createDependency(regularHtmlUrl,
                         DependencyList.TYPE_HTML_IMPORT, false),
-                createDependency(REGULAR_CSS_URL,
-                        DependencyList.TYPE_STYLESHEET, false),
+                createDependency(regularCssUrl, DependencyList.TYPE_STYLESHEET,
+                        false),
 
-                createDependency(BLOCKING_JS_URL,
-                        DependencyList.TYPE_JAVASCRIPT, true),
-                createDependency(BLOCKING_HTML_URL,
+                createDependency(blockingJsUrl, DependencyList.TYPE_JAVASCRIPT,
+                        true),
+                createDependency(blockingHtmlUrl,
                         DependencyList.TYPE_HTML_IMPORT, true),
-                createDependency(BLOCKING_CSS_URL,
-                        DependencyList.TYPE_STYLESHEET, true)));
+                createDependency(blockingCssUrl, DependencyList.TYPE_STYLESHEET,
+                        true)));
 
         assertEquals("2 js files should be imported, blocking first",
-                Arrays.asList(BLOCKING_JS_URL, REGULAR_JS_URL),
+                Arrays.asList(blockingJsUrl, regularJsUrl),
                 mockResourceLoader.loadingScripts);
 
         assertEquals("2 style files should be imported, blocking first",
-                Arrays.asList(BLOCKING_CSS_URL, REGULAR_CSS_URL),
+                Arrays.asList(blockingCssUrl, regularCssUrl),
                 mockResourceLoader.loadingStyles);
 
         assertEquals("2 html files should be imported, blocking first",
-                Arrays.asList(BLOCKING_HTML_URL, REGULAR_HTML_URL),
+                Arrays.asList(blockingHtmlUrl, regularHtmlUrl),
+                mockResourceLoader.loadingHtml);
+    }
+
+    @Test
+    public void ensureNonBlockingDependenciesLoadedInOrder() {
+        ensureDependenciesLoadedInOrder(false);
+    }
+
+    @Test
+    public void ensureBlockingDependenciesLoadedInOrder() {
+        ensureDependenciesLoadedInOrder(true);
+    }
+
+    private void ensureDependenciesLoadedInOrder(boolean blocking) {
+        String jsUrl1 = "1.js";
+        String jsUrl2 = "2.js";
+        String cssUrl1 = "1.css";
+        String cssUrl2 = "2.css";
+        String htmlUrl1 = "1.html";
+        String htmlUrl2 = "2.html";
+
+        new DependencyLoader(registry).loadDependencies(createJsonArray(
+                createDependency(jsUrl1, DependencyList.TYPE_JAVASCRIPT,
+                        blocking),
+                createDependency(jsUrl2, DependencyList.TYPE_JAVASCRIPT,
+                        blocking),
+                createDependency(cssUrl1, DependencyList.TYPE_STYLESHEET,
+                        blocking),
+                createDependency(cssUrl2, DependencyList.TYPE_STYLESHEET,
+                        blocking),
+                createDependency(htmlUrl1, DependencyList.TYPE_HTML_IMPORT,
+                        blocking),
+                createDependency(htmlUrl2, DependencyList.TYPE_HTML_IMPORT,
+                        blocking)));
+
+        assertEquals(
+                "jsUrl1 should come before jsUrl2, because it was added earlier",
+                Arrays.asList(jsUrl1, jsUrl2),
+                mockResourceLoader.loadingScripts);
+
+        assertEquals(
+                "cssUrl1 should come before cssUrl2, because it was added earlier",
+                Arrays.asList(cssUrl1, cssUrl2),
+                mockResourceLoader.loadingStyles);
+
+        assertEquals(
+                "htmlUrl1 should come before htmlUrl2, because it was added earlier",
+                Arrays.asList(htmlUrl1, htmlUrl2),
                 mockResourceLoader.loadingHtml);
     }
 

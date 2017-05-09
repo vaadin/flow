@@ -334,8 +334,9 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N attachExistingElement(String tagName, Element previousSibling,
             ChildElementConsumer callback) {
-        // not yet implemented, the implementation will follow in the next PR
-        throw new UnsupportedOperationException();
+        getStateProvider().attachExistingElement(getNode(), tagName,
+                previousSibling, callback);
+        return getSelf();
     }
 
     /**

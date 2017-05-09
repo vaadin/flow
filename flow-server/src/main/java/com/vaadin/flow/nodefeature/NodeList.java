@@ -315,7 +315,7 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         if (isPopulated) {
             allChanges.stream().filter(this::acceptChange).forEach(collector);
         } else {
-            boolean hasChanges[] = new boolean[1];
+            boolean[] hasChanges = new boolean[1];
             allChanges.stream().filter(this::acceptChange)
                     .peek(change -> hasChanges[0] = true).forEach(collector);
             if (!hasChanges[0]) {

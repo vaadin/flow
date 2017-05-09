@@ -285,7 +285,7 @@ public abstract class NodeMap extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        boolean hasChanges[] = new boolean[1];
+        boolean[] hasChanges = new boolean[1];
         getChangeTracker().forEach((key, earlierValue) -> {
             boolean containsNow = values != null && values.containsKey(key);
             boolean containedEarlier = earlierValue != REMOVED_MARKER;
