@@ -53,7 +53,7 @@ public class ClientJsonCodec {
      *            the state tree to use for resolving nodes and elements
      * @param json
      *            the JSON value to decode
-     * @return the decoded value
+     * @return the decoded state node if any
      */
     public static StateNode decodeStateNode(StateTree tree, JsonValue json) {
         if (json.getType() == JsonType.ARRAY) {

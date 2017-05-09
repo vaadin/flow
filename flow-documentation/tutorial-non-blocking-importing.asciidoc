@@ -11,6 +11,11 @@ to the annotated component class won't be created and process until the dependen
 
 If you want to speed up the page load and it is possible to load dependencies after 
 the processing of the DOM structure then you can specify the `blocking` parameter value as `blocking=false`.
+[NOTE]
+====
+It is guaranteed, that all blocking dependencies are loaded before any of the non-blocking dependencies.
+Each of the groups imports dependencies in the same way, which is described in <<tutorial-importing#,Importing html/javascript>> tutorial.
+====
 
 All the blocking dependencies are loaded and injected into the DOM before any non-blocking dependencies,
 to make sure that client side structure is correctly processed with the required blocking dependencies.

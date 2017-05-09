@@ -101,7 +101,7 @@ public class AttachExistingElementFeature extends ServerSideFeature {
      *            the registered state node
      * @return the registered previous sibling for the {@code node}
      */
-    public Element getPrevisouSibling(StateNode node) {
+    public Element getPreviousSibling(StateNode node) {
         return siblings.get(node);
     }
 

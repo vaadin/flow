@@ -84,7 +84,8 @@ public class ElementUtils {
             for (int i = 0; i < list.length(); i++) {
                 StateNode stateNode = (StateNode) list.get(i);
                 Node domNode = stateNode.getDomNode();
-                if (indices.get(domNode) < elementIndex) {
+                Integer index = indices.get(domNode);
+                if (index != null && index < elementIndex) {
                     childIndex++;
                 }
 
