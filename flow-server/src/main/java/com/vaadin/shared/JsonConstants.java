@@ -203,6 +203,16 @@ public class JsonConstants implements Serializable {
     public static final String RPC_ATTACH_EXISTING_ELEMENT = "attachExistingElement";
 
     /**
+     * Type value for attach existing element server callback.
+     *
+     * @see #RPC_ATTACH_ASSIGNED_ID
+     * @see #RPC_ATTACH_REQUESTED_ID
+     * @see #RPC_ATTACH_TAG_NAME
+     * @see #RPC_ATTACH_ID
+     */
+    public static final String RPC_ATTACH_EXISTING_ELEMENT_BY_ID = "attachExistingElementById";
+
+    /**
      * Key used to hold requested state node identifier for attach existing
      * element request.
      */
@@ -224,6 +234,11 @@ public class JsonConstants implements Serializable {
      * request.
      */
     public static final String RPC_ATTACH_INDEX = "attachIndex";
+
+    /**
+     * Key used to hold id of the element for attach existing element request.
+     */
+    public static final String RPC_ATTACH_ID = "attachId";
 
     /**
      * Key used when informing the client side that the session has expired.

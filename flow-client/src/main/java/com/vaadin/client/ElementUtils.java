@@ -22,6 +22,7 @@ import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.nodefeature.NodeList;
+import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.dom.Element;
@@ -95,15 +96,9 @@ public class ElementUtils {
                 }
             }
 
-            if (existingId == null) {
-                ExistingElementMap map = parent.getTree().getRegistry()
-                        .getExistingElementMap();
-                existingId = map.getId(existingElement);
-                if (existingId == null) {
-                    existingId = id;
-                    map.add(id, existingElement);
-                }
-            }
+            existingId = getExistingIdOrUpdate(parent, id, existingElement,
+                    existingId);
+
             parent.getTree().sendExistingElementAttachToServer(parent, id,
                     existingId, existingElement.getTagName(), childIndex);
         }
@@ -112,5 +107,75 @@ public class ElementUtils {
     private static boolean hasTag(Node node, String tag) {
         return node instanceof Element
                 && tag.equalsIgnoreCase(((Element) node).getTagName());
+    }
+
+    /**
+     * Find element for given id and collect data required for server side
+     * callback to attach existing element and send it to the server.
+     *
+     * @param parent
+     *            the parent node containing the shadow root containing the
+     *            element requested to attach
+     * @param tagName
+     *            the tag name of the element requested to attach
+     * @param serverSideId
+     *            the identifier of the server side node which is requested to
+     *            be a counterpart of the client side element
+     * @param id
+     *            id of element to wire to
+     */
+    public static void attachExistingElementById(StateNode parent,
+            String tagName, int serverSideId, String id) {
+        Element existingElement = getDomElementById(
+                (Element) parent.getDomNode(), id);
+
+        if (existingElement != null && hasTag(existingElement, tagName)) {
+            NodeMap map = parent.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+            StateNode shadowRootNode = (StateNode) map
+                    .getProperty(NodeFeatures.SHADOW_ROOT).getValue();
+            NodeList list = shadowRootNode
+                    .getList(NodeFeatures.ELEMENT_CHILDREN);
+            Integer existingId = null;
+
+            for (int i = 0; i < list.length(); i++) {
+                StateNode stateNode = (StateNode) list.get(i);
+                Node domNode = stateNode.getDomNode();
+
+                if (domNode.equals(existingElement)) {
+                    existingId = stateNode.getId();
+                    break;
+                }
+            }
+
+            existingId = getExistingIdOrUpdate(shadowRootNode, serverSideId,
+                    existingElement, existingId);
+
+            // Return this as attach to parent which will delegate it to the
+            // underlying shadowRoot as a virtual child.
+            parent.getTree().sendExistingElementWithIdAttachToServer(parent,
+                    serverSideId, existingId, existingElement.getTagName(), id);
+        }
+    }
+
+    private static native Element getDomElementById(Element shadowRootParent,
+            String id) /*-{
+        if (shadowRootParent.shadowRoot) {
+            return shadowRootParent.shadowRoot.getElementById(id);
+        }
+        return null;
+    }-*/;
+
+    private static Integer getExistingIdOrUpdate(StateNode parent,
+            int serverSideId, Element existingElement, Integer existingId) {
+        if (existingId == null) {
+            ExistingElementMap map = parent.getTree().getRegistry()
+                    .getExistingElementMap();
+            existingId = map.getId(existingElement);
+            if (existingId == null) {
+                existingId = serverSideId;
+                map.add(serverSideId, existingElement);
+            }
+        }
+        return existingId;
     }
 }

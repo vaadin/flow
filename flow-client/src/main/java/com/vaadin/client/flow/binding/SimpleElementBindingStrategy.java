@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import jsinterop.annotations.JsFunction;
+
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
 import com.vaadin.client.ExistingElementMap;
@@ -53,7 +55,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import jsinterop.annotations.JsFunction;
 
 /**
  * Binding strategy for a simple (not template) {@link Element} node.
@@ -310,6 +311,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             BindingContext newContext = new BindingContext(shadowRootNode,
                     shadowRoot, context.binderContext);
             bindChildren(newContext);
+            bindVirtualChildren(newContext);
         }
     }
 
@@ -565,6 +567,28 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         });
     }
 
+    private EventRemover bindVirtualChildren(BindingContext context) {
+        NodeList children = context.node.getList(29);// NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+
+        for (int i = 0; i < children.length(); i++) {
+            StateNode childNode = (StateNode) children.get(i);
+
+            context.binderContext.bind(childNode, childNode.getDomNode());
+
+            // DomApi.wrap(context.htmlNode).appendChild(child);
+        }
+
+        return children.addSpliceListener(e -> {
+            /*
+             * Handle lazily so we can create the children we need to insert.
+             * The change that gives a child node an element tag name might not
+             * yet have been applied at this point.
+             */
+            Reactive.addFlushListener(
+                    () -> handleVirtualChildrenSplice(e, context));
+        });
+    }
+
     private void handleChildrenSplice(ListSpliceEvent event,
             BindingContext context) {
         JsArray<?> remove = event.getRemove();
@@ -615,6 +639,30 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 }
 
                 beforeRef = DomApi.wrap(childNode).getNextSibling();
+            }
+        }
+    }
+
+    private void handleVirtualChildrenSplice(ListSpliceEvent event,
+            BindingContext context) {
+        // Actually removing of a virtual element from the dom is not supported.
+
+        JsArray<?> add = event.getAdd();
+        if (add.length() != 0) {
+            for (int i = 0; i < add.length(); i++) {
+                StateNode newChild = (StateNode) add.get(i);
+
+                ExistingElementMap existingElementMap = newChild.getTree()
+                        .getRegistry().getExistingElementMap();
+                Node childNode = existingElementMap
+                        .getElement(newChild.getId());
+                if (childNode != null) {
+                    existingElementMap.remove(newChild.getId());
+                    newChild.setDomNode(childNode);
+                    context.binderContext.createAndBind(newChild);
+                } else {
+                    context.binderContext.createAndBind(newChild);
+                }
             }
         }
     }
