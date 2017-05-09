@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.vaadin.client.Console;
+import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.ConstantPool;
@@ -302,6 +303,10 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                             + "else { return element.attachShadow({'mode' : 'open'});}");
             Node shadowRoot = (Node) function.call(null, context.htmlNode);
 
+            if (shadowRootNode.getDomNode() == null) {
+                shadowRootNode.setDomNode(shadowRoot);
+            }
+
             BindingContext newContext = new BindingContext(shadowRootNode,
                     shadowRoot, context.binderContext);
             bindChildren(newContext);
@@ -537,9 +542,17 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
 
-            Node child = context.binderContext.createAndBind(childNode);
-
-            DomApi.wrap(context.htmlNode).appendChild(child);
+            ExistingElementMap existingElementMap = childNode.getTree()
+                    .getRegistry().getExistingElementMap();
+            Node child = existingElementMap.getElement(childNode.getId());
+            if (child != null) {
+                existingElementMap.remove(childNode.getId());
+                childNode.setDomNode(child);
+                context.binderContext.createAndBind(childNode);
+            } else {
+                child = context.binderContext.createAndBind(childNode);
+                DomApi.wrap(context.htmlNode).appendChild(child);
+            }
         }
 
         return children.addSpliceListener(e -> {
@@ -584,11 +597,22 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             for (int i = 0; i < add.length(); i++) {
                 Object newChildObject = add.get(i);
-                Node childNode = context.binderContext
-                        .createAndBind((StateNode) newChildObject);
+                StateNode newChild = (StateNode) newChildObject;
 
-                DomApi.wrap(context.htmlNode).insertBefore(childNode,
-                        beforeRef);
+                ExistingElementMap existingElementMap = newChild.getTree()
+                        .getRegistry().getExistingElementMap();
+                Node childNode = existingElementMap
+                        .getElement(newChild.getId());
+                if (childNode != null) {
+                    existingElementMap.remove(newChild.getId());
+                    newChild.setDomNode(childNode);
+                    context.binderContext.createAndBind(newChild);
+                } else {
+                    childNode = context.binderContext.createAndBind(newChild);
+
+                    DomApi.wrap(context.htmlNode).insertBefore(childNode,
+                            beforeRef);
+                }
 
                 beforeRef = DomApi.wrap(childNode).getNextSibling();
             }

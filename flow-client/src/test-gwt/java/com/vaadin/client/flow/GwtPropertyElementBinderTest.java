@@ -16,6 +16,7 @@
 package com.vaadin.client.flow;
 
 import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.collection.JsArray;
@@ -45,11 +46,17 @@ public abstract class GwtPropertyElementBinderTest
         JsMap<StateNode, JsMap<String, Object>> synchronizedProperties = JsCollections
                 .map();
 
-        public CollectingStateTree(ConstantPool constantPool) {
+        public CollectingStateTree(ConstantPool constantPool,
+                ExistingElementMap existingElementMap) {
             super(new Registry() {
                 @Override
                 public ConstantPool getConstantPool() {
                     return constantPool;
+                }
+
+                @Override
+                public ExistingElementMap getExistingElementMap() {
+                    return existingElementMap;
                 }
             });
         }
@@ -97,7 +104,7 @@ public abstract class GwtPropertyElementBinderTest
         super.gwtSetUp();
         Reactive.reset();
         constantPool = new ConstantPool();
-        tree = new CollectingStateTree(constantPool);
+        tree = new CollectingStateTree(constantPool, new ExistingElementMap());
 
         node = createNode();
         properties = node.getMap(NodeFeatures.ELEMENT_PROPERTIES);

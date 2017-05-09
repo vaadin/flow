@@ -15,6 +15,7 @@
  */
 package com.vaadin.client;
 
+import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 
@@ -30,7 +31,9 @@ import elemental.dom.Element;
 public class ExistingElementMap {
 
     private final JsMap<Element, Integer> elementToId = JsCollections.map();
-    private final JsMap<Integer, Element> idToElement = JsCollections.map();
+    // JsArray is used as a Map<Integer,Element> here. So this is a map between
+    // an id and an Element.
+    private final JsArray<Element> idToElement = JsCollections.array();
 
     /**
      * Gets the element stored via the {@link #add(int, Element)} method by the
@@ -67,7 +70,7 @@ public class ExistingElementMap {
     public void remove(int id) {
         Element element = idToElement.get(id);
         if (element != null) {
-            idToElement.delete(id);
+            idToElement.set(id, null);
             elementToId.delete(element);
         }
     }
