@@ -183,8 +183,11 @@ public class DependencyLoader {
             }
         }
 
-        runWhenBlockingDependenciesLoaded(() -> nonBlockingDependencies
-                .forEach((url, loader) -> loadDependency(url, false, loader)));
+        runWhenBlockingDependenciesLoaded(() -> {
+            Console.log("Finished loading blocking dependencies, loading non-blocking.");
+            nonBlockingDependencies
+                    .forEach((url, loader) -> loadDependency(url, false, loader));
+        });
     }
 
     private BiConsumer<String, ResourceLoadListener> getResourceLoader(
@@ -197,7 +200,7 @@ public class DependencyLoader {
             return resourceLoader::loadHtml;
         case DependencyList.TYPE_JAVASCRIPT:
             return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadScript(scriptUrl, resourceLoadListener, false,
+                    .loadScript(scriptUrl, resourceLoadListener, !blocking,
                             !blocking);
         default:
             throw new IllegalArgumentException(
