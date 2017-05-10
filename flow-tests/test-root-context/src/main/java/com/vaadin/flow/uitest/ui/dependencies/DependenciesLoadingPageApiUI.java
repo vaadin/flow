@@ -4,11 +4,11 @@ import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.Page;
 
 /**
- * See {@link DependenciesLoadingPageApiUI} for more details about the test.
+ * See {@link DependenciesLoadingAnnotationsUI} for more details about the test.
  * @author Vaadin Ltd.
- * @see DependenciesLoadingPageApiUI
+ * @see DependenciesLoadingAnnotationsUI
  */
-public class DependenciesLoadingPageApiUI extends DependenciesLoadingAnnotationsUI {
+public class DependenciesLoadingPageApiUI extends DependenciesLoadingBaseUI {
     @Override
     protected void init(VaadinRequest request) {
         super.init(request);

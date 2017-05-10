@@ -189,10 +189,13 @@ public class DependencyLoader {
         // run after the blocking dependencies so that non-blocking dependencies
         // don't block those commands
         if (!nonBlockingDependencies.isEmpty()) {
-            runWhenBlockingDependenciesLoaded(() -> Scheduler.get()
-                    .scheduleDeferred(() -> nonBlockingDependencies
-                            .forEach((url, loader) -> loadDependency(url, false,
-                                    loader))));
+            runWhenBlockingDependenciesLoaded(
+                    () -> Scheduler.get().scheduleDeferred(() -> {
+                        Console.log(
+                                "Finished loading blocking dependencies, loading non-blocking.");
+                        nonBlockingDependencies.forEach((url,
+                                loader) -> loadDependency(url, false, loader));
+                    }));
         }
     }
 
@@ -206,7 +209,7 @@ public class DependencyLoader {
             return resourceLoader::loadHtml;
         case DependencyList.TYPE_JAVASCRIPT:
             return (scriptUrl, resourceLoadListener) -> resourceLoader
-                    .loadScript(scriptUrl, resourceLoadListener, false,
+                    .loadScript(scriptUrl, resourceLoadListener, !blocking,
                             !blocking);
         default:
             throw new IllegalArgumentException(
