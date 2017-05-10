@@ -97,7 +97,7 @@ public class DependenciesLoadingAnnotationsIT extends PhantomJSTest {
                         htmlImport -> Assert
                                 .assertEquals(
                                         String.format(
-                                                "All javascript dependencies should be loaded with 'async' attribute. Dependency with url %s does not have this attribute",
+                                                "All html dependencies should be loaded with 'async' attribute. Dependency with url %s does not have this attribute",
                                                 htmlImport
                                                         .getAttribute("href")),
                                         "true",
