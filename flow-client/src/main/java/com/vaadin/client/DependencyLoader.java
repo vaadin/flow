@@ -174,8 +174,7 @@ public class DependencyLoader {
             boolean blocking = dependencyJson
                     .getBoolean(DependencyList.KEY_BLOCKING);
             BiConsumer<String, ResourceLoadListener> loader = getResourceLoader(
-                    dependencyJson.getString(DependencyList.KEY_TYPE),
-                    blocking);
+                    dependencyJson.getString(DependencyList.KEY_TYPE));
             if (blocking) {
                 loadDependency(url, true, loader);
             } else {
@@ -191,7 +190,7 @@ public class DependencyLoader {
     }
 
     private BiConsumer<String, ResourceLoadListener> getResourceLoader(
-            String resourceType, boolean blocking) {
+            String resourceType) {
         ResourceLoader resourceLoader = registry.getResourceLoader();
         switch (resourceType) {
         case DependencyList.TYPE_STYLESHEET:
