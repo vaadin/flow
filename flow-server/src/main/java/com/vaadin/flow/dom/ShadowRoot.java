@@ -85,8 +85,10 @@ public class ShadowRoot extends Node<ShadowRoot> {
      * @return this element
      */
     public ShadowRoot insertVirtualChild(Element childElement) {
-        assert childElement
-                .getParent() == null : "Virtual elements should not have a parent";
+        if (childElement.getParent() != null) {
+            throw new IllegalArgumentException(
+                    "Element to be attached as virtual element should not have a parent");
+        }
 
         getStateProvider().insertVirtualChild(getNode(), childElement);
         ensureChildHasParent(childElement, true);

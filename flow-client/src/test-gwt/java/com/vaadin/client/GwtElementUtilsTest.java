@@ -17,6 +17,8 @@ package com.vaadin.client;
 
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
+import com.vaadin.client.flow.nodefeature.NodeList;
+import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.flow.shared.NodeFeatures;
 
 import elemental.client.Browser;
@@ -48,6 +50,8 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
 
         private int sentExistingElementIndex;
 
+        private String sentExistingElementId;
+
         ExistingElementStateTree(Registry registry) {
             super(registry);
         }
@@ -60,6 +64,16 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
             sentExistingElementAssignedId = assignedId;
             sentExistingElementTagName = tagName;
             sentExistingElementIndex = index;
+        }
+
+        @Override
+        public void sendExistingElementWithIdAttachToServer(StateNode parent,
+                int requestedId, int assignedId, String tagName, String id) {
+            sentExistingElementParent = parent;
+            sentExistingElementRequestedId = requestedId;
+            sentExistingElementAssignedId = assignedId;
+            sentExistingElementTagName = tagName;
+            sentExistingElementId = id;
         }
     }
 
@@ -150,6 +164,81 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
         assertRpcToServerArguments(-1, "button", -1);
     }
 
+    public void testAttachExistingElementById_elementExistsInDom() {
+        Element shadowRoot = setupShadowRoot();
+
+        String id = "identifier";
+
+        Element child = Browser.getDocument().createElement("div");
+        child.setAttribute("id", id);
+        shadowRoot.appendChild(child);
+
+        ElementUtils.attachExistingElementById(node,
+                "div", requestedId, id);
+
+        assertRpcToServerArguments(requestedId, child.getTagName(), id);
+    }
+
+    public void testAttachExistingElementById_elementMissingInDom() {
+        setupShadowRoot();
+
+        ElementUtils.attachExistingElementById(node,
+                "div", requestedId, "not_found");
+
+        assertRpcToServerArguments(-1, "div", "not_found");
+    }
+
+    public void testAttachExistingElementById_elementIsAlreadyAssociated() {
+        Element shadowRoot = setupShadowRoot();
+
+        String id = "identifier";
+
+        Element child = Browser.getDocument().createElement("div");
+        child.setAttribute("id", id);
+        shadowRoot.appendChild(child);
+
+
+        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+        StateNode shadowRootNode = (StateNode) map
+                .getProperty(NodeFeatures.SHADOW_ROOT).getValue();
+        NodeList list = shadowRootNode
+                .getList(NodeFeatures.ELEMENT_CHILDREN);
+
+        StateNode elementNode = new StateNode(99, tree);
+        elementNode.setDomNode(child);
+
+        list.add(0, elementNode);
+
+        ElementUtils.attachExistingElementById(node,
+                "div", requestedId, id);
+
+        assertRpcToServerArguments(99, child.getTagName(), id);
+    }
+
+    private Element setupShadowRoot() {
+        Element shadowRoot = addShadowRoot(element);
+
+        NodeMap map = node.getMap(NodeFeatures.SHADOW_ROOT_DATA);
+        map.getProperty(NodeFeatures.SHADOW_ROOT).setValue(new StateNode(34, tree));
+
+        return shadowRoot;
+    }
+
+    private native Element addShadowRoot(Element element) /*-{
+        element.shadowRoot = $doc.createElement("div");
+        element.shadowRoot.getElementById = function(id) {
+            var children = element.shadowRoot.children;
+            for (var i = 0; i < children.length; i++) {
+                var child = children[i];
+                if(child.getAttribute("id") === id) {
+                    return child;
+                }
+            }
+        }
+
+        return element.shadowRoot;
+    }-*/;
+
     private void assertRpcToServerArguments(int associatedId, String tagName,
             int index) {
         assertEquals(node.getId(), tree.sentExistingElementParent.getId());
@@ -157,6 +246,15 @@ public class GwtElementUtilsTest extends ClientEngineTestBase {
         assertEquals(associatedId, tree.sentExistingElementAssignedId);
         assertEquals(tagName, tree.sentExistingElementTagName);
         assertEquals(index, tree.sentExistingElementIndex);
+    }
+
+    private void assertRpcToServerArguments(int associatedId, String tagName,
+            String id) {
+        assertEquals(node.getId(), tree.sentExistingElementParent.getId());
+        assertEquals(requestedId, tree.sentExistingElementRequestedId);
+        assertEquals(associatedId, tree.sentExistingElementAssignedId);
+        assertEquals(tagName, tree.sentExistingElementTagName);
+        assertEquals(id, tree.sentExistingElementId);
     }
 
     private StateNode addChild(Element child, int index) {

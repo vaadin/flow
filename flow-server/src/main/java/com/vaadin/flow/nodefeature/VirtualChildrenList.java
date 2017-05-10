@@ -63,12 +63,12 @@ public class VirtualChildrenList extends StateNodeNodeList {
 
     @Override
     public StateNode remove(int index) {
-        return super.remove(index);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void clear() {
-        super.clear();
+        throw new UnsupportedOperationException();
     }
 
     @Override

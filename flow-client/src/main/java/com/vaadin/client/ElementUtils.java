@@ -154,6 +154,9 @@ public class ElementUtils {
             // underlying shadowRoot as a virtual child.
             parent.getTree().sendExistingElementWithIdAttachToServer(parent,
                     serverSideId, existingId, existingElement.getTagName(), id);
+        } else {
+            parent.getTree().sendExistingElementWithIdAttachToServer(parent,
+                    serverSideId, -1, tagName, id);
         }
     }
 
