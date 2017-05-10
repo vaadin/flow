@@ -264,14 +264,16 @@ public class ResourceLoader {
      * already loaded doesn't cause the HTML import to be loaded again, but the
      * listener will still be notified when appropriate.
      *
-     *
      * @param htmlUrl
      *            url of HTML import to load
      * @param resourceLoadListener
      *            listener to notify when the HTML import is loaded
+     * @param async
+     *            loads the import asynchronously, if {@code true},
+     *            synchronously otherwise
      */
     public void loadHtml(final String htmlUrl,
-            final ResourceLoadListener resourceLoadListener) {
+            final ResourceLoadListener resourceLoadListener, boolean async) {
         final String url = WidgetUtil.getAbsoluteUrl(htmlUrl);
         ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {
@@ -285,6 +287,7 @@ public class ResourceLoader {
             LinkElement linkTag = getDocument().createLinkElement();
             linkTag.setAttribute("rel", "import");
             linkTag.setAttribute("href", url);
+            linkTag.setAttribute("async", Boolean.toString(async));
 
             class LoadAndReadyListener
                     implements ResourceLoadListener, Runnable {

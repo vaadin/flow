@@ -312,14 +312,15 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             }
             index++;
         }
+        List<AbstractListChange<T>> changes = allChanges.stream()
+                .filter(this::acceptChange).collect(Collectors.toList());
         if (isPopulated) {
-            allChanges.stream().filter(this::acceptChange).forEach(collector);
+            changes.forEach(collector);
         } else {
-            boolean[] hasChanges = new boolean[1];
-            allChanges.stream().filter(this::acceptChange)
-                    .peek(change -> hasChanges[0] = true).forEach(collector);
-            if (!hasChanges[0]) {
+            if (changes.isEmpty()) {
                 collector.accept(new EmptyChange(this));
+            } else {
+                changes.forEach(collector);
             }
             isPopulated = true;
         }

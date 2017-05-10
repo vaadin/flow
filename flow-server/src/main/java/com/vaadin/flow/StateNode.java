@@ -82,19 +82,18 @@ public class StateNode implements Serializable {
      * Creates a state node with the given feature types and required features
      * that are always sent to the client side.
      *
-     * @param requiredFeatures
+     * @param reportableFeatureTypes
      *            the list of the features that are required on the client side
      *            (populated even if they are empty)
-     * @param featureTypes
+     * @param nonReportableFeatureTypes
      *            a collection of feature classes that the node should support
      */
     @SafeVarargs
-    public StateNode(List<Class<? extends NodeFeature>> requiredFeatures,
-            Class<? extends NodeFeature>... featureTypes) {
-        reportedFeatures.addAll(requiredFeatures);
-        requiredFeatures.stream().forEach(this::addFeature);
-        Stream.concat(requiredFeatures.stream(), Stream.of(featureTypes))
-                .forEach(this::addFeature);
+    public StateNode(List<Class<? extends NodeFeature>> reportableFeatureTypes,
+            Class<? extends NodeFeature>... nonReportableFeatureTypes) {
+        reportedFeatures.addAll(reportableFeatureTypes);
+        Stream.concat(reportableFeatureTypes.stream(),
+                Stream.of(nonReportableFeatureTypes)).forEach(this::addFeature);
     }
 
     /**

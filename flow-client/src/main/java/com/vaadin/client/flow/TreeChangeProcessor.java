@@ -125,7 +125,7 @@ public class TreeChangeProcessor {
 
     private static void populateFeature(JsonObject change, StateNode node) {
         assert change.hasKey(
-                JsonConstants.CHANGE_FEATURE_TYPE) : "Change doesn't contain feature type. Dont know how to populate feature";
+                JsonConstants.CHANGE_FEATURE_TYPE) : "Change doesn't contain feature type. Don't know how to populate feature";
         int featureId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
         if (change.getBoolean(JsonConstants.CHANGE_FEATURE_TYPE)) {
             // list feature
