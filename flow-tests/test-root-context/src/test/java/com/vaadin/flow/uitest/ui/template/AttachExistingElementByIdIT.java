@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
@@ -38,7 +39,12 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
         Assert.assertEquals("Type here to update label",
                 input.getAttribute("placeholder"));
 
-        input.sendKeys("Harley!", Keys.ENTER);
+        input.sendKeys("Harley!");
+        input.sendKeys(Keys.ENTER);
+
+        // Wait for text so we don't asser too early
+        waitUntil(ExpectedConditions.textToBePresentInElement(label,
+                "Text from input Harley!"), 2);
 
         Assert.assertEquals("Text from input Harley!", label.getText());
 
