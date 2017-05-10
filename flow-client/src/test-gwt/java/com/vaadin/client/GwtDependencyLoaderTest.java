@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-
 import com.google.gwt.core.client.impl.SchedulerImpl;
 import com.vaadin.ui.DependencyList;
 
@@ -95,7 +93,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         initScheduler(new CustomScheduler());
     }
 
-    @Test
     public void testAllBlockingDependenciesAreLoadedFirst() {
         String blockingJsUrl = "https://foo.bar/blocking_script.js";
         String blockingHtmlUrl = "https://foo.bar/blocking_page.html";
@@ -132,7 +129,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
                 mockResourceLoader.loadingHtml);
     }
 
-    @Test
     public void testEnsureNonBlockingDependenciesLoadedInOrder() {
         String jsUrl1 = "1.js";
         String jsUrl2 = "2.js";

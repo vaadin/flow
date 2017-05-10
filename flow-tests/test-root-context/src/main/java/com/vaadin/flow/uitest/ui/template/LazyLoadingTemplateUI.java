@@ -68,7 +68,7 @@ public class LazyLoadingTemplateUI extends UI {
     }
 
     private StreamResource getHtmlImportResource() {
-        StreamResource jsRes = new StreamResource("LazyWidget.html", () -> {
+        return new StreamResource("LazyWidget.html", () -> {
             // @formatter:off
             String js = "<link rel='import' href='/v2/bower_components/polymer/polymer.html'>"+
             "<dom-module id='lazy-widget'>"+
@@ -94,6 +94,5 @@ public class LazyLoadingTemplateUI extends UI {
             return new ByteArrayInputStream(
                     js.getBytes(StandardCharsets.UTF_8));
         });
-        return jsRes;
     }
 }
