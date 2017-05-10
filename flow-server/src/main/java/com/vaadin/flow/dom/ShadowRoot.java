@@ -69,11 +69,21 @@ public class ShadowRoot extends Node<ShadowRoot> {
         return this;
     }
 
+    /**
+     * Insert a 'virtual' child to this shadow root.
+     * <p>
+     * Virtual children are elements in the shadow root, but they may not
+     * actually be connected to the shadow root itself on the client.
+     * 
+     * @param childElement
+     *            element to register for shadow root
+     * @return this element
+     */
     public ShadowRoot insertVirtualChild(Element childElement) {
         childElement.removeFromParent();
 
         ((ShadowRootStateProvider) getStateProvider())
-                .insertVirtualChild(getNode(), getChildCount(), childElement);
+                .insertVirtualChild(getNode(), childElement);
         ensureChildHasParent(childElement, true);
 
         return this;

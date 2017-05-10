@@ -19,13 +19,15 @@ package com.vaadin.flow.nodefeature;
 import com.vaadin.flow.StateNode;
 
 /**
- * List of nodes describing the virtually connected child elements of an element.
+ * List of nodes describing the virtually connected child elements of an
+ * element.
  *
  * @author Vaadin Ltd
  */
 public class VirtualChildrenList extends StateNodeNodeList {
+
     /**
-     * Creates a new element children list for the given node.
+     * Creates a new element virtual children list for the given node.
      *
      * @param node
      *            the node that the list belongs to
@@ -42,6 +44,16 @@ public class VirtualChildrenList extends StateNodeNodeList {
                         .getParentGenerator().isPresent();
 
         super.add(index, node);
+    }
+
+    /**
+     * Appends an item as last in the list.
+     * 
+     * @param node
+     *            the item to append
+     */
+    public void append(StateNode node) {
+        add(size(), node);
     }
 
     @Override

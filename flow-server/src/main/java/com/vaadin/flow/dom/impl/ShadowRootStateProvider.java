@@ -210,10 +210,15 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
         return ShadowRoot.get(node);
     }
 
-    public void insertVirtualChild(StateNode node, int index, Element child) {
-        assert index >= 0;
-        assert index <= getChildCount(node); // == if adding as last
-
-        node.getFeature(VirtualChildrenList.class).add(index, child.getNode());
+    /**
+     * Insert the given virtual child at the given position.
+     * 
+     * @param node
+     *            node containing data
+     * @param child
+     *            element to insert
+     */
+    public void insertVirtualChild(StateNode node, Element child) {
+        node.getFeature(VirtualChildrenList.class).append(child.getNode());
     }
 }

@@ -17,10 +17,8 @@ package com.vaadin.flow.nodefeature;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import com.vaadin.flow.StateNode;
-import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 
@@ -54,14 +52,11 @@ public class AttachExistingElementFeatureById extends ServerSideFeature {
      * 
      * @param parent
      *            parent node of the {@code child}
-     * @param id
-     *            id attribute identifier of the wanted element
      * @param child
      *            the state node that is going to be associated with the
      *            existing element
      */
-    public void register(Element parent, String id,
-            StateNode child) {
+    public void register(Element parent, StateNode child) {
         parentNodes.put(child, parent);
         child.setParent(getNode());
     }

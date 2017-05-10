@@ -15,9 +15,12 @@
  */
 package com.vaadin.server.communication.rpc;
 
+import java.util.Optional;
+
 import com.vaadin.flow.StateNode;
 import com.vaadin.flow.StateTree;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.nodefeature.AttachExistingElementFeatureById;
 import com.vaadin.shared.JsonConstants;
 
@@ -72,18 +75,19 @@ public class AttachExistingElementByIdRpcHandler
             throw new IllegalStateException(String.format(
                     "The element with the tag name '%s' and id '%s' was "
                             + "not found in the parent with id='%d'",
-                    tag, id,
-                    parent.getNode().getId()));
+                    tag, id, parent.getNode().getId()));
 
         } else {
             StateNode elementNode = tree.getNodeById(assignedId);
 
-
             if (requestedId == assignedId) {
-            feature.unregister(elementNode);
+                feature.unregister(elementNode);
                 Element element = Element.get(elementNode);
 
-                parent.getShadowRoot().get().insertVirtualChild(element);
+                Optional<ShadowRoot> shadowRoot = parent.getShadowRoot();
+                if (shadowRoot.isPresent()) {
+                    shadowRoot.get().insertVirtualChild(element);
+                }
             } else {
                 feature.unregister(tree.getNodeById(requestedId));
             }

@@ -568,14 +568,12 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     private EventRemover bindVirtualChildren(BindingContext context) {
-        NodeList children = context.node.getList(29);// NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
+        NodeList children = context.node.getList(NodeFeatures.VIRTUAL_CHILD_ELEMENTS);
 
         for (int i = 0; i < children.length(); i++) {
             StateNode childNode = (StateNode) children.get(i);
 
             context.binderContext.bind(childNode, childNode.getDomNode());
-
-            // DomApi.wrap(context.htmlNode).appendChild(child);
         }
 
         return children.addSpliceListener(e -> {

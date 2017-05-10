@@ -59,6 +59,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
 
     private transient M model;
+    private ShadowRoot shadowRoot;
 
     /**
      * Creates the component that is responsible for Polymer template
@@ -74,7 +75,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         ModelDescriptor.get(getModelType()).getPropertyNames().forEach(
                 propertyName -> modelMap.setProperty(propertyName, null));
 
-        getElement().attachShadow();
+        shadowRoot = getElement().attachShadow();
         mapComponents(getClass());
     }
 
@@ -219,12 +220,10 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
         Tag tag = fieldType.getAnnotation(Tag.class);
 
-        attachExistingElementById(tag.value(), id, fieldType, field);
+        attachExistingElementById(tag.value(), id, field);
     }
 
     private Optional<Element> getElementById(String id) {
-        ShadowRoot shadowRoot = getElement().getShadowRoot().get();
-
         return shadowRoot.getChildren().flatMap(this::flattenChildren)
                 .filter(element -> id.equals(element.getAttribute("id")))
                 .findFirst();
@@ -245,9 +244,11 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      *            tag name of element, not {@code null}
      * @param id
      *            id of element to attach to
+     * @param field
+     *            field to attach {@code Element} or {@code Component} to
      */
-    public void attachExistingElementById(String tagName, String id,
-            Class<?> fieldType, Field field) {
+    private void attachExistingElementById(String tagName, String id,
+            Field field) {
         if (tagName == null) {
             throw new IllegalArgumentException(
                     "Tag name parameter cannot be null");
@@ -261,26 +262,27 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         StateNode proposedNode = BasicElementStateProvider
                 .createStateNode(tagName);
         Element element = Element.get(proposedNode);
-        handleAttach(element, fieldType, field);
+        handleAttach(element, field);
 
         StateNode node = getElement().getNode();
         node.runWhenAttached(ui -> {
             node.getFeature(AttachExistingElementFeatureById.class)
-                    .register(getElement(), id, proposedNode);
+                    .register(getElement(), proposedNode);
             ui.getPage().executeJavaScript(
                     "this.attachExistingElementById($0, $1, $2, $3);",
                     getElement(), tagName, proposedNode.getId(), id);
         });
     }
 
-    private void handleAttach(Element element, Class<?> fieldType,
-            Field field) {
+    private void handleAttach(Element element, Field field) {
+        Class<?> fieldType = field.getType();
         if (Component.class.isAssignableFrom(fieldType)) {
             CustomElementRegistry.getInstance().wrapElementIfNeeded(element);
             Component component;
 
-            if (element.getComponent().isPresent())
-                component = element.getComponent().get();
+            Optional<Component> wrappedComponent = element.getComponent();
+            if (wrappedComponent.isPresent())
+                component = wrappedComponent.get();
             else {
                 Class<? extends Component> componentType = (Class<? extends Component>) fieldType;
                 component = Component.from(element, componentType);

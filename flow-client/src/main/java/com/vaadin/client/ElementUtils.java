@@ -170,11 +170,12 @@ public class ElementUtils {
         if (existingId == null) {
             ExistingElementMap map = parent.getTree().getRegistry()
                     .getExistingElementMap();
-            existingId = map.getId(existingElement);
-            if (existingId == null) {
-                existingId = serverSideId;
+            Integer fromMap = map.getId(existingElement);
+            if (fromMap == null) {
                 map.add(serverSideId, existingElement);
+                return serverSideId;
             }
+            return fromMap;
         }
         return existingId;
     }
