@@ -122,7 +122,7 @@ public class ElementUtils {
      *            the identifier of the server side node which is requested to
      *            be a counterpart of the client side element
      * @param id
-     *            id of element to wire to
+     *            the id attribute of the element to wire to
      */
     public static void attachExistingElementById(StateNode parent,
             String tagName, int serverSideId, String id) {

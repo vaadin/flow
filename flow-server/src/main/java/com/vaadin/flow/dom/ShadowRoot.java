@@ -69,6 +69,11 @@ public class ShadowRoot extends Node<ShadowRoot> {
         return this;
     }
 
+    @Override
+    public ShadowRootStateProvider getStateProvider() {
+        return (ShadowRootStateProvider) super.getStateProvider();
+    }
+
     /**
      * Insert a 'virtual' child to this shadow root.
      * <p>
@@ -80,10 +85,10 @@ public class ShadowRoot extends Node<ShadowRoot> {
      * @return this element
      */
     public ShadowRoot insertVirtualChild(Element childElement) {
-        childElement.removeFromParent();
+        assert childElement
+                .getParent() == null : "Virtual elements should not have a parent";
 
-        ((ShadowRootStateProvider) getStateProvider())
-                .insertVirtualChild(getNode(), childElement);
+        getStateProvider().insertVirtualChild(getNode(), childElement);
         ensureChildHasParent(childElement, true);
 
         return this;

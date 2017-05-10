@@ -59,7 +59,6 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         extends AbstractTemplate<M> {
 
     private transient M model;
-    private ShadowRoot shadowRoot;
 
     /**
      * Creates the component that is responsible for Polymer template
@@ -75,7 +74,6 @@ public abstract class PolymerTemplate<M extends TemplateModel>
         ModelDescriptor.get(getModelType()).getPropertyNames().forEach(
                 propertyName -> modelMap.setProperty(propertyName, null));
 
-        shadowRoot = getElement().attachShadow();
         mapComponents(getClass());
     }
 
@@ -182,7 +180,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     /* Map declared fields marked @Id */
 
     private void mapComponents(Class<?> cls) {
-        if (cls.getSuperclass() != AbstractTemplate.class) {
+        if (!AbstractTemplate.class.equals(cls.getSuperclass())) {
             // Parent fields
             mapComponents(cls.getSuperclass());
         }
@@ -213,9 +211,10 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                             + "This is always mapped to the template instance itself ("
                             + getClass().getName() + ")");
         } else if (!fieldType.isAnnotationPresent(Tag.class)) {
-            throw new IllegalArgumentException(
-                    "Cannot instantiate element without tagName for ("
-                            + fieldType.getName() + ")");
+            String msg = String.format(
+                    "Cannot instantiate element without tagName for '%s' defined for field '%s' found in class '%s'",
+                    fieldType.getName(), field.getName(), getClass().getName());
+            throw new IllegalArgumentException(msg);
         }
 
         Tag tag = fieldType.getAnnotation(Tag.class);
@@ -224,6 +223,16 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     }
 
     private Optional<Element> getElementById(String id) {
+        Optional<ShadowRoot> shadowRootOptional = getElement().getShadowRoot();
+
+        ShadowRoot shadowRoot;
+
+        if (shadowRootOptional.isPresent()) {
+            shadowRoot = shadowRootOptional.get();
+        } else {
+            shadowRoot = getElement().attachShadow();
+        }
+
         return shadowRoot.getChildren().flatMap(this::flattenChildren)
                 .filter(element -> id.equals(element.getAttribute("id")))
                 .findFirst();
