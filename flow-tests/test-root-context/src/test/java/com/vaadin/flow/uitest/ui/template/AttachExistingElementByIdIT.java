@@ -30,11 +30,9 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
     public void elementsAreBoundOnTheServerSide() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement label = getInShadowRoot(template, By.id("label")).get();
-        WebElement input = getInShadowRoot(template, By.id("input")).get();
+        WebElement input = getInput();
 
-        Assert.assertEquals("default", label.getText());
+        Assert.assertEquals("default", getLabel().getText());
 
         Assert.assertEquals("Type here to update label",
                 input.getAttribute("placeholder"));
@@ -42,18 +40,19 @@ public class AttachExistingElementByIdIT extends ChromeBrowserTest {
         input.sendKeys("Harley!");
         input.sendKeys(Keys.ENTER);
 
-        // Wait for text so we don't asser too early
-        waitUntil(ExpectedConditions.textToBePresentInElement(label,
-                "Text from input Harley!"), 2);
-
-        Assert.assertEquals("Text from input Harley!", label.getText());
+        Assert.assertEquals("Text from input Harley!", getLabel().getText());
 
         // Reset values to defaults
-        getInShadowRoot(template, By.id("button")).get().click();
+        getInShadowRoot(findElement(By.id("template")), By.id("button")).get().click();
 
-        Assert.assertEquals("default", label.getText());
+        Assert.assertEquals("default", getLabel().getText());
+    }
 
-        Assert.assertEquals("Type here to update label",
-                input.getAttribute("placeholder"));
+    private WebElement getInput() {
+        return getInShadowRoot(findElement(By.id("template")), By.id("input")).get();
+    }
+
+    private WebElement getLabel() {
+        return getInShadowRoot(findElement(By.id("template")), By.id("label")).get();
     }
 }
