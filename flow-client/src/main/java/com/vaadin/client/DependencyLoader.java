@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
 import com.vaadin.client.flow.collection.JsArray;
@@ -183,11 +184,19 @@ public class DependencyLoader {
             }
         }
 
-        runWhenBlockingDependenciesLoaded(() -> {
-            Console.log("Finished loading blocking dependencies, loading non-blocking.");
-            nonBlockingDependencies
-                    .forEach((url, loader) -> loadDependency(url, false, loader));
-        });
+        // postpone load dependencies execution after the browser event
+        // loop to make possible to execute all other commands that should be
+        // run after the blocking dependencies so that non-blocking dependencies
+        // don't block those commands
+        if (!nonBlockingDependencies.isEmpty()) {
+            runWhenBlockingDependenciesLoaded(
+                    () -> Scheduler.get().scheduleDeferred(() -> {
+                        Console.log(
+                                "Finished loading blocking dependencies, loading non-blocking.");
+                        nonBlockingDependencies.forEach((url,
+                                loader) -> loadDependency(url, false, loader));
+                    }));
+        }
     }
 
     private BiConsumer<String, ResourceLoadListener> getResourceLoader(
