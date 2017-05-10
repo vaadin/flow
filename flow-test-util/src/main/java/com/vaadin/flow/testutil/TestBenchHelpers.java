@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.testutil;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -189,6 +190,9 @@ public class TestBenchHelpers extends ParallelTest {
             By by) {
         WebElement root = (WebElement) getCommandExecutor()
                 .executeScript("return arguments[0].shadowRoot", webComponent);
+        if (root == null) {
+            return Collections.emptyList();
+        }
         return root.findElements(by);
     }
 

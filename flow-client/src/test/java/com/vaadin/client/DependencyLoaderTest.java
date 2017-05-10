@@ -43,7 +43,7 @@ public class DependencyLoaderTest {
 
         @Override
         public void loadHtml(String htmlUrl,
-                ResourceLoadListener resourceLoadListener) {
+                ResourceLoadListener resourceLoadListener, boolean async) {
             loadingHtml.add(htmlUrl);
             resourceLoadListener.onLoad(new ResourceLoadEvent(this, htmlUrl));
         }
@@ -85,9 +85,8 @@ public class DependencyLoaderTest {
     public void loadStylesheet() {
         String TEST_URL = "http://foo.bar/baz";
 
-        new DependencyLoader(registry)
-                .loadDependencies(createJsonArray(createDependency(TEST_URL,
-                        DependencyList.TYPE_STYLESHEET, true)));
+        new DependencyLoader(registry).loadDependencies(createJsonArray(
+                createDependency(TEST_URL, DependencyList.TYPE_STYLESHEET)));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingStyles);
@@ -97,9 +96,8 @@ public class DependencyLoaderTest {
     public void loadScript() {
         String TEST_URL = "http://foo.bar/baz.js";
 
-        new DependencyLoader(registry)
-                .loadDependencies(createJsonArray(createDependency(TEST_URL,
-                        DependencyList.TYPE_JAVASCRIPT, true)));
+        new DependencyLoader(registry).loadDependencies(createJsonArray(
+                createDependency(TEST_URL, DependencyList.TYPE_JAVASCRIPT)));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingScripts);
@@ -109,9 +107,8 @@ public class DependencyLoaderTest {
     public void loadHtml() {
         String TEST_URL = "http://foo.bar/baz.html";
 
-        new DependencyLoader(registry)
-                .loadDependencies(createJsonArray(createDependency(TEST_URL,
-                        DependencyList.TYPE_HTML_IMPORT, true)));
+        new DependencyLoader(registry).loadDependencies(createJsonArray(
+                createDependency(TEST_URL, DependencyList.TYPE_HTML_IMPORT)));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingHtml);
@@ -124,12 +121,10 @@ public class DependencyLoaderTest {
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(TEST_JS_URL, DependencyList.TYPE_JAVASCRIPT,
-                        true),
-                createDependency(TEST_JS_URL2, DependencyList.TYPE_JAVASCRIPT,
-                        true),
-                createDependency(TEST_CSS_URL, DependencyList.TYPE_STYLESHEET,
-                        true)));
+                createDependency(TEST_JS_URL, DependencyList.TYPE_JAVASCRIPT),
+                createDependency(TEST_JS_URL2, DependencyList.TYPE_JAVASCRIPT),
+                createDependency(TEST_CSS_URL,
+                        DependencyList.TYPE_STYLESHEET)));
 
         assertEquals(Arrays.asList(TEST_JS_URL, TEST_JS_URL2),
                 mockResourceLoader.loadingScripts);
@@ -146,9 +141,8 @@ public class DependencyLoaderTest {
         registry.set(ApplicationConfiguration.class, config);
         config.setFrontendRootUrl("http://someplace.com/es6/");
 
-        new DependencyLoader(registry)
-                .loadDependencies(createJsonArray(createDependency(TEST_URL,
-                        DependencyList.TYPE_HTML_IMPORT, true)));
+        new DependencyLoader(registry).loadDependencies(createJsonArray(
+                createDependency(TEST_URL, DependencyList.TYPE_HTML_IMPORT)));
 
         assertEquals(
                 Collections.singletonList(
@@ -166,9 +160,8 @@ public class DependencyLoaderTest {
         config.setFrontendRootUrl("context://es6/");
         config.setContextRootUrl("http://someplace.com/");
 
-        new DependencyLoader(registry)
-                .loadDependencies(createJsonArray(createDependency(TEST_URL,
-                        DependencyList.TYPE_HTML_IMPORT, true)));
+        new DependencyLoader(registry).loadDependencies(createJsonArray(
+                createDependency(TEST_URL, DependencyList.TYPE_HTML_IMPORT)));
 
         assertEquals(
                 Collections.singletonList(
@@ -177,54 +170,11 @@ public class DependencyLoaderTest {
     }
 
     @Test
-    public void allBlockingDependenciesAreLoadedFirst() {
-        String blockingJsUrl = "https://foo.bar/blocking_script.js";
-        String blockingHtmlUrl = "https://foo.bar/blocking_page.html";
-        String blockingCssUrl = "https://foo.bar/blocking_style.css";
-
-        String regularJsUrl = "https://foo.bar/script.js";
-        String regularHtmlUrl = "https://foo.bar/page.html";
-        String regularCssUrl = "https://foo.bar/style.css";
-
-        new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(regularJsUrl, DependencyList.TYPE_JAVASCRIPT,
-                        false),
-                createDependency(regularHtmlUrl,
-                        DependencyList.TYPE_HTML_IMPORT, false),
-                createDependency(regularCssUrl, DependencyList.TYPE_STYLESHEET,
-                        false),
-
-                createDependency(blockingJsUrl, DependencyList.TYPE_JAVASCRIPT,
-                        true),
-                createDependency(blockingHtmlUrl,
-                        DependencyList.TYPE_HTML_IMPORT, true),
-                createDependency(blockingCssUrl, DependencyList.TYPE_STYLESHEET,
-                        true)));
-
-        assertEquals("2 js files should be imported, blocking first",
-                Arrays.asList(blockingJsUrl, regularJsUrl),
-                mockResourceLoader.loadingScripts);
-
-        assertEquals("2 style files should be imported, blocking first",
-                Arrays.asList(blockingCssUrl, regularCssUrl),
-                mockResourceLoader.loadingStyles);
-
-        assertEquals("2 html files should be imported, blocking first",
-                Arrays.asList(blockingHtmlUrl, regularHtmlUrl),
-                mockResourceLoader.loadingHtml);
-    }
-
-    @Test
-    public void ensureNonBlockingDependenciesLoadedInOrder() {
-        ensureDependenciesLoadedInOrder(false);
-    }
-
-    @Test
     public void ensureBlockingDependenciesLoadedInOrder() {
-        ensureDependenciesLoadedInOrder(true);
+        ensureDependenciesLoadedInOrder();
     }
 
-    private void ensureDependenciesLoadedInOrder(boolean blocking) {
+    private void ensureDependenciesLoadedInOrder() {
         String jsUrl1 = "1.js";
         String jsUrl2 = "2.js";
         String cssUrl1 = "1.css";
@@ -233,18 +183,12 @@ public class DependencyLoaderTest {
         String htmlUrl2 = "2.html";
 
         new DependencyLoader(registry).loadDependencies(createJsonArray(
-                createDependency(jsUrl1, DependencyList.TYPE_JAVASCRIPT,
-                        blocking),
-                createDependency(jsUrl2, DependencyList.TYPE_JAVASCRIPT,
-                        blocking),
-                createDependency(cssUrl1, DependencyList.TYPE_STYLESHEET,
-                        blocking),
-                createDependency(cssUrl2, DependencyList.TYPE_STYLESHEET,
-                        blocking),
-                createDependency(htmlUrl1, DependencyList.TYPE_HTML_IMPORT,
-                        blocking),
-                createDependency(htmlUrl2, DependencyList.TYPE_HTML_IMPORT,
-                        blocking)));
+                createDependency(jsUrl1, DependencyList.TYPE_JAVASCRIPT),
+                createDependency(jsUrl2, DependencyList.TYPE_JAVASCRIPT),
+                createDependency(cssUrl1, DependencyList.TYPE_STYLESHEET),
+                createDependency(cssUrl2, DependencyList.TYPE_STYLESHEET),
+                createDependency(htmlUrl1, DependencyList.TYPE_HTML_IMPORT),
+                createDependency(htmlUrl2, DependencyList.TYPE_HTML_IMPORT)));
 
         assertEquals(
                 "jsUrl1 should come before jsUrl2, because it was added earlier",
@@ -262,12 +206,11 @@ public class DependencyLoaderTest {
                 mockResourceLoader.loadingHtml);
     }
 
-    private JsonObject createDependency(String url, String type,
-            boolean blocking) {
+    private JsonObject createDependency(String url, String type) {
         JsonObject dependency = Json.createObject();
         dependency.put(DependencyList.KEY_TYPE, type);
         dependency.put(DependencyList.KEY_URL, url);
-        dependency.put(DependencyList.KEY_BLOCKING, blocking);
+        dependency.put(DependencyList.KEY_BLOCKING, true);
         return dependency;
     }
 
