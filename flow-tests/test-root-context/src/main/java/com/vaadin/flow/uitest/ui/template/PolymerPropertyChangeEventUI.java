@@ -22,18 +22,11 @@ import com.vaadin.annotations.WebComponents.PolyfillVersion;
 import com.vaadin.flow.event.PropertyChangeEvent;
 import com.vaadin.flow.html.Div;
 import com.vaadin.flow.template.PolymerTemplate;
-import com.vaadin.flow.template.model.TemplateModel;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.ui.UI;
 
 @WebComponents(PolyfillVersion.V1)
 public class PolymerPropertyChangeEventUI extends UI {
-
-    public interface Message extends TemplateModel {
-        void setText(String text);
-
-        String getText();
-    }
 
     @Tag("property-change")
     @HtmlImport("/com/vaadin/flow/uitest/ui/template/PolymerPropertyChange.html")
